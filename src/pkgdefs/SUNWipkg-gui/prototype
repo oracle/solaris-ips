@@ -10,7 +10,6 @@ f none usr/bin/packagemanager 755 root bin
 d none usr/lib 755 root bin
 f none usr/lib/pm-checkforupdates 755 root bin
 f none usr/lib/pm-launch 755 root bin
-f none usr/lib/pm-openlink 755 root bin
 d none usr/lib/python2.6 755 root bin
 d none usr/lib/python2.6/vendor-packages 755 root bin
 d none usr/lib/python2.6/vendor-packages/pkg 755 root bin

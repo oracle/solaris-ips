@@ -27,7 +27,7 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
-OPEN_LINK = 'usr/lib/pm-openlink'
+PM_LAUNCH_OPEN_CMD = "pm-launch: OPEN:"   # Command to tell pm-launch to open link.
 PUBLISHER_INSTALLED = 0                   # Index for "All Publishers (Installed)" string
 PUBLISHER_ALL = 1                         # Index for "All Publishers (Search)" string
 PUBLISHER_ADD = 2                         # Index for "Add..." string
@@ -109,7 +109,6 @@ INFORMATION_PAGE_HEADER = (
 import getopt
 import pwd
 import os
-import subprocess
 import sys
 import time
 import locale
@@ -180,10 +179,10 @@ REGEX_STRIP_RESULT = re.compile(r'\(\d+\) ?')
 
 class PackageManager:
         def __init__(self):
+                self.allow_links = False
                 self.before_start = True
                 signal.signal(signal.SIGINT, self.__main_application_quit)
                 self.user_rights = portable.is_admin()
-                self.original_user = None
                 self.__reset_home_dir()
                 self.api_o = None
                 self.cache_o = None
@@ -1424,28 +1423,48 @@ class PackageManager:
 
         def __open_link(self, link):
                 self.set_busy_cursor()
-                if self.original_user == None:
-                        if self.user_rights:
-                                self.__link_load_error(link)
-                                self.unset_busy_cursor()
-                        else:
-                                try:
-                                        gnome.url_show(link)
-                                        gobject.timeout_add(1000, self.unset_busy_cursor)
-                                except gobject.GError:
-                                        self.__link_load_error(link)
-                                        self.unset_busy_cursor()
-                else: 
-                        prog = os.path.join(self.application_dir, OPEN_LINK)
+
+                if not self.allow_links:
+                        # Links not allowed.
+                        self.__link_load_error(link)
+                        self.unset_busy_cursor()
+                        return
+                elif not self.user_rights:
+                        # Not a privileged user? Show links directly.
                         try:
-                                return_code = subprocess.call([prog, 
-                                    self.original_user, link])
-                                gobject.timeout_add(1000, self.unset_busy_cursor)
-                        except OSError:
-                                return_code = 1
-                        if return_code != 0:
+                                gnome.url_show(link)
+                                gobject.timeout_add(1000,
+                                    self.unset_busy_cursor)
+                        except gobject.GError:
                                 self.__link_load_error(link)
                                 self.unset_busy_cursor()
+                        return
+
+                # XXX PackageManager shouldn't run as a privileged user!
+                # Opening links relies on the packagemanager having been
+                # launched by the pm-launch process.  The pm-launch process
+                # monitors the output of its child process for special commands
+                # such as the one used to below to launch links.  This causes
+                # the pm-launch program to open this link as the original user
+                # that executed pm-launch instead of as the current, privileged
+                # user the packagemanager is likely running as.
+                try:
+                        # XXX There's no way to know if opening the link failed
+                        # using this method; the assumption is that the user
+                        # will be informed somehow by the launcher or browser.
+                        print "%s%s" % (PM_LAUNCH_OPEN_CMD, link)
+                        sys.stdout.flush()
+                        gobject.timeout_add(1000, self.unset_busy_cursor)
+                except Exception, e:
+                        # Any exception from the above likely means that the
+                        # link wasn't loaded.  For example, an IOError or
+                        # some other exception might be raised if the launch
+                        # process was killed.
+                        self.__link_load_error(link)
+                        self.unset_busy_cursor()
+
+                        # Log the error for post-mortem evaluation.
+                        logger.error(str(e))
 
         def __link_load_page(self, text =""):
                 self.link_load_page = text
@@ -6066,6 +6085,7 @@ def main():
 sys.excepthook = global_exception_handler
 if __name__ == '__main__':
         installThreadExcepthook()
+        allow_links = False
         debug = False
         debug_perf = False
         max_filter_length = 0
@@ -6073,7 +6093,6 @@ if __name__ == '__main__':
         app_path = None
         image_dir = None
         info_install_arg = None
-        original_user = None
         save_selected = _("Save selected...")
         save_selected_pkgs = _("Save selected packages...")
         reboot_needed = _("The installed package(s) require a reboot before "
@@ -6081,7 +6100,8 @@ if __name__ == '__main__':
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "hR:Ui:", \
-                    ["help", "image-dir=", "update-all", "info-install="])
+                    ["help", "allow-links", "image-dir=", "update-all",
+                    "info-install="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -6098,11 +6118,13 @@ if __name__ == '__main__':
 Use -R (--image-dir) to specify image directory.
 Use -U (--update-all) to proceed with Updates"""
                         sys.exit(0)
-                if option in ("-R", "--image-dir"):
+                elif option == "--allow-links":
+                        allow_links = True
+                elif option in ("-R", "--image-dir"):
                         image_dir = argument
-                if option in ("-U", "--update-all"):
+                elif option in ("-U", "--update-all"):
                         update_all_proceed = True
-                if option in ("-i", "--info-install"):
+                elif option in ("-i", "--info-install"):
                         info_install_arg = argument
 
         if image_dir == None:
@@ -6110,6 +6132,7 @@ Use -U (--update-all) to proceed with Updates"""
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
                         image_dir = os.getcwd()
+
         try:
                 gtk.init_check()
         except RuntimeError, e:
@@ -6126,21 +6149,12 @@ Use -U (--update-all) to proceed with Updates"""
                 main()
                 sys.exit(0)
 
-        # Get original user name if running as root
-        if portable.is_admin():
-                original_id = portable.get_userid()
-                if original_id:
-                        try:
-                                original_user = portable.get_username()
-                        except EnvironmentError:
-                                pass
-
         # Setup packagemanager
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
         packagemanager.image_directory = image_dir
+        packagemanager.allow_links = allow_links
         packagemanager.update_all_proceed = update_all_proceed
-        packagemanager.original_user = original_user
 
         while gtk.events_pending():
                 gtk.main_iteration(False)

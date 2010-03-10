@@ -70,6 +70,8 @@ def get_platform():
         return platform.uname()[4]
 
 def get_userid():
+        """To be used for display purposes only!"""
+
         # If the software is being executed with pfexec, the uid or euid will
         # likely be 0 which is of no use.  Since the os.getlogin() interface
         # provided by Python breaks in a number of interesting ways, their
@@ -84,6 +86,8 @@ def get_userid():
         return os.getuid()
 
 def get_username():
+        """To be used for display purposes only!"""
+
         if not already_called():
                 get_username()
         return pwd.getpwuid(get_userid()).pw_name

@@ -123,11 +123,13 @@ def is_admin():
         raise NotImplementedError
 
 def get_userid():
-        """ Return a string representing the invoking user's id."""
+        """ Return a string representing the invoking user's id.  To be used
+        for display purposes only!"""
         raise NotImplementedError
 
 def get_username():
-        """ Return a string representing the invoking user's username."""
+        """ Return a string representing the invoking user's username.  To be
+        used for display purposes only!"""
         raise NotImplementedError
 
 
