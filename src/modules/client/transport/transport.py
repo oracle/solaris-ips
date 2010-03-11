@@ -155,7 +155,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -236,7 +236,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -372,7 +372,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 # Check if the download_dir exists.  If it doesn't, create
                 # the directories.
@@ -411,14 +411,6 @@ class Transport(object):
                         try:
                                 errlist = d.get_catalog1(flist, download_dir,
                                     header, ts, progtrack=progtrack)
-                        except tx.TransportProtoError, e:
-                                # If we've performed a conditional
-                                # request, and it returned 304, raise a
-                                # CatalogNotModified exception here.
-                                if e.code == httplib.NOT_MODIFIED:
-                                        raise apx.CatalogNotModified(e.url)
-                                else:
-                                        raise
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that the client just gave up, make a note
@@ -727,7 +719,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -813,7 +805,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1204,7 +1196,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=mfile.get_ccancel())
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1275,7 +1267,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test()
+                self._captive_portal_test(ccancel=ccancel)
 
                 for d in self.__gen_origins(pub, retry_count):
                         # If a transport exception occurs,
@@ -1504,6 +1496,8 @@ class Transport(object):
         def _captive_portal_test(self, ccancel=None):
                 """Implementation of captive_portal_test."""
 
+                fail = tx.TransportFailures()
+
                 if self.__portal_test_executed:
                         return
 
@@ -1513,10 +1507,14 @@ class Transport(object):
                 for pub in self.__img.gen_publishers():
                         try:
                                 vd = self._get_versions(pub, ccancel=ccancel)
-                        except tx.TransportException:
+                        except tx.TransportException, ex:
                                 # Encountered a transport error while
                                 # trying to contact this publisher.
                                 # Pick another publisher instead.
+                                if isinstance(ex, tx.TransportFailures):
+                                        fail.extend(ex.exceptions)
+                                else:
+                                        fail.append(ex)
                                 continue
                         except apx.CanceledException:
                                 self.__portal_test_executed = False
@@ -1525,6 +1523,9 @@ class Transport(object):
                         if self._valid_versions_test(vd):
                                 return
                         else:
+                                fail.append(tx.PkgProtoError(pub.prefix,
+                                    "version", 0,
+                                    "Invalid content in response"))
                                 continue
 
                 if not vd:
@@ -1532,9 +1533,11 @@ class Transport(object):
                         # encountered transport errors in every case.  This is
                         # likely a network configuration problem.  Report our
                         # inability to contact a server.
-                        raise apx.InvalidDepotResponseException(None,
-                            "Unable to contact any configured publishers. "
-                            "This is likely a network configuration problem.")
+                        estr = "Unable to contact any configured publishers." \
+                            "\nThis is likely a network configuration problem."
+                        if fail:
+                                estr += "\n%s" % fail
+                        raise apx.InvalidDepotResponseException(None, estr)
 
         @staticmethod
         def _valid_versions_test(versdict):
@@ -1700,6 +1703,12 @@ class MultiXfr(object):
 
                 self._hash.pop(hashval, None)
 
+        def get_ccancel(self):
+                """If the progress tracker has an associated ccancel,
+                return it.  Otherwise, return None."""
+
+                return getattr(self._progtrack, "check_cancelation", None)
+                
         def get_progtrack(self):
                 """Return the progress tracker object for this MFile,
                 if it has one."""
@@ -1791,8 +1800,8 @@ class MultiFile(MultiXfr):
                 # the engine's progress tracking.  Adjust the progress tracker
                 # by the difference between what we have and the total we should
                 # have received.
-                bytes = int(totalsz - filesz)
-                self._progtrack.download_add_progress((nactions - 1), bytes)
+                nbytes = int(totalsz - filesz)
+                self._progtrack.download_add_progress((nactions - 1), nbytes)
 
         def subtract_progress(self, size):
                 """Subtract the progress accumulated by the download of

@@ -80,7 +80,6 @@ class TransportFailures(TransportException):
         def __init__(self):
                 TransportException.__init__(self)
                 self.exceptions = []
-                self.reduced_ex = []
 
         def append(self, exc):
                 found = False
@@ -262,11 +261,12 @@ class PkgProtoError(TransportException):
         def __str__(self):
                 s = "Invalid pkg(5) response from %s" % self.url
                 if self.operation:
-                        s += ": Attempting operation %s" % self.operation
-                if self.version:
+                        s += ": Attempting operation '%s'" % self.operation
+                if self.version is not None:
                         s += " version %s" % self.version
                 if self.reason:
                         s += ":\n%s" % self.reason
+                return s
 
         def __cmp__(self, other):
                 if not isinstance(other, PkgProtoError):
