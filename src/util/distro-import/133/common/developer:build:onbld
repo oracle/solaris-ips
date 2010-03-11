@@ -1,5 +1,4 @@
 package developer/build/onbld
-consolidation "osnet"
 classification "Development/Distribution Tools"
 import SUNWonbld
 end package

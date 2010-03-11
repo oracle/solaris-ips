@@ -1,0 +1,6 @@
+package system/input-method/ibus/sunpinyin
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWibus-sunpinyin
+version 2.0
+end package

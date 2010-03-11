@@ -1,0 +1,42 @@
+package system/network
+consolidation "osnet"
+classification "System/Core"
+import SUNWcnetr
+
+add group groupname=netadm gid=65
+add user username=dladm uid=15 group=netadm gcos-field="Datalink Admin" \
+    ftpuser=false
+add user username=netadm uid=16 group=netadm gcos-field="Network Admin" \
+    ftpuser=false
+add user username=netcfg uid=17 group=netadm \
+    gcos-field="Network Configuration Admin" ftpuser=false
+
+chattr etc/default/dhcpagent \
+	original_name=SUNWcnetr:etc/default/dhcpagent
+chattr etc/default/inetinit \
+	original_name=SUNWcnetr:etc/default/inetinit
+chattr etc/default/ipsec \
+	original_name=SUNWcnetr:etc/default/ipsec
+chattr etc/default/mpathd \
+	original_name=SUNWcnetr:etc/default/mpathd
+chattr etc/dladm/datalink.conf \
+	original_name=SUNWcnetr:etc/dladm/datalink.conf
+chattr etc/dladm/flowadm.conf \
+	original_name=SUNWcnetr:etc/dladm/flowadm.conf
+chattr etc/dladm/flowprop.conf \
+	original_name=SUNWcnetr:etc/dladm/flowprop.conf
+chattr etc/dladm/secobj.conf \
+	original_name=SUNWcnetr:etc/dladm/secobj.conf
+chattr etc/inet/ipsecalgs \
+	original_name=SUNWcnetr:etc/inet/ipsecalgs
+chattr etc/inet/secret/ike.preshared \
+	original_name=SUNWcnetr:etc/inet/secret/ike.preshared
+chattr etc/inet/sock2path \
+	original_name=SUNWcnetr:etc/inet/sock2path
+end package
+
+package SUNWcnetr
+consolidation "osnet"
+renamed 133
+depend system/network
+end package
