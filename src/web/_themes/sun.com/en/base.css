@@ -61,7 +61,7 @@ div.masthead {
         display: block;
         clear: both;
         height: 60px;
-        background: transparent url(http://www.sun.com/im/a1a2_sprite.png) no-repeat scroll -10px -393px;
+        background: transparent url(http://www.sun.com/im/a1a2_sprite.png) no-repeat scroll -47px -453px;
 }
 div.masthead div.content {
         height: 100%;
@@ -76,7 +76,7 @@ div.masthead a#logo {
 div.masthead div.menu {
         height: 100%;
         background: transparent url(http://www.sun.com/im/a1a2_sprite.png) repeat-x scroll 0 0;
-        margin: 0 10px 0 107px;
+        margin: 0 10px 0 10px;
 }
 div.masthead div.menu ul {
         display: inline;
@@ -102,7 +102,7 @@ div.page-title {
         clear: both;
         display: block;
         font-weight: bold;
-        color: #E76F00;
+        color: black;
 }
 
 /* Body Styles */
@@ -111,7 +111,7 @@ div#bd {
         width: 730px;
 }
 .section-title {
-        border-bottom: 1px solid #D2D5D7;
+        border-bottom: 1px solid black;
 }
 ul.tips li {
         margin-bottom: 10px;
@@ -125,7 +125,7 @@ table.stats a#catalog-feed {
 }
 table.stats {
         width: 100%;
-        background: #DDE6EC url(http://www.sun.com/im/bg_navblue.gif) repeat-x scroll left bottom;
+        background: #E4E4E4 url(http://www.sun.com/im/bg_navblue.gif) repeat-x scroll left bottom;
 }
 table.stats tr.first {
         /* XXX for some reason this doesn't work in IE7. */
@@ -145,7 +145,7 @@ table.stats td.value { text-align: center; }
 
 /* Footer Styles */
 div#ft {
-        color: #3E6B8A;
+        color: black;
         font-size: 77%;
         margin: 20px 0 8px 0;
 }
@@ -153,16 +153,16 @@ div#ft .page-container {
         padding-bottom: 30px;
 }
 div#ft .footer-line {
-        border-top: 1px solid #D2D5D7;
+        border-top: 1px solid black;
 }
 div#ft .logo {
-        background: transparent url(http://www.sun.com/im/sunhome_sprite.gif) no-repeat scroll 90% -140px;
+        background: transparent url(http://opensolaris.org/oracle/logo_oracle_footer.gif) no-repeat scroll;
         display: inline;
         float: left;
         clear: both;
         height: 36px;
         margin-right: 24px;
-        width: 62px;
+        width: 100px;
 }
 div#ft .notice {
         display: inline;

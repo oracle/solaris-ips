@@ -170,13 +170,13 @@ div#ft .footer-line {
         border-top: 1px solid #FFC726;
 }
 div#ft .logo {
-        background: transparent url(http://www.opensolaris.com/images/sun_footerlogo.gif) no-repeat scroll;
+        background: transparent url(http://opensolaris.org/oracle/logo_oracle_footer.gif) no-repeat scroll;
         display: inline;
         float: left;
         clear: both;
         height: 35px;
         padding-right: 24px;
-        width: 72px;
+        width: 100px;
 }
 div#ft .notice {
         display: inline;
