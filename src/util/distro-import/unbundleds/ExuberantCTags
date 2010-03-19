@@ -1,5 +1,5 @@
 package developer/tool/exuberant-ctags
 classification "Development/Editors"
 import SUNWexctags
-version 5.7
+version 5.8
 end package
