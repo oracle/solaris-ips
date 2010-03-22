@@ -1,7 +1,7 @@
 package developer/netbeans/plugin/nb-dtrace
 classification "Development/System"
 summary "NetBeans DTrace GUI Plug-in"
-version 1.0
+version 1.1
 import SUNWdtrace-gui
 depend netbeans-ide
 add depend fmri=dtrace-gui-plugin@1.0-1 type=optional
