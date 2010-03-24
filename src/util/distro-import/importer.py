@@ -73,6 +73,7 @@ fmridict = {}        # all ips FMRIS known, indexed by name
 global_includes = [] # include these for every package
 include_path = []    # where to find inport files - searched in order
 just_these_pkgs = [] # publish only thesee pkgs
+not_these_consolidations = [] # don't include packages in these consolidations
 macro_definitions = {} # list of macro substitutions
 nopublish = False    # fake publication?
 path_dict = {}       # map of paths to action lists
@@ -323,6 +324,8 @@ class Package(object):
                                         print "Updating attributes on " + \
                                             "'%s' in '%s' with '%s'" % \
                                             (fname, curpkg.name, new_attrs)
+        def delivered_via_ips(self):
+                return self.consolidation in not_these_consolidations
 
 def pkg_path(pkgname):
         name = os.path.basename(pkgname)
@@ -1109,7 +1112,7 @@ def SolarisParse(mf):
                         else:
                                 line = read_full_line(lexer)
 
-                        if not print_pkg_names:
+                        if not (print_pkg_names or curpkg.delivered_via_ips()):
                                 try:
                                         curpkg.import_pkg(package_name, line)
                                 except Exception, e:
@@ -1129,7 +1132,7 @@ def SolarisParse(mf):
                                 next = lexer.get_token()
                         junk = lexer.get_token()
                         assert junk == "import"
-                        if not print_pkg_names:
+                        if not (print_pkg_names or curpkg.delivered_via_ips()):
                                 try:
                                         curpkg.import_files(pkgspec, filenames)
                                 except Exception, e:
@@ -1198,7 +1201,7 @@ def SolarisParse(mf):
 
                 elif token == "drop":
                         f = lexer.get_token()
-                        if print_pkg_names:
+                        if print_pkg_names or curpkg.delivered_via_ips():
                                 continue
                         m = [a for a in curpkg.actions if a.attrs.get("path") == f]
                         if not m:
@@ -1217,7 +1220,7 @@ def SolarisParse(mf):
                 elif token == "chattr":
                         fname = lexer.get_token()
                         line = read_full_line(lexer)
-                        if print_pkg_names:
+                        if print_pkg_names or curpkg.delivered_via_ips():
                                 continue
                         try:
                                 curpkg.chattr(fname, line)
@@ -1229,7 +1232,7 @@ def SolarisParse(mf):
                 elif token == "chattr_glob":
                         glob = lexer.get_token()
                         line = read_full_line(lexer)
-                        if print_pkg_names:
+                        if print_pkg_names or curpkg.delivered_via_ips():
                                 continue
                         try:
                                 curpkg.chattr_glob(glob, line)
@@ -1280,10 +1283,12 @@ def main_func():
         global reference_uris
         global show_debug
         global wos_path
+        global not_these_consolidations
+        global curpkg
 
         
         try:
-                _opts, _args = getopt.getopt(sys.argv[1:], "AB:D:E:I:G:NR:T:b:dj:m:ns:v:w:p:")
+                _opts, _args = getopt.getopt(sys.argv[1:], "AB:C:D:E:I:G:NR:T:b:dj:m:ns:v:w:p:")
         except getopt.GetoptError, _e:
                 print "unknown option", _e.opt
                 sys.exit(1)
@@ -1327,6 +1332,8 @@ def main_func():
                                         if len(bfargs) == 2:
                                                 branch_dict[bfargs[0]] = bfargs[1]
                         branch_file.close()
+                elif opt == "-C":
+                        not_these_consolidations.append(arg)
                 elif opt == "-D":
                         elided_files[arg] = True
                 elif opt == "-E":
@@ -1377,6 +1384,18 @@ def main_func():
 
         for _mf in filelist:
                 SolarisParse(_mf)
+
+        # Remove pkgs we're not touching  because we're skipping that
+        # consolidation
+
+        pkgs_to_elide = [
+                p.name
+                for p in pkgdict.values()
+                if p.consolidation in not_these_consolidations
+                ]
+
+        for pkg in pkgs_to_elide:
+                del pkgdict[pkg]
 
         # Unless we are publishing all obsolete and renamed packages 
         # (-A command line option), remove obsolete and renamed packages
@@ -1513,6 +1532,9 @@ def main_func():
 
         # Generate consolidation incorporations
         for cons in cons_dict.keys():
+                if cons in not_these_consolidations:
+                        print "skipping consolidation %s" % cons
+                        continue
                 consolidation_incorporation = "consolidation/%s/%s-incorporation" %  (
                     cons, cons)
                 consolidation_incorporations.append(consolidation_incorporation)
@@ -1574,7 +1596,8 @@ def main_func():
                         action = actions.fromstr("depend fmri=%s type=incorporate" % extra)
                         action.attrs["importer.source"] = "command-line"
                         curpkg.actions.append(action)
-                        action = actions.fromstr("depend fmri=%s type=require" % extra)
+			extra_noversion = extra.split("@")[0] # remove version
+                        action = actions.fromstr("depend fmri=%s type=require" % extra_noversion)
                         action.attrs["importer.source"] = "command-line"
                         action.attrs["importer.no-version"] = "true"
                         curpkg.actions.append(action)
@@ -1606,7 +1629,6 @@ def main_func():
                         print "The following non-empty unincorporated pkgs are not part of any consolidation"
                         for f in unincorps:
                                 print f      
-                     
         if just_these_pkgs:
                 newpkgs = set(pkgdict[name]
                               for name in pkgdict.keys()
@@ -1614,6 +1636,13 @@ def main_func():
                               )
         else:
                 newpkgs = set(pkgdict.values())
+
+        if not_these_consolidations:
+                newpkgs = set([
+                                p
+                                for p in newpkgs
+                                if not p.delivered_via_ips()
+                                ])
 
         processed = 0
         total = len(newpkgs)

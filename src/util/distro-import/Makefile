@@ -45,8 +45,10 @@ NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
 
 TEST_PKGS=
 REPO=http://localhost:10000
+ON_REPO=http://localhost:20000
 
 BUILDID_NORESPIN=/usr/bin/echo $(BUILDID) | sed -e 's/\([0-9]\)[a-z]*$$/\1/g'
+
 REF_REPO=http://ipkg.sfbay/release
 REF_URIS=$(REF_REPO)@entire@0.5.11,5.11-0.$(BUILDID_NORESPIN:sh)
 
@@ -78,6 +80,17 @@ sparc_DEFINES=		\
 ARCH_DEFINES=$($(ARCH)_DEFINES)
 
 EXTRA_OPTIONS=
+
+
+OSNET_CONSOLIDATION_OPTIONS = \
+	-C osnet \
+	-R \
+	$(ON_REPO)@consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
+	-E consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID)
+
+CONSOLIDATION_OPTIONS_136 = \
+	$(OSNET_CONSOLIDATION_OPTIONS)
+CONSOLIDATION_OPTIONS = $(CONSOLIDATION_OPTIONS_$(BUILDID))
 
 GLOBAL_CHATTRS_BASE=	\
 	reboot		\
@@ -396,6 +409,9 @@ FIX_FILES_133 = $(FIX_FILES_131)	\
 	user_attr
 FIX_FILES_134 = $(FIX_FILES_133)
 FIX_FILES_135 = $(FIX_FILES_133)
+FIX_FILES_136 = 			\
+	services.desktop		\
+	shares.desktop
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -701,7 +717,7 @@ import:	cluster.import $(FIX_FILES:%=$(BUILDID)/%)
 slim_import:	$(BUILDID)/slim_cluster $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
-		$(BUILDID)/slim_cluster
+		$(CONSOLIDATION_OPTIONS) $(BUILDID)/slim_cluster
 
 %/slim_import:
 	if test -z "$(JUST_THESE_PKGS)"; then \
@@ -712,7 +728,7 @@ slim_import:	$(BUILDID)/slim_cluster $(FIX_FILES:%=$(BUILDID)/%)
 redist_import:	$(BUILDID)/redist_cluster $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
-		$(BUILDID)/redist_cluster
+		$(CONSOLIDATION_OPTIONS) $(BUILDID)/redist_cluster
 
 %/redist_import:
 	if test -z "$(JUST_THESE_PKGS)"; then \

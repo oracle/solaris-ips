@@ -23,7 +23,9 @@
 #
 ARCH:sh=	uname -p
 REPO=http://localhost:10000
+ON_REPO=http://localhost:20000
 MERGEDIR=../../../proto/merge
+SETPUBLISHERDIR=../../../proto/set-publisher
 PROTO=../../../proto/root_$(ARCH)
 PYTHONPATH=$(PROTO)/usr/lib/python2.6/vendor-packages
 SPARC_REPO=http://localhost:10001
@@ -31,8 +33,12 @@ i386_REPO=http://localhost:10002
 EXTRA_ARGS=
 JUST_THESE_PKGS=
 
+
 $(MERGEDIR):
 	mkdir -p $(MERGEDIR)
+
+$(SETPUBLISHERDIR):
+	mkdir -p $(SETPUBLISHERDIR)
 
 # add other targets as needed; -r flag recursively expands
 # incorporations 
@@ -47,9 +53,10 @@ publish: $(MERGEDIR)
 	for var in `(cd $(MERGEDIR); echo * )` ;\
 	do PYTHONPATH=$(PYTHONPATH) ./pkg_publish $(MERGEDIR)/$$var $(REPO); done
 
+publish_setpublisher: $(SETPUBLISHERDIR)
+	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh -b $(BUILDID) -d $(SETPUBLISHERDIR) -p $(REPO) $(ON_REPO)
+
 clean:
 	
 clobber:
-	rm -rf $(MERGEDIR)
-
-
+	rm -rf $(MERGEDIR) $(SETPUBLISHERDIR)
