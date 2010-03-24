@@ -86,7 +86,8 @@ OSNET_CONSOLIDATION_OPTIONS = \
 	-C osnet \
 	-R \
 	$(ON_REPO)@consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID)
+	-E consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
+	-J developer/build/onbld -J developer/opensolaris/osnet
 
 CONSOLIDATION_OPTIONS_136 = \
 	$(OSNET_CONSOLIDATION_OPTIONS)

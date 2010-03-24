@@ -72,7 +72,8 @@ extra_entire_contents = [] # additional entries to be added to "entire"
 fmridict = {}        # all ips FMRIS known, indexed by name
 global_includes = [] # include these for every package
 include_path = []    # where to find inport files - searched in order
-just_these_pkgs = [] # publish only thesee pkgs
+just_these_pkgs = [] # publish only these pkgs
+not_these_pkgs = []  # do not publish these pkgs
 not_these_consolidations = [] # don't include packages in these consolidations
 macro_definitions = {} # list of macro substitutions
 nopublish = False    # fake publication?
@@ -1277,6 +1278,7 @@ def main_func():
         global def_vers
         global extra_entire_contents
         global just_these_pkgs
+        global not_these_pkgs
         global nopublish
         global publish_all
         global print_pkg_names
@@ -1288,7 +1290,7 @@ def main_func():
 
         
         try:
-                _opts, _args = getopt.getopt(sys.argv[1:], "AB:C:D:E:I:G:NR:T:b:dj:m:ns:v:w:p:")
+                _opts, _args = getopt.getopt(sys.argv[1:], "AB:C:D:E:I:J:G:NR:T:b:dj:m:ns:v:w:p:")
         except getopt.GetoptError, _e:
                 print "unknown option", _e.opt
                 sys.exit(1)
@@ -1345,6 +1347,8 @@ def main_func():
                 elif opt == "-I":
                         include_path.extend(arg.split(":"))
 
+                elif opt == "-J":
+                        not_these_pkgs.append(arg)
                 elif opt == "-G": #another file of global includes
                         global_includes.append(arg)
                 elif opt == "-N":
@@ -1395,6 +1399,9 @@ def main_func():
                 ]
 
         for pkg in pkgs_to_elide:
+                del pkgdict[pkg]
+
+	for pkg in not_these_pkgs:
                 del pkgdict[pkg]
 
         # Unless we are publishing all obsolete and renamed packages 
@@ -1633,6 +1640,14 @@ def main_func():
                 newpkgs = set(pkgdict[name]
                               for name in pkgdict.keys()
                               if name in just_these_pkgs
+                              )
+        else:
+                newpkgs = set(pkgdict.values())
+
+        if not_these_pkgs:
+                newpkgs = set(pkgdict[name]
+                              for name in pkgdict.keys()
+                              if name not in not_these_pkgs
                               )
         else:
                 newpkgs = set(pkgdict.values())
