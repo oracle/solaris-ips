@@ -1,0 +1,17 @@
+package x11/clients
+consolidation "X"
+classification "System/X11"
+import SUNWxwplt
+# Links for compatibility with old Solaris locations
+add link path=usr/X11/lib/XErrorDB target=X11/XErrorDB
+add link path=usr/X11/lib/XKeysymDB target=X11/XKeysymDB
+add link path=usr/X11/sfw target=.
+add link path=usr/X11/share/include target=../include
+add link path=usr/openwin target=X11
+end package
+
+package SUNWxwplt
+consolidation "X"
+renamed 133
+depend x11/clients
+end package

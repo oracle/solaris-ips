@@ -1,0 +1,13 @@
+package x11/server/xorg/driver/xorg-kfb
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWkfbw
+depend driver/graphics/kfb
+depend x11/server/xorg
+end package
+
+package SUNWkfbw
+consolidation "smcc"
+renamed 133
+depend x11/server/xorg/driver/xorg-kfb
+end package

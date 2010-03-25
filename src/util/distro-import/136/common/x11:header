@@ -1,0 +1,12 @@
+package x11/header
+consolidation "X"
+classification "Development/X11"
+import SUNWxwinc
+depend_path /usr/include/sys/types.h
+end package
+
+package SUNWxwinc
+consolidation "X"
+renamed 133
+depend x11/header
+end package

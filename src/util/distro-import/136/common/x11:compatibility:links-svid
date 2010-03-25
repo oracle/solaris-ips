@@ -1,0 +1,26 @@
+package x11/compatibility/links-svid
+consolidation "X"
+classification "System/X11"
+import SUNWxwrtl
+#
+# the following link was removed in snv_103 but due to bug 2369, we
+# continue to instantiate it so it does not get removed on update
+#
+add link path=usr/lib/64 target=$(ARCH64)
+#
+# the following links were removed in snv_116 but due to bug 2369, we
+# continue to instantiate them so they do not get removed on update
+#
+$(sparc_ONLY)add link path=usr/lib/$(ARCH64)/libMrm.so target=./libMrm.so.4
+$(sparc_ONLY)add link path=usr/lib/$(ARCH64)/libMrm.so.4 \
+$(sparc_ONLY)	target=../../dt/lib/$(ARCH64)/libMrm.so.4
+$(sparc_ONLY)add link path=usr/lib/$(ARCH64)/libUil.so target=./libUil.so.3
+$(sparc_ONLY)add link path=usr/lib/$(ARCH64)/libUil.so.3 \
+$(sparc_ONLY)	target=../../dt/lib/$(ARCH64)/libUil.so.3
+end package
+
+package SUNWxwrtl
+consolidation "X"
+renamed 133
+depend x11/compatibility/links-svid
+end package

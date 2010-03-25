@@ -1,0 +1,17 @@
+package x11/xfs
+consolidation "X"
+classification "System/X11"
+import SUNWxwfs
+# SMF manifest formerly in separate root package
+from SUNWxwplr import
+var/svc/manifest/application/x11/xfs.xml
+end import
+version 1.1.0
+end package
+
+package SUNWxwfs
+consolidation "X"
+renamed 133
+depend x11/xfs
+version 1.1.0
+end package

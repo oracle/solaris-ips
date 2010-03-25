@@ -1,0 +1,17 @@
+package library/motif/libdpstkxm
+consolidation "X"
+classification "System/X11"
+import SUNWxwdxm
+end package
+
+package library/motif/libdpstkXm
+consolidation "X"
+renamed 134
+depend library/motif/libdpstkxm
+end package
+
+package SUNWxwdxm
+consolidation "X"
+renamed 133
+depend library/motif/libdpstkXm
+end package
