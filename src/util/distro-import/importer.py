@@ -1644,14 +1644,6 @@ def main_func():
         else:
                 newpkgs = set(pkgdict.values())
 
-        if not_these_pkgs:
-                newpkgs = set(pkgdict[name]
-                              for name in pkgdict.keys()
-                              if name not in not_these_pkgs
-                              )
-        else:
-                newpkgs = set(pkgdict.values())
-
         if not_these_consolidations:
                 newpkgs = set([
                                 p
