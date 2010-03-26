@@ -62,20 +62,15 @@ if __name__ == "__main__":
                         os.putenv(HTTP_PROXY_VARIABLE, http_proxy)
                 if os.getenv(HTTPS_PROXY_VARIABLE) == None:
                         os.putenv(HTTPS_PROXY_VARIABLE, http_proxy)
-        args = ""
-        for i in range(1, len(sys.argv)):
-                args = args + sys.argv[i]
-                if i < len(sys.argv) - 1:
-                        args = args + " "
-
-        allow_links = False
-        args = ["/usr/bin/gksu", args]
 
         # If /usr/bin/packagemanager was checked for instead, that would make
         # testing (especially automated) impossible for web links.
-        if args[1].find("packagemanager") != -1 and not portable.is_admin():
+        allow_links = False
+        args = sys.argv[1:]
+        if args[0].find("packagemanager") != -1 and not portable.is_admin():
                 allow_links = True
-                args[1] += " --allow-links "
+                args.append("--allow-links")
+        args = ["/usr/bin/gksu", " ".join(args)]
 
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,
             close_fds=True)

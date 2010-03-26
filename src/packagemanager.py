@@ -6141,10 +6141,10 @@ Use -U (--update-all) to proceed with Updates"""
                 sys.exit(1)
 
         # Setup webinstall
-        if info_install_arg or len(sys.argv) == 2 and not update_all_proceed:
+        if info_install_arg or (args and not update_all_proceed):
                 webinstall = webinstall.Webinstall(image_dir)
-                if len(sys.argv) == 2:
-                        info_install_arg = sys.argv[1]
+                if args:
+                        info_install_arg = args[0]
                 webinstall.process_param(info_install_arg)
                 main()
                 sys.exit(0)
