@@ -23,5 +23,5 @@ package SUNWsndm
 consolidation "osnet"
 renamed 133
 depend service/network/smtp/sendmail
-version 8.14.3
+version 8.14.4
 end package
