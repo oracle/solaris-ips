@@ -49,7 +49,8 @@ CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
 # by cherrypy is 2048 * 1024 * 1024 - 1 (just short of 2048MB), but the default
 # here is purposefully conservative.
 MAX_REQUEST_BODY_SIZE = 128 * 1024 * 1024
-# The default port(s) to serve data from.
+# The default host/port(s) to serve data from.
+HOST_DEFAULT = "0.0.0.0"
 PORT_DEFAULT = 80
 SSL_PORT_DEFAULT = 443
 # The minimum number of threads allowed.
@@ -95,7 +96,9 @@ except ImportError:
             """3.2.0) is required to use this program."""
         sys.exit(2)
 
-from pkg.misc import port_available, msg, emsg, setlocale
+import cherrypy.process.servers
+
+from pkg.misc import msg, emsg, setlocale
 import pkg.client.api_errors as api_errors
 import pkg.indexer as indexer
 import pkg.portable.util as os_util
@@ -545,10 +548,11 @@ if __name__ == "__main__":
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
         if not reindex and not exit_ready:
-                available, msg = port_available(None, port)
-                if not available:
-                        print "pkg.depotd: unable to bind to the specified " \
-                            "port: %d. Reason: %s" % (port, msg)
+                try:
+                        cherrypy.process.servers.check_port(HOST_DEFAULT, port)
+                except Exception, e:
+                        emsg("pkg.depotd: unable to bind to the specified "
+                            "port: %d. Reason: %s" % (port, e))
                         sys.exit(1)
         else:
                 # Not applicable if we're not going to serve content
@@ -566,10 +570,10 @@ if __name__ == "__main__":
                                         stderr=None)
                                 p.wait()
                         except Exception, __e:
-                                print "pkg.depotd: an error occurred while " \
-                                    "executing [%s]; unable to obtain the " \
-                                    "passphrase needed to decrypt the SSL" \
-                                    "private key file: %s" % (cmdline, __e)
+                                emsg("pkg.depotd: an error occurred while "
+                                    "executing [%s]; unable to obtain the "
+                                    "passphrase needed to decrypt the SSL "
+                                    "private key file: %s" % (cmdline, __e))
                                 sys.exit(1)
                         return p.stdout.read().strip("\n")
 
@@ -594,13 +598,13 @@ if __name__ == "__main__":
                             crypto.FILETYPE_PEM, pkey))
                         key_data.seek(0)
                 except EnvironmentError, _e:
-                        print "pkg.depotd: unable to read the SSL private " \
-                            "key file: %s" % _e
+                        emsg("pkg.depotd: unable to read the SSL private key "
+                            "file: %s" % _e)
                         sys.exit(1)
                 except crypto.Error, _e:
-                        print "pkg.depotd: authentication or cryptography " \
-                            "failure while attempting to decode\nthe SSL " \
-                            "private key file: %s" % _e
+                        emsg("pkg.depotd: authentication or cryptography "
+                            "failure while attempting to decode\nthe SSL "
+                            "private key file: %s" % _e)
                         sys.exit(1)
                 else:
                         # Redirect the server to the decrypted key file.
@@ -613,7 +617,7 @@ if __name__ == "__main__":
             "log.screen": False,
             "server.max_request_body_size": MAX_REQUEST_BODY_SIZE,
             "server.shutdown_timeout": 0,
-            "server.socket_host": "0.0.0.0",
+            "server.socket_host": HOST_DEFAULT,
             "server.socket_port": port,
             "server.socket_timeout": socket_timeout,
             "server.ssl_certificate": ssl_cert_file,
