@@ -3444,7 +3444,8 @@ def image_create(args):
                     image_dir, imgtype, is_zone, facets=facets, force=force,
                     mirrors=add_mirrors, origins=add_origins, prefix=pub_name,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
-                    repo_uri=repo_uri, variants=variants)
+                    ssl_cert=ssl_cert, ssl_key=ssl_key, repo_uri=repo_uri,
+                    variants=variants)
                 __img = api_inst.img
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.

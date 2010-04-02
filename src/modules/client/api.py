@@ -2703,6 +2703,10 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         try:
                 if repo_uri:
                         # Assume auto configuration.
+                        if ssl_cert:
+                                misc.validate_ssl_cert(ssl_cert, prefix=prefix,
+                                    uri=repo_uri)
+
                         repo = publisher.RepositoryURI(repo_uri,
                             ssl_cert=ssl_cert, ssl_key=ssl_key)
 
@@ -2743,6 +2747,10 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                 if prefix and not repo_uri:
                         # Auto-configuration not possible or not requested.
+                        if ssl_cert:
+                                misc.validate_ssl_cert(ssl_cert, prefix=prefix,
+                                    uri=origins[0])
+
                         repo = publisher.Repository()
                         for o in origins:
                                 repo.add_origin(o)
