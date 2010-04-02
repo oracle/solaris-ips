@@ -79,7 +79,7 @@ class QueryLexer(object):
 
         # Note: Functions are documented using comments instead of docstrings
         # below because Ply uses the docstrings for specific purposes.
-                
+
         def t_LBRACE(self, t):
                 # This rule is for lexing the left side of the pkgs<>
                 # construction.
@@ -95,29 +95,61 @@ class QueryLexer(object):
                 return t
 
         def t_FTERM(self, t):
-                # This rule breaks up the structured search term
-                # pkg_name:action_type:key: into its constituents and builds
-                # a FTERM token whose value is a three tuple of the
-                # constituents.
-                r"([^\(\s][^\s]*)?\:"
-                t.type = "FTERM"
-                bar = t.value.split(":", 4)
-                assert len(bar) >= 2
-                assert bar[-1] == ""
-                pkg_name = None
-                action_type = None
-                key = bar[-2]
-                if len(bar) >= 3:
-                        action_type = bar[-3]
-                        if len(bar) >= 4:
-                                pkg_name = bar[-4]
-                t.value = (pkg_name, action_type, key)
+                # This rule handles valid search terms with a colon in them.  If
+                # all colons are escaped, it produces a TERM token whose value
+                # is the original term with the escape characters removed.  If
+                # there are unescaped colons, it produces an FTERM token whose
+                # value is a four tuple consisting of the pkg name, the action
+                # type, the action key, and the token that followed the last
+                # unescaped colon.
+                #
+                # The following regular expresion matches a string with a colon
+                # in it, subject to certain other restrictions, such as not
+                # beginning with a quote.  It consists of three parts: the
+                # part before the colon, the colon, and the part after colon.
+                # The part before the colon is attempting to match anything that
+                # could come before a colon acting as a field deliminater or
+                # the escaped colon in a token.  The colon is matching either a
+                # colon acting as a field separator or an escaped colon in a
+                # token or field.  The part after the colon is attempting to
+                # match the valid term that can follow a colon that's either
+                # a field separator or escaped as part of a term.
+                r"([^\'\"\(\s][^\s]*)?\:([^\s\(\'\"][^\s]*[^\s\)\'\"\>]|[^\s\(\)\'\"\>])?"
+                fields = t.value.split(":")
+                assert len(fields) >= 2
+                tmp = fields[0:1]
+                for field in fields[1:]:
+                        if tmp[-1] and tmp[-1][-1] == "\\":
+                                tmp[-1] = tmp[-1][:-1] + ":" + field
+                        else:
+                                tmp.append(field)
+                fields = tmp
+                token = fields[-1]
+                # If the last item in the list is not the empty string, then
+                # it's possible that there was no field query and that all the
+                # colons were escaped.  In that case, treat the item as a TERM
+                # rather than an FTERM.
+                if len(fields) == 1:
+                        t.type = self.reserved.get(token, "TERM")
+                        t.value = token
+                # If an unescaped colon was in the term, then this was actually
+                # a FTERM, so fill in the fields and set the type to FTERM.
+                else:
+                        key = fields[-2]
+                        action_type = ""
+                        pkg_name = ""
+                        if len(fields) >= 3:
+                                action_type = fields[-3]
+                                if len(fields) >= 4:
+                                        pkg_name = fields[-4]
+                        t.type = "FTERM"
+                        t.value = (pkg_name, action_type, key, token)
                 return t
                 
         def t_TERM(self, t):
                 # This rule handles the general search terms as well as
                 # checking for any reserved words such as AND or OR.
-                r'[^\s\(\'\"][^\s]*[^\s\)\'\"\>] | [^\s\(\)\'\"]'
+                r'[^\s\(\'\"][^\s]*[^\s\)\'\"\>]|[^\s\(\)\'\"]'
                 t.type = self.reserved.get(t.value, "TERM")
                 return t
 
@@ -230,13 +262,31 @@ class QueryParser(object):
                          | FTERM'''
                 # If the len of p is 3, then one of the first two cases
                 # was used.
+                pkg_name, at, key, token = p[1]
+                fields = pkg_name, at, key
                 if len(p) == 3:
-                        p[0] = self.query_objs["FieldQuery"](p[1], p[2])
-                # If the length of p isn't 3, then a bare FTERM was found.  It's
-                # necessary to make the implicit wildcard explicit in this case.
+                        # If no token was attached to the FTERM, then attach
+                        # the term found following it.  If a token was attached
+                        # to the FTERM then following term is treated like a
+                        # basetermlist.
+                        if token == "":
+                                p[0] = self.query_objs["FieldQuery"](
+                                    fields, p[2])
+                        else:
+                                p[0] = self.query_objs["AndQuery"](
+                                    self.query_objs["FieldQuery"](
+                                        (pkg_name, at, key),
+                                        self.query_objs["TermQuery"](token)),
+                                    p[2])
+
+                # If the length of p isn't 3, then a bare FTERM was found.  If
+                # no token was attached to the FTERM, it's necessary to make
+                # the implicit wildcard explicit.
                 else:
-                        p[0] = self.query_objs["FieldQuery"](p[1],
-                            self.query_objs["TermQuery"]('*'))
+                        if token == "":
+                                token = "*"
+                        p[0] = self.query_objs["FieldQuery"](fields,
+                            self.query_objs["TermQuery"](token))
 
         def p_ftermarg(self, p):
                 # ftermargs are the terms which are valid after the final
@@ -607,10 +657,10 @@ class AndQuery(BooleanQuery):
                 
 
         def __str__(self):
-                return "( " + str(self.lc) + " AND " + str(self.rc) + " )"
+                return "(%s AND %s)" % (self.lc, self.rc)
 
         def __repr__(self):
-                return str(self)
+                return "(%r AND %r)" % (self.lc, self.rc)
         
 class OrQuery(BooleanQuery):
         """Class representing OR queries in the AST."""
@@ -658,10 +708,10 @@ class OrQuery(BooleanQuery):
                                         yield j
 
         def __str__(self):
-                return "( " + str(self.lc) + " OR " + str(self.rc) + " )"
+                return "(%s OR %s)" % (self.lc, self.rc)
 
         def __repr__(self):
-                return str(self)
+                return "(%r OR %r)" % (self.lc, self.rc)
 
 class PkgConversion(object):
         """Class representing a change from returning actions to returning
@@ -672,10 +722,10 @@ class PkgConversion(object):
                 self.return_type = Query.RETURN_PACKAGES
 
         def __str__(self):
-                return "p<%s>" % str(self.query)
+                return "p<%s>" % self.query
 
         def __repr__(self):
-                return str(self)
+                return "p<%r>" % self.query
 
         def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
@@ -819,7 +869,7 @@ class FieldQuery(object):
                 self.query.add_field_restrictions(*params)
 
         def __repr__(self):
-                return "( PN:%s AT:%s ST:%s Q:%s)" % (self.query.pkg_name,
+                return "( PN:%r AT:%r ST:%r Q:%r)" % (self.query.pkg_name,
                     self.query.action_type, self.query.key, self.query)
 
         def __str__(self):
@@ -857,7 +907,7 @@ class TopQuery(object):
                 self.num_to_return = None
 
         def __repr__(self):
-                return "TopQuery(" + str(self.query) +  " )"
+                return "TopQuery(%r)" % self.query
 
         def __str__(self):
                 return str(self.query)
@@ -1017,7 +1067,7 @@ class TermQuery(object):
 
         @staticmethod
         def __is_wildcard(s):
-                return s is None or s == '*' or s == ''
+                return s == '*' or s == ''
                 
         def add_trailing_wildcard(self):
                 """Ensures that the search is a prefix match.  Primarily used

@@ -68,6 +68,7 @@ class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
             add set name=description value='FOOO bAr O OO OOO' value="whee fun"
             add set name='weirdness' value='] [ * ?'
             add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
+            add set name=smf.fmri value=svc:/milestone/multi-user-server:default
             close """
 
         example_pkg11 = """
@@ -454,6 +455,12 @@ close
             "pkg1@1.0,5.11"
         ])
 
+        res_smf_svc = set([
+            ('pkg:/example_pkg@1.0-0',
+            'svc:/milestone/multi-user-server:default',
+            'set name=smf.fmri value=svc:/milestone/multi-user-server:default')
+        ])
+
         fast_add_after_second_update = set(["VERSION: 2\n"])
 
         fast_remove_after_second_update = set(["VERSION: 2\n"])
@@ -691,7 +698,42 @@ close
                     self._search_op, api_obj, True, "<e*> OR e*", set())
                 self.assertRaises(api_errors.BooleanQueryException,
                     self._search_op, api_obj, True, "e* OR <e*>", set())
-
+                # Test for bug 15284, \ not being treated as an escape character
+                # for : as well as testing that \: when used with field queries
+                # works as expected.
+                svc_name = "svc\:/milestone/multi-user-server\:default"
+                self._search_op(api_obj, True,
+                    svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "example_pkg:set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "smf.fmri:%s" %svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    ":set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "%s *milestone*" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "example_pkg:set:smf.fmri:%s %s" % (svc_name, svc_name),
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "example_pkg:set:smf.fmri:%s example_pkg:set:smf.fmri:%s" %
+                    (svc_name, svc_name),
+                    self.res_smf_svc)
+                self._search_op(api_obj, True,
+                    "%s example_pkg:set:smf.fmri:%s" %
+                    (svc_name, svc_name),
+                    self.res_smf_svc)
+                # Test that a single escaped colon doesn't cause a traceback.
+                self._search_op(api_obj, True, "\:", set())
+                
         def _run_remote_tests(self, api_obj):
                 self._search_op(api_obj, True, "example_pkg",
                     self.res_remote_pkg)
@@ -832,6 +874,41 @@ close
                     self._search_op, api_obj, False, "<e*> OR e*", set())
                 self.assertRaises(api_errors.BooleanQueryException,
                     self._search_op, api_obj, False, "e* OR <e*>", set())
+                # Test for bug 15284, \ not being treated as an escape character
+                # for : as well as testing that \: when used with field queries
+                # works as expected.
+                svc_name = "svc\:/milestone/multi-user-server\:default"
+                self._search_op(api_obj, False,
+                    svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "example_pkg:set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "smf.fmri:%s" %svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    ":set:smf.fmri:%s" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "%s *milestone*" % svc_name,
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "example_pkg:set:smf.fmri:%s %s" % (svc_name, svc_name),
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "example_pkg:set:smf.fmri:%s example_pkg:set:smf.fmri:%s" %
+                    (svc_name, svc_name),
+                    self.res_smf_svc)
+                self._search_op(api_obj, False,
+                    "%s example_pkg:set:smf.fmri:%s" %
+                    (svc_name, svc_name),
+                    self.res_smf_svc)
+                # Test that a single escaped colon doesn't cause a traceback.
+                self._search_op(api_obj, True, "\:", set())
 
         def _run_local_tests(self, api_obj):
                 outfile = os.path.join(self.testdata_dir, "res")
