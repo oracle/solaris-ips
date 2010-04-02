@@ -77,7 +77,7 @@ class AmbiguousPathError(DependencyError):
 class UnresolvedDependencyError(DependencyError):
         """This exception is used when no package delivers a file which is
         depended upon."""
-        
+
         def __init__(self, pth, file_dep, pvars):
                 self.path = pth
                 self.file_dep = file_dep
@@ -91,7 +91,7 @@ class UnresolvedDependencyError(DependencyError):
                         " ".join([("%s:%s" % (name, val)) for name, val in grp])
                         for grp in self.pvars.get_unsatisfied()
                     ]))
-                
+
 def list_implicit_deps(file_path, proto_dir, dyn_tok_conv, kernel_paths,
     remove_internal_deps=True):
         """Given the manifest provided in file_path, use the known dependency
@@ -150,7 +150,7 @@ def resolve_internal_deps(deps, mfst, proto_dir, pkg_vars):
                 delivered.setdefault(rp, variants.VariantSets()).merge(pvars)
                 bn = os.path.basename(p)
                 delivered_bn.setdefault(bn, variants.VariantSets()).merge(pvars)
-                
+
         for d in deps:
                 etype, pvars = d.resolve_internal(delivered_files=delivered,
                     delivered_base_names=delivered_bn)
@@ -302,7 +302,7 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
 
         'orig_dep_vars' is the original set of variants under which the
         dependency must be satisfied.
-        
+
         'pkg_vars' is the list of variants against which the package delivering
         the action was published."""
 
@@ -369,7 +369,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
 
         'orig_dep_vars' is the original set of variants under which the
         dependency must be satisfied.
-        
+
         'pkg_vars' is the list of variants against which the package delivering
         the action was published."""
 
@@ -648,14 +648,25 @@ def split_off_variants(dep, pkg_vars):
         dep.strip_variants()
         return dep, dep_vars
 
-def resolve_deps(manifest_paths, api_inst):
+def prune_debug_attrs(action):
+        """Given a dependency action with pkg.debug.depend attributes
+        return a matching action with those attributes removed"""
+
+        attrs = dict((k, v) for k, v in action.attrs.iteritems()
+                     if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
+        return actions.depend.DependencyAction(**attrs)
+
+def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
         """For each manifest given, resolve the file dependencies to package
         dependencies. It returns a mapping from manifest_path to a list of
         dependencies and a list of unresolved dependencies.
 
         'manifest_paths' is a list of paths to the manifests being resolved.
 
-        'api_inst' is an ImageInterface which references the current image."""
+        'api_inst' is an ImageInterface which references the current image.
+
+        'prune_attrs' is a boolean indicating whether debugging
+        attributes should be stripped from returned actions."""
 
         # The variable 'manifests' is a list of 5-tuples. The first element
         # of the tuple is the path to the manifest. The second is the name of
@@ -736,6 +747,9 @@ def resolve_deps(manifest_paths, api_inst):
                 # Add variant information to the dependency actions and combine
                 # what would otherwise be duplicate dependencies.
                 deps = combine(deps, pkg_vars)
+
+                if prune_attrs:
+                        deps = [prune_debug_attrs(d) for d in deps]
                 pkg_deps[mp] = deps
-                        
+
         return pkg_deps, errs

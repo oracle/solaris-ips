@@ -79,7 +79,7 @@ Usage:
 
 Subcommands:
         pkgdepend generate [-DIkMm] manifest proto_dir
-        pkgdepend [options] resolve [-dMos] manifest ...
+        pkgdepend [options] resolve [-dmosv] manifest ...
 
 Options:
         -R dir
@@ -141,7 +141,7 @@ def generate(args):
                     "inferred from the\ninstall paths of the files."))
 
         retcode = 0
-                
+
         manf = pargs[0]
         proto_dir = pargs[1]
 
@@ -167,14 +167,14 @@ def generate(args):
                 for l in fh:
                         msg(l.rstrip())
                 fh.close()
-        
+
         for d in sorted(ds):
                 msg(d)
 
         if show_missing:
                 for m in ms:
                         emsg(m)
-                
+
         for e in es:
                 emsg(e)
                 retcode = 1
@@ -188,8 +188,9 @@ def resolve(args, img_dir):
         echo_manifest = False
         output_to_screen = False
         suffix = None
+        verbose = False
         try:
-            opts, pargs = getopt.getopt(args, "d:mos:")
+            opts, pargs = getopt.getopt(args, "d:mos:v")
         except getopt.GetoptError, e:
             usage(_("illegal global option -- %s") % e.opt)
         for opt, arg in opts:
@@ -201,6 +202,8 @@ def resolve(args, img_dir):
                         output_to_screen = True
                 elif opt == "-s":
                         suffix = arg
+                elif opt == "-v":
+                        verbose = True
 
         if (out_dir or suffix) and output_to_screen:
                 usage(_("-o cannot be used with -d or -s"))
@@ -216,7 +219,7 @@ def resolve(args, img_dir):
                 out_dir = os.path.abspath(out_dir)
                 if not os.path.isdir(out_dir):
                         usage(_("The output directory %s is not a directory." %
-                            manf), retcode=2)
+                            out_dir), retcode=2)
 
         if img_dir is None:
                 try:
@@ -249,14 +252,15 @@ def resolve(args, img_dir):
                 return 1
 
         try:
-            pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst)
+            pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst,
+                prune_attrs=not verbose)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
             error(_("Could not parse one or more manifests because of the " +
                 "following line:\n%s") % e.actionstr)
             return 1
 
         ret_code = 0
-        
+
         if output_to_screen:
                 ret_code = pkgdeps_to_screen(pkg_deps, manifest_paths,
                     echo_manifest)
@@ -297,7 +301,7 @@ def explode(dep_with_variantsets):
                 attrs.update(dict(tup))
                 res.append(str(actions.depend.DependencyAction(**attrs)))
         return "\n".join(res).rstrip()
-        
+
 def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         """Write the resolved package dependencies to stdout.
 

@@ -108,7 +108,7 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                                 fp, self.py_path)
                             ])))
                         return res
-                        
+
                 sp = subprocess.Popen(
                     "python%s -c 'import sys; print sys.path'" % ver,
                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -157,7 +157,7 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                     "dummy_fmri": base.Dependency.DUMMY_FMRI,
                     "reason": "%(reason)s"
                 }
-                
+
         def make_full_res_manf_1(self, proto_area):
                 return self.make_res_manf_1(proto_area) + self.test_manf_1
 
@@ -187,7 +187,7 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=
     "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
-        
+
         def make_res_payload_1(self, proto_area):
                 return ("depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=python "
@@ -230,7 +230,7 @@ set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz variant.num=two
 """
 
-        two_v_deps_output = """\
+        two_v_deps_verbose_output = """\
 %(m1_path)s
 depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
@@ -247,6 +247,26 @@ depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.dep
 
 %(m4_path)s
 
+
+
+"""
+
+        two_v_deps_output = """\
+%(m1_path)s
+depend fmri=pkg:/s-v-bar type=require
+depend fmri=pkg:/s-v-baz-one type=require variant.foo=baz variant.num=one
+depend fmri=pkg:/s-v-baz-two type=require variant.foo=baz variant.num=two
+
+
+%(m2_path)s
+
+
+
+%(m3_path)s
+
+
+
+%(m4_path)s
 
 
 """
@@ -390,7 +410,7 @@ Usage:
 
 Subcommands:
         pkgdepend generate [-DIkMm] manifest proto_dir
-        pkgdepend [options] resolve [-dMos] manifest ...
+        pkgdepend [options] resolve [-dmosv] manifest ...
 
 Options:
         -R dir
@@ -490,7 +510,7 @@ file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
-                        
+
                     "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=misc.py "
                     "%(pfx)s.file=misc.pyc "
@@ -499,13 +519,13 @@ file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
-                        
+
                     "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=pkg/__init__.py " +
                     self.__make_paths("", vp) +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
-                        
+
                     "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=search_storage.py "
                     "%(pfx)s.file=search_storage.pyc "
@@ -645,13 +665,13 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     proto=proto, exit=2)
                 self.pkgdepend_generate("-\?", proto="")
                 self.pkgdepend_generate("--help", proto="")
-                
+
         def test_output(self):
                 """Check that the output is in the format expected."""
 
                 tp = self.make_manifest(self.test_manf_1)
-                fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py" 
-                
+                fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py"
+
                 self.pkgdepend_generate("%s" % tp,
                     proto=pkg5unittest.g_proto_area, exit=1)
                 self.check_res(self.make_res_manf_1(
@@ -671,7 +691,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 self.make_proto_text_file(fp, self.python_text)
                 self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
-                
+
                 self.pkgdepend_generate("-m %s" % tp, proto=self.test_proto_dir)
                 self.check_res(
                     self.make_full_res_manf_1_mod_proto(
@@ -681,7 +701,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 tp = self.make_manifest(self.test_manf_2)
                 self.make_proto_text_file("etc/pam.conf", "text")
-                
+
                 self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res("", self.errout)
@@ -696,7 +716,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, self.errout)
-                
+
                 self.pkgdepend_generate("-M %s" % tp, proto=self.test_proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res(self.res_manf_2_missing, self.errout)
@@ -707,7 +727,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 tp = self.make_manifest(self.int_hardlink_manf)
 
                 self.make_proto_text_file("var/log/syslog", "text")
-                
+
                 self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
@@ -734,7 +754,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 3) Does the first line of the file include a specific version
                     of python.
                     (Represented by F)
-                
+
                 Conditions || Perform Analysis
                  X  D  F   || Y, if F and D disagree, display a warning in the
                            ||     output and use D to analyze the file.
@@ -850,7 +870,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                         tp = self.make_manifest(
                             self.pyver_test_manf_1 % {"py_ver":py_ver})
                         fp = "usr/lib/python%s/vendor-packages/pkg/" \
-                            "client/indexer.py" % py_ver 
+                            "client/indexer.py" % py_ver
                         self.make_proto_text_file(fp, self.python_text)
 
                         # Run generate and check the output.
@@ -870,7 +890,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                         # Run resolver and check the output.
                         self.pkgdepend_resolve(
-                            "%s %s" % (dependency_mp, provider_mp))
+                            "-v %s %s" % (dependency_mp, provider_mp))
                         self.check_res("", self.output)
                         self.check_res("", self.errout)
                         dependency_res_p = dependency_mp + ".res"
@@ -893,14 +913,11 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
         def test_resolve_screen_out(self):
                 """Check that the results printed to screen are what is
                 expected."""
-                
+
                 m1_path = self.make_manifest(self.two_variant_deps)
                 m2_path = self.make_manifest(self.two_v_deps_bar)
                 m3_path = self.make_manifest(self.two_v_deps_baz_one)
                 m4_path = self.make_manifest(self.two_v_deps_baz_two)
-                p2_name = "s-v-bar"
-                p3_name = "s-v-baz-one"
-                p4_name = "s-v-baz-two"
                 self.pkgdepend_resolve("-o %s" %
                     " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
 
@@ -910,12 +927,23 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                         "m3_path": m3_path,
                         "m4_path": m4_path
                     }, self.output)
+
                 self.check_res(self.two_v_deps_resolve_error % {
                         "manf_path": m1_path,
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, self.errout)
+
+                self.pkgdepend_resolve("-vo %s" %
+                    " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
+
+                self.check_res(self.two_v_deps_verbose_output % {
+                        "m1_path": m1_path,
+                        "m2_path": m2_path,
+                        "m3_path": m3_path,
+                        "m4_path": m4_path
+                    }, self.output)
 
         def test_bug_10518(self):
                 """ pkgdepend should exit 2 on input args of the wrong type """
@@ -970,10 +998,10 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 m_path = None
                 nonsense = "This is a nonsense manifest"
                 m_path = self.make_manifest(nonsense)
-                
+
                 self.pkgdepend_generate("%s" % m_path,
                     proto=self.test_proto_dir, exit=1)
-                self.check_res('pkgdepend: Could not parse manifest ' + 
+                self.check_res('pkgdepend: Could not parse manifest ' +
                     '%s because of the following line:\n' % m_path +
                     nonsense, self.errout)
 
@@ -986,7 +1014,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 """Using the provided run paths, produces a elf binary with
                 those paths set and checks to make sure that pkgdep run with
                 the provided arguments performs the substitution correctly."""
-                
+
                 elf_path = self.make_elf(run_paths)
                 m_path = self.make_manifest(self.elf_sub_manf %
                     {"file_loc": elf_path})
@@ -1026,7 +1054,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     m_path, proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout_platform, self.output)
-                
+
                 self.debug("Test unexpanded token")
 
                 rp = ["/platform/$PLATFORM/foo"]
@@ -1089,7 +1117,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.double_double_stdout, self.output)
-                
+
         def test_bug_12816(self):
                 """Test that the error produced by a missing payload action
                 uses the right path."""
@@ -1141,7 +1169,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 # In the comments below, v.f stands for variant.foo and v.n
                 # stands for variant.num.
-                
+
                 # dup_variant_deps contains all the dependencies to be resolved.
                 # It is published as dup-v-deps.
                 m1_path = self.make_manifest(self.dup_variant_deps)
@@ -1192,10 +1220,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # that manually added dependencies are propogated correctly.
                 m8_path = self.make_manifest("\n\n")
 
-                p2_name = "s-v-bar"
-                p3_name = "s-v-baz-one"
-                p4_name = "s-v-baz-two"
-                self.pkgdepend_resolve(" -m %s" % " ".join([m1_path, m2_path,
+                self.pkgdepend_resolve(" -vm %s" % " ".join([m1_path, m2_path,
                         m3_path, m4_path, m5_path, m6_path, m7_path, m8_path]))
                 fh = open(m1_path + ".res")
                 res = fh.read()
