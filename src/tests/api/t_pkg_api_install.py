@@ -159,6 +159,24 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             add file tmp/baz mode=644 owner=root group=bin path=quux original_name="moving:baz" preserve=true
             close """
 
+        corepkgs = """
+            open package/pkg@1.0,5.11-0
+            close
+            open package/pkg@2.0,5.11-0
+            close
+            open SUNWipkg@1.0,5.11-0
+            close
+            open SUNWipkg@2.0,5.11-0
+            close
+            open SUNWcs@1.0,5.11-0
+            close
+            open release/name@1.0,5.11-0
+            close
+            open release/name@2.0,5.11-0
+            add set name=pkg.release.osname value=sunos
+            close
+        """
+
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -393,6 +411,96 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["bar", "foo"])
                 self.pkg("verify")
+
+        def test_ipkg_out_of_date(self):
+                """Make sure that packaging system out-of-date testing works."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10 + self.foo12 + self.corepkgs)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                # We need to pretend that we're running out of the image we just
+                # created, so that the up to date code looks in that image to do
+                # the checking.
+                argv0 = os.path.join(self.get_img_path(), "usr/bin/pkg")
+
+                # Image-update when it doesn't appear to be an opensolaris image
+                # shouldn't have any issues.
+                self.__do_install(api_obj, ["foo@1.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # Even though SUNWipkg is on the system, it won't appear as an
+                # opensolaris system.
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo@1.0", "SUNWipkg@1.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # Same for package/pkg
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo@1.0", "package/pkg@1.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # Same for SUNWcs
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo@1.0", "SUNWcs"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # There are still no problems if the packaging system is up to
+                # date.  We can't test with SUNWipkg installed instead, because
+                # we're making the assumption in the code that we always want to
+                # update package/pkg, given that this revision of the code will
+                # only run on systems where the packaging system is in that
+                # package.
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # We should run into a problem if pkg(5) is out of date.
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj,
+                    ["foo@1.0", "SUNWcs", "package/pkg@1.0"])
+                api_obj.reset()
+                self.assertRaises(api_errors.IpkgOutOfDateException,
+                    api_obj.plan_update_all, argv0)
+
+                # Use the metadata on release/name to determine it's an
+                # opensolaris system.
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj,
+                    ["foo@1.0", "release/name@2.0", "package/pkg@1.0"])
+                api_obj.reset()
+                self.assertRaises(api_errors.IpkgOutOfDateException,
+                    api_obj.plan_update_all, argv0)
+
+                # An older release/name which doesn't have the metadata should
+                # cause us to skip the check.
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["*"])
+                api_obj.reset()
+                self.__do_install(api_obj,
+                    ["foo@1.0", "release/name@1.0", "package/pkg@1.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
 
         def test_recursive_uninstall(self):
                 """Install bar@1.0, dependent on foo@1.0, uninstall foo recursively."""

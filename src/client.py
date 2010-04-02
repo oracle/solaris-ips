@@ -942,9 +942,9 @@ def __api_plan_exception(op, noexecute):
         if e_type == api_errors.IpkgOutOfDateException:
                 msg(_("""\
 WARNING: pkg(5) appears to be out of date, and should be updated before
-running %s.  Please update pkg(5) using 'pfexec pkg install
-SUNWipkg' and then retry the %s."""
-                    ) % (op, op))
+running %(op)s.  Please update pkg(5) using 'pfexec pkg install
+pkg:/package/pkg' and then retry the %(op)s."""
+                    ) % locals())
                 return False
         if e_type == api_errors.NonLeafPackageException:
                 error(_("""\
@@ -3887,9 +3887,9 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
         except api_errors.VersionException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
-                error(_("The pkg command appears out of sync with the "
-                    "libraries provided \nby SUNWipkg. The client version is "
-                    "%(client)s while the library API version is %(api)s") %
+                error(_("The pkg command appears out of sync with the libraries"
+                    " provided\nby pkg:/package/pkg. The client version is "
+                    "%(client)s while the library\nAPI version is %(api)s.") %
                     {'client': __e.received_version,
                      'api': __e.expected_version
                     })

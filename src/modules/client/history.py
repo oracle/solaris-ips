@@ -55,7 +55,7 @@ RESULT_FAILED_BAD_REQUEST = ["Failed", "Bad Request"]
 # invalid SSL Certificate, etc.).
 RESULT_FAILED_CONFIGURATION = ["Failed", "Configuration"]
 # Indicates that the operation failed due to package constraints or because of
-# a restriction enforced by the client (e.g. SUNWipkg out of date).
+# a restriction enforced by the client (e.g. pkg(5) out of date).
 RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
 # Indicates an operation failed because the image was already in use.
 RESULT_FAILED_LOCKED = ["Failed", "Locked"]

@@ -402,22 +402,51 @@ class ImageInterface(object):
                 res = not self.__img.imageplan.nothingtodo()
                 return res
 
+        def __is_pkg5_native_packaging(self):
+                """Helper routine that returns True if this object represents an
+                image where pkg(5) is the native packaging system and needs to
+                be upgraded before the image can be."""
+
+                # First check to see if the special package "release/name"
+                # exists and contains metadata saying this is Solaris.
+                fmris, notfound, illegals = \
+                    self.__img.installed_fmris_from_args(["release/name"])
+                assert(not illegals)
+                if fmris:
+                        mfst = self.__img.get_manifest(fmris[0][0])
+                        osname = mfst.get("pkg.release.osname", None)
+                        if osname == "sunos":
+                                return True
+
+                # Otherwise, see if we can find package/pkg (or SUNWipkg) and
+                # SUNWcs.
+                fmris, notfound, illegals = \
+                    self.__img.installed_fmris_from_args(
+                        ["pkg:/package/pkg", "SUNWipkg", "SUNWcs"])
+                assert(not illegals)
+                installed = set((f[0].pkg_name for f in fmris))
+                if "SUNWcs" in installed and ("SUNWipkg" in installed or
+                    "package/pkg" in installed):
+                        return True
+
+                return False
+
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
             noexecute=False, force=False, verbose=False, update_index=True,
             be_name=None):
                 """Creates a plan to update all packages on the system to the
                 latest known versions.  actual_cmd is the command used to start
                 the client.  It is used to determine the image to check whether
-                SUNWipkg is up to date.  refresh_catalogs controls whether the
-                catalogs will automatically be refreshed.  noexecute determines
-                whether the history will be recorded after planning is finished.
-                force controls whether update should proceed even if ipkg is not
-                up to date.  verbose controls whether verbose debugging output
-                will be printed to the terminal.  Its existence is temporary. It
-                returns a tuple of two things.  The first is a boolean which
-                tells the client whether there is anything to do.  The second
-                tells whether the image is an opensolaris image.  It can raise
-                CatalogRefreshException, IpkgOutOfDateException,
+                the packaging system is up to date.  refresh_catalogs controls
+                whether the catalogs will automatically be refreshed.  noexecute
+                determines whether the history will be recorded after planning
+                is finished.  force controls whether update should proceed even
+                if ipkg is not up to date.  verbose controls whether verbose
+                debugging output will be printed to the terminal.  Its existence
+                is temporary. It returns a tuple of two things.  The first is a
+                boolean which tells the client whether there is anything to do.
+                The second tells whether the image is an opensolaris image.  It
+                can raise CatalogRefreshException, IpkgOutOfDateException,
                 PlanCreationException and PermissionsException."""
 
                 self.__plan_common_start("image-update", noexecute)
@@ -428,17 +457,9 @@ class ImageInterface(object):
                         if refresh_catalogs:
                                 self.__refresh_publishers()
 
-                        # If we can find SUNWipkg and SUNWcs in the
-                        # target image, then we assume this is a valid
-                        # opensolaris image, and activate some
-                        # special case behaviors.
-                        opensolaris_image = True
-                        fmris, notfound, illegals = \
-                            self.__img.installed_fmris_from_args(
-                                ["SUNWipkg", "SUNWcs"])
-                        assert(len(illegals) == 0)
-                        if notfound:
-                                opensolaris_image = False
+                        # If the target image is an opensolaris image, we
+                        # activate some special behavior.
+                        opensolaris_image = self.__is_pkg5_native_packaging()
 
                         if opensolaris_image and not force:
                                 try:

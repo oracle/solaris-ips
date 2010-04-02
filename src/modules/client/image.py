@@ -2678,8 +2678,8 @@ class Image(object):
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):
-                """ Test whether SUNWipkg is updated to the latest version
-                    known to be available for this image """
+                """Test whether the packaging system is updated to the latest
+                version known to be available for this image."""
 
                 #
                 # This routine makes the distinction between the "target image",
@@ -2721,24 +2721,24 @@ class Image(object):
 
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,
-                                # then perform a refresh so that a new SUNWipkg
-                                # can be discovered.
+                                # then perform a refresh so that a new packaging
+                                # system package can be discovered.
                                 newimg.lock()
                                 try:
                                         newimg.refresh_publishers(
                                             progtrack=progtrack)
                                 except api_errors.CatalogRefreshException, cre:
                                         cre.errmessage = \
-                                            _("SUNWipkg update check failed.")
+                                            _("pkg(5) update check failed.")
                                         raise
                                 finally:
                                         newimg.unlock()
 
                         img = newimg
 
-                # XXX call to progress tracker that SUNWipkg is being refreshed
+                # XXX call to progress tracker that the package is being refreshed
 
-                img.make_install_plan(["SUNWipkg"], progtrack,
+                img.make_install_plan(["pkg:/package/pkg"], progtrack,
                     check_cancelation, noexecute)
 
                 return img.imageplan.nothingtodo()

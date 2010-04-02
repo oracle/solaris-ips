@@ -487,9 +487,9 @@ if __name__ == "__main__":
                 error("The manifest file %s could not be found." % e.path)
                 __ret = 1
         except api_errors.VersionException, __e:
-                error(_("The %(cmd)s command appears out of sync with the "
-                    "libraries provided \nby SUNWipkg. The client version is "
-                    "%(client)s while the library API version is %(api)s") %
+                error(_("The %(cmd)s command appears out of sync with the lib"
+                    "raries provided\nby pkg:/package/pkg. The client version "
+                    "is %(client)s while the library\nAPI version is %(api)s") %
                     {"cmd": PKG_CLIENT_NAME,
                      "client": __e.received_version,
                      "api": __e.expected_version
