@@ -105,7 +105,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -@", exit=2)
                 self.pkg("list -v -s", exit=2)
 
-        def test_list_00(self):
+        def test_00(self):
                 """Verify that sort order and content of a full list matches
                 expected."""
 
@@ -140,7 +140,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_01(self):
+        def test_01(self):
                 """List all "foo@1.0" from auth "test1"."""
                 self.pkg("list -afH pkg://test1/foo@1.0,5.11-0")
                 expected = \
@@ -148,7 +148,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_02(self):
+        def test_02(self):
                 """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
                 self.pkg("list -afH pkg:/foo@1.0,5.11-0")
@@ -158,7 +158,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_03(self):
+        def test_03(self):
                 """List all "foo@1.0", regardless of publisher, without "pkg:/"
                 prefix."""
                 self.pkg("list -afH pkg:/foo@1.0,5.11-0")
@@ -169,7 +169,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_04(self):
+        def test_04(self):
                 """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo")
                 expected = \
@@ -196,7 +196,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
 
-        def test_list_05(self):
+        def test_05(self):
                 """Show foo@1.0 from both depots, but 1.1 only from test2."""
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
@@ -216,7 +216,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_06(self):
+        def test_06(self):
                 """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
                 expected = \
@@ -236,7 +236,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_07(self):
+        def test_07(self):
                 """List all foo@1 from test1, but all foo@1.2(.x), and only list
                 the latter once."""
                 self.pkg("list -aHf pkg://test1/foo@1 pkg:/foo@1.2")
@@ -260,7 +260,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_08_after_pub_update_removal(self):
+        def test_08_after_pub_update_removal(self):
                 """Install a package from a publisher which is also offered by
                 another publisher.  Then alter or remove the installed package's
                 publisher, and verify that list still shows the package
@@ -326,7 +326,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # impacted.
                 self.pkg("uninstall pkg://test2/foo@1.0")
 
-        def test_list_09_needs_refresh(self):
+        def test_09_needs_refresh(self):
                 """Verify that a list operation performed when a publisher's
                 metadata needs refresh works as expected."""
 
@@ -373,7 +373,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # metadata has been refreshed.
                 self.pkg("list -a | grep newpkg", su_wrap=True)
 
-        def test_list_10_all_known_failed_refresh(self):
+        def test_10_all_known_failed_refresh(self):
                 """Verify that a failed implicit refresh will not prevent pkg
                 list from working properly when appropriate."""
 
@@ -393,7 +393,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkg("set-publisher -O %s test2" % durl2)
 
-        def test_list_11_v0_repo(self):
+        def test_11_v0_repo(self):
                 """Verify that pkg list works with a v0 repository, especially
                 for unprivileged users."""
 
@@ -418,7 +418,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("refresh --full")
 
-        def test_list_matching(self):
+        def test_12_matching(self):
                 """Verify that pkg list pattern matching works as expected."""
                 self.pkg("list -aHf foo*")
                 expected = \
@@ -474,7 +474,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                     ("'fo*' food bogus", 3), ("'f?o*' bogus", 3)):
                         self.pkg("list -a %s" % pat, exit=ecode)
 
-        def test_list_multi_name(self):
+        def test_13_multi_name(self):
                 """Test for multiple name match listing."""
                 self.pkg("list -aHf foo*@1.2")
                 expected = \
@@ -498,13 +498,31 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
+        def test_14_invalid_input(self):
+                """Verify that invalid input is handled gracefully."""
+
+                pats = ("bar -v", "*@a", "bar@a", "@1.0", "foo@1.0.a")
+                # First, test individually.
+                for val in pats:
+                        self.pkg("list %s" % val, exit=1)
+
+                # Next, test invalid input but with options.  The option
+                # should not be in the error output. (If it is, the FMRI
+                # parsing has parsed the option too.)
+                self.pkg("list -a bar@a", exit=1)
+                self.assert_(self.output.find("FMRI '-a'") == -1)
+
+                # Last, test all at once.
+                self.pkg("list %s" % " ".join(pats), exit=1)
+
         # Put this one last since it screws the other tests up
-        def test_list_z_empty_image(self):
+        def test_z_empty_image(self):
                 """ pkg list should fail in an empty image """
 
                 self.image_create(self.dcs[1].get_depot_url(),
                     prefix="test1")
                 self.pkg("list", exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

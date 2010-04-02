@@ -212,22 +212,27 @@ INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
 PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = "\n(Failure of consistent use " + \
     "of pfexec when executing pkg commands is often a\nsource of this problem.)"
 
-def check_fmri_args(args, cmd=None):
+def get_fmri_args(api_inst, args, cmd=None):
         """ Convenience routine to check that input args are valid fmris. """
+
+        res = []
         errors = []
-        for x in args:
-                try:
-                        #
-                        # Pass a bogus build release-- needed to satisfy
-                        # fmri's checks in the common case that a version but
-                        # no build release was specified by the user.
-                        #
-                        fmri.MatchingPkgFmri(x, build_release="1.0")
-                except fmri.IllegalFmri, e:
-                        errors.append(e)
+        for pat, err, pfmri, matcher in api_inst.parse_fmri_patterns(args):
+                if not err:
+                        res.append((pat, err, pfmri, matcher))
+                        continue
+                if isinstance(err, version.VersionError):
+                        # For version errors, include the pattern so
+                        # that the user understands why it failed.
+                        errors.append("Illegal FMRI '%s': %s" % (pat,
+                            err))
+                else:
+                        # Including the pattern is reundant for other
+                        # exceptions.
+                        errors.append(err)
         if errors:
                 error("\n".join(str(e) for e in errors), cmd=cmd)
-        return len(errors) == 0
+        return len(errors) == 0, res
 
 def list_inventory(img, args):
         """List packages."""
@@ -300,12 +305,25 @@ def list_inventory(img, args):
         else:
                 fmt_str = "%-45s %-15s %-10s %s"
 
-        if not check_fmri_args(pargs, cmd="list"):
-                return EXIT_OOPS
-
         api_inst = __api_alloc(img, quiet=not display_headers)
         if api_inst == None:
                 return EXIT_OOPS
+
+        # Each pattern in pats can be a partial or full FMRI, so
+        # extract the individual components.  These patterns are
+        # transformed here so that partial failure can be detected
+        # when more than one pattern is provided.
+        rval, res = get_fmri_args(api_inst, pargs, cmd="list")
+        if not rval:
+                return EXIT_OOPS
+
+        pats = set()
+        unmatched_pats = {}
+        for pat, err, pfmri, matcher in res:
+                # get_fmri_args() already filtered out all the err
+                # case entries, so no need to check for those.
+                pats.add(pat)
+                unmatched_pats[pat] = (pfmri.tuple(), matcher)
 
         api_inst.log_operation_start("list")
         if pkg_list != api_inst.LIST_INSTALLED and refresh_catalogs:
@@ -344,47 +362,6 @@ def list_inventory(img, args):
             [(api.PackageInfo.EXCLUDES, "x")],
             [(api.PackageInfo.INCORPORATED, "i")],
         ]
-
-        pats = EmptyI
-        if pargs:
-                pats = pargs
-
-        # Each pattern in pats can be a partial or full FMRI, so
-        # extract the individual components.  These patterns are
-        # transformed here so that partial failure can be detected
-        # when more than one pattern is provided.
-        unmatched_pats = {}
-        MATCH_EXACT = 0
-        MATCH_FMRI = 1
-        MATCH_GLOB = 2
-
-        # XXX need a saner way of building matching user input for
-        # the build-release case (how would the api provide it?).
-        # Something like this should probably be added to the client
-        # API at some point.
-        brelease = "5.11"
-        for pat in pats:
-                if "*" in pat or "?" in pat:
-                        matcher = MATCH_GLOB
-
-                        # XXX By default, matching FMRIs currently do not also
-                        # use MatchingVersion.  If that changes, this should
-                        # change too.
-                        parts = pat.split("@", 1)
-                        if len(parts) == 1:
-                                npat = fmri.MatchingPkgFmri(pat, brelease)
-                        else:
-                                npat = fmri.MatchingPkgFmri(parts[0], brelease)
-                                npat.version = \
-                                    pkg.version.MatchingVersion(
-                                    str(parts[1]), brelease)
-                elif pat.startswith("pkg:/"):
-                        matcher = MATCH_EXACT
-                        npat = fmri.PkgFmri(pat, brelease)
-                else:
-                        matcher = MATCH_FMRI
-                        npat = pkg.fmri.PkgFmri(pat, brelease)
-                unmatched_pats[pat] = (npat.tuple(), matcher)
 
         if len(pats) == 1:
                 # For the single pattern case, there's no need to check for
@@ -451,23 +428,24 @@ def list_inventory(img, args):
                                 # pkg.fmri module's match routines to reduce
                                 # list operation time for the multiple match
                                 # case by about 2-8%.
-                                if matcher == MATCH_EXACT:
+                                if matcher == api_inst.MATCH_EXACT:
                                         if pat_stem != stem:
                                                 # Stem doesn't match.
                                                 continue
-                                elif matcher == MATCH_FMRI:
+                                elif matcher == api_inst.MATCH_FMRI:
                                         if not ("/" + stem).endswith(
                                             "/" + pat_stem):
                                                 # Stem doesn't match.
                                                 continue
-                                elif matcher == MATCH_GLOB:
+                                elif matcher == api_inst.MATCH_GLOB:
                                         if not fnmatch.fnmatchcase(stem,
                                             pat_stem):
                                                 # Stem doesn't match.
                                                 continue
 
                                 if pat_ver is not None:
-                                        ever = version.Version(ver, brelease)
+                                        ever = version.Version(ver,
+                                            pat_ver.build_release)
                                         if not ever.is_successor(pat_ver,
                                             version.CONSTRAINT_AUTO):
                                                 # Version doesn't match.
@@ -695,9 +673,12 @@ def verify_image(img, args):
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="verify")
 
-        progresstracker = get_tracker(quiet)
+        api_inst = __api_alloc(img, quiet=quiet)
+        if api_inst == None:
+                return EXIT_OOPS
 
-        if not check_fmri_args(pargs, cmd="verify"):
+        rval, res = get_fmri_args(api_inst, pargs, cmd="verify")
+        if not rval:
                 return EXIT_OOPS
 
         fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
@@ -708,6 +689,7 @@ def verify_image(img, args):
                 return EXIT_OOPS
 
         any_errors = False
+        progresstracker = get_tracker(quiet)
         for f, fstate in fmris:
                 entries = []
                 result = _("OK")
@@ -1269,11 +1251,12 @@ def install(img, args):
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
 
-        if not check_fmri_args(pargs, cmd=op):
-                return EXIT_OOPS
-
         api_inst = __api_alloc(img, quiet)
         if api_inst == None:
+                return EXIT_OOPS
+
+        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
+        if not rval:
                 return EXIT_OOPS
 
         stuff_to_do = None
@@ -1333,11 +1316,12 @@ def uninstall(img, args):
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
 
-        if not check_fmri_args(pargs, cmd=op):
+        api_inst = __api_alloc(img, quiet)
+        if api_inst == None:
                 return EXIT_OOPS
 
-        api_inst = __api_alloc(img, quiet)
-        if api_inst is None:
+        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
+        if not rval:
                 return EXIT_OOPS
 
         try:
@@ -1700,13 +1684,14 @@ def info(img, args):
                 usage(_("must request remote info for specific packages"),
                     cmd="info")
 
-        if not check_fmri_args(pargs):
-                return EXIT_OOPS
-
         err = 0
 
         api_inst = __api_alloc(img, quiet=True)
         if api_inst == None:
+                return EXIT_OOPS
+
+        rval, res = get_fmri_args(api_inst, pargs, cmd="info")
+        if not rval:
                 return EXIT_OOPS
 
         try:
@@ -2123,7 +2108,12 @@ def list_contents(img, args):
                 usage(_("contents: must request remote contents for specific "
                    "packages"), cmd="contents")
 
-        if not check_fmri_args(pargs):
+        api_inst = __api_alloc(img)
+        if api_inst == None:
+                return EXIT_OOPS
+
+        rval, res = get_fmri_args(api_inst, pargs, cmd="contents")
+        if not rval:
                 return EXIT_OOPS
 
         if display_raw:

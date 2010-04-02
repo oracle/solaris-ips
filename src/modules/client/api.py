@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 34
+CURRENT_API_VERSION = 35
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -95,6 +95,10 @@ class ImageInterface(object):
         LIST_NEWEST = 3
         LIST_UPGRADABLE = 4
 
+        MATCH_EXACT = 0
+        MATCH_FMRI = 1
+        MATCH_GLOB = 2
+
         # Private constants used for tracking which type of plan was made.
         __INSTALL = 1
         __UNINSTALL = 2
@@ -122,7 +126,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([34, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -972,13 +976,10 @@ class ImageInterface(object):
                 # extract the individual components for use in filtering.
                 illegals = []
                 pat_tuples = {}
-                MATCH_EXACT = 0
-                MATCH_FMRI = 1
-                MATCH_GLOB = 2
                 for pat in patterns:
                         try:
                                 if "*" in pat or "?" in pat:
-                                        matcher = MATCH_GLOB
+                                        matcher = self.MATCH_GLOB
 
                                         # XXX By default, matching FMRIs
                                         # currently do not also use
@@ -995,11 +996,11 @@ class ImageInterface(object):
                                                     pkg.version.MatchingVersion(
                                                     str(parts[1]), brelease)
                                 elif pat.startswith("pkg:/"):
-                                        matcher = MATCH_EXACT
+                                        matcher = self.MATCH_EXACT
                                         npat = pkg.fmri.PkgFmri(pat,
                                             brelease)
                                 else:
-                                        matcher = MATCH_FMRI
+                                        matcher = self.MATCH_FMRI
                                         npat = pkg.fmri.PkgFmri(pat,
                                             brelease)
                                 pat_tuples[pat] = (npat.tuple(), matcher)
@@ -1364,18 +1365,18 @@ class ImageInterface(object):
                                                 omit_package = True
                                                 continue
 
-                                        if matcher == MATCH_EXACT:
+                                        if matcher == self.MATCH_EXACT:
                                                 if pat_stem != stem:
                                                         # Stem doesn't match.
                                                         omit_package = True
                                                         continue
-                                        elif matcher == MATCH_FMRI:
+                                        elif matcher == self.MATCH_FMRI:
                                                 if not ("/" + stem).endswith(
                                                     "/" + pat_stem):
                                                         # Stem doesn't match.
                                                         omit_package = True
                                                         continue
-                                        elif matcher == MATCH_GLOB:
+                                        elif matcher == self.MATCH_GLOB:
                                                 if not fnmatch.fnmatchcase(stem,
                                                     pat_stem):
                                                         # Stem doesn't match.
@@ -2455,6 +2456,66 @@ class ImageInterface(object):
                 'data' or 'fileobj' or 'location' must be provided."""
 
                 return p5i.parse(data=data, fileobj=fileobj, location=location)
+
+        def parse_fmri_patterns(self, patterns):
+                """A generator function that yields a list of tuples of the form
+                (pattern, error, fmri, matcher) based on the provided patterns,
+                where 'error' is any exception encountered while parsing the
+                pattern, 'fmri' is the resulting FMRI object, and 'matcher' is
+                one of the following constant values:
+
+                        MATCH_EXACT
+                                Indicates that the name portion of the pattern
+                                must match exactly and the version (if provided)
+                                must be considered a successor or equal to the
+                                target FMRI.
+
+                        MATCH_FMRI
+                                Indicates that the name portion of the pattern
+                                must be a proper subset and the version (if
+                                provided) must be considered a successor or
+                                equal to the target FMRI.
+
+                        MATCH_GLOB
+                                Indicates that the name portion of the pattern
+                                uses fnmatch rules for pattern matching (shell-
+                                style wildcards) and that the version can either
+                                match exactly, match partially, or contain
+                                wildcards.
+                """
+
+                brelease = self.__img.attrs["Build-Release"]
+                for pat in patterns:
+                        error = None
+                        matcher = None
+                        npat = None
+                        try:
+                                if "*" in pat or "?" in pat:
+                                        # XXX By default, matching FMRIs
+                                        # currently do not also use
+                                        # MatchingVersion.  If that changes,
+                                        # this should  change too.
+                                        parts = pat.split("@", 1)
+                                        if len(parts) == 1:
+                                                npat = fmri.MatchingPkgFmri(pat,
+                                                    brelease)
+                                        else:
+                                                npat = fmri.MatchingPkgFmri(
+                                                    parts[0], brelease)
+                                                npat.version = \
+                                                    pkg.version.MatchingVersion(
+                                                    str(parts[1]), brelease)
+                                        matcher = self.MATCH_GLOB
+                                elif pat.startswith("pkg:/"):
+                                        npat = fmri.PkgFmri(pat, brelease)
+                                        matcher = self.MATCH_EXACT
+                                else:
+                                        npat = pkg.fmri.PkgFmri(pat, brelease)
+                                        matcher = self.MATCH_FMRI
+                        except (fmri.FmriError, pkg.version.VersionError), e:
+                                # Whatever the error was, return it.
+                                error = e
+                        yield (pat, error, npat, matcher)
 
         def write_p5i(self, fileobj, pkg_names=None, pubs=None):
                 """Writes the publisher, repository, and provided package names

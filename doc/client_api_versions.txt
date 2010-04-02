@@ -1,3 +1,15 @@
+Version 35:
+Compatible with clients using version 34.
+
+    The ImageInterface class has changed as follows:
+        * A new method named parse_fmri_patterns has been added to
+          help clients parse user input and transform any valid patterns
+          into FMRI objects that can be used for comparison.  See pydoc
+          'pkg.client.api' for details.
+
+        * New constants for the parse_fmri_patterns method were added:
+          MATCH_EXACT, MATCH_FMRI, and MATCH_GLOB.
+
 Version 34:
 Incompatible with clients using versions 0-33.
 
