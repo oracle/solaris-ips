@@ -578,7 +578,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                         curses.setupterm()
                         self.cr = curses.tigetstr("cr")
-                        self.clear_eol = curses.tigetstr("el")
+                        self.clear_eol = curses.tigetstr("el") or ""
                 except KeyboardInterrupt:
                         raise
                 except:
@@ -709,7 +709,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                              self.spinner_chars[self.spinner],
                              self.spinner_chars[self.spinner])
                         self.curstrlen = len(s)
-                        print s, self.clear_eol, self.cr,
+                        sys.stdout.write(s + self.clear_eol + self.cr)
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -781,7 +781,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             "%.1f/%.1f" % \
                                 ((self.dl_cur_nbytes / 1024.0 / 1024.0),
                                 (self.dl_goal_nbytes / 1024.0 / 1024.0)))
-                        print s, self.clear_eol,
+                        sys.stdout.write(s + self.clear_eol)
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
