@@ -203,7 +203,6 @@ class Image(object):
                 self.__lock = pkg.nrlock.NRLock()
                 self.__locked = False
                 self.__lockf = None
-                self.__req_dependents = None
 
                 # Transport operations for this image
                 self.transport = transport.Transport(self)
@@ -220,9 +219,6 @@ class Image(object):
                                     self.root)
                         self.__set_dirs(root=self.root, imgtype=imgtype,
                             progtrack=progtrack)
-
-                # a place to keep info about saved_files; needed by file action
-                self.saved_files = {}
 
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
@@ -248,10 +244,6 @@ class Image(object):
 
                 # This is used to cache image catalogs.
                 self.__catalogs = {}
-
-                # This is used to keep track of what packages have been added
-                # to IMG_CATALOG_KNOWN by set_pkg_state().
-                self.__catalog_new_installs = set()
 
         @property
         def locked(self):
@@ -1193,77 +1185,66 @@ class Image(object):
 
                 return m
 
-        def set_pkg_state(self, pfmri, state):
-                """Sets the recorded image state of the specified package.
-                The caller is responsible for also calling save_pkg_state
-                after they are finished updating package state information.
-                'state' must be one of the following image constants:
-
-                    PKG_STATE_INSTALLED
-                        Indicates that the package is installed.
-
-                    PKG_STATE_KNOWN
-                        Indicates that the package is currently present in
-                        a repository catalog.
-
-                    PKG_STATE_UNINSTALLED
-                        Clears the INSTALLED state of the package.
-
-                    PKG_STATE_UNKNOWN
-                        Clears the KNOWN state of the package."""
+        def update_pkg_installed_state(self, pkg_pairs):
+                """Sets the recorded installed state of each package pair in
+                'pkg_pairs'.  'pkg_pair' should be an iterable of tuples of
+                the format (added, removed) where 'removed' is the FMRI of the
+                package that was uninstalled, and 'added' is the package
+                installed for the operation.  These pairs are representative of
+                the destination and origin package for each part of the
+                operation."""
 
                 kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                entry = kcat.get_entry(pfmri)
+                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
 
-                mdata = entry.get("metadata", {})
-                states = set(mdata.get("states", set()))
-                if state == self.PKG_STATE_UNKNOWN:
-                        states.discard(self.PKG_STATE_KNOWN)
-                elif state == self.PKG_STATE_UNINSTALLED:
-                        icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                        icat.remove_package(pfmri)
-                        states.discard(self.PKG_STATE_INSTALLED)
-                else:
-                        # All other states should simply be added to the
-                        # existing set of states.
-                        states.add(state)
+                added = set()
+                removed = set()
+                for add_pkg, rem_pkg in pkg_pairs:
+                        if add_pkg:
+                                added.add(add_pkg)
+                        if rem_pkg:
+                                removed.add(rem_pkg)
 
-                if self.PKG_STATE_KNOWN not in states and \
-                    self.PKG_STATE_INSTALLED not in states:
-                        # This entry is no longer available and has no
-                        # meaningful state information, so should be
-                        # discarded.
-                        kcat.remove_package(pfmri)
-                        return
+                for pfmri in added.union(removed):
+                        entry = kcat.get_entry(pfmri)
+                        mdata = entry.get("metadata", {})
+                        states = set(mdata.get("states", set()))
+                        if pfmri in removed:
+                                icat.remove_package(pfmri)
+                                states.discard(self.PKG_STATE_INSTALLED)
 
-                if (self.PKG_STATE_INSTALLED in states and
-                    self.PKG_STATE_UNINSTALLED in states) or (
-                    self.PKG_STATE_KNOWN in states and
-                    self.PKG_STATE_UNKNOWN in states):
-                        raise api_errors.ImagePkgStateError(pfmri, states)
+                        if pfmri in added:
+                                states.add(self.PKG_STATE_INSTALLED)
+                        elif self.PKG_STATE_KNOWN not in states:
+                                # This entry is no longer available and has no
+                                # meaningful state information, so should be
+                                # discarded.
+                                kcat.remove_package(pfmri)
+                                continue
 
-                # Catalog format only supports lists.
-                mdata["states"] = list(states)
+                        if (self.PKG_STATE_INSTALLED in states and
+                            self.PKG_STATE_UNINSTALLED in states) or (
+                            self.PKG_STATE_KNOWN in states and
+                            self.PKG_STATE_UNKNOWN in states):
+                                raise api_errors.ImagePkgStateError(pfmri,
+                                    states)
 
-                # Now record the package state.
-                kcat.update_entry(pfmri, metadata=mdata)
+                        # Catalog format only supports lists.
+                        mdata["states"] = list(states)
 
-                if state == self.PKG_STATE_INSTALLED:
-                        # If the package is being marked as installed, then
-                        # it shouldn't already exist in the installed catalog
-                        # and should be added.
-                        icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                        icat.append(kcat, pfmri=pfmri)
-                        self.__catalog_new_installs.add(pfmri)
-                elif self.PKG_STATE_INSTALLED in states:
-                        # If some other state has been changed and the package
-                        # is still marked as installed, then simply update the
-                        # existing entry (which should already exist).
-                        icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                        icat.update_entry(pfmri, metadata=mdata)
+                        # Now record the package state.
+                        kcat.update_entry(pfmri, metadata=mdata)
 
-        def save_pkg_state(self):
-                """Saves current package state information."""
+                        # If the package is being marked as installed,
+                        # then  it shouldn't already exist in the
+                        # installed catalog and should be added.
+                        if pfmri in added:
+                                icat.append(kcat, pfmri=pfmri)
+
+                        entry = mdata = states = None
+
+                # Cleanup temporary variables.
+                del pfmri, removed
 
                 # Temporarily redirect the catalogs to a different location,
                 # so that if the save is interrupted, the image won't be left
@@ -1271,18 +1252,20 @@ class Image(object):
                 tmp_state_root = self.temporary_dir()
 
                 try:
-                        for name in (self.IMG_CATALOG_KNOWN,
-                            self.IMG_CATALOG_INSTALLED):
+                        for cat, name in ((kcat, self.IMG_CATALOG_KNOWN),
+                            (icat, self.IMG_CATALOG_INSTALLED)):
                                 cpath = os.path.join(tmp_state_root, name)
 
                                 # Must copy the old catalog data to the new
                                 # destination as only changed files will be
                                 # written.
-                                cat = self.get_catalog(name)
                                 shutil.copytree(cat.meta_root, cpath)
                                 cat.meta_root = cpath
-                                cat.finalize(pfmris=self.__catalog_new_installs)
+                                cat.finalize(pfmris=added)
                                 cat.save()
+
+                        del cat, name
+                        self.__init_catalogs()
 
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
@@ -1314,11 +1297,7 @@ class Image(object):
                         raise
                 finally:
                         # Regardless of success, the following must happen.
-                        for name in (self.IMG_CATALOG_KNOWN,
-                            self.IMG_CATALOG_INSTALLED):
-                                cat = self.get_catalog(name)
-                                cat.meta_root = os.path.join(self.imgdir,
-                                    "state", name)
+                        self.__init_catalogs()
                         if os.path.exists(tmp_state_root):
                                 shutil.rmtree(tmp_state_root, True)
 
@@ -1477,32 +1456,6 @@ class Image(object):
         def get_facets(self):
                 """ Return a copy of the current image facets"""
                 return self.cfg_cache.facets.copy()
-
-        def __build_dependents(self, progtrack):
-                """Build a dictionary mapping packages to the list of packages
-                that have required dependencies on them."""
-
-                self.__req_dependents = {}
-
-                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                for f, actions in cat.actions([cat.DEPENDENCY],
-                    excludes=self.list_excludes()):
-                        progtrack.evaluate_progress(f)
-                        for a in actions:
-                                if a.name != "depend" or \
-                                    a.attrs["type"] != "require":
-                                        continue
-                                name = self.strtofmri(a.attrs["fmri"]).pkg_name
-                                self.__req_dependents.setdefault(name, []).append(f)
-
-        def get_dependents(self, pfmri, progtrack):
-                """Return a list of the packages directly dependent on the given
-                FMRI."""
-
-                if self.__req_dependents is None:
-                        self.__build_dependents(progtrack)
-
-                return self.__req_dependents.get(pfmri.pkg_name, [])
 
         def __rebuild_image_catalogs(self, progtrack=None):
                 """Rebuilds the image catalogs based on the available publisher

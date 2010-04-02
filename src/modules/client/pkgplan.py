@@ -61,7 +61,6 @@ class PkgPlan(object):
                 self.__xfersize = -1
                 self.__xferfiles = -1
 
-                self.__destination_filters = []
                 self.__license_status = {}
 
                 self.check_cancelation = check_cancelation
@@ -353,37 +352,3 @@ class PkgPlan(object):
                                 dest.postinstall(self, src)
                         else:
                                 src.postremove(self)
-
-                # For an uninstall or an upgrade, remove the installation
-                # turds from the origin's directory.
-                # XXX should this just go in preexecute?
-                if self.destination_fmri == None or self.origin_fmri != None:
-                        self.image.set_pkg_state(self.origin_fmri,
-                            self.image.PKG_STATE_UNINSTALLED)
-
-                        try:
-                                os.unlink("%s/pkg/%s/filters" % (
-                                    self.image.imgdir,
-                                    self.origin_fmri.get_dir_path()))
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-
-                if self.destination_fmri != None:
-                        self.image.set_pkg_state(self.destination_fmri,
-                            self.image.PKG_STATE_INSTALLED)
-
-                        # Save the filters we used to install the package, so
-                        # they can be referenced later.
-                        if self.__destination_filters:
-                                f = file("%s/pkg/%s/filters" % \
-                                    (self.image.imgdir,
-                                    self.destination_fmri.get_dir_path()), "w")
-
-                                f.writelines([
-                                    myfilter + "\n"
-                                    for myfilter, code in \
-				        self.__destination_filters
-                                ])
-                                f.close()
-

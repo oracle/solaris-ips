@@ -449,12 +449,14 @@ class FileAction(generic.Action):
                         # isn't an original to restore.
                         saved_name = None
 
-                image.saved_files[self.attrs["save_file"]] = (self, saved_name)
+                ip = image.imageplan
+                ip.saved_files[self.attrs["save_file"]] = (self, saved_name)
 
         def restore_file(self, image):
                 """restore a previously saved file; return cached action """
 
-                orig, saved_name = image.saved_files[self.attrs["save_file"]]
+                ip = image.imageplan
+                orig, saved_name = ip.saved_files[self.attrs["save_file"]]
                 if saved_name is None:
                         # Nothing to restore; original file is missing.
                         return

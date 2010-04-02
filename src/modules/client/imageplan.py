@@ -94,6 +94,9 @@ class ImagePlan(object):
                 self.removal_actions = []
                 self.install_actions = []
 
+                # A place to keep info about saved_files; needed by file action.
+                self.saved_files = {}
+
                 self.__target_install_count = 0
                 self.__target_update_count  = 0
                 self.__target_removal_count = 0
@@ -296,7 +299,7 @@ class ImagePlan(object):
                     self.image.get_publisher_ranks(),
                     self.image.get_variants(),
                     self.__progtrack)
-                # 
+
                 new_vector = self.__pkg_solver.solve_update([],  self.__new_excludes)
 
                 self.__fmri_changes = [ 
@@ -577,10 +580,18 @@ class ImagePlan(object):
                                         prefetch_mfsts.append((newfmri, new_in))
                                         new_in = None
                         eval_list.append((oldfmri, old_in, newfmri, new_in))
+                        old_in = new_in = None
+
+                # No longer needed.
+                del enabled_publishers
+                self.__references = None
 
                 self.image.transport.prefetch_manifests(prefetch_mfsts, 
                     progtrack=self.__progtrack,
                     ccancel=self.__check_cancelation)
+
+                # No longer needed.
+                del prefetch_mfsts
 
                 for oldfmri, old_in, newfmri, new_in in eval_list:
                         pp = pkgplan.PkgPlan(self.image, self.__progtrack,
@@ -599,8 +610,11 @@ class ImagePlan(object):
                                 self.__target_removal_count += 1
 
                         self.pkg_plans.append(pp)
-
+                        pp = None
                         self.__progtrack.evaluate_progress()
+
+                # No longer needed.
+                del eval_list
 
                 # we now have a workable set of pkgplans to add/upgrade/remove
                 # now combine all actions together to create a synthetic single
@@ -699,6 +713,8 @@ class ImagePlan(object):
                                             "%s:%s" % (ap.p.origin_fmri.get_name(),
                                             attrs["path"]))
                                         cons_named[fname] = re
+                                        fname = None
+                                attrs = re = None
 
                         self.__actuators.scan_removal(ap.src.attrs)
 
@@ -759,6 +775,8 @@ class ImagePlan(object):
                                         ra.attrs["save_file"] = cache_name
                                         ap.dst.attrs["save_file"] = cache_name
 
+                                cache_name = index = ra = None
+
                         # Similarly, try to prevent files (and other actions)
                         # from unnecessarily being deleted and re-created if
                         # they're simply moving between packages, but only if
@@ -780,11 +798,11 @@ class ImagePlan(object):
                                         ap.p.actions.changed.append((ra, ap.dst))
                                         ap.p.actions.added[plan_pos[id(ap.dst)]] = None
                                         pp_needs_trimming.append(ap.p)
+                                nkv = index = ra = None
 
                         self.__actuators.scan_install(ap.dst.attrs)
 
-                del cons_generic, cons_named
-                del plan_pos
+                del ConsolidationEntry, cons_generic, cons_named, plan_pos
 
                 # Remove from the pkgplans the install actions which have been
                 # consolidated away.
@@ -853,12 +871,14 @@ class ImagePlan(object):
                                             ActionPlan(a[0], l, l)
                                             for l in l_actions[path]
                                         ])
+                                path = None
 
                         # scan both old and new actions
                         # repairs may result in update action w/o orig action
                         if a[1]:
                                 self.__actuators.scan_update(a[1].attrs)
                         self.__actuators.scan_update(a[2].attrs)
+
                 self.update_actions.extend(l_refresh)
 
                 # sort actions to match needed processing order
@@ -920,6 +940,7 @@ class ImagePlan(object):
                 # for this BE so the user can boot into this BE and have a
                 # correct index.
                 if self.update_index:
+                        ind = None
                         try:
                                 self.image.update_index_dir()
                                 ind = indexer.Indexer(self.image,
@@ -952,6 +973,9 @@ class ImagePlan(object):
                                     api_errors.WrapSuccessfulIndexingException(
                                         e, traceback.format_exc(),
                                         traceback.format_stack())
+
+                        # No longer needed.
+                        del ind
 
                 # Remove history about manifest/catalog transactions.  This
                 # helps the stats engine by only considering the performance of
@@ -1067,11 +1091,13 @@ class ImagePlan(object):
 
                 self.__actuators.exec_pre_actuators(self.image)
 
+                # List of tuples of (src, dest) used to track each pkgplan so
+                # that it can be discarded after execution.
+                executed_pp = []
                 try:
                         try:
 
                                 # execute removals
-
                                 self.__progtrack.actions_set_goal(
                                     _("Removal Phase"),
                                     len(self.removal_actions))
@@ -1080,8 +1106,11 @@ class ImagePlan(object):
                                         self.__progtrack.actions_add_progress()
                                 self.__progtrack.actions_done()
 
-                                # execute installs
+                                # Done with removals; discard them so memory can
+                                # be re-used.
+                                self.removal_actions = []
 
+                                # execute installs
                                 self.__progtrack.actions_set_goal(
                                     _("Install Phase"),
                                     len(self.install_actions))
@@ -1091,8 +1120,11 @@ class ImagePlan(object):
                                         self.__progtrack.actions_add_progress()
                                 self.__progtrack.actions_done()
 
-                                # execute updates
+                                # Done with installs, so discard them so memory
+                                # can be re-used.
+                                self.install_actions = []
 
+                                # execute updates
                                 self.__progtrack.actions_set_goal(
                                     _("Update Phase"),
                                     len(self.update_actions))
@@ -1103,12 +1135,26 @@ class ImagePlan(object):
 
                                 self.__progtrack.actions_done()
 
+                                # Done with updates, so discard them so memory
+                                # can be re-used.
+                                self.update_actions = []
+
                                 # handle any postexecute operations
-                                for p in self.pkg_plans:
+                                while self.pkg_plans:
+                                        # postexecute in reverse, but pkg_plans
+                                        # aren't ordered, so does it matter?
+                                        # This allows the pkgplan objects to be
+                                        # discarded as they're executed which
+                                        # allows memory to be-reused sooner.
+                                        p = self.pkg_plans.pop()
                                         p.postexecute()
+                                        executed_pp.append((p.destination_fmri,
+                                            p.origin_fmri))
+                                        p = None
 
                                 # save package state
-                                self.image.save_pkg_state()
+                                self.image.update_pkg_installed_state(
+                                    executed_pp)
 
                                 # write out variant changes to the image config
                                 if self.__variant_change:
@@ -1150,10 +1196,11 @@ class ImagePlan(object):
                 self.state = EXECUTED_OK
 
                 # reduce memory consumption
-
-                self.removal_actions = []
-                self.update_actions  = []
-                self.install_actions = []
+                self.added_groups = {}
+                self.removed_groups = {}
+                self.added_users = {}
+                self.removed_users = {}
+                self.saved_files = {}
                 self.__fmri_changes  = []
                 self.__directories   = []
                 self.__actuators     = []
@@ -1162,14 +1209,8 @@ class ImagePlan(object):
                 # Perform the incremental update to the search indexes
                 # for all changed packages
                 if self.update_index:
-                        plan_info = [
-                            (p.destination_fmri, p.origin_fmri)
-                            for p
-                            in self.pkg_plans
-                        ]
-                        del self.pkg_plans
                         self.__progtrack.actions_set_goal(_("Index Phase"),
-                            len(plan_info))
+                            len(executed_pp))
                         self.image.update_index_dir()
                         ind = indexer.Indexer(self.image,
                             self.image.get_manifest,
@@ -1181,7 +1222,7 @@ class ImagePlan(object):
                                         ind.setup()
                                 if empty_image or ind.check_index_existence():
                                         ind.client_update_index(([],
-                                            plan_info), self.image)
+                                            executed_pp), self.image)
                         except KeyboardInterrupt:
                                 raise
                         except se.ProblematicPermissionsIndexException:
@@ -1197,7 +1238,7 @@ class ImagePlan(object):
                                 # from scratch rather than using the
                                 # existing indexer because otherwise the
                                 # state will become confused.
-                                del(ind)
+                                del ind
                                 # XXX Once we have a framework for
                                 # emitting a message to the user in this
                                 # spot in the code, we should tell them

@@ -35,7 +35,7 @@ from pkg.misc import EmptyI
 
 
 SOLVER_INIT    = "Initialized"
-SOLVER_OXY     = "Not poseable"
+SOLVER_OXY     = "Not possible"
 SOLVER_FAIL    = "Failed"
 SOLVER_SUCCESS = "Succeeded"
 
@@ -58,7 +58,7 @@ class PkgSolver(object):
                 self.__pub_trim = {}		# pkg names already
                                                 # trimmed by pub.
                 self.__installed_fmris = installed_fmris.copy()
-                
+
                 for f in installed_fmris.values(): # record only sticky pubs
                         pub = f.get_publisher()
                         if self.__pub_ranks[pub][1]:
@@ -76,7 +76,7 @@ class PkgSolver(object):
 
                 self.__variant_dict = {}        # fmris -> variant cache
                 self.__variants = variants      # variants supported by image
-                
+
                 self.__cache = {}
                 self.__trimdone = False         # indicate we're finished trimming
                 self.__fmri_state = {}          # cache of obsolete, renamed bits
@@ -94,7 +94,7 @@ class PkgSolver(object):
 
         def __str__(self):
 
-                s = "Solver: [" 
+                s = "Solver: ["
                 if self.__state in [SOLVER_FAIL, SOLVER_SUCCESS]:
                         s += " Variables: %d Clauses: %d Iterations: %d" % (
                             self.__variables, self.__clauses, self.__iterations)
@@ -114,6 +114,36 @@ class PkgSolver(object):
 
                 return s
 
+        def __cleanup(self, rval):
+                """Discards all solver information except for that needed to
+                show failure information or to stringify the solver object.
+                This allows early garbage collection to take place, and should
+                be performed after a solution is successfully returned."""
+
+                self.__catalog = None
+                self.__installed_fmris = None
+                self.__publisher = None
+                self.__possible_dict = None
+                self.__pub_ranks = None
+                self.__trim_dict = None
+                self.__pub_trim = None
+                self.__publisher = None
+                self.__id2fmri = None
+                self.__fmri2id = None
+                self.__solver = None
+                self.__poss_set = None
+                self.__progtrack = None
+                self.__addclause_failure = None
+                self.__variant_dict = None
+                self.__variants = None
+                self.__cache = None
+                self.__trimdone = None
+                self.__fmri_state = None
+                self.__start_time = None
+                self.__dep_dict = None
+                self.__dependents = None
+                return rval
+
         def __timeit(self, phase=None):
                 """Add timing records; set phase to None to reset"""
                 if phase == None:
@@ -123,7 +153,7 @@ class PkgSolver(object):
                         now = time.time()
                         self.__timings.append((phase, now - self.__start_time))
                         self.__start_time = now
-                        
+
         def gen_failure_report(self, verbose):
                 """grab saved failure list"""
                 if not verbose:
@@ -133,9 +163,13 @@ class PkgSolver(object):
 
         def solve_install(self, existing_freezes, proposed_dict, excludes=EmptyI):
                 """Existing_freezes is a list of incorp. style
-                fmris that constrain pkg motion, proposed_dict 
+                fmris that constrain pkg motion, proposed_dict
                 contains user specified fmris indexed by pkg_name;
                 returns FMRIs to be installed/upgraded in system"""
+
+                # Once solution has been returned or failure has occurred, a new
+                # solver must be used.
+                assert self.__state == SOLVER_INIT
 
                 self.__state = SOLVER_OXY
 
@@ -163,14 +197,14 @@ class PkgSolver(object):
                 self.__timeit("phase 1")
 
                 for f in self.__installed_fmris.values():
-                        self.__trim_older(f)                
+                        self.__trim_older(f)
 
                 self.__progtrack.evaluate_progress()
 
                 # trim fmris we excluded via proposed_fmris
                 for name in proposed_dict:
                         reason = _("This version excluded by specified installation version")
-                        self.__trim(set(self.__get_catalog_fmris(name)) - 
+                        self.__trim(set(self.__get_catalog_fmris(name)) -
                             set(proposed_dict[name]), reason)
 
                 self.__timeit("phase 2")
@@ -182,7 +216,7 @@ class PkgSolver(object):
                         self.__trim(self.__comb_auto_fmris(i)[1], reason)
                         for f in flist:
                                 self.__trim(self.__comb_auto_fmris(f)[1], reason)
-                
+
                 self.__timeit("phase 3")
                 self.__progtrack.evaluate_progress()
 
@@ -192,7 +226,7 @@ class PkgSolver(object):
                         self.__trim(self.__comb_auto_fmris(f)[1], reason)
 
                 self.__progtrack.evaluate_progress()
-                
+
                 # elide any proposed versions that don't match variants (arch usually)
                 self.__timeit("phase 4")
                 for name in proposed_dict:
@@ -205,7 +239,7 @@ class PkgSolver(object):
                         tv = self.__dotrim(proposed_dict[name])
                         if not tv:
                                 ret = [_("No matching version of %s can be installed:") % name]
-                                
+
                                 for f in proposed_dict[name]:
                                         ret += ["%s: %s\n" % (f, "\n\t".join(self.__trim_dict[f]))]
                                 raise api_errors.PlanCreationException(no_version=ret)
@@ -214,7 +248,7 @@ class PkgSolver(object):
                 self.__progtrack.evaluate_progress()
 
                 # build set of possible pkgs
-                self.__timeit("phase 6")                
+                self.__timeit("phase 6")
 
                 possible_set = set()
                 # ensure exisiting pkgs stay installed; explicitly add in installed fmris
@@ -238,7 +272,7 @@ class PkgSolver(object):
                         tv = self.__dotrim(proposed_dict[name])
                         if not tv:
                                 ret = [_("No version of %s can be installed:") % name]
-                                
+
                                 for f in proposed_dict[name]:
                                         ret += ["%s: %s\n" % (f, "\n\t".join(self.__trim_dict[f]))]
                                 raise api_errors.PlanCreationException(no_version=ret)
@@ -247,12 +281,12 @@ class PkgSolver(object):
                 self.__timeit("phase 9")
                 self.__progtrack.evaluate_progress()
 
-                # generate ids, possible_dict for clause generation 
+                # generate ids, possible_dict for clause generation
                 self.__assign_fmri_ids(possible_set)
 
                 # generate clauses for only one version of each package, and
                 # for dependencies for each package.  Do so for all possible fmris.
-                
+
                 for name in self.__possible_dict.keys():
                         self.__progtrack.evaluate_progress()
                         # insure that at most one version of a package is installed
@@ -260,7 +294,7 @@ class PkgSolver(object):
                             self.__possible_dict[name]))
                         # generate dependency clauses for each pkg
                         for fmri in self.__possible_dict[name]:
-                                for da in self.__get_dependency_actions(fmri, 
+                                for da in self.__get_dependency_actions(fmri,
                                     excludes=excludes):
                                         self.__addclauses(self.__gen_dependency_clauses(
                                             fmri, da))
@@ -268,7 +302,7 @@ class PkgSolver(object):
                 self.__timeit("phase 10")
 
                 # Save a solver instance to check for inherited obsolete pkgs
-                # in case we upgraded to a pkg version that now supports 
+                # in case we upgraded to a pkg version that now supports
                 # obsoletion.
                 obsolete_check_solver = self.__save_solver()
 
@@ -301,7 +335,7 @@ class PkgSolver(object):
                         self.__restore_solver(obsolete_check_solver)
                         # add clauses for installed pkgs
                         for f in self.__installed_fmris.values():
-                                self.__addclauses(self.__gen_one_of_these_clauses([f]))                        
+                                self.__addclauses(self.__gen_one_of_these_clauses([f]))
                         try:
                                 self.__solve()
                                 # worked, so handle as regular error
@@ -321,11 +355,11 @@ class PkgSolver(object):
                                                 _("Package(s) are installed that depend on obsolete empty packages."),
                                                 _("These package(s) must be uninstalled to continue:\n\t%s\n") % \
                                                     "\n\t".join([str(a) for a in inst_obs_deps]),
-                                                _("The pkg command to perform needed uninstall is\n\tpkg uninstall %s\n") % 
+                                                _("The pkg command to perform needed uninstall is\n\tpkg uninstall %s\n") %
                                                     " ".join(a.pkg_name for a in inst_obs_deps)
                                                 ]
                                         raise api_errors.PlanCreationException(no_version=ret)
-                                        
+
                         info = []
                         info.append("package solver error")
                         info.append("attempted operation: install")
@@ -339,11 +373,11 @@ class PkgSolver(object):
                         for name in proposed_dict:
                                 info.append("    %s" % name)
                                 for f in proposed_dict[name]:
-                                        info.append("        %s %s" % 
+                                        info.append("        %s %s" %
                                             (f, self.__trim_dict.get(f, "")))
                                         for s in self.__print_dependencies(f, excludes=excludes):
                                                 info.append("            %s" % s)
-                        
+
                         if inc_list:
                                 info.append("maintained incorporations:")
                                 for il in inc_list:
@@ -364,29 +398,29 @@ class PkgSolver(object):
                 # check to see if we actually got anything done
                 # that we requested... it is possible that the
                 # solver cannot find anything to do for the
-                # requested packages, but actually just 
+                # requested packages, but actually just
                 # picked some other packages to upgrade
 
                 installed_set = set(self.__installed_fmris.values())
-                proposed_changes = [ 
+                proposed_changes = [
                         f
                         for f in saved_solution - installed_set
                         if f.pkg_name in proposed_dict
                 ]
 
                 if not proposed_changes:
-                        return installed_set
+                        return self.__cleanup(installed_set)
 
                 # we have a solution that works... attempt to
                 # reduce collateral damage to other packages
                 # while still keeping command line pkgs at their
                 # optimum level
-        
+
                 self.__restore_solver(saved_solver)
 
                 # fix the fmris that were specified on the cmd line
                 # at their optimum (newest) level along with the
-                # new dependencies, but try and avoid upgrading 
+                # new dependencies, but try and avoid upgrading
                 # already installed pkgs or adding un-needed new pkgs.
 
                 for fmri in saved_solution:
@@ -413,17 +447,21 @@ class PkgSolver(object):
                 for f in solution.copy():
                         if self.__fmri_is_obsolete(f):
                                 solution.remove(f)
-                                
-                self.__timeit("phase 12")
 
-                return self.__elide_possible_renames(solution, excludes)
+                self.__timeit("phase 12")
+                return self.__cleanup(self.__elide_possible_renames(solution,
+                    excludes))
 
         def solve_update(self, existing_freezes, excludes=EmptyI):
                 # trim fmris we cannot install because they're older
                 self.__timeit()
 
+                # Once solution has been returned or failure has occurred, a new
+                # solver must be used.
+                assert self.__state == SOLVER_INIT
+
                 for f in self.__installed_fmris.values():
-                        self.__trim_older(f)                
+                        self.__trim_older(f)
 
                 self.__timeit("phase 1")
 
@@ -435,7 +473,7 @@ class PkgSolver(object):
                         if not matching:            # disabled publisher...
                                 matching = set([f]) # staying put is an option
                         possible_set |=  matching
-                
+
                 self.__timeit("phase 2")
 
                 possible_set.update(self.__generate_dependency_closure(possible_set,
@@ -443,19 +481,19 @@ class PkgSolver(object):
 
                 self.__timeit("phase 3")
 
-                # generate ids, possible_dict for clause generation 
+                # generate ids, possible_dict for clause generation
                 self.__assign_fmri_ids(possible_set)
 
                 # generate clauses for only one version of each package, and
                 # for dependencies for each package.  Do so for all possible fmris.
-                
+
                 for name in self.__possible_dict.keys():
                         # insure that at most one version of a package is installed
                         self.__addclauses(self.__gen_highlander_clauses(
                             self.__possible_dict[name]))
                         # generate dependency clauses for each pkg
                         for fmri in self.__possible_dict[name]:
-                                for da in self.__get_dependency_actions(fmri, 
+                                for da in self.__get_dependency_actions(fmri,
                                     excludes=excludes):
                                         self.__addclauses(self.__gen_dependency_clauses(
                                             fmri, da))
@@ -473,11 +511,16 @@ class PkgSolver(object):
                 for f in solution.copy():
                         if self.__fmri_is_obsolete(f):
                                 solution.remove(f)
-                        
-                return self.__elide_possible_renames(solution, excludes)
+
+                return self.__cleanup(self.__elide_possible_renames(solution,
+                    excludes))
 
         def solve_uninstall(self, existing_freezes, uninstall_list, recursive, excludes):
                 """Compute changes needed for uninstall"""
+
+                # Once solution has been returned or failure has occurred, a new
+                # solver must be used.
+                assert self.__state == SOLVER_INIT
 
                 # generate list of installed pkgs w/ possible renames removed to forestall
                 # failing removal due to presence of unneeded renamed pkg
@@ -485,11 +528,11 @@ class PkgSolver(object):
                 orig_installed_set = set(self.__installed_fmris.values())
                 renamed_set = orig_installed_set - \
                     self.__elide_possible_renames(orig_installed_set, excludes)
-                
+
                 if recursive is True:
                         needs_processing = set(uninstall_list) | renamed_set
                         proposed_removals = set()
-                        
+
                         while needs_processing:
                                 pfmri = needs_processing.pop()
                                 proposed_removals.add(pfmri)
@@ -504,11 +547,16 @@ class PkgSolver(object):
                                 raise api_errors.NonLeafPackageException(pfmri, dependents)
 
                 # remove any additional pkgs
-                return self.__elide_possible_renames(orig_installed_set - proposed_removals, excludes)
+                return self.__cleanup(self.__elide_possible_renames(
+                    orig_installed_set - proposed_removals, excludes))
 
         def solve_change_varcets(self, existing_freezes, new_variants, new_facets, new_excludes):
                 """Compute packaging changes needed to effect
                 desired variant and or facet change"""
+
+                # Once solution has been returned or failure has occurred, a new
+                # solver must be used.
+                assert self.__state == SOLVER_INIT
 
                 # First, determine if there are any packages that are
                 # not compatible w/ the new variants, and compute
@@ -522,7 +570,7 @@ class PkgSolver(object):
                 self.__excludes = new_excludes #must include facet changes
 
                 if new_variants:
-                        for f in self.__installed_fmris.values():                        
+                        for f in self.__installed_fmris.values():
                                 d = self.__get_variant_dict(f)
                                 for k in new_variants.keys():
                                         if k in d and new_variants[k] not in \
@@ -533,26 +581,27 @@ class PkgSolver(object):
                                         keep_set.add(f)
                 else: # keep the same pkgs as a starting point for facet changes only
                         keep_set = set(self.__installed_fmris.values())
-                        
+
                 # XXX check existing freezes to see if they permit removals
 
                 # recompute solution as if a blank image was being
-                # considered; if a generic package depends on a 
+                # considered; if a generic package depends on a
                 # architecture specific one, the operation will fail.
 
-
                 if not keep_set:
-                        return [] # in case this deletes our last package
+                        # in case this deletes our last package
+                        return self.__cleanup([])
 
-                blank_solver = PkgSolver(self.__catalog, {} , self.__pub_ranks, 
+                blank_solver = PkgSolver(self.__catalog, {} , self.__pub_ranks,
                     self.__variants, self.__progtrack)
 
                 proposed_dict = dict([(f.pkg_name, [f]) for f in keep_set])
-                return blank_solver.solve_install(existing_freezes, proposed_dict, new_excludes)
+                return self.__cleanup(blank_solver.solve_install(
+                    existing_freezes, proposed_dict, new_excludes))
 
         def __save_solver(self):
                 """Create a saved copy of the current solver state and return it"""
-                return (self.__addclause_failure, 
+                return (self.__addclause_failure,
                         pkg.solver.msat_solver(self.__solver))
 
         def __restore_solver(self, solver):
@@ -560,7 +609,7 @@ class PkgSolver(object):
 
                 self.__addclause_failure, self.__solver = solver
                 self.__iterations = 0
-        
+
         def __solve(self, older=False, max_iterations=2000):
                 """Perform iterative solution; try for newest pkgs unless older=True"""
                 solution_vector = []
@@ -570,10 +619,10 @@ class PkgSolver(object):
                         self.__iterations += 1
 
                         if self.__iterations > max_iterations:
-                                break 
+                                break
 
                         solution_vector = self.__get_solution_vector()
-                                
+
                         # prevent the selection of any older pkgs
                         for fid in solution_vector:
                                 if not older:
@@ -610,7 +659,7 @@ class PkgSolver(object):
                     (i + 1) for i in range(self.__solver.get_variables())
                     if self.__solver.dereference(i)
                 ])
-                        
+
         def __assign_fmri_ids(self, possible_set):
                 """ give a set of possible fmris, assign ids"""
                 # generate dictionary of possible pkgs fmris by pkg stem
@@ -659,11 +708,11 @@ class PkgSolver(object):
                         if not dotrim or (f not in self.__trim_dict and
                                           (not self.__poss_set or f in self.__poss_set))
                         ]
-                
+
         def __comb_newer_fmris(self, fmri, dotrim=True, obsolete_ok=True):
-                """Returns tuple of set of fmris that are match witinin 
+                """Returns tuple of set of fmris that are match witinin
                 CONSTRAINT.NONE of specified version and set of remaining fmris."""
-                return self.__comb_common(fmri, dotrim, version.CONSTRAINT_NONE, obsolete_ok) 
+                return self.__comb_common(fmri, dotrim, version.CONSTRAINT_NONE, obsolete_ok)
 
         def __comb_common(self, fmri, dotrim, constraint, obsolete_ok):
                 """Underlying impl. of other comb routines"""
@@ -676,7 +725,7 @@ class PkgSolver(object):
                                         for f in all_fmris
                                         if not fmri.version or
                                         fmri.version == f.version or
-                                        f.version.is_successor(fmri.version, 
+                                        f.version.is_successor(fmri.version,
                                             constraint=constraint)
                                         if obsolete_ok or not self.__fmri_is_obsolete(f)
                                         ])
@@ -686,24 +735,24 @@ class PkgSolver(object):
                         # cache the result
                         self.__cache[tp] = (matching, all_fmris - matching)
                 return self.__cache[tp]
-                
+
         def __comb_older_fmris(self, fmri, dotrim=True, obsolete_ok=True):
-                """Returns tuple of set of fmris that are older than 
+                """Returns tuple of set of fmris that are older than
                 specified version and set of remaining fmris."""
                 newer, older = self.__comb_newer_fmris(fmri, dotrim, obsolete_ok)
                 return older, newer
 
         def __comb_auto_fmris(self, fmri, dotrim=True, obsolete_ok=True):
-                """Returns tuple of set of fmris that are match witinin 
+                """Returns tuple of set of fmris that are match witinin
                 CONSTRAINT.AUTO of specified version and set of remaining fmris."""
                 return self.__comb_common(fmri, dotrim, version.CONSTRAINT_AUTO, obsolete_ok)
 
         def __fmri_loadstate(self, fmri, excludes):
                 """load fmri state (obsolete == True, renamed == True)"""
-                
-                relevant = dict([ 
+
+                relevant = dict([
                         (a.attrs["name"], a.attrs["value"])
-                        for a in self.__catalog.get_entry_actions(fmri, 
+                        for a in self.__catalog.get_entry_actions(fmri,
                         [catalog.Catalog.DEPENDENCY], excludes=excludes)
                         if a.name == "set" and \
                             a.attrs["name"] in ["pkg.renamed", "pkg.obsolete"]
@@ -711,7 +760,7 @@ class PkgSolver(object):
                 self.__fmri_state[fmri] = (
                     relevant.get("pkg.obsolete", "false").lower() == "true",
                     relevant.get("pkg.renamed", "false").lower() == "true")
-                        
+
         def __fmri_is_obsolete(self, fmri, excludes=EmptyI):
                 """check to see if fmri is obsolete"""
                 if fmri not in self.__fmri_state:
@@ -723,13 +772,13 @@ class PkgSolver(object):
                 if fmri not in self.__fmri_state:
                         self.__fmri_loadstate(fmri, excludes)
                 return self.__fmri_state[fmri][1]
-                                        
+
         def __get_dependency_actions(self, fmri, excludes=EmptyI):
                 """Return list of all dependency actions for this fmri"""
 
                 return [
                         a
-                        for a in self.__catalog.get_entry_actions(fmri, 
+                        for a in self.__catalog.get_entry_actions(fmri,
                             [catalog.Catalog.DEPENDENCY], excludes=excludes)
                         if a.name == "depend"
                         ]
@@ -739,9 +788,9 @@ class PkgSolver(object):
                 if fmri not in self.__variant_dict:
                         self.__variant_dict[fmri] = dict(
                             self.__catalog.get_entry_all_variants(fmri))
-                            
+
                 return self.__variant_dict[fmri]
-                
+
         def __generate_dependency_closure(self, fmri_set, excludes=EmptyI, dotrim=True):
                 """return set of all fmris the set of specified fmris could depend on"""
 
@@ -760,7 +809,7 @@ class PkgSolver(object):
                 """return set of direct dependencies of this pkg"""
                 try:
                         return set([
-                             f 
+                             f
                              for da in self.__get_dependency_actions(fmri, excludes)
                              for f in self.__parse_dependency(da, dotrim, check_req=True)[1]
                              if da.attrs["type"] == "require"
@@ -785,11 +834,11 @@ class PkgSolver(object):
                 # return if nothing has been renamed
                 if not renamed_fmris:
                         return set(fmris)
-                
+
                 fmris_by_name = dict(((pfmri.pkg_name, pfmri) for pfmri in fmris))
 
                 # figure out which renamed fmris have dependencies; compute transitively
-                # so we can handle multiple renames 
+                # so we can handle multiple renames
 
                 needs_processing = set(fmris) - renamed_fmris
                 already_processed = set()
@@ -806,8 +855,8 @@ class PkgSolver(object):
                                                 needs_processing.add(new_fmri)
                                         renamed_fmris.discard(new_fmri)
                 return set(fmris) - renamed_fmris
-        
-                
+
+
         def __get_dependents(self, pfmri, excludes=EmptyI):
                 """return set of installed fmris that depend on specified installed fmri"""
                 if self.__dependents is None:
@@ -817,7 +866,7 @@ class PkgSolver(object):
                                         if da.attrs["type"] == "require":
                                                 self.__dependents.setdefault(
                                                     self.__installed_fmris[pkg.fmri.PkgFmri(
-                                                    da.attrs["fmri"], "5.11").pkg_name], 
+                                                    da.attrs["fmri"], "5.11").pkg_name],
                                                     set()).add(f)
                 return self.__dependents.get(pfmri, set())
 
@@ -829,10 +878,10 @@ class PkgSolver(object):
 
                 if dtype == "require":
                         matching, nonmatching = \
-                            self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=False)                        
+                            self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=False)
                 elif dtype == "optional":
                         matching, nonmatching = \
-                            self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=True)                        
+                            self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=True)
                 elif dtype == "exclude":
                         matching, nonmatching = \
                             self.__comb_older_fmris(fmri, dotrim, obsolete_ok=True)
@@ -850,7 +899,7 @@ class PkgSolver(object):
                                     "Suitable required dependency %s cannot be found" % fmri
                         else:
                                 raise RuntimeError, \
-                                    "Required dependency %s is obsolete" % fmri                                    
+                                    "Required dependency %s is obsolete" % fmri
 
                 return nonmatching, matching, dtype
 
@@ -877,7 +926,7 @@ class PkgSolver(object):
                 else:
                         s = ""
                 return "%s%s" % (f, s)
-                 
+
         def __print_dependencies(self, fmri, excludes=EmptyI):
                 """ used to display dependencies when things go wrong"""
                 ret = []
@@ -889,7 +938,7 @@ class PkgSolver(object):
                                 untrimmed_match = self.__parse_dependency(a, dotrim=False)[1]
 
                         dfmri =  pkg.fmri.PkgFmri(a.attrs["fmri"], "5.11")
-                                                      
+
                         if dtype == "require":
                                 if not match:
                                         ms.append("FAIL: No matching packages found")
@@ -925,7 +974,7 @@ class PkgSolver(object):
                                         ms.append("Excludes: " + ", ".join(
                                             [self.__disp_fmri(f, excludes) for f in unmatch]))
 
-                        if ms:                                
+                        if ms:
                                 ret.append("%15s: %s" % (dtype, a.attrs["fmri"]))
                                 for m in ms:
                                         ret.append("%s%s" % (" " * 20, m))
@@ -950,10 +999,10 @@ class PkgSolver(object):
                 at once"""
 
                 # pair wise negation
-                # if a has 4 versions, we need 
+                # if a has 4 versions, we need
                 # [
                 #  [-a.1, -a.2],
-                #  [-a.1, -a.3], 
+                #  [-a.1, -a.3],
                 #  [-a.1, -a.4],
                 #  [-a.2, -a.3],
                 #  [-a.2, -a.4],
@@ -980,7 +1029,7 @@ class PkgSolver(object):
                 # !a.1 | b.2 | b.3 | b.4
 
                 return [
-                        [-self.__getid(fmri)] + 
+                        [-self.__getid(fmri)] +
                         [self.__getid(fmri) for fmri in matching_fmri_list]
                         ]
 
@@ -1013,11 +1062,11 @@ class PkgSolver(object):
                                 if not self.__solver.add_clause(c):
                                         self.__addclause_failure = True
                                 self.__clauses += 1
-                        except TypeError:                                
+                        except TypeError:
                                 raise TypeError, "List of integers, not %s, expected" % c
 
         def __get_installed_unbound_inc_list(self, proposed_fmris, excludes=EmptyI):
-                """Return the list of incorporations that are to not to change 
+                """Return the list of incorporations that are to not to change
                 during this install operation, and the lists of fmris they constrain."""
 
                 incorps = set()
@@ -1025,8 +1074,8 @@ class PkgSolver(object):
                 pkg_cons = {}
                 install_holds = {}
 
-                # determine installed packages that contain incorporation dependencies, 
-                # determine those packages that are depended on by explict version, 
+                # determine installed packages that contain incorporation dependencies,
+                # determine those packages that are depended on by explict version,
                 # and those that have pkg.depend.install-hold values.
 
                 for f in self.__installed_fmris.values():
@@ -1058,8 +1107,8 @@ class PkgSolver(object):
                         ])
                 # versioned_dependents contains all the packages that are depended on
                 # w/ a explicit version.  We now modify this list so that it does not
-                # contain any packages w/ install_holds, unless those holds were 
-                # relaxed.  
+                # contain any packages w/ install_holds, unless those holds were
+                # relaxed.
                 versioned_dependents -= set([
                     pkg_name
                     for pkg_name, hold_value in install_holds.iteritems()
@@ -1069,8 +1118,8 @@ class PkgSolver(object):
                 # 2) are not in the set of versioned_dependents and 3) do
                 # not explicitly appear on the install command line.
                 ret = [
-                    self.__installed_fmris[pkg_name] 
-                    for pkg_name in incorps - versioned_dependents 
+                    self.__installed_fmris[pkg_name]
+                    for pkg_name in incorps - versioned_dependents
                     if pkg_name not in proposed_fmris
                 ]
                 # For each incorporation above that will not change, return a list
@@ -1107,12 +1156,12 @@ class PkgSolver(object):
                         # pkgs; guard against unconfigured publishers in known catalog
                         pubs_found = list(set([f.get_publisher() for f in fmri_list]))
                         ranked = sorted([
-                                        (self.__pub_ranks[p][0], p) 
+                                        (self.__pub_ranks[p][0], p)
                                         for p in pubs_found
                                         if self.__pub_ranks.get(p, (0, False, False))[2]
                                         ])
-                        acceptable_pubs = [ r[1] 
-                                            for r in ranked 
+                        acceptable_pubs = [ r[1]
+                                            for r in ranked
                                             if r[0] == ranked[0][0]
                                             ]
                         reason = _("Publisher is lower ranked")
@@ -1124,14 +1173,14 @@ class PkgSolver(object):
 
                 # allow installed packages to co-exist to meet dependency reqs.
                 # in case new publisher not proper superset of original.
-                # avoid multiple publishers w/ the exact same fmri to prevent 
+                # avoid multiple publishers w/ the exact same fmri to prevent
                 # thrashing in the solver due to many equiv. solutions.
 
                 inst_f = self.__installed_fmris.get(pkg_name, None)
 
                 if inst_f:
                         version_dict[inst_f.version] = [inst_f]
-                        
+
                 acceptable_list = []
                 for l in version_dict.values():
                         acceptable_list.extend(l)
@@ -1163,7 +1212,7 @@ class PkgSolver(object):
                                         reason = _("Package doesn't support image architecture")
                                 else:
                                         reason = _("Package doesn't support image variant %s") % v
-                                        
+
                                 self.__trim(fmri, reason)
 
         def __dotrim(self, fmri_list):
