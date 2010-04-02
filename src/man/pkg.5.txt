@@ -122,12 +122,11 @@ DESCRIPTION
 
      elfbits  This will be '32' or '64'.
 
-     elfhash  This is the hash of the 'interesting' ELF sections in the
-              file.  These sections are the ones that are mapped into
-              memory when the binary is loaded, except for the section
-              containing the CTF data.  These sections are the only ones
-              necessary to consider when determining whether two binaries'
-              executable behavior will differ.
+     elfhash  This is the hash of the 'interesting' ELF sections in
+              the file.  These are the sections that are mapped into
+              memory when the binary is loaded, and are the only ones
+              necessary to consider when determining whether two
+              binaries' executable behavior will differ.
 
      original_name This attribute is used to handle editable files moving
                    from package to package or from place to place, or both.
@@ -357,10 +356,10 @@ DESCRIPTION
      pkg.summary           A short, one-line description of the package.
 
   Group actions
-     The 'group' action define a unix group as defined in group(4).  No support
-     is present for group passwords.  Groups defined with this action initially
-     have no user-list; users may be added with the 'user' action.  The following
-     attributes are recognized:
+     The 'group' action defines a Unix group as defined in group(4).
+     No support is present for group passwords.  Groups defined with
+     this action initially have no user-list; users may be added with
+     the 'user' action.  The following attributes are recognized:
 
      groupname   The value for the name of the group.
 
@@ -392,11 +391,11 @@ DESCRIPTION
 
      login-shell The user's default shell.  Default value is empty.
 
-
      group-list  secondary groups to which the user belongs.  See group(4).
 
-     ftpuser     Can be set to "true" or "false".  Determines whether
-                 user is allowed to use ftp.  See ftpusers(4).
+     ftpuser     Can be set to "true" or "false".  The default value
+                 of "true" indicates that the user is permitted to
+                 login via FTP.  See ftpusers(4).
 
      lastchng    The number of days between January 1, 1970,  and
                  the  date  that  the password was last modified.

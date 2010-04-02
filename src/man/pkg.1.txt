@@ -635,7 +635,7 @@ SUBCOMMANDS
      publisher [-HPn] [publisher ...]
           Display publisher information.  With no arguments, display
           the list of all publishers, their origin URIs, and mirrors
-          in search order preference.  If specific publishers are
+          in order of search preference.  If specific publishers are
           requested, display the configuration values, including
           mirrors, associated with those publishers.
           
