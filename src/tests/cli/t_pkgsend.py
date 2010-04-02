@@ -30,6 +30,8 @@ import pkg5unittest
 
 import os
 import os.path
+import pkg.fmri as fmri
+import pkg.manifest as manifest
 import shutil
 import stat
 import tempfile
@@ -37,10 +39,60 @@ import unittest
 import urllib
 
 from pkg import misc
+from pkg.actions import fromstr
 import pkg.portable as portable
 
 class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
         persistent_setup = False
+
+        def __validate_bundle_dir_package(self, pfmri, expected):
+                """Used to validate a package imported or generated using
+                a DirectoryBundle.  Validation includes installing and
+                verifying the specified package, as well as comparing
+                the package manifest actions to the expected action data.
+                Only dir, file, link, and hardlink actions are compared.
+
+                'pfmri' is a package FMRI object for the package.
+
+                'expected' is a string containing the raw action data to
+                use to validate the package.  Only the attributes present
+                on each action will be compared."""
+
+                self.pkg("install %s" % pfmri)
+                self.pkg("verify %s" % pfmri)
+
+                m = manifest.Manifest()
+                content = self.get_img_manifest(pfmri)
+                m.set_content(content)
+
+                # Now build action objects from expected data indexed by path.
+                exp_actions = {}
+                for entry in expected.splitlines():
+                        a = fromstr(entry)
+
+                        if a.attrs["path"] in exp_actions:
+                                raise RuntimeError(a.attrs["path"])
+
+                        exp_actions[a.attrs["path"]] = a
+
+                # Number of actions should match number of expected entries.
+                self.assertEqual(len(exp_actions), len(expected.splitlines()))
+
+                # Number of expected actions should match number of actual.
+                actual = [
+                    a for a in m.gen_actions()
+                    if a.name in ("dir", "file", "link", "hardlink")
+                ]
+                self.assertEqual(len(exp_actions), len(actual))
+
+                # For each dir, file, link, or hardlink action, verify that the
+                # attributes match expected.
+                for a in actual:
+                        exp = exp_actions[a.attrs["path"]]
+                        for attr in exp.attrs:
+                                self.assertEqual(exp.attrs[attr], a.attrs[attr])
+
+                self.pkg("uninstall %s" % pfmri)
 
         def test_0_pkgsend_bad_opts(self):
                 """Verify that non-existent or invalid option combinations
@@ -330,18 +382,144 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_destroy()
 
         def test_10_bundle_dir(self):
+                """Verify that import and generate of a directory bundle works
+                as expected."""
+
                 rootdir = self.test_root
-                dir1 = os.path.join(rootdir, "foo")
-                os.mkdir(dir1)
-                file(os.path.join(dir1, "bar"), "wb").close()
+                src_dir1 = os.path.join(rootdir, "foo")
+                src_dir2 = os.path.join(rootdir, "bar")
+
+                # Build a file tree under each source directory to test
+                # import and generate functionality.  Tree should look like:
+                #   src-foo/
+                #       file-foo
+                #       link-foo -> file-foo
+                #       hardlink-foo -> file-foo
+                #       dir-foo/
+                #           subfile-foo
+                #           sublink-foo -> ../file-foo
+                #           subhardlink-foo -> ../file-foo
+                #           subfilelink-foo -> subfile-foo
+                #           subfilehardlink-foo -> subfile-foo
+                #           subdir-foo/
+                #               subdirfile-foo
+                #
+                #  Where 'foo' is replaced with 'bar' for the second source dir.
+
+                cwd = os.getcwd()
+                for src_dir in (src_dir1, src_dir2):
+                        # Final component used as part of name for all entries.
+                        name = os.path.basename(src_dir)
+
+                        # File at top level in source directory.
+                        top_file = os.path.join(src_dir, "file-%s" % name)
+                        self.make_misc_files(os.path.relpath(top_file, src_dir),
+                            prefix=name, mode=0644)
+
+                        # Link at top level in source directory.
+                        os.chdir(src_dir)
+                        os.symlink(os.path.basename(top_file), "link-%s" % name)
+                        os.chdir(cwd)
+
+                        # Hard link at top level in source directory.
+                        os.link(top_file, os.path.join(src_dir,
+                            "hardlink-%s" % name))
+
+                        # Directory at top level in source directory.
+                        top_dir = os.path.join(src_dir, "dir-%s" % name)
+                        os.mkdir(top_dir, 0755)
+
+                        # File in top_dir.
+                        top_dir_file = os.path.join(top_dir,
+                            "subfile-%s" % name)
+                        self.make_misc_files(os.path.relpath(top_dir_file,
+                            src_dir), prefix=name, mode=0444)
+
+                        # Link in top_dir to file in parent dir.
+                        os.chdir(top_dir)
+                        os.symlink(os.path.relpath(top_file, top_dir),
+                            "sublink-%s" % name)
+                        os.chdir(cwd)
+
+                        # Link in top_dir to file in top_dir.
+                        os.chdir(top_dir)
+                        os.symlink(os.path.basename(top_dir_file),
+                            "subfilelink-%s" % name)
+                        os.chdir(cwd)
+
+                        # Hard link in top_dir to file in parent dir.
+                        os.link(top_file, os.path.join(top_dir,
+                            "subhardlink-%s" % name))
+
+                        # Hard link in top_dir to file in top_dir.
+                        os.link(top_dir_file, os.path.join(top_dir,
+                            "subfilehardlink-%s" % name))
+
+                        # Directory in top_dir.
+                        sub_dir = os.path.join(top_dir, "subdir-%s" % name)
+                        os.mkdir(sub_dir, 0750)
+
+                        # File in sub_dir.
+                        sub_dir_file = os.path.join(sub_dir,
+                            "subdirfile-%s" % name)
+                        self.make_misc_files(os.path.relpath(sub_dir_file,
+                            src_dir), prefix=name, mode=0400)
+
+                # Pre-generated result used for package validation.
+                expected = """\
+dir group=bin mode=0755 owner=root path=dir-foo
+file 4b5e791c627772d731d6c1623228a9c147a7dc3a chash=57ac66d45c0c4adb6d3626bd711c6f09f10fd286 group=bin mode=0644 owner=root path=file-foo
+link path=link-foo target=file-foo
+hardlink path=hardlink-foo target=file-foo
+dir group=bin mode=0750 owner=root path=dir-foo/subdir-foo
+file a10c7e788532fd2e7ee7eb9682733dd4e3fbe9de chash=aa3025ca5df3f9f6560db438b1b748d8155c9763 group=bin mode=0444 owner=root path=dir-foo/subfile-foo
+link path=dir-foo/sublink-foo target=../file-foo
+link path=dir-foo/subfilelink-foo target=subfile-foo
+hardlink path=dir-foo/subhardlink-foo target=../file-foo
+hardlink path=dir-foo/subfilehardlink-foo target=subfile-foo
+file 7e810bfd0fddc15334ae8f8c5720417c19d26d65 chash=d4e6a65e17cad442857eea1885b909b09e96f40e group=bin mode=0400 owner=root path=dir-foo/subdir-foo/subdirfile-foo
+dir group=bin mode=0755 owner=root path=dir-bar
+file 994c33bbd9d77c3a54a1130d07f87f9d57c91d53 chash=98b4c123eefd676a472924e004dc293ddd44f73a group=bin mode=0644 owner=root path=file-bar
+link path=link-bar target=file-bar
+hardlink path=hardlink-bar target=file-bar
+dir group=bin mode=0750 owner=root path=dir-bar/subdir-bar
+file 1e4760226a169690da06b592e8eedb6d79c1b3a0 chash=71d14067e564c3c52261918788f353e99d249a87 group=bin mode=0444 owner=root path=dir-bar/subfile-bar
+link path=dir-bar/sublink-bar target=../file-bar
+link path=dir-bar/subfilelink-bar target=subfile-bar
+hardlink path=dir-bar/subhardlink-bar target=../file-bar
+hardlink path=dir-bar/subfilehardlink-bar target=subfile-bar
+file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf16677cb09125e group=bin mode=0400 owner=root path=dir-bar/subdir-bar/subdirfile-bar"""
+
+                # Test with and without trailing slash on import path.
+                # This cannot be done using pkgsend_bulk, which doesn't
+                # support import.
                 url = self.dc.get_depot_url()
-                self.pkgsend_bulk(url,
-                """open foo@1.0
-                import %s
-                close""" % dir1 )
+                self.pkgsend(url, "open foo@1.0")
+                self.pkgsend(url, "import %s" % src_dir1)
+                self.pkgsend(url, "import %s/" % src_dir2)
+                ret, sfmri = self.pkgsend(url, "close")
+                foo_fmri = fmri.PkgFmri(sfmri, "5.11")
+
+                # Test with and without trailing slash on generate path.
+                # This cannot be done using pkgsend_bulk, which doesn't
+                # support generate.
+                rc, out1 = self.pkgsend(url, "generate %s" % src_dir1)
+                rc, out2 = self.pkgsend(url, "generate %s/" % src_dir2)
+
+                self.pkgsend(url, "open bar@1.0")
+                mpath = self.make_misc_files({ "bar.mfst": out1 + out2 })[0]
+                self.pkgsend(url, "include -d %s -d %s %s" % (src_dir1,
+                    src_dir2, mpath))
+                ret, sfmri = self.pkgsend(url, "close")
+                bar_fmri = fmri.PkgFmri(sfmri, "5.11")
+
                 self.image_create(url)
-                self.pkg("install foo")
-                self.image_destroy()
+
+                # Perform actual validation; content should be identical
+                # whether import or generate was used.
+                for pfmri in (foo_fmri, bar_fmri):
+                        self.__validate_bundle_dir_package(pfmri, expected)
+
 
         # A map used to create a SVR4 package, and check an installed pkg(5)
         # version of that package, created via 'pkgsend import'.  We map the

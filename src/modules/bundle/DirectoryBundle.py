@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -29,7 +29,10 @@ import os
 import stat
 import pkg.misc
 
-from pkg.actions import *
+import pkg.bundle
+import pkg.actions.file
+import pkg.actions.link
+import pkg.actions.hardlink
 
 class DirectoryBundle(object):
         """The DirectoryBundle class assists in the conversion of a directory
@@ -44,11 +47,11 @@ class DirectoryBundle(object):
         caller once the action has been emitted.
         """
 
-        def __init__(self, dir):
+        def __init__(self, path):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
-                self.pkgname = os.path.basename(dir)
-                self.rootdir = dir
+                self.rootdir = os.path.normpath(path)
+                self.pkgname = os.path.basename(self.rootdir)
                 self.inodes = {}
 
         def __iter__(self):
@@ -56,16 +59,9 @@ class DirectoryBundle(object):
                         for obj in dirs + files:
                                 yield self.action(os.path.join(root, obj))
 
-        @staticmethod
-        def __commonroot(one, two):
-                for i, c in enumerate(zip(one, two)):
-                        if c[0] != c[1]:
-                                break
-
-                return i
-
         def action(self, path):
-                pubpath = path[len(self.rootdir) + 1:]
+                rootdir = self.rootdir
+                pubpath = os.path.relpath(path, rootdir)
                 pstat = os.lstat(path)
                 mode = oct(stat.S_IMODE(pstat.st_mode))
                 timestamp = pkg.misc.time_to_timestamp(pstat.st_mtime)
@@ -74,25 +70,24 @@ class DirectoryBundle(object):
                         inode = pstat.st_ino
                         if inode not in self.inodes:
                                 if pstat.st_nlink > 1:
-                                        self.inodes[inode] = pubpath
-                                return file.FileAction(open(path), mode=mode,
-                                    owner="root", group="bin", path=pubpath,
+                                        self.inodes[inode] = path
+                                return pkg.actions.file.FileAction(
+                                    open(path, "rb"), mode=mode, owner="root",
+                                    group="bin", path=pubpath,
                                     timestamp=timestamp)
                         else:
                                 # Find the relative path to the link target.
-                                cp = self.__commonroot(pubpath,
-                                    self.inodes[inode])
-                                target = os.path.sep.join(
-                                    pubpath[cp:].count("/") * [os.path.pardir] +
-                                        [self.inodes[inode][cp:]])
-                                return hardlink.HardLinkAction(
+                                target = os.path.relpath(self.inodes[inode],
+                                    os.path.dirname(path))
+                                return pkg.actions.hardlink.HardLinkAction(
                                     path=pubpath, target=target)
                 elif stat.S_ISLNK(pstat.st_mode):
-                        return link.LinkAction(
+                        return pkg.actions.link.LinkAction(
                             target=os.readlink(path), path=pubpath)
                 elif stat.S_ISDIR(pstat.st_mode):
-                        return directory.DirectoryAction(timestamp=timestamp,
-                            mode=mode, owner="root", group="bin", path=pubpath)
+                        return pkg.actions.directory.DirectoryAction(
+                            timestamp=timestamp, mode=mode, owner="root",
+                            group="bin", path=pubpath)
 
 def test(filename):
         try:

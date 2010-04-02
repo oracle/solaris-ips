@@ -428,7 +428,7 @@ class Pkg5TestCase(unittest.TestCase):
                 """ Make miscellaneous text files.  Files can be a
                 single relative pathname, a list of relative pathnames,
                 or a hash mapping relative pathnames to specific contents.
-                If file contents are nto specified, the pathname of the
+                If file contents are not specified, the pathname of the
                 file is placed into the file as default content. """
 
                 outpaths = []
@@ -1380,6 +1380,8 @@ class CliTestCase(Pkg5TestCase):
                                 if l.startswith("pkg:/"):
                                         published = l
                                         break
+                elif (cmdop == "generate" and retcode == 0):
+                        published = out
 
                 # This may be a failure due to us being too quick to republish,
                 # and getting the same timestamp twice.  Keep trying for a
@@ -1421,6 +1423,14 @@ class CliTestCase(Pkg5TestCase):
 
                         for line in commands.split("\n"):
                                 line = line.strip()
+
+                                # pkgsend_bulk can't be used w/ import or
+                                # generate.
+                                assert not line.startswith("import"), \
+                                    "pkgsend_bulk cannot be used with import"
+                                assert not line.startswith("generate"), \
+                                    "pkgsend_bulk cannot be used with generate"
+
                                 if line == "":
                                         continue
                                 if line.startswith("add"):
