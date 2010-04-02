@@ -31,6 +31,7 @@ import gettext
 import os
 import shutil
 import signal
+import stat
 import string
 import subprocess
 import sys
@@ -85,6 +86,7 @@ class TestSkippedException(Exception):
 # Errors for which the traceback is likely not useful.
 #
 import pkg.depotcontroller as depotcontroller
+import pkg.portable as portable
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
 class Pkg5CommonException(AssertionError):
@@ -1162,7 +1164,6 @@ class CliTestCase(Pkg5TestCase):
         def get_img_path(self):
                 return self.img_path
 
-
         def image_create(self, repourl, prefix="test", additional_args=""):
                 assert self.img_path
                 assert self.img_path != "/"
@@ -1564,6 +1565,38 @@ class CliTestCase(Pkg5TestCase):
                 # Finally, write the new manifest.
                 with open(mpath, "wb") as f:
                         f.write(mdata)
+
+        def validate_fsobj_attrs(self, act, target=None, img_path=None):
+                """Used to verify that the target item's mode, attrs, timestamp,
+                etc. match as expected.  The actual"""
+
+                if act.name not in ("file", "dir"):
+                        return
+
+                if not img_path:
+                        img_path = self.get_img_path()
+                if not target:
+                        target = act.attrs["path"]
+
+                fpath = os.path.join(img_path, target)
+                lstat = os.lstat(fpath)
+
+                # Verify owner.
+                expected = portable.get_user_by_name(act.attrs["owner"], None,
+                    False)
+                actual = lstat.st_uid
+                self.assertEqual(expected, actual)
+
+                # Verify group.
+                expected = portable.get_group_by_name(act.attrs["group"], None,
+                    False)
+                actual = lstat.st_gid
+                self.assertEqual(expected, actual)
+
+                # Verify mode.
+                expected = int(act.attrs["mode"], 8)
+                actual = stat.S_IMODE(lstat.st_mode)
+                self.assertEqual(expected, actual)
 
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):

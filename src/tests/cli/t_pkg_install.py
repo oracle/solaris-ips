@@ -33,6 +33,7 @@ import pkg5unittest
 import os
 import pkg.catalog as catalog
 import pkg.fmri as fmri
+import pkg.manifest as manifest
 import pkg.portable as portable
 import re
 import shutil
@@ -1537,6 +1538,7 @@ adm
                 # content changes.
                 self.pkg("install preserve@1")
                 self.file_append("testme", "junk")
+                self.file_contains("testme", "preserve1")
                 self.pkg("install preserve@3")
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
@@ -1580,9 +1582,8 @@ adm
                 """Make sure that file upgrade with preserve=renameold works."""
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.renameold1)
-                self.pkgsend_bulk(durl, self.renameold2)
-                self.pkgsend_bulk(durl, self.renameold3)
+                plist = self.pkgsend_bulk(durl, self.renameold1 +
+                    self.renameold2 + self.renameold3)
                 self.image_create(durl)
 
                 # If there are no local modifications, no preservation should be
@@ -1612,6 +1613,7 @@ adm
                 self.file_contains("testme.old", "junk")
                 self.file_doesnt_contain("testme", "junk")
                 self.file_contains("testme", "renold3")
+                self.dest_file_valid(plist, "renold@3.0", "testme", "testme")
                 self.file_doesnt_exist("testme.new")
                 self.pkg("verify renold")
                 self.pkg("uninstall renold")
@@ -1640,9 +1642,8 @@ adm
                 """Make sure that file ugprade with preserve=renamenew works."""
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.renamenew1)
-                self.pkgsend_bulk(durl, self.renamenew2)
-                self.pkgsend_bulk(durl, self.renamenew3)
+                plist = self.pkgsend_bulk(durl, self.renamenew1 +
+                    self.renamenew2 + self.renamenew3)
                 self.image_create(durl)
 
                 # If there are no local modifications, no preservation should be
@@ -1672,6 +1673,8 @@ adm
                 self.file_contains("testme", "junk")
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew3")
+                self.dest_file_valid(plist, "rennew@3.0", "testme",
+                    "testme.new")
                 self.file_doesnt_exist("testme.old")
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
@@ -1691,12 +1694,15 @@ adm
                 self.file_chmod("testme", 0640)
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
+                self.file_remove("testme.new")
 
                 # Remove the file locally and update the package; this should
                 # simply replace the missing file.
                 self.pkg("install rennew@1")
                 self.file_remove("testme")
                 self.pkg("install rennew@2")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.old")
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
 
@@ -1705,6 +1711,30 @@ adm
                 f = file(file_path, "a+")
                 f.write("\n%s\n" % string)
                 f.close
+
+        def dest_file_valid(self, plist, pkg, src, dest):
+                """Used to verify that the dest item's mode, attrs, timestamp,
+                etc. match the src items's matching action as expected."""
+
+                for p in plist:
+                        pfmri = fmri.PkgFmri(p, "5.11")
+                        pfmri.publisher = None
+                        sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
+
+                        if pkg != sfmri:
+                                continue
+
+                        m = manifest.Manifest()
+                        m.set_content(self.get_img_manifest(pfmri))
+                        for a in m.gen_actions():
+                                if a.name != "file":
+                                        # Only want file actions that have
+                                        # preserve attribute.
+                                        continue
+                                if a.attrs["path"] != src:
+                                        # Only want actions with matching path.
+                                        continue
+                                self.validate_fsobj_attrs(a, target=dest)
 
         def file_chmod(self, path, mode):
                 file_path = os.path.join(self.get_img_path(), path)

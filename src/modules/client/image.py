@@ -1083,6 +1083,7 @@ class Image(object):
                         pps.append(pp)
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
                 ip._image_lm = ilm
+                ip._planned_op = ip.PLANNED_FIX
                 self.imageplan = ip
 
                 ip.update_index = False

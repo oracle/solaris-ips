@@ -57,20 +57,19 @@ PREEXECUTED_ERROR = 4 # whoops
 EXECUTED_OK       = 5 # finished execution
 EXECUTED_ERROR    = 6 # failed
 
-PLANNED_NOTHING   = "no-plan"
-PLANNED_INSTALL   = "install"
-PLANNED_UNINSTALL = "uninstall"
-PLANNED_UPDATE    = "image-update"
-PLANNED_FIX       = "fix"
-PLANNED_VARIANT   = "change-variant"
-
-
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
         there are separate routines for planning the various types of
         image modifying operations; evaluation (comparing manifests
         and buildig lists of removeal, install and update actions
         and their execution is all common code"""
+
+        PLANNED_NOTHING   = "no-plan"
+        PLANNED_INSTALL   = "install"
+        PLANNED_UNINSTALL = "uninstall"
+        PLANNED_UPDATE    = "image-update"
+        PLANNED_FIX       = "fix"
+        PLANNED_VARIANT   = "change-variant"
 
         def __init__(self, image, progtrack, check_cancel, noexecute=False):
                 self.image = image
@@ -113,7 +112,7 @@ class ImagePlan(object):
                 self.update_index = True
 
                 self.__preexecuted_indexing_error = None
-                self.__planned_op = PLANNED_NOTHING
+                self._planned_op = self.PLANNED_NOTHING
                 self.__pkg_solver = None
                 self.__new_variants = None
                 self.__new_facets = None
@@ -167,23 +166,30 @@ class ImagePlan(object):
 
                 return s
 
+        @property
+        def planned_op(self):
+                """Returns a constant value indicating the type of operation
+                planned."""
+
+                return self._planned_op
+
         def show_failure(self, verbose):
                 """Here's where extensive messaging needs to go"""
 
                 if self.__pkg_solver:
                         logger.info(_("Planning for %s failed: %s\n") % 
-                            (self.__planned_op, self.__pkg_solver.gen_failure_report(verbose)))
+                            (self._planned_op, self.__pkg_solver.gen_failure_report(verbose)))
 
         def __plan_op(self, op):
                 """Private helper method used to mark the start of a planned
                 operation."""
 
-                self.__planned_op = op
+                self._planned_op = op
                 self._image_lm = self.image.get_last_modified()
 
         def plan_install(self, pkgs_to_install):
                 """Determine the fmri changes needed to install the specified pkgs"""
-                self.__plan_op(PLANNED_INSTALL)
+                self.__plan_op(self.PLANNED_INSTALL)
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
@@ -222,7 +228,7 @@ class ImagePlan(object):
                 self.state = EVALUATED_PKGS
 
         def plan_uninstall(self, pkgs_to_uninstall, recursive_removal=False):
-                self.__plan_op(PLANNED_UNINSTALL)
+                self.__plan_op(self.PLANNED_UNINSTALL)
                 proposed_dict, self.__references = self.match_user_fmris(pkgs_to_uninstall, 
                     False, None, None)
                 # merge patterns together
@@ -275,7 +281,7 @@ class ImagePlan(object):
         def plan_update(self):
                 """Determine the fmri changes needed to update all
                 pkgs"""
-                self.__plan_op(PLANNED_UPDATE)
+                self.__plan_op(self.PLANNED_UPDATE)
 
                 # build installed dict
                 installed_dict = dict([
@@ -305,13 +311,13 @@ class ImagePlan(object):
 
         def plan_fix(self, pkgs_to_fix):
                 """Create the list of pkgs to fix"""
-                self.__plan_op(PLANNED_FIX)
+                self.__plan_op(self.PLANNED_FIX)
                 # XXX complete this
 
         def plan_change_varcets(self, variants, facets):
                 """Determine the fmri changes needed to change
                 the specified variants/facets"""
-                self.__plan_op(PLANNED_VARIANT)
+                self.__plan_op(self.PLANNED_VARIANT)
 
                 if variants == None and facets == None: # nothing to do
                         self.state = EVALUATED_PKGS
@@ -498,7 +504,7 @@ class ImagePlan(object):
                         else:
                                 old_fmri = None
                 info = {
-                    "operation": self.__planned_op,
+                    "operation": self._planned_op,
                     "old_fmri" : old_fmri,
                     "new_fmri" : new_fmri,
                     "reference": reference

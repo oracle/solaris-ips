@@ -133,8 +133,12 @@ class FileAction(generic.Action):
                 # used as an ancestor for a three-way merge, for example.  Where
                 # should it be stored?
                 pres_type = self.__check_preserve(orig, pkgplan)
-                if pres_type is True:
-                        return
+                do_content = True
+                if pres_type == True or (pres_type and
+                    pkgplan.origin_fmri == pkgplan.destination_fmri):
+                        # File is marked to be preserved and exists so don't
+                        # reinstall content.
+                        do_content = False
                 elif pres_type == "renameold":
                         old_path = final_path + ".old"
                 elif pres_type == "renamenew":
@@ -159,7 +163,7 @@ class FileAction(generic.Action):
 
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
-                if self.needsdata(orig, pkgplan):
+                if do_content and self.needsdata(orig, pkgplan):
                         tfilefd, temp = tempfile.mkstemp(dir=os.path.dirname(
                             final_path))
                         stream = self.data()
@@ -192,14 +196,14 @@ class FileAction(generic.Action):
 
                 # XXX There's a window where final_path doesn't exist, but we
                 # probably don't care.
-                if pres_type == "renameold":
+                if do_content and pres_type == "renameold":
                         portable.rename(final_path, old_path)
 
                 # This is safe even if temp == final_path.
                 portable.rename(temp, final_path)
 
-                # Handle timestamp if specified
-                if "timestamp" in self.attrs:
+                # Handle timestamp if specified (and content was installed).
+                if do_content and "timestamp" in self.attrs:
                         t = misc.timestamp_to_time(self.attrs["timestamp"])
                         try:
                                 os.utime(final_path, (t, t))
@@ -242,7 +246,8 @@ class FileAction(generic.Action):
                         info.append("Warning: package may contain bobcat!  "
                             "(http://xkcd.com/325/)")
 
-                if "timestamp" in self.attrs and lstat.st_mtime != \
+                if "preserve" not in self.attrs and \
+                    "timestamp" in self.attrs and lstat.st_mtime != \
                     misc.timestamp_to_time(self.attrs["timestamp"]):
                         errors.append(_("Timestamp: %(found)s should be "
                             "%(expected)s") % {

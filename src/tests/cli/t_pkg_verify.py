@@ -30,6 +30,7 @@ import pkg5unittest
 
 import os
 import pkg.portable as portable
+import time
 import unittest
 
 class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
@@ -41,6 +42,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=sys path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
             add file bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
+            add file bobcat path=/etc/preserved mode=644 owner=root group=sys preserve=true timestamp="20080731T024051Z"
             add file dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
             add file dricon_cls path=/etc/driver_classes mode=644 owner=root group=sys preserve=true
@@ -110,15 +112,21 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify foo | grep bobcat", exit=1)
                 self.pkg("verify -v foo | grep bobcat")
 
-                # Get path to installed file.
+                # Verify shouldn't care if timestamp has changed on
+                # preserved files.
+                fpath = os.path.join(self.get_img_path(), "etc", "preserved")
+                ctime = time.time() - 1240
+                os.utime(fpath, (ctime, ctime))
+                self.pkg("verify foo")
+
+                # Verify should fail if file is missing.
                 fpath = os.path.join(self.get_img_path(), "usr", "bin",
                     "bobcat")
-
-                # Should fail since file is missing.
                 portable.remove(fpath)
                 self.pkg("verify foo", exit=1)
 
-                # Now verify that verify warnings are not fatal.
+                # Now verify that verify warnings are not fatal (because
+                # package contained bobcat!).
                 self.pkg("fix")
 
                 fpath = os.path.join(self.get_img_path(), "etc",
