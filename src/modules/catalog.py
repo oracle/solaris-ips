@@ -55,9 +55,13 @@ class _JSONWriter(object):
         """Private helper class used to serialize catalog data and generate
         signatures."""
 
-        def __init__(self, data, pathname=None, sign=True):
+        def __init__(self, data, single_pass=False, pathname=None, sign=True):
                 self.__data = data
                 self.__fileobj = None
+
+                # Determines whether data is encoded in a single pass (uses
+                # more memory) or iteratively.
+                self.__single_pass = single_pass
 
                 # Default to a 32K buffer.
                 self.__bufsz = 32 * 1024 
@@ -109,6 +113,16 @@ class _JSONWriter(object):
                         return {}
                 return { "sha-1": self.__sha_1_value }
 
+        def _dump(self, obj, fp, skipkeys=False, ensure_ascii=True,
+            check_circular=True, allow_nan=True, cls=json.JSONEncoder,
+            indent=None, separators=None, encoding='utf-8', default=None, **kw):
+                iterable = cls(skipkeys=skipkeys, ensure_ascii=ensure_ascii,
+                    check_circular=check_circular, allow_nan=allow_nan,
+                    indent=indent, separators=separators, encoding=encoding,
+                    default=default, **kw).iterencode(obj,
+                    _one_shot=self.__single_pass)
+                fp.writelines(iterable)
+
         def save(self):
                 """Serializes and stores the provided data in JSON format."""
 
@@ -124,7 +138,7 @@ class _JSONWriter(object):
                 if not out:
                         out = self
 
-                json.dump(self.__data, out, check_circular=False,
+                self._dump(self.__data, out, check_circular=False,
                     separators=(",", ":"), sort_keys=self.__sign)
                 out.write("\n")
 
@@ -157,7 +171,7 @@ class _JSONWriter(object):
 
                 # Add the signature data and close.
                 sfile.write(',"_SIGNATURE":')
-                json.dump(self.signatures(), sfile, check_circular=False,
+                self._dump(self.signatures(), sfile, check_circular=False,
                     separators=(",", ":"))
                 sfile.write("}\n")
                 sfile.close()
@@ -168,6 +182,13 @@ class _JSONWriter(object):
 
                 if self.__sign:
                         self.__sha_1.update(data)
+
+        def writelines(self, iterable):
+                """Wrapper function that should not be called by external
+                consumers."""
+
+                for l in iterable:
+                        self.__sha_1.update(l)
 
 
 class CatalogPartBase(object):
@@ -302,13 +323,20 @@ class CatalogPartBase(object):
                         return None
                 return os.path.join(self.meta_root, self.name)
 
-        def save(self, data):
+        def save(self, data, single_pass=False):
                 """Serialize and store the transformed catalog part's 'data' in
                 a file using the pathname <self.meta_root>/<self.name>.
 
-                'data' must be a dict."""
+                'data' must be a dict.
 
-                f = _JSONWriter(data, pathname=self.pathname, sign=self.sign)
+                'single_pass' is an optional boolean indicating whether the data
+                should be serialized in a single pass.  This is significantly
+                faster, but requires that the entire set of data be serialized
+                in-memory instead of iteratively writing it to the target
+                storage object."""
+
+                f = _JSONWriter(data, single_pass=single_pass,
+                    pathname=self.pathname, sign=self.sign)
                 f.save()
 
                 # Update in-memory copy to reflect stored data.
@@ -727,14 +755,21 @@ class CatalogPart(CatalogPartBase):
                 self.last_modified = op_time
                 self.signatures = {}
 
-        def save(self):
+        def save(self, single_pass=False):
                 """Transform and store the catalog part's data in a file using
-                the pathname <self.meta_root>/<self.name>."""
+                the pathname <self.meta_root>/<self.name>.
+
+                'single_pass' is an optional boolean indicating whether the data
+                should be serialized in a single pass.  This is significantly
+                faster, but requires that the entire set of data be serialized
+                in-memory instead of iteratively writing it to the target
+                storage object."""
 
                 if not self.meta_root:
                         # Assume this is in-memory only.
                         return
-                CatalogPartBase.save(self, self.__data)
+
+                CatalogPartBase.save(self, self.__data, single_pass=single_pass)
 
         def sort(self, pfmris=None, pubs=None):
                 """Re-sorts the contents of the CatalogPart such that version
@@ -1145,7 +1180,7 @@ class CatalogAttrs(CatalogPartBase):
                 if not self.meta_root:
                         # Assume this is in-memory only.
                         return
-                CatalogPartBase.save(self, self.__transform())
+                CatalogPartBase.save(self, self.__transform(), single_pass=True)
 
         def validate(self, signatures=None):
                 """Verifies whether the signatures for the contents of the
@@ -1661,7 +1696,14 @@ class Catalog(object):
                 for name, part in self.__parts.iteritems():
                         # Must save first so that signature data is
                         # current.
-                        part.save()
+
+                        # single-pass encoding is not used for summary part as
+                        # it increases memory usage substantially (30MB at 
+                        # current for /dev).  No significant difference is
+                        # detectable for other parts though.
+                        single_pass = name in (self.__BASE_PART,
+                            self.__DEPS_PART)
+                        part.save(single_pass=single_pass)
 
                         # Now replace the existing signature data with
                         # the new signature data.

@@ -19,38 +19,18 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-
-try:
-        import cherrypy
-except ImportError:
-        # Optional dependency.
-        pass
 
 import bisect
 import datetime
 import errno
 import os
 import pkg.fmri as fmri
-import pkg.indexer as indexer
-import pkg.manifest as manifest
-import pkg.pkgsubprocess as subprocess
 import pkg.portable as portable
-import pkg.search_errors as se
-import pkg.server.query_parser as query_p
-import pkg.version as version
-import random
 import re
-import shutil
-import signal
 import stat
-import sys
 import tempfile
-import threading
-import urllib
-
-from pkg.misc import EmptyI
 
 class CatalogException(Exception):
 
@@ -88,7 +68,8 @@ class CatalogPermissionsException(CatalogException):
 
 class ServerCatalog(object):
         """A Catalog is the representation of the package FMRIs available to
-        the repository.
+        the repository.  This class is only used for compatibility with v0
+        repositories.
 
         The serialized structure of the repository is an unordered list of
         available package versions, followed by an unordered list of
@@ -116,77 +97,20 @@ class ServerCatalog(object):
         # The file mode to be used for all catalog files.
         file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
-        # XXX Mirroring records also need to be allowed from client
-        # configuration, and not just catalogs.
-        #
-        # XXX It would be nice to include available tags and package sizes,
-        # although this could also be calculated from the set of manifests.
-        #
-        # XXX Current code is O(N_packages) O(M_versions), should be
-        # O(1) O(M_versions), and possibly O(1) O(1).
-        #
-        # XXX Initial estimates suggest that the Catalog could be composed of
-        # 1e5 - 1e7 lines.  Catalogs across these magnitudes will need to be
-        # spread out into chunks, and may require a delta-oriented update
-        # interface.
-
-        def __init__(self, cat_root, publisher=None, pkg_root=None,
-            read_only=False, index_root=None, repo_root=None,
-            rebuild=False, verbose=False, fork_allowed=False,
-            has_writable_root=False):
+        def __init__(self, cat_root, publisher=None, read_only=False):
                 """Create a catalog.  If the path supplied does not exist,
                 this will create the required directory structure.
                 Otherwise, if the directories are already in place, the
-                existing catalog is opened.  If pkg_root is specified
-                and no catalog is found at cat_root, the catalog will be
-                rebuilt.  publisher names the publisher that
-                is represented by this catalog."""
-
-                self.fork_allowed = fork_allowed
-                self.index_root = index_root
-                self.repo_root = repo_root
-                # XXX this is a cheap hack to determine whether information
-                # about catalog operations should be logged using cherrypy.
-                self.verbose = verbose
-
-                # The update_handle lock protects the update_handle variable.
-                # This allows update_handle to be checked and acted on in a
-                # consistent step, preventing the dropping of needed updates.
-                # The check at the top of refresh index should always be done
-                # prior to deciding to spin off a process for indexing as it
-                # prevents more than one indexing process being run at the same
-                # time.
-                self.searchdb_update_handle_lock = threading.Lock()
-
-                if os.name == "posix" and self.fork_allowed:
-                        try:
-                                signal.signal(signal.SIGCHLD,
-                                    self.child_handler)
-                        except ValueError:
-                                self.__log("Tried to create signal handler in "
-                                    "a thread other than the main thread.")
-
-                self.searchdb_update_handle = None
-                self._search_available = False
-                self.deferred_searchdb_updates = []
-                self.deferred_searchdb_updates_lock = threading.Lock()
-
-                self.refresh_again = False
+                existing catalog is opened.  publisher names the publisher
+                that is represented by this catalog."""
 
                 self.catalog_root = cat_root
                 self.catalog_file = os.path.normpath(os.path.join(
                     self.catalog_root, "catalog"))
                 self.attrs = {}
                 self.pub = publisher
-                self.pkg_root = pkg_root
                 self.read_only = read_only
                 self.__size = -1
-
-                assert not (read_only and rebuild)
-
-                # The catalog protects the catalog file from having multiple
-                # threads writing to it at the same time.
-                self.catalog_lock = threading.Lock()
 
                 self.attrs["npkgs"] = 0
 
@@ -198,56 +122,9 @@ class ServerCatalog(object):
                                         return
                                 raise
 
-                # Rebuild catalog, if we're the depot and it's necessary.
-                if pkg_root is not None and rebuild:
-                        self.build_catalog()
-
                 self.load_attrs()
                 self.check_prefix()
                 self.__set_perms()
-
-                if self.repo_root:
-                        searchdb_file = os.path.join(self.repo_root, "search")
-                        try:
-                                os.unlink(searchdb_file + ".pag")
-                        except OSError:
-                                pass
-                        try:
-                                os.unlink(searchdb_file + ".dir")
-                        except OSError:
-                                pass
-
-                if not read_only or has_writable_root:
-                        try:
-                                try:
-                                        self.refresh_index()
-                                except se.InconsistentIndexException, e:
-                                        s = _("Index corrupted or out of date. "
-                                            "Removing old index directory (%s) "
-                                            " and rebuilding search "
-                                            "indexes.") % e.cause
-                                        self.__log(s, "INDEX")
-                                        shutil.rmtree(self.index_root)
-                                        try:
-                                                self.refresh_index()
-                                        except se.IndexingException, e:
-                                                self.__log(str(e), "INDEX")
-                                except se.IndexingException, e:
-                                        self.__log(str(e), "INDEX")
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        if has_writable_root:
-                                                raise RuntimeError(
-                                                    _("writable root not "
-                                                    "writable by current user "
-                                                    "id or group."))
-                                        else:
-                                                raise RuntimeError(
-                                                    _("unable to write to "
-                                                    "index directory."))
-                                raise
-                else:
-                        self._check_search()
 
         @staticmethod
         def destroy(root=None):
@@ -260,30 +137,6 @@ class ServerCatalog(object):
                         except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
-
-        @staticmethod
-        def whence(cmd):
-                if cmd[0] != '/':
-                        tmp_cmd = cmd
-                        cmd = None
-                        path = os.environ['PATH'].split(':')
-                        path.append(os.environ['PWD'])
-                        for p in path:
-                                if os.path.exists(os.path.join(p, tmp_cmd)):
-                                        cmd = os.path.join(p, tmp_cmd)
-                                        break
-                        assert cmd
-                return cmd
-
-        def __log(self, msg, context=None):
-                """Used to notify callers about operations performed by the
-                catalog."""
-                if self.verbose and "cherrypy" in globals():
-                        # XXX generic logging mechanism needed
-                        cherrypy.log(msg, context)
-
-        def __index_log(self, msg):
-                self.__log(msg, "INDEX")
 
         def __set_perms(self):
                 """Sets permissions on catalog files if not read_only and if the
@@ -350,21 +203,16 @@ class ServerCatalog(object):
                 else:
                         pkgstr = "V %s\n" % pfmri.get_fmri(anarchy = True)
 
+                self.__append_to_catalog(pkgstr)
 
-                self.catalog_lock.acquire()
-                try:
-                        self.__append_to_catalog(pkgstr)
+                # Catalog size has changed, force recalculation on
+                # next send()
+                self.__size = -1
 
-                        # Catalog size has changed, force recalculation on
-                        # next send()
-                        self.__size = -1
+                self.attrs["npkgs"] += 1
 
-                        self.attrs["npkgs"] += 1
-
-                        ts = datetime.datetime.now()
-                        self.set_time(ts)
-                finally:
-                        self.catalog_lock.release()
+                ts = datetime.datetime.now()
+                self.set_time(ts)
 
                 return ts
 
@@ -431,39 +279,6 @@ class ServerCatalog(object):
                         raise
 
         @staticmethod
-        def fast_cache_fmri(d, pfmri, sversion, pubs):
-                """Store the fmri in a data structure 'd' for fast lookup, but
-                requires the caller to provide all the data pre-sorted and
-                processed.
-
-                'd' is a dict that maps each package name to another dictionary
-
-                'pfmri' is the fmri object to be cached.
-
-                'sversion' is the string representation of pfmri.version.
-
-                'pubs' is a dict of publisher name and boolean value pairs
-                indicating catalog presence.
-
-                The fmri is expected not to have an embedded publisher.  If it
-                does, it will be ignored.
-
-                See cache_fmri() for data structure details."""
-
-                if pfmri.pkg_name not in d:
-                        # This is the simplest representation of the cache data
-                        # structure.
-                        d[pfmri.pkg_name] = {
-                            "versions": [pfmri.version],
-                            sversion: (pfmri, pubs)
-                        }
-                else:
-                        # It's assumed the caller will provide these in
-                        # the correct order for performance reasons.
-                        d[pfmri.pkg_name][sversion] = (pfmri, pubs)
-                        d[pfmri.pkg_name]["versions"].append(pfmri.version)
-
-        @staticmethod
         def cache_fmri(d, pfmri, pub, known=True):
                 """Store the fmri in a data structure 'd' for fast lookup.
 
@@ -524,16 +339,6 @@ class ServerCatalog(object):
                 elif pub not in d[pfmri.pkg_name][pversion][1]:
                         d[pfmri.pkg_name][pversion][1][pub] = known
 
-        def added_prefix(self, p):
-                """Perform any catalog transformations necessary if
-                prefix p is found in the catalog.  Previously, we didn't
-                know how to handle this prefix and now we do.  If we
-                need to transform the entry from server to client form,
-                make sure that happens here."""
-
-                # Nothing to do now.
-                pass
-
         def attrs_as_lines(self):
                 """Takes the list of in-memory attributes and returns
                 a list of strings, each string naming an attribute."""
@@ -563,17 +368,6 @@ class ServerCatalog(object):
                         yield e
 
                 cfile.close()
-
-        @staticmethod
-        def _fmri_from_path(pkg, vers):
-                """Helper method that takes the full path to the package
-                directory and the name of the manifest file, and returns an FMRI
-                constructed from the information in those components."""
-
-                v = version.Version(urllib.unquote(vers), None)
-                f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkg)), None)
-                f.version = v
-                return f
 
         def check_prefix(self):
                 """If this version of the catalog knows about new prefixes,
@@ -607,9 +401,6 @@ class ServerCatalog(object):
                 # add the prefix and perform a catalog transform.
                 new = known_prefixes.difference(pfx_set)
                 if new:
-                        for p in new:
-                                self.added_prefix(p)
-
                         pfx_set.update(new)
 
                         # Write out updated prefixes list
@@ -625,17 +416,6 @@ class ServerCatalog(object):
                 if not self.catalog_file:
                         return False
                 return os.path.exists(self.catalog_file)
-
-        # XXX This is only used by a handful of tests.
-        def get_matching_fmris(self, patterns):
-                """Wrapper for extract_matching_fmris."""
-
-                if self.attrs["npkgs"] == 0:
-                        return []
-
-                ret = extract_matching_fmris(self.fmris(), patterns)
-
-                return sorted(ret, reverse = True)
 
         def fmris(self):
                 """A generator function that produces FMRIs as it
@@ -902,7 +682,8 @@ class ServerCatalog(object):
 
                 return self.__size
 
-        def valid_new_fmri(self, pfmri):
+        @staticmethod
+        def valid_new_fmri(pfmri):
                 """Check that the fmri supplied as an argument would be valid
                 to add to the catalog.  This checks to make sure that any past
                 catalog operations (such as a rename or freeze) would not
@@ -911,237 +692,6 @@ class ServerCatalog(object):
                 if not fmri.is_valid_pkg_name(pfmri.get_name()):
                         return False
                 return True
-
-        def refresh_index(self):
-                """ This function refreshes the search indexes if there any new
-                packages. It starts a subprocess which results in a call to
-                run_update_index (see below) which does the actual update.
-                """
-
-                self.searchdb_update_handle_lock.acquire()
-
-                if self.searchdb_update_handle:
-                        self.refresh_again = True
-                        self.searchdb_update_handle_lock.release()
-                        return
-
-                try:
-                        fmris_to_index = set(self.fmris())
-
-                        indexer.Indexer.check_for_updates(self.index_root,
-                            fmris_to_index)
-
-                        if fmris_to_index:
-                                if os.name == "posix" and self.fork_allowed:
-                                        cmd = self.whence(sys.argv[0])
-                                        args = (sys.executable, cmd,
-                                            "--refresh-index", "-d",
-                                            self.repo_root)
-                                        if os.path.normpath(
-                                            self.index_root) != \
-                                            os.path.normpath(os.path.join(
-                                            self.repo_root, "index")):
-                                                writ, t = os.path.split(
-                                                    self.index_root)
-                                                args += ("--writable-root",
-                                                    writ)
-                                        if self.read_only:
-                                                args += ("--readonly",)
-                                        try:
-                                                self.searchdb_update_handle = \
-                                                    subprocess.Popen(args,
-                                                    stderr=subprocess.STDOUT)
-                                        except Exception, e:
-                                                self.__log("Starting the "
-                                                    "indexing process failed: "
-                                                    "%s" % e)
-                                                raise
-                                else:
-                                        self.run_update_index()
-                        else:
-                                # Since there is nothing to index, setup
-                                # the index and declare search available.
-                                # We only log this if this represents
-                                # a change in status of the server.
-                                ind = indexer.Indexer(self.index_root,
-                                    self.get_server_manifest,
-                                    self.get_manifest_path,
-                                    log=self.__index_log)
-                                ind.setup()
-                                if not self._search_available:
-                                        self.__index_log("Search Available")
-                                self._search_available = True
-                finally:
-                        self.searchdb_update_handle_lock.release()
-
-        def run_update_index(self):
-                """ Determines which fmris need to be indexed and passes them
-                to the indexer.
-
-                Note: Only one instance of this method should be running.
-                External locking is expected to ensure this behavior. Calling
-                refresh index is the preferred method to use to reindex.
-                """
-                fmris_to_index = set(self.fmris())
-
-                indexer.Indexer.check_for_updates(self.index_root,
-                    fmris_to_index)
-
-                if fmris_to_index:
-                        self.__index_log("Updating search indices")
-                        self.__update_searchdb_unlocked(fmris_to_index)
-                else:
-                        ind = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, self.get_manifest_path,
-                            log=self.__index_log)
-                        ind.setup()
-
-        def _check_search(self):
-                if not self.index_root:
-                        return
-
-                ind = indexer.Indexer(self.index_root,
-                    self.get_server_manifest, self.get_manifest_path,
-                    log=self.__index_log)
-                cie = False
-                try:
-                        cie = ind.check_index_existence()
-                except se.InconsistentIndexException:
-                        pass
-                if cie:
-                        self._search_available = True
-                        self.__index_log("Search Available")
-
-        def build_catalog(self):
-                """ Creates an Indexer instance and after building the
-                catalog, refreshes the index.
-                """
-                self._check_search()
-
-                try:
-                        cat_mtime = os.stat(os.path.join(
-                            self.catalog_root, "catalog")).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        cat_mtime = 0
-
-                # XXX eschew os.walk in favor of another os.listdir here?
-                tree = os.walk(self.pkg_root)
-                for pkg in tree:
-                        if pkg[0] == self.pkg_root:
-                                continue
-
-                        for e in os.listdir(pkg[0]):
-                                ver_mtime = os.stat(os.path.join(
-                                    pkg[0], e)).st_mtime
-
-                                # XXX force a rebuild despite mtimes?
-                                # XXX queue this and fork later?
-                                if ver_mtime > cat_mtime:
-                                        f = self._fmri_from_path(pkg[0], e)
-                                        self.add_fmri(f)
-                                        print f
-
-                # refresh_index doesn't use file modification times
-                # to determine which packages need to be indexed, so use
-                # it to reindex if it's needed.
-                self.refresh_index()
-
-        def child_handler(self, sig, frame):
-                """ Handler method for the SIGCHLD signal.  Checks to see if the
-                search database update child has finished, and enables searching
-                if it finished successfully, or logs an error if it didn't.
-                """
-                try:
-                        signal.signal(signal.SIGCHLD, self.child_handler)
-                except ValueError:
-                        self.__log("Tried to create signal handler in a thread "
-                            "other than the main thread.")
-                # If there's no update_handle, then another subprocess was
-                # spun off and that was what finished. If the poll() returns
-                # None, then while the indexer was running, another process
-                # that was spun off finished.
-                rc = None
-                if not self.searchdb_update_handle:
-                        return
-                rc = self.searchdb_update_handle.poll()
-                if rc == None:
-                        return
-
-                if rc == 0:
-                        self._search_available = True
-                        self.__index_log(
-                            "Search indexes updated and available.")
-                        # Need to acquire this lock to prevent the possibility
-                        # of a race condition with refresh_index where a needed
-                        # refresh is dropped. It is possible that an extra
-                        # refresh will be done with this code, but that refresh
-                        # should be very quick to finish.
-                        self.searchdb_update_handle_lock.acquire()
-                        self.searchdb_update_handle = None
-                        self.searchdb_update_handle_lock.release()
-
-                        if self.refresh_again:
-                                self.refresh_again = False
-                                self.refresh_index()
-                elif rc > 0:
-                        # If the refresh of the index failed, defensively
-                        # declare that search is unavailable.
-                        self.__index_log("ERROR building search database, exit "
-                            "code: %s" % rc)
-                        try:
-                                self.__log(
-                                    self.searchdb_update_handle.stderr.read())
-                                self.searchdb_update_handle.stderr.read()
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                pass
-                        self.searchdb_update_handle_lock.acquire()
-                        self.searchdb_update_handle = None
-                        self.searchdb_update_handle_lock.release()
-
-        def __update_searchdb_unlocked(self, fmris):
-                """ Creates an indexer then hands it fmris It assumes that all
-                needed locking has already occurred.
-                """
-                assert self.index_root
-
-                if fmris:
-                        index_inst = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, self.get_manifest_path,
-                            log=self.__index_log)
-                        index_inst.server_update_index(fmris)
-
-        def get_manifest_path(self, f):
-                return os.path.join(self.pkg_root, f.get_dir_path())
-
-        def get_server_manifest(self, f, add_to_cache=False):
-                assert not add_to_cache
-                m = manifest.Manifest()
-                mcontent = file(self.get_manifest_path(f)).read()
-                m.set_fmri(None, fmri)
-                m.set_content(mcontent, EmptyI)
-                return m
-
-        def search(self, q):
-                """Searches the index using the information given by "q", a
-                Query object."""
-
-                assert self.index_root
-                l = query_p.QueryLexer()
-                l.build()
-                qp = query_p.QueryParser(l)
-                query = qp.parse(q.encoded_text())
-                query.set_info(num_to_return=q.num_to_return,
-                    start_point=q.start_point, index_dir=self.index_root,
-                    get_manifest_path=self.get_manifest_path,
-                    case_sensitive=q.case_sensitive)
-                return query.search(self.fmris)                
-
-        def search_available(self):
-                return self._search_available or self._check_search()
 
         @staticmethod
         def __parse_entry(line, pub):
@@ -1174,47 +724,6 @@ class ServerCatalog(object):
 
                 catf.close()
 
-class NastyServerCatalog(ServerCatalog):
-        """The catalog for the nasty server."""
-
-        def as_lines(self, scfg=None):
-                """Returns a generator function that produces the contents of
-                the catalog as a list of strings."""
-
-                be_nasty = False
-
-                # NASTY
-                # First roll the dice to decide whether we should be nasty.
-                # Later roll again to decide when to be nasty.
-                if scfg and scfg.need_nasty_occasionally():
-                        be_nasty = True
-
-                try:
-                        cfile = file(self.catalog_file, "r")
-                except EnvironmentError, e:
-                        # Missing catalog is fine; other errors need to
-                        # be reported.
-                        if e.errno == errno.ENOENT:
-                                return
-                        raise
-
-                for e in cfile:
-                        # NASTY
-                        # There's only one opportunity to truncate
-                        # the request, but if we don't truncate the
-                        # request we can try to truncate a line too.
-                        if be_nasty and scfg.need_nasty_occasionally():
-                                return
-                        elif be_nasty and \
-                            scfg.need_nasty_infrequently(): 
-                                linelen = random.randint(1, len(e))
-                                badline = e[0:linelen]
-                                yield badline
-                        else:
-                                yield e
-
-                cfile.close()
-
 # Prefixes that this catalog knows how to handle
 known_prefixes = frozenset("CSVR")
 
@@ -1243,100 +752,3 @@ def ts_to_datetime(ts):
         except ValueError:
                 usec = 0
         return datetime.datetime(year, month, day, hour, minutes, sec, usec)
-
-def extract_matching_fmris(pkgs, patterns=None, matcher=None,
-    constraint=None, counthash=None, versions=None):
-        """Iterate through the given list of PkgFmri objects,
-        looking for packages matching 'pattern' in 'patterns', based on the
-        function in 'matcher' and the versioning constraint described by
-        'constraint'.  If 'matcher' is None, uses fmri subset matching
-        as the default.  If 'patterns' is None, 'versions' may be specified,
-        and looks for packages matching the patterns specified in 'versions'.
-        When using 'version', the 'constraint' parameter is ignored.
-
-        'versions' should be a list of strings of the format:
-            release,build_release-branch:datetime 
-
-        ...with a value of '*' provided for any component to be ignored. '*' or
-        '?' may be used within each component value and will act as wildcard
-        characters ('*' for one or more characters, '?' for a single character).
-
-        Returns a sorted list of PkgFmri objects, newest versions first.  If
-        'counthash' is a dictionary, instead store the number of matched fmris
-        for each package that matches."""
-
-        if not matcher:
-                matcher = fmri.fmri_match
-
-        if patterns is None:
-                patterns = []
-        elif not isinstance(patterns, list):
-                patterns = [ patterns ]
-
-        if versions is None:
-                versions = []
-        elif not isinstance(versions, list):
-                versions = [ version.MatchingVersion(versions, None) ]
-        else:
-                for i, ver in enumerate(versions):
-                        versions[i] = version.MatchingVersion(ver, None)
-
-        # 'pattern' may be a partially or fully decorated fmri; we want
-        # to extract its name and version to match separately against
-        # the catalog.
-        # XXX "5.11" here needs to be saner
-        tuples = {}
-
-        for pattern in patterns:
-                if isinstance(pattern, fmri.PkgFmri):
-                        tuples[pattern] = pattern.tuple()
-                else:
-                        assert pattern != None
-                        tuples[pattern] = \
-                            fmri.PkgFmri(pattern, "5.11").tuple()
-
-        def by_pattern(p):
-                cat_pub, cat_name, cat_version = p.tuple()
-                for pattern in patterns:
-                        pat_pub, pat_name, pat_version = tuples[pattern]
-                        if (fmri.is_same_publisher(pat_pub, cat_pub) or not \
-                            pat_pub) and matcher(cat_name, pat_name):
-                                if not pat_version or \
-                                    p.version.is_successor(
-                                    pat_version, constraint) or \
-                                    p.version == pat_version:
-                                        if counthash is not None:
-                                                if pattern in counthash:
-                                                        counthash[pattern] += 1
-                                                else:
-                                                        counthash[pattern] = 1
-
-                                        if pat_pub:
-                                                p.set_publisher(pat_pub)
-                                        return p
-
-        def by_version(p):
-                for ver in versions:
-                        if ver == p.version:
-                                if counthash is not None:
-                                        sver = str(ver)
-                                        if sver in counthash:
-                                                counthash[sver] += 1
-                                        else:
-                                                counthash[sver] = 1
-                                return p
-
-        ret = []
-        if patterns:
-                for p in pkgs:
-                        res = by_pattern(p)
-                        if res is not None:
-                                ret.append(res)
-        elif versions:
-                for p in pkgs:
-                        res = by_version(p)
-                        if res is not None:
-                                ret.append(res)
-
-        return sorted(ret, reverse=True)
-
