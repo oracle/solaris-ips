@@ -705,5 +705,25 @@ dir path=foo/bar mode=0755 owner=root group=bin
                             " grep %s" % path)
                 self.image_destroy()
 
+        def test_17_include_errors(self):
+                """Verify that pkgsend include handles error conditions
+                gracefully."""
+
+                url = self.dc.get_depot_url()
+
+                # Start a transaction.
+                self.pkgsend(url, "open foo@1.0")
+
+                # Verify no such include file handled.
+                self.pkgsend(url, "include nosuchfile", exit=1)
+
+                # Verify files with invalid content handled.
+                misc = self.make_misc_files({
+                    "invalid": "!%^$%^@*&$ bobcat",
+                    "empty": "",
+                })
+                self.pkgsend(url, "include %s" % " ".join(misc), exit=1)
+
+
 if __name__ == "__main__":
         unittest.main()
