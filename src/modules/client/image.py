@@ -1019,6 +1019,8 @@ class Image(object):
         def image_change_varcets(self, variants, facets, progtrack, check_cancelation,
             noexecute, verbose=False):
 
+                # Allow garbage collection of previous plan.
+                self.imageplan = None
 
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     noexecute=noexecute)
@@ -1070,6 +1072,9 @@ class Image(object):
 
                 ilm = self.get_last_modified()
 
+                # Allow garbage collection of previous plan.
+                self.imageplan = None
+
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
                 # into the api and can actually use the
                 # api::__check_cancelation() function.
@@ -1081,6 +1086,7 @@ class Image(object):
                         pp.propose_repair(fmri, m, actions)
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
+
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
                 ip._image_lm = ilm
                 ip._planned_op = ip.PLANNED_FIX
@@ -1336,7 +1342,9 @@ class Image(object):
                 except KeyError:
                         pass
 
-                return self.__get_catalog(name)
+                cat = self.__get_catalog(name)
+                self.__catalogs[name] = cat
+                return cat
 
         def __get_catalog(self, name):
                 """Private method to retrieve catalog; this bypasses the
@@ -1372,7 +1380,6 @@ class Image(object):
                 # is resorted and finalized so this is always safe to use.
                 cat = pkg.catalog.Catalog(batch_mode=True,
                     manifest_cb=manifest_cb, meta_root=croot, sign=False)
-                self.__catalogs[name] = cat
                 return cat
 
         def __remove_catalogs(self):
@@ -2618,6 +2625,9 @@ class Image(object):
                 routine for some common operations in the client.
                 """
 
+                # Allow garbage collection of previous plan.
+                self.imageplan = None
+
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     noexecute=noexecute)
 
@@ -2646,6 +2656,9 @@ class Image(object):
 
                 progtrack.evaluate_start()
 
+                # Allow garbage collection of previous plan.
+                self.imageplan = None
+
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     noexecute=noexecute)
 
@@ -2664,6 +2677,9 @@ class Image(object):
                 do so recursively iff recursive_removal is set"""
 
                 progtrack.evaluate_start()
+
+                # Allow garbage collection of previous plan.
+                self.imageplan = None
 
                 ip = imageplan.ImagePlan(self, progtrack,
                     check_cancelation, noexecute=noexecute)
