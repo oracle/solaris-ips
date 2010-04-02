@@ -21,7 +21,7 @@ SYNOPSIS
          [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-HIalpr] [-o attribute ...] [-s repo_uri]
+     /usr/bin/pkg search [-HIaflpr] [-o attribute ...] [-s repo_uri]
          query
 
      /usr/bin/pkg verify [-Hqv] [pkg_fmri_pattern ...]
@@ -322,7 +322,7 @@ SUBCOMMANDS
           subcommand, as a given query may be more naturally formulated in
           one than in the other.
 
-     search [-HIalpr] [-o attribute ...] [-s repo_uri] query
+     search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
           Search for matches to the query, and display the results.
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.  By default, queries are
@@ -330,8 +330,17 @@ SUBCOMMANDS
           '?' and '*' characters can be used as glob(3C)-style
           wildcards, allowing more flexible query matches.
 
+          With -H, omit the headers.
+
+          With -I, use a case-sensitive search.
+
           By default, and with -a, perform the search and display information
           about the matching actions.
+
+          By default, search prunes results from packages older than the 
+          currently installed version and from package versions excluded by 
+          current incorporations.  Use -f to show all results, regardless of 
+          package version.
 
           With -l, search the image's installed packages.
 
@@ -354,10 +363,6 @@ SUBCOMMANDS
 
           By default, and with -r, search the repositories corresponding
           to the image's publishers.
-
-          With -H, omit the headers.
-
-          With -I, use a case-sensitive search.
 
           With -s, search the pkg(5) repository located at the given URI.
           This may be specified multiple times.

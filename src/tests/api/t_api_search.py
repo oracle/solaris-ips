@@ -49,7 +49,7 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.server.repository as srepo
 
-API_VERSION = 34
+API_VERSION = 36
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -74,6 +74,16 @@ class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
             open example_pkg@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path11
+            close """
+
+        incorp_pkg10 = """
+            open incorp_pkg@1.0,5.11-0
+            add depend fmri=example_pkg@1.0,5.11-0 type=incorporate
+            close """
+
+        incorp_pkg11 = """
+            open incorp_pkg@1.1,5.11-0
+            add depend fmri=example_pkg@1.1,5.11-0 type=incorporate
             close """
 
         another_pkg10 = """
@@ -512,27 +522,27 @@ close
 
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
-            start_point=None, servers=None):
+            start_point=None, servers=None, prune_versions=True):
                 query = [api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point)]
                 self._search_op_common(api_obj, remote, query, test_value,
-                    return_actions, servers)
+                    return_actions, servers, prune_versions)
 
         def _search_op_multi(self, api_obj, remote, tokens, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
-            start_point=None, servers=None):
+            start_point=None, servers=None, prune_versions=True):
                 query = [api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point) for token in tokens]
                 self._search_op_common(api_obj, remote, query, test_value,
-                    return_actions, servers)
+                    return_actions, servers, prune_versions)
 
         def _search_op_common(self, api_obj, remote, query, test_value,
-            return_actions, servers):
+            return_actions, servers, prune_versions):
                 self.debug("Search for: %s" % " ".join([str(q) for q in query]))
                 search_func = api_obj.local_search
                 if remote:
                         search_func = lambda x: api_obj.remote_search(x,
-                            servers=servers)
+                            servers=servers, prune_versions=prune_versions)
                 init_time = time.time()
 
                 # servers may not be ready immediately - retry search
@@ -2141,6 +2151,123 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     self.res_space_unique)
                 self._search_op(api_obj, True, "with*",
                     self.res_space_with_star)
+
+        def test_bug_6177(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkgsend_bulk(durl, self.incorp_pkg10)
+                self.pkgsend_bulk(durl, self.incorp_pkg11)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                res_both_actions = set([
+                    ('pkg:/example_pkg@1.1-0', 'path',
+                        'dir group=bin mode=0755 owner=root path=bin'),
+                    ('pkg:/example_pkg@1.0-0', 'path',
+                        'dir group=bin mode=0755 owner=root path=bin')
+                ])
+
+                res_10_action = set([
+                    ('pkg:/example_pkg@1.0-0', 'path',
+                        'dir group=bin mode=0755 owner=root path=bin')
+                ])
+
+                res_11_action = set([
+                    ('pkg:/example_pkg@1.1-0', 'path',
+                        'dir group=bin mode=0755 owner=root path=bin')
+                ])
+
+                res_both_packages = set([
+                    "pkg:/example_pkg@1.1-0",
+                    "pkg:/example_pkg@1.0-0"
+                ])
+
+                res_10_package = set([
+                    "pkg:/example_pkg@1.0-0"
+                ])
+
+                res_11_package = set([
+                    "pkg:/example_pkg@1.1-0"
+                ])
+
+                self._search_op(api_obj, True, "/bin", res_both_actions)
+
+                # Test that if a package is installed, its version and newer
+                # versions are shown.
+                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._search_op(api_obj, True, "/bin", res_both_actions)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+
+                # Check that after uninstall, back to returning all versions.
+                self._do_uninstall(api_obj, ["example_pkg"])
+                self._search_op(api_obj, True, "/bin", res_both_actions)
+                self._search_op(api_obj, True, "/bin", res_both_packages,
+                    return_actions=False)
+
+                # Test that if a package is installed, its version and newer
+                # versions are shown.  Older versions should not be shown.
+                self._do_install(api_obj, ["example_pkg@1.1"])
+                self._search_op(api_obj, True, "/bin", res_11_action)
+                self._search_op(api_obj, True, "</bin>", res_11_package,
+                    return_actions=False)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+                self._search_op(api_obj, True, "</bin>", res_both_packages,
+                    return_actions=False, prune_versions=False)
+                
+                # Check that after uninstall, back to returning all versions.
+                self._do_uninstall(api_obj, ["example_pkg"])
+                self._search_op(api_obj, True, "/bin", res_both_actions)
+
+                # Check that only the incorporated package is returned.
+                self._do_install(api_obj, ["incorp_pkg@1.0"])
+                self._search_op(api_obj, True, "/bin", res_10_action)
+                self._search_op(api_obj, True, "/bin", res_10_package,
+                    return_actions=False)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+                self._search_op(api_obj, True, "/bin", res_both_packages,
+                    return_actions=False, prune_versions=False)
+
+                # Should now show the 1.1 version of example_pkg since the
+                # version has been upgraded.
+                self._do_install(api_obj, ["incorp_pkg"])
+                self._search_op(api_obj, True, "/bin", res_11_action)
+                self._search_op(api_obj, True, "</bin>", res_11_package,
+                    return_actions=False)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+                self._search_op(api_obj, True, "</bin>", res_both_packages,
+                    return_actions=False, prune_versions=False)
+
+                # Should now show both again since the incorporation has been
+                # removed.
+                self._do_uninstall(api_obj, ["incorp_pkg"])
+                self._search_op(api_obj, True, "/bin", res_both_actions)
+
+                # Check that installed and incorporated work correctly together.
+                self._do_install(api_obj, ["incorp_pkg@1.0", "example_pkg@1.0"])
+                self._search_op(api_obj, True, "/bin", res_10_action)
+                self._search_op(api_obj, True, "</bin>", res_10_package,
+                    return_actions=False)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+                self._search_op(api_obj, True, "</bin>", res_both_packages,
+                    return_actions=False, prune_versions=False)
+
+                # And that it works after the incorporation has been changed.
+                self._do_install(api_obj, ["incorp_pkg"])
+                self._search_op(api_obj, True, "/bin", res_11_action)
+                self._search_op(api_obj, True, "</bin>", res_11_package,
+                    return_actions=False)
+                self._search_op(api_obj, True, "/bin", res_both_actions,
+                    prune_versions=False)
+                self._search_op(api_obj, True, "</bin>", res_both_packages,
+                    return_actions=False, prune_versions=False)
 
         def __corrupt_depot(self, ind_dir):
                 self.dc.stop()

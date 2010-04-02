@@ -42,7 +42,7 @@ import pkg.client.progress as progress
 import pkg.portable as portable
 import shutil
 
-API_VERSION = 34
+API_VERSION = 36
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):

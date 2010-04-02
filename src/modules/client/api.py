@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 35
+CURRENT_API_VERSION = 36
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -126,7 +126,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([34, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -1856,15 +1856,18 @@ class ImageInterface(object):
                         raise api_errors.ServerReturnError(line)
                 if return_type == Query.RETURN_ACTIONS:
                         subfields = fields[2].split(None, 2)
-                        return (query_num, pub, (v, return_type,
-                            (subfields[0], urllib.unquote(subfields[1]),
+                        pfmri = fmri.PkgFmri(subfields[0])
+                        return pfmri, (query_num, pub, (v, return_type,
+                            (pfmri, urllib.unquote(subfields[1]),
                             subfields[2])))
                 elif return_type == Query.RETURN_PACKAGES:
-                        return (query_num, pub, (v, return_type, fields[2]))
+                        pfmri = fmri.PkgFmri(fields[2])
+                        return pfmri, (query_num, pub, (v, return_type, pfmri))
                 else:
                         raise api_errors.ServerReturnError(line)
 
-        def remote_search(self, query_str_and_args_lst, servers=None):
+        def remote_search(self, query_str_and_args_lst, servers=None,
+            prune_versions=True):
                 """This function takes a list of Query objects, and optionally
                 a list of servers to search against.  It performs each query
                 against each server and yields the results in turn.  If no
@@ -1888,7 +1891,7 @@ class ImageInterface(object):
                 self.__enable_cancel()
                 try:
                         for r in self._remote_search(query_str_and_args_lst,
-                            servers):
+                            servers, prune_versions):
                                 yield r
                 except GeneratorExit:
                         return
@@ -1912,7 +1915,8 @@ class ImageInterface(object):
                                 self.__cancel_cleanup_exception()
                         self.__activity_lock.release()
 
-        def _remote_search(self, query_str_and_args_lst, servers=None):
+        def _remote_search(self, query_str_and_args_lst, servers=None,
+            prune_versions=True):
                 """This is the implementation of remote_search.  The other
                 function is a wrapper that handles locking and exception
                 handling.  This is a generator function."""
@@ -1945,6 +1949,8 @@ class ImageInterface(object):
                                 raise api_errors.ParseError(e)
 
                 query_str_and_args_lst = new_qs
+
+                incorp_info, inst_stems = self.get_incorp_info()
 
                 for pub in servers:
                         descriptive_name = None
@@ -1991,7 +1997,28 @@ class ImageInterface(object):
                                         invalid.append(descriptive_name)
                                         continue
                                 for line in res:
-                                        yield self.__parse_v_1(line, pub, 1)
+                                        pfmri, ret = self.__parse_v_1(line, pub,
+                                            1)
+                                        pstem = pfmri.pkg_name
+                                        pver = pfmri.version
+                                        # Skip this package if a newer version
+                                        # is already installed and version
+                                        # pruning is enabled.
+                                        if prune_versions and \
+                                            pstem in inst_stems and \
+                                            pver < inst_stems[pstem]:
+                                                continue
+                                        # Return this result if version pruning
+                                        # is disabled, the package is not
+                                        # incorporated, or the version of the
+                                        # package matches the incorporation.
+                                        if not prune_versions or \
+                                            pstem not in incorp_info or \
+                                            pfmri.version.is_successor(
+                                                incorp_info[pstem],
+                                                pkg.version.CONSTRAINT_AUTO):
+                                                yield ret
+
                         except api_errors.CanceledException:
                                 raise
                         except api_errors.TransportError, e:
@@ -2001,6 +2028,45 @@ class ImageInterface(object):
                 if failed or invalid or unsupported:
                         raise api_errors.ProblematicSearchServers(failed,
                             invalid, unsupported)
+
+
+        def get_incorp_info(self):
+                """This function returns a mapping of package stems to the
+                version at which they are incorporated, if they are
+                incorporated, and the version at which they are installed, if
+                they are installed."""
+
+                # This maps fmris to the version at which they're incorporated.
+                inc_vers = {}
+                inst_stems = {}
+                brelease = self.__img.attrs["Build-Release"]
+
+                img_cat = self.__img.get_catalog(
+                    self.__img.IMG_CATALOG_INSTALLED)
+                cat_info = frozenset([img_cat.DEPENDENCY])
+
+                # The incorporation list should include all installed,
+                # incorporated packages from all publishers.
+                for pfmri, actions in img_cat.actions(cat_info):
+                        inst_stems[pfmri.pkg_name] = pfmri.version
+                        for a in actions:
+                                if a.name != "depend" or \
+                                    a.attrs["type"] != "incorporate":
+                                        continue
+                                # Record incorporated packages.
+                                tgt = fmri.PkgFmri(
+                                    a.attrs["fmri"], brelease)
+                                tver = tgt.version
+                                over = inc_vers.get(
+                                    tgt.pkg_name, None)
+
+                                # In case this package has been
+                                # incorporated more than once,
+                                # use the newest version.
+                                if over > tver:
+                                        continue
+                                inc_vers[tgt.pkg_name] = tver
+                return inc_vers, inst_stems
 
         @staticmethod
         def __unconvert_return_type(v):

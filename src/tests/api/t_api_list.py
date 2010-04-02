@@ -47,7 +47,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-API_VERSION = 34
+API_VERSION = 36
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):

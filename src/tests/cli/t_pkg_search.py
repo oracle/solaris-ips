@@ -64,6 +64,17 @@ class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
             add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
 
+        example_pkg11 = """
+            open example_pkg@1.1,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path11
+            close """
+        
+        incorp_pkg10 = """
+            open incorp_pkg@1.0,5.11-0
+            add depend fmri=example_pkg@1.0,5.11-0 type=incorporate
+            close """
+
         dup_lines_pkg10 = """
             open dup_lines@1.0,5.11-0
             add set name=com.sun.service.incorporated_changes value="aa abc a a"
@@ -288,7 +299,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,
-            return_actions=True, exit=0, su_wrap=False):
+            return_actions=True, exit=0, su_wrap=False, prune_versions=True):
                 outfile = os.path.join(self.test_root, "res")
                 if remote:
                         token = "-r " + token
@@ -300,6 +311,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                         token = "-a " + token
                 else:
                         token = "-p " + token
+                if not prune_versions:
+                        token = "-f " + token
                 self.pkg("search " + token + " > " + outfile, exit=exit)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
@@ -584,6 +597,46 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     set(self.res_bogus_name_result))
                 self._search_op(False, "6627937",
                     set(self.res_bogus_number_result))
+
+        def test_bug_6177(self):
+                """Test that by default search restricts the results to the
+                incorporated packages and that the -f option works as
+                expected."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkgsend_bulk(durl, self.incorp_pkg10)
+
+                self.image_create(durl)
+
+                res_both_actions = set([
+                    self.headers,
+                    "path       dir    bin   pkg:/example_pkg@1.0-0\n",
+                    "path       dir    bin   pkg:/example_pkg@1.1-0\n"
+                ])
+
+                res_10_action = set([
+                    self.headers,
+                    "path       dir    bin   pkg:/example_pkg@1.0-0\n"
+                ])
+
+
+                res_11_action = set([
+                    self.headers,
+                    "path       dir    bin   pkg:/example_pkg@1.1-0\n"
+                ])
+
+                self.pkg("install incorp_pkg")
+                self._search_op(True, '/bin', res_10_action)
+                self._search_op(True, '/bin', res_both_actions,
+                    prune_versions=False)
+
+                self.pkg("uninstall incorp_pkg")
+                self.pkg("install example_pkg")
+                self._search_op(True, '/bin', res_11_action)
+                self._search_op(True, '/bin', res_both_actions,
+                    prune_versions=False)
 
         def test_bug_7835(self):
                 """Check that installing a package in a non-empty image

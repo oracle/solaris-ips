@@ -42,7 +42,7 @@ import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.fmri as fmri
 
-API_VERSION = 34
+API_VERSION = 36
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(pkg5unittest.SingleDepotTestCase):

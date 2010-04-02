@@ -82,7 +82,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 34
+CLIENT_API_VERSION = 36
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -156,7 +156,7 @@ Basic subcommands:
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-HIalpr] [-o attribute ...] [-s repo_uri] query
+        pkg search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
         pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
@@ -1434,7 +1434,6 @@ def v1_extract_info(tup, return_type, pub):
                 match = produce_matching_token(action, match)
         else:
                 pfmri = tup
-        pfmri = fmri.PkgFmri(str(pfmri))
         return pfmri, action, pub, match, match_type
 
 def search(img, args):
@@ -1451,7 +1450,7 @@ def search(img, args):
         search_prefixes = valid_special_prefixes[:]
         search_prefixes.extend(["search."])
 
-        opts, pargs = getopt.getopt(args, "Halo:prs:I")
+        opts, pargs = getopt.getopt(args, "Haflo:prs:I")
 
         default_attrs_action = ["search.match_type", "action.name",
             "search.match", "pkg.shortfmri"]
@@ -1461,14 +1460,19 @@ def search(img, args):
         local = remote = case_sensitive = False
         servers = []
         attrs = []
-        return_actions = True
+
         display_headers = True
+        prune_versions = True
+        return_actions = True
         use_default_attrs = True
+
         for opt, arg in opts:
                 if opt == "-H":
                         display_headers = False
                 elif opt == "-a":
                         return_actions = True
+                elif opt == "-f":
+                        prune_versions = False
                 elif opt == "-l":
                         local = True
                 elif opt == "-o":
@@ -1532,7 +1536,7 @@ def search(img, args):
                         searches.append(api_inst.local_search(query))
                 if remote:
                         searches.append(api_inst.remote_search(query,
-                            servers=servers))
+                            servers=servers, prune_versions=prune_versions))
                 # By default assume we don't find anything.
                 retcode = EXIT_OOPS
 

@@ -1,3 +1,15 @@
+Version 36:
+Incompatible with clients using versions 0-35.
+
+    The interface for pkg.client.api.remote_search has changed as follows:
+        * A new parameter, prune_versions, has been added which, when true,
+          causes remote search to remove versions a user is unlikely to be
+          interested in.
+
+        * The return type of remote_search and local_search has changed.  Where
+          the string representation used to be returned, a FMRI object is now
+          returned.
+
 Version 35:
 Compatible with clients using version 34.
 

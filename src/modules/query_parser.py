@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -879,14 +879,14 @@ class TopQuery(object):
 
                 if self.query.return_type == Query.RETURN_ACTIONS:
                         return (
-                            (1, Query.RETURN_ACTIONS, (pfmri, fv, l))
+                            (1, Query.RETURN_ACTIONS, (fmri.PkgFmri(pfmri), fv, l))
                             for x, (at, st, pfmri, fv, l)
                             in enumerate(it)
                             if self.__keep(x)
                         )
                 else:
                         return (
-                            (1, Query.RETURN_PACKAGES, pfmri)
+                            (1, Query.RETURN_PACKAGES, fmri.PkgFmri(pfmri))
                             for x, pfmri
                             in enumerate(it)
                             if self.__keep(x)
