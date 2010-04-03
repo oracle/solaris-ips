@@ -20,12 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import ConfigParser
-import pkg.misc as misc
+import os
+from pkg import misc, portable
 import random
+import tempfile
 import uuid
 
 PROP_TYPE_STR = 0
@@ -143,7 +145,7 @@ class RepositoryConfig(object):
             },
         }
 
-        def __init__(self, pathname=None, properties=misc.EmptyDict):
+        def __init__(self, pathname, properties=misc.EmptyDict):
                 """Initializes a RepositoryConfig object.
 
                 Will read existing configuration data from pathname, if
@@ -152,12 +154,15 @@ class RepositoryConfig(object):
 
                 self.cfg_cache = {}
                 self.nasty = 0
+                self.__dirty = False
+                self.__pathname = pathname
 
-                if pathname:
+                if os.path.exists(pathname):
                         # If a pathname was provided, read the data in.
-                        self.read(pathname, overrides=properties)
+                        self.__read(overrides=properties)
                 else:
                         # Otherwise, initialize to default state.
+                        self.__dirty = True
                         self.__reset(overrides=properties)
 
         def __str__(self):
@@ -361,6 +366,8 @@ class RepositoryConfig(object):
                 self.is_valid_property_value(section, prop, value,
                     raise_error=True)
 
+                self.__dirty = True
+
                 ptype = self.get_property_type(section, prop)
                 if ptype == PROP_TYPE_INT:
                         self.cfg_cache[section][prop] = int(value)
@@ -388,7 +395,7 @@ class RepositoryConfig(object):
                         raise ReadOnlyPropertyError("%s.%s is read-only." % \
                             (prop, section))
 
-        def read(self, pathname, overrides=misc.EmptyDict):
+        def __read(self, overrides=misc.EmptyDict):
                 """Reads the specified pathname and populates the configuration
                 object based on the data contained within.  The file is
                 expected to be in a ConfigParser-compatible format.
@@ -399,15 +406,18 @@ class RepositoryConfig(object):
                 # will be correct.
                 self.__reset()
 
+                if overrides:
+                        self.__dirty = True
+
                 cp = ConfigParser.SafeConfigParser()
 
-                r = cp.read(pathname)
+                r = cp.read(self.__pathname)
                 if len(r) == 0:
                         raise RuntimeError(_("Unable to locate or read the "
                             "specified repository configuration file: "
-                            "'%s'.") % pathname)
+                            "'%s'.") % self.__pathname)
 
-                assert r[0] == pathname
+                assert r[0] == self.__pathname
                 for section in self._props:
                         for prop in self._props[section]:
                                 ptype = self.get_property_type(section, prop)
@@ -453,10 +463,13 @@ class RepositoryConfig(object):
                                         # Skip any missing properties.
                                         continue
 
-        def write(self, pathname):
+        def write(self):
                 """Saves the current configuration object to the specified
                 pathname using ConfigParser.
                 """
+                if os.path.exists(self.__pathname) and not self.__dirty:
+                        return
+
                 cp = ConfigParser.SafeConfigParser()
 
                 for section in self._props:
@@ -474,12 +487,20 @@ class RepositoryConfig(object):
                                         # Force None to be an empty string.
                                         cp.set(section, prop, "")
 
+                fn = None
                 try:
-                        f = open(pathname, "w")
-                except IOError, (errno, strerror):
+                        dirname = os.path.dirname(self.__pathname)
+                        fd, fn = tempfile.mkstemp(dir=dirname)
+                        with os.fdopen(fd, "w") as f:
+                                cp.write(f)
+                        portable.rename(fn, self.__pathname)
+                        self.__dirty = False
+                except EnvironmentError, e:
                         raise RuntimeError("Unable to open %s for writing: "
-                            "%s" % (pathname, strerror))
-                cp.write(f)
+                            "%s" % (e.pathname, e.strerror))
+                finally:
+                        if fn and os.path.exists(fn):
+                                os.unlink(fn)
 
         def validate(self):
                 """Verify that the in-memory contents of the configuration

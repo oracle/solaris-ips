@@ -169,12 +169,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                                             props[section][prop])
 
                 # Write out a sample configuration in ConfigParser format.
-                rc = rcfg.RepositoryConfig()
+                get_property_type = rcfg.RepositoryConfig.get_property_type
                 props = self.__props
                 for section in props:
                         f.write("[%s]\n" % section)
                         for prop in props[section]:
-                                atype = rc.get_property_type(section, prop)
+                                atype = get_property_type(section, prop)
                                 val = props[section][prop]["default"]
                                 if atype == rcfg.PROP_TYPE_URI_LIST:
                                         val = ",".join(val)
@@ -193,35 +193,23 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that RepositoryConfig init accepts a pathname and
                 returns the expected configuration data.
                 """
-                rcfg.RepositoryConfig(pathname=self.sample_conf)
-
-        def test_read(self):
-                """Verify that read() succeeds for a known good configuration.
-                """
-                rc = rcfg.RepositoryConfig()
-                rc.read(self.sample_conf)
+                rcfg.RepositoryConfig(self.sample_conf)
 
         def test_write(self):
                 """Verify that write() succeeds for a known good configuration.
                 """
-                rc = rcfg.RepositoryConfig()
-                rc.read(self.sample_conf)
-                rc.write(self.sample_conf)
-
-        def test_multi_read_write(self):
-                """Verify that a RepositoryConfig object can be read and
-                written multiple times in succession.
-                """
-                rc = rcfg.RepositoryConfig(pathname=self.sample_conf)
-                rc.write(self.sample_conf)
-                rc.read(self.sample_conf)
-                rc.write(self.sample_conf)
+                rc = rcfg.RepositoryConfig(self.sample_conf)
+                rc.set_property("publisher", "prefix", "test-write")
+                rc.write()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
+                self.assertEqual(rc.get_property("publisher", "prefix"),
+                    "test-write")
 
         def test_get_property(self):
                 """Verify that each property's value in sample_conf matches
                 what we retrieved.
                 """
-                rc = rcfg.RepositoryConfig(pathname=self.sample_conf)
+                rc = rcfg.RepositoryConfig(self.sample_conf)
 
                 props = self.__props
                 for section in props:
@@ -234,7 +222,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that attempting to retrieve an invalid property will
                 result in an InvalidPropertyError exception.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 self.assertRaises(rcfg.InvalidPropertyError, rc.get_property,
                     "repository", "foo")
 
@@ -242,7 +230,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that each property's type matches the\
                 default object state.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 props = self.__props
                 for section in props:
                         for prop in props[section]:
@@ -261,7 +249,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 get_properties and that each property returned can have its
                 value retrieved.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 props = rc.get_properties()
                 self.assertEqual(len(props), len(self.__props))
                 for section in props:
@@ -278,7 +266,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """
                 fd, sample_conf = tempfile.mkstemp(dir=self.test_root)
                 self.remove.append(sample_conf)
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(sample_conf)
                 props = self.__props
                 for section in props:
                         for prop in props[section]:
@@ -297,10 +285,10 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                                 returned = rc.get_property(section, prop)
                                 self.assertEqual(returned, value)
 
-                rc.write(sample_conf)
+                rc.write()
                 os.close(fd)
 
-                rc = rcfg.RepositoryConfig(pathname=sample_conf)
+                rc = rcfg.RepositoryConfig(sample_conf)
                 for section in props:
                         for prop in props[section]:
                                 value = props[section][prop]["default"]
@@ -311,7 +299,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that attempting to set an invalid property will
                 result in an InvalidPropertyError exception.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify an exception is raised for an invalid property.
                 self.assertRaises(rcfg.InvalidPropertyError, rc.set_property,
                     "repository", "foo", "baz")
@@ -324,7 +312,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that attempting to _set an invalid property will
                 result in an InvalidPropertyError exception.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that it happens for an invalid property.
                 self.assertRaises(rcfg.InvalidPropertyError,
                     rc.set_property, "repository", "foo", "bar")
@@ -339,7 +327,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 exception if raise_error=True and the property is
                 invalid.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property.
                 self.assertFalse(rc.is_valid_property("repository", "foo"))
 
@@ -366,7 +354,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 exception if raise_error=True and the property value is
                 invalid.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("feed", "window",
                     "foo"))
@@ -385,7 +373,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that is_valid_property_value returns the expected
                 boolean value indicating the validity of UUID property values.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("feed", "id",
                     "8baf-433b-82eb-8c7fada847da"))
@@ -404,7 +392,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """Verify that is_valid_property_value returns the expected
                 boolean value indicating the validity of bool property values.
                 """
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for invalid property values.
                 self.assertFalse(rc.is_valid_property_value("feed",
                     "enabled", "foo"))
@@ -446,7 +434,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 boolean value indicating the validity of uri property values.
                 """
 
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("repository",
                     "registration_uri", "abc.123^@#$&)(*&#$)"))
@@ -468,7 +456,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 values.
                 """
 
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("repository",
                     "mirrors", "http://example.com/mirror, abc.123^@#$&)(*&#$)"))
@@ -492,7 +480,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 property values.
                 """
 
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("publisher",
                     "alias", "abc.123^@#$&)(*&#$)"))
@@ -513,7 +501,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 property values.
                 """
 
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("publisher",
                     "prefix", "abc.123^@#$&)(*&#$)"))
@@ -534,7 +522,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 type property values.
                 """
 
-                rc = rcfg.RepositoryConfig()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
                 # Verify that False is returned for an invalid property value.
                 self.assertFalse(rc.is_valid_property_value("repository",
                     "collection_type", "donotwant"))
@@ -550,12 +538,26 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                     "collection_type", "supplemental"))
 
         def test_missing_conffile(self):
-                """Verify that read() will raise an exception if a non-existent
-                file is specified.
+                """Verify that a missing conf file gets created"
                 """
                 os.remove(self.sample_conf)
-                rc = rcfg.RepositoryConfig()
-                self.assertRaises(RuntimeError, rc.read, self.sample_conf)
+                rc = rcfg.RepositoryConfig(self.sample_conf)
+                rc.write()
+                self.assertTrue(os.path.isfile(self.sample_conf))
+
+        def test_overrides_are_dirty(self):
+                """Verify that specifying overridden properties marks
+                the RepositoryConfig dirty, so a subsequent write()
+                goes to disk"""
+                overrides = {"publisher": {"prefix": "overridden"}}
+
+                rc = rcfg.RepositoryConfig(self.sample_conf,
+                    properties=overrides)
+                rc.write()
+                rc = rcfg.RepositoryConfig(self.sample_conf)
+                self.assertEqual(rc.get_property("publisher", "prefix"),
+                    "overridden")
+
 
 if __name__ == "__main__":
         unittest.main()

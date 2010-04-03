@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import datetime
@@ -600,7 +600,7 @@ class Repository(object):
 
                         # If it doesn't exist, just create a new object, it will
                         # automatically be populated with sane defaults.
-                        self.cfg = rc.RepositoryConfig()
+                        self.cfg = rc.RepositoryConfig(pathname=cfgpathname)
 
                 self.cfgpathname = cfgpathname
 
@@ -969,7 +969,7 @@ class Repository(object):
 
                 # Save a new configuration (or refresh existing).
                 try:
-                        self.cfg.write(self.cfgpathname)
+                        self.cfg.write()
                 except EnvironmentError, e:
                         # If we're unable to write due to the following
                         # errors, it isn't critical to the operation of

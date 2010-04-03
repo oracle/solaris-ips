@@ -665,12 +665,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 rpath = self.dc.get_repodir()
                 rcpath = os.path.join(rpath, "cfg_cache")
 
-                if not os.path.exists(rcpath):
-                        # If the configuration doesn't exist yet, create a
-                        # default one and write it out.
-                        rc = rcfg.RepositoryConfig()
-                else:
-                        rc = rcfg.RepositoryConfig(pathname=rcpath)
+                rc = rcfg.RepositoryConfig(pathname=rcpath)
 
                 # Update the configuration with our sample data.
                 cfg = self.repo_cfg
@@ -680,7 +675,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                     cfg[section][prop])
 
                 # Save it.
-                rc.write(rcpath)
+                rc.write()
 
         def test_1_depot_publisher(self):
                 """Verify the output of the depot /publisher operation."""
