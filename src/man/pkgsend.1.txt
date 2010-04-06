@@ -32,8 +32,17 @@ OPTIONS
      The following options are supported:
 
      -s repo_uri    A URI representing the location of the target
-                    repository.  The default value is
+                    repository.  Both HTTP and filesystem-based
+                    publication are supported. The default value is
                     http://localhost:10000/.
+
+                    For filesystem-based publication, the repo_uri
+                    should be specified as follows:
+
+                      file://<absolute_path_to_repository>
+
+                    See the NOTES section below for more information
+                    about restrictions or suggestions for publication.
 
      --help or -?
           Displays a usage message.
@@ -246,7 +255,13 @@ EXAMPLES
      $ pkgsend -s file:///tmp/example_repo create-repository \
          --set-property publisher.prefix=opensolaris.org
 
-     Example 3:  Create a package that delivers two groups and a user.
+     Example 3:  Publish a package using filesystem-based publication
+         and a pre-existing manifest:
+
+     $ pkgsend -s file:///tmp/example_repo -d /tmp/pkg_files \
+         /tmp/pkg_manifest
+
+     Example 4:  Create a package that delivers two groups and a user.
 
      $ eval `pkgsend open groups-and-user@1.0-1`
      $ pkgsend add group groupname=maingrp
@@ -258,13 +273,11 @@ EXAMPLES
 EXIT STATUS
      The following exit values are returned:
 
-     0     Everything worked.
+     0     Command succeeded.
 
-     1     Something bad happened.
+     1     An error occurred.
 
      2     Invalid command line options were specified.
-
-FILES
 
 ATTRIBUTES
      See attributes(5) for descriptions of the following attributes:
@@ -282,10 +295,20 @@ NOTES
      The image packaging system is an under-development feature.
      Command names, invocation, formats, and operations are all subject
      to change.  Development is hosted in the OpenSolaris community
-     at
+     at:
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/
 
-     Other package bundle formats can be created.  Other forms of
-     package publication, via the underlying Python API or via the web
-     API, are also possible.
+     Other package bundle formats can be created.  Other forms of package
+     publication, via the underlying Python API or via the web API, are
+     also possible.
+
+     When publishing individual package files that are greater than 128MB
+     in size, filesystem-based publication must be used due to publication
+     protocol limitations.  It is also the recommended method of publication
+     when access control for a repository is needed.
+
+     When using filesystem-based publication, any pkg.depot(1M) processes
+     serving the target repository must be restarted after publication is
+     completed for the changes to be reflected in its web interface or
+     search responses.  See pkg.depotd(1M) for more information.

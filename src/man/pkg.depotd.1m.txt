@@ -23,6 +23,13 @@ DESCRIPTION
      developers may wish to run private copies for various testing
      purposes.
 
+     The depot currently does not provide any access control mechanisms
+     of its own.  By default, all clients able to connect are able to
+     read all data and publish new package versions (when running under
+     SMF, the default is to run in a read-only mode).  The NOTES section
+     below describes some best practices for maintaining a public depot
+     with evolving content.
+
      The pkg.depot server is generally configured via the smf(5) properties
      associated with its service.  The following properties are recognized:
 
@@ -60,7 +67,7 @@ DESCRIPTION
                                 stdout, none, or an absolute pathname.
                                 The default value is stderr.
 
-     pkg/mirror                 (boolean) Sets whether package mirror mode 
+     pkg/mirror                 (boolean) Sets whether package mirror mode
                                 is used. When true, publishing and metadata
                                 operations are disabled and only a limited
                                 browser user interface is provided. This
@@ -80,12 +87,12 @@ DESCRIPTION
                                 webserver in a reverse proxy
                                 configuration.
 
-     pkg/readonly               (boolean) Sets whether modifying operations, 
-                                such as those initiated by pkgsend(1M) are 
-                                disabled. Retrieval operations are still 
+     pkg/readonly               (boolean) Sets whether modifying operations,
+                                such as those initiated by pkgsend(1M) are
+                                disabled. Retrieval operations are still
                                 available. This property may not be true
                                 when pkg/mirror is true. The default value
-                                is false.
+                                is true.
 
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
@@ -180,7 +187,7 @@ OPTIONS
      --exit-ready               Prepare for startup, but exit just before
                                 serving content.  This is useful for making
                                 sure search indices are built, new content
-                                cataloged, etc.  
+                                cataloged, etc.
 
      --log-access dest          Overrides pkg/log_access with the value
                                 given by dest.
@@ -382,7 +389,7 @@ NOTES
 
      http://hub.opensolaris.org/bin/view/Project+pkg/
 
-     The pkd.depotd service is managed by the service  management
+     The pkd.depotd service is managed by the service management
      facility, smf(5), under the service identifier:
 
           svc:/application/pkg/server
@@ -391,6 +398,29 @@ NOTES
      it does not daemonize.  Error messages are generally sent to
      standard output, or to the syslogd(1M) system.
 
-     Changes to configuration require a restart of the depot server process
-     so that they can be reflected in operations and output.  This must be
-     done when the server is not operating in read-only or mirror mode.
+     When publishing individual package files that are greater than 128MB
+     in size, filesystem-based publication must be used due to publication
+     protocol limitations.  See pkgsend(1) for more information.
+
+     For controlling read access to the depot, it is suggested that admin-
+     istrators use an HTTP reverse proxy in combination with authentication
+     methods such as client-based SSL certificate access which pkg(1)
+     natively supports.
+
+     If new package versions must be added to a public depot, it is sugg-
+     ested that filesystem-based publication be performed instead, and that
+     the depot server process be restarted afterwards.  For more information
+     about filesystem-based publication, see pkgsend(1).
+
+     Changes to configuration, or changes to package data using filesystem-
+     based operations require a restart of the depot server process so that
+     they can be reflected in operations and output.  This can be done by
+     using one of the following methods:
+
+        * using svcadm(1M) to restart the application/pkg/server instance
+
+        * sending a SIGUSR1 signal to the depot server process using kill(1),
+          which will execute a 'graceful restart' that leaves the process
+          intact, but reloads all configuration, package, and search data:
+
+            kill -USR1 <pid>

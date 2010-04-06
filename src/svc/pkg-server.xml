@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+	Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 	Use is subject to license terms.
 
 	NOTE:  This service manifest is not editable; its contents will
@@ -114,7 +114,7 @@
 		<propval name='log_errors' type='astring'
 			value='stderr' />
 		<propval name='mirror' type='boolean' value='false'/>
-		<propval name='readonly' type='boolean' value='false'/>
+		<propval name='readonly' type='boolean' value='true'/>
 		<propval name='ssl_cert_file' type='astring' value='none' />
 		<propval name='ssl_dialog' type='astring' value='smf' />
 		<propval name='ssl_key_file' type='astring' value='none' />
