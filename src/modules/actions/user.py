@@ -41,24 +41,18 @@ except ImportError:
 
 class UserAction(generic.Action):
         """Class representing a user packaging object."""
+
+        __slots__ = []
+
         name = "user"
         key_attr = "username"
-        required_attributes = ["username", "group"]
         globally_unique = True
 
-        attributes = [ "username", "password", "uid", "group",
-                       "gcos-field", "home-dir", "login-shell",
-                       "lastchng", "min", "max",
-                       "warn", "inactive", "expire"
-                       "flag", "group-list", "ftpuser"]
         # if these values are different on disk than in action
         # prefer on-disk version
         use_existing_attrs = [ "passwd", "lastchng", "min",
                                "max", "expire", "flag", 
                                "warn", "inactive"]
-
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
 
         def as_set(self, item):
                 if isinstance(item, list):
@@ -76,8 +70,10 @@ class UserAction(generic.Action):
                 out = self.attrs.copy()
 
                 for attr in on_disk:
-                        if (attr in out and attr not in self.use_existing_attrs) or \
-                            ( attr in old_plan and old_plan[attr] == on_disk[attr]):
+                        if (attr in out and
+                            attr not in self.use_existing_attrs) or \
+                            (attr in old_plan and
+                            old_plan[attr] == on_disk[attr]):
                                 continue
                         if attr != "group-list":
                                 out[attr] = on_disk[attr]

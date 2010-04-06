@@ -42,11 +42,10 @@ from pkg import misc
 class LegacyAction(generic.Action):
         """Class representing a legacy SVr4 packaging object."""
 
+        __slots__ = []
+
         name = "legacy"
         key_attr = "pkg"
-
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
 
         def directory_references(self):
                 return [os.path.normpath(os.path.join("var/sadm/pkg",
@@ -66,20 +65,24 @@ class LegacyAction(generic.Action):
                 pkginfo = os.path.join(pkgdir, "pkginfo")
 
                 if not os.path.isfile(pkginfo):
-                        legacy_info = pkgplan.get_legacy_info()
+                        pkg_summary = pkgplan.pkg_summary
+                        if len(pkg_summary) > 256:
+                                # The len check is done to avoid slice creation.
+                                pkg_summary = pkg_summary[:256]
+
                         svr4attrs = {
                             "arch": pkgplan.image.get_arch(),
                             "basedir": "/",
                             "category": "system",
                             "desc": None,
                             "hotline": None,
-                            "name": legacy_info["description"],
+                            "name": pkg_summary,
                             "pkg": self.attrs["pkg"],
                             "pkginst": self.attrs["pkg"],
                             "pstamp": None,
                             "sunw_prodvers": None,
                             "vendor": None,
-                            "version": legacy_info["version"],
+                            "version": str(pkgplan.destination_fmri.version),
                         }
 
                         attrs = [

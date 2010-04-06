@@ -42,10 +42,12 @@ class GroupAction(generic.Action):
         """Class representing a group packaging object.
         note that grouplist members are selected via the user action,
         although they are stored in the /etc/group file.  Use of
-        group passwds is not supported"""
+        group passwds is not supported."""
+
+        __slots__ = []
+
         name = "group"
         key_attr = "groupname"
-        attributes = [ "groupname", "gid"]
         globally_unique = True
 
         def __init__(self, data=None, **attrs):

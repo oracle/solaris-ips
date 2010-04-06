@@ -37,8 +37,9 @@ import generic
 class UnknownAction(generic.Action):
         """Class representing a unknown type of packaging object."""
 
+        __slots__ = []
+
         name = "unknown"
-        attributes = ("path",)
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

@@ -40,8 +40,9 @@ import pkg.actions
 class DirectoryAction(generic.Action):
         """Class representing a directory-type packaging object."""
 
+        __slots__ = []
+
         name = "dir"
-        attributes = ("mode", "owner", "group", "path")
         key_attr = "path"
         globally_unique = True
 

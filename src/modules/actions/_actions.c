@@ -34,33 +34,27 @@ static PyObject *InvalidActionError;
 static int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
 {
-	int contains;
-	int ret;
+	int contains, ret;
 
 	contains = PyDict_Contains(attrs, key);
 	if (contains == 0) {
-		ret = PyDict_SetItem(attrs, key, attr);
-		Py_DECREF(key);
-		Py_DECREF(attr);
-		return (ret);
+		return (PyDict_SetItem(attrs, key, attr));
 	} else if (contains == 1) {
 		PyObject *av = PyDict_GetItem(attrs, key);
 		Py_INCREF(av);
 		if (PyList_Check(av)) {
 			ret = PyList_Append(av, attr);
 			Py_DECREF(av);
-			Py_DECREF(key);
-			Py_DECREF(attr);
 			return (ret);
 		} else {
 			PyObject *list;
 			if ((list = PyList_New(2)) == NULL)
 				return (-1);
 			PyList_SET_ITEM(list, 0, av);
+			Py_INCREF(attr);
 			PyList_SET_ITEM(list, 1, attr);
 			ret = PyDict_SetItem(attrs, key, list);
 			Py_DECREF(list);
-			Py_DECREF(key);
 			return (ret);
 		}
 	} else if (contains == -1)
@@ -117,6 +111,12 @@ _fromstr(PyObject *self, PyObject *args)
 
 #define malformed(msg) set_malformederr(str, i, (msg))
 #define invalid(msg) set_invaliderr(str, (msg))
+#define CLEANUP_REFS \
+	Py_XDECREF(key);\
+	Py_XDECREF(type);\
+	Py_XDECREF(attr);\
+	Py_XDECREF(attrs);\
+	Py_XDECREF(hash);
 
 	if (PyArg_ParseTuple(args, "s#", &str, &strl) == 0) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
@@ -145,42 +145,41 @@ _fromstr(PyObject *self, PyObject *args)
 
 			if (str[i] == ' ' || str[i] == '\t') {
 				if (PyDict_Size(attrs) > 0 || hash != NULL) {
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (malformed("whitespace in key"));
 				}
 				else {
 					if ((hash = PyString_FromStringAndSize(
-						keystr, keysize)) == NULL)
+						keystr, keysize)) == NULL) {
+						CLEANUP_REFS;
 						return (NULL);
+					}
 					state = WS;
 				}
 			} else if (str[i] == '=') {
 				if ((key = PyString_FromStringAndSize(
-					keystr, keysize)) == NULL)
+					keystr, keysize)) == NULL) {
+					CLEANUP_REFS;
 					return (NULL);
+				}
 
 				if (keysize == 4 && strncmp(keystr, "data", keysize) == 0) {
-					Py_DECREF(key);
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (invalid("invalid key: 'data'"));
 				}
 
+				/*
+				 * Pool attribute key to reduce memory usage and
+				 * potentially improve lookup performance.
+				 */
+				PyString_InternInPlace(&key);
+
 				if (i == ks) {
-					Py_DECREF(key);
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (malformed("impossible: missing key"));
 				}
 				else if (++i == strl) {
-					Py_DECREF(key);
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (malformed("missing value"));
 				}
 				if (str[i] == '\'' || str[i] == '\"') {
@@ -188,10 +187,7 @@ _fromstr(PyObject *self, PyObject *args)
 					quote = str[i];
 					vs = i + 1;
 				} else if (str[i] == ' ' || str[i] == '\t') {
-					Py_DECREF(key);
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (malformed("missing value"));
 				}
 				else {
@@ -199,9 +195,7 @@ _fromstr(PyObject *self, PyObject *args)
 					vs = i;
 				}
 			} else if (str[i] == '\'' || str[i] == '\"') {
-				Py_DECREF(type);
-				Py_DECREF(attrs);
-				Py_XDECREF(hash);
+				CLEANUP_REFS;
 				return (malformed("quote in key"));
 			}
 		} else if (state == QVAL) {
@@ -256,30 +250,40 @@ _fromstr(PyObject *self, PyObject *args)
 					if ((attr = PyString_FromStringAndSize(
 						sattr, attrlen - o)) == NULL) {
 						free(sattr);
+						CLEANUP_REFS;
 						return (NULL);
 					}
 					free(sattr);
-				} else if ((attr = PyString_FromStringAndSize(
-					&str[vs], i - vs)) == NULL) 
+				} else {
+					Py_XDECREF(attr);
+					if ((attr = PyString_FromStringAndSize(
+					    &str[vs], i - vs)) == NULL) {
+						CLEANUP_REFS;
+						return (NULL);
+					}
+				}
+
+				if (add_to_attrs(attrs, key, attr) == -1) {
+					CLEANUP_REFS;
 					return (NULL);
-				if (add_to_attrs(attrs, key, attr) == -1)
-					return (NULL);
+				}
 			}
 		} else if (state == UQVAL) {
 			if (str[i] == ' ' || str[i] == '\t') {
 				state = WS;
+				Py_XDECREF(attr);
 				attr = PyString_FromStringAndSize(&str[vs], i - vs);
-				if (add_to_attrs(attrs, key, attr) == -1)
+				if (add_to_attrs(attrs, key, attr) == -1) {
+					CLEANUP_REFS;
 					return (NULL);
+				}
 			}
 		} else if (state == WS) {
 			if (str[i] != ' ' && str[i] != '\t') {
 				state = KEY;
 				ks = i;
 				if (str[i] == '=') {
-					Py_DECREF(type);
-					Py_DECREF(attrs);
-					Py_XDECREF(hash);
+					CLEANUP_REFS;
 					return (malformed("missing key"));
 				}
 			}
@@ -290,29 +294,29 @@ _fromstr(PyObject *self, PyObject *args)
 		if (slashmap != NULL)
 			free(slashmap);
 
-		Py_DECREF(key);
-		Py_DECREF(type);
-		Py_DECREF(attrs);
-		Py_XDECREF(hash);
+		CLEANUP_REFS;
 		return (malformed("unfinished quoted value"));
 	}
 	if (state == KEY) {
-		Py_DECREF(type);
-		Py_DECREF(attrs);
-		Py_XDECREF(hash);
+		CLEANUP_REFS;
 		return (malformed("missing value"));
 	}
 
 	if (state == UQVAL) {
+		Py_XDECREF(attr);
 		attr = PyString_FromStringAndSize(&str[vs], i - vs);
-		if (add_to_attrs(attrs, key, attr) == -1)
+		if (add_to_attrs(attrs, key, attr) == -1) {
+			CLEANUP_REFS;
 			return (NULL);
+		}
 	}
 
 	if (hash == NULL)
 		hash = Py_None;
 
 	ret = Py_BuildValue("OOO", type, hash, attrs);
+	Py_XDECREF(key);
+	Py_XDECREF(attr);
 	Py_DECREF(type);
 	Py_DECREF(attrs);
 	if (hash != Py_None)

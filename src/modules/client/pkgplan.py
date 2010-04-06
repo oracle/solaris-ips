@@ -45,25 +45,28 @@ class PkgPlan(object):
         If the destination FMRI is None, the package is removed.
         """
 
+        __slots__ = ["actions", "check_cancelation", "destination_fmri",
+            "image", "origin_fmri", "pkg_summary", "__destination_mfst",
+            "__license_status", "__origin_mfst", "__progtrack",
+            "__repair_actions", "__xferfiles", "__xfersize"]
+
         def __init__(self, image, progtrack, check_cancelation):
-                self.origin_fmri = None
                 self.destination_fmri = None
-                self.actions = manifest.ManifestDifference([], [], [])
-                self.__repair_actions = []
-
-                self.__origin_mfst = manifest.NullCachedManifest
                 self.__destination_mfst = manifest.NullCachedManifest
-                self.__legacy_info = {}
 
+                self.origin_fmri = None
+                self.__origin_mfst = manifest.NullCachedManifest
+
+                self.actions = manifest.ManifestDifference([], [], [])
+                self.check_cancelation = check_cancelation
                 self.image = image
-                self.__progtrack = progtrack
-
-                self.__xfersize = -1
-                self.__xferfiles = -1
+                self.pkg_summary = None
 
                 self.__license_status = {}
-
-                self.check_cancelation = check_cancelation
+                self.__progtrack = progtrack
+                self.__repair_actions = []
+                self.__xferfiles = -1
+                self.__xfersize = -1
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -94,8 +97,6 @@ class PkgPlan(object):
                 self.__origin_mfst = om
                 self.destination_fmri = df
                 self.__destination_mfst = dm
-                if self.destination_fmri:
-                        self.__legacy_info["version"] = self.destination_fmri.version
 
         def propose_repair(self, fmri, mfst, actions):
                 self.propose(fmri, mfst, fmri, mfst)
@@ -152,6 +153,9 @@ class PkgPlan(object):
                 origin_dirs = expanddirs(self.__origin_mfst.get_directories(
                     old_excludes))
 
+                # No longer needed.
+                self.__origin_mfst = None
+
                 if origin_dirs:
                         absent_dirs = origin_dirs - \
                             expanddirs(self.__destination_mfst.get_directories(
@@ -162,9 +166,12 @@ class PkgPlan(object):
                                     [directory.DirectoryAction(path=a), None])
 
                 # Stash information needed by legacy actions.
-                self.__legacy_info["description"] = \
+                self.pkg_summary = \
                     self.__destination_mfst.get("pkg.summary",
                     self.__destination_mfst.get("description", "none provided"))
+
+                # No longer needed.
+                self.__destination_mfst = None
 
                 # Add any repair actions to the update list
                 self.actions.changed.extend(self.__repair_actions)
@@ -173,12 +180,6 @@ class PkgPlan(object):
                     self.gen_install_actions()):
                         if dest.name == "license":
                                 self.__add_license(src, dest)
-
-                # We cross a point of no return here, and throw away the origin
-                # and destination manifests; we also delete them from the
-                # image cache.
-                self.__origin_mfst = None
-                self.__destination_mfst = None
 
         def get_licenses(self):
                 """A generator function that yields tuples of the form (license,
@@ -211,11 +212,6 @@ class PkgPlan(object):
                         entry["accepted"] = accepted
                 if displayed is not None:
                         entry["displayed"] = displayed
-
-        def get_legacy_info(self):
-                """ Returns information needed by the legacy action to
-                    populate the SVR4 packaging info. """
-                return self.__legacy_info
 
         def get_xferstats(self):
                 if self.__xfersize != -1:

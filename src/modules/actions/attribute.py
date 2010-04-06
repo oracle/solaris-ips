@@ -38,8 +38,9 @@ import pkg.actions
 class AttributeAction(generic.Action):
         """Class representing a package attribute."""
 
+        __slots__ = ["value"]
+
         name = "set"
-        attributes = ("type",)
         key_attr = "name"
 
         def __init__(self, data=None, **attrs):

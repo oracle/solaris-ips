@@ -41,11 +41,16 @@ from pkg.client.debugvalues import DebugValues
 class DriverAction(generic.Action):
         """Class representing a driver-type packaging object."""
 
+        __slots__ = []
+
         name = "driver"
         key_attr = "name"
         globally_unique = True
 
         usr_sbin = None
+        add_drv = None
+        rem_drv = None
+        update_drv = None
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

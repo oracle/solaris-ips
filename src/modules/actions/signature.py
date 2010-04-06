@@ -31,4 +31,6 @@ class SignatureAction(generic.Action):
         """Stub signature class to allow clients to function when signature
         actions start appearing in the catalog."""
 
+        __slots__ = ["hash"]
+
         name = "signature"

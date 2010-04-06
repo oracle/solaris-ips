@@ -35,6 +35,8 @@ import generic
 import pkg.fmri as fmri
 import pkg.version
 
+known_types = ("optional", "require", "exclude", "incorporate")
+
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
         is expected to be the pkg FMRI that this package depends on.  The type
@@ -53,10 +55,10 @@ class DependencyAction(generic.Action):
         exclude - package may not be installed together with named version 
         or higher - reverse logic of require."""
 
+        __slots__ = []
+
         name = "depend"
-        attributes = ("type", "fmri")
         key_attr = "fmri"
-        known_types = ("optional", "require", "exclude", "incorporate")
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
@@ -68,7 +70,7 @@ class DependencyAction(generic.Action):
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing fmri attribute"))
 
-                if self.attrs["type"] not in self.known_types:
+                if self.attrs["type"] not in known_types:
                         raise pkg.actions.InvalidActionError(str(self),
                             _("Unknown type (%s) in depend action") %
                             self.attrs["type"])
@@ -192,7 +194,7 @@ class DependencyAction(generic.Action):
                 pfmri = fmri.PkgFmri(self.attrs["fmri"],
                     image.attrs["Build-Release"])
 
-                if ctype not in self.known_types:
+                if ctype not in known_types:
                         errors.append(
                             _("Unknown type (%s) in depend action") % ctype)
                         return errors, warnings, info
@@ -258,7 +260,7 @@ class DependencyAction(generic.Action):
                 ctype = self.attrs["type"]
                 pfmri = self.attrs["fmri"]
 
-                if ctype not in self.known_types:
+                if ctype not in known_types:
                         return []
 
                 #

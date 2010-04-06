@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
         setup2 = """import pkg.actions as actions
 a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.1")
-a2 = actions.fromstr("dir 1234 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.2")
+a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.2")
         """
 
         n = 520000

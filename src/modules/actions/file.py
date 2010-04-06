@@ -48,8 +48,9 @@ except ImportError:
 class FileAction(generic.Action):
         """Class representing a file-type packaging object."""
 
+        __slots__ = ["hash", "replace_required"]
+
         name = "file"
-        attributes = ("mode", "owner", "group", "path")
         key_attr = "path"
         globally_unique = True
 

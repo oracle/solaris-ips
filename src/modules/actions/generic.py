@@ -52,11 +52,10 @@ class Action(object):
         files.
         """
 
+        __slots__ = ["attrs", "data", "ord"]
+
         # 'name' is the name of the action, as specified in a manifest.
         name = "generic"
-        # 'attributes' is a list of the known usable attributes.  Or something.
-        # There probably isn't a good use for it.
-        attributes = ()
         # 'key_attr' is the name of the attribute whose value must be unique in
         # the namespace of objects represented by a particular action.  For
         # instance, a file's key_attr would be its pathname.  Or a driver's
@@ -72,9 +71,8 @@ class Action(object):
         # Directories must precede all
         # filesystem-modifying actions; hardlinks must follow all
         # filesystem-modifying actions.  Note that usr/group actions
-        # preceed file actions; this implies that /etc/group and /etc/passwd
+        # precede file actions; this implies that /etc/group and /etc/passwd
         # file ownership needs to be part of initial contents of those files
-
         orderdict = {}
         unknown = 0
 
@@ -96,7 +94,8 @@ class Action(object):
                 self.orderdict.update(dict((
                     (pkg.actions.types[t], i) for i, t in enumerate(ol)
                     )))
-                self.unknown = self.orderdict[pkg.actions.types["unknown"]]
+                self.__class__.unknown = \
+                    self.orderdict[pkg.actions.types["unknown"]]
 
         def __init__(self, data=None, **attrs):
                 """Action constructor.

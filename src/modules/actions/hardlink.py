@@ -42,6 +42,8 @@ from pkg.client.api_errors import ActionExecutionError
 class HardLinkAction(link.LinkAction):
         """Class representing a hardlink-type packaging object."""
 
+        __slots__ = []
+
         name = "hardlink"
         globally_unique = True
 

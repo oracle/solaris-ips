@@ -42,8 +42,9 @@ from pkg import misc
 class LinkAction(generic.Action):
         """Class representing a link-type packaging object."""
 
+        __slots__ = []
+
         name = "link"
-        attributes = ("path", "target")
         key_attr = "path"
         globally_unique = True
 

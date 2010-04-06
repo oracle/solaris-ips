@@ -44,6 +44,8 @@ import pkg.portable as portable
 class LicenseAction(generic.Action):
         """Class representing a license packaging object."""
 
+        __slots__ = ["hash"]
+
         name = "license"
         key_attr = "license"
         reverse_indices = ("license", )
