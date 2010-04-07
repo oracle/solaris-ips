@@ -140,7 +140,7 @@ DESCRIPTION
                    packaging operation.
 
   Directory Actions
-     The 'directory' action is like the file action in that it represents a
+     The 'dir' action is like the file action in that it represents a
      filesystem object, but a directory instead of an ordinary file.  It
      has the same four standard attributes as the file action, and 'path'
      is the key attribute.
