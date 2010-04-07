@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+## Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
 <%!
@@ -28,7 +28,7 @@
 <%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
 <%page args="g_vars"/>\
 <%
-        CLIENT_API_VERSION = 6
+        CLIENT_API_VERSION = 8
         base = g_vars["base"]
         catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
         config = api.ConfigInterface(CLIENT_API_VERSION, base)

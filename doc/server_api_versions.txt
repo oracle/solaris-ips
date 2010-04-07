@@ -1,3 +1,11 @@
+Version 8:
+    Incompatible with clients using version 0-7.
+
+    pkg.server.api changed as follows:
+        * The return type of CatalogInterface.search changed so that instead
+          of returning the fmri string in the result, it returns a PkgFmri
+          object.
+
 Version 7:
     Compatible with clients using version 6.
 

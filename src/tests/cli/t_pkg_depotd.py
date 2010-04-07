@@ -761,6 +761,32 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         if e.code != httplib.NOT_FOUND:
                                 raise
 
+        def test_bug_15482(self):
+                """Test to make sure BUI search doesn't trigger a traceback."""
+
+                # Now update the repository configuration while the depot is
+                # stopped so changes won't be overwritten on exit.
+                self.__update_repo_config()
+
+                # Start the depot.
+                self.dc.start()
+
+                # Then, publish some packages we can abuse for testing.
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.quux10)
+                
+                time.sleep(1)
+                surl = urlparse.urljoin(durl,
+                    "en/search.shtml?action=Search&token=*")
+                urllib2.urlopen(surl).read()
+                surl = urlparse.urljoin(durl,
+                    "en/advanced_search.shtml?action=Search&token=*")
+                urllib2.urlopen(surl).read()
+                surl = urlparse.urljoin(durl,
+                    "en/advanced_search.shtml?token=*&show=a&rpp=50&"
+                    "action=Advanced+Search")
+                urllib2.urlopen(surl).read()
+
 
 if __name__ == "__main__":
         unittest.main()

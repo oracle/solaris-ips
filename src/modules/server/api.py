@@ -41,7 +41,7 @@ import pkg.version as version
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 
-CURRENT_API_VERSION = 7
+CURRENT_API_VERSION = 8
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -66,7 +66,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([6, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -373,7 +373,7 @@ class CatalogInterface(_Interface):
                                         # Latest version filtering can only be
                                         # done for packages as only they are
                                         # guaranteed to be in version order.
-                                        stem = result[2].split("@", 1)[0]
+                                        stem = result[2].pkg_name
                                         if last_stem == stem:
                                                 continue
                                         else:
@@ -395,8 +395,8 @@ class CatalogInterface(_Interface):
                         if return_latest and \
                             return_type == qp.Query.RETURN_PACKAGES:
                                 def cmp_fmris(resa, resb):
-                                        a = pkg.fmri.PkgFmri(resa[2])
-                                        b = pkg.fmri.PkgFmri(resb[2])
+                                        a = resa[2]
+                                        b = resb[2]
 
                                         if a.pkg_name == b.pkg_name:
                                                 # Version in descending order.

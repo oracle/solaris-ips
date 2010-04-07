@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+## Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
 <%!
@@ -327,20 +327,22 @@ matching characters use '[' and ']':<br/>
                         if result_count > rpp:
                                 break
 
-                        stem = pfmri.split("@", 1)[0]
+                        stem = pfmri.pkg_name
+                        pfmri_str = pfmri.get_fmri(anarchy=True, 
+                            include_scheme=False)
                         phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                            urllib.quote(pfmri, ""))) 
+                            urllib.quote(pfmri_str, "")))
                         # XXX the .p5i extension is a bogus hack because
                         # packagemanager requires it and shouldn't.
                         p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
                             urllib.quote(stem, ""))) 
                         mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
-                            urllib.quote(pfmri, ""))) 
+                            urllib.quote(pfmri_str, "")))
 %>\
                         <tr${rclass}>
                                 <td>
                                         <a title="Package Information Summary"
-                                            href="${phref}">${pfmri}</a>
+                                            href="${phref}">${pfmri_str}</a>
                                 </td>
                                 <td>
                                         <a class="p5i"
@@ -387,14 +389,16 @@ ${display_pagination(criteria, result_count, colspan=2)}
                         if result_count > rpp:
                                 break
 
+                        pfmri_str = pfmri.get_fmri(anarchy=True, 
+                            include_scheme=False)
                         phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                            urllib.quote(pfmri, ""))) 
+                            urllib.quote(pfmri_str, "")))
 %>\
                         <tr${rclass}>
                                 <td>${index | h}</td>
                                 <td>${action | h}</td>
                                 <td>${value | h}</td>
-                                <td><a href="${phref}">${pfmri}</a></td>
+                                <td><a href="${phref}">${pfmri_str}</a></td>
                         </tr>
 %               endfor
 ${display_pagination(criteria, result_count, colspan=2)}
