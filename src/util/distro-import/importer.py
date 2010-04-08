@@ -356,7 +356,7 @@ def check_pkg_actions(pkg):
                 raise RuntimeError("Package %s: errors occurred" % pkg.name)
         return local_path_dict
 
-def check_pathdict_actions(my_path_dict, remove_dups=False):
+def check_pathdict_actions(my_path_dict, remove_dups=False, allow_dir_goofs=False):
         # investigate all paths w/ multiple actions
         errorlist = []
         for p in my_path_dict:
@@ -411,8 +411,13 @@ def check_pathdict_actions(my_path_dict, remove_dups=False):
                         if len(ga[g]) == 1:
                                 continue
                         if g in ["owner", "group", "mode"]:
-                                errorlist.append("Multiple directory actions with the same path(%s) and different %s:\n\t%s\n" %
-                                    (p, g, "\n\t".join(str(d) for d in dups)))
+                                dir_error = "Multiple directory actions with the same path(%s) and different %s:\n\t%s\n" % \
+                                    (p, g, "\n\t".join(str(d) for d in dups))
+                                if allow_dir_goofs:
+                                        print >> sys.stderr, "%s\n" % dir_error
+                                else:
+                                        errorlist.append(dir_error)
+                        
                         elif remove_dups and g.startswith("variant.") and None in ga[g]:
                                 # remove any dirs that are zone variants if same dir w/o variant exists
                                 for d in dups:
@@ -1525,7 +1530,7 @@ def main_func():
                                                     action.attrs["path"]), []).append(action)
                                                 pkgpath_dict.setdefault(action.attrs["path"],
                                                     []).append(action.attrs["importer.ipspkg"])
-                errors = check_pathdict_actions(path_dict)
+                errors = check_pathdict_actions(path_dict, allow_dir_goofs=True)
                 if errors:
                         for e in errors:
                                 print "Fail: %s" % e
