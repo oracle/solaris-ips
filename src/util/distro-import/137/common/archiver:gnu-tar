@@ -1,0 +1,13 @@
+package archiver/gnu-tar
+consolidation "sfw"
+classification "Development/GNU"
+import SUNWgtar
+version 1.23
+end package
+
+package SUNWgtar
+consolidation "sfw"
+renamed 133
+depend archiver/gnu-tar
+version 1.22
+end package

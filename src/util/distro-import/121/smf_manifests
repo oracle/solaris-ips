@@ -1,3 +1,5 @@
 # make sure manifest changes are picked up
-chattr_glob var/svc/manifest/*.xml type file restart_fmri=svc:/system/manifest-import:default
-chattr_glob etc/svc/manifest/*.xml type file restart_fmri=svc:/system/manifest-import:default
+chattr_glob lib/svc/manifest/*.xml type file \
+	restart_fmri=svc:/system/manifest-import:default
+chattr_glob var/svc/manifest/*.xml type file \
+	restart_fmri=svc:/system/manifest-import:default
