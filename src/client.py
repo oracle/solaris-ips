@@ -522,17 +522,17 @@ def list_inventory(img, args):
                         return EXIT_OOPS
 
                 if pkg_list == api.ImageInterface.LIST_ALL:
-                        state = _("known")
+                        error(_("no packages matching '%s' known") % \
+                            ", ".join(e.notfound), cmd="list")
                 elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
-                        state = _("known or installed")
+                        error(_("no packages matching '%s' allowed by "
+                            "installed incorporations or image variants that "
+                            "are known or installed") % \
+                            ", ".join(e.notfound), cmd="list")
+                        logger.error("Use -af to allow all versions.")
                 else:
-                        state = _("installed")
-
-                if e.notfound:
-                        error(_("no packages matching "
-                            "'%(pattern)s' %(state)s") % {
-                            "pattern": ", ".join(e.notfound),
-                            "state": state }, cmd="list")
+                        error(_("no packages matching '%s' installed") % \
+                            ", ".join(e.notfound), cmd="list")
 
                 if found and e.notfound:
                         # Only some patterns matched.

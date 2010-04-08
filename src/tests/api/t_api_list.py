@@ -628,7 +628,6 @@ add set name=pkg.description value="%(desc)s"
                 self.assertEqual(len(returned), 10)
                 self.assertPrettyEqual(returned, expected)
 
-
                 # Re-test, including variants.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj, variants=True)
@@ -656,12 +655,9 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
-#                    self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11",
-#                        installed=True),
                 ]
                 self.assertEqual(len(returned), 12)
                 self.assertPrettyEqual(returned, expected)
-
 
                 # Verify results of LIST_INSTALLED_NEWEST when not including
                 # the publisher of installed packages.
@@ -743,8 +739,7 @@ add set name=pkg.description value="%(desc)s"
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
-                api_obj.plan_uninstall(["entire", "apple",
-                    "grault"], False)
+                api_obj.plan_uninstall(["*"], False)
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -813,6 +808,42 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
                 self.assertEqual(len(returned), 18)
 
+                # Re-test, including only a specific package version, which
+                # should show the requested versions even though newer
+                # versions are available.  'baz' should be omitted because
+                # it doesn't apply to the current image variants.
+                returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.0,5.11.0", "baz",
+                        "qux@0.9"])
+
+                expected = [
+                    self.__get_exp_pub_entry("test1", 1, "apple", "1.0,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 1, "apple", "1.0,5.11-0"),
+                    self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
+                    self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 4)
+
+                # Re-test, including only a specific package version, which
+                # should show the requested versions even though newer
+                # versions are available, and all variants.  'baz' should be
+                # included this time.
+                returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.0,5.11.0", "baz",
+                        "qux@0.9"], variants=True)
+
+                expected = [
+                    self.__get_exp_pub_entry("test1", 1, "apple", "1.0,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 1, "apple", "1.0,5.11-0"),
+                    self.__get_exp_pub_entry("test1", 10, "baz", "1.3,5.11"),
+                    self.__get_exp_pub_entry("test2", 10, "baz", "1.3,5.11"),
+                    self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
+                    self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 6)
+
                 # Test results after installing packages and only listing the
                 # installed packages.
                 af = self.__get_pub_entry("test1", 1, "apple", "1.0,5.11-0")[0]
@@ -862,6 +893,18 @@ add set name=pkg.description value="%(desc)s"
                 ]
                 self.assertPrettyEqual(returned, expected)
                 self.assertEqual(len(returned), 9)
+
+                # Re-test last but specify patterns for versions newer than
+                # what is installed; nothing should be returned as
+                # LIST_INSTALLED_NEWEST is supposed to omit versions newer
+                # than what is installed, allowed by installed incorporations,
+                # or doesn't apply to image variants.
+                returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.2.1,5.11-1",
+                        "corge@1.0", "qux@1.0"])
+                expected = []
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 0)
 
                 # Remove corge, install grault, retest for
                 # LIST_INSTALLED_NEWEST.  corge, grault, qux, and
@@ -956,6 +999,26 @@ add set name=pkg.description value="%(desc)s"
                 ]
                 self.assertPrettyEqual(returned, expected)
                 self.assertEqual(len(returned), 11)
+
+                # Re-test, specifying versions older than the newest, with
+                # some older than that allowed by the incorporation (should
+                # be omitted) and with versions allowed by the incorporation
+                # (should be returned).
+                returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.2.0,5.11-0", "qux@0.9"])
+
+                expected = [
+                    self.__get_exp_pub_entry("test1", 3, "apple",
+                        "1.2.0,5.11-0"),
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 1)
+
+                # Re-test, specifying versions newer than that allowed by the
+                # incorporation.
+                returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.2.1,5.11-1"])
+                self.assertEqual(len(returned), 0)
 
                 # Re-test, only including test1's packages.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,

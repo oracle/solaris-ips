@@ -30,6 +30,7 @@ interface with the pkg(5) system.
 
 Refer to pkg.api_common for additional core class documentation."""
 
+import collections
 import copy
 import errno
 import fnmatch
@@ -1176,7 +1177,7 @@ class ImageInterface(object):
 
                 # Keep track of listed stems for all other packages on a
                 # per-publisher basis.
-                nlist = set()
+                nlist = collections.defaultdict(int)
 
                 def check_state(t, entry):
                         states = entry["metadata"]["states"]
@@ -1243,7 +1244,7 @@ class ImageInterface(object):
                                         return True
                                 return False
 
-                        pkg_stem = pub + "!" + stem
+                        pkg_stem = "!".join((pub, stem))
                         if pkg_stem in nlist:
                                 # A newer version has already been listed for
                                 # this stem and publisher.
@@ -1332,9 +1333,8 @@ class ImageInterface(object):
                                                 # Package is for zones only.
                                                 omit_package = True
 
-                        if filter_cb is not None:
-                                pkg_stem = pub + "!" + stem
-                                nlist.add(pkg_stem)
+                        pkg_stem = "!".join((pub, stem))
+                        nlist[pkg_stem] += 1
 
                         if not pkgi and pkgr and stem in inc_vers:
                                 # If the package is not installed, but this is
@@ -1354,6 +1354,7 @@ class ImageInterface(object):
                         # Pattern filtering has to be applied last so that
                         # renames, incorporations, and everything else is
                         # handled correctly.
+                        omit_ver = False
                         if not omit_package:
                                 for pat in patterns:
                                         (pat_pub, pat_stem, pat_ver), matcher = \
@@ -1389,6 +1390,7 @@ class ImageInterface(object):
                                                 if not ever.is_successor(pat_ver,
                                                     pkg.version.CONSTRAINT_AUTO):
                                                         omit_package = True
+                                                        omit_ver = True
                                                         continue
 
                                         # If this entry matched at least one
@@ -1397,6 +1399,15 @@ class ImageInterface(object):
                                         break
 
                         if omit_package:
+                                if filter_cb is not None and omit_ver and \
+                                    nlist[pkg_stem] == 1:
+                                        # If omitting because of version, and
+                                        # no other versions have been returned
+                                        # yet for this stem, then discard
+                                        # tracking entry so that other
+                                        # versions will be listed.
+                                        del nlist[pkg_stem]
+                                        slist.discard(stem)
                                 continue
 
                         if cats is not None:

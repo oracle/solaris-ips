@@ -431,12 +431,18 @@ SUBCOMMANDS
           With -H, omit the headers from the listing.
 
           With -a, list installed packages and the newest version of
-          packages that are not installed and are available for
-          installation; without -a, list only installed packages.
+          packages that are available for installation.  Packages are
+          considered to be available for installation if they are
+          allowed by the installed incorporations and by the image's
+          variants.  If one or more patterns are specified, then the
+          newest version matching the specified pattern and is also
+          allowed by any installed incorporations and the image's
+          variants will be listed.  Without -a, list only installed
+          packages.
 
-          With -f, include all versions of all packages for all variants
-          regardless of installed state.  This option may only be used
-          with -a.
+          With -f and -a, list all versions of all packages for all
+          variants regardless of incorporation constraints or installed
+          state.
 
           With -n, display the newest versions of all known packages,
           regardless of installed state.
