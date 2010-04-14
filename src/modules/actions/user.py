@@ -79,8 +79,8 @@ class UserAction(generic.Action):
                                 out[attr] = on_disk[attr]
                         else:
                                 out[attr] = list(
-                                        self.as_set(out[attr]) +
-                                        self.as_set(on_disk[attr]))
+                                    self.as_set(out.get(attr, [])) |
+                                    self.as_set(on_disk[attr]))
                 return out
 
         def readstate(self, image, username, lock=False):

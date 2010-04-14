@@ -2338,6 +2338,23 @@ adm:NP:6445::::::
                 self.pkg("install silver@2.0")
                 self.pkg("verify -v")
 
+        def test_user_in_grouplist(self):
+                """If a user is present in a secondary group list when the user
+                is installed, the client shouldn't crash."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.only_user10)
+                self.image_create(durl)
+                self.pkg("install basics@1.0")
+                group_path = os.path.join(self.get_img_path(), "etc/group")
+                with file(group_path, "r+") as group_file:
+                        lines = group_file.readlines()
+                        lines[0] = lines[0][:-1] + "Kermit" + "\n"
+                        group_file.truncate(0)
+                        group_file.writelines(lines)
+                self.pkg("install only_user@1.0")
+
         def test_invalid_open(self):
                 """Send invalid package definitions (invalid fmris); expect
                 failure."""
