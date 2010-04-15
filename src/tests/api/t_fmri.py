@@ -263,6 +263,19 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 a[self.n10] = 1
                 self.assert_(a[self.n11] == 1)
 
+        def testpartial(self):
+                """Verify that supported operations on a partial FMRI
+                function properly."""
+
+                pfmri = "pkg:/BRCMbnx"
+
+                f = fmri.PkgFmri(pfmri)
+                self.assertEqual(f.get_short_fmri(), pfmri)
+                self.assertEqual(f.get_pkg_stem(), pfmri)
+                self.assertEqual(f.get_fmri(), pfmri)
+                self.assertFalse(f.has_version())
+                self.assertFalse(f.has_publisher())
+
         def testunsupported(self):
                 """Verify that unsupported operations on a partial FMRI raise
                 the correct exceptions."""

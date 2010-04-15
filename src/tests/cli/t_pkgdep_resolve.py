@@ -201,7 +201,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/lib-tk/pkg/sea
 set name=fmri value=pkg:/sat_pyc
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
 """
-        
+
         inst_pkg = """\
 open example2_pkg@1.0,5.11-0
 add file tmp/foo mode=0555 owner=root group=bin path=/usr/bin/python2.6
@@ -215,7 +215,7 @@ close"""
 
 
         misc_files = ["tmp/foo"]
-        
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
@@ -254,8 +254,8 @@ close"""
 
                 m1_path = self.make_manifest(self.hardlink1_manf_deps)
                 m2_path = self.make_manifest(self.hardlink2_manf_deps)
-                p1_name = os.path.basename(m1_path)
-                p2_name = os.path.basename(m2_path)
+                p1_name = 'pkg:/%s' % os.path.basename(m1_path)
+                p2_name = 'pkg:/%s' % os.path.basename(m2_path)
                 pkg_deps, errs = dependencies.resolve_deps(
                     [m1_path, m2_path], self.api_obj)
                 if errs:
@@ -276,16 +276,16 @@ close"""
                 image and packages works for the same package and that the
                 resolver picks up the name of the package if it's defined in
                 the package."""
-                
+
 
                 self.pkgsend_bulk(self.durl, self.inst_pkg)
                 self.api_obj.refresh(immediate=True)
                 self._do_install(self.api_obj, ["example2_pkg"])
-                
+
                 m1_path = self.make_manifest(self.multi_deps)
                 m2_path = self.make_manifest(self.misc_manf)
-                p3_name = "pkg:/example2_pkg@1.0,5.11-0"
-                p2_name = "pkg:/footest@0.5.11,5.11-0.117"
+                p3_name = "pkg:/example2_pkg@1.0-0"
+                p2_name = "pkg:/footest@0.5.11-0.117"
 
                 pkg_deps, errs = dependencies.resolve_deps(
                     [m1_path, m2_path], self.api_obj)
@@ -294,16 +294,16 @@ close"""
                 self.assertEqual(len(pkg_deps[m2_path]), 0)
                 self.assertEqual(len(errs), 0)
                 for d in pkg_deps[m1_path]:
-                        if d.attrs["fmri"].startswith(p2_name):
+                        if d.attrs["fmri"] == p2_name:
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
                                     ["usr/lib/python2.6/v-p/pkg/misc.py"])
-                        elif d.attrs["fmri"].startswith(p3_name):
+                        elif d.attrs["fmri"] == p3_name:
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
                                     ["usr/bin/python2.6"])
                         else:
-                                raise RuntimeError("Got expected fmri "
+                                raise RuntimeError("Got unexpected fmri "
                                     "%s for in dependency %s" %
                                     (d.attrs["fmri"], d))
 
@@ -429,7 +429,7 @@ close"""
                                         [str(d) for d in pkg_deps[col_path]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
-                
+
                 col_path = self.make_manifest(self.multi_file_dep_manf)
                 # This manifest provides two files that satisfy col_path's
                 # file dependencies.
@@ -510,7 +510,7 @@ close"""
                 self._do_install(self.api_obj, ["variant_pkg"])
 
                 m1_path = self.make_manifest(self.simp_manf)
-                p2_name = "pkg:/variant_pkg@1.0,5.11-0"
+                p2_name = "pkg:/variant_pkg@1.0-0"
 
                 pkg_deps, errs = dependencies.resolve_deps(
                     [m1_path], self.api_obj)
@@ -518,7 +518,7 @@ close"""
                 self.assertEqual(len(pkg_deps[m1_path]), 1)
                 self.assertEqual(len(errs), 0)
                 for d in pkg_deps[m1_path]:
-                        if d.attrs["fmri"].startswith(p2_name):
+                        if d.attrs["fmri"] == p2_name:
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
                                     ["var/log/syslog"])
@@ -547,7 +547,7 @@ close"""
                                         [str(d) for d in pkg_deps[col_path]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
-                
+
                 col_path = self.make_manifest(self.collision_manf)
                 col_path_num_var = self.make_manifest(
                     self.collision_manf_num_var)

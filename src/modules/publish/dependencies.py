@@ -31,7 +31,6 @@ import urllib
 
 import pkg.actions as actions
 import pkg.client.api as api
-import pkg.client.api_errors as api_errors
 import pkg.flavor.base as base
 import pkg.flavor.elf as elf_dep
 import pkg.flavor.hardlink as hardlink
@@ -287,7 +286,7 @@ def choose_name(fp, mfst):
                 return name
         return urllib.unquote(os.path.basename(fp))
 
-def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
+def helper(lst, file_dep, dep_vars, orig_dep_vars):
         """Creates the depend actions from lst for the dependency and determines
         which variants have been accounted for.
 
@@ -301,10 +300,7 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
         satisfied.
 
         'orig_dep_vars' is the original set of variants under which the
-        dependency must be satisfied.
-
-        'pkg_vars' is the list of variants against which the package delivering
-        the action was published."""
+        dependency must be satisfied."""
 
         res = []
         vars = []
@@ -355,7 +351,7 @@ def make_paths(file_dep):
         return [os.path.join(rp, f) for rp in rps for f in files]
 
 def find_package_using_delivered_files(delivered, file_dep, dep_vars,
-    orig_dep_vars, pkg_vars):
+    orig_dep_vars):
         """Uses a dictionary mapping file paths to packages to determine which
         package delivers the dependency under which variants.
 
@@ -368,13 +364,9 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
         resolved.
 
         'orig_dep_vars' is the original set of variants under which the
-        dependency must be satisfied.
-
-        'pkg_vars' is the list of variants against which the package delivering
-        the action was published."""
+        dependency must be satisfied."""
 
         res = None
-        variants_with_matches = []
         errs = []
         multiple_path_errs = {}
         for p in make_paths(file_dep):
@@ -387,7 +379,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                 # published.
                 try:
                         new_res, dep_vars = helper(delivered_list, file_dep,
-                            dep_vars, orig_dep_vars, pkg_vars)
+                            dep_vars, orig_dep_vars)
                 except AmbiguousPathError, e:
                         errs.append(e)
                 else:
@@ -448,13 +440,13 @@ def find_package(delivered, installed, file_dep, pkg_vars):
 
         # First try to resolve the dependency against the delivered files.
         res, dep_vars, errs = find_package_using_delivered_files(delivered,
-                file_dep, dep_vars, orig_dep_vars, pkg_vars)
+                file_dep, dep_vars, orig_dep_vars)
         if res and dep_vars.is_satisfied():
                 return res, dep_vars, errs
         # If the dependency isn't fully satisfied, resolve it against the
         # files installed in the current image.
         inst_res, dep_vars, inst_errs = find_package_using_delivered_files(
-            installed, file_dep, dep_vars, orig_dep_vars, pkg_vars)
+            installed, file_dep, dep_vars, orig_dep_vars)
         res.extend(inst_res)
         errs.extend(inst_errs)
         return res, dep_vars, errs
@@ -668,6 +660,27 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
         'prune_attrs' is a boolean indicating whether debugging
         attributes should be stripped from returned actions."""
 
+        def add_fmri_path_mapping(pathdict, pfmri, mfst):
+                """Add mappings from path names to FMRIs and variants.
+
+                'pathdict' is a dict path -> (fmri, variants) to which
+                entries are added.
+
+                'pfmri' is the FMRI of the current manifest
+
+                'mfst' is the manifest to process."""
+
+                pvariants = mfst.get_all_variants()
+
+                for f in itertools.chain(mfst.gen_actions_by_type("file"),
+                     mfst.gen_actions_by_type("hardlink"),
+                     mfst.gen_actions_by_type("link")):
+                        dep_vars = variants.VariantSets(f.get_variants())
+                        dep_vars.merge_unknown(pvariants)
+                        pathdict.setdefault(f.attrs["path"], []).append(
+                            (pfmri, dep_vars))
+
+
         # The variable 'manifests' is a list of 5-tuples. The first element
         # of the tuple is the path to the manifest. The second is the name of
         # the package contained in the manifest. The third is the manifest
@@ -684,34 +697,20 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
 
         delivered_files = {}
         installed_files = {}
+
         # Build a list of all files delivered in the manifests being resolved.
-        for n, f_list, pkg_vars in (
-            (name,
-            itertools.chain(mfst.gen_actions_by_type("file"),
-                mfst.gen_actions_by_type("hardlink"),
-                mfst.gen_actions_by_type("link")),
-            pv)
-            for mp, name, mfst, pv, miss_files in manifests
-        ):
-                for f in f_list:
-                        dep_vars = variants.VariantSets(f.get_variants())
-                        dep_vars.merge_unknown(pkg_vars)
-                        delivered_files.setdefault(
-                            f.attrs["path"], []).append((n, dep_vars))
+        for mp, name, mfst, pkg_vars, miss_files in manifests:
+                pfmri = fmri.PkgFmri(name).get_short_fmri()
+                add_fmri_path_mapping(delivered_files, pfmri, mfst)
+
         # Build a list of all files delivered in the packages installed on
         # the system.
         for (pub, stem, ver), summ, cats, states in api_inst.get_pkg_list(
             api.ImageInterface.LIST_INSTALLED):
                 pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
                 mfst = api_inst.get_manifest(pfmri, all_variants=True)
-                pv = mfst.get_all_variants()
-                for f in itertools.chain(mfst.gen_actions_by_type("file"),
-                    mfst.gen_actions_by_type("hardlink"),
-                    mfst.gen_actions_by_type("link")):
-                        dep_vars = variants.VariantSets(f.get_variants())
-                        dep_vars.merge_unknown(pkg_vars)
-                        installed_files.setdefault(
-                            f.attrs["path"], []).append((pfmri, dep_vars))
+                add_fmri_path_mapping(installed_files, pfmri.get_short_fmri(),
+                                      mfst)
 
         pkg_deps = {}
         errs = []

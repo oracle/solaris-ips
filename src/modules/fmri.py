@@ -53,7 +53,7 @@ class FmriError(Exception):
         def __init__(self, fmri):
                 Exception.__init__(self)
                 self.fmri = fmri
- 
+
         def __unicode__(self):
                 # To workaround python issues 6108 and 2517, this provides a
                 # a standard wrapper for this class' exceptions so that they
@@ -144,10 +144,10 @@ class PkgFmri(object):
                 if not self.pkg_name:
                         raise IllegalFmri(fmri, IllegalFmri.SYNTAX_ERROR,
                             detail="Missing package name")
-                     
+
                 if not self.valid_pkg_name.match(self.pkg_name):
                         raise IllegalFmri(fmri, IllegalFmri.BAD_PACKAGENAME,
-                            detail=self.pkg_name) 
+                            detail=self.pkg_name)
 
         def copy(self):
                 return PkgFmri(str(self))
@@ -271,12 +271,15 @@ class PkgFmri(object):
                 if not publisher:
                         publisher = default_publisher
 
-                if not publisher or publisher.startswith(PREF_PUB_PFX):
-                        return "pkg:/%s@%s" % (self.pkg_name,
-                            self.version.get_short_version())
+                if self.version == None:
+                        version = ""
+                else:
+                        version = "@" + self.version.get_short_version()
 
-                return "pkg://%s/%s@%s" % (publisher, self.pkg_name,
-                    self.version.get_short_version())
+                if not publisher or publisher.startswith(PREF_PUB_PFX):
+                        return "pkg:/%s%s" % (self.pkg_name, version)
+
+                return "pkg://%s/%s%s" % (publisher, self.pkg_name, version)
 
         def get_fmri(self, default_publisher=None, anarchy=False,
             include_scheme=True):
@@ -361,7 +364,7 @@ class PkgFmri(object):
                         return c
 
                 c = cmp(self.pkg_name, other.pkg_name)
- 
+
                 if c != 0:
                         return c
 
@@ -486,7 +489,7 @@ def strip_pub_pfx(pub):
                 outstr = pub
 
         return outstr
-        
+
 
 def is_same_publisher(pub1, pub2):
         """Compare two publishers.  Return true if they are the same, false

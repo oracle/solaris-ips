@@ -476,7 +476,7 @@ file NOHASH group=bin mode=0644 owner=root path=usr/bin/pkg \
 
         # The #! line has lots of spaces to test for bug 14632.
         pyver_python_text = """\
-#!                  /usr/bin/python%s     -S  
+#!                  /usr/bin/python%s     -S    
 
 import pkg.indexer as indexer
 import pkg.search_storage as ss
@@ -575,7 +575,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
 """
 
         pyver_resolve_results = """
-depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py %(pfx)s.file=usr/bin/python %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script %(pfx)s.type=python type=require
+depend fmri=pkg:/%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py %(pfx)s.file=usr/bin/python %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script %(pfx)s.type=python type=require
 """
 
         pyver_mismatch_results = """\
