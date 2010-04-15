@@ -2018,7 +2018,8 @@ def create_output_format(display_headers, widths, justs, line):
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
     display_headers):
-        """Print results of a "list" operation """
+        """Print results of a "list" operation.  Returns False if no output
+        was produced."""
 
         justs = calc_justs(attrs)
         lines = produce_lines(actionlist, attrs, action_types)
@@ -2040,12 +2041,17 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
         else:
                 key_extract = lambda x: x[sortidx]
 
-        if display_headers:
-                print_headers(attrs, widths, justs)
-
+        printed_output = False
         for line in sorted(lines, key=key_extract):
-                msg((create_output_format(display_headers, widths, justs,
-                    line) % tuple(line)).rstrip())
+                text = (create_output_format(display_headers, widths, justs,
+                    line) % tuple(line)).rstrip()
+                if not text:
+                        continue
+                if not printed_output and display_headers:
+                        print_headers(attrs, widths, justs)
+                printed_output = True
+                msg(text)
+        return printed_output
 
 def check_attrs(attrs, cmd, reference=None, prefixes=None):
         """For a set of output attributes ("attrs") passed to a command ("cmd"),
@@ -2076,6 +2082,7 @@ def list_contents(img, args):
 
         display_headers = True
         display_raw = False
+        output_fields = False
         remote = False
         local = False
         attrs = []
@@ -2093,6 +2100,7 @@ def list_contents(img, args):
                                     "<attribute>=<pattern>"), cmd="contents")
                         attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
+                        output_fields = True
                         attrs.extend(arg.split(","))
                 elif opt == "-s":
                         sort_attrs.append(arg)
@@ -2281,8 +2289,26 @@ def list_contents(img, args):
 pkg: contents: no matching actions found in the listed packages"""))
 
         if fmris and not err:
-                display_contents_results(actionlist, attrs, sort_attrs,
-                    action_types, display_headers)
+                displayed_results = display_contents_results(actionlist, attrs,
+                    sort_attrs, action_types, display_headers)
+
+                if not displayed_results:
+                        if output_fields:
+                                error(gettext.ngettext("""\
+This package contains no actions with the fields specified using the -o
+option. Please specify other fields, or use the -m option to show the raw
+package manifests.""", """\
+These packages contain no actions with the fields specified using the -o
+option. Please specify other fields, or use the -m option to show the raw
+package manifests.""", len(pargs)))
+                        else:
+                                error(gettext.ngettext("""\
+This package delivers no filesystem content, but may contain metadata. Use
+the -o option to specify fields other than 'path', or use the -m option to show
+the raw package manifests.""", """\
+These packages deliver no filesystem content, but may contain metadata. Use
+the -o option to specify fields other than 'path', or use the -m option to show
+the raw package manifests.""", len(pargs)))
 
         if notfound:
                 err = EXIT_OOPS

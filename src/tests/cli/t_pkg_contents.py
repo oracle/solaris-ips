@@ -49,6 +49,18 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        nopathA10 = """
+            open nopathA@1.0,5.11-0
+            add license tmp/copyright1 license=copyright
+            close
+        """
+
+        nopathB10 = """
+            open nopathB@1.0,5.11-0
+            add license tmp/copyright1 license=copyright
+            close
+        """
+
         # wire file contents to well known values so we're sure we
         # know their hashes.
         misc_files = {
@@ -65,6 +77,9 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(self.misc_files)
 
                 self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
+                self.pkgsend_bulk(self.dc.get_depot_url(), self.nopathA10)
+                self.pkgsend_bulk(self.dc.get_depot_url(), self.nopathB10)
+
 
 	def test_contents_bad_opts(self):
 
@@ -144,6 +159,40 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
 
                 # Non-matching pattern should exit 1
                 self.pkg("contents -a path=usr/bin/notthere", 1)
+
+        def test_contents_nocolumns(self):
+                """Test that when pkg contents doesn't find any actions that
+                match the specified output columns, we produce appropriate
+                error messages """
+
+                self.image_create(self.dc.get_depot_url())
+                self.pkg("install nopathA")
+                self.pkg("install nopathB")
+
+                # part of the messages that result in running pkg contents
+                # when no output would result.  Note that pkg still returns 0
+                # at present in these cases.
+                # XXX Checking for a substring of an error message in a test case
+                # isn't ideal.
+                nopath = "This package delivers no filesystem content"
+                nopath_plural = "These packages deliver no filesystem content"
+
+                nofield = "This package contains no actions with the fields specified " \
+                    "using the -o"
+                nofield_plural = "These packages contain no actions with the fields " \
+                    "specified using the -o"
+
+                self.pkg("contents nopathA")
+                self.assert_(nopath in self.output)
+
+                self.pkg("contents nopathA nopathB")
+                self.assert_(nopath_plural in self.output)
+
+                self.pkg("contents -o noodles nopathA")
+                self.assert_(nofield in self.output)
+
+                self.pkg("contents -o noodles -o mice nopathA nopathB")
+                self.assert_(nofield_plural in self.output)
 
 if __name__ == "__main__":
         unittest.main()
