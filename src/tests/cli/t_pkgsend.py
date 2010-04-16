@@ -308,20 +308,32 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.dc.stop()
                 rpath = os.path.join(self.test_root, "example_repo")
-                self.pkgsend("file://%s" % rpath,
-                    "create-repository --set-property publisher.prefix=test")
 
-                # Now verify that the repository was created by starting the
-                # depot server in readonly mode using the target repository.
-                # If it wasn't, restart_depots should fail with an exception
-                # since the depot process will exit with a non-zero return
-                # code.
-                self.dc.set_repodir(rpath)
-                self.dc.set_readonly()
-                self.dc.start()
+                # ensure we fail when presented with a file://host/path/example_repo
+                # which includes a hostname, bug 14022
+                self.pkgsend("file:/%s" % rpath, "create-repository"
+                    " --set-property publisher.prefix=test", exit=1)
+
+                # check that we can create a repository using URIs with varying
+                # number of '/' characters and verify the repo was created.
+                for slashes in [ "", "//", "///", "////" ]:
+                        if os.path.exists(rpath):
+                                shutil.rmtree(rpath)
+                        self.pkgsend("file:%s%s" % (slashes, rpath), "create-repository"
+                            " --set-property publisher.prefix=test")
+
+                        # Now verify that the repository was created by starting the
+                        # depot server in readonly mode using the target repository.
+                        # If it wasn't, restart_depots should fail with an exception
+                        # since the depot process will exit with a non-zero return
+                        # code.
+                        self.dc.set_repodir(rpath)
+                        self.dc.set_readonly()
+                        self.dc.start()
+                        self.dc.stop()
 
                 # Now verify that creation of a repository is rejected for all
-                # schemes execpt file://.
+                # schemes except file://.
                 self.pkgsend("http://invalid.test1", "create-repository", exit=1)
                 self.pkgsend("https://invalid.test2", "create-repository", exit=1)
 

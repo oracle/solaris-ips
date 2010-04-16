@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 """Provides a set of publishing interfaces for interacting with a pkg(5)
@@ -563,6 +563,15 @@ class Transaction(object):
                 if scheme.startswith("http") and not netloc:
                         raise TransactionRepositoryURLError(origin_url,
                             netloc=None)
+                if scheme.startswith("file"):
+                        if netloc:
+                                raise TransactionRepositoryURLError(origin_url,
+                                    msg="'%s' contains host information, which is not "
+                                        "supported for filesystem operations." % netloc)
+                        # as we're urlunparsing below, we need to ensure that the path
+                        # starts with only one '/' character, if any are present
+                        if path.startswith("/"):
+                                path = "/" + path.lstrip("/")
 
                 # Rebuild the url with the sanitized components.
                 origin_url = urlparse.urlunparse((scheme, netloc, path, params,
