@@ -91,7 +91,7 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 ic_args += " --facet 'facet.locale.fr_CA=False' " 
 
                 depot = self.dc.get_depot_url()
-                self.image_create(depot, additional_args=ic_args)
+                self.pkg_image_create(depot, additional_args=ic_args)
                 self.pkg("facet")
                 self.pkg("facet -H 'facet.locale*' | egrep False")
                 # install a package and verify

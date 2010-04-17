@@ -82,7 +82,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 36
+CLIENT_API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -505,6 +505,7 @@ def list_inventory(img, args):
                 api_inst.log_operation_end()
                 return EXIT_OK
         except (api_errors.InvalidPackageErrors,
+            api_errors.ActionExecutionError,
             api_errors.PermissionsException), e:
                 error(e, cmd="list")
                 return EXIT_OOPS
@@ -622,6 +623,7 @@ def fix_image(img, args):
                             accept=accept, show_licenses=show_licenses)
                 except (api_errors.InvalidPlanError,
                     api_errors.InvalidPackageErrors,
+                    api_errors.ActionExecutionError,
                     api_errors.PermissionsException), e:
                         logger.error("\n")
                         logger.error(str(e))
@@ -844,13 +846,14 @@ def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
                 raise
         return EXIT_OK
 
-def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
+def __api_execute_plan(operation, api_inst):
         try:
                 api_inst.execute_plan()
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
                 return EXIT_OOPS
         except (api_errors.InvalidPlanError,
+            api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
@@ -885,12 +888,6 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 error(e)
                 return EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException:
-                raise
-        except api_errors.ActionExecutionError, e:
-                if not raise_ActionExecutionError:
-                        return EXIT_OOPS
-                error(_("An unexpected error happened during " \
-                    "%s: %s") % (operation, e))
                 raise
         except Exception, e:
                 error(_("An unexpected error happened during " \
@@ -942,6 +939,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                         return True
                 return False
         if e_type in (api_errors.InvalidPlanError,
+            api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors):
                 error("\n" + str(e))
                 return False
@@ -1284,8 +1282,7 @@ def install(img, args):
         if ret_code != EXIT_OK:
                 return ret_code
 
-        ret_code = __api_execute_plan(op, api_inst,
-            raise_ActionExecutionError=False)
+        ret_code = __api_execute_plan(op, api_inst)
 
         return ret_code
 
@@ -1709,6 +1706,7 @@ def info(img, args):
                 try:
                         ret = api_inst.info(pargs, info_local, info_needed)
                 except (api_errors.InvalidPackageErrors,
+                    api_errors.ActionExecutionError,
                     api_errors.UnrecognizedOptionsToInfo), e:
                         error(e)
                         return EXIT_OOPS

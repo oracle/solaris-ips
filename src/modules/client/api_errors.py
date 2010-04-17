@@ -387,41 +387,74 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
 
 
 class ActionExecutionError(ApiException):
-        """An error was encountered executing an action.
+        """Used to indicate that action execution (such as install, remove,
+        etc.) failed even though the action is valid.
 
         In particular, this exception indicates that something went wrong in the
-        application (or unapplication) of the action to the system, not an error
-        in the pkg(5) code.
+        application (or unapplication) of the action to the system, and is most
+        likely not an error in the pkg(5) code."""
 
-        The 'msg' argument can provide a more specific message than what would
-        be returned from, and 'ignoreerrno' can be set to True to indicate that
-        the sterror() text is misleading, and shouldn't be displayed.
-        """
+        def __init__(self, action, details=None, error=None, fmri=None,
+            use_errno=None):
+                """'action' is the object for the action that failed during the
+                requested operation.
 
-        def __init__(self, action, exception, msg=None, ignoreerrno=False):
+                'details' is an optional message explaining what operation
+                failed, why it failed, and why it cannot continue.  It should
+                also include a suggestion as to how to resolve the situation
+                if possible.
+
+                'error' is an optional exception object that may have been
+                raised when the operation failed.
+
+                'fmri' is an optional package FMRI indicating what package
+                was being operated on at the time the error occurred.
+
+                'use_errno' is an optional boolean value indicating whether
+                the strerror() text of the exception should be used.  If
+                'details' is provided, the default value is False, otherwise
+                True."""
+
+                assert (details or error)
                 self.action = action
-                self.exception = exception
-                self.msg = msg
-                self.ignoreerrno = ignoreerrno
+                self.details = details
+                self.error = error
+                self.fmri = fmri
+                if use_errno == None:
+                        # If details were provided, don't use errno unless
+                        # explicitly requested.
+                        use_errno = not details
+                self.use_errno = use_errno
 
         def __str__(self):
                 errno = ""
-                if not self.ignoreerrno and hasattr(self.exception, "errno"):
-                        errno = "[errno %d: %s]" % (self.exception.errno,
-                            os.strerror(self.exception.errno))
+                if self.use_errno and self.error and \
+                    hasattr(self.error, "errno"):
+                        errno = "[errno %d: %s]" % (self.error.errno,
+                            os.strerror(self.error.errno))
 
-                msg = self.msg or ""
+                details = self.details or ""
 
                 # Fall back on the wrapped exception if we don't have anything
                 # useful.
-                if not errno and not msg:
-                        return str(self.exception)
+                if not errno and not details:
+                        return str(self.error)
 
-                if errno and msg:
-                        return "%s: %s" % (errno, msg)
+                if errno and details:
+                        details = "%s: %s" % (errno, details)
+
+                if details and not self.fmri:
+                        details = _("Requested operation failed for action "
+                            "%(action)s:\n%(details)s") % {
+                            "action": self.action,
+                            "details": msg }
+                elif details:
+                        details = _("Requested operation failed for package "
+                            "%(fmri)s:\n%(details)s") % { "fmri": self.fmri,
+                            "details": details }
 
                 # If we only have one of the two, no need for the colon.
-                return "%s%s" % (errno, msg)
+                return "%s%s" % (errno, details)
 
 
 class CatalogRefreshException(ApiException):

@@ -29,6 +29,7 @@ import difflib
 import errno
 import gettext
 import os
+import pprint
 import shutil
 import signal
 import stat
@@ -44,6 +45,7 @@ import re
 import textwrap
 
 EmptyI = tuple()
+EmptyDict = dict()
 
 #
 # These are initialized by pkg5testenv.setup_environment.
@@ -87,6 +89,13 @@ class TestSkippedException(Exception):
 #
 import pkg.depotcontroller as depotcontroller
 import pkg.portable as portable
+import pkg.client.api
+import pkg.client.progress
+
+# Version test suite is known to work with.
+PKG_CLIENT_NAME = "pkg"
+CLIENT_API_VERSION = 37
+
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
 class Pkg5CommonException(AssertionError):
@@ -489,6 +498,12 @@ class Pkg5TestCase(unittest.TestCase):
         
         def assertEqualDiff(self, expected, actual):
                 """Compare two strings."""
+
+                if not isinstance(expected, basestring):
+                        expected = pprint.pformat(expected)
+                if not isinstance(actual, basestring):
+                        actual = pprint.pformat(actual)
+
                 self.assertEqual(expected, actual,
                     "Actual output differed from expected output.\n" +
                     "\n".join(difflib.unified_diff(
@@ -1164,7 +1179,31 @@ class CliTestCase(Pkg5TestCase):
         def get_img_path(self):
                 return self.img_path
 
-        def image_create(self, repourl, prefix="test", additional_args=""):
+        def image_create(self, repourl, prefix="test", variants=EmptyDict):
+                """A convenience wrapper for callers that only need basic image
+                creation functionality.  This wrapper creates a full (as opposed
+                to user) image using the pkg.client.api and returns the related
+                API object."""
+
+                assert self.img_path
+                assert self.img_path != "/"
+
+                self.image_destroy()
+                os.mkdir(self.img_path)
+
+                progtrack = pkg.client.progress.NullProgressTracker()
+                api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
+                    CLIENT_API_VERSION, self.img_path,
+                    pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
+                    prefix=prefix, progtrack=progtrack, variants=variants)
+                return api_inst
+
+        def pkg_image_create(self, repourl, prefix="test", additional_args="",
+            exit=0):
+                """Executes pkg(1) client to create a full (as opposed to user)
+                image; returns exit code of client or raises an exception if
+                exit code doesn't match 'exit' or equals 99.."""
+
                 assert self.img_path
                 assert self.img_path != "/"
 
@@ -1183,10 +1222,9 @@ class CliTestCase(Pkg5TestCase):
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output)
-                if retcode != 0:
+                if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, 0,
                             retcode, output)
-
                 return retcode
 
         def image_set(self, imgdir):
@@ -1200,7 +1238,6 @@ class CliTestCase(Pkg5TestCase):
                 if os.path.exists(self.img_path):
                         os.chdir(self.test_root)
                         shutil.rmtree(self.img_path)
-
 
         def get_su_wrapper(self, su_wrap=None):
                 if su_wrap:

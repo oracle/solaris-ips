@@ -309,8 +309,8 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                     ren_partial_variant10)
 
                 # Create an image.
-                self.image_create(durl,
-                    additional_args="--variant=variant.cat=bobcat")
+                variants = { "variant.cat": "bobcat" }
+                self.image_create(durl, variants=variants)
 
                 # First, verify that a renamed package (for all variants), and
                 # with the correct dependencies will provide the expected info.

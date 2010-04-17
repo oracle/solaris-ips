@@ -39,6 +39,7 @@ try:
 except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import pkg.actions
+import pkg.client.api_errors as apx
 import pkg.portable as portable
 import pkg.variant as variant
 import stat
@@ -338,8 +339,7 @@ class Action(object):
                 return "%s: %s" % \
                     (self.name, self.attrs.get(self.key_attr, "???"))
 
-        @staticmethod
-        def makedirs(path, **kw):
+        def makedirs(self, path, **kw):
                 """Make directory specified by 'path' with given permissions, as
                 well as all missing parent directories.  Permissions are
                 specified by the keyword arguments 'mode', 'uid', and 'gid'.
@@ -362,8 +362,32 @@ class Action(object):
 
                 g = enumerate(pathlist)
                 for i, e in g:
-                        if not os.path.isdir(os.path.join(*pathlist[:i + 1])):
-                                break
+                        # os.path.isdir() follows links, which isn't
+                        # desirable here.
+                        p = os.path.join(*pathlist[:i + 1])
+                        try:
+                                fs = os.lstat(p)
+                        except OSError, e:
+                                if e.errno == errno.ENOENT:
+                                        break
+                                raise
+
+                        if not stat.S_ISDIR(fs.st_mode):
+                                if p == path:
+                                        # Allow caller to handle target by
+                                        # letting the operation continue,
+                                        # and whatever error is encountered
+                                        # being raised to the caller.
+                                        break
+
+                                err_txt = _("Unable to create %(path)s; a "
+                                    "parent directory %(p)s has been replaced "
+                                    "with a file or link.  Please restore the "
+                                    "parent directory and try again.") % \
+                                    locals()
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e,
+                                    fmri=kw.get("fmri", None))
                 else:
                         # XXX Because the filelist codepath may create
                         # directories with incorrect permissions (see
@@ -372,7 +396,7 @@ class Action(object):
                         # intermediate directories being explicitly created by
                         # the packaging system; otherwise intermediate
                         # directories will not get their permissions corrected.
-                        fs = os.stat(path)
+                        fs = os.lstat(path)
                         mode = kw.get("mode", fs.st_mode)
                         uid = kw.get("uid", fs.st_uid)
                         gid = kw.get("gid", fs.st_gid)
@@ -390,7 +414,20 @@ class Action(object):
                 fs = os.stat(os.path.join(*pathlist[:i]))
                 for i, e in g:
                         p = os.path.join(*pathlist[:i])
-                        os.mkdir(p, fs.st_mode)
+                        try:
+                                os.mkdir(p, fs.st_mode)
+                        except OSError, e:
+                                if e.ernno != errno.ENOTDIR:
+                                        raise
+                                err_txt = _("Unable to create %(path)s; a "
+                                    "parent directory %(p)s has been replaced "
+                                    "with a file or link.  Please restore the "
+                                    "parent directory and try again.") % \
+                                    locals()
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e,
+                                    fmri=kw.get("fmri", None))
+
                         os.chmod(p, fs.st_mode)
                         try:
                                 portable.chown(p, fs.st_uid, fs.st_gid)
@@ -727,6 +764,68 @@ class Action(object):
                 """Client-side method that removes the object."""
                 pass
 
+        def remove_fsobj(self, pkgplan, path):
+                """Shared logic for removing file and link objects."""
+
+                # Necessary since removal logic is reused by install.
+                fmri = pkgplan.destination_fmri
+                if not fmri:
+                        fmri = pkgplan.origin_fmri
+
+                try:
+                        portable.remove(path)
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                # Already gone; don't care.
+                                return
+                        elif e.errno == errno.EBUSY and os.path.ismount(path):
+                                # User has replaced item with mountpoint, or a
+                                # package has been poorly implemented.
+                                err_txt = _("Unable to remove %s; it is in use "
+                                    "as a mountpoint.  To continue, please "
+                                    "unmount the filesystem at the target "
+                                    "location and try again.") % path
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e, fmri=fmri)
+                        elif e.errno == errno.EBUSY:
+                                # os.path.ismount() is broken for lofs
+                                # filesystems, so give a more generic
+                                # error.
+                                err_txt = _("Unable to remove %s; it is in "
+                                    "use by the system, another process, or "
+                                    "as a mountpoint.") % path
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e, fmri=fmri)
+                        elif e.errno == errno.EPERM and \
+                            not stat.S_ISDIR(os.lstat(path).st_mode):
+                                # Was expecting a directory in this failure
+                                # case, it is not, so raise the error.
+                                raise
+                        elif e.errno in (errno.EACCES, errno.EROFS):
+                                # Raise these permissions exceptions as-is.
+                                raise
+                        elif e.errno != errno.EPERM:
+                                # An unexpected error.
+                                raise apx.ActionExecutionError(self, error=e,
+                                    fmri=fmri)
+
+                        # Attempting to remove a directory as performed above
+                        # gives EPERM.  First, try to remove the directory,
+                        # if it isn't empty, salvage it.
+                        try:
+                                os.rmdir(path)
+                        except OSError, e:
+                                if e.errno in (errno.EPERM, errno.EACCES):
+                                        # Raise permissions exceptions as-is.
+                                        raise
+                                elif e.errno not in (errno.EEXIST,
+                                    errno.ENOTEMPTY):
+                                        # An unexpected error.
+                                        raise apx.ActionExecutionError(self,
+                                            error=e, fmri=fmri)
+
+                                pkgplan.image.salvage(path)
+
         def postremove(self, pkgplan):
                 """Client-side method that performs post-remove actions."""
                 pass
@@ -751,3 +850,47 @@ class Action(object):
                 'fmri' is an optional package FMRI (object or string) indicating
                 what package contained this action."""
                 pass
+
+        def fsobj_checkpath(self, pkgplan, final_path):
+                """Verifies that the specified path doesn't contain one or more
+                symlinks relative to the image root.  Raises an
+                ActionExecutionError exception if path check fails."""
+
+                valid_dirs = pkgplan.image.imageplan.valid_directories
+                parent_path = os.path.dirname(final_path)
+                if parent_path in valid_dirs:
+                        return
+
+                real_parent_path = os.path.realpath(parent_path)
+                if parent_path == real_parent_path:
+                        valid_dirs.add(parent_path)
+                        return
+
+                fmri = pkgplan.destination_fmri
+
+                # Now test each component of the parent path until one is found
+                # to be a link.  When found, that's the parent that has been
+                # redirected to some other location.
+                tmp = parent_path
+                img_root = pkgplan.image.root.rstrip(os.path.sep)
+                while 1:
+                        if tmp == img_root:
+                                # No parent directories up to the root were
+                                # found to be links, so assume this is ok.
+                                valid_dirs.add(parent_path)
+                                return
+
+                        if os.path.islink(tmp):
+                                # We've found the parent that changed locations.
+                                break
+                        # Drop the final component.
+                        tmp = os.path.split(tmp)[0]
+
+                parent_dir = tmp
+                parent_target = os.path.realpath(parent_dir)
+                err_txt = _("Cannot install '%(final_path)s'; parent directory "
+                    "%(parent_dir)s is a link to %(parent_target)s.  To "
+                    "continue, move the directory to its original location and "
+                    "try again.") % locals() 
+                raise apx.ActionExecutionError(self, details=err_txt,
+                    fmri=fmri)

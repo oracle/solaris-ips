@@ -36,7 +36,6 @@ import stat
 
 import generic
 import pkg.actions
-from pkg.client.api_errors import ActionExecutionError
 from pkg import misc
 
 class LinkAction(generic.Action):
@@ -66,28 +65,18 @@ class LinkAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
+                # Don't allow installation through symlinks.
+                self.fsobj_checkpath(pkgplan, path)
+
                 if not os.path.exists(os.path.dirname(path)):
                         self.makedirs(os.path.dirname(path),
-                            mode=misc.PKG_DIR_MODE)
+                            mode=misc.PKG_DIR_MODE,
+                            fmri=pkgplan.destination_fmri)
 
                 # XXX The exists-unlink-symlink path appears to be as safe as it
                 # gets to modify a link with the current symlink(2) interface.
                 if os.path.lexists(path):
-                        try:
-                                os.unlink(path)
-                        except EnvironmentError, e:
-                                if e.errno == errno.EPERM:
-                                        # Unlinking a directory gives EPERM,
-                                        # which is confusing, so ignore errno
-                                        # and give a good message.
-                                        path = self.attrs["path"]
-                                        raise ActionExecutionError(self, e,
-                                            "attempted to remove link '%s' but "
-                                            "found a directory" % path,
-                                            ignoreerrno=True)
-                                else:
-                                        raise ActionExecutionError(self, e)
-
+                        self.remove(pkgplan)
                 os.symlink(target, path)
 
         def verify(self, img, **args):
@@ -117,13 +106,13 @@ class LinkAction(generic.Action):
                 return errors, warnings, info
 
         def remove(self, pkgplan):
+                """Removes the installed link from the system.  If something
+                other than a link is found at the destination location, it
+                will be removed or salvaged."""
+
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
-                try:
-                        os.unlink(path)
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
+                return self.remove_fsobj(pkgplan, path)
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

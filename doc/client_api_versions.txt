@@ -1,3 +1,14 @@
+Version 37:
+Compatible with clients using version 36.
+
+    The pkg.client.api ImageInterface has changed as follows:
+        * Whenever an unexpected change in the state or structure
+          of the image is encountered during install, remove, or
+          update operations (such as a missing file, directory,
+          or inability to remove an item) and it cannot be
+          recovered from without user intervention, an
+          ActionExecutionError exception is raised.
+
 Version 36:
 Incompatible with clients using versions 0-35.
 

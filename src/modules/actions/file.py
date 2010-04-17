@@ -111,9 +111,13 @@ class FileAction(generic.Action):
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
+                # Don't allow installation through symlinks.
+                self.fsobj_checkpath(pkgplan, final_path)
+
                 if not os.path.exists(os.path.dirname(final_path)):
                         self.makedirs(os.path.dirname(final_path),
-                            mode=misc.PKG_DIR_MODE)
+                            mode=misc.PKG_DIR_MODE,
+                            fmri=pkgplan.destination_fmri)
 
                 # XXX If we're upgrading, do we need to preserve file perms from
                 # existing file?
@@ -155,9 +159,8 @@ class FileAction(generic.Action):
                         except OSError, e:
                                 if e.errno == errno.ENOENT:
                                         pass
-                                elif e.errno == errno.EEXIST or \
-                                            e.errno == errno.ENOTEMPTY:
-                                        pkgplan.image.salvagedir(final_path)
+                                elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):
+                                        pkgplan.image.salvage(final_path)
                                 elif e.errno != errno.EACCES:
                                         # this happens on Windows
                                         raise
@@ -390,18 +393,22 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
-                # are we supposed to save this file to restore it elsewhere
+                # Are we supposed to save this file to restore it elsewhere
                 # or in another pkg?
                 if "save_file" in self.attrs:
                         self.save_file(pkgplan.image, path)
 
                 try:
-                        # Make file writable so it can be deleted
+                        # Make file writable so it can be deleted.
                         os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
-                        portable.remove(path)
                 except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
+                        if e.errno == errno.ENOENT:
+                                # Already gone; don't care.
+                                return
+                        raise
+
+                # Attempt to remove the file.
+                self.remove_fsobj(pkgplan, path)
 
         def different(self, other):
                 # Override the generic different() method to ignore the file

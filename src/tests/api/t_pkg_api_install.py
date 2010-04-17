@@ -39,10 +39,11 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.client.progress as progress
+import pkg.misc as misc
 import pkg.portable as portable
 import shutil
 
-API_VERSION = 36
+API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
@@ -318,9 +319,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
 
         def test_pkg_file_errors(self):
-                """ Verify that package install works as expected when
-                files or directories are are missing during upgrade or
-                uninstall. """
+                """ Verify that package install and uninstall works as expected
+                when files or directories are missing. """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bar09 + self.bar10 + self.bar11 + \
@@ -835,6 +835,369 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                                 self.assertRaises(api_errors.InvalidPackageErrors,
                                     self.__do_install, api_obj,
                                     [pfmri.pkg_name])
+
+
+class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
+        """This set of tests is intended to verify that the client API will
+        handle image state errors gracefully during install or uninstall
+        operations."""
+
+        # Only start/stop the depot once (instead of for every test)
+        persistent_setup = True
+
+        dir10 = """
+            open dir@1.0,5.11-0
+            add dir path=dir mode=755 owner=root group=bin
+            close """
+
+        file10 = """
+            open file@1.0,5.11-0
+            add file tmp/file path=file mode=755 owner=root group=bin
+            close """
+
+        # Purposefully omits depend on dir@1.0.
+        filesub10 = """
+            open filesub@1.0,5.11-0
+            add file tmp/file path=dir/file mode=755 owner=root group=bin
+            close """
+
+        # Purposefully omits depend on dir@1.0.
+        link10 = """
+            open link@1.0,5.11-0
+            add link path=link target=dir
+            close """
+
+        link20 = """
+            open link@2.0,5.11-0
+            add depend type=require fmri=file@1.0,5.11-0
+            add link path=dir/link target=file
+            close """
+
+        # Purposefully omits depend on file@1.0.
+        hardlink10 = """
+            open hardlink@1.0,5.11-0
+            add hardlink path=hardlink target=file
+            close """
+
+        # Purposefully omits depend on dir@1.0.
+        hardlink20 = """
+            open hardlink@2.0,5.11-0
+            add depend type=require fmri=file@1.0,5.11-0
+            add hardlink path=dir/hardlink target=file
+            close """
+
+        misc_files = ["tmp/file"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                plist = self.pkgsend_bulk(self.dc.get_depot_url(), self.dir10 +
+                    self.file10 + self.filesub10 + self.link10 + self.link20 +
+                    self.hardlink10 + self.hardlink20)
+
+                self.plist = {}
+                for p in plist:
+                        pfmri = fmri.PkgFmri(p, "5.11")
+                        self.plist.setdefault(pfmri.pkg_name, []).append(pfmri)
+
+        @staticmethod
+        def __do_install(api_obj, fmris):
+                fmris = [str(f) for f in fmris]
+                api_obj.reset()
+                api_obj.plan_install(fmris)
+                api_obj.prepare()
+                api_obj.execute_plan()
+
+        @staticmethod
+        def __do_verify(api_obj, pfmri):
+                img = api_obj.img
+                progtrack = progress.NullProgressTracker()
+                for act, errors, warnings, pinfo in img.verify(pfmri, progtrack,
+                    forever=True):
+                        raise AssertionError("Action %s in package %s failed "
+                            "verification: %s, %s" % (act, pfmri, errors,
+                            warnings))
+
+        @staticmethod
+        def __do_uninstall(api_obj, fmris, recursive_removal=False):
+                fmris = [str(f) for f in fmris]
+                api_obj.reset()
+                api_obj.plan_uninstall(fmris, recursive_removal)
+                api_obj.prepare()
+                api_obj.execute_plan()
+
+        @staticmethod
+        def __write_empty_file(target, mode=misc.PKG_FILE_MODE, owner="root",
+            group="bin"):
+                f = open(target, "wb")
+                f.write("\n")
+                f.close()
+                os.chmod(target, mode)
+                owner = portable.get_user_by_name(owner, "/", True)
+                group = portable.get_group_by_name(group, "/", True)
+                os.chown(target, owner, group)
+
+        def test_00_directory(self):
+                """Verify that directory install and removal works as expected
+                when directory is already present before install or has been
+                replaced with a file or link during install or removal."""
+
+                api_obj = self.image_create(self.dc.get_depot_url())
+
+                # The dest_dir's installed path.
+                dest_dir_name = "dir"
+                dir10_pfmri = self.plist[dest_dir_name][0]
+                dest_dir = os.path.join(self.get_img_path(), dest_dir_name)
+
+                # First, verify that install won't fail if the dest_dir already
+                # exists, and that it will set the correct owner, group, and
+                # mode for the dest_dir even though it already exists and has
+                # the wrong mode.
+                os.mkdir(dest_dir, misc.PKG_FILE_MODE) # Intentionally wrong.
+                os.chown(dest_dir, 0, 0)
+                self.__do_install(api_obj, [dir10_pfmri])
+                self.__do_verify(api_obj, dir10_pfmri)
+
+                self.__do_uninstall(api_obj, [dir10_pfmri])
+
+                # Next, verify that install and uninstall won't fail if the
+                # dest_dir exists, but not as the expected type.  Also check
+                # that the correct mode, owner, group, etc. is set for the
+                # dest_dir.
+
+                # Directory replaced with a file.
+                self.__write_empty_file(dest_dir)
+                self.__do_install(api_obj, [dir10_pfmri])
+                self.__do_verify(api_obj, dir10_pfmri)
+
+                shutil.rmtree(dest_dir)
+                self.__write_empty_file(dest_dir)
+                self.__do_uninstall(api_obj, [dir10_pfmri])
+
+                # Directory replaced with a link (fails for install).
+                self.__write_empty_file(dest_dir + ".src")
+                os.symlink(dest_dir + ".src", dest_dir)
+                self.assertRaises(api_errors.ActionExecutionError,
+                    self.__do_install, api_obj, [dir10_pfmri])
+                os.unlink(dest_dir)
+
+                # Directory replaced with a link (succeeds for uninstall).
+                self.__do_install(api_obj, [dir10_pfmri])
+                shutil.rmtree(dest_dir)
+                os.symlink(dest_dir + ".src", dest_dir)
+                self.__do_uninstall(api_obj, [dir10_pfmri])
+                os.unlink(dest_dir + ".src")
+
+        def test_01_file(self):
+                """Verify that file install and removal works as expected when
+                file is: already present before install, has been replaced
+                with a directory or link during install or removal, or an
+                install is attempted when its parent directory has been
+                replaced with a link."""
+
+                api_obj = self.image_create(self.dc.get_depot_url())
+
+                # The dest_file's installed path.
+                dest_file_name = "file"
+                file10_pfmri = self.plist[dest_file_name][0]
+                dest_file = os.path.join(self.get_img_path(), dest_file_name)
+                src = os.path.join(self.get_img_path(), "dir")
+
+                # First, verify that install won't fail if the dest_file already
+                # exists, and that it will set the correct owner, group, and
+                # mode for the dest_file even though it already exists.
+                self.__write_empty_file(dest_file, mode=misc.PKG_DIR_MODE,
+                    owner="root", group="root")
+                self.__do_install(api_obj, [file10_pfmri])
+                self.__do_verify(api_obj, file10_pfmri)
+                self.__do_uninstall(api_obj, [file10_pfmri])
+
+                # Next, verify that install and uninstall won't fail if the
+                # dest_file exists, but not as the expected type.  Also check
+                # that the correct mode, owner, group, etc. is set for the
+                # dest_file.
+
+                # File replaced with a directory.
+                os.mkdir(dest_file, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_install(api_obj, [file10_pfmri])
+                self.__do_verify(api_obj, file10_pfmri)
+
+                os.unlink(dest_file)
+                os.mkdir(dest_file, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_uninstall(api_obj, [file10_pfmri])
+
+                # File replaced with a non-empty directory.
+                os.mkdir(dest_file, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_file, "foobar"), "wb").close()
+                self.assert_(os.path.isfile(os.path.join(dest_file, "foobar")))
+                self.__do_install(api_obj, [file10_pfmri])
+                self.__do_verify(api_obj, file10_pfmri)
+
+                os.unlink(dest_file)
+                os.mkdir(dest_file, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_file, "foobar"), "wb").close()
+                self.assert_(os.path.exists(os.path.join(dest_file, "foobar")))
+                self.__do_uninstall(api_obj, [file10_pfmri])
+
+                # File replaced with a link.
+                self.__do_install(api_obj, ["dir"])
+                os.symlink(src, dest_file)
+                self.__do_install(api_obj, [file10_pfmri])
+                self.__do_verify(api_obj, file10_pfmri)
+
+                os.unlink(dest_file)
+                os.symlink(src, dest_file)
+                self.__do_uninstall(api_obj, [file10_pfmri])
+
+                # File's parent directory replaced with a link.
+                filesub10_pfmri = self.plist["filesub"][0]
+                os.mkdir(os.path.join(self.get_img_path(), "export"))
+                new_src = os.path.join(os.path.dirname(src), "export", "dir")
+                shutil.move(src, os.path.dirname(new_src))
+                os.symlink(new_src, src)
+                self.assertRaises(api_errors.ActionExecutionError,
+                    self.__do_install, api_obj, [filesub10_pfmri])
+
+        def test_02_link(self):
+                """Verify that link install and removal works as expected when
+                link is already present before install or has been replaced
+                with a directory or file during install or removal."""
+
+                api_obj = self.image_create(self.dc.get_depot_url())
+
+                # The dest_link's installed path.
+                dest_link_name = "link"
+                link10_pfmri = self.plist[dest_link_name][0]
+                link20_pfmri = self.plist[dest_link_name][1]
+                dest_link = os.path.join(self.get_img_path(), dest_link_name)
+
+                # First, verify that install won't fail if the dest_link already
+                # exists.
+                self.__do_install(api_obj, ["dir"])
+                os.symlink("dir", dest_link)
+                self.__do_install(api_obj, [link10_pfmri])
+                self.__do_verify(api_obj, link10_pfmri)
+                self.__do_uninstall(api_obj, [link10_pfmri])
+
+                # Next, verify that install and uninstall won't fail if the
+                # dest_link exists, but not as the expected type.  Also check
+                # that the correct mode, owner, group, etc. is set for the
+                # dest_link.
+
+                # Link replaced with a directory.
+                os.mkdir(dest_link, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_install(api_obj, [link10_pfmri])
+                self.__do_verify(api_obj, link10_pfmri)
+
+                os.unlink(dest_link)
+                os.mkdir(dest_link, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_uninstall(api_obj, [link10_pfmri])
+
+                # Link replaced with a non-empty directory.
+                os.mkdir(dest_link, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_link, "foobar"), "wb").close()
+                self.assert_(os.path.isfile(os.path.join(dest_link, "foobar")))
+                self.__do_install(api_obj, [link10_pfmri])
+                self.__do_verify(api_obj, link10_pfmri)
+
+                os.unlink(dest_link)
+                os.mkdir(dest_link, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_link, "foobar"), "wb").close()
+                self.assert_(os.path.exists(os.path.join(dest_link, "foobar")))
+                self.__do_uninstall(api_obj, [link10_pfmri])
+
+                # Link replaced with a file.
+                self.__write_empty_file(dest_link)
+                self.__do_install(api_obj, [link10_pfmri])
+                self.__do_verify(api_obj, link10_pfmri)
+
+                os.unlink(dest_link)
+                self.__write_empty_file(dest_link)
+                self.__do_uninstall(api_obj, [link10_pfmri])
+
+                # Link's parent directory replaced with a link.
+                os.mkdir(os.path.join(self.get_img_path(), "export"))
+                src = os.path.join(self.get_img_path(), "dir")
+                new_src = os.path.join(os.path.dirname(src), "export", "dir")
+                self.__do_install(api_obj, ["dir"])
+                shutil.move(src, os.path.dirname(new_src))
+                os.symlink(new_src, src)
+                self.assertRaises(api_errors.ActionExecutionError,
+                    self.__do_install, api_obj, [link20_pfmri])
+
+        def test_03_hardlink(self):
+                """Verify that hard link install and removal works as expected
+                when the link is already present before install or has been
+                replaced with a directory or link during install or removal."""
+
+                api_obj = self.image_create(self.dc.get_depot_url())
+
+                # The dest_hlink's installed path.
+                dest_hlink_name = "hardlink"
+                hlink10_pfmri = self.plist[dest_hlink_name][0]
+                hlink20_pfmri = self.plist[dest_hlink_name][1]
+                dest_hlink = os.path.join(self.get_img_path(), dest_hlink_name)
+                src = os.path.join(self.get_img_path(), "file")
+
+                # First, verify that install won't fail if the dest_hlink
+                # already exists, and that it will set the correct owner, group,
+                # and mode for the dest_hlink even though it already exists.
+                self.__do_install(api_obj, ["file"])
+                os.link(src, dest_hlink)
+                self.__do_install(api_obj, [hlink10_pfmri])
+                self.__do_verify(api_obj, hlink10_pfmri)
+                self.__do_uninstall(api_obj, [hlink10_pfmri])
+
+                # Next, verify that install and uninstall won't fail if the
+                # dest_hlink exists, but not as the expected type.  Also check
+                # that the correct mode, owner, group, etc. is set for the
+                # dest_hlink.
+
+                # Hard link replaced with a directory.
+                os.mkdir(dest_hlink, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_install(api_obj, [hlink10_pfmri])
+                self.__do_verify(api_obj, hlink10_pfmri)
+
+                os.unlink(dest_hlink)
+                os.mkdir(dest_hlink, misc.PKG_FILE_MODE) # Intentionally wrong.
+                self.__do_uninstall(api_obj, [hlink10_pfmri])
+
+                # Hard link replaced with a non-empty directory.
+                os.mkdir(dest_hlink, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_hlink, "foobar"), "wb").close()
+                self.assert_(os.path.isfile(os.path.join(dest_hlink, "foobar")))
+                self.__do_install(api_obj, [hlink10_pfmri])
+                self.__do_verify(api_obj, hlink10_pfmri)
+
+                os.unlink(dest_hlink)
+                os.mkdir(dest_hlink, misc.PKG_FILE_MODE) # Intentionally wrong.
+                open(os.path.join(dest_hlink, "foobar"), "wb").close()
+                self.assert_(os.path.exists(os.path.join(dest_hlink, "foobar")))
+                self.__do_uninstall(api_obj, [hlink10_pfmri])
+
+                # Hard link replaced with a link.
+                os.symlink(src, dest_hlink)
+                self.__do_install(api_obj, [hlink10_pfmri])
+                self.__do_verify(api_obj, hlink10_pfmri)
+
+                os.unlink(dest_hlink)
+                os.symlink(src, dest_hlink)
+                self.__do_uninstall(api_obj, [hlink10_pfmri])
+
+                # Hard link target is missing (failure expected).
+                self.__do_uninstall(api_obj, ["file"])
+                self.assertRaises(api_errors.ActionExecutionError,
+                    self.__do_install, api_obj, [hlink10_pfmri])
+
+                # Hard link's parent directory replaced with a link.
+                os.mkdir(os.path.join(self.get_img_path(), "export"))
+                src = os.path.join(self.get_img_path(), "dir")
+                new_src = os.path.join(os.path.dirname(src), "export", "dir")
+                self.__do_install(api_obj, ["dir"])
+                shutil.move(src, os.path.dirname(new_src))
+                os.symlink(new_src, src)
+                self.assertRaises(api_errors.ActionExecutionError,
+                    self.__do_install, api_obj, [hlink20_pfmri])
 
 
 if __name__ == "__main__":

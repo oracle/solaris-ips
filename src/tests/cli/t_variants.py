@@ -103,7 +103,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.__vtest(depot, "i386", "nonglobal", "false")
                 self.__vtest(depot, "zos", "nonglobal", "false")
 
-                self.image_create(depot, 
+                self.pkg_image_create(depot, 
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
 
@@ -116,7 +116,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                         do_isdebug = ""
                         is_debug = "false"
 
-                self.image_create(depot, 
+                self.pkg_image_create(depot, 
                     additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s %s" % (
                     arch, zone, do_isdebug))
                 self.pkg("install bronze")

@@ -49,7 +49,7 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.server.repository as srepo
 
-API_VERSION = 36
+API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -1275,10 +1275,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_010_remote(self):
                 """Test remote search."""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 time.sleep(1)
                 # This should be a full test to test all functionality.
                 self._run_full_remote_tests(api_obj)
@@ -1287,10 +1284,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_020_local_0(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["example_pkg"])
 
@@ -1299,10 +1293,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_030_degraded_local(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["example_pkg@1.0"])
 
@@ -1320,10 +1311,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 repeat = 3
 
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["example_pkg@1.0"])
                 self._do_uninstall(api_obj, ["example_pkg"])
@@ -1338,10 +1326,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_050_local_case_sensitive(self):
                 """Test local case sensitive search"""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["example_pkg@1.0"])
                 self._search_op(api_obj, False, "fooo", set(), True)
@@ -1355,11 +1340,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test to check for stack trace when files missing.
                 Bug 2753"""
                 durl = self.dc.get_depot_url()
+                api_obj = self.image_create(durl)
 
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self._do_install(api_obj, ["example_pkg@1.0"])
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
@@ -1389,10 +1371,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test to check for stack trace when files missing.
                 Bug 2753"""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 self._do_install(api_obj, ["example_pkg@1.0"])
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
@@ -1453,10 +1432,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_080_weird_patterns(self):
                 """Test strange patterns to ensure they're handled correctly"""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "[*]", self.res_remote_weird)
                 self._search_op(api_obj, True, "[?]", self.res_remote_weird)
@@ -1471,10 +1447,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test that installing a package doesn't prevent searching on
                 package names from working on previously installed packages."""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
                     "TMP")
@@ -1488,7 +1461,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
 
-                self.image_create(durl,
+                self.pkg_image_create(durl,
                     additional_args="--variant variant.arch=i386")
 
                 progresstracker = progress.NullProgressTracker()
@@ -1508,7 +1481,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
 
-                self.image_create(durl,
+                self.pkg_image_create(durl,
                     additional_args="--variant variant.arch=sparc")
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -1527,10 +1500,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Checks if directories ending in / break the indexer."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bad_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "foo", set())
                 self._search_op(api_obj, True, "/", set())
@@ -1540,10 +1510,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 Also tests whether multiple queries submitted via the api work.
                 """
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 ip = self.get_img_path()
                 if not ip.endswith("/"):
@@ -1568,10 +1535,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Checks if things with spaces break the indexer."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["space_pkg"])
                 time.sleep(1)
@@ -1613,10 +1577,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def test_bug_2863(self):
                 """Check that disabling indexing works as expected"""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._check_no_index()
                 self._do_install(api_obj, ["example_pkg"], update_index=False)
@@ -1653,11 +1614,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
 
                 for f in self._dir_restore_functions:
-                        self.image_create(durl)
-                        progresstracker = progress.NullProgressTracker()
-                        api_obj = api.ImageInterface(self.get_img_path(),
-                            API_VERSION, progresstracker, lambda x: False,
-                            PKG_CLIENT_NAME)
+                        api_obj = self.image_create(durl)
+
                         api_obj.rebuild_search_index()
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
@@ -1678,12 +1636,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
 
                 for f in self._dir_restore_functions:
+                        api_obj = self.image_create(durl)
 
-                        self.image_create(durl)
-                        progresstracker = progress.NullProgressTracker()
-                        api_obj = api.ImageInterface(self.get_img_path(),
-                            API_VERSION, progresstracker, lambda x: False,
-                            PKG_CLIENT_NAME)
                         self._do_install(api_obj, ["example_pkg"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
@@ -1705,12 +1659,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg11)
 
                 for f in self._dir_restore_functions:
+                        api_obj = self.image_create(durl)
 
-                        self.image_create(durl)
-                        progresstracker = progress.NullProgressTracker()
-                        api_obj = api.ImageInterface(self.get_img_path(),
-                            API_VERSION, progresstracker, lambda x: False,
-                            PKG_CLIENT_NAME)
                         self._do_install(api_obj, ["example_pkg@1.0,5.11-0"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
@@ -1732,12 +1682,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg11)
 
                 for f in self._dir_restore_functions:
+                        api_obj = self.image_create(durl)
 
-                        self.image_create(durl)
-                        progresstracker = progress.NullProgressTracker()
-                        api_obj = api.ImageInterface(self.get_img_path(),
-                            API_VERSION, progresstracker, lambda x: False,
-                            PKG_CLIENT_NAME)
                         self._do_install(api_obj, ["another_pkg"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
@@ -1815,10 +1761,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.cat3_pkg10)
                 self.pkgsend_bulk(durl, self.bad_cat_pkg10)
                 self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 remote = True
                 _run_cat_tests(self, remote)
@@ -1879,10 +1822,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bug_983_manifest)
                 time.sleep(2)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "gmake", self.res_bug_983)
                 self._search_op(api_obj, True, "SUNWcsl@0.5.11-0.89",
@@ -1910,10 +1850,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 suite."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
@@ -1935,10 +1872,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bug_8492_manf_1)
                 self.pkgsend_bulk(durl, self.bug_8492_manf_2)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "set::'image packaging'",
                     self.res_8492_1 | self.res_8492_2)
@@ -2140,10 +2074,10 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.hierarchical_named_pkg)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
+
+                # XXX wait for depot to be ready.
+                time.sleep(1)
 
                 remote = True
                 run_tests(api_obj, remote)
@@ -2167,10 +2101,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 gaps in them works correctly."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 self._do_install(api_obj, ["example_pkg"])
 
@@ -2192,10 +2123,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 tmp_dir = os.path.join(depotpath, "index", "TMP")
                 os.mkdir(tmp_dir)
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 self._run_remote_empty_tests(api_obj)
                 os.rmdir(tmp_dir)
                 offset = 2
@@ -2215,10 +2143,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 tmp_dir = os.path.join(depotpath, "index", "TMP")
                 os.mkdir(tmp_dir)
                 self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 self._run_remote_empty_tests(api_obj)
                 os.rmdir(tmp_dir)
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -2369,10 +2294,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 depotpath = self.dc.get_repodir()
                 ind_dir = os.path.join(depotpath, "index")
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 # Check when depot is empty.
                 self.__corrupt_depot(ind_dir)
                 self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
@@ -2401,10 +2323,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 writ_dir = os.path.join(writable_root, "index")
                 self.dc.set_writable_root(writable_root)
 
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 # Check when depot is empty.
                 self.__corrupt_depot(writ_dir)
@@ -2426,13 +2345,13 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
         def test_bug_8318(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 uuids = []
                 for p in api_obj.img.gen_publishers():
                         uuids.append(p.client_uuid)
+
+                # XXX wait for depot to be ready.
+                time.sleep(1)
 
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
@@ -2440,7 +2359,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 7
+                num_expected = 6
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
@@ -2465,10 +2384,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 self._do_install(api_obj, pkg_list)
 
         def test_bug_9729_2(self):
@@ -2483,10 +2399,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
                 fast_add_loc = os.path.join(self._get_index_dirs()[0],
                     "fast_add.v1")
                 fast_remove_loc = os.path.join(self._get_index_dirs()[0],

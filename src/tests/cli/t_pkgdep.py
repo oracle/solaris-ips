@@ -596,7 +596,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # To test pkgdepend resolve properly, we need an image.
                 # Side by side with the image, we create a testing proto area.
                 #
-                self.image_create(self.dc.get_depot_url())
+                self.pkg_image_create(self.dc.get_depot_url())
 
                 self.test_proto_dir = os.path.join(self.test_root, "proto")
                 os.makedirs(self.test_proto_dir)
@@ -652,7 +652,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 expected = set(expected.splitlines())
                 seen_but_not_expected = self.__compare_res(seen, expected)
                 expected_but_not_seen = self.__compare_res(expected, seen)
-                self.assertEqual(seen_but_not_expected, expected_but_not_seen)
+                self.assertEqualDiff(seen_but_not_expected,
+                    expected_but_not_seen)
 
         def test_opts(self):
                 """Ensure that incorrect arguments don't cause a traceback."""
@@ -1263,7 +1264,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                         for nv in num_vars:
                                 var_settings = "--variant variant.foo=%s " \
                                     "--variant num=%s" % (fv, nv)
-                                self.image_create(durl,
+                                self.pkg_image_create(durl,
                                     additional_args=var_settings)
                                 self.pkg("install dup-v-deps")
                                 self.image_destroy()

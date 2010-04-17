@@ -309,7 +309,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 ic_args += " --variant variant.arch=%s " % v_arch
                 ic_args += " --variant variant.opensolaris.zone=%s " % v_zone
                 depot = self.dc.get_depot_url()
-                self.image_create(depot, additional_args=ic_args)
+                self.pkg_image_create(depot, additional_args=ic_args)
                 self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch))
                 self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone))
 

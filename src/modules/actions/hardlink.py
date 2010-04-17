@@ -36,6 +36,7 @@ import os
 import stat
 
 from pkg import misc
+import pkg.actions
 from pkg.client.api_errors import ActionExecutionError
 
 
@@ -77,11 +78,15 @@ class HardLinkAction(link.LinkAction):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
+                # Don't allow installation through symlinks.
+                self.fsobj_checkpath(pkgplan, path)
+
                 if not os.path.exists(os.path.dirname(path)):
                         self.makedirs(os.path.dirname(path),
-                            mode=misc.PKG_DIR_MODE)
+                            mode=misc.PKG_DIR_MODE,
+                            fmri=pkgplan.destination_fmri)
                 elif os.path.exists(path):
-                        os.unlink(path)
+                        self.remove(pkgplan)
 
                 fulltarget = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), target)))
@@ -89,11 +94,18 @@ class HardLinkAction(link.LinkAction):
                 try:
                         os.link(fulltarget, path)
                 except EnvironmentError, e:
-                        if e.errno == errno.ENOENT:
-                                raise ActionExecutionError(self, e,
-                                    "missing hard link target '%s'" % target)
-                        else:
-                                raise ActionExecutionError(self, e)
+                        if e.errno != errno.ENOENT:
+                                raise ActionExecutionError(self, error=e)
+
+                        # User or another process has removed target for
+                        # hardlink, a package hasn't declared correct
+                        # dependencies, or the target hasn't been installed
+                        # yet.
+                        err_txt = _("Unable to create hard link %(path)s; "
+                            "target %(target)s is missing.") % {
+                            "path": path, "target": fulltarget }
+                        raise ActionExecutionError(self, details=err_txt,
+                            error=e, fmri=pkgplan.destination_fmri)
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,

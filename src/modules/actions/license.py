@@ -78,7 +78,8 @@ class LicenseAction(generic.Action):
                 # make sure the directory exists and the file is writable
                 if not os.path.exists(os.path.dirname(path)):
                         self.makedirs(os.path.dirname(path),
-                            mode=misc.PKG_DIR_MODE)
+                            mode=misc.PKG_DIR_MODE,
+                            fmri=pkgplan.destination_fmri)
                 elif os.path.exists(path):
                         os.chmod(path, misc.PKG_FILE_MODE)
 

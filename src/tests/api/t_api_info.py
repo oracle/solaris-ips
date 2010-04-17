@@ -42,7 +42,7 @@ import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.fmri as fmri
 
-API_VERSION = 36
+API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(pkg5unittest.SingleDepotTestCase):
@@ -442,8 +442,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     ren_partial_variant10)
 
                 # Create an image and get the api object needed to run tests.
-                self.image_create(durl,
-                    additional_args="--variant=variant.cat=bobcat")
+                variants = { "variant.cat": "bobcat" }
+                self.image_create(durl, variants=variants)
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)

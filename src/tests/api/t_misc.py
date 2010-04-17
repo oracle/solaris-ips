@@ -36,6 +36,7 @@ import tempfile
 import shutil
 
 import pkg.misc as misc
+import pkg.actions as action
 from pkg.actions.generic import Action
 
 class TestMisc(pkg5unittest.Pkg5TestCase):
@@ -49,7 +50,9 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 foopath = os.path.join(fopath, "o")
 
                 # make the leaf, and ONLY the leaf read-only
-                Action.makedirs(foopath, mode = stat.S_IREAD)
+                act = action.fromstr("dir path=%s" % foopath)
+                act.makedirs(foopath, mode = stat.S_IREAD)
+
                 # Now make sure the directories leading up the leaf
                 # are read-write, and the leaf is readonly.
                 assert(os.stat(tmpdir).st_mode & (stat.S_IREAD | stat.S_IWRITE) != 0)

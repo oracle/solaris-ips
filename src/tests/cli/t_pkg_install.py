@@ -2019,13 +2019,6 @@ adm:NP:6445::::::
                     close
                 """
 
-                self.dirshouldbelink = """
-                    open dirshouldbelink@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=foo
-                    add link path=foo target=bar
-                    close
-                """
-
                 self.make_misc_files(self.misc_files)
 
         def test_basics_0(self):
@@ -2657,12 +2650,6 @@ adm:NP:6445::::::
                 ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
                 self.assert_(ino1 == ino2)
 
-        def test_bad_links(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.dirshouldbelink)
-                self.image_create(durl)
-
-                self.pkg("install dirshouldbelink", exit=1)
 
 class TestDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -3366,7 +3353,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # repository.  After that, attempt to install the package again,
                 # which should succeed even though the fmri is only in a
                 # different publisher's catalog.
-                # 
+                #
                 self.pkg("set-publisher -O %s test3" % \
                     self.dcs[7].get_depot_url())
                 self.pkg("install quux@1.0", exit=1) # no viable publisher
@@ -4505,7 +4492,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list remrenA")
 
         def test_chained_renames(self):
-                """If there are multiple renames, make sure we delete as much 
+                """If there are multiple renames, make sure we delete as much
                 as possible, but no more."""
 
                 A1 = """
@@ -4526,7 +4513,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     add depend type=require fmri=pkg:/chained_C@2
                     close
                 """
- 
+
                 C2 = """
                     open chained_C@2
                     close
@@ -4559,14 +4546,15 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                         self.pkg("list %s" % p)
                 self.pkg("image-update")
 
-                for p in ["chained_A@2", "chained_X@1", "chained_B@2", "chained_C@2", "chained_Z"]:
+                for p in ["chained_A@2", "chained_X@1", "chained_B@2",
+                    "chained_C@2", "chained_Z"]:
                         self.pkg("list %s" % p)
 
                 self.pkg("uninstall chained_X")
-               
+
                 for p in ["chained_C@2", "chained_Z"]:
                         self.pkg("list %s" % p)
-               
+
                 # make sure renamed pkgs no longer needed are uninstalled
                 for p in ["chained_A@2", "chained_B@2"]:
                         self.pkg("list %s" % p, exit=1)
@@ -4903,6 +4891,95 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 # specified --accept and a license requires acceptance.
                 self.pkg("image-update -v --accept")
                 self.pkg("info licensed@1.3")
+
+
+class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
+        """This set of tests is intended to verify that the client will handle
+        image state errors gracefully during install or uninstall operations.
+        Unlike the client API version of these tests, the CLI only needs to be
+        tested for failure cases since it uses the client API."""
+
+        # Only start/stop the depot once (instead of for every test)
+        persistent_setup = True
+
+        dir10 = """
+            open dir@1.0,5.11-0
+            add dir path=dir mode=755 owner=root group=bin
+            close """
+
+        # Purposefully omits depend on dir@1.0.
+        filesub10 = """
+            open filesub@1.0,5.11-0
+            add file tmp/file path=dir/file mode=755 owner=root group=bin
+            close """
+
+        # Dependency providing file intentionally omitted.
+        hardlink10 = """
+            open hardlink@1.0,5.11-0
+            add hardlink path=hardlink target=file
+            close """
+
+        misc_files = ["tmp/file"]
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                plist = self.pkgsend_bulk(self.dc.get_depot_url(), self.dir10 +
+                    self.filesub10 + self.hardlink10)
+
+                self.plist = {}
+                for p in plist:
+                        pfmri = fmri.PkgFmri(p, "5.11")
+                        self.plist[pfmri.pkg_name] = pfmri
+
+        @staticmethod
+        def __write_empty_file(target, mode=644, owner="root", group="bin"):
+                f = open(target, "wb")
+                f.write("\n")
+                f.close()
+                os.chmod(target, mode)
+                owner = portable.get_user_by_name(owner, "/", True)
+                group = portable.get_group_by_name(group, "/", True)
+                os.chown(target, owner, group)
+
+        def test_00_directory(self):
+                """Verify that directory install fails as expected when it has
+                been replaced with a link prior to install."""
+
+                self.image_create(self.dc.get_depot_url())
+
+                # The dest_dir's installed path.
+                dest_dir_name = "dir"
+                dest_dir = os.path.join(self.get_img_path(), dest_dir_name)
+
+                # Directory replaced with a link (fails for install).
+                self.__write_empty_file(dest_dir + ".src")
+                os.symlink(dest_dir + ".src", dest_dir)
+                self.pkg("install %s" % dest_dir_name, exit=1)
+
+        def test_01_file(self):
+                """Verify that file install works as expected when its parent
+                directory has been replaced with a link."""
+
+                self.image_create(self.dc.get_depot_url())
+
+                # File's parent directory replaced with a link.
+                self.pkg("install dir")
+                src = os.path.join(self.get_img_path(), "dir")
+                os.mkdir(os.path.join(self.get_img_path(), "export"))
+                new_src = os.path.join(os.path.dirname(src), "export", "dir")
+                shutil.move(src, os.path.dirname(new_src))
+                os.symlink(new_src, src)
+                self.pkg("install filesub", exit=1)
+
+        def test_02_hardlink(self):
+                """Verify that hardlink install fails as expected when
+                hardlink target is missing."""
+
+                self.image_create(self.dc.get_depot_url())
+
+                # Hard link target is missing (failure expected).
+                self.pkg("install hardlink", exit=1)
 
 
 if __name__ == "__main__":

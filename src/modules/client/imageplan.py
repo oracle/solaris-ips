@@ -94,6 +94,12 @@ class ImagePlan(object):
                 self.removal_actions = []
                 self.install_actions = []
 
+                # The set of processed target object directories known to be
+                # valid (those that are not symlinks and thus are valid for
+                # use during installation).  This is used by the pkg.actions
+                # classes during install() operations.
+                self.valid_directories = set()
+
                 # A place to keep info about saved_files; needed by file action.
                 self.saved_files = {}
 
@@ -1176,10 +1182,11 @@ class ImagePlan(object):
                         self.state = EXECUTED_ERROR
                         try:
                                 self.__actuators.exec_fail_actuators(self.image)
-                        finally:
+                        except:
                                 # Ensure the real cause of failure is raised.
-                                raise api_errors.InvalidPackageErrors([
-                                    exc_value]), None, exc_tb
+                                pass
+                        raise api_errors.InvalidPackageErrors([
+                            exc_value]), None, exc_tb
                 except:
                         exc_type, exc_value, exc_tb = sys.exc_info()
                         self.state = EXECUTED_ERROR
@@ -1201,6 +1208,7 @@ class ImagePlan(object):
                 self.added_users = {}
                 self.removed_users = {}
                 self.saved_files = {}
+                self.valid_directories = set()
                 self.__fmri_changes  = []
                 self.__directories   = []
                 self.__actuators     = []

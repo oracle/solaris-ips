@@ -32,6 +32,7 @@ import fcntl
 import os
 import platform
 import shutil
+import stat
 import tempfile
 import time
 import urllib
@@ -185,6 +186,7 @@ class Image(object):
                 self.__upgraded = False
 
                 self.attrs = {
+                    "Build-Release": "5.11", # XXX real data needed
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
                 }
@@ -425,7 +427,6 @@ class Image(object):
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     progtrack=progtrack)
-                                self.attrs["Build-Release"] = "5.11"
                                 return
                         elif imgtype == IMG_ENTIRE:
                                 # XXX Look at image file to determine
@@ -439,7 +440,6 @@ class Image(object):
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     progtrack=progtrack)
-                                self.attrs["Build-Release"] = "5.11"
                                 return
 
                         # XXX follow symlinks or not?
@@ -1031,6 +1031,8 @@ class Image(object):
                 try:
                         ip.plan_change_varcets(variants, facets)
                         self.__call_imageplan_evaluate(ip, verbose)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
@@ -1055,6 +1057,8 @@ class Image(object):
                 with self.locked_op("fix"):
                         try:
                                 return self.__repair(*args, **kwargs)
+                        except api_errors.ActionExecutionError, e:
+                                raise
                         except pkg.actions.ActionError, e:
                                 raise api_errors.InvalidPackageErrors([e])
 
@@ -1180,6 +1184,8 @@ class Image(object):
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
                             intent=intent)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
@@ -1270,7 +1276,7 @@ class Image(object):
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
                         state_root = os.path.join(self.imgdir, "state")
-                        orig_state_root = self.__salvagedir(state_root)
+                        orig_state_root = self.__salvage(state_root)
                         portable.rename(tmp_state_root, state_root)
                         shutil.rmtree(orig_state_root, True)
                 except EnvironmentError, e:
@@ -1718,7 +1724,7 @@ class Image(object):
                 # Next, preserve the old installed state dir, rename the
                 # new one into place, and then remove the old one.
                 state_root = os.path.join(self.imgdir, "state")
-                orig_state_root = self.__salvagedir(state_root)
+                orig_state_root = self.__salvage(state_root)
                 portable.rename(tmp_state_root, state_root)
                 shutil.rmtree(orig_state_root, True)
 
@@ -2121,10 +2127,10 @@ class Image(object):
                 # Then, rename the new state directory into place, and then
                 # remove the old catalog and state directories.
                 cat_root = os.path.join(self.imgdir, "catalog")
-                orig_cat_root = self.__salvagedir(cat_root)
+                orig_cat_root = self.__salvage(cat_root)
 
                 state_root = os.path.join(self.imgdir, "state")
-                orig_state_root = self.__salvagedir(state_root)
+                orig_state_root = self.__salvage(state_root)
 
                 portable.rename(tmp_state_root, state_root)
 
@@ -2447,7 +2453,21 @@ class Image(object):
                         logger.info("Deleting content cache")
                         shutil.rmtree(self.dl_cache_dir, True)
 
-        def __salvagedir(self, path):
+        def __salvage(self, path):
+                # This ensures that if the path is already rooted in the image,
+                # that it will be stored in lost+found (due to os.path.join
+                # behaviour with absolute path components).
+                if path.startswith(self.root):
+                        path = path.replace(self.root, "", 1)
+
+                if os.path.isabs(path):
+                        # If for some reason the path wasn't rooted in the
+                        # image, but it is an absolute one, then strip the
+                        # absolute part so that it will be stored in lost+found
+                        # (due to os.path.join behaviour with absolute path
+                        # components).
+                        path = os.path.splitdrive(path)[-1].lstrip(os.path.sep)
+
                 sdir = os.path.normpath(
                     os.path.join(self.imgdir, "lost+found",
                     path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
@@ -2459,14 +2479,28 @@ class Image(object):
                     sdir)
                 return sdir
 
-        def salvagedir(self, path):
-                """Called when directory contains something and it's not
-                supposed to because it's being deleted. XXX Need to work out a
-                better error passback mechanism. Path is rooted in /...."""
+        def salvage(self, path):
+                """Called when unexpected file or directory is found during
+                install or removal. XXX Need to work out a better error
+                passback mechanism. Path is rooted in /...."""
 
-                sdir = self.__salvagedir(path)
-                logger.warning("\nWarning - directory %s not empty - contents "
-                    "preserved in %s" % (path, sdir))
+                try:
+                        lstat = os.lstat(path)
+                except OSError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        raise
+
+                is_dir = stat.S_ISDIR(lstat.st_mode)
+                sdir = self.__salvage(path)
+                if is_dir:
+                        logger.warning("\nWarning - directory %s not empty or "
+                            "not expected during operation - contents "
+                            "preserved in %s" % (path, sdir))
+                else:
+                        logger.warning("\nWarning - file %s not expected "
+                            "during operation - preserved in %s" % (path, sdir))
 
         def temporary_dir(self):
                 """create a temp directory under image directory for various
@@ -2591,6 +2625,8 @@ class Image(object):
 
                 try:
                         ip.plan_install(pkg_list)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
                 except api_errors.ApiException:
@@ -2599,6 +2635,8 @@ class Image(object):
 
                 try:
                         self.__call_imageplan_evaluate(ip, verbose)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
@@ -2621,6 +2659,8 @@ class Image(object):
                 try:
                         ip.plan_update()
                         self.__call_imageplan_evaluate(ip, verbose)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
@@ -2643,6 +2683,8 @@ class Image(object):
                 try:
                         ip.plan_uninstall(fmri_list, recursive_removal)
                         self.__call_imageplan_evaluate(ip, verbose)
+                except api_errors.ActionExecutionError, e:
+                        raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 

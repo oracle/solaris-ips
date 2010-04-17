@@ -30,12 +30,13 @@
 This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
-import os
 import errno
-import stat
 import generic
+import os
 import pkg.portable as portable
 import pkg.actions
+import pkg.client.api_errors as apx
+import stat
 
 class DirectoryAction(generic.Action):
         """Class representing a directory-type packaging object."""
@@ -72,6 +73,7 @@ class DirectoryAction(generic.Action):
                         # informative error.
                         self.validate(fmri=pkgplan.destination_fmri)
 
+                omode = oowner = ogroup = None
                 owner, group = self.get_fsobj_uid_gid(pkgplan,
                         pkgplan.destination_fmri)
                 if orig:
@@ -84,8 +86,11 @@ class DirectoryAction(generic.Action):
                         oowner, ogroup = orig.get_fsobj_uid_gid(pkgplan,
                             pkgplan.origin_fmri)
 
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
+                path = os.path.normpath(os.path.sep.join((
+                    pkgplan.image.get_root(), self.attrs["path"])))
+
+                # Don't allow installation through symlinks.
+                self.fsobj_checkpath(pkgplan, path)
 
                 # XXX Hack!  (See below comment.)
                 if not portable.is_admin():
@@ -93,17 +98,55 @@ class DirectoryAction(generic.Action):
 
                 if not orig:
                         try:
-                                self.makedirs(path, mode=mode)
+                                self.makedirs(path, mode=mode,
+                                    fmri=pkgplan.destination_fmri)
                         except OSError, e:
+                                if e.filename != path:
+                                        # makedirs failed for some component
+                                        # of the path.
+                                        raise
+
+                                fs = os.lstat(path)
+                                fs_mode = stat.S_IFMT(fs.st_mode)
                                 if e.errno == errno.EROFS:
                                         # Treat EROFS like EEXIST if both are
                                         # applicable, since we'll end up with
                                         # EROFS instead.
-                                        if os.path.isdir(path):
+                                        if stat.S_ISDIR(fs_mode):
                                                 return
                                         raise
-                                if e.errno != errno.EEXIST:
+                                elif e.errno != errno.EEXIST:
                                         raise
+
+                                if stat.S_ISLNK(fs_mode):
+                                        # User has replaced directory with a
+                                        # link, or a package has been poorly
+                                        # implemented.  It isn't safe to
+                                        # simply re-create the directory as
+                                        # that won't restore the files that
+                                        # are supposed to be contained within.
+                                        err_txt = _("Unable to create "
+                                            "directory %s; it has been "
+                                            "replaced with a link.  To "
+                                            "continue, please remove the "
+                                            "link or restore the directory "
+                                            "to its original location and "
+                                            "try again.") % path
+                                        raise apx.ActionExecutionError(
+                                            self, details=err_txt, error=e,
+                                            fmri=pkgplan.destination_fmri)
+                                elif stat.S_ISREG(fs_mode):
+                                        # User has replaced directory with a
+                                        # file, or a package has been poorly
+                                        # implemented.  Salvage what's there,
+                                        # and drive on.
+                                        pkgplan.image.salvage(path)
+                                        os.mkdir(path, mode)
+                                elif stat.S_ISDIR(fs_mode):
+                                        # The directory already exists, but
+                                        # ensure that the mode matches what's
+                                        # expected.
+                                        os.chmod(path, mode)
 
                 # The downside of chmodding the directory is that as a non-root
                 # user, if we set perms u-w, we won't be able to put anything in
@@ -137,19 +180,42 @@ class DirectoryAction(generic.Action):
                 return errors, warnings, info
 
         def remove(self, pkgplan):
-                localpath = os.path.normpath(self.attrs["path"])
                 path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), localpath)))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
                 try:
                         os.rmdir(path)
                 except OSError, e:
                         if e.errno == errno.ENOENT:
                                 pass
-                        elif e.errno == errno.EEXIST or \
-                                    e.errno == errno.ENOTEMPTY:
-                                # cannot remove directory since it's
-                                # not empty...
-                                pkgplan.image.salvagedir(localpath)
+                        elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):
+                                # Cannot remove directory since it's
+                                # not empty.
+                                pkgplan.image.salvage(path)
+                        elif e.errno == errno.ENOTDIR:
+                                # Either the user or another package has changed
+                                # this directory into a link or file.  Salvage
+                                # what's there and drive on.
+                                pkgplan.image.salvage(path)
+                        elif e.errno == errno.EBUSY and os.path.ismount(path):
+                                # User has replaced directory with mountpoint,
+                                # or a package has been poorly implemented.
+                                err_txt = _("Unable to remove %s; it is in use "
+                                    "as a mountpoint.  To continue, please "
+                                    "unmount the filesystem at the target "
+                                    "location and try again.") % path
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e,
+                                    fmri=pkgplan.origin_fmri)
+                        elif e.errno == errno.EBUSY:
+                                # os.path.ismount() is broken for lofs
+                                # filesystems, so give a more generic
+                                # error.
+                                err_txt = _("Unable to remove %s; it is in use "
+                                    "by the system, another process, or as a "
+                                    "mountpoint.") % path
+                                raise apx.ActionExecutionError(self,
+                                    details=err_txt, error=e,
+                                    fmri=pkgplan.origin_fmri)
                         elif e.errno != errno.EACCES: # this happens on Windows
                                 raise
 

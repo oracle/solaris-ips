@@ -64,7 +64,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
         def test_basic(self):
                 """ Create an image, verify it. """
 
-                self.image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.durl1, prefix="test1")
                 self.pkg("verify")
 
         def test_image_create_bad_opts(self):
@@ -330,7 +330,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # First, check to be certain that an image-create --no-refresh
                 # will succeed.
-                self.image_create(self.durl2, prefix="test1",
+                self.pkg_image_create(self.durl2, prefix="test1",
                     additional_args="--no-refresh")
                 self.pkg("list --no-refresh -a | grep baz", exit=1)
 
@@ -350,7 +350,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl2, "open corge@1.0\nclose")
 
                 # First, create a new image.
-                self.image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.durl1, prefix="test1")
 
                 # Add the second repository.
                 self.pkg("set-publisher -O %s test2" % self.durl2)
@@ -434,7 +434,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 """)
 
                 # First, create a new image.
-                self.image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.durl1, prefix="test1")
 
                 # Verify pkg info works as expected.
                 self.pkg("info -r foo")
@@ -495,14 +495,14 @@ class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
                 #
                 durl = "http://localhost:4"
                 self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
-                    self.image_create, durl)
+                    self.pkg_image_create, durl)
 
         def test_765(self):
                 """Bug 765: malformed publisher URL."""
 
                 durl = "bar=baz"
                 self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
-                    self.image_create, durl)
+                    self.pkg_image_create, durl)
 
         def test_763a(self):
                 """Bug 763, traceback 1: no -p option given to image-create."""
