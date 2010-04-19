@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
@@ -117,6 +116,7 @@ class PackageManager:
                 self.__reset_home_dir()
                 self.api_o = None
                 self.cache_o = None
+                self.child = None
                 self.img_timestamp = None
                 self.gconf = gconf.PMGConf()
                 self.set_section = 0
@@ -4314,7 +4314,7 @@ def main():
 
 if __name__ == '__main__':
         program_title = _("Package Manager")
-        gblexcepthandler = globalexceptionhandler.GlobalExceptionHandler(program_title)
+        gblexcepthandler = globalexceptionhandler.GlobalExceptionHandler()
         allow_links = False
         debug = False
         debug_perf = False
@@ -4381,6 +4381,7 @@ Use -U (--update-all) to proceed with Updates"""
 
         # Setup packagemanager
         packagemanager = PackageManager(program_title)
+        gblexcepthandler.set_parent(packagemanager)
         packagemanager.application_path = app_path
         packagemanager.image_directory = image_dir
         packagemanager.allow_links = allow_links

@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import sys
@@ -170,12 +169,17 @@ class Beadmin:
                     _("Boot Environment Confirmation"))
                 gui_misc.set_modal_and_transient(self.w_beadmin_dialog,
                     self.parent.w_main_window)
+                self.parent.child = self
                 self.w_beadmin_dialog.show_all()
                 self.w_progress_dialog.set_title(
                     _("Loading Boot Environment Information"))
                 self.w_progressinfo_label.set_text(
                     _("Fetching BE entries..."))
                 self.w_progress_dialog.show()
+
+        def cleanup(self):
+                self.progress_stop_thread = True
+                self.__on_beadmin_delete_event(None, None)
 
         def __progress_pulse(self):
                 while not self.progress_stop_thread:
@@ -282,6 +286,7 @@ class Beadmin:
                 Thread(target = self.__delete_activate_be).start()
                 
         def __on_beadmin_delete_event(self, widget, event, stub=None):
+                self.parent.child = None
                 self.w_beadmin_dialog.destroy()
                 return True
 

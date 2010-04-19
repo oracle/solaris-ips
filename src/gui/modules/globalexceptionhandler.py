@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import sys
@@ -38,13 +37,18 @@ import pkg.misc as misc
 import pkg.gui.misc as gui_misc
 
 class GlobalExceptionHandler:
-        def __init__(self, name):
+        def __init__(self):
                 self.parent = None
-                self.name = name
                 sys.excepthook = self.global_exception_handler
                 self.installThreadExcepthook()
 
+        def set_parent(self, parent):
+                self.parent = parent
+
         def global_exception_handler(self, exctyp, value, tb):
+                if self.parent:
+                        if self.parent.child:
+                                self.parent.child.cleanup()
                 trace = StringIO()
                 traceback.print_exception (exctyp, value, tb, None, trace)
                 if exctyp is MemoryError:
