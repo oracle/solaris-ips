@@ -649,6 +649,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_substage(_("Downloading..."), bounce_progress=False)
                 self.api_o.prepare()
                 self.__start_substage(_("Executing..."), bounce_progress=False)
+                gobject.idle_add(self.w_cancel_button.set_sensitive, False)
                 try:
                         self.api_o.execute_plan()
                 except api_errors.WrapSuccessfulIndexingException:
@@ -833,6 +834,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_stage_three()
                 self.__start_substage(None,
                     bounce_progress=False)
+                gobject.idle_add(self.w_cancel_button.set_sensitive, False)
                 try:
                         self.api_o.execute_plan()
                 except api_errors.WrapSuccessfulIndexingException:
