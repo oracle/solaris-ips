@@ -37,6 +37,9 @@ import urllib2
 import urlparse
 import socket
 import traceback
+import tempfile
+import re
+import threading
 try:
         import gobject
         import gnome
@@ -44,9 +47,11 @@ try:
         import pango
 except ImportError:
         sys.exit(1)
+import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
+import pkg.client.publisher as publisher
 from pkg.gui.misc_non_gui import get_api_object as ngao
 from pkg.gui.misc_non_gui import setup_logging as su_logging
 from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
@@ -315,6 +320,118 @@ def error_occurred(parent, error_msg, msg_title = None,
         msgbox.set_title(title)
         msgbox.run()
         msgbox.destroy()
+
+def set_dependencies_text(textview, info, dep_info, installed_dep_info,
+    installed_icon, not_installed_icon):
+        names = []
+        states = None
+        installed_states = []
+        if dep_info != None and len(dep_info.get(0)) >= 0:
+                states = dep_info[0]
+        if installed_dep_info != None and len(installed_dep_info.get(0)) >= 0:
+                installed_states = installed_dep_info[0]
+        version_fmt = _("%(version)s (Build %(build)s-%(branch)s)")
+        i = 0
+        for x in info.dependencies:
+                if states != None and len(states) > 0:
+                        name = fmri.extract_pkg_name(x)
+                        if i < len(states):
+                                version = version_fmt % \
+                                    {"version": states[i].version,
+                                    "build": states[i].build_release,
+                                    "branch": states[i].branch}
+                        else:
+                                version = version_fmt % \
+                                    {"version": '0',
+                                     "build": '0',
+                                    "branch": '0'}
+                        found = False
+                        for state in installed_states:
+                                if name ==  fmri.extract_pkg_name(state.fmri):
+                                        installed_version = version_fmt % \
+                                            {"version": state.version,
+                                            "build": state.build_release,
+                                            "branch": state.branch}
+                                        found = True
+                                        break
+                        if not found:
+                                installed_version = (_("(not installed)"))
+                        names.append((name, version, installed_version,
+                            found))
+                        i += 1
+                else:
+                        build_rel = "0"
+                        pkg_fmri = fmri.PkgFmri(x, build_release=build_rel)
+                        branch = pkg_fmri.version.branch
+                        version_stripped = pkg_fmri.get_version().split("-%s"
+                            % branch)[0]
+                        version = version_fmt % \
+                             {"version": version_stripped,
+                             "build": build_rel,
+                             "branch": branch}
+                        names.append((pkg_fmri.pkg_name, version,
+                            _("(not installed)"), False))
+
+        depbuffer = textview.get_buffer()
+        depbuffer.set_text("")
+        if states == None:
+                if len(names) == 0:
+                        itr = depbuffer.get_iter_at_line(0)
+                        depbuffer.insert_with_tags_by_name(itr,
+                            _("None"), "bold")
+                else:
+                        for i in  range(0, len(names)):
+                                itr = depbuffer.get_iter_at_line(i)
+                                dep_str = "%s\n" % (names[i])
+                                depbuffer.insert(itr, dep_str)
+                return
+        max_name_len = 0
+        max_version_len = 0
+        for (name, version, installed_version, is_installed) in names:
+                if len(name) > max_name_len:
+                        max_name_len = len(name)
+                if len(version) > max_version_len:
+                        max_version_len = len(version)
+
+        style = textview.get_style()
+        font_size_in_pango_unit = style.font_desc.get_size()
+        font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+        tab_array = pango.TabArray(3, True)
+        i = 1
+        tab_array.set_tab(i, pango.TAB_LEFT,
+            max_name_len * font_size_in_pixel + 1)
+        i += 1
+        tab_array.set_tab(i, pango.TAB_LEFT,
+            (max_name_len + max_version_len) *
+            font_size_in_pixel + 2)
+        textview.set_tabs(tab_array)
+
+        itr = depbuffer.get_iter_at_line(0)
+        depbuffer.insert_with_tags_by_name(itr,
+            _("Name\tDependency\tInstalled Version\n"), "bold")
+        resized_installed_icon = None
+        resized_not_installed_icon = None
+        i += 0
+        for (name, version, installed_version, is_installed) in names:
+                if is_installed:
+                        if resized_installed_icon == None:
+                                resized_installed_icon = resize_icon(
+                                    installed_icon,
+                                    font_size_in_pixel)
+                        icon = resized_installed_icon
+                else:
+                        if resized_not_installed_icon == None:
+                                resized_not_installed_icon = resize_icon(
+                                    not_installed_icon,
+                                    font_size_in_pixel)
+                        icon = resized_not_installed_icon
+                itr = depbuffer.get_iter_at_line(i + 1)
+                dep_str = "%s\t%s\t" % (name, version)
+                depbuffer.insert(itr, dep_str)
+                end_itr = depbuffer.get_end_iter()
+                depbuffer.insert_pixbuf(end_itr, icon)
+                depbuffer.insert(end_itr, " %s\n" % installed_version)
+                i += 1
 
 def set_package_details(pkg_name, local_info, remote_info, textview,
     installed_icon, not_installed_icon, update_available_icon, 
@@ -600,3 +717,154 @@ def change_stockbutton_label(button, text):
         button_label = __get_stockbutton_label(button)
         if button_label != None:
                 button_label.set_label(text)
+
+def get_export_p5i_filename(last_export_selection_path, main_window):
+        filename = None
+        chooser = gtk.FileChooserDialog(_("Export Selections"),
+            main_window,
+            gtk.FILE_CHOOSER_ACTION_SAVE,
+            (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+            gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+
+        file_filter = gtk.FileFilter()
+        file_filter.set_name(_("p5i Files"))
+        file_filter.add_pattern("*.p5i")
+        chooser.add_filter(file_filter)
+        file_filter = gtk.FileFilter()
+        file_filter.set_name(_("All Files"))
+        file_filter.add_pattern("*")
+        chooser.add_filter(file_filter)
+
+        path = tempfile.gettempdir()
+        name = _("my_packages")
+        if last_export_selection_path and last_export_selection_path != "":
+                path, name_plus_ext = os.path.split(last_export_selection_path)
+                result = os.path.splitext(name_plus_ext)
+                name = result[0]
+
+        #Check name
+        base_name = None
+        m = re.match("(.*)(-\d+)$", name)
+        if m == None and os.path.exists(path + os.sep + name + '.p5i'):
+                base_name = name
+        if m and len(m.groups()) == 2:
+                base_name = m.group(1)
+        name = name + '.p5i'
+        if base_name:
+                for i in range(1, 99):
+                        full_path = path + os.sep + base_name + '-' + \
+                            str(i) + '.p5i'
+                        if not os.path.exists(full_path):
+                                name = base_name + '-' + str(i) + '.p5i'
+                                break
+        chooser.set_current_folder(path)
+        chooser.set_current_name(name)
+        chooser.set_do_overwrite_confirmation(True)
+
+        response = chooser.run()
+        if response == gtk.RESPONSE_OK:
+                filename = chooser.get_filename()
+        chooser.destroy()
+
+        return filename
+
+def set_icon_for_button_and_menuitem(icon_name, button=None, menuitem=None):
+        icon_source = gtk.IconSource()
+        icon_source.set_icon_name(icon_name)
+        icon_set = gtk.IconSet()
+        icon_set.add_source(icon_source)
+        if button:
+                image_widget = gtk.image_new_from_icon_set(icon_set,
+                    gtk.ICON_SIZE_SMALL_TOOLBAR)
+                button.set_icon_widget(image_widget)
+        if menuitem:
+                image_widget = gtk.image_new_from_icon_set(icon_set,
+                    gtk.ICON_SIZE_MENU)
+                menuitem.set_image(image_widget)
+
+def exit_if_no_threads():
+        if threading.activeCount() == 1:
+                if gtk.main_level() > 0:
+                        gtk.main_quit()
+                sys.exit(0)
+        return True
+
+def get_statusbar_label(statusbar):
+        sb_frame = None
+        sb_label = None
+        children = statusbar.get_children()
+        if len(children) > 0:
+                sb_frame = children[0]
+        if sb_frame and isinstance(sb_frame, gtk.Frame):
+                children = sb_frame.get_children()
+                if len(children) > 0:
+                        sb_label = children[0]
+                if sb_label and isinstance(sb_label, gtk.Label):
+                        return sb_label
+        return None
+
+def get_origin_uri(repo):
+        if repo == None:
+                return None
+        origin_uri = repo.origins[0]
+        ret_uri = None
+        if isinstance(origin_uri, str):
+                if len(origin_uri) > 0:
+                        ret_uri = origin_uri.strip("/")
+        elif isinstance(origin_uri, publisher.RepositoryURI):
+                uri = origin_uri.uri
+                if uri != None and len(uri) > 0:
+                        ret_uri = uri.strip("/")
+        return ret_uri
+
+def get_pkg_stem(pkg_name, pkg_pub=None):
+        pkg_str = "pkg:/"
+        if pkg_pub == None:
+                return_str = "%s%s" % (pkg_str, pkg_name)
+        else:
+                return_str = "%s/%s/%s" % (pkg_str, pkg_pub, pkg_name)
+        return return_str
+
+def get_max_text_length(length_to_check, text, widget):
+        if widget == None:
+                return 0
+        context = widget.get_pango_context()
+        metrics = context.get_metrics(context.get_font_description())
+        current_length = pango.PIXELS(
+            metrics.get_approximate_char_width() * len(text))
+        if current_length > length_to_check:
+                return current_length
+        else:
+                return length_to_check
+
+def is_a_textview( widget):
+        return widget.class_path().rpartition('.')[2] == "GtkTextView"
+
+def alias_clash(pubs, prefix, alias):
+        clash = False
+        if alias != None and len(alias) > 0:
+                for pub in pubs:
+                        if pub.disabled:
+                                continue
+                        if pub.prefix == prefix:
+                                continue
+                        if alias == pub.prefix or alias == pub.alias:
+                                clash = True
+                                break
+        return clash
+
+def setup_package_license(licenses):
+        lic = ""
+        lic_u = ""
+        if licenses == None:
+                lic_u = _("Not available")
+        else:
+                for licens in licenses:
+                        lic += licens.get_text()
+                        lic += "\n"
+                try:
+                        lic_u = unicode(lic, "utf-8")
+                except UnicodeDecodeError:
+                        lic_u = _("License could not be shown "
+                            "due to conversion problem.")
+        return lic_u

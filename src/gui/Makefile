@@ -166,15 +166,25 @@ PYMODS = \
    modules/__init__.py \
    modules/beadmin.py \
    modules/cache.py \
+   modules/detailspanel.py \
+   modules/entrystyle.py \
    modules/enumerations.py \
+   modules/exportconfirm.py \
+   modules/globalexceptionhandler.py \
    modules/imageinfo.py \
    modules/installupdate.py \
    modules/misc.py \
    modules/misc_non_gui.py \
    modules/parseqs.py \
+   modules/pmgconf.py \
+   modules/pmlogging.py \
+   modules/preferences.py \
    modules/progress.py \
    modules/repository.py \
+   modules/searcherror.py \
+   modules/startpage.py \
    modules/uarenamebe.py \
+   modules/versioninfo.py \
    modules/webinstall.py
 
 PYCMODS = $(PYMODS:%.py=%.pyc)
