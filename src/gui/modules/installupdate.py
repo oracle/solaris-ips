@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 DEFAULT_CONFIRMATION_WIDTH = 550                # Width & height of single confirmation
@@ -64,7 +63,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
             action = -1, parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
-            confirmation_list = None):
+            confirmation_list = None, api_lock = None):
                 if action == -1:
                         return
                 progress.GuiProgressTracker.__init__(self)
@@ -72,6 +71,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.web_updates_list = None
                 self.web_install_all_installed = False
                 self.parent = parent
+                self.api_lock = api_lock
                 self.api_o = gui_misc.get_api_object(image_directory,
                     self, main_window)
                 if self.api_o == None:
@@ -463,6 +463,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                     args = (continue_operation, )).start()
 
         def __proceed_with_stages_thread_ex(self, continue_operation = False):
+                if self.api_lock:
+                        self.api_lock.acquire()
+                self.__proceed_with_stages_thread_ex_with_lock(continue_operation)
+                if self.api_lock:
+                        self.api_lock.release()
+
+        def __proceed_with_stages_thread_ex_with_lock(self, continue_operation = False):
                 try:
                         try:
                                 if self.action == enumerations.IMAGE_UPDATE and \

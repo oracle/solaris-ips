@@ -19,10 +19,8 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
-
 
 import getopt
 import os
@@ -53,6 +51,7 @@ import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
+import pkg.nrlock as nrlock
 from pkg.client import global_settings
 logger = global_settings.logger
 
@@ -87,6 +86,7 @@ UM_STEM,
 class Updatemanager:
         def __init__(self):
                 global_settings.client_name = gui_misc.get_um_name()
+                self.api_lock = nrlock.NRLock()
                     
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
@@ -495,6 +495,11 @@ class Updatemanager:
                     args=(stem, pkg_name, self.last_show_info_id)).start()
 
         def __show_package_info(self, stem, pkg_name, info_id):
+                self.api_lock.acquire()
+                self.__show_package_info_without_lock(stem, pkg_name, info_id)
+                self.api_lock.release()
+
+        def __show_package_info_without_lock(self, stem, pkg_name, info_id):
                 local_info = None
                 remote_info = None
                 if info_id == self.last_show_info_id:
@@ -568,7 +573,8 @@ class Updatemanager:
                     gui_misc.package_name["SUNWipkg-gui"],
                     gui_misc.package_name["SUNWipkg-um"]],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36))
+                    icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36),
+                    api_lock = self.api_lock)
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):

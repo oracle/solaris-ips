@@ -78,6 +78,7 @@ import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 import pkg.portable as portable
 import pkg.fmri as fmri
+import pkg.nrlock as nrlock
 import pkg.gui.beadmin as beadm
 import pkg.gui.cache as cache
 import pkg.gui.detailspanel as detailspanel
@@ -113,6 +114,7 @@ class PackageManager:
                 self.program_title = title
                 signal.signal(signal.SIGINT, self.__main_application_quit)
                 self.user_rights = portable.is_admin()
+                self.api_lock = nrlock.NRLock()
                 self.__reset_home_dir()
                 self.api_o = None
                 self.cache_o = None
@@ -1495,6 +1497,11 @@ class PackageManager:
                 self.in_setup = False
 
         def __do_api_search(self, search_all = True):
+                self.api_lock.acquire()
+                self.__do_api_search_without_lock(search_all)
+                self.api_lock.release()
+
+        def __do_api_search_without_lock(self, search_all = True):
                 self.__set_search_start()
                 gobject.idle_add(self.update_statusbar)
                 self.search_time_sec = 0
@@ -2422,6 +2429,11 @@ class PackageManager:
                             enumerations.REPOSITORY_PREFIX)
 
         def __setup_publisher(self, publishers):
+                self.api_lock.acquire()
+                self.__setup_publisher_without_lock(publishers)
+                self.api_lock.release()
+
+        def __setup_publisher_without_lock(self, publishers):
                 self.saved_filter_combobox_active = self.gconf.initial_show_filter
                 application_list, category_list , section_list = \
                     self.__get_application_categories_lists(publishers)
@@ -2536,6 +2548,11 @@ class PackageManager:
                 return self.exiting
           
         def __get_info(self, pkg_stem, name):
+                self.api_lock.acquire()
+                self.__get_info_without_lock(pkg_stem, name)
+                self.api_lock.release()
+
+        def __get_info_without_lock(self, pkg_stem, name):
                 if not self.__do_api_reset():
                         return
                 try:
@@ -2576,7 +2593,7 @@ class PackageManager:
                 installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list)
+                    confirmation_list = confirmation_list, api_lock = self.api_lock)
 
         def __on_update_all(self, widget):
                 if not self.__do_api_reset():
@@ -2591,7 +2608,7 @@ class PackageManager:
                     gui_misc.package_name["SUNWipkg-gui"]],
                     main_window = self.w_main_window,
                     icon_confirm_dialog = self.window_icon,
-                    confirmation_list = confirmation)
+                    confirmation_list = confirmation, api_lock = self.api_lock)
                 return
 
         def __on_help_about(self, widget):
@@ -2642,7 +2659,7 @@ class PackageManager:
                 installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list)
+                    confirmation_list = confirmation_list, api_lock = self.api_lock)
 
         def __on_reload(self, widget):
                 self.force_reload_packages = True
@@ -2662,6 +2679,11 @@ class PackageManager:
                 Thread(target = self.__catalog_refresh).start()
 
         def __catalog_refresh(self):
+                self.api_lock.acquire()
+                self.__catalog_refresh_without_lock()
+                self.api_lock.release()
+
+        def __catalog_refresh_without_lock(self):
                 """Update image's catalogs."""
                 success = self.__do_refresh(immediate=True)
                 if not success:
@@ -3016,13 +3038,20 @@ class PackageManager:
 
         def __show_licenses(self):
                 self.show_licenses_id = 0
+                if self.selected_pkgstem == None:
+                        gobject.idle_add(self.__update_package_license, None,
+                            self.last_show_licenses_id)
+                        return
                 Thread(target = self.__show_package_licenses,
                     args = (self.selected_pkgstem, self.last_show_licenses_id,)).start()
 
         def __show_package_licenses(self, selected_pkgstem, license_id):
+                self.api_lock.acquire()
+                self.__show_package_licenses_without_lock(selected_pkgstem, license_id)
+                self.api_lock.release()
+
+        def __show_package_licenses_without_lock(self, selected_pkgstem, license_id):
                 if selected_pkgstem == None:
-                        gobject.idle_add(self.__update_package_license, None,
-                            self.last_show_licenses_id)
                         return
                 info = None
                 try:
@@ -3110,6 +3139,11 @@ class PackageManager:
                     args = (pkg, pkg_stem, pkg_status, self.last_show_info_id)).start()
 
         def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id):
+                self.api_lock.acquire()
+                self.__show_package_info_without_lock(pkg, pkg_stem, pkg_status, info_id)
+                self.api_lock.release()
+
+        def __show_package_info_without_lock(self, pkg, pkg_stem, pkg_status, info_id):
                 local_info = None
                 remote_info = None
                 if not self.detailspanel.showing_empty_details and (info_id ==
