@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010 Oracle and/or its affiliates. All rights reserved.
 #
 
 MODIFY_DIALOG_WIDTH_DEFAULT = 500
@@ -575,12 +574,10 @@ class Repository(progress.GuiProgressTracker):
                 return True
 
         def __get_selected_publisher_itr_model(self):
-                tsel = self.w_publishers_treeview.get_selection()
-                selection = tsel.get_selected()
-                itr = selection[1]
-                if itr == None:
+                itr, sorted_model = self.__get_fitr_model_from_tree(
+                    self.w_publishers_treeview)
+                if itr == None or sorted_model == None:
                         return (None, None)
-                sorted_model = selection[0]
                 sorted_path = sorted_model.get_path(itr)
                 filter_path = sorted_model.convert_path_to_child_path(sorted_path)
                 filter_model = sorted_model.get_model()
@@ -1449,6 +1446,13 @@ class Repository(progress.GuiProgressTracker):
                 self.priority_changes.append([enumerations.PUBLISHER_MOVE_BEFORE,
                     cur_name, before_name])
                 self.__enable_disable_updown_btn(itr, model)
+                self.__move_to_cursor()
+
+        def __move_to_cursor(self):
+                itr, model = self.__get_fitr_model_from_tree(self.w_publishers_treeview)
+                if itr and model:
+                        path = model.get_path(itr)
+                        self.w_publishers_treeview.scroll_to_cell(path)
 
         def __on_manage_move_down_clicked(self, widget):
                 after_name = None
@@ -1469,6 +1473,7 @@ class Repository(progress.GuiProgressTracker):
                 self.priority_changes.append([enumerations.PUBLISHER_MOVE_AFTER,
                     cur_name, after_name])
                 self.__enable_disable_updown_btn(itr, model)
+                self.__move_to_cursor()
 
         def __on_manage_cancel_clicked(self, widget):
                 self.__on_manage_publishers_delete_event(
@@ -1678,7 +1683,7 @@ class Repository(progress.GuiProgressTracker):
                 selection = tsel.get_selected()
                 itr = selection[1]
                 if itr == None:
-                        return None
+                        return (None, None)
                 model = selection[0]
                 return (itr, model)
 
