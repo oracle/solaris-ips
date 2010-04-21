@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
@@ -4063,8 +4063,11 @@ class PackageManager:
                 self.in_setup = False
                 self.cancelled = False
                 active_filter = self.w_filter_combobox.get_active()
-                if self.set_section != 0 or \
-                    active_filter != enumerations.FILTER_ALL:
+                ret = self.__get_selection_and_category_path()
+                need_refilter = True
+                if ret[0] and ret[1][0] == 0:
+                        need_refilter = False
+                if need_refilter or active_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 else:
                         if not self.__doing_search():
