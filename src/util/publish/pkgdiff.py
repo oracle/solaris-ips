@@ -146,12 +146,17 @@ def main_func():
                 diffs += a
                 diffs += c
                 diffs += r
-        # License action still causes spurious diffs... elide to get exit
-        # code correct
-        if not diffs or (len(diffs) == 1 and 
-            diffs[0][0] == diffs[0][1]): # no real changes detected at all
+        # License action still causes spurious diffs... check again for now.
+              
+        real_diffs = [ 
+            (a,b)
+            for a, b in diffs
+            if a is None or b is None or a.different(b)
+        ]
+
+        if not real_diffs:
                 return 0
-       
+
         # define some ordering functions so that output is easily readable
         # First, a human version of action comparison that works across
         # variants and action changes...
@@ -203,17 +208,20 @@ def main_func():
         def conditional_print(s, a):
                 if onlyattrs:
                         if not set(a.attrs.keys()) & onlyattrs:
-                                return
+                                return False
                 elif ignoreattrs:
                         if not set(a.attrs.keys()) - ignoreattrs:
-                                return
+                                return False
                 print "%s %s" % (s, a)               
-                
+                return True
+
+        different = False
+
         for old, new in diffs:
                 if not new:
-                        conditional_print("-", old)
+                        different |= conditional_print("-", old)
                 elif not old:
-                        conditional_print("+", new)
+                        different |= conditional_print("+", new)
                 else:
                         s = []
 
@@ -251,6 +259,7 @@ def main_func():
                                                 s.append("  + %s" % diff_str)
                         # print out part of action that is the same
                         if s:
+                                different = True
                                 print "%s %s %s" % (old.name, 
                                     attrval(old.attrs, old.key_attr), 
                                     " ".join(("%s" % attrval(old.attrs,v) 
@@ -258,7 +267,7 @@ def main_func():
                                 for l in s:
                                         print l
 
-        sys.exit(1)
+        return int(different)
 
 def product(*args, **kwds):
         # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy

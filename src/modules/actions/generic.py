@@ -235,12 +235,20 @@ class Action(object):
 
                 return out
 
+        def __eq__(self, other):
+                if isinstance(other, Action):
+                        return cmp(self, other) == 0
+                return False
+
         def __cmp__(self, other):
                 """Compare actions for ordering.  The ordinality of a
                    given action is computed and stored at action
                    initialization."""
+                if not isinstance(other, Action):
+                        return cmp(id(self), id(other))
 
                 res = cmp(self.ord, other.ord)
+
                 if res == 0:
                         return self.compare(other) # often subclassed
 
