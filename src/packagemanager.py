@@ -2763,12 +2763,16 @@ class PackageManager:
                 if len(self.search_completion) > 0:
                         self.cache_o.dump_search_completion_info(
                             self.search_completion)
-                if len(self.category_active_paths) > 0:
-                        self.cache_o.dump_categories_active_dict(
-                            self.category_active_paths)
-                if len(self.category_expanded_paths) > 0:
-                        self.cache_o.dump_categories_expanded_dict(
-                            self.category_expanded_paths)
+                if self.gconf.save_state:
+                        if len(self.category_active_paths) > 0:
+                                self.cache_o.dump_categories_active_dict(
+                                    self.category_active_paths)
+                        if len(self.category_expanded_paths) > 0:
+                                self.cache_o.dump_categories_expanded_dict(
+                                    self.category_expanded_paths)
+                else:
+                        self.cache_o.dump_categories_active_dict({})
+                        self.cache_o.dump_categories_expanded_dict({})
 
                 self.__shutdown_part2()
                 return True
@@ -3332,6 +3336,7 @@ class PackageManager:
                         self.w_selectall_menuitem.set_sensitive(False)
 
         def __enable_disable_install_remove(self):
+                self.__enable_disable_export_selections()
                 if not self.user_rights:
                         self.w_installupdate_button.set_sensitive(False)
                         self.w_installupdate_menuitem.set_sensitive(False)
@@ -3340,7 +3345,6 @@ class PackageManager:
                         return
                 self.__enable_if_selected_for_removal()
                 self.__enable_if_selected_for_install_update()
-                self.__enable_disable_export_selections()
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False

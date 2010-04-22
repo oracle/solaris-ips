@@ -576,7 +576,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except api_errors.RebootNeededOnLiveImageException:
-                        msg = _("The requested operation would affect files that cannot"
+                        msg = _("The requested operation would affect files that cannot "
                         "be modified in the Live Image.\n"
                         "Please retry this operation on an alternate boot environment.")
                         self.__g_error_stage(msg)
