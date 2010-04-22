@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of the
@@ -385,30 +384,37 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
                                 dep_str = "%s\n" % (names[i])
                                 depbuffer.insert(itr, dep_str)
                 return
-        max_name_len = 0
-        max_version_len = 0
-        for (name, version, installed_version, is_installed) in names:
-                if len(name) > max_name_len:
-                        max_name_len = len(name)
-                if len(version) > max_version_len:
-                        max_version_len = len(version)
-
         style = textview.get_style()
         font_size_in_pango_unit = style.font_desc.get_size()
         font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
         tab_array = pango.TabArray(3, True)
-        i = 1
-        tab_array.set_tab(i, pango.TAB_LEFT,
-            max_name_len * font_size_in_pixel + 1)
-        i += 1
-        tab_array.set_tab(i, pango.TAB_LEFT,
-            (max_name_len + max_version_len) *
-            font_size_in_pixel + 2)
+        header = [_("Name"), _("Dependency"), _("Installed Version")]
+        max_len = [0, 0]
+        for i in range(2):
+                depbuffer.set_text("")
+                itr = depbuffer.get_iter_at_line(0)
+                depbuffer.insert_with_tags_by_name(itr, header[i], "bold")
+                max_len[i] = get_textview_width(textview)
+
+                depbuffer.set_text("")
+                for one_names in names:
+                        itr = depbuffer.get_iter_at_line(0)
+                        depbuffer.insert(itr, one_names[i])
+                        test_len = get_textview_width(textview)
+
+                        if test_len > max_len[i]:
+                                max_len[i] = test_len
+                        depbuffer.set_text("")
+
+        tab_array.set_tab(1, pango.TAB_LEFT, max_len[0] + font_size_in_pixel)
+        tab_array.set_tab(2, pango.TAB_LEFT,
+            max_len[0] + max_len[1] + 2 * font_size_in_pixel)
+
         textview.set_tabs(tab_array)
 
         itr = depbuffer.get_iter_at_line(0)
-        depbuffer.insert_with_tags_by_name(itr,
-            _("Name\tDependency\tInstalled Version\n"), "bold")
+        header_text = "%s\t%s\t%s\n" % (header[0], header[1], header[2])
+        depbuffer.insert_with_tags_by_name(itr, header_text, "bold")
         resized_installed_icon = None
         resized_not_installed_icon = None
         i += 0
@@ -526,6 +532,13 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                 not_installed_icon, update_available_icon)
         return (labs, text)
 
+def get_textview_width(textview):
+        infobuffer = textview.get_buffer()
+        bounds = infobuffer.get_bounds()
+        start = textview.get_iter_location(bounds[0])
+        end = textview.get_iter_location(bounds[1])
+        return end[0] - start[0]
+
 def set_package_details_text(labs, text, textview, installed_icon,
     not_installed_icon, update_available_icon):
         style = textview.get_style()
@@ -538,10 +551,7 @@ def set_package_details_text(labs, text, textview, installed_icon,
         max_test_len = 0
         for lab in labs:
                 __add_label_to_generalinfo(infobuffer, 0, labs[lab])
-                bounds = infobuffer.get_bounds()
-                start = textview.get_iter_location(bounds[0])
-                end = textview.get_iter_location(bounds[1])
-                test_len = end[0] - start[0]
+                test_len = get_textview_width(textview)
                 if test_len > max_test_len:
                         max_test_len = test_len
                 infobuffer.set_text("")
