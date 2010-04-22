@@ -2566,6 +2566,8 @@ class PackageManager:
                 return
 
         def __do_api_reset(self):
+                if self.api_o == None:
+                        return False
                 try:
                         self.api_o.reset()
                 except api_errors.ApiException, ex:
