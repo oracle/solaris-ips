@@ -1040,6 +1040,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_stages_icon.show()
                 self.__stages_label_set_markup("<b>" + done_txt + "</b>")
                 self.__update_details_text("\n"+ done_txt, "bold")
+                self.w_cancel_button.set_sensitive(True)
                 self.w_cancel_button.set_label("gtk-close")
                 self.w_cancel_button.grab_focus()
                 self.w_progressbar.hide()

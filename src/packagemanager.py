@@ -113,7 +113,8 @@ class PackageManager:
                 self.allow_links = False
                 self.program_title = title
                 signal.signal(signal.SIGINT, self.__main_application_quit)
-                self.user_rights = portable.is_admin()
+                self.is_admin = portable.is_admin()
+                self.user_rights = True
                 self.api_lock = nrlock.NRLock()
                 self.__reset_home_dir()
                 self.api_o = None
@@ -309,6 +310,7 @@ class PackageManager:
                 self.w_updateall_menuitem = w_tree_main.get_widget("package_update_all")
                 gui_misc.set_icon_for_button_and_menuitem('pm-update_all',
                     self.w_updateall_button, self.w_updateall_menuitem)
+                self.w_be_menuitem = w_tree_main.get_widget("file_be")
                 self.w_export_selections_menuitem = w_tree_main.get_widget(
                     "file_export_selections")
                 self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
@@ -693,7 +695,7 @@ class PackageManager:
                         self.startpage.link_load_error(link)
                         self.unset_busy_cursor()
                         return
-                elif not self.user_rights:
+                elif not self.is_admin:
                         # Not a privileged user? Show links directly.
                         try:
                                 gnome.url_show(link)
@@ -2481,6 +2483,12 @@ class PackageManager:
                         err = str(idex)
                         logger.error(err)
                         gui_misc.notify_log_error(self)
+                except api_errors.PermissionsException, ex:
+                        if self.first_run:
+                                self.user_rights = False
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
                 except api_errors.ApiException, ex:
                         err = str(ex)
                         gobject.idle_add(self.error_occurred, err,
@@ -2930,13 +2938,21 @@ class PackageManager:
                         self.__enable_disable_selection_menus()
                         self.__enable_disable_install_remove()
 
-        def __update_reload_button(self):
+        def __update_menu_items(self):
                 if self.user_rights:
                         self.w_reload_menuitem.set_sensitive(True)
                         self.w_reload_button.set_sensitive(True)
+                        self.w_updateall_button.set_sensitive(True)
+                        self.w_updateall_menuitem.set_sensitive(True)
                 else:
                         self.w_reload_menuitem.set_sensitive(False)
                         self.w_reload_button.set_sensitive(False)
+                        self.w_updateall_button.set_sensitive(False)
+                        self.w_updateall_menuitem.set_sensitive(False)
+                if self.is_admin:
+                        self.w_be_menuitem.set_sensitive(True)
+                else:
+                        self.w_be_menuitem.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, name, status, pub, description="test"):
                 if self.selected_pkgs.get(pub) == None:
@@ -4082,7 +4098,7 @@ class PackageManager:
                         self.__setup_filter_combobox()
                 self.__setup_repositories_combobox(self.api_o)
                 if self.first_run:
-                        self.__update_reload_button()
+                        self.__update_menu_items()
                         self.w_repository_combobox.grab_focus()
 
         @staticmethod
@@ -4300,7 +4316,7 @@ class PackageManager:
                 # We reset the HOME directory in case the user called us
                 # with gksu and had NFS mounted home directory in which
                 # case dbus called from gconf cannot write to the directory.
-                if self.user_rights:
+                if self.is_admin:
                         root_home_dir = self.__find_root_home_dir()
                         os.putenv('HOME', root_home_dir)
 
