@@ -1498,6 +1498,7 @@ class PackageManager:
 
         def __do_api_search(self, search_all = True):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__do_api_search_without_lock(search_all)
                 self.api_lock.release()
 
@@ -2430,6 +2431,7 @@ class PackageManager:
 
         def __setup_publisher(self, publishers):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__setup_publisher_without_lock(publishers)
                 self.api_lock.release()
 
@@ -2549,6 +2551,7 @@ class PackageManager:
           
         def __get_info(self, pkg_stem, name):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__get_info_without_lock(pkg_stem, name)
                 self.api_lock.release()
 
@@ -2682,6 +2685,7 @@ class PackageManager:
 
         def __catalog_refresh(self):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__catalog_refresh_without_lock()
                 self.api_lock.release()
 
@@ -3146,6 +3150,7 @@ class PackageManager:
 
         def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__show_package_info_without_lock(pkg, pkg_stem, pkg_status, info_id)
                 self.api_lock.release()
 
