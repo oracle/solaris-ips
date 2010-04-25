@@ -20,13 +20,16 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import ConfigParser
+import errno
 import os
 from pkg import misc, portable
 import random
+import stat
 import tempfile
 import uuid
 
@@ -491,13 +494,31 @@ class RepositoryConfig(object):
                 try:
                         dirname = os.path.dirname(self.__pathname)
                         fd, fn = tempfile.mkstemp(dir=dirname)
+
+                        st = None
+                        try:
+                                st = os.stat(self.__pathname)
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+
+                        if st:
+                                os.fchmod(fd, stat.S_IMODE(st.st_mode))
+                                try:
+                                        portable.chown(fn, st.st_uid, st.st_gid)
+                                except OSError, e:
+                                        if e.errno != errno.EPERM:
+                                                raise
+                        else:
+                                os.fchmod(fd, misc.PKG_FILE_MODE)
+
                         with os.fdopen(fd, "w") as f:
                                 cp.write(f)
                         portable.rename(fn, self.__pathname)
                         self.__dirty = False
                 except EnvironmentError, e:
-                        raise RuntimeError("Unable to open %s for writing: "
-                            "%s" % (e.pathname, e.strerror))
+                        raise RuntimeError("Failed to write configuration: %s: "
+                            "%s" % (e.filename, e.strerror))
                 finally:
                         if fn and os.path.exists(fn):
                                 os.unlink(fn)

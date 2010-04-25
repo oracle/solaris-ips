@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -31,9 +32,10 @@ import pkg5unittest
 import unittest
 import copy
 import os
-import sys
+import stat
 import tempfile
 
+from pkg import misc, portable
 import pkg.server.repositoryconfig as rcfg
 
 class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
@@ -558,6 +560,35 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(rc.get_property("publisher", "prefix"),
                     "overridden")
 
+        def test_perms_are_sane(self):
+                """Verify that cfg_cache is created with sane permissions,
+                and retains user-specified permissions
+                """
+
+                os.remove(self.sample_conf)
+
+                rc = rcfg.RepositoryConfig(self.sample_conf,
+                    {"publisher": {"prefix": "default"}})
+                rc.write()
+                self.assertEqual(stat.S_IMODE(
+                    os.stat(self.sample_conf).st_mode), misc.PKG_FILE_MODE)
+
+                os.chmod(self.sample_conf, 0777)
+                rc = rcfg.RepositoryConfig(self.sample_conf)
+                rc.set_property("publisher", "prefix", "foobar")
+                rc.write()
+                self.assertEqual(
+                    stat.S_IMODE(os.stat(self.sample_conf).st_mode), 0777)
+
+                if portable.util.get_canonical_os_type() == "unix":
+                        portable.chown(self.sample_conf, 65534, 65534)
+                        rc = rcfg.RepositoryConfig(self.sample_conf)
+                        rc.set_property("publisher", "prefix", "foobaz")
+                        rc.write()
+                        self.assertEqual(os.stat(self.sample_conf).st_uid,
+                            65534)
+                        self.assertEqual(os.stat(self.sample_conf).st_gid,
+                            65534)
 
 if __name__ == "__main__":
         unittest.main()
