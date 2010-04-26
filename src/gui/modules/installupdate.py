@@ -321,7 +321,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                      len(self.confirmation_list))
 
                                 if len(to_install) == 0:
-                                        operation_txt = _("Update Confirmation")
+                                        operation_txt = _("Updates Confirmation")
                                         install_text = ngettext(
                                             "Review the package to be Updated",
                                             "Review the packages to be Updated",
@@ -767,14 +767,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         self.w_remove_expander.hide()
 
+                no_pkgs = len(to_update) + len(to_install) + len(to_remove)
                 if global_settings.client_name == gui_misc.get_pm_name():
-                        operation_txt = _("Update Confirmation")
+                        operation_txt = _("Updates Confirmation")
+                        install_text = ngettext(
+                            "Review the package which will be affected by Updates",
+		            "Review the packages which will be affected by Updates", no_pkgs)
                 else:
                         operation_txt = _("Update All Confirmation")
-                no_pkgs = len(to_update) + len(to_install) + len(to_remove)
-                install_text = ngettext(
-                    "Review the package which will be affected by Update all",
-		    "Review the packages which will be affected by Update all", no_pkgs)
+                        install_text = ngettext(
+                            "Review the package which will be affected by Update All",
+		            "Review the packages which will be affected by Update All", no_pkgs)
 
                 self.w_confirm_dialog.set_title(operation_txt)
                 self.w_confirm_label.set_markup("<b>"+install_text+"</b>")
