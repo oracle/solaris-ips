@@ -455,6 +455,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
 
         labs = {}
         labs["name"] = _("Name:")
+        labs["summ"] = _("Summary:")
         labs["desc"] = _("Description:")
         labs["size"] = _("Size:")
         labs["cat"] = _("Category:")
@@ -463,12 +464,16 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         labs["lat"] = _("Latest Version:")
         labs["repository"] = _("Publisher:")
 
-        description = _("None")
+        summary = _("None")
         if local_info.summary:
-                description = local_info.summary
+                summary = local_info.summary
+        description = ""
+        if local_info.description:
+                description = local_info.description
 
         text = {}
         text["name"] = pkg_name
+        text["summ"] = summary
         text["desc"] = description
         if installed:
                 ver_text = _("%(version)s (Build %(build)s-%(branch)s)")
@@ -561,7 +566,7 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i = 0
         __add_line_to_generalinfo(infobuffer, i, labs["name"], text["name"])
         i += 1
-        __add_line_to_generalinfo(infobuffer, i, labs["desc"], text["desc"])
+        __add_line_to_generalinfo(infobuffer, i, labs["summ"], text["summ"])
         i += 1
         installed = False
         if text["ins"] == _("No"):
@@ -588,6 +593,12 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i += 1
         __add_line_to_generalinfo(infobuffer, i, labs["repository"],
             text["repository"])
+        i += 1
+        __add_label_to_generalinfo(infobuffer, i, labs["desc"] + '\n')
+        if len(text["desc"]) > 0:
+                i += 1
+                itr = infobuffer.get_iter_at_line(i)
+                infobuffer.insert(itr, text["desc"])
 
 def __add_label_to_generalinfo(text_buffer, index, label):
         itr = text_buffer.get_iter_at_line(index)

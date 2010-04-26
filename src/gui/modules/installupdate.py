@@ -380,9 +380,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 column.set_sort_column_id(1)
                 column.set_sort_indicator(True)
                 treeview.append_column(column)
-                description_renderer = gtk.CellRendererText()
-                description_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
-                column = gtk.TreeViewColumn(_('Description'), description_renderer,
+                summary_renderer = gtk.CellRendererText()
+                summary_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
+                column = gtk.TreeViewColumn(_('Summary'), summary_renderer,
                     text = enumerations.CONFIRM_DESC)
                 column.set_resizable(True)
                 column.set_sort_column_id(2)
@@ -724,7 +724,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         elif orig and not dest:
                                 dic_to_remove[orig.pkg_stem] = [orig.publisher, None] 
 
-                self.__update_descriptions(dic_to_update, dic_to_install, dic_to_remove)
+                self.__update_summaries(dic_to_update, dic_to_install, dic_to_remove)
 
                 self.__dic_to_liststore(dic_to_update, to_update)
                 self.__dic_to_liststore(dic_to_install, to_install)
@@ -1152,7 +1152,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 pkg_version = version_pref + version_suf + dt_str
                 return pkg_name + "@" + pkg_version
 
-        def __update_descriptions(self, to_update, to_install, to_remove):
+        def __update_summaries(self, to_update, to_install, to_remove):
                 pkgs_table = to_update.keys() + to_install.keys()
                 info = None
                 try:

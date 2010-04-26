@@ -856,7 +856,7 @@ class PackageManager:
                             self.__column_sort_func, 
                             enumerations.PUBLISHER_COLUMN)
                 description_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(_('Description'),
+                column = gtk.TreeViewColumn(_('Summary'),
                     description_renderer,
                     text = enumerations.DESCRIPTION_COLUMN)
                 column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
