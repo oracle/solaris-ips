@@ -18,9 +18,9 @@
 #
 # CDDL HEADER END
 #
+
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 unset LD_LIBRARY_PATH
@@ -88,8 +88,7 @@ is_brand_labeled() {
 	return 0
 }
 
-sanity_check()
-{
+sanity_check() {
 	typeset dir="$1"
 	shift
 	res=0
@@ -293,11 +292,11 @@ unconfigure_zone() {
 	zoneadm -z $ZONENAME mount -f || fatal "$e_badmount"
 
 	zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
-            </dev/null >/dev/null 2>&1
-        if (( $? != 0 )); then
-                error "$e_unconfig"
+	    </dev/null >/dev/null 2>&1
+	if (( $? != 0 )); then
+		error "$e_unconfig"
 		failed=1
-        fi
+	fi
 
 	vlog "$v_unmount"
 	zoneadm -z $ZONENAME unmount || fatal "$e_badunmount"
@@ -307,19 +306,30 @@ unconfigure_zone() {
 }
 
 #
+# Emits to stdout the fmri for the supplied package,
+# stripped of publisher name and other junk.
+#
+get_pkg_fmri() {
+	typeset pname=$1
+	typeset pkg_fmri=
+	typeset info_out=
+
+	info_out=$(LC_ALL=C $PKG info pkg:/$pname 2>/dev/null)
+	if [[ $? -ne 0 ]]; then
+		return 1
+	fi
+	pkg_fmri=$(echo $info_out | grep FMRI | cut -d'@' -f 2)
+	echo "$pname@$pkg_fmri"
+	return 0
+}
+
+#
 # Emits to stdout the entire incorporation for this image,
 # stripped of publisher name and other junk.
 #
 get_entire_incorp() {
-	typeset entire_fmri
-	entire_fmri=$($PKG list -Hv entire | nawk '{print $1}')
-	if [[ $? -ne 0 ]]; then
-		return 1
-	fi
-	entire_fmri=$(echo $entire_fmri | sed 's@^pkg://[^/]*/@@')
-	entire_fmri=$(echo $entire_fmri | sed 's@^pkg:/@@')
-	echo $entire_fmri
-	return 0
+	get_pkg_fmri entire
+	return $?
 }
 
 #
@@ -329,8 +339,8 @@ get_entire_incorp() {
 # ("mirror" or "origin").
 #
 get_publisher_attrs() {
-	pname=$1
-	utype=$2
+	typeset pname=$1
+	typeset utype=$2
 
 	LC_ALL=C $PKG publisher -HF tsv| \
 	    nawk '$5 == "'"$utype"'" && $1 == "'"$pname"'" \
@@ -344,8 +354,11 @@ get_publisher_attrs() {
 # ("mirror" or "origin").
 #
 get_publisher_attr_args() {
+	typeset args=
+	typeset sticky=
+	typeset preferred=
+	typeset enabled=
 
-	args=""
 	get_publisher_attrs $1 $2 |
 	while IFS=" " read sticky preferred enabled; do
 		if [ $sticky == "true" ]; then
@@ -374,15 +387,14 @@ get_publisher_attr_args() {
 # the list of the requested URLs separated by spaces, followed by a
 # newline after each unique publisher.  It expects two parameters,
 # publisher type ("all", "preferred", "non-preferred") and URL type
-# ("mirror" or "origin".
+# ("mirror" or "origin".)
 #
 get_publisher_urls() {
-	ptype=$1
-	utype=$2
-
-	__pub_prefix=""
-	__publisher_urls=""
-	ptype_filter=""
+	typeset ptype=$1
+	typeset utype=$2
+	typeset __pub_prefix=
+	typeset __publisher_urls=
+	typeset ptype_filter=
 
 	if [ "$ptype" == "all" ]
 	then
@@ -426,6 +438,9 @@ get_publisher_urls() {
 # as the main publisher.
 #
 get_pub_secinfo() {
+	typeset key=
+	typeset cert=
+
 	key=$(LC_ALL=C $PKG publisher $1 |
 	    nawk -F': ' '/SSL Key/ {print $2; exit 0}')
 	cert=$(LC_ALL=C $PKG publisher $1 |
@@ -438,6 +453,6 @@ get_pub_secinfo() {
 # No changes were made - nothing to do.  Any other exit code is an error.
 #
 pkg_err_check() {
-	res=$?
+	typeset res=$?
 	(( $res != 0 && $res != 4 )) && fail_fatal "$1"
 }

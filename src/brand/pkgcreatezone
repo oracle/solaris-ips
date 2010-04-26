@@ -19,9 +19,9 @@
 #
 # CDDL HEADER END
 #
+
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -284,9 +284,7 @@ fi
 # It's ok to not find entire in the current image, since this means the user
 # can install pre-release development bits for testing purposes.
 #
-raw_entire_fmri=$($PKG list -Hv entire | nawk '{print $1}')
-entire_fmri=$(echo $raw_entire_fmri | sed 's@^pkg://[^/]*/@@')
-entire_fmri=$(echo $entire_fmri | sed 's@^pkg:/@@')
+entire_fmri=$(get_entire_incorp)
 
 #
 # Before installing the zone, set up ZFS dataset hierarchy for the zone root
@@ -382,7 +380,7 @@ done
 # and build catalog information.  This substantially reduces the amount of
 # time needed to create a zone.
 #
-$PKG image-create -f --no-refresh --zone --full \
+LC_ALL=C $PKG image-create -f --no-refresh --zone --full \
     -p $publisher=$pub_first_origin $pub_add_origins $pub_add_mirrors $secinfo \
     $ZONEROOT || fail_incomplete "$f_img"
 
@@ -398,7 +396,8 @@ export PKG_IMAGE
 # --no-refresh is used here so that update operations can be
 # coalesced.
 # Update our new publisher
-$PKG set-publisher --no-refresh $attrs $publisher || fail_incomplete "$f_img"
+LC_ALL=C $PKG set-publisher --no-refresh $attrs $publisher \
+    || fail_incomplete "$f_img"
 
 # add extra publishers
 # If cert and key information are ever allowed at the origin or
@@ -423,7 +422,7 @@ if [[ -n "$publishers_extra_origins" ]]; then
 		export PKG_IMAGE
 		# --no-refresh is used here so that update operations can be
 		# coalesced.
-		$PKG set-publisher --no-refresh $attrs \
+		LC_ALL=C $PKG set-publisher --no-refresh $attrs \
                     ${pub_add_origins}${pub_prefix} || fail_incomplete "$f_img"
 	done
 
@@ -447,7 +446,7 @@ if [[ -n "$publishers_extra_origins" ]]; then
 			export PKG_IMAGE
 			# --no-refresh is used here so that update operations
 			# can be coalesced.
-			$PKG set-publisher --no-refresh $attrs \
+			LC_ALL=C $PKG set-publisher --no-refresh $attrs \
 			    ${pub_add_mirrors}${pub_prefix} || \
 			    fail_incomplete "$f_img"
 		done
@@ -456,7 +455,7 @@ fi
 
 # Now that all of the publisher configurations are in place, attempt a refresh.
 # If this fails, assume the image is incomplete.
-$PKG refresh || fail_incomplete "$f_img"
+LC_ALL=C $PKG refresh || fail_incomplete "$f_img"
 
 if [ -d /var/pkg/download ]; then
 	PKG_CACHEDIR=/var/pkg/download
@@ -478,7 +477,7 @@ fi
 #
 if [[ -n $entire_fmri ]]; then
 	printf "$m_incorp\n"
-	$PKG list -af pkg://$publisher/$entire_fmri > /dev/null 2>&1
+	LC_ALL=C $PKG list -af pkg://$publisher/$entire_fmri > /dev/null 2>&1
 	if [[ $? -ne 0 ]]; then
 		fail_fatal "$f_no_entire_in_pref" $entire_fmri $publisher
 	fi
@@ -494,11 +493,11 @@ printf "$m_core\n"
 # hopefully go away once "primordial" actions arrive.
 #
 if [[ -n $entire_fmri ]]; then
-	$PKG install -q --no-refresh --no-index $entire_fmri || \
+	LC_ALL=C $PKG install -q --no-refresh --no-index $entire_fmri || \
 	    pkg_err_check "$f_pkg"
 fi
-$PKG install --no-refresh --no-index SUNWcsd || pkg_err_check "$f_pkg"
-$PKG install --no-refresh --no-index SUNWcs || pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --no-refresh --no-index SUNWcsd || pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --no-refresh --no-index SUNWcs || pkg_err_check "$f_pkg"
 
 printf "$m_more\n"
 pkglist=""
@@ -558,7 +557,7 @@ pkglist="$pkglist $extra_packages"
 # Do the install; we just refreshed on image-create, so skip that.  We
 # also skip indexing here, as that is also what the LiveCD does.
 #
-$PKG install --no-index --no-refresh $pkglist || pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --no-index --no-refresh $pkglist || pkg_err_check "$f_pkg"
 
 printf "\n$m_mannote\n"
 
