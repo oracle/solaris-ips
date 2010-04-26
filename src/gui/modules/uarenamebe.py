@@ -19,13 +19,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.gui.misc as gui_misc
 import os
 import pkg.misc as misc
+import pkg.client.api_errors as api_errors
+import pkg.client.bootenv as bootenv
 from threading import Thread
 import time
 
@@ -39,13 +40,6 @@ except ImportError:
         import sys
         sys.exit(1)
 
-try:
-        import libbe as be
-        nobe = False
-except ImportError:
-        # All actions are disabled when libbe can't be imported. 
-        nobe = True
-
 VALID_BE_NAME = 0
 INVALID_BE_NAME = -1
 DUPLICATE_BE_NAME = -2
@@ -54,7 +48,7 @@ ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 class RenameBeAfterUpdateAll:
         def __init__(self, parent, dialog_icon, parent_window):
-                if nobe:
+                if not bootenv.BootEnv.libbe_exists():
                         msg = _("The <b>libbe</b> library was not "
                             "found on your system.")
                         msgbox = gtk.MessageDialog(
@@ -139,7 +133,7 @@ class RenameBeAfterUpdateAll:
                                 "on_ua_be_entry_changed" : \
                                     self.__on_ua_be_entry_changed,
                                 "on_ua_whats_this_button_clicked" : \
-                                    self.__on_ua_whats_this_button_clicked,                                
+                                    self.__on_ua_whats_this_button_clicked,
                             }
                         w_tree_ua_completed.signal_autoconnect(dic_be_rename)
                 except AttributeError, error:
@@ -152,7 +146,7 @@ class RenameBeAfterUpdateAll:
                 '''Returns False if no BE rename is needed'''
                 self.updated_packages_list = updated_packages_list
                 self.__set_release_notes_url()
-                self.__setup_be_list()
+                self.__setup_be_name()
                 orig_name = self.__get_activated_be_name()
                 if orig_name == self.active_be_before_update_all:
                         self.w_ua_completed_dialog.hide()
@@ -278,44 +272,37 @@ class RenameBeAfterUpdateAll:
                 self.w_ua_restart_later_button.set_sensitive(sensitive)
                 self.w_ua_restart_now_button.set_sensitive(sensitive)
 
-        def __setup_be_list(self):
-                be_list = self.__get_be_list()
-                proposed_name = ""
-                for bee in be_list:
-                        if bee.get("active_boot"):
-                                proposed_name = bee.get("orig_be_name")
+        def __setup_be_name(self):
+                proposed_name = self.__get_activated_be_name()
                 self.w_ua_be_entry.set_text(proposed_name)
 
         def __verify_be_name(self, new_name):
-                be_list = self.__get_be_list()
-                for bee in be_list:
-                        name = bee.get("orig_be_name")
-                        if name == new_name:
-                                active_boot = bee.get("active_boot")
-                                if name == new_name \
-                                    and active_boot == False:
-                                        return DUPLICATE_BE_NAME
-                                elif active_boot:
-                                        return ACTIVATED_BE_NAME
-                if be.beVerifyBEName(new_name) != VALID_BE_NAME:
+                try:
+                        bootenv.BootEnv.check_be_name(new_name)
+                except api_errors.DuplicateBEName:
+                        if new_name == self.__get_activated_be_name():
+                                return ACTIVATED_BE_NAME
+                        else:
+                                return DUPLICATE_BE_NAME
+                except api_errors.ApiException:
                         return INVALID_BE_NAME
                 return VALID_BE_NAME
 
-        def __get_activated_be_name(self):
-                be_list = self.__get_be_list()
-                for bee in be_list:
-                        name = bee.get("orig_be_name")
-                        active_boot = bee.get("active_boot")
-                        if active_boot:
-                                return name
+        @staticmethod
+        def __get_activated_be_name():
+                try:
+                        name = bootenv.BootEnv.get_activated_be_name()
+                except api_errors.ApiException:
+                        name = ""
+                return name
 
-        def __get_active_be_name(self):
-                be_list = self.__get_be_list()
-                for bee in be_list:
-                        name = bee.get("orig_be_name")
-                        active_boot = bee.get("active")
-                        if active_boot:
-                                return name
+        @staticmethod
+        def __get_active_be_name():
+                try:
+                        name = bootenv.BootEnv.get_active_be_name()
+                except api_errors.ApiException:
+                        name = ""
+                return name
 
         def __start_bouncing_progress(self):
                 self.stop_progress_bouncing = False
@@ -339,33 +326,23 @@ class RenameBeAfterUpdateAll:
                 return not self.stopped_bouncing_progress
 
         @staticmethod
-        def __get_be_list():
-                be_list_vals = be.beList()
-                be_list = None
-                if isinstance(be_list_vals[0], int):
-                        be_list = be_list_vals[1]
-                else:
-                        be_list = be_list_vals
-                return be_list
-
-        @staticmethod
         def __rename_be(orig_name, new_name):
                 # The rename operation is i/o intensive, so the gui
                 # progress is not responsive. This will allow to show the
                 # gui progress.
                 time.sleep(0.2)
-                return be.beRename(orig_name, new_name)
+                return bootenv.BootEnv.rename_be(orig_name, new_name)
 
         @staticmethod
         def __workaround_for_6472202(active_name, orig_name, new_name):
                 ret_code = 0
-                ret_code = be.beActivate(active_name)
+                ret_code = bootenv.BootEnv.set_default_be(active_name)
                 if ret_code == 0:
-                        ret_code = be.beRename(orig_name, new_name)
+                        ret_code = bootenv.BootEnv.rename_be(orig_name, new_name)
                 if ret_code == 0:
-                        ret_code = be.beActivate(new_name)
+                        ret_code = bootenv.BootEnv.set_default_be(new_name)
                 else:
-                        be.beActivate(orig_name)
+                        bootenv.BootEnv.set_default_be(orig_name)
                 return ret_code
 
         @staticmethod

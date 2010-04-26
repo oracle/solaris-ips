@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import os
 import tempfile
@@ -189,6 +188,32 @@ class BootEnv(object):
                 return self.is_valid
 
         @staticmethod
+        def libbe_exists():
+                return True
+
+        @staticmethod
+        def check_verify():
+                return hasattr(be, "beVerifyBEName")
+
+        @staticmethod
+        def split_be_entry(bee):
+                name = bee.get("orig_be_name")
+                return (name, bee.get("active"), bee.get("active_boot"),
+                    bee.get("space_used"), bee.get("date"))
+
+        @staticmethod
+        def rename_be(orig_name, new_name):
+                return be.beRename(orig_name, new_name)
+
+        @staticmethod
+        def destroy_be(be_name):
+                return be.beDestroy(be_name, 1, True)
+
+        @staticmethod
+        def set_default_be(be_name):
+                return be.beActivate(be_name)
+
+        @staticmethod
         def check_be_name(be_name):
                 try:
                         if be_name is None:
@@ -197,19 +222,49 @@ class BootEnv(object):
                         if be.beVerifyBEName(be_name) != 0:
                                 raise api_errors.InvalidBENameException(be_name)
 
-                        # Check for the old beList() API since pkg(1) can be
-                        # back published and live on a system without the 
-                        # latest libbe.
-                        beVals = be.beList()
-                        if isinstance(beVals[0], int):
-                                rc, beList = beVals
-                        else:
-                                beList = beVals
+                        beList = BootEnv.get_be_list()
 
                         # If there is already a BE with the same name as
                         # be_name, then raise an exception.
                         if be_name in (be.get("orig_be_name") for be in beList):
                                 raise api_errors.DuplicateBEName(be_name)
+                except AttributeError:
+                        raise api_errors.BENamingNotSupported(be_name)
+
+        @staticmethod
+        def get_be_list():
+                # Check for the old beList() API since pkg(1) can be
+                # back published and live on a system without the 
+                # latest libbe.
+                rc = 0
+                beVals = be.beList()
+                if isinstance(beVals[0], int):
+                        rc, beList = beVals
+                else:
+                        beList = beVals
+                if not beList or rc != 0:
+                        beList = []
+                return beList
+
+        @staticmethod
+        def get_activated_be_name():
+                try:
+                        beList = BootEnv.get_be_list()
+
+                        for be in beList:
+                                if be.get("active_boot"):
+                                        return be.get("orig_be_name")
+                except AttributeError:
+                        raise api_errors.BENamingNotSupported(be_name)
+
+        @staticmethod
+        def get_active_be_name():
+                try:
+                        beList = BootEnv.get_be_list()
+
+                        for be in beList:
+                                if be.get("active"):
+                                        return be.get("orig_be_name")
                 except AttributeError:
                         raise api_errors.BENamingNotSupported(be_name)
 
@@ -469,31 +524,74 @@ class BootEnvNull(object):
         def __init__(self, root):
                 pass
 
-        def exists(self):
+        @staticmethod
+        def exists():
                 return False
+
+        @staticmethod
+        def libbe_exists():
+                return False
+
+        @staticmethod
+        def check_verify():
+                return False
+
+        @staticmethod
+        def split_be_entry(bee):
+                return None
+
+        @staticmethod
+        def rename_be(orig_name, new_name):
+	        pass
+
+        @staticmethod
+        def destroy_be(be_name):
+	        pass
+
+        @staticmethod
+        def set_default_be(be_name):
+                pass
 
         @staticmethod
         def check_be_name(be_name):
                 if be_name:
                         raise api_errors.BENamingNotSupported(be_name)
 
-        def init_image_recovery(self, img, be_name=None):
+        @staticmethod
+        def get_be_list():
+                pass
+
+        @staticmethod
+        def get_activated_be_name():
+                pass
+
+        @staticmethod
+        def get_active_be_name():
+                pass
+
+        @staticmethod
+        def init_image_recovery(img, be_name=None):
                 if be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
 
-        def activate_image(self):
+        @staticmethod
+        def activate_image():
                 pass
 
-        def restore_image(self):
+        @staticmethod
+        def restore_image():
                 pass
 
-        def destroy_snapshot(self):
+        @staticmethod
+        def destroy_snapshot():
                 pass
 
-        def restore_install_uninstall(self):
+        @staticmethod
+        def restore_install_uninstall():
                 pass
 
-        def activate_install_uninstall(self):
+        @staticmethod
+        def activate_install_uninstall():
                 pass
 
 if "be" not in locals():

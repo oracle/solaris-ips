@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -41,14 +41,8 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.gui.misc as gui_misc
-
-nobe = False
-
-try:
-        import libbe as be
-except ImportError:
-        # All actions are disabled when libbe can't be imported. 
-        nobe = True
+import pkg.client.api_errors as api_errors
+import pkg.client.bootenv as bootenv
 import pkg.misc
 
 #BE_LIST
@@ -68,7 +62,7 @@ class Beadmin:
         def __init__(self, parent):
                 self.parent = parent
 
-                if nobe:
+                if not bootenv.BootEnv.libbe_exists():
                         msg = _("The <b>libbe</b> library was not "
                             "found on your system."
                             "\nAll functions for managing Boot Environments are disabled")
@@ -188,7 +182,7 @@ class Beadmin:
                 gobject.idle_add(self.w_progress_dialog.hide)
 
         def __prepare_beadmin_list(self):
-                be_list = be.beList()
+                be_list = bootenv.BootEnv.get_be_list()
                 gobject.idle_add(self.__create_view_with_be, be_list)
                 self.progress_stop_thread = True
                 return
@@ -209,7 +203,7 @@ class Beadmin:
                     name_renderer, text = BE_NAME)
                 column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
-                if "beVerifyBEName" in be.__dict__:
+                if bootenv.BootEnv.check_verify():
                         column.add_attribute(name_renderer, "editable", 
                             BE_EDITABLE)
                 self.w_be_treeview.append_column(column)
@@ -415,7 +409,7 @@ class Beadmin:
 
         @staticmethod
         def __rename_be(orig_name, new_name):
-                return be.beRename(orig_name, new_name)
+                return bootenv.BootEnv.rename_be(orig_name, new_name)
 
         def __error_occurred(self, error_msg, reset=True):
                 gui_misc.error_occurred(self.w_beadmin_dialog,
@@ -476,7 +470,11 @@ class Beadmin:
 
         #TBD: Notify user if name clash using same logic as Repo Add and warning text
         def __verify_be_name(self, new_name):
-                if be.beVerifyBEName(new_name) != 0:
+                try:
+                        bootenv.BootEnv.check_be_name(new_name)
+                except api_errors.DuplicateBEName:
+                        pass
+                except api_errors.ApiException:
                         return -1
                 for row in self.be_list:
                         if new_name == row[BE_NAME]:
@@ -498,33 +496,22 @@ class Beadmin:
                 dates = None
                 i = 0
                 j = 0
-                error_code = None
-                be_list_loop = None
-                if len(be_list) > 1 and type(be_list[0]) == type(-1):
-                        error_code = be_list[0]
-                if error_code != None and error_code == 0:
-                        be_list_loop = be_list[1]
-                elif error_code != None and error_code != 0:
+                if len(be_list) == 0:
                         msg = _("The <b>libbe</b> library couldn't "
                             "prepare list of Boot Environments."
                             "\nAll functions for managing Boot Environments are disabled")
                         self.__error_occurred(msg, False)
                         return
-                else:
-                        be_list_loop = be_list
 
-                for bee in be_list_loop:
-                        if bee.get("orig_be_name"):
-                                name = bee.get("orig_be_name")
-                                active = bee.get("active")
-                                active_boot = bee.get("active_boot")
-                                be_size = bee.get("space_used")
-                                be_date = bee.get("date")
+                for bee in be_list:
+                        item = bootenv.BootEnv.split_be_entry(bee)
+                        if item and item[0]:
+                                (name, active, active_boot, be_size, be_date) = item
                                 converted_size = \
                                     self.__convert_size_of_be_to_string(be_size)
                                 active_img = None
                                 if not be_date and j == 0:
-                                        dates = self.__get_dates_of_creation(be_list_loop)
+                                        dates = self.__get_dates_of_creation(be_list)
                                 if dates:
                                         try:
                                                 date_time = repr(dates[i])[1:-3]
@@ -581,11 +568,11 @@ class Beadmin:
 
         @staticmethod
         def __destroy_be(be_name):
-                return be.beDestroy(be_name, 1, True)
+                return bootenv.BootEnv.destroy_be(be_name)
 
         @staticmethod
         def __set_default_be(be_name):
-                return be.beActivate(be_name)
+                return bootenv.BootEnv.set_default_be(be_name)
 
         def __cell_data_default_function(self, column, renderer, model, itr, data):
                 if itr:
