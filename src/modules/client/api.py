@@ -2725,6 +2725,13 @@ class PlanDescription(object):
                         if pfmri:
                                 break
 
+        @property
+        def reboot_needed(self):
+                """A boolean value indicating that execution of the plan will
+                require a restart of the system to take effect if the target
+                image is an existing boot environment."""
+                return self.__plan.reboot_needed()
+
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
     cancel_state_callable=None, facets=misc.EmptyDict, force=False,
     mirrors=misc.EmptyI, origins=misc.EmptyI, prefix=None, refresh_allowed=True,
