@@ -95,6 +95,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.operations_done = False
                 self.operations_done_ex = False
                 self.prev_ind_phase = None
+                self.reboot_needed = False
                 self.uarenamebe_o = None
                 self.prev_pkg = None
                 self.progress_stop_timer_running = False
@@ -1069,7 +1070,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         if self.uarenamebe_o:
                                 be_rename_dialog = \
                                     self.uarenamebe_o.show_rename_dialog(
-                                    self.update_list)
+                                    self.update_list, self.reboot_needed)
                                 if be_rename_dialog == True:
                                         self.w_dialog.hide()
 
@@ -1095,6 +1096,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 plan_desc = self.api_o.describe()
                 if plan_desc == None:
                         return
+                self.reboot_needed = plan_desc.reboot_needed
                 plan = plan_desc.get_changes()
                 self.update_details_text("\n")
                 for pkg_plan in plan:

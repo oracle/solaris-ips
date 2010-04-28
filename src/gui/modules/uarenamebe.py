@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.gui.misc as gui_misc
@@ -61,15 +61,7 @@ class RenameBeAfterUpdateAll:
                         msgbox.destroy()
                         return
 
-                # Before performing update all (image-update) task, we are storing
-                # the active on reboot be name. If the be name after update is different
-                # it means that new BE was created and we can show BE rename dialog
-                # otherwise we can show update completed dialog.
-                # Also we need to store original BE name to work-around the bug: 6472202
-                self.active_be_before_update_all = self.__get_activated_be_name()
-
                 self.parent = parent
-                self.updated_packages_list = None
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
                 gladefile = os.path.join(self.parent.application_dir,
@@ -142,17 +134,15 @@ class RenameBeAfterUpdateAll:
                             "Check declare_signals()") \
                             % error
 
-        def show_rename_dialog(self, updated_packages_list):
+        def show_rename_dialog(self, updated_packages_list, reboot_needed):
                 '''Returns False if no BE rename is needed'''
-                self.updated_packages_list = updated_packages_list
-                self.__set_release_notes_url()
-                self.__setup_be_name()
-                orig_name = self.__get_activated_be_name()
-                if orig_name == self.active_be_before_update_all:
+                if not reboot_needed:
                         self.w_ua_completed_dialog.hide()
-                        self.parent.update_package_list(self.updated_packages_list)
+                        self.parent.update_package_list(updated_packages_list)
                         return False
                 else:
+                        self.__set_release_notes_url()
+                        self.__setup_be_name()
                         self.w_ua_completed_dialog.show_all()
                         return True
 
@@ -220,9 +210,6 @@ class RenameBeAfterUpdateAll:
                                 gobject.idle_add(self.__g_be_reboot_problem_dialog)
                         else:
                                 gobject.idle_add(self.parent.shutdown_after_image_update)
-                else:
-                        gobject.idle_add(self.parent.update_package_list,
-                            self.updated_packages_list)
                 self.__stop_bouncing_progress()
                 gobject.idle_add(self.parent.shutdown_after_image_update, False)
 
