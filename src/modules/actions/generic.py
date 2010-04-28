@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -235,17 +234,12 @@ class Action(object):
 
                 return out
 
-        def __eq__(self, other):
-                if isinstance(other, Action):
-                        return cmp(self, other) == 0
-                return False
-
         def __cmp__(self, other):
                 """Compare actions for ordering.  The ordinality of a
                    given action is computed and stored at action
                    initialization."""
                 if not isinstance(other, Action):
-                        return cmp(id(self), id(other))
+                        return NotImplemented
 
                 res = cmp(self.ord, other.ord)
 
