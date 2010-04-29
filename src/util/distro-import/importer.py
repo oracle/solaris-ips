@@ -19,9 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
 
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import fnmatch
 import getopt
@@ -1421,32 +1422,36 @@ def main_func():
         for pkg in pkgdict.keys():
                 obs_branch = pkgdict[pkg].obsolete_branch
                 rename_branch = pkgdict[pkg].rename_branch
+                assert not (obs_branch and rename_branch)
 
-                ver_tokens = pkgdict[pkg].version.split(".")
+                ver_tokens = pkgdict[pkg].version.split("-")
+                branch_tokens = ver_tokens[1].split(".")
                 cons = pkgdict[pkg].consolidation
                 if obs_branch:
-                        ver_tokens[-1] = obs_branch
-                        ver_string = ".".join(ver_tokens)
+                        branch_string = branch_tokens[0] + "." + obs_branch
+                        ver_tokens[1] = branch_string
+                        ver_string = "-".join(ver_tokens)
                         or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
                         obs_or_renamed_pkgs[pkg] = (pkgdict[pkg].fmristr(), "obsolete")
 
                         if publish_all:
                                 pkgdict[pkg].version = ver_string
                         else:
-                                if obs_branch != def_branch.split(".")[1]:
+                                if obs_branch != def_branch.split(".", 1)[1]:
                                         # Not publishing this obsolete package.
                                         del pkgdict[pkg]
 
                 if rename_branch:
-                        ver_tokens[-1] = rename_branch
-                        ver_string = ".".join(ver_tokens)
+                        branch_string = branch_tokens[0] + "." + rename_branch
+                        ver_tokens[1] = branch_string
+                        ver_string = "-".join(ver_tokens)
                         or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
                         obs_or_renamed_pkgs[pkg] = (pkgdict[pkg].fmristr(), "renamed")
 
                         if publish_all:
                                 pkgdict[pkg].version = ver_string
                         else:
-                                if rename_branch != def_branch.split(".")[1]:
+                                if rename_branch != def_branch.split(".", 1)[1]:
                                         # Not publishing this renamed package.
                                         del pkgdict[pkg]
 

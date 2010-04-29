@@ -1,0 +1,21 @@
+package web/server/apache-22/module/apache-sed
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-sed
+import SUNWapch22r-sed
+version 2.2.15
+end package
+
+package web/server/apache-22/plugin/plugin-sed
+consolidation "sfw"
+renamed 134
+depend web/server/apache-22/module/apache-sed
+version 2.2.14
+end package
+
+package SUNWapch22m-sed
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/plugin/plugin-sed
+version 2.2.14
+end package

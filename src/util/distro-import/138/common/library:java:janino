@@ -1,0 +1,12 @@
+package library/java/janino
+consolidation "sfw"
+obsoleted 138
+version 2.5.10
+end package
+
+package SUNWjanino
+consolidation "sfw"
+renamed 133
+depend library/java/janino
+version 2.5.10
+end package

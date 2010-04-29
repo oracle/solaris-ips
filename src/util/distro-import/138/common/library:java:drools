@@ -1,0 +1,12 @@
+package library/java/drools
+consolidation "sfw"
+obsoleted 138
+version 4.0.7
+end package
+
+package SUNWdrools
+consolidation "sfw"
+renamed 133
+depend library/java/drools
+version 4.0.7
+end package

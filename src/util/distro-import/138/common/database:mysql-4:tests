@@ -1,0 +1,12 @@
+package database/mysql-4/tests
+consolidation "sfw"
+obsoleted 138
+version 4.0.24
+end package
+
+package SUNWmysqlt
+consolidation "sfw"
+renamed 133
+depend database/mysql-4/tests
+version 4.0.24
+end package

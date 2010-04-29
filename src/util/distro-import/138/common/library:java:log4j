@@ -1,0 +1,12 @@
+package library/java/log4j
+consolidation "sfw"
+obsoleted 138
+version 1.2.15
+end package
+
+package SUNWlog4j
+consolidation "sfw"
+renamed 133
+depend library/java/log4j
+version 1.2.15
+end package

@@ -1,0 +1,19 @@
+package library/java/relaxngdatatype
+consolidation "sfw"
+obsoleted 138
+version 1.0
+end package
+
+package library/java/relaxngDatatype
+consolidation "sfw"
+renamed 134
+depend library/java/relaxngdatatype
+version 1.0
+end package
+
+package SUNWrelaxngDatatype
+consolidation "sfw"
+renamed 133
+depend library/java/relaxngDatatype
+version 1.0
+end package

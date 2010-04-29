@@ -1,0 +1,12 @@
+package library/java/jarjar
+consolidation "sfw"
+obsoleted 138
+version 1.0
+end package
+
+package SUNWjarjar
+consolidation "sfw"
+renamed 133
+depend library/java/jarjar
+version 1.0
+end package

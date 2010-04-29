@@ -1,0 +1,12 @@
+package library/java/jexcelapi
+consolidation "sfw"
+obsoleted 138
+version 2.4.2
+end package
+
+package SUNWjxl
+consolidation "sfw"
+renamed 133
+depend library/java/jexcelapi
+version 2.4.2
+end package

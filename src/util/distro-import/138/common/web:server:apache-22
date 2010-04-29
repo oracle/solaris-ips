@@ -1,0 +1,28 @@
+package web/server/apache-22
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22u
+import SUNWapch22r
+version 2.2.15
+depend library/apr-util-13/apr-ldap
+
+chattr etc/apache2/2.2/conf.d/modules-32.load \
+	original_name=SUNWapch22:etc/apache2/2.2/conf.d/modules-32.load
+chattr etc/apache2/2.2/conf.d/modules-64.load \
+	original_name=SUNWapch22:etc/apache2/2.2/conf.d/modules-64.load
+chattr etc/apache2/2.2/envvars \
+	original_name=SUNWapch22:etc/apache2/2.2/envvars
+chattr etc/apache2/2.2/httpd.conf \
+	original_name=SUNWapch22:etc/apache2/2.2/httpd.conf
+chattr etc/apache2/2.2/magic \
+	original_name=SUNWapch22:etc/apache2/2.2/magic
+chattr etc/apache2/2.2/mime.types \
+	original_name=SUNWapch22:etc/apache2/2.2/mime.types
+end package
+
+package SUNWapch22
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22
+version 2.2.14
+end package

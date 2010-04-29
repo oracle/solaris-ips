@@ -1,0 +1,12 @@
+package library/java/joda-time
+consolidation "sfw"
+obsoleted 138
+version 1.5.1
+end package
+
+package SUNWjodatime
+consolidation "sfw"
+renamed 133
+depend library/java/joda-time
+version 1.5.1
+end package
