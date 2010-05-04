@@ -19,8 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
 #
 # pkg - package system client utility
 #
@@ -189,7 +192,7 @@ Advanced subcommands:
             [publisher]
         pkg unset-publisher publisher ...
         pkg publisher [-HPn] [publisher ...]
-        pkg history [-Hl]
+        pkg history [-Hl] [-n number]
         pkg purge-history
         pkg rebuild-index
 
@@ -3523,13 +3526,26 @@ def history_list(img, args):
 
         omit_headers = False
         long_format = False
+        display_limit = None    # Infinite
 
-        opts, pargs = getopt.getopt(args, "Hl")
+        opts, pargs = getopt.getopt(args, "Hln:")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
                 elif opt == "-l":
                         long_format = True
+                elif opt == "-n":
+                        try:
+                                display_limit = int(arg)
+                        except ValueError:
+                                logger.error(
+                                    _("Argument to -n must be numeric"))
+                                return EXIT_BADOPT
+
+                        if display_limit <= 0:
+                                logger.error(
+                                    _("Argument to -n must be positive"))
+                                return EXIT_BADOPT
 
         if omit_headers and long_format:
                 usage(_("-H and -l may not be combined"), cmd="history")
@@ -3543,7 +3559,13 @@ def history_list(img, args):
                 # Nothing to display.
                 return EXIT_OK
 
-        for entry in sorted(os.listdir(img.history.path)):
+        if display_limit:
+                n = -display_limit
+                entries = sorted(os.listdir(img.history.path))[n:]
+        else:
+                entries = sorted(os.listdir(img.history.path))
+
+        for entry in entries:
                 # Load the history entry.
                 try:
                         he = history.History(root_dir=img.history.root_dir,

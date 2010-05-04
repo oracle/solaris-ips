@@ -58,7 +58,7 @@ SYNOPSIS
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPn] [publisher ...]
 
-     /usr/bin/pkg history [-Hl]
+     /usr/bin/pkg history [-Hl] [-n number]
      /usr/bin/pkg purge-history
 
      /usr/bin/pkg rebuild-index
@@ -656,13 +656,18 @@ SUBCOMMANDS
 
           With -n, display only enabled publishers.
 
-     history [-Hl]
-          Displays the command history of the applicable image.  With -H, omit
-          the headers from the listing.  With -l, display log records in long
-          format, which in addition to the standard format, includes the outcome
-          of the command, when the command completed, version and name of the
-          client used, what user performed the operation, and any errors that
+     history [-Hl] [-n number]
+          Display the command history of the applicable image.  
+
+          With -H, omit the headers from the listing.
+
+          With -l, display log records in long format, which, in addition to
+          the standard format, includes the outcome of the command, the time
+          the command completed, the version and name of the client used, the
+          name of the user who performed the operation, and any errors that
           were encountered while executing the command.
+
+          With -n, display only the specified number of most recent entries.
 
      purge-history
           Deletes all existing history information.

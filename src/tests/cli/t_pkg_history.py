@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -78,6 +77,10 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 self.pkg("history")
                 self.pkg("history -l")
                 self.pkg("history -H")
+                self.pkg("history -n 5")
+                self.pkg("history -n foo", exit=2)
+                self.pkg("history -n -5", exit=2)
+                self.pkg("history -n 0", exit=2)
                 self.pkg("history -lH", exit=2)
 
         def test_2_history_record(self):
@@ -89,9 +92,9 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 commands = [
                     ("install foo", 0),
                     ("uninstall foo", 0),
-                    ("image-update", 4), 
+                    ("image-update", 4),
                     ("set-publisher -O " + durl2 + " test2", 0),
-                    ("set-publisher -P test1", 0), 
+                    ("set-publisher -P test1", 0),
                     ("set-publisher -m " + durl2 + " test1", 0),
                     ("set-publisher -M " + durl2 + " test1", 0),
                     ("unset-publisher test2", 0),
@@ -277,6 +280,31 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         if o.find(" %s" % cmd) == -1:
                                 raise RuntimeError("Command: %s wasn't recorded,"
                                     " o:%s" % (cmd, o))
+
+        def test_9_history_limit(self):
+                """Verify limiting the number of records to output
+                """
+
+                #
+                # Make sure we have a nice number of entries with which to
+                # experiment.
+                #
+                for i in xrange(5):
+                        self.pkg("install pkg%d" % i, exit=1)
+                self.pkg("history -Hn 3")
+                self.assertEqual(len(self.output.splitlines()), 3)
+
+                self.pkg("history -ln 3")
+                lines = self.output.splitlines()
+                nentries = len([l for l in lines if l.find("Operation:") >= 0])
+                self.assertEqual(nentries, 3)
+
+                count = len(os.listdir(
+                    os.path.join(self.get_img_path(), "var", "pkg", "history")))
+
+                # Asking for too many objects should return the full set
+                self.pkg("history -Hn %d" % (count + 5))
+                self.assertEqual(len(self.output.splitlines()), count)
 
 
 if __name__ == "__main__":
