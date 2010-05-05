@@ -1212,26 +1212,6 @@ close
                 if os.path.exists(ind_dir_tmp):
                         self.assert_(0)
 
-        def _do_install(self, api_obj, pkg_list, **kwargs):
-                self.debug("install %s" % " ".join(pkg_list))
-                api_obj.plan_install(pkg_list, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_uninstall(self, api_obj, pkg_list, **kwargs):
-                self.debug("uninstall %s" % " ".join(pkg_list))
-                api_obj.plan_uninstall(pkg_list, False, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_image_update(self, api_obj, **kwargs):
-                self.debug("planning image-update")
-                api_obj.plan_update_all(sys.argv[0], verbose=False, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_finish(self, api_obj):
-                api_obj.prepare()
-                api_obj.execute_plan()
-                api_obj.reset()
-
         @staticmethod
         def validateAssertRaises(ex_type, validate_func, func, *args, **kwargs):
                 try:
@@ -1286,7 +1266,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
 
                 self._run_full_local_tests(api_obj)
 
@@ -1295,7 +1275,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
                 shutil.rmtree(index_dir)
@@ -1313,13 +1293,13 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg@1.0"])
-                self._do_uninstall(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
+                self._api_uninstall(api_obj, ["example_pkg"])
 
                 for i in range(1, repeat):
-                        self._do_install(api_obj, ["example_pkg"])
+                        self._api_install(api_obj, ["example_pkg"])
                         self._run_local_tests(api_obj)
-                        self._do_uninstall(api_obj, ["example_pkg"])
+                        self._api_uninstall(api_obj, ["example_pkg"])
                         api_obj.reset()
                         self._run_local_empty_tests(api_obj)
 
@@ -1328,7 +1308,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
                 self._search_op(api_obj, False, "fooo", set(), True)
                 self._search_op(api_obj, False, "fo*", set(), True)
                 self._search_op(api_obj, False, "bar", set(), True)
@@ -1342,7 +1322,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
@@ -1372,7 +1352,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 Bug 2753"""
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
-                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
@@ -1401,13 +1381,13 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                         self._overwrite_version_number(orig_path)
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"])
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg", set())
                         self._overwrite_version_number(orig_path)
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_install, api_obj, ["example_pkg"])
+                            self._api_install, api_obj, ["example_pkg"])
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
@@ -1426,7 +1406,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                     self.res_local_pkg)
                 self._overwrite_hash(ffh_path)
                 self.assertRaises(api_errors.WrapSuccessfulIndexingException,
-                    self._do_uninstall, api_obj, ["example_pkg"])
+                    self._api_uninstall, api_obj, ["example_pkg"])
                 self._search_op(api_obj, False, "example_pkg", set())
 
         def test_080_weird_patterns(self):
@@ -1451,9 +1431,9 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
                     "TMP")
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
-                self._do_install(api_obj, ["fat"])
+                self._api_install(api_obj, ["fat"])
                 self.assert_(not os.path.exists(tmp_dir))
                 self._run_local_tests(api_obj)
 
@@ -1472,7 +1452,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._search_op(api_obj, remote, "fat:::*",
                     self.res_remote_fat10_star)
-                self._do_install(api_obj, ["fat"])
+                self._api_install(api_obj, ["fat"])
                 remote = False
                 self._search_op(api_obj, remote, "fat:::*",
                     self.res_local_fat10_i386_star)
@@ -1491,7 +1471,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._search_op(api_obj, remote, "fat:::*",
                     self.res_remote_fat10_star)
-                self._do_install(api_obj, ["fat"])
+                self._api_install(api_obj, ["fat"])
                 remote = False
                 self._search_op(api_obj, remote, "fat:::*",
                     self.res_local_fat10_sparc_star)
@@ -1520,7 +1500,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._run_remove_root_search(self._search_op_multi, True,
                     api_obj, ip)
 
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
                 # Do local searches
                 self._run_remove_root_search(self._search_op_multi, False,
                     api_obj, ip)
@@ -1537,13 +1517,13 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.space_pkg10)
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["space_pkg"])
+                self._api_install(api_obj, ["space_pkg"])
                 time.sleep(1)
 
                 self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
                 api_obj.refresh(immediate=True)
 
-                self._do_install(api_obj, ["space_pkg"])
+                self._api_install(api_obj, ["space_pkg"])
 
                 remote = False
                 self._search_op(api_obj, remote, 'with', set())
@@ -1580,29 +1560,30 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 api_obj = self.image_create(durl)
 
                 self._check_no_index()
-                self._do_install(api_obj, ["example_pkg"], update_index=False)
+                self._api_install(api_obj, ["example_pkg"], update_index=False)
                 self._check_no_index()
                 api_obj.rebuild_search_index()
                 self._run_local_tests(api_obj)
-                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
+                self._api_uninstall(api_obj, ["example_pkg"], update_index=False)
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.
                 self.assertRaises(api_errors.IncorrectIndexFileHash,
                     self._search_op, api_obj, False, "example_pkg", set())
                 api_obj.rebuild_search_index()
                 self._run_local_empty_tests(api_obj)
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
                 self._run_local_tests(api_obj)
                 self.pkgsend_bulk(durl, self.example_pkg11)
                 api_obj.refresh(immediate=True)
-                self._do_image_update(api_obj, update_index=False)
+                self._api_image_update(api_obj, update_index=False)
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.
                 self.assertRaises(api_errors.IncorrectIndexFileHash,
                     self._search_op, api_obj, False, "example_pkg", set())
                 api_obj.rebuild_search_index()
                 self._run_local_tests_example11_installed(api_obj)
-                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
+                self._api_uninstall(api_obj, ["example_pkg"],
+                    update_index=False)
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.
                 self.assertRaises(api_errors.IncorrectIndexFileHash,
@@ -1622,13 +1603,13 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         shutil.copytree(index_dir, index_dir_tmp)
 
-                        self._do_install(api_obj, ["example_pkg"])
+                        self._api_install(api_obj, ["example_pkg"])
 
                         f(index_dir, index_dir_tmp)
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"])
 
                         self.image_destroy()
 
@@ -1638,19 +1619,19 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 for f in self._dir_restore_functions:
                         api_obj = self.image_create(durl)
 
-                        self._do_install(api_obj, ["example_pkg"])
+                        self._api_install(api_obj, ["example_pkg"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
 
                         shutil.copytree(index_dir, index_dir_tmp)
 
-                        self._do_install(api_obj, ["another_pkg"])
+                        self._api_install(api_obj, ["another_pkg"])
 
                         f(index_dir, index_dir_tmp)
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_uninstall, api_obj, ["another_pkg"])
+                            self._api_uninstall, api_obj, ["another_pkg"])
 
                         self.image_destroy()
 
@@ -1661,19 +1642,19 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 for f in self._dir_restore_functions:
                         api_obj = self.image_create(durl)
 
-                        self._do_install(api_obj, ["example_pkg@1.0,5.11-0"])
+                        self._api_install(api_obj, ["example_pkg@1.0,5.11-0"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
 
                         shutil.copytree(index_dir, index_dir_tmp)
 
-                        self._do_install(api_obj, ["example_pkg"])
+                        self._api_install(api_obj, ["example_pkg"])
 
                         f(index_dir, index_dir_tmp)
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"])
 
                         self.image_destroy()
 
@@ -1684,19 +1665,19 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 for f in self._dir_restore_functions:
                         api_obj = self.image_create(durl)
 
-                        self._do_install(api_obj, ["another_pkg"])
+                        self._api_install(api_obj, ["another_pkg"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
 
                         shutil.copytree(index_dir, index_dir_tmp)
 
-                        self._do_install(api_obj, ["example_pkg@1.0,5.11-0"])
+                        self._api_install(api_obj, ["example_pkg@1.0,5.11-0"])
 
                         f(index_dir, index_dir_tmp)
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._do_image_update, api_obj)
+                            self._api_image_update, api_obj)
 
                         self.image_destroy()
 
@@ -1769,17 +1750,17 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 _run_cat3_tests(self, remote)
 
                 remote = False
-                self._do_install(api_obj, ["cat"])
+                self._api_install(api_obj, ["cat"])
                 _run_cat_tests(self, remote)
 
-                self._do_install(api_obj, ["cat2"])
+                self._api_install(api_obj, ["cat2"])
                 _run_cat2_tests(self, remote)
 
-                self._do_install(api_obj, ["cat3"])
+                self._api_install(api_obj, ["cat3"])
                 _run_cat3_tests(self, remote)
 
-                self._do_install(api_obj, ["badcat"])
-                self._do_install(api_obj, ["badcat2"])
+                self._api_install(api_obj, ["badcat"])
+                self._api_install(api_obj, ["badcat2"])
                 _run_cat_tests(self, remote)
                 _run_cat2_tests(self, remote)
                 _run_cat3_tests(self, remote)
@@ -1859,12 +1840,12 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                     get_file_name())
                 dest_fn = orig_fn + "TMP"
 
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
 
                 portable.rename(orig_fn, dest_fn)
                 self.assertRaises(api_errors.WrapSuccessfulIndexingException,
-                    self._do_uninstall, api_obj, ["example_pkg"])
+                    self._api_uninstall, api_obj, ["example_pkg"])
 
         def test_bug_8492(self):
                 """Tests that field queries and phrase queries work together.
@@ -1879,7 +1860,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._search_op(api_obj, True, "b1:set::'image packaging'",
                     self.res_8492_1)
 
-                self._do_install(api_obj, ["b1", "b2"])
+                self._api_install(api_obj, ["b1", "b2"])
 
                 self._search_op(api_obj, False, "set::'image packaging'",
                     self.res_8492_1 | self.res_8492_2)
@@ -2081,7 +2062,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 remote = True
                 run_tests(api_obj, remote)
-                self._do_install(api_obj, ["pfoo"])
+                self._api_install(api_obj, ["pfoo"])
                 remote = False
                 run_tests(api_obj, remote)
                 api_obj.rebuild_search_index()
@@ -2103,12 +2084,12 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 api_obj = self.image_create(durl)
 
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
 
                 self.pkgsend_bulk(durl, self.example_pkg11)
                 api_obj.refresh(immediate=True)
 
-                self._do_image_update(api_obj)
+                self._api_image_update(api_obj)
 
                 self._run_local_tests_example11_installed(api_obj)
 
@@ -2199,20 +2180,20 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
                 # Test that if a package is installed, its version and newer
                 # versions are shown.
-                self._do_install(api_obj, ["example_pkg@1.0"])
+                self._api_install(api_obj, ["example_pkg@1.0"])
                 self._search_op(api_obj, True, "/bin", res_both_actions)
                 self._search_op(api_obj, True, "/bin", res_both_actions,
                     prune_versions=False)
 
                 # Check that after uninstall, back to returning all versions.
-                self._do_uninstall(api_obj, ["example_pkg"])
+                self._api_uninstall(api_obj, ["example_pkg"])
                 self._search_op(api_obj, True, "/bin", res_both_actions)
                 self._search_op(api_obj, True, "/bin", res_both_packages,
                     return_actions=False)
 
                 # Test that if a package is installed, its version and newer
                 # versions are shown.  Older versions should not be shown.
-                self._do_install(api_obj, ["example_pkg@1.1"])
+                self._api_install(api_obj, ["example_pkg@1.1"])
                 self._search_op(api_obj, True, "/bin", res_11_action)
                 self._search_op(api_obj, True, "</bin>", res_11_package,
                     return_actions=False)
@@ -2222,11 +2203,11 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     return_actions=False, prune_versions=False)
                 
                 # Check that after uninstall, back to returning all versions.
-                self._do_uninstall(api_obj, ["example_pkg"])
+                self._api_uninstall(api_obj, ["example_pkg"])
                 self._search_op(api_obj, True, "/bin", res_both_actions)
 
                 # Check that only the incorporated package is returned.
-                self._do_install(api_obj, ["incorp_pkg@1.0"])
+                self._api_install(api_obj, ["incorp_pkg@1.0"])
                 self._search_op(api_obj, True, "/bin", res_10_action)
                 self._search_op(api_obj, True, "/bin", res_10_package,
                     return_actions=False)
@@ -2237,7 +2218,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
                 # Should now show the 1.1 version of example_pkg since the
                 # version has been upgraded.
-                self._do_install(api_obj, ["incorp_pkg"])
+                self._api_install(api_obj, ["incorp_pkg"])
                 self._search_op(api_obj, True, "/bin", res_11_action)
                 self._search_op(api_obj, True, "</bin>", res_11_package,
                     return_actions=False)
@@ -2248,11 +2229,12 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
                 # Should now show both again since the incorporation has been
                 # removed.
-                self._do_uninstall(api_obj, ["incorp_pkg"])
+                self._api_uninstall(api_obj, ["incorp_pkg"])
                 self._search_op(api_obj, True, "/bin", res_both_actions)
 
                 # Check that installed and incorporated work correctly together.
-                self._do_install(api_obj, ["incorp_pkg@1.0", "example_pkg@1.0"])
+                self._api_install(api_obj,
+                    ["incorp_pkg@1.0", "example_pkg@1.0"])
                 self._search_op(api_obj, True, "/bin", res_10_action)
                 self._search_op(api_obj, True, "</bin>", res_10_package,
                     return_actions=False)
@@ -2262,7 +2244,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     return_actions=False, prune_versions=False)
 
                 # And that it works after the incorporation has been changed.
-                self._do_install(api_obj, ["incorp_pkg"])
+                self._api_install(api_obj, ["incorp_pkg"])
                 self._search_op(api_obj, True, "/bin", res_11_action)
                 self._search_op(api_obj, True, "</bin>", res_11_package,
                     return_actions=False)
@@ -2385,7 +2367,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
                 api_obj = self.image_create(durl)
-                self._do_install(api_obj, pkg_list)
+                self._api_install(api_obj, pkg_list)
 
         def test_bug_9729_2(self):
                 """Test that installing more than
@@ -2406,7 +2388,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     "fast_remove.v1")
                 api_obj.rebuild_search_index()
                 for p in pkg_list:
-                        self._do_install(api_obj, [p])
+                        self._api_install(api_obj, [p])
                 # Test for bug 11104. The fast_add.v1 file was not being updated
                 # correctly by install or image update, it was growing with
                 # each modification.
@@ -2425,7 +2407,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                             "open pkg%s@2.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
                 api_obj.refresh(immediate=True)
-                self._do_image_update(api_obj)
+                self._api_image_update(api_obj)
                 self._check(set((
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_add_loc)
@@ -2442,7 +2424,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                             "open pkg%s@2.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
                 api_obj.refresh(immediate=True)
-                self._do_image_update(api_obj)
+                self._api_image_update(api_obj)
                 self._check(set((
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_add_loc)
@@ -2504,26 +2486,6 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
             ('pkg:/example_pkg@1.0-0', 'test2/example_pkg',
             'set name=pkg.fmri value=pkg://test2/example_pkg@1.0,5.11-0:')
         ])
-
-        def _do_install(self, api_obj, pkg_list, **kwargs):
-                self.debug("install %s" % " ".join(pkg_list))
-                api_obj.plan_install(pkg_list, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_uninstall(self, api_obj, pkg_list, **kwargs):
-                self.debug("uninstall %s" % " ".join(pkg_list))
-                api_obj.plan_uninstall(pkg_list, False, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_image_update(self, api_obj, **kwargs):
-                self.debug("planning image-update")
-                api_obj.plan_update_all(sys.argv[0], verbose=False, **kwargs)
-                self._do_finish(api_obj)
-
-        def _do_finish(self, api_obj):
-                api_obj.prepare()
-                api_obj.execute_plan()
-                api_obj.reset()
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
@@ -2592,7 +2554,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                self._do_install(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["example_pkg"])
 
                 # Test for bug 10690 by checking whether the fmri names
                 # for packages installed from the non-preferred publisher
@@ -2612,7 +2574,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                     self.res_alternate_server_local)
                 self._search_op(api_obj, False, "set::test2/*",
                     self.res_alternate_server_local)
-                self._do_uninstall(api_obj, ["example_pkg"])
+                self._api_uninstall(api_obj, ["example_pkg"])
 
         def test_bug_8318(self):
                 progresstracker = progress.NullProgressTracker()

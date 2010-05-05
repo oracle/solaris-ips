@@ -424,7 +424,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
         return [(a, v) for a, v in res if a not in multiple_path_errs], \
             dep_vars, errs
 
-def find_package(delivered, installed, file_dep, pkg_vars):
+def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         """Find the packages which resolve the dependency. It returns a list of
         dependency actions with the fmri tag resolved.
 
@@ -441,7 +441,7 @@ def find_package(delivered, installed, file_dep, pkg_vars):
         # First try to resolve the dependency against the delivered files.
         res, dep_vars, errs = find_package_using_delivered_files(delivered,
                 file_dep, dep_vars, orig_dep_vars)
-        if res and dep_vars.is_satisfied():
+        if (res and dep_vars.is_satisfied()) or not use_system:
                 return res, dep_vars, errs
         # If the dependency isn't fully satisfied, resolve it against the
         # files installed in the current image.
@@ -648,7 +648,7 @@ def prune_debug_attrs(action):
                      if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
         return actions.depend.DependencyAction(**attrs)
 
-def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
+def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         """For each manifest given, resolve the file dependencies to package
         dependencies. It returns a mapping from manifest_path to a list of
         dependencies and a list of unresolved dependencies.
@@ -705,12 +705,13 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
 
         # Build a list of all files delivered in the packages installed on
         # the system.
-        for (pub, stem, ver), summ, cats, states in api_inst.get_pkg_list(
-            api.ImageInterface.LIST_INSTALLED):
-                pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
-                mfst = api_inst.get_manifest(pfmri, all_variants=True)
-                add_fmri_path_mapping(installed_files, pfmri.get_short_fmri(),
-                                      mfst)
+        if use_system:
+                for (pub, stem, ver), summ, cats, states in \
+                    api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED):
+                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
+                        mfst = api_inst.get_manifest(pfmri, all_variants=True)
+                        add_fmri_path_mapping(installed_files,
+                            pfmri.get_short_fmri(), mfst)
 
         pkg_deps = {}
         errs = []
@@ -721,7 +722,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False):
                         continue
                 pkg_res = [
                     (d, find_package(delivered_files, installed_files,
-                        d, pkg_vars))
+                        d, pkg_vars, use_system))
                     for d in mfst.gen_actions_by_type("depend")
                     if is_file_dependency(d)
                 ]

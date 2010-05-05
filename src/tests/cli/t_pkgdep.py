@@ -35,9 +35,14 @@ import sys
 import tempfile
 import unittest
 
+import pkg.client.api as api
+import pkg.client.progress as progress
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
 import pkg.portable as portable
+
+API_VERSION = 37
+PKG_CLIENT_NAME = "pkg"
 
 class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -490,6 +495,23 @@ file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-
         pyver_test_manf_1_non_ex = """\
 file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
 """
+
+        inst_pkg = """\
+open example2_pkg@1.0,5.11-0
+add file tmp/foo mode=0555 owner=root group=bin path=/usr/bin/python2.6
+close"""
+
+        multi_deps = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/v-p/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=usr/bin/python2.6 pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=script type=require
+depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.6/v-p/pkg/misc.py pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=python type=require
+"""
+
+        misc_manf = """\
+set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.6/v-p/pkg/misc.py
+"""
+
         def make_pyver_python_res(self, ver, proto_area=None):
                 """Create the python dependency results with paths expected for
                 the pyver tests.
@@ -709,7 +731,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 res_path = self.make_manifest(self.output)
 
-                self.pkgdepend_resolve("-o %s" % res_path, exit=1)
+                # Check that -S doesn't prevent the resolution from happening.
+                self.pkgdepend_resolve("-S -o %s" % res_path, exit=1)
                 self.check_res("%s" % res_path, self.output)
                 self.check_res(self.resolve_error % {
                         "manf_path": res_path,
@@ -1268,6 +1291,28 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                                     additional_args=var_settings)
                                 self.pkg("install dup-v-deps")
                                 self.image_destroy()
+
+        def test_bug_15777(self):
+                """Test that -S switch disables resolving dependencies against
+                the installed system."""
+
+                durl = self.dc.get_depot_url()
+                self.make_misc_files(["tmp/foo"])
+                self.pkgsend_bulk(durl, self.inst_pkg)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(),
+                    API_VERSION, progresstracker, lambda x: False,
+                    PKG_CLIENT_NAME)
+                api_obj.refresh(immediate=True)
+                self._api_install(api_obj, ["example2_pkg"])
+
+                m1_path = self.make_manifest(self.multi_deps)
+                m2_path = self.make_manifest(self.misc_manf)
+
+                self.pkgdepend_resolve("-o %s %s" % (m1_path, m2_path))
+                self.pkgdepend_resolve("-o -S %s %s" % (m1_path, m2_path),
+                    exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

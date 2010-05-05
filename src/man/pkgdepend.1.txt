@@ -10,7 +10,7 @@ SYNOPSIS
      /usr/bin/pkgdepend generate [-IMm] [-D name=value] [-k path] manifest_path
          proto_dir
 
-     /usr/bin/pkgdepend resolve [-dmosv] manifest_path ...
+     /usr/bin/pkgdepend resolve [-dmosSv] manifest_path ...
 
 DESCRIPTION
      pkgdepend(1) is used to generate and resolve dependencies for
@@ -83,6 +83,9 @@ SUBCOMMANDS
           With -s, for each output file, append the given suffix (a "."
           will be added to the argument if not provided) to the basename
           of the file that was the source of the resolved dependencies.
+
+          With -S, only resolve against the manifests given on the command
+          line and not against those installed on the system.
 
           With -v, include additional package dependency debugging
           metadata.

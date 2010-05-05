@@ -227,27 +227,6 @@ close"""
                     API_VERSION, progresstracker, lambda x: False,
                     PKG_CLIENT_NAME)
 
-        @staticmethod
-        def _do_install(api_obj, pkg_list, **kwargs):
-                api_obj.plan_install(pkg_list, **kwargs)
-                TestApiDependencies._do_finish(api_obj)
-
-        @staticmethod
-        def _do_uninstall(api_obj, pkg_list, **kwargs):
-                api_obj.plan_uninstall(pkg_list, False, **kwargs)
-                TestApiDependencies._do_finish(api_obj)
-
-        @staticmethod
-        def _do_image_update(api_obj, **kwargs):
-                api_obj.plan_update_all(sys.argv[0], **kwargs)
-                TestApiDependencies._do_finish(api_obj)
-
-        @staticmethod
-        def _do_finish(api_obj):
-                api_obj.prepare()
-                api_obj.execute_plan()
-                api_obj.reset()
-
         def test_resolve_cross_package(self):
                 """test that cross dependencies between published packages
                 works."""
@@ -280,7 +259,7 @@ close"""
 
                 self.pkgsend_bulk(self.durl, self.inst_pkg)
                 self.api_obj.refresh(immediate=True)
-                self._do_install(self.api_obj, ["example2_pkg"])
+                self._api_install(self.api_obj, ["example2_pkg"])
 
                 m1_path = self.make_manifest(self.multi_deps)
                 m2_path = self.make_manifest(self.misc_manf)
@@ -307,6 +286,37 @@ close"""
                                     "%s for in dependency %s" %
                                     (d.attrs["fmri"], d))
 
+                # Check that with use_system set to false, the system is not
+                # resolved against.  Bug 15777
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path], self.api_obj, use_system=False)
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[m1_path]), 1)
+                self.assertEqual(len(pkg_deps[m2_path]), 0)
+                self.assertEqual(len(errs), 1)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"] == p2_name:
+                                self.assertEqual(
+                                    d.attrs["%s.file" % self.depend_dp],
+                                    ["usr/lib/python2.6/v-p/pkg/misc.py"])
+                        elif d.attrs["fmri"] == p3_name:
+                                self.assertEqual(
+                                    d.attrs["%s.file" % self.depend_dp],
+                                    ["usr/bin/python2.6"])
+                        else:
+                                raise RuntimeError("Got unexpected fmri "
+                                    "%s for in dependency %s" %
+                                    (d.attrs["fmri"], d))
+                for e in errs:
+                        if isinstance(e,
+                            dependencies.UnresolvedDependencyError):
+                                self.assertEqual(e.path, m1_path)
+                                self.assertEqual(e.file_dep.attrs[
+                                    "%s.file" % self.depend_dp],
+                                    "usr/bin/python2.6")
+                        else:
+                                raise RuntimeError("Unexpected error:%s" % e)
+                        
         def test_simple_variants_1(self):
                 """Test that variants declared on the actions work correctly
                 when resolving dependencies."""
@@ -507,7 +517,7 @@ close"""
 
                 self.pkgsend_bulk(self.durl, self.var_pkg)
                 self.api_obj.refresh(immediate=True)
-                self._do_install(self.api_obj, ["variant_pkg"])
+                self._api_install(self.api_obj, ["variant_pkg"])
 
                 m1_path = self.make_manifest(self.simp_manf)
                 p2_name = "pkg:/variant_pkg@1.0-0"

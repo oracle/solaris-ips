@@ -1708,6 +1708,26 @@ class CliTestCase(Pkg5TestCase):
                 self.debug("start_depot: started")
                 return dc
 
+        def _api_install(self, api_obj, pkg_list, **kwargs):
+                self.debug("install %s" % " ".join(pkg_list))
+                api_obj.plan_install(pkg_list, **kwargs)
+                self._api_finish(api_obj)
+
+        def _api_uninstall(self, api_obj, pkg_list, **kwargs):
+                self.debug("uninstall %s" % " ".join(pkg_list))
+                api_obj.plan_uninstall(pkg_list, False, **kwargs)
+                self._api_finish(api_obj)
+
+        def _api_image_update(self, api_obj, **kwargs):
+                self.debug("planning image-update")
+                api_obj.plan_update_all(sys.argv[0], verbose=False, **kwargs)
+                self._api_finish(api_obj)
+
+        def _api_finish(self, api_obj):
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
 class ManyDepotTestCase(CliTestCase):
 
         def __init__(self, methodName='runTest'):

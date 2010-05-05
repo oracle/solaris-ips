@@ -189,8 +189,9 @@ def resolve(args, img_dir):
         output_to_screen = False
         suffix = None
         verbose = False
+        use_system_to_resolve = True
         try:
-            opts, pargs = getopt.getopt(args, "d:mos:v")
+            opts, pargs = getopt.getopt(args, "d:mos:Sv")
         except getopt.GetoptError, e:
             usage(_("illegal global option -- %s") % e.opt)
         for opt, arg in opts:
@@ -202,6 +203,8 @@ def resolve(args, img_dir):
                         output_to_screen = True
                 elif opt == "-s":
                         suffix = arg
+                elif opt == "-S":
+                        use_system_to_resolve = False
                 elif opt == "-v":
                         verbose = True
 
@@ -253,7 +256,7 @@ def resolve(args, img_dir):
 
         try:
             pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst,
-                prune_attrs=not verbose)
+                prune_attrs=not verbose, use_system=use_system_to_resolve)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
             error(_("Could not parse one or more manifests because of the " +
                 "following line:\n%s") % e.actionstr)
