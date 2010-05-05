@@ -67,9 +67,6 @@ ICON_LOCATION = "usr/share/update-manager/icons"
 CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 SHOW_INFO_DELAY = 500           # Delay in milliseconds before showing selected
                                 # package information
-UPDATES_FETCH_DELAY = 200       # Time to wait before fetching updates, allows gtk main
-                                # loop time to start and display main UI
-MAX_INFO_CACHE_LIMIT = 100      # Max numger of package descriptions to cache
 
 #UM Row Model
 (
@@ -105,6 +102,7 @@ class Updatemanager:
                 self.last_select_time = 0
                 self.user_rights = portable.is_admin()
                 self.image_dir_arg = None
+                self.initial_selection = False
                 self.toggle_counter = 0
                 self.last_show_info_id = 0
                 self.show_info_id = 0
@@ -124,7 +122,6 @@ class Updatemanager:
                 self.icon_theme.append_search_path(icon_location)
                 self.pylintstub = None
                 self.api_obj = None
-                self.use_cache = False # Turns off Details Description cache
 
                 # Progress Dialog
                 self.gladefile = os.path.join(self.application_dir,
@@ -179,8 +176,6 @@ class Updatemanager:
                 self.w_um_cancel_button = w_xmltree_um.get_widget("cancel_button")
                 self.w_um_close_button = w_xmltree_um.get_widget("close_button")
 
-                self.details_cache = {}
-                
                 try:
                         dic = \
                             {
@@ -234,7 +229,9 @@ class Updatemanager:
                 if len(self.um_list) == 0:
                         self.__display_noupdates()
                 else:
+                        self.initial_selection = True
                         self.w_um_treeview.set_cursor(0, None)
+                        self.initial_selection = False
                         if self.update_all_proceed:
                                 self.__on_updateall_button_clicked(None)
                                 self.update_all_proceed = False
@@ -391,13 +388,6 @@ class Updatemanager:
 
                         if add_package:
                                 count += 1
-                                # XXX: Would like to caputre if package for upgrade is
-                                # incorporated, could then indicate this to user
-                                # and take action when doing install to run image-update.
-                                #if state["incorporated"]:
-                                #        incState = _("Inc")
-                                #else:
-                                #        incState = "--"
                                 um_list.insert(count, [count, False, None, pkg_name, 
                                     None, pkg_fmri.get_version(), None, 
                                     pkg_fmri.get_pkg_stem()])
@@ -409,7 +399,7 @@ class Updatemanager:
                 gobject.idle_add(self.w_um_treeview.set_model, um_list)
                 self.um_list = um_list                
                 gobject.idle_add(self.__set_initial_selection)
-                        
+
                 # XXX: Currently this will fetch the sizes but it really slows down the
                 # app responsiveness - until we get caching I think we should just hide
                 # the size column
@@ -457,33 +447,18 @@ class Updatemanager:
                         gobject.source_remove(self.show_info_id)
                         self.show_info_id = 0
                 if itr:                        
-                        stem = model.get_value(itr, UM_STEM)
-                        if self.__setting_from_cache(stem):
-                                return
                         pkg_name =  model.get_value(itr, UM_NAME)
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text(
                             _("\nFetching details for %s ...") % pkg_name)
-                        self.last_show_info_id = self.show_info_id = \
-                            gobject.timeout_add(SHOW_INFO_DELAY,
-                            self.__show_info, model, model.get_path(itr))
-
-        def __setting_from_cache(self, stem):
-                if not self.use_cache:
-                        return False
-                if len(self.details_cache) > MAX_INFO_CACHE_LIMIT:
-                        self.details_cache = {}
-
-                if self.details_cache.has_key(stem):
-                        labs = self.details_cache[stem][0]
-                        text = self.details_cache[stem][1]
-                        gui_misc.set_package_details_text(labs, text,
-                            self.w_um_textview, self.pkg_installed_icon,
-                            self.pkg_not_installed_icon, 
-                            self.pkg_update_available_icon)
-                        return True
-                else:
-                        return False
+                        if self.initial_selection:
+                                self.last_show_info_id = self.show_info_id = \
+                                    gobject.idle_add(self.__show_info, model,
+                                    model.get_path(itr))
+                        else:
+                                self.last_show_info_id = self.show_info_id = \
+                                    gobject.timeout_add(SHOW_INFO_DELAY,
+                                    self.__show_info, model, model.get_path(itr))
 
         def __show_info(self, model, path):
                 self.show_info_id = 0
@@ -525,11 +500,9 @@ class Updatemanager:
                         infobuffer.insert_with_tags_by_name(textiter,
                             _("\nNo details available"), "bold")
                         return
-                labs, text = gui_misc.set_package_details(pkg_name, local_info,
+                gui_misc.set_package_details(pkg_name, local_info,
                     remote_info, self.w_um_textview, self.pkg_installed_icon,
                     self.pkg_not_installed_icon, self.pkg_update_available_icon)
-                if self.use_cache:
-                        self.details_cache[stem] = (labs, text)
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -733,6 +706,6 @@ Use -U (--update-all) to proceed with Update All"""
         um.init_tree_views()
 
         um.setup_progressdialog_show(_("Checking for new software"))
-        gobject.timeout_add(UPDATES_FETCH_DELAY, um.setup_updates)
+        gobject.idle_add(um.setup_updates)
         main()
 
