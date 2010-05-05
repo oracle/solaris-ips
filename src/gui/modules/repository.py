@@ -516,7 +516,7 @@ class Repository(progress.GuiProgressTracker):
                         if w_ssl_cert:
                                 ssl_cert = w_ssl_cert.get_text()
                         ssl_valid, ssl_error = self.__validate_ssl_key_cert(url, ssl_key,
-                            ssl_cert, ignore_ssl_check_for_http=True)
+                            ssl_cert, ignore_ssl_check_for_not_https=True)
                         self.__update_repository_dialog_width(ssl_error)
                         if ssl_error != None and w_ssl_label:
                                 self.__show_error_label_with_format(w_ssl_label,
@@ -1721,12 +1721,12 @@ class Repository(progress.GuiProgressTracker):
 
         @staticmethod
         def __validate_ssl_key_cert(origin_url, ssl_key, ssl_cert, 
-            ignore_ssl_check_for_http = False):
+            ignore_ssl_check_for_not_https = False):
                 '''The SSL Cert and SSL Key may be valid and contain no error'''
                 ssl_error = None
                 ssl_valid = True
-                if origin_url and origin_url.startswith("http:"):
-                        if ignore_ssl_check_for_http:
+                if origin_url and not origin_url.startswith("https:"):
+                        if ignore_ssl_check_for_not_https:
                                 return ssl_valid, ssl_error
                         if (ssl_key != None and len(ssl_key) != 0) or \
                             (ssl_cert != None and len(ssl_cert) != 0):
