@@ -313,7 +313,6 @@ link:
 	mkdir -p /usr/share/lib/package-manager/data
 	ln -sf $(PWD)/../packagemanager.py /usr/bin/packagemanager
 	ln -sf $(PWD)/data/packagemanager.glade /usr/share/package-manager/packagemanager.glade
-	ln -sf $(PWD)/data/opensolaris.org /usr/share/package-manager/data/opensolaris.org
 	ln -sf $(PWD)/data/opensolaris.org.sections /usr/share/package-manager/data/opensolaris.org.sections
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
