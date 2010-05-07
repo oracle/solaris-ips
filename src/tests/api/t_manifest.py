@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # CDDL HEADER START
 #
@@ -20,8 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import unittest
 import tempfile
@@ -46,13 +46,13 @@ class TestManifest(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
 
-                self.m1 = manifest.Manifest();
+                self.m1 = manifest.Manifest()
                 self.m1_contents = """\
 set com.sun,test=true
 depend type=require fmri=pkg:/library/libc
 file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 """
-                self.m2 = manifest.Manifest();
+                self.m2 = manifest.Manifest()
                 self.m2_contents = """\
 set com.sun,test=false
 set com.sun,data=true
@@ -117,6 +117,23 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
                 str(self.m1).index("owner=sch")
                 str(self.m1).index("group=staff")
                 str(self.m1).index("isa=i386")
+
+                # Verify set_content with a byte string with unicode data
+                # works.
+                bstr = "set name=pkg.summary:th value=\"ซอฟต์แวร์ \""
+                m = manifest.Manifest()
+                m.set_content(bstr)
+                output = list(m.as_lines())[0].rstrip()
+                self.assertEqual(bstr, output)
+                self.assert_(isinstance(output, str))
+
+                # Verify set_content with a Unicode string results in a
+                # byte string (for now).
+                m = manifest.Manifest()
+                m.set_content(unicode(bstr, "utf-8"))
+                output = list(m.as_lines())[0].rstrip()
+                self.assertEqual(bstr, output)
+                self.assert_(isinstance(output, str))
 
         def test_diffs1(self):
                 """ humanized_differences runs to completion """
@@ -341,6 +358,20 @@ dir mode=0755 owner=bin group=sys path=usr
                 self.m2.set_content(self.diverse_contents, signatures=True)
                 self.assertRaises(api_errors.BadManifestSignatures,
                     self.m2.validate, signatures=self.m2_signatures)
+
+                # Verify a manifest that has its content set using a byte string
+                # has the same signature as that of one set with a Unicode
+                # string when the content is the same.
+                bstr = "set name=pkg.summary:th value=\"ซอฟต์แวร์ \""
+                m1 = manifest.Manifest()
+                m1.set_content(bstr, signatures=True)
+                output1 = "".join(m1.as_lines())
+
+                m2 = manifest.Manifest()
+                m2.set_content(unicode(bstr, "utf-8"), signatures=True)
+                output2 = "".join(m2.as_lines())
+                self.assertEqualDiff(output1, output2)
+                self.assertEqualDiff(m1.signatures, m2.signatures)
 
 
 if __name__ == "__main__":

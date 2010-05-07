@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple
@@ -37,7 +36,7 @@ import pkg.client.api_errors as api_errors
 import pkg.portable as portable
 import pkg.variant as variant
 
-from pkg.misc import EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
+from pkg.misc import EmptyDict, EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
 
 ManifestDifference = namedtuple("ManifestDifference", "added changed removed")
@@ -88,6 +87,7 @@ class Manifest(object):
                 self.variants = {}   # variants seen in package
                 self.facets = {}     # facets seen in package
                 self.attributes = {} # package-wide attributes
+                self.signatures = EmptyDict
 
         def __str__(self):
                 r = ""
@@ -341,7 +341,7 @@ class Manifest(object):
                 # can't be in a manifest twice.  (The problem of having the same
                 # action more than once in packages that can be installed
                 # together has to be solved somewhere else, though.)
-                if isinstance(content, str):
+                if isinstance(content, basestring):
                         if signatures:
                                 # Generate manifest signature based upon input
                                 # content, but only if signatures were
@@ -513,7 +513,11 @@ class Manifest(object):
                 manifest content, and returns a hash value."""
 
                 sha_1 = hashlib.sha1()
-                sha_1.update(mfstcontent)
+                if isinstance(mfstcontent, unicode):
+                        # Byte stream expected, so pass encoded.
+                        sha_1.update(mfstcontent.encode("utf-8"))
+                else:
+                        sha_1.update(mfstcontent)
 
                 return sha_1.hexdigest()
 

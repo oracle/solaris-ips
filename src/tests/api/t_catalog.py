@@ -21,8 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -108,7 +107,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
         def __gen_manifest(self, f):
                 m = manifest.Manifest()
-                lines = (
+                lines = unicode(
                     "depend fmri=foo@1.0 type=require\n"
                     "set name=facet.devel value=true\n"
                     "set name=info.classification "
@@ -124,8 +123,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "set name=pkg.summary value=\"Sparc Summary %s\""
                     " variant.arch=sparc\n"
                     "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
-                    "set name=pkg.description value=\"Desc %s\"\n" % \
-                    (f, f, f, f, f))
+                    "set name=pkg.description value=\"Desc %s\"\n", "utf-8") % \
+                    (f, f, f, f, f)
 
                 if f.pkg_name == "zpkg":
                         lines += "set name=pkg.depend.install-hold value=test\n"

@@ -20,8 +20,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -92,7 +91,10 @@ set_invaliderr(const char *str, const char *msg)
 static PyObject *
 _fromstr(PyObject *self, PyObject *args)
 {
-	char *s, *str, *keystr, *slashmap = NULL;
+	char *s = NULL;
+	char *str = NULL;
+	char *keystr = NULL;
+	char *slashmap = NULL;
 	int strl;
 	int i, ks, vs, keysize;
 	char quote;
@@ -112,13 +114,20 @@ _fromstr(PyObject *self, PyObject *args)
 #define malformed(msg) set_malformederr(str, i, (msg))
 #define invalid(msg) set_invaliderr(str, (msg))
 #define CLEANUP_REFS \
+	PyMem_Free(str);\
 	Py_XDECREF(key);\
 	Py_XDECREF(type);\
 	Py_XDECREF(attr);\
 	Py_XDECREF(attrs);\
 	Py_XDECREF(hash);
 
-	if (PyArg_ParseTuple(args, "s#", &str, &strl) == 0) {
+	/*
+	 * The action string is currently assumed to be a stream of bytes that
+	 * are valid UTF-8.  This method works regardless of whether the string
+	 * object provided is a Unicode object, string object, or a character
+	 * buffer.
+	 */
+	if (PyArg_ParseTuple(args, "et#", "utf-8", &str, &strl) == 0) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
 		return (NULL);
 	}
@@ -126,15 +135,20 @@ _fromstr(PyObject *self, PyObject *args)
 	s = strpbrk(str, " \t");
 
 	i = strl;
-	if (s == NULL)
+	if (s == NULL) {
+		PyMem_Free(str);
 		return (malformed("no attributes"));
+	}
 
-	if ((type = PyString_FromStringAndSize(str, s - str)) == NULL)
+	if ((type = PyString_FromStringAndSize(str, s - str)) == NULL) {
+		PyMem_Free(str);
 		return (NULL);
+	}
 
 	ks = vs = s - str;
 	state = WS;
 	if ((attrs = PyDict_New()) == NULL) {
+		PyMem_Free(str);
 		Py_DECREF(type);
 		return (NULL);
 	}
@@ -212,8 +226,10 @@ _fromstr(PyObject *self, PyObject *args)
 				if (slashmap == NULL) {
 					int smlen = strl - (i - vs);
 					slashmap = calloc(1, smlen + 1);
-					if (slashmap == NULL)
+					if (slashmap == NULL) {
+						PyMem_Free(str);
 						return (PyErr_NoMemory());
+					}
 				}
 				i++;
 				if (str[i] == '\\' || str[i] == quote) {
@@ -228,6 +244,7 @@ _fromstr(PyObject *self, PyObject *args)
 					attrlen = i - vs;
 					sattr = calloc(1, attrlen + 1);
 					if (sattr == NULL) {
+						PyMem_Free(str);
 						free(slashmap);
 						return (PyErr_NoMemory());
 					}
@@ -311,6 +328,7 @@ _fromstr(PyObject *self, PyObject *args)
 		}
 	}
 
+	PyMem_Free(str);
 	if (hash == NULL)
 		hash = Py_None;
 

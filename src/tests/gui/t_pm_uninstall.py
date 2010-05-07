@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -35,6 +34,9 @@ except ImportError:
         raise ImportError, "SUNWldtp package not installed."
 
 class TestPkgGuiUninstallBasics(pkg5unittest.SingleDepotTestCase):
+
+        # pygtk requires unicode as the default encoding.
+        default_utf8 = True
 
         foo10 = """
             open package1@1.0,5.11-0
