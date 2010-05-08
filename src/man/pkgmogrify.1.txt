@@ -104,7 +104,7 @@ EMBEDDED DIRECTIVES
 
      One of the action-types specified must match.  All of the attributes
      specified must match.  The regular expression syntax used is that of
-     python; more information is available via the command "pydoc sre" or
+     python; more information is available via the command "pydoc re" or
      (more completely) at http://docs.python.org/dev/howto/regex.html.
      Some examples of matching expressions include:
 
@@ -146,7 +146,7 @@ EXAMPLES:
      <transform file path=var/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
 
      # move files from usr/sfw/bin to usr/bin
-     <transform file edit path usr/sfw/bin usr/bin>
+     <transform file -> edit path usr/sfw/bin usr/bin>
 
      # Add reboot-needed tags to files that aren't .conf files under /kernel.
      # Can also be done w/ regexp magic in a single expression,
