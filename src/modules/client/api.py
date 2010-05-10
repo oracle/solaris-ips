@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -1799,10 +1798,13 @@ class ImageInterface(object):
                 ssu = None
                 for i, q in enumerate(query_lst):
                         try:
-                                query = qp.parse(q.encoded_text())
-                                query_rr = qp.parse(q.encoded_text())
+                                query = qp.parse(q.text)
+                                query_rr = qp.parse(q.text)
                                 if query_rr.remove_root(self.__img.root):
                                         query.add_or(query_rr)
+                                if q.return_type == \
+                                    query_p.Query.RETURN_PACKAGES:
+                                        query.propagate_pkg_return()
                         except query_p.BooleanQueryException, e:
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
@@ -1945,15 +1947,16 @@ class ImageInterface(object):
                 qp = query_p.QueryParser(l)
                 for q in query_str_and_args_lst:
                         try:
-                                query = qp.parse(q.encoded_text())
-                                query_rr = qp.parse(q.encoded_text())
+                                query = qp.parse(q.text)
+                                query_rr = qp.parse(q.text)
                                 if query_rr.remove_root(self.__img.root):
                                         query.add_or(query_rr)
-                                        new_qs.append(query_p.Query(str(query),
-                                            q.case_sensitive, q.return_type,
-                                            q.num_to_return, q.start_point))
-                                else:
-                                        new_qs.append(q)
+                                if q.return_type == \
+                                    query_p.Query.RETURN_PACKAGES:
+                                        query.propagate_pkg_return()
+                                new_qs.append(query_p.Query(str(query),
+                                    q.case_sensitive, q.return_type,
+                                    q.num_to_return, q.start_point))
                         except query_p.BooleanQueryException, e:
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
@@ -2093,7 +2096,7 @@ class ImageInterface(object):
                         l.build()
                         qp = query_p.QueryParser(l)
                         try:
-                                query = qp.parse(q.encoded_text())
+                                query = qp.parse(q.text)
                         except query_p.BooleanQueryException, e:
                                 return api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:

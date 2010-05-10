@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -458,7 +457,7 @@ class Query(object):
                 The "start_point" parameter is the number of results to skip
                 before returning results to the querier."""
 
-                self.__text = text
+                self.text = text
                 self.case_sensitive = case_sensitive
                 self.return_type = return_type
                 assert self.return_type == Query.RETURN_PACKAGES or \
@@ -471,18 +470,7 @@ class Query(object):
 
                 return "%s_%s_%s_%s_%s" % (self.case_sensitive,
                     self.return_type, self.num_to_return, self.start_point,
-                    self.__text)
-
-        def ver_0(self):
-                """Return the v0 string representation of this query."""
-
-                return self.__text
-
-        def encoded_text(self):
-                if self.return_type == Query.RETURN_PACKAGES:
-                        return "<%s>" % self.__text
-                else:
-                        return self.__text
+                    self.text)
 
         @staticmethod
         def fromstr(s):
@@ -585,6 +573,9 @@ class BooleanQuery(object):
                 self.lc = left_query
                 self.rc = right_query
                 self.return_type = self.lc.return_type
+                self.__check_return_types()
+
+        def __check_return_types(self):
                 if self.lc.return_type != self.rc.return_type:
                         if self.lc.return_type == Query.RETURN_ACTIONS:
                                 raise BooleanQueryException(self.lc, self.rc)
@@ -624,6 +615,22 @@ class BooleanQuery(object):
 
                 return v > 0 and self.lc.allow_version(v) and \
                     self.rc.allow_version(v)
+
+        def propagate_pkg_return(self):
+                """Makes each child return packages instead of actions.
+
+                If a child returns a value that isn't None, that means a new
+                node in the tree has been created which needs to become the
+                new child for this node."""
+                self.return_type = Query.RETURN_PACKAGES
+                new_lc = self.lc.propagate_pkg_return()
+                if new_lc:
+                        self.lc = new_lc
+                new_rc = self.rc.propagate_pkg_return()
+                if new_rc:
+                        self.rc = new_rc
+                self.__check_return_types()
+                return None
 
 class AndQuery(BooleanQuery):
         """Class representing AND queries in the AST."""
@@ -768,6 +775,10 @@ class PkgConversion(object):
 
                 return v > 0 and self.query.allow_version(v)
 
+        def propagate_pkg_return(self):
+                """Makes this node return packages instead of actions.
+                Returns None because no changes need to be made to the tree."""
+                return None
 
 class PhraseQuery(object):
         """Class representing a phrase search in the AST"""
@@ -788,11 +799,23 @@ class PhraseQuery(object):
                         self.query.add_trailing_wildcard()
                 self._case_sensitive = None
 
+        @property
+        def pkg_name(self):
+                return self.query.pkg_name
+
+        @property
+        def action_type(self):
+                return self.query.action_type
+
+        @property
+        def key(self):
+                return self.query.key
+
         def __repr__(self):
                 return "Phrase Query:'" + self.full_str + "'"
 
         def __str__(self):
-                return "'" + self.full_str + "'"
+                return "%s:'%s'" % (self.query.field_strings(), self.full_str)
 
         def add_field_restrictions(self, *params):
                 self.query.add_field_restrictions(*params)
@@ -847,6 +870,14 @@ class PhraseQuery(object):
                 """Returns whether the query supports a query of version v."""
 
                 return v > 0 and self.query.allow_version(v)
+
+        def propagate_pkg_return(self):
+                """Inserts a conversion to package results into the tree.
+
+                Creates a new node by wrapping a PkgConversion node around
+                itself. It then returns the new node to its parent for
+                insertion into the tree."""
+                return PkgConversion(self)
                 
 class FieldQuery(object):
         """Class representing a structured query in the AST."""
@@ -895,6 +926,14 @@ class FieldQuery(object):
 
                 return v > 0 and self.query.allow_version(v)
 
+        def propagate_pkg_return(self):
+                """Inserts a conversion to package results into the tree.
+
+                Creates a new node by wrapping a PkgConversion node around
+                itself. It then returns the new node to its parent for
+                insertion into the tree."""
+                return PkgConversion(self)
+
 class TopQuery(object):
         """Class which must be at the top of all valid ASTs, and may only be
         at the top of an AST.  It handles starting N results in, or only
@@ -929,7 +968,8 @@ class TopQuery(object):
 
                 if self.query.return_type == Query.RETURN_ACTIONS:
                         return (
-                            (1, Query.RETURN_ACTIONS, (fmri.PkgFmri(pfmri), fv, l))
+                            (1, Query.RETURN_ACTIONS,
+                            (fmri.PkgFmri(pfmri), fv, l))
                             for x, (at, st, pfmri, fv, l)
                             in enumerate(it)
                             if self.__keep(x)
@@ -967,6 +1007,17 @@ class TopQuery(object):
                 """Returns whether the query supports a query of version v."""
 
                 return self.query.allow_version(v)
+        
+        def propagate_pkg_return(self):
+                """Makes the child return packages instead of actions.
+
+                If a child returns a value that isn't None, that means a new
+                node in the tree has been created which needs to become the
+                new child for this node."""
+                new_child = self.query.propagate_pkg_return()
+                if new_child:
+                        self.query = new_child
+                return None
 
 class TermQuery(object):
         """Class representing the a single query term in the AST."""
@@ -1028,19 +1079,31 @@ class TermQuery(object):
                 return "( TermQuery: " + self._term + " )"
 
         def __str__(self):
+                return "%s:%s" % (self.field_strings(),
+                    self.__wc_to_string(False, self._term))
+
+        def field_strings(self):
                 return ":".join([
                     self.__wc_to_string(wc, v)
                     for wc, v in [(self.pkg_name_wildcard, self.pkg_name),
                         (self.action_type_wildcard, self.action_type),
-                        (self.key_wildcard, self.key), (False, self._term)
+                        (self.key_wildcard, self.key)
                     ]
                 ])
+
+        def propagate_pkg_return(self):
+                """Inserts a conversion to package results into the tree.
+
+                Creates a new node by wrapping a PkgConversion node around
+                itself. It then returns the new node to its parent for
+                insertion into the tree."""
+                return PkgConversion(self)
 
         @staticmethod
         def __wc_to_string(wc, v):
                 if wc:
                         return ""
-                return v
+                return "\\:".join(v.split(":"))
 
         def add_field_restrictions(self, pkg_name, action_type, key):
                 """Add the information needed to restrict the search domain

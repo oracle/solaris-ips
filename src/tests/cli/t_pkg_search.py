@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -501,18 +500,18 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 # Testing interaction of -o and -p options
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.pkg("search -o action.name -p pkg", exit=2)
-                self.pkg("search -o action.name '<pkg>'", exit=1)
-                self.pkg("search -o action.name '<example_path>'", exit=2)
+                self.pkg("search -o action.name -a '<pkg>'", exit=1)
+                self.pkg("search -o action.name -a '<example_path>'", exit=2)
                 self.pkg("search -o action.key -p pkg", exit=2)
-                self.pkg("search -o action.key '<pkg>'", exit=1)
-                self.pkg("search -o action.key '<example_path>'", exit=2)
+                self.pkg("search -o action.key -a '<pkg>'", exit=1)
+                self.pkg("search -o action.key -a '<example_path>'", exit=2)
                 self.pkg("search -o search.match -p pkg", exit=2)
-                self.pkg("search -o search.match '<pkg>'", exit=1)
-                self.pkg("search -o search.match '<example_path>'", exit=2)
+                self.pkg("search -o search.match -a '<pkg>'", exit=1)
+                self.pkg("search -o search.match -a '<example_path>'", exit=2)
                 self.pkg("search -o search.match_type -p pkg", exit=2)
-                self.pkg("search -o search.match_type '<pkg>'", exit=1)
-                self.pkg("search -o search.match_type '<example_path>'", exit=2)
-                self.pkg("search -o action.foo pkg", exit=2)
+                self.pkg("search -o search.match_type -a '<pkg>'", exit=1)
+                self.pkg("search -o search.match_type -a '<example_path>'", exit=2)
+                self.pkg("search -o action.foo -a pkg", exit=2)
 
         def test_remote(self):
                 """Test remote search."""
@@ -764,18 +763,18 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 self.image_create(durl)
                 
-                self.pkg("search 'dup_lines:set:pkg.fmri:'")
+                self.pkg("search -a 'dup_lines:set:pkg.fmri:'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
-                self.pkg("search -o pkg.shortfmri 'a'")
+                self.pkg("search -a -o pkg.shortfmri 'a'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
                 self.pkg("install dup_lines")
 
-                self.pkg("search -l 'dup_lines:set:pkg.fmri:'")
+                self.pkg("search -a -l 'dup_lines:set:pkg.fmri:'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
-                self.pkg("search -l -o pkg.shortfmri,action.key 'a'")
+                self.pkg("search -l -a -o pkg.shortfmri,action.key 'a'")
                 self.assertEqual(len(self.output.splitlines()), 4)
 
 if __name__ == "__main__":

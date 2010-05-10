@@ -356,10 +356,10 @@ SUBCOMMANDS
           search.match_type     Corresponds to the attribute which contained
                                 the string that matched the search query.
 
-          With -p, perform the search and display the packages which contain
-          at least one action which matched the query.  This is equivalent to
-          enclosing the entire query with '<>'.  (For a description of the
-          '<>' operator, please see below.)
+          With -p, display packages which have some actions that match each 
+          query term.  Using this option is equivalent to putting '<>' around 
+          each term  in the query.  (For a description of the '<>' operator, 
+          please see below.)
 
           By default, and with -r, search the repositories corresponding
           to the image's publishers.

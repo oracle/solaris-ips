@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import sys
 import threading
@@ -82,6 +81,12 @@ class EmptyQuery(object):
                         return "(a AND b)"
                 else:
                         return "<(a AND b)>"
+
+        def propagate_pkg_return(self):
+                """Makes this node return packages instead of actions.
+                Returns None because no changes need to be made to the tree."""
+                self.return_type = qp.Query.RETURN_PACKAGES
+                return None
 
 
 class OrQuery(qp.OrQuery):

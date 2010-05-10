@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import datetime
 import errno
@@ -1288,7 +1287,7 @@ class Repository(object):
                         l = query_p.QueryLexer()
                         l.build()
                         qp = query_p.QueryParser(l)
-                        query = qp.parse(q.encoded_text())
+                        query = qp.parse(q.text)
                         query.set_info(num_to_return=q.num_to_return,
                             start_point=q.start_point,
                             index_dir=self.index_root,
