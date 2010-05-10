@@ -35,6 +35,7 @@ ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTAPPHIGHICONSHARE = $(ROOT)/share/icons/HighContrast/48x48/apps
+ROOTAPPHIGHINVICONSHARE = $(ROOT)/share/icons/HighContrastInverse/48x48/apps
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
@@ -42,6 +43,9 @@ ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
 ROOTHIGHICON16SHARE = $(ROOTSHARE)/icons/HighContrast/16x16/actions
 ROOTHIGHICON24SHARE = $(ROOTSHARE)/icons/HighContrast/24x24/actions
 ROOTHIGHICON48SHARE = $(ROOTSHARE)/icons/HighContrast/48x48/actions
+ROOTHIGHINVICON16SHARE = $(ROOTSHARE)/icons/HighContrastInverse/16x16/actions
+ROOTHIGHINVICON24SHARE = $(ROOTSHARE)/icons/HighContrastInverse/24x24/actions
+ROOTHIGHINVICON48SHARE = $(ROOTSHARE)/icons/HighContrastInverse/48x48/actions
 ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
@@ -55,17 +59,19 @@ ROOTSPSHARE = $(ROOTSHARE)/data/startpagebase
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
    $(ROOTAPPHIGHICONSHARE) \
+   $(ROOTAPPHIGHINVICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
    $(ROOTHIGHICON16SHARE) \
    $(ROOTHIGHICON24SHARE) \
-   $(ROOTHIGHICON36SHARE) \
    $(ROOTHIGHICON48SHARE) \
+   $(ROOTHIGHINVICON16SHARE) \
+   $(ROOTHIGHINVICON24SHARE) \
+   $(ROOTHIGHINVICON48SHARE) \
    $(ROOTICON16SHARE) \
    $(ROOTICON24SHARE) \
-   $(ROOTICON36SHARE) \
    $(ROOTICON48SHARE) \
    $(ROOTMIMEICONSHARE) \
    $(ROOTMIMETYPESHARE) \
@@ -78,6 +84,9 @@ APPICONS = \
 
 APPHIGHICONS = \
    data/icons/HighContrast/48x48/packagemanager.png
+
+APPHIGHINVICONS = \
+   data/icons/HighContrastInverse/48x48/packagemanager.png
 
 CATALOG = \
    data/opensolaris.org.sections
@@ -124,11 +133,27 @@ HIGHICONS16 = \
    data/icons/HighContrast/16x16/status_newupdate.png \
    data/icons/HighContrast/16x16/status_notinstalled.png
 
+HIGHINVICONS16 = \
+   data/icons/HighContrastInverse/16x16/filter_all.png \
+   data/icons/HighContrastInverse/16x16/filter_selected.png \
+   data/icons/HighContrastInverse/16x16/progress_checkmark.png \
+   data/icons/HighContrastInverse/16x16/selection.png \
+   data/icons/HighContrastInverse/16x16/status_checkmark.png \
+   data/icons/HighContrastInverse/16x16/status_installed.png \
+   data/icons/HighContrastInverse/16x16/status_newupdate.png \
+   data/icons/HighContrastInverse/16x16/status_notinstalled.png
+
 HIGHICONS24 = \
    data/icons/HighContrast/24x24/pm-install_update.png \
    data/icons/HighContrast/24x24/pm-refresh.png \
    data/icons/HighContrast/24x24/pm-remove.png \
    data/icons/HighContrast/24x24/pm-update_all.png
+
+HIGHINVICONS24 = \
+   data/icons/HighContrastInverse/24x24/pm-install_update.png \
+   data/icons/HighContrastInverse/24x24/pm-refresh.png \
+   data/icons/HighContrastInverse/24x24/pm-remove.png \
+   data/icons/HighContrastInverse/24x24/pm-update_all.png
 
 HIGHICONS48 = \
    data/icons/HighContrast/48x48/packagemanager.png \
@@ -136,6 +161,13 @@ HIGHICONS48 = \
    data/icons/HighContrast/48x48/pm-refresh.png \
    data/icons/HighContrast/48x48/pm-remove.png \
    data/icons/HighContrast/48x48/pm-update_all.png
+
+HIGHINVICONS48 = \
+   data/icons/HighContrastInverse/48x48/packagemanager.png \
+   data/icons/HighContrastInverse/48x48/pm-install_update.png \
+   data/icons/HighContrastInverse/48x48/pm-refresh.png \
+   data/icons/HighContrastInverse/48x48/pm-remove.png \
+   data/icons/HighContrastInverse/48x48/pm-update_all.png
 
 ICONS16 = \
    data/icons/16x16/filter_all.png \
@@ -207,6 +239,7 @@ STATICSPFILES = \
 #
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
 ROOTAPPHIGHICONS = $(APPHIGHICONS:data/%=$(ROOTAPPHIGHICONSHARE)/%)
+ROOTAPPHIGHINVICONS = $(APPHIGHINVICONS:data/%=$(ROOTAPPHIGHINVICONSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -236,6 +269,10 @@ ROOTHIGHICONS16 = $(HIGHICONS16:data/icons/HighContrast/16x16/%=$(ROOTHIGHICON16
 ROOTHIGHICONS24 = $(HIGHICONS24:data/icons/HighContrast/24x24/%=$(ROOTHIGHICON24SHARE)/%)
 ROOTHIGHICONS48 = $(HIGHICONS48:data/icons/HighContrast/48x48/%=$(ROOTHIGHICON48SHARE)/%)
 
+ROOTHIGHINVICONS16 = $(HIGHINVICONS16:data/icons/HighContrastInverse/16x16/%=$(ROOTHIGHINVICON16SHARE)/%)
+ROOTHIGHINVICONS24 = $(HIGHINVICONS24:data/icons/HighContrastInverse/24x24/%=$(ROOTHIGHINVICON24SHARE)/%)
+ROOTHIGHINVICONS48 = $(HIGHINVICONS48:data/icons/HighContrastInverse/48x48/%=$(ROOTHIGHINVICON48SHARE)/%)
+
 ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
@@ -251,17 +288,19 @@ ROOTPYCALLMODS = $(ROOTPYMODS:%.py=%.pyc)
 ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
    $(ROOTAPPHIGHICONS) \
+   $(ROOTAPPHIGHINVICONS) \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTHELPFILES) \
    $(ROOTHIGHICONS16) \
    $(ROOTHIGHICONS24) \
-   $(ROOTHIGHICONS36) \
    $(ROOTHIGHICONS48) \
+   $(ROOTHIGHINVICONS16) \
+   $(ROOTHIGHINVICONS24) \
+   $(ROOTHIGHINVICONS48) \
    $(ROOTICONS16) \
    $(ROOTICONS24) \
-   $(ROOTICONS36) \
    $(ROOTICONS48) \
    $(ROOTMIMEICONS) \
    $(ROOTMIMETYPE) \
@@ -337,6 +376,9 @@ $(ROOTDIRS):
 $(ROOTAPPHIGHICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPHIGHICONSHARE) -m 0644 $<
 
+$(ROOTAPPHIGHINVICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAPPHIGHINVICONSHARE) -m 0644 $<
+
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
@@ -383,6 +425,15 @@ $(ROOTHIGHICON24SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/24x24/%
 
 $(ROOTHIGHICON48SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/48x48/%
 	$(INSTALL) -f $(ROOTHIGHICON48SHARE) -m 0644 $<
+
+$(ROOTHIGHINVICON16SHARE)/%: $(ROOTDIRS) data/icons/HighContrastInverse/16x16/%
+	$(INSTALL) -f $(ROOTHIGHINVICON16SHARE) -m 0644 $<
+
+$(ROOTHIGHINVICON24SHARE)/%: $(ROOTDIRS) data/icons/HighContrastInverse/24x24/%
+	$(INSTALL) -f $(ROOTHIGHINVICON24SHARE) -m 0644 $<
+
+$(ROOTHIGHINVICON48SHARE)/%: $(ROOTDIRS) data/icons/HighContrastInverse/48x48/%
+	$(INSTALL) -f $(ROOTHIGHINVICON48SHARE) -m 0644 $<
 
 $(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
 	$(INSTALL) -f $(ROOTICON16SHARE) -m 0644 $<

@@ -26,6 +26,10 @@ d none usr/share/icons/HighContrast 755 root other
 d none usr/share/icons/HighContrast/48x48 755 root other
 d none usr/share/icons/HighContrast/48x48/apps 755 root other
 f none usr/share/icons/HighContrast/48x48/apps/updatemanager.png 444 root other
+d none usr/share/icons/HighContrastInverse 755 root other
+d none usr/share/icons/HighContrastInverse/48x48 755 root other
+d none usr/share/icons/HighContrastInverse/48x48/apps 755 root other
+f none usr/share/icons/HighContrastInverse/48x48/apps/updatemanager.png 444 root other
 d none usr/share/icons/hicolor 755 root other
 d none usr/share/icons/hicolor/48x48 755 root other
 d none usr/share/icons/hicolor/48x48/apps 755 root other
@@ -45,6 +49,16 @@ f none usr/share/update-manager/icons/HighContrast/36x36/actions/updatemanager.p
 d none usr/share/update-manager/icons/HighContrast/48x48 755 root bin
 d none usr/share/update-manager/icons/HighContrast/48x48/actions 755 root bin
 f none usr/share/update-manager/icons/HighContrast/48x48/actions/updatemanager.png 444 root other
+d none usr/share/update-manager/icons/HighContrastInverse 755 root bin
+d none usr/share/update-manager/icons/HighContrastInverse/24x24 755 root bin
+d none usr/share/update-manager/icons/HighContrastInverse/24x24/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrastInverse/24x24/actions/updatemanager.png 444 root other
+d none usr/share/update-manager/icons/HighContrastInverse/36x36 755 root bin
+d none usr/share/update-manager/icons/HighContrastInverse/36x36/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrastInverse/36x36/actions/updatemanager.png 444 root other
+d none usr/share/update-manager/icons/HighContrastInverse/48x48 755 root bin
+d none usr/share/update-manager/icons/HighContrastInverse/48x48/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrastInverse/48x48/actions/updatemanager.png 444 root other
 d none usr/share/update-manager/icons/hicolor 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24/actions 755 root bin
