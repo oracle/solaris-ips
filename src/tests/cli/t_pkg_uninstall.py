@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -31,20 +30,22 @@ import pkg5unittest
 import os
 import unittest
 
+
 class TestCommandLine(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
 
         def setUp(self):
-                return pkg5unittest.ManyDepotTestCase.setUp(self,
+                pkg5unittest.ManyDepotTestCase.setUp(self,
                     ["test", "bogus"])
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
 
         def test_pkg_bogus_opts(self):
                 """ pkg bogus option checks """
 
                 # create a image to avoid non-existant image messages
-                durl = self.dcs[1].get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl1)
 
                 self.pkg("uninstall -@ foo", exit=2)
                 self.pkg("uninstall -vq foo", exit=2)
@@ -61,9 +62,8 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
         def test_rmdir_cwd(self):
                 """Remove a package containing a directory that's our cwd."""
 
-                durl = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl, self.foo12)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl1, self.foo12)
+                self.image_create(self.rurl1)
 
                 self.pkg("install foo")
                 os.chdir(os.path.join(self.get_img_path(), "tmp"))
@@ -90,11 +90,9 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                   1) uninstall is blocked if dependencies are found
                   2) packages w/ circular dependencies can be uninstalled
                   3) if all dependencies are to be deleted, uninstall works."""
-                durl = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl, self.foob20)
-                self.pkgsend_bulk(durl, self.barb20)
-                self.pkgsend_bulk(durl, self.bazb20)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl1, (self.foob20, self.barb20,
+                    self.bazb20))
+                self.image_create(self.rurl1)
                 self.pkg("install bazb")
                 self.pkg("verify")
                 self.pkg("uninstall foob", exit=1)
@@ -122,14 +120,12 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
                 in its removal from the output of pkg list -a, even if it has
                 been renamed, etc.""" 
 
-                durl = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl, self.quux10 + self.renamed10 + 
-                    self.holder10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl1, (self.quux10, self.renamed10,
+                    self.holder10))
+                self.image_create(self.rurl1)
                 self.pkg("install -v renamed holder")
                 self.pkg("verify")
-                self.pkg("set-publisher -P -g %s bogus" % durl2)
+                self.pkg("set-publisher -P -g %s bogus" % self.rurl2)
                 self.pkg("unset-publisher test")
                 self.pkg("info quux@1.0 renamed@1.0")
                 self.pkg("uninstall holder renamed")

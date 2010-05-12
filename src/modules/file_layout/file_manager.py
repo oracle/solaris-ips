@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 """centralized object for insert, lookup, and removal of files.
 
@@ -171,17 +170,24 @@ class FileManager(object):
                 # file into the right place.
                 if dest_full_path != cur_full_path and not self.readonly:
                         p_sdir = os.path.dirname(cur_full_path)
-                        p_ddir = os.path.dirname(dest_full_path)
                         try:
-                                # Ensure that the parent destination directory
-                                # exists first; it might not in a reverse
-                                # migration scenario.
-                                if not os.path.exists(p_ddir):
-                                        os.makedirs(p_ddir)
-
                                 # Attempt to move the file from the old location
                                 # to the preferred location.
-                                portable.rename(cur_full_path, dest_full_path)
+                                try:
+                                        portable.rename(cur_full_path,
+                                            dest_full_path)
+                                except OSError, e:
+                                        if e.errno != errno.ENOENT:
+                                                raise
+
+                                        p_ddir = os.path.dirname(
+                                            dest_full_path)
+                                        if os.path.isdir(p_ddir):
+                                                raise
+
+                                        os.makedirs(p_ddir)
+                                        portable.rename(cur_full_path,
+                                            dest_full_path)
 
                                 # Since the file has been moved, point at the
                                 # new destination *before* attempting to remove
@@ -206,7 +212,7 @@ class FileManager(object):
 
         def insert(self, hashval, src_path):
                 """Add the content at "src_path" to the files under the name
-                "hashval"."""
+                "hashval".  Returns the path to the inserted file."""
 
                 if self.readonly:
                         raise NeedToModifyReadOnlyFileManager(hashval)
@@ -229,16 +235,24 @@ class FileManager(object):
 
                 p_dir = os.path.dirname(dest_full_path)
                 try:
-                        # Ensure that the destination's parent directory exists.
-                        if not os.path.exists(p_dir):
-                                os.makedirs(p_dir)
-
                         # Move the file into place.
                         portable.rename(src_path, dest_full_path)
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                        if e.errno == errno.ENOENT and not os.path.isdir(p_dir):
+                                try:
+                                        os.makedirs(p_dir)
+                                        portable.rename(src_path,
+                                            dest_full_path)
+                                except EnvironmentError, e:
+                                        if e.errno == errno.EACCES or \
+                                            e.errno == errno.EROFS:
+                                                raise FMPermissionsException(
+                                                    e.filename)
+                                        raise
+                        elif e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 raise FMPermissionsException(e.filename)
-                        raise
+                        else:
+                                raise
 
                 # Attempt to remove the parent directory of the file's original
                 # location to ensure empty directories aren't left behind.
@@ -254,6 +268,9 @@ class FileManager(object):
                                         raise FMPermissionsException(e.filename)
                                 else:
                                         raise
+
+                # Return the location of the inserted file to the caller.
+                return dest_full_path
 
         def remove(self, hashval):
                 """This function removes the file associated with the name

@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -29,11 +28,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import re
-import time
 import unittest
-import shutil
-from stat import *
+
 
 class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -66,44 +62,44 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         close"""
 
         misc_files = [ 
-                "tmp/bronze_sparc/etc/motd",
-                "tmp/bronze_i386/etc/motd",
-                "tmp/bronze_zos/etc/motd",
-                "tmp/bronze_zone/etc/nonglobal_motd",
-                "tmp/bronze_zone/etc/global_motd",
-                "tmp/bronze_zone/etc/i386_nonglobal",
-                "tmp/bronze_zone/etc/sparc_nonglobal",
-                "tmp/bronze_zone/etc/zos_nonglobal",
-                "tmp/bronze_zone/etc/i386_global",
-                "tmp/bronze_zone/etc/sparc_global",
-                "tmp/bronze_zone/etc/zos_global",
-                "tmp/bronze_zone/false",
-                "tmp/bronze_zone/true",
-                ]
+            "tmp/bronze_sparc/etc/motd",
+            "tmp/bronze_i386/etc/motd",
+            "tmp/bronze_zos/etc/motd",
+            "tmp/bronze_zone/etc/nonglobal_motd",
+            "tmp/bronze_zone/etc/global_motd",
+            "tmp/bronze_zone/etc/i386_nonglobal",
+            "tmp/bronze_zone/etc/sparc_nonglobal",
+            "tmp/bronze_zone/etc/zos_nonglobal",
+            "tmp/bronze_zone/etc/i386_global",
+            "tmp/bronze_zone/etc/sparc_global",
+            "tmp/bronze_zone/etc/zos_global",
+            "tmp/bronze_zone/false",
+            "tmp/bronze_zone/true",
+        ]
 
         def setUp(self):
-                self.debug("setUp")
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
 
         def test_variant_1(self):
                 self.__test_common("no-change", "no-change")
+
         def test_old_zones_pkgs(self):
-                self.__test_common("variant.opensolaris.zone", "opensolaris.zone")
+                self.__test_common("variant.opensolaris.zone",
+                    "opensolaris.zone")
 
         def __test_common(self, orig, new):
-                depot = self.dc.get_depot_url()
-                self.pkgsend_bulk(depot, self.bronze10.replace(orig, new))
-                self.pkgsend_bulk(depot, self.silver10.replace(orig, new))
+                self.pkgsend_bulk(self.rurl, self.bronze10.replace(orig, new))
+                self.pkgsend_bulk(self.rurl, self.silver10.replace(orig, new))
 
-                self.__vtest(depot, "sparc", "global")
-                self.__vtest(depot, "i386", "global")
-                self.__vtest(depot, "zos", "global", "true")
-                self.__vtest(depot, "sparc", "nonglobal", "true")
-                self.__vtest(depot, "i386", "nonglobal", "false")
-                self.__vtest(depot, "zos", "nonglobal", "false")
+                self.__vtest(self.rurl, "sparc", "global")
+                self.__vtest(self.rurl, "i386", "global")
+                self.__vtest(self.rurl, "zos", "global", "true")
+                self.__vtest(self.rurl, "sparc", "nonglobal", "true")
+                self.__vtest(self.rurl, "i386", "nonglobal", "false")
+                self.__vtest(self.rurl, "zos", "nonglobal", "false")
 
-                self.pkg_image_create(depot, 
+                self.pkg_image_create(self.rurl, 
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
 
@@ -141,6 +137,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 else:
                         f.close()
                         self.assert_(False, "File %s does not contain %s" % (path, string))
+
 
 if __name__ == "__main__":
         unittest.main()

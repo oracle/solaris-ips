@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -469,6 +468,7 @@ class Image(object):
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
 
+                self.transport._reset_caches()
                 for pub in self.gen_publishers(inc_disabled=True):
                         pub.transport = self.transport
 
@@ -477,6 +477,7 @@ class Image(object):
                 # the cfg_cache can be written.
                 self.mkdirs()
                 self.cfg_cache.write(self.imgdir)
+                self.transport._reset_caches()
 
         # XXX mkdirs and set_attrs() need to be combined into a create
         # operation.

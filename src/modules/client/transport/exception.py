@@ -21,10 +21,10 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import errno
 import httplib
 import pycurl
 
@@ -32,35 +32,54 @@ import pkg.client.api_errors as api_errors
 
 retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
         httplib.GATEWAY_TIMEOUT, httplib.NOT_FOUND))
+retryable_file_errors = set((pycurl.E_FILE_COULDNT_READ_FILE, errno.EAGAIN,
+    errno.ENOENT))
 
 # Errors that stats.py may include in a decay-able error rate
 decayable_http_errors = set((httplib.NOT_FOUND,))
+decayable_file_errors = set((pycurl.E_FILE_COULDNT_READ_FILE, errno.EAGAIN,
+    errno.ENOENT))
 decayable_pycurl_errors = set((pycurl.E_OPERATION_TIMEOUTED,
         pycurl.E_COULDNT_CONNECT))
 
 # Different protocols may have different retryable errors.  Map proto
 # to set of retryable errors.
 
-retryable_proto_errors = { "http" : retryable_http_errors,
-                           "https" : retryable_http_errors }
+retryable_proto_errors = {
+    "file": retryable_file_errors,
+    "http": retryable_http_errors,
+    "https": retryable_http_errors,
+}
 
-proto_code_map = { "http" : httplib.responses, "https": httplib.responses }
+decayable_proto_errors = {
+    "file": decayable_file_errors,
+    "http": decayable_http_errors,
+    "https": decayable_http_errors,
+}
+
+proto_code_map = {
+    "http": httplib.responses,
+    "https": httplib.responses
+}
 
 retryable_pycurl_errors = set((pycurl.E_COULDNT_CONNECT, pycurl.E_PARTIAL_FILE,
-        pycurl.E_OPERATION_TIMEOUTED, pycurl.E_GOT_NOTHING, pycurl.E_SEND_ERROR,
-        pycurl.E_RECV_ERROR, pycurl.E_COULDNT_RESOLVE_HOST,
-        pycurl.E_TOO_MANY_REDIRECTS))
+    pycurl.E_OPERATION_TIMEOUTED, pycurl.E_GOT_NOTHING, pycurl.E_SEND_ERROR,
+    pycurl.E_RECV_ERROR, pycurl.E_COULDNT_RESOLVE_HOST,
+    pycurl.E_TOO_MANY_REDIRECTS))
 
 class TransportException(api_errors.TransportError):
         """Base class for various exceptions thrown by code in transport
         package."""
+
         def __init__(self):
                 self.count = 1
+                self.decayable = False
                 self.retryable = False
 
 
 class TransportOperationError(TransportException):
         """Used when transport operations fail for miscellaneous reasons."""
+
         def __init__(self, data):
                 TransportException.__init__(self)
                 self.data = data
@@ -120,13 +139,15 @@ class TransportProtoError(TransportException):
         """Raised when errors occur in the transport protocol."""
 
         def __init__(self, proto, code=None, url=None, reason=None,
-            repourl=None, uuid=None):
+            repourl=None, request=None, uuid=None):
                 TransportException.__init__(self)
                 self.proto = proto
                 self.code = code
                 self.url = url
                 self.urlstem = repourl
                 self.reason = reason
+                self.request = request
+                self.decayable = self.code in decayable_proto_errors[self.proto]
                 self.retryable = self.code in retryable_proto_errors[self.proto]
                 self.uuid = uuid
 
@@ -138,6 +159,12 @@ class TransportProtoError(TransportException):
                         s += " reason: %s" % self.reason
                 if self.url:
                         s += "\nURL: '%s'." % self.url
+                elif self.urlstem:
+                        # If the location of the resource isn't known because
+                        # the error was encountered while attempting to find
+                        # the location, then at least knowing where it was
+                        # looking will be helpful.
+                        s += "\nRepository URL: '%s'." % self.urlstem
                 return s
 
         def __cmp__(self, other):
@@ -165,6 +192,7 @@ class TransportFrameworkError(TransportException):
                 self.url = url
                 self.urlstem = repourl
                 self.reason = reason
+                self.decayable = self.code in decayable_pycurl_errors
                 self.retryable = self.code in retryable_pycurl_errors
                 self.uuid = uuid
 
@@ -190,6 +218,7 @@ class TransportFrameworkError(TransportException):
 
 class TransferContentException(TransportException):
         """Raised when there are problems downloading the requested content."""
+
         def __init__(self, url, reason=None):
                 TransportException.__init__(self)
                 self.url = url
@@ -215,6 +244,7 @@ class TransferContentException(TransportException):
 class InvalidContentException(TransportException):
         """Raised when the content's hash/chash doesn't verify, or the
         content is received in an unreadable format."""
+
         def __init__(self, path, reason, size=0, url=None):
                 TransportException.__init__(self)
                 self.path = path

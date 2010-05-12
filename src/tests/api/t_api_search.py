@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -48,8 +48,6 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.server.repository as srepo
 
-API_VERSION = 37
-PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -472,7 +470,7 @@ close
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self,
-                    debug_features=self.debug_features)
+                    debug_features=self.debug_features, start_depot=True)
                 self.testdata_dir = os.path.join(self.test_root,
                     "search_results")
                 os.mkdir(self.testdata_dir)
@@ -1327,7 +1325,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 first = True
 
-                for d in query_parser.TermQuery._global_data_dict.values():
+                for d in query_parser.TermQuery._get_gdd(index_dir).values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
                         dest_fn = orig_fn + "TMP"
@@ -1357,7 +1355,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 first = True
 
-                for d in query_parser.TermQuery._global_data_dict.values():
+                for d in query_parser.TermQuery._get_gdd(index_dir).values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
                         dest_fn = orig_fn + "TMP"
@@ -1440,13 +1438,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
 
-                self.pkg_image_create(durl,
-                    additional_args="--variant variant.arch=i386")
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
-
+                variants = { "variant.arch": "i386" }
+                api_obj = self.image_create(durl, variants=variants)
                 remote = True
 
                 self._search_op(api_obj, remote, "fat:::*",
@@ -1460,12 +1453,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
 
-                self.pkg_image_create(durl,
-                    additional_args="--variant variant.arch=sparc")
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
-
+                variants = { "variant.arch": "sparc" }
+                api_obj = self.image_create(durl, variants=variants)
                 remote = True
 
                 self._search_op(api_obj, remote, "fat:::*",
@@ -1835,7 +1824,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
                 orig_fn = os.path.join(index_dir,
-                    query_parser.TermQuery._global_data_dict.values()[0].\
+                    query_parser.TermQuery._get_gdd(index_dir).values()[0].\
                     get_file_name())
                 dest_fn = orig_fn + "TMP"
 
@@ -1852,6 +1841,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bug_8492_manf_1)
                 self.pkgsend_bulk(durl, self.bug_8492_manf_2)
+                time.sleep(2)
                 api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "set::'image packaging'",
@@ -2109,8 +2099,8 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 offset = 2
                 depot_logfile = os.path.join(self.test_root,
                     "depot_logfile%d" % offset)
-                tmp_dc = self.start_depot(12000 + offset, depotpath,
-                    depot_logfile, refresh_index=True)
+                tmp_dc = self.prep_depot(12000 + offset, depotpath,
+                    depot_logfile, refresh_index=True, start=True)
                 time.sleep(1)
                 # This should do something other than sleep for 1 sec
                 self._run_remote_tests(api_obj)
@@ -2140,10 +2130,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg11)
                 self.pkgsend_bulk(durl, self.incorp_pkg10)
                 self.pkgsend_bulk(durl, self.incorp_pkg11)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(durl)
 
                 res_both_actions = set([
                     ('pkg:/example_pkg@1.1-0', 'path',
@@ -2488,7 +2475,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3"], debug_features=["headers"])
+                    "test3"], debug_features=["headers"], start_depots=True)
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
@@ -2550,9 +2537,8 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
 
         def test_bug_2955(self):
                 """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
 
                 # Test for bug 10690 by checking whether the fmri names
@@ -2576,10 +2562,8 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                 self._api_uninstall(api_obj, ["example_pkg"])
 
         def test_bug_8318(self):
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
+                api_obj = self.get_img_api_obj()
                 self._search_op(api_obj, True,
                     "this_should_not_match_any_token", set())
                 self._search_op(api_obj, True, "example_path",
@@ -2614,10 +2598,8 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                                     (d, found, num_expected[d]))
 
         def test_bug_12739(self):
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
+                api_obj = self.get_img_api_obj()
                 self._search_op(api_obj, True, "example_dir",
                     set([("pkg:/example_pkg@1.0-0", "basename",
                         "dir group=bin mode=0755 owner=root "
@@ -2629,6 +2611,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                         "path=bin/example_dir")]),
                         expected_err=api_errors.ProblematicSearchServers)
                 self.pkg("search example_dir", exit=3)
-                
+
+
 if __name__ == "__main__":
         unittest.main()

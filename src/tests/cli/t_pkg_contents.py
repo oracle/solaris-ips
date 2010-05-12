@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,7 +29,7 @@ import pkg5unittest
 
 import unittest
 import os
-import shutil
+
 
 class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -75,16 +74,13 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-
-                self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
-                self.pkgsend_bulk(self.dc.get_depot_url(), self.nopathA10)
-                self.pkgsend_bulk(self.dc.get_depot_url(), self.nopathB10)
-
+                self.pkgsend_bulk(self.rurl, (self.bronze10,
+                    self.nopathA10, self.nopathB10))
 
 	def test_contents_bad_opts(self):
+                """Verify that contents handles bad options as expected."""
 
-		self.image_create(self.dc.get_depot_url())
-
+		self.image_create(self.rurl)
                 self.pkg("contents -@", exit=2)
                 self.pkg("contents -m -r", exit=2)
                 self.pkg("contents -o", exit=2)
@@ -97,24 +93,26 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 """local pkg contents should fail in an empty image; remote
                 should succeed on a match """
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
                 self.pkg("contents -m", exit=1)
                 self.pkg("contents -m -r bronze@1.0", exit=0)
 
         def test_contents_1(self):
                 """get contents"""
-                self.image_create(self.dc.get_depot_url())
+
+                self.image_create(self.rurl)
                 self.pkg("install bronze@1.0")
                 self.pkg("contents")
                 self.pkg("contents -m")
 
         def test_contents_2(self):
                 """test that local and remote contents are the same"""
-                self.image_create(self.dc.get_depot_url())
+
+                self.image_create(self.rurl)
                 self.pkg("install bronze@1.0")
                 self.pkg("contents -m bronze@1.0")
                 x = sorted(self.output.splitlines())
-                x = "".join(x) 
+                x = "".join(x)
                 x = self.reduceSpaces(x)
                 self.pkg("contents -r -m bronze@1.0")
                 y = sorted(self.output.splitlines())
@@ -124,19 +122,22 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_contents_3(self):
                 """ test matching """
-                self.image_create(self.dc.get_depot_url())
+
+                self.image_create(self.rurl)
                 self.pkg("install bronze@1.0")
                 self.pkg("contents 'bro*'")
 
         def test_contents_failures(self):
                 """ attempt to get contents of non-existent packages """
-                self.image_create(self.dc.get_depot_url())
+
+                self.image_create(self.rurl)
                 self.pkg("contents bad", exit=1)
                 self.pkg("contents -r bad", exit=1)
 
         def test_contents_dash_a(self):
                 """Test the -a option of contents"""
-                self.image_create(self.dc.get_depot_url())
+
+                self.image_create(self.rurl)
                 self.pkg("install bronze")
 
                 # Basic -a
@@ -165,7 +166,7 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 match the specified output columns, we produce appropriate
                 error messages """
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
                 self.pkg("install nopathA")
                 self.pkg("install nopathB")
 
@@ -193,6 +194,7 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("contents -o noodles -o mice nopathA nopathB")
                 self.assert_(nofield_plural in self.output)
+
 
 if __name__ == "__main__":
         unittest.main()

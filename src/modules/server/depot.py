@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -396,8 +395,6 @@ class DepotHTTP(object):
 
                 try:
                         fpath = self._repo.catalog_1(name)
-                except repo.RepositoryCatalogNotFoundError, e:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 except repo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
@@ -1313,8 +1310,6 @@ class NastyDepotHTTP(DepotHTTP):
 
                 try:
                         fpath = self._repo.catalog_1(name)
-                except repo.RepositoryCatalogNotFoundError, e:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 except repo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure

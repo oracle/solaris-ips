@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -30,11 +29,9 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import calendar
 import os
-import shutil
-import simplejson as json
 import unittest
+
 
 class TestPkgList(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -72,33 +69,30 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test2"])
 
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo1 + self.foo10 + self.foo11 + \
-                    self.foo12 + self.foo121 + self.food12)
-
-                durl2 = self.dcs[2].get_depot_url()
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.pkgsend_bulk(self.rurl1, (self.foo1, self.foo10,
+                    self.foo11, self.foo12, self.foo121, self.food12))
 
                 # Ensure that the second repo's packages have exactly the same
                 # timestamps as those in the first ... by copying the repo over.
                 # If the repos need to have some contents which are different,
                 # send those changes after restarting depot 2.
-                self.dcs[2].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
                 self.copy_repository(d1dir, "test1", d2dir, "test2")
 
-                # The new repository won't have a catalog, so set the depot
-                # server to rebuild it.
-                self.dcs[2].set_rebuild()
-                self.dcs[2].start()
-                self.dcs[2].set_norebuild()
+                # The new repository won't have a catalog, so rebuild it.
+                self.dcs[2].get_repo(auto_create=True).rebuild()
 
                 # The third repository should remain empty and not be
                 # published to.
 
                 # Next, create the image and configure publishers.
-                self.image_create(durl1, prefix="test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
+                self.image_create(self.rurl1, prefix="test1")
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.pkg("set-publisher -O " + self.rurl2 + " test2")
+
+                self.rurl3 = self.dcs[3].get_repo_url()
 
         def test_pkg_list_cli_opts(self):
 
@@ -266,9 +260,6 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 publisher, and verify that list still shows the package
                 as installed."""
 
-                durl2 = self.dcs[2].get_depot_url()
-                durl3 = self.dcs[3].get_depot_url()
-
                 self.pkg("list -a")
                 # Install a package from the second publisher.
                 self.pkg("install pkg://test2/foo@1.0")
@@ -276,28 +267,28 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Change the origin of the publisher of an installed package to
                 # that of an empty repository.  The package should still be
                 # shown as known for test1 and installed for test2.
-                self.pkg("set-publisher -O %s test2" % durl3)
+                self.pkg("set-publisher -O %s test2" % self.rurl3)
                 self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
                     "foo (test2) 1.0-0 installed u----\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Remove the publisher of an installed package, then add the
                 # publisher back, but with an empty repository.  The package
                 # should still be shown as known for test1 and installed
                 # for test2.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test2" % durl3)
+                self.pkg("set-publisher -O %s test2" % self.rurl3)
                 self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
                     "foo (test2) 1.0-0 installed u----\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # With the publisher of an installed package unknown, add a new
                 # publisher using the repository the package was originally
@@ -311,7 +302,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # publisher.  However, since this test is checking for the case
                 # where a different publisher's data is now being used for
                 # a publisher, this can be worked around.
-                self.pkg("set-publisher --no-refresh -O %s test3" % durl2)
+                self.pkg("set-publisher --no-refresh -O %s test3" % self.rurl2)
                 self.pkg("refresh test3")
                 self.pkg("list -aHf foo@1.0")
                 expected = \
@@ -320,7 +311,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
                 self.pkg("unset-publisher test3")
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Uninstall the package so any remaining tests won't be
                 # impacted.
@@ -330,14 +321,12 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """Verify that a list operation performed when a publisher's
                 metadata needs refresh works as expected."""
 
-                durl1 = self.dcs[1].get_depot_url()
-
                 # Package should not exist as an unprivileged user or as a
                 # privileged user since it hasn't been published yet.
                 self.pkg("list -a | grep newpkg", su_wrap=True, exit=1)
                 self.pkg("list -a | grep newpkg", exit=1)
 
-                self.pkgsend_bulk(durl1, self.newpkg10)
+                self.pkgsend_bulk(self.rurl1, self.newpkg10)
 
                 # Package should not exist as an unprivileged user or as a
                 # privileged user since the publisher doesn't need a refresh
@@ -390,18 +379,18 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a", exit=1)
 
                 # Reset test2's origin.
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
         def test_11_v0_repo(self):
                 """Verify that pkg list works with a v0 repository, especially
                 for unprivileged users."""
 
+                # This test requires an actual depot due to v0 operation usage.
                 dc = self.dcs[1]
-                durl = dc.get_depot_url()
-                dc.stop()
                 dc.set_disable_ops(["catalog/1"])
                 dc.start()
+                self.pkg("set-publisher --no-refresh -O %s test1" %
+                    dc.get_depot_url())
 
                 self.pkg("refresh --full")
 
@@ -414,12 +403,13 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 dc.stop()
                 dc.unset_disable_ops()
-                dc.start()
 
+                self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl1)
                 self.pkg("refresh --full")
 
         def test_12_matching(self):
                 """Verify that pkg list pattern matching works as expected."""
+
                 self.pkg("list -aHf foo*")
                 expected = \
                     "foo         1.2.1-0 known -----\n" \
@@ -519,8 +509,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
         def test_z_empty_image(self):
                 """ pkg list should fail in an empty image """
 
-                self.image_create(self.dcs[1].get_depot_url(),
-                    prefix="test1")
+                self.image_create(self.rurl1, prefix="test1")
                 self.pkg("list", exit=1)
 
 

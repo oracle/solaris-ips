@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -697,7 +696,7 @@ class ProblematicSearchServers(SearchException):
                 self.unsupported_servers = unsupported
 
         def __str__(self):
-                s = _("Some servers failed to respond appropriately:\n")
+                s = _("Some repositories failed to respond appropriately:\n")
                 for pub, err in self.failed_servers:
                         s += _("%(o)s:\n%(msg)s\n") % \
                             { "o": pub, "msg": err}
@@ -705,8 +704,8 @@ class ProblematicSearchServers(SearchException):
                         s += _("%s did not return a valid response.\n" \
                             % pub)
                 if len(self.unsupported_servers) > 0:
-                        s += _("Some servers don't support requested search"
-                            " operation:\n")
+                        s += _("Some repositories don't support requested "
+                            "search operation:\n")
                 for pub, err in self.unsupported_servers:
                         s += _("%(o)s:\n%(msg)s\n") % \
                             { "o": pub, "msg": err}
@@ -733,9 +732,10 @@ class UnsupportedSearchError(SearchException):
                 self.proto = proto
 
         def __str__(self):
-                s = _("Search server does not support the requested protocol:")
+                s = _("Search repository does not support the requested "
+                    "protocol:")
                 if self.url:
-                        s += "\nServer URL: %s" % self.url
+                        s += "\nRepository URL: %s" % self.url
                 if self.proto:
                         s += "\nRequested operation: %s" % self.proto
                 return s
@@ -855,7 +855,7 @@ class InvalidDepotResponseException(ApiException):
                 self.data = data
 
         def __str__(self):
-                s = "Unable to contact valid package server"
+                s = "Unable to contact valid package repository"
                 if self.url:
                         s += ": %s" % self.url
                 if self.data:

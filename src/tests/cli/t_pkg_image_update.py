@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,6 +29,7 @@ import pkg5unittest
 
 import unittest
 import os
+
 
 class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -103,33 +103,29 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test2", "test4", "test5"])
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                durl4 = self.dcs[4].get_depot_url()
-                durl5 = self.dcs[5].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo10 + self.foo11 + \
-                    self.baz11 + self.qux10 + self.qux11 + self.quux10 + \
-                    self.quux11 + self.corge11)
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.rurl3 = self.dcs[3].get_repo_url()
+                self.rurl4 = self.dcs[4].get_repo_url()
+                self.rurl5 = self.dcs[5].get_repo_url()
+                self.pkgsend_bulk(self.rurl1, (self.foo10, self.foo11,
+                    self.baz11, self.qux10, self.qux11, self.quux10,
+                    self.quux11, self.corge11))
 
-                self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
-                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
-                    self.quux10 + self.quux11 + self.corge10)
+                self.pkgsend_bulk(self.rurl2, (self.foo10, self.bar10,
+                    self.bar11, self.baz10, self.qux10, self.qux11,
+                    self.quux10, self.quux11, self.corge10))
 
                 # Copy contents of repository 2 to repos 4 and 5.
                 for i in (4, 5):
-                        self.dcs[i].stop()
-                        self.dcs[i].set_rebuild()
                         self.copy_repository(self.dcs[2].get_repodir(), "test1",
                                 self.dcs[i].get_repodir(), "test%d" % i)
-                        self.dcs[i].start()
-                        self.dcs[i].set_norebuild()
+                        self.dcs[i].get_repo(auto_create=True).rebuild()
 
         def test_image_update_bad_opts(self):
                 """Test image-update with bad options."""
 
-                durl1 = self.dcs[1].get_depot_url()
-                self.image_create(durl1, prefix="test1")
-
+                self.image_create(self.rurl1, prefix="test1")
                 self.pkg("image-update -@", exit=2)
                 self.pkg("image-update -vq", exit=2)
                 self.pkg("image-update foo", exit=2)
@@ -139,33 +135,28 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 removal of the second publisher will not prevent an
                 image-update."""
 
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                durl3 = self.dcs[3].get_depot_url()
-                durl4 = self.dcs[4].get_depot_url()
-                durl5 = self.dcs[5].get_depot_url()
-                self.image_create(durl1, prefix="test1")
+                self.image_create(self.rurl1, prefix="test1")
 
                 # Install a package from the preferred publisher.
                 self.pkg("install foo@1.0")
 
                 # Install a package from a second publisher.
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
                 self.pkg("install bar@1.0")
 
                 # Remove the publisher of an installed package, then add the
                 # publisher back, but with an empty repository.  An image-update
                 # should still be possible.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test2" % durl3)
+                self.pkg("set-publisher -O %s test2" % self.rurl3)
                 self.pkg("image-update -nv")
 
                 # Add two publishers with the same packages as a removed one;
                 # an image-update should be possible despite the conflict (as
                 # the newer versions will simply be ignored).
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test4" % durl4)
-                self.pkg("set-publisher -O %s test5" % durl5)
+                self.pkg("set-publisher -O %s test4" % self.rurl4)
+                self.pkg("set-publisher -O %s test5" % self.rurl5)
                 self.pkg("image-update -nv")
 
                 # Remove one of the conflicting publishers. An image-update
@@ -181,15 +172,13 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 """Verify that image-updates work as expected when different
                 publishers offer the same package."""
 
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                self.image_create(durl1, prefix="test1")
+                self.image_create(self.rurl1, prefix="test1")
 
                 # First, verify that the preferred status of a publisher will
                 # not affect which source is used for image-update when two
                 # publishers offer the same package and the package publisher
                 # was preferred at the time of install.
-                self.pkg("set-publisher -P -O %s test2" % durl2)
+                self.pkg("set-publisher -P -O %s test2" % self.rurl2)
                 self.pkg("install foo@1.0")
                 self.pkg("info foo@1.0 | grep test2")
                 self.pkg("set-publisher -P test1")
@@ -214,4 +203,3 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

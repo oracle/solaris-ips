@@ -1020,7 +1020,9 @@ class TopQuery(object):
                 return None
 
 class TermQuery(object):
-        """Class representing the a single query term in the AST."""
+        """Class representing the a single query term in the AST.  This is an
+        abstract class and should not be used instead of the related client and
+        server classes."""
 
         # This structure was used to gather all index files into one
         # location. If a new index structure is needed, the files can
@@ -1028,21 +1030,12 @@ class TermQuery(object):
         # dictionary allows an easy approach to opening or closing all
         # index files.
 
-        dict_lock = threading.Lock()
+        __dict_locks = {}
 
         has_non_wildcard_character = re.compile('.*[^\*\?].*')
 
         fmris = None
         
-        _global_data_dict = {
-            "manf":
-                    ss.IndexStoreDict(ss.MANIFEST_LIST),
-            "token_byte_offset":
-                    ss.IndexStoreDictMutable(ss.BYTE_OFFSET_FILE),
-            "fmri_offsets":
-                    ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
-        }
-
         def __init__(self, term):
                 """term is a the string for the token to be searched for."""
 
@@ -1075,6 +1068,35 @@ class TermQuery(object):
                 self._data_token_offset = None
                 self._data_main_dict = None
 
+        def __init_gdd(self, path):
+                gdd = self._global_data_dict
+                if path in gdd:
+                        return
+
+                # Setup default global dictionary for this index path.
+                gdd[path] = {
+                    "manf": ss.IndexStoreDict(ss.MANIFEST_LIST),
+                    "token_byte_offset": ss.IndexStoreDictMutable(
+                        ss.BYTE_OFFSET_FILE),
+                    "fmri_offsets": ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
+                }
+
+        @classmethod
+        def __lock_gdd(cls, index_dir):
+                # This lock is used so that only one instance of a term query
+                # object is ever modifying the class wide variable for this
+                # index.
+                cls.__dict_locks.setdefault(index_dir,
+                    threading.Lock()).acquire()
+
+        @classmethod
+        def __unlock_gdd(cls, index_dir):
+                cls.__dict_locks[index_dir].release()
+
+        @classmethod
+        def _get_gdd(cls, path):
+                return cls._global_data_dict[path]
+
         def __repr__(self):
                 return "( TermQuery: " + self._term + " )"
 
@@ -1104,6 +1126,19 @@ class TermQuery(object):
                 if wc:
                         return ""
                 return "\\:".join(v.split(":"))
+
+        @classmethod
+        def clear_cache(cls, index_dir):
+                """Dump any cached index data for specified index path."""
+
+                gdd = cls._global_data_dict
+                cls.__lock_gdd(index_dir)
+                try:
+                        del gdd[index_dir]
+                except KeyError:
+                        pass
+                finally:
+                        cls.__unlock_gdd(index_dir)
 
         def add_field_restrictions(self, pkg_name, action_type, key):
                 """Add the information needed to restrict the search domain
@@ -1155,21 +1190,25 @@ class TermQuery(object):
 
                 self._dir_path = index_dir
                 assert self._dir_path
+
                 self._manifest_path_func = get_manifest_path
                 self._case_sensitive = case_sensitive
+                self.__init_gdd(self._dir_path)
 
-                # Take the staic class lock because it's possible we'll
+                # Take the static class lock because it's possible we'll
                 # modify the shared dictionaries for the class.
-                TermQuery.dict_lock.acquire()
+                self.__lock_gdd(self._dir_path)
+                gdd = self._global_data_dict
+                tq_gdd = self._get_gdd(self._dir_path)
                 try:
                         self._data_main_dict = \
                             ss.IndexStoreMainDict(ss.MAIN_FILE)
-                        if "fmri_offsets" not in TermQuery._global_data_dict:
-                                TermQuery._global_data_dict["fmri_offsets"] = \
-                                    ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
+                        if "fmri_offsets" not in tq_gdd:
+                                tq_gdd["fmri_offsets"] = ss.InvertedDict(
+                                    ss.FMRI_OFFSETS_FILE, None)
                         # Create a temporary list of dictionaries we need to
                         # open consistently.
-                        tmp = TermQuery._global_data_dict.values()
+                        tmp = tq_gdd.values()
                         tmp.append(self._data_main_dict)
                         try:
                                 # Try to open the index files assuming they
@@ -1181,9 +1220,8 @@ class TermQuery(object):
                                 # If opening the index fails, try falling
                                 # back to the index prior to the conversion
                                 # to using the fmri_offsets.v1 file.
-                                del TermQuery._global_data_dict[
-                                    "fmri_offsets"]
-                                tmp = TermQuery._global_data_dict.values()
+                                del tq_gdd["fmri_offsets"]
+                                tmp = tq_gdd.values()
                                 tmp.append(self._data_main_dict)
                                 ret = ss.consistent_open(tmp, self._dir_path,
                                     self._file_timeout_secs)
@@ -1194,7 +1232,7 @@ class TermQuery(object):
                         # Check to see if any of the in-memory stores of the
                         # dictionaries are out of date compared to the ones
                         # on disc.
-                        for k, d in self._global_data_dict.items():
+                        for k, d in tq_gdd.items():
                                 if d.should_reread():
                                         should_reread = True
                                         break
@@ -1209,25 +1247,25 @@ class TermQuery(object):
                                 if should_reread:
                                         for i in tmp:
                                                 i.close_file_handle()
-                                        TermQuery._global_data_dict = \
+                                        tq_gdd = gdd[self._dir_path] = \
                                             dict([
                                                 (k, copy.copy(d))
                                                 for k, d
-                                                in TermQuery._global_data_dict.items()
+                                                in tq_gdd.items()
                                             ])
-                                        tmp = \
-                                            TermQuery._global_data_dict.values()
+                                        tmp = tq_gdd.values()
                                         tmp.append(self._data_main_dict)
                                         ret = ss.consistent_open(tmp,
                                             self._dir_path,
                                             self._file_timeout_secs)
                                         try:
                                                 if ret == None:
-                                                        raise search_errors.NoIndexException(self._dir_path)
+                                                        raise search_errors.NoIndexException(
+                                                            self._dir_path)
                                                 # Reread the dictionaries and
                                                 # store the new information in
                                                 # the shared data structure.
-                                                for d in TermQuery._global_data_dict.values():
+                                                for d in tq_gdd.values():
                                                         d.read_dict_file()
                                         except:
                                                 self._data_main_dict.close_file_handle()
@@ -1236,20 +1274,15 @@ class TermQuery(object):
                         finally:
                                 # Ensure that the files are closed no matter
                                 # what happens.
-                                for d in TermQuery._global_data_dict.values():
+                                for d in tq_gdd.values():
                                         d.close_file_handle()
-                        self._data_manf = TermQuery._global_data_dict["manf"]
+                        self._data_manf = tq_gdd["manf"]
 
-                        self._data_token_offset = \
-                            TermQuery._global_data_dict["token_byte_offset"]
-
-                        try:
-                                self._data_fmri_offsets = \
-                                    TermQuery._global_data_dict["fmri_offsets"]
-                        except KeyError:
-                                self._data_fmri_offsets = None
+                        self._data_token_offset = tq_gdd["token_byte_offset"]
+                        self._data_fmri_offsets = tq_gdd.get("fmri_offsets",
+                            None)
                 finally:
-                        TermQuery.dict_lock.release()
+                        self.__unlock_gdd(self._dir_path)
 
         def allow_version(self, v):
                 """Returns whether the query supports a query of version v."""

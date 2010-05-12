@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -42,8 +41,13 @@ from pkg import misc
 from pkg.actions import fromstr
 import pkg.portable as portable
 
+
 class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
         persistent_setup = False
+
+        def setUp(self):
+                # This test suite needs an actual depot.
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
 
         def __validate_bundle_dir_package(self, pfmri, expected):
                 """Used to validate a package imported or generated using

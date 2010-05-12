@@ -1,3 +1,10 @@
+Version 38:
+Compatible with clients using versions 36-37.
+
+    The pkg.client.api now supports file-based repository access for all
+    operations.  All related classes have been updated to support URIs
+    that use the 'file' scheme.
+
 Version 37:
 Compatible with clients using version 36.
 

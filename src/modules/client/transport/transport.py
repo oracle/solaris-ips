@@ -21,16 +21,17 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import cStringIO
 import errno
 import httplib
 import os
 import statvfs
+import urllib
+import urlparse
 import zlib
-import cStringIO
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -40,7 +41,7 @@ import pkg.client.transport.engine as engine
 import pkg.client.transport.exception as tx
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
-import pkg.file_layout.file_manager as file_manager
+import pkg.file_layout.file_manager as fm
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
@@ -51,6 +52,8 @@ import pkg.updatelog as updatelog
 
 from pkg.actions import ActionError
 from pkg.client import global_settings
+logger = global_settings.logger
+
 
 class Transport(object):
         """The generic transport wrapper object.  Its public methods should
@@ -68,8 +71,8 @@ class Transport(object):
                 self.__portal_test_executed = False
                 self.__repo_cache = None
                 self.__lock = nrlock.NRLock()
+                self._caches = None
                 self.stats = tstats.RepoChooser()
-                self.cache_store = None
 
         def __setup(self):
                 self.__engine = engine.CurlTransportEngine(self)
@@ -81,8 +84,41 @@ class Transport(object):
 
                 self.__repo_cache = trepo.RepoCache(self.__engine)
 
-                self.cache_store = file_manager.FileManager(
-                    self.__img.cached_download_dir(), False)
+        def _reset_caches(self):
+                # For now, transport write caches all publisher data in one
+                # place regardless of publisher source.
+                self._caches = {}
+                self.add_cache(self.__img.cached_download_dir(),
+                    readonly=False)
+
+                # Automatically add any publisher repository origins
+                # or mirrors that are filesystem-based as read-only caches.
+                for pub in self.__img.gen_publishers():
+                        repo = pub.selected_repository
+                        if not repo:
+                                continue
+
+                        for ruri in repo.origins + repo.mirrors:
+                                scheme, netloc, path, params, query, fragment = \
+                                    urlparse.urlparse(ruri.uri, "file",
+                                    allow_fragments=0)
+
+                                if scheme != "file":
+                                        continue
+
+                                path = urllib.url2pathname(path)
+                                path = os.path.join(path, "file")
+                                try:
+                                        self.add_cache(path, pub=pub.prefix,
+                                            readonly=True)
+                                except apx.ApiException:
+                                        # Cache isn't currently valid, so skip
+                                        # it for now.  This essentially defers
+                                        # any errors that might be encountered
+                                        # accessing this repository until
+                                        # later when transport attempts to
+                                        # retrieve data through the engine.
+                                        continue
 
         def reset(self):
                 """Resets the transport.  This needs to be done
@@ -98,6 +134,7 @@ class Transport(object):
                 try:
                         self.__engine.reset()
                         self.__repo_cache.clear_cache()
+                        self._reset_caches()
                 finally:
                         self.__lock.release()
 
@@ -113,15 +150,111 @@ class Transport(object):
                 try:
                         self.__engine.shutdown()
                         self.__engine = None
+                        if self.__repo_cache:
+                                self.__repo_cache.clear_cache()
                         self.__repo_cache = None
-                        self.cache_store = None
+                        self._caches = None
                 finally:
                         self.__lock.release()
 
+        def add_cache(self, path, pub=None, readonly=True):
+                """Adds the directory specified by 'path' as a location to read
+                file data from, and optionally to store to for the specified
+                publisher. 'path' must be a directory created for use with the
+                pkg.file_manager module.  If the cache already exists for the
+                specified 'pub', its 'readonly' status will be updated.
+
+                'pub' is an optional publisher prefix to restrict usage of this
+                cache to.  If not provided, it is assumed that file data for any
+                publisher could be contained within this cache.
+
+                'readonly' is an optional boolean value indicating whether file
+                data should be stored here as well.  Only one writeable cache
+                can exist for each 'pub' at a time."""
+
+                if not pub:
+                        pub = '__all'
+
+                pub_caches = self._caches.setdefault(pub, [])
+
+                write_caches = [
+                    cache
+                    for cache in pub_caches
+                    if not cache.readonly
+                ]
+
+                # For now, there should be no write caches or a single one.
+                assert len(write_caches) <= 1
+
+                path = path.rstrip(os.path.sep)
+                for cache in pub_caches:
+                        if cache.root != path:
+                                continue
+
+                        if readonly:
+                                # Nothing more to do.
+                                cache.readonly = True
+                                return
+
+                        # Ensure no other writeable caches exist for this
+                        # publisher.
+                        for wr_cache in write_caches:
+                                if id(wr_cache) == id(cache):
+                                        continue
+                                raise tx.TransportOperationError("Only one "
+                                    "cache that is writable for all or a "
+                                    "specific publisher may exist at a time.")
+
+                        cache.readonly = False
+                        break
+                else:
+                        # Either no caches exist for this publisher, or this is
+                        # a new cache.
+                        pub_caches.append(fm.FileManager(path, readonly))
+
+        def _get_caches(self, pub=None, readonly=True):
+                """Returns the file_manager cache objects for the specified
+                publisher in order of preference.  That is, caches should
+                be checked for file content in the order returned.
+
+                'pub' is an optional publisher prefix.  If provided, caches
+                designated for use with the given publisher will be returned
+                first in addition to any caches designed for all publishers.
+
+                'readonly' is an optional boolean value indicating whether
+                a cache for storing file data should be returned.  By default,
+                only caches for reading file data are returned."""
+
+                if isinstance(pub, publisher.Publisher):
+                        pub = pub.prefix
+                elif not pub or not isinstance(pub, basestring):
+                        pub = None
+
+                caches = [
+                    cache
+                    for cache in self._caches.get(pub, [])
+                    if readonly or not cache.readonly
+                ]
+
+                if not readonly and caches:
+                        # If a publisher-specific writeable cache has been
+                        # found, return it alone.
+                        return caches
+
+                # If this is a not a specific publisher case, a readonly case,
+                # or no writeable cache exists for the specified publisher,
+                # return any publisher-specific ones first and any additional
+                # ones after.
+                return caches + [
+                    cache
+                    for cache in self._caches.get("__all", [])
+                    if readonly or not cache.readonly
+                ]
+
         def do_search(self, pub, data, ccancel=None):
-                """Perform a search request.  Returns a file-like object
-                that contains the search results.  Callers need to catch
-                transport exceptions that this object may generate."""
+                """Perform a search request.  Returns a file-like object or an
+                iterable that contains the search results.  Callers need to
+                catch transport exceptions that this object may generate."""
 
                 self.__lock.acquire()
                 try:
@@ -129,12 +262,12 @@ class Transport(object):
                 finally:
                         self.__lock.release()
 
-                # Since we're returning a file object that's using the
-                # same engine as the rest of this transport, assign
-                # our lock to the fobj.  It must synchronize with us
-                # too.
-                fobj.set_lock(self.__lock)
-
+                if hasattr(fobj, "set_lock"):
+                        # Since we're returning a file object that's using the
+                        # same engine as the rest of this transport, assign
+                        # our lock to the fobj.  It must synchronize with us
+                        # too.
+                        fobj.set_lock(self.__lock)
                 return fobj
 
         def _do_search(self, pub, data, ccancel=None):
@@ -157,12 +290,19 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test(ccancel=ccancel)
 
-                for d in self.__gen_origins(pub, retry_count):
+                # For search, prefer remote sources if available.  This allows
+                # consumers to configure both a file-based and network-based set
+                # of origins for a publisher without incurring the significant
+                # overhead of performing file-based search unless the network-
+                # based resource is unavailable.
+                for d in self.__gen_origins(pub, retry_count,
+                    prefer_remote=True):
 
                         try:
                                 fobj = d.do_search(data, header,
                                     ccancel=ccancel)
-                                fobj._prime()
+                                if hasattr(fobj, "_prime"):
+                                        fobj._prime()
                                 return fobj
 
                         except tx.ExcessiveTransientFailure, ex:
@@ -172,12 +312,13 @@ class Transport(object):
                                 failures.extend(ex.failures)
 
                         except tx.TransportProtoError, e:
-                                if e.code == httplib.NOT_FOUND:
+                                if e.code in (httplib.NOT_FOUND, errno.ENOENT):
                                         raise apx.UnsupportedSearchError(e.url,
                                             "search/1")
                                 elif e.code == httplib.NO_CONTENT:
                                         raise apx.NegativeSearchResult(e.url)
-                                elif e.code == httplib.BAD_REQUEST:
+                                elif e.code == (httplib.BAD_REQUEST,
+                                    errno.EINVAL):
                                         raise apx.MalformedSearchRequest(e.url)
                                 elif e.retryable:
                                         failures.append(e)
@@ -707,7 +848,6 @@ class Transport(object):
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
                 pub = self.__img.get_publisher(pub_prefix)
-                mfst = fmri.get_url_path()
                 download_dir = self.__img.incoming_download_dir()
                 mcontent = None
                 header = self.__build_header(intent=intent,
@@ -730,7 +870,7 @@ class Transport(object):
                         repostats = self.stats[d.get_url()]
 
                         try:
-                                resp = d.get_manifest(mfst, header,
+                                resp = d.get_manifest(fmri, header,
                                     ccancel=ccancel)
                                 mcontent = resp.read()
 
@@ -835,17 +975,16 @@ class Transport(object):
                 for fmri, intent in fetchlist:
                         pub_prefix = fmri.get_publisher()
                         pub = self.__img.get_publisher(pub_prefix)
-                        mfst = fmri.get_url_path()
                         header = self.__build_header(intent=intent,
                             uuid=self.__get_uuid(pub))
                         if pub_prefix not in mx_pub:
                                 mx_pub[pub_prefix] = MultiXfr(pub,
                                     progtrack=progtrack,
                                     ccancel=ccancel)
-                        # Add requests keyed by requested manifest
-                        # name.  Value contains (header, fmri) tuple.
+                        # Add requests keyed by requested package
+                        # fmri.  Value contains (header, fmri) tuple.
                         mx_pub[pub_prefix].add_hash(
-                            mfst, (header, fmri))
+                            fmri, (header, fmri))
 
                 for mxfr in mx_pub.values():
                         namelist = [k for k in mxfr]
@@ -866,7 +1005,7 @@ class Transport(object):
                 that downloads initiates the downloads in chunks
                 determined by its caller _prefetch_manifests.  The mxfr
                 argument should be a MultiXfr object, and mlist
-                should be a list of tuples (manifestname, header)."""
+                should be a list of tuples (fmri, header)."""
 
                 # Don't perform multiple retries, since we're just prefetching.
                 retry_count = 1
@@ -929,14 +1068,15 @@ class Transport(object):
 
                         for s in success:
 
-                                dl_path = os.path.join(download_dir, s)
+                                dl_path = os.path.join(download_dir,
+                                    s.get_url_path())
 
                                 try:
                                         # Verify manifest content.
                                         fmri = mxfr[s][1]
                                         self._verify_manifest(fmri, dl_path)
                                 except tx.InvalidContentException, e:
-                                        e.request = s
+                                        e.request = str(s)
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
                                         continue
@@ -1089,6 +1229,7 @@ class Transport(object):
                 # download_dir is temporary download path.
                 download_dir = self.__img.incoming_download_dir()
 
+                cache = self._get_caches(pub, readonly=False)[0]
                 for d in self.__gen_repos(pub, retry_count):
 
                         failedreqs = []
@@ -1160,12 +1301,8 @@ class Transport(object):
                                                 filelist = failedreqs
                                         continue
 
-                                try:
-                                        self.cache_store.insert(s, dl_path)
-                                except file_manager.FMPermissionsException, e:
-                                        raise apx.PermissionsException(
-                                            e.filename)
-                                mfile.make_openers(s)
+                                cpath = cache.insert(s, dl_path)
+                                mfile.make_openers(s, cpath)
                                 mfile.del_hash(s)
 
                         # Return if everything was successful
@@ -1294,7 +1431,7 @@ class Transport(object):
                                         raise
                         except ValueError:
                                 raise apx.InvalidDepotResponseException(
-                                    d.get_url(), "Unable to parse server "
+                                    d.get_url(), "Unable to parse repository "
                                     "response")
                 raise failures
 
@@ -1347,9 +1484,14 @@ class Transport(object):
 
                 repo.add_version_data(vers)
 
-        def __gen_origins(self, pub, count):
-                """The pub argument may either be a Publisher or a
-                RepositoryURI object."""
+        def __gen_origins(self, pub, count, prefer_remote=False):
+                """The pub argument may either be a Publisher or a RepositoryURI
+                object.
+
+                'prefer_remote' is an optional boolean value indicating whether
+                network-based sources are preferred over local sources.  If
+                True, network-based origins will be returned first after the
+                default order criteria has been applied."""
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -1363,8 +1505,19 @@ class Transport(object):
                         # this to a repo uri
                         origins = [pub]
 
+                def remote_first(a, b):
+                        # For now, any URI using the file scheme is considered
+                        # local.  Realistically, it could be an NFS mount, etc.
+                        # However, that's a further refinement that can be done
+                        # later.
+                        aremote = a[0].scheme != "file"
+                        bremote = b[0].scheme != "file"
+                        return cmp(aremote, bremote) * -1
+
                 for i in xrange(count):
                         rslist = self.stats.get_repostats(origins, origins)
+                        if prefer_remote:
+                                rslist.sort(cmp=remote_first)
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
@@ -1472,7 +1625,7 @@ class Transport(object):
                         url = getattr(e, "url", pub["origin"])
                         raise apx.InvalidDepotResponseException(url,
                             "Transport errors encountered when trying to "
-                            "contact depot server.\nReported the following "
+                            "contact repository.\nReported the following "
                             "errors:\n%s" % e)
 
                 if not self._valid_versions_test(vd):
@@ -1594,25 +1747,24 @@ class Transport(object):
 
                 return mfile
 
-        def _action_cached(self, action):
+        def _action_cached(self, action, pub):
                 """If a file with the name action.hash is cached,
                 and if it has the same content hash as action.chash,
                 then return the path to the file.  If the file can't
                 be found, return None."""
 
                 hashval = action.hash
-
-                cache_path = self.cache_store.lookup(hashval)
-
-                try:
-                        if cache_path:
-                                self._verify_content(action, cache_path)
-                                return cache_path
-                except tx.InvalidContentException:
-                        # If the content in the cache doesn't match the hash of
-                        # the action, verify will have already purged the item
-                        # from the cache. 
-                        pass
+                for cache in self._get_caches(pub=pub, readonly=True):
+                        cache_path = cache.lookup(hashval)
+                        try:
+                                if cache_path:
+                                        self._verify_content(action, cache_path)
+                                        return cache_path
+                        except tx.InvalidContentException:
+                                # If the content in the cache doesn't match the
+                                # hash of the action, verify will have already
+                                # purged the item from the cache. 
+                                pass
 
                 return None
 
@@ -1748,10 +1900,10 @@ class MultiFile(MultiXfr):
                 publisher in pub and the list of files in filelist.
                 Wait for the operation by calling waitFiles."""
 
-                cachedpath = self._transport._action_cached(action)
-                if cachedpath:
-                        action.data = self._make_opener(cachedpath,
-                            self._transport.cache_store)
+                cpath = self._transport._action_cached(action,
+                    self.get_publisher())
+                if cpath:
+                        action.data = self._make_opener(cpath)
                         filesz = int(misc.get_pkg_otw_size(action))
                         self._progtrack.download_add_progress(1, filesz)
                         return
@@ -1767,26 +1919,23 @@ class MultiFile(MultiXfr):
                 self._hash.setdefault(hashval, []).append(item)
 
         @staticmethod
-        def _make_opener(hashval, cache_store):
+        def _make_opener(cache_path):
                 def opener():
-                        f = open(cache_store.lookup(hashval), "rb")
+                        f = open(cache_path, "rb")
                         return f
-                return opener                                
+                return opener
 
-        def make_openers(self, hashval):
+        def make_openers(self, hashval, cache_path):
                 """Find each action associated with the hash value hashval.
-                Create an opener that points to the file for hashval for the
+                Create an opener that points to the cache file for the
                 action's data method."""
 
                 totalsz = 0
                 nactions = 0
 
-                filesz = os.stat(
-                    self._transport.cache_store.lookup(hashval)).st_size
-
+                filesz = os.stat(cache_path).st_size
                 for action in self._hash[hashval]:
-                        action.data = self._make_opener(hashval,
-                            self._transport.cache_store)
+                        action.data = self._make_opener(cache_path)
                         nactions += 1
                         totalsz += misc.get_pkg_otw_size(action)
 

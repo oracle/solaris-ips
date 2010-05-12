@@ -21,17 +21,27 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import cStringIO
+import errno
+import itertools
 import os
 import urlparse
 import urllib
 
+import pkg
+import pkg.p5i as p5i
+import pkg.client.api_errors as apx
+import pkg.client.publisher as publisher
 import pkg.client.transport.exception as tx
+import pkg.server.repository as svr_repo
+import pkg.server.repositoryconfig as svr_rcfg
+import pkg.server.query_parser as sqp
 
 from email.Utils import formatdate
+
 
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
@@ -39,21 +49,32 @@ class TransportRepo(object):
         the operations that are performed against a repo.  Subclasses
         should implement protocol specific repo modifications."""
 
-        def do_search(self, data, header=None):
+        def do_search(self, data, header=None, ccancel=None):
                 """Perform a search request."""
 
                 raise NotImplementedError
 
-        def get_catalog(self, ts=None, header=None):
+        def get_catalog(self, ts=None, header=None, ccancel=None):
                 """Get the catalog from the repo.  If ts is defined,
                 request only changes newer than timestamp ts."""
 
                 raise NotImplementedError
 
-        def get_manifest(self, mfst, header=None):
-                """Get a manifest from repo.  The name of the
-                manifest is given in mfst.  If dest is set, download
-                the manifest to dest."""
+        def get_catalog1(self, filelist, destloc, header=None, ts=None,
+            progtrack=None):
+                """Get the files that make up the catalog components
+                that are listed in 'filelist'.  Download the files to
+                the directory specified in 'destloc'.  The caller
+                may optionally specify a dictionary with header
+                elements in 'header'.  If a conditional get is
+                to be performed, 'ts' should contain a floating point
+                value of seconds since the epoch."""
+
+                raise NotImplementedError
+
+        def get_datastream(self, fhash, header=None, ccancel=None):
+                """Get a datastream from a repo.  The name of the
+                file is given in fhash."""
 
                 raise NotImplementedError
 
@@ -65,22 +86,74 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
+        def get_manifest(self, fmri, header=None, ccancel=None):
+                """Get a manifest from repo.  The name of the
+                package is given in fmri.  If dest is set, download
+                the manifest to dest."""
+
+                raise NotImplementedError
+
+        def get_manifests(self, mfstlist, dest, progtrack=None):
+                """Get manifests named in list.  The mfstlist argument contains
+                tuples (fmri, header).  This is so that each manifest may have
+                unique header information.  The destination directory is spec-
+                ified in the dest argument."""
+
+                raise NotImplementedError
+
+        def get_publisherinfo(self, header=None, ccancel=None):
+                """Get publisher configuration information from the
+                repository."""
+
+                raise NotImplementedError
+
         def get_url(self):
                 """Return's the Repo's URL."""
 
                 raise NotImplementedError
 
-        def get_versions(self, header=None):
+        def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
                 Returns a fileobject."""
 
                 raise NotImplementedError
 
-        def touch_manifest(self, mfst, header=None):
+        def touch_manifest(self, fmri, header=None, ccancel=None):
                 """Send data about operation intent without actually
                 downloading a manifest."""
 
                 raise NotImplementedError
+
+        @staticmethod
+        def _annotate_exceptions(errors):
+                """Walk a list of transport errors, examine the
+                url, and add a field that names the request.  This request
+                information is derived from the URL."""
+
+                for e in errors:
+                        if not e.url:
+                                # Error may have been raised before request path
+                                # was determined; nothing to annotate.
+                                continue
+                        # Request is basename of path portion of URI.
+                        e.request = os.path.basename(urlparse.urlsplit(
+                            e.url)[2])
+                return errors
+
+        @staticmethod
+        def _url_to_request(urllist):
+                """Take a list of urls and remove the protocol information,
+                leaving just the information about the request."""
+
+                reqlist = []
+
+                for u in urllist:
+                        utup = urlparse.urlsplit(u)
+                        req = utup[2]
+                        req = os.path.basename(req)
+                        reqlist.append(req)
+
+                return reqlist
 
 
 class HTTPRepo(TransportRepo):
@@ -248,12 +321,13 @@ class HTTPRepo(TransportRepo):
                 requesturl = urlparse.urljoin(self._repouri.uri, "publisher/0/")
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
-        def get_manifest(self, mfst, header=None, ccancel=None):
-                """Get a manifest from repo.  The name of the
-                manifest is given in mfst."""
+        def get_manifest(self, fmri, header=None, ccancel=None):
+                """Get a package manifest from repo.  The FMRI of the
+                package is given in fmri."""
 
                 methodstr = "manifest/0/"
 
+                mfst = fmri.get_url_path()
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 requesturl = urlparse.urljoin(baseurl, mfst)
 
@@ -261,10 +335,10 @@ class HTTPRepo(TransportRepo):
                     ccancel=ccancel)
 
         def get_manifests(self, mfstlist, dest, progtrack=None):
-                """Get manifests named in list.  The mfstlist argument
-                contains tuples (manifest_name, header).  This is so
-                that each manifest may contain unique header information.
-                The destination directory is specified in the dest argument."""
+                """Get manifests named in list.  The mfstlist argument contains
+                tuples (fmri, header).  This is so that each manifest may have
+                unique header information.  The destination directory is spec-
+                ified in the dest argument."""
 
                 methodstr = "manifest/0/"
                 urllist = []
@@ -276,7 +350,8 @@ class HTTPRepo(TransportRepo):
                 if progtrack:
                         progclass = ProgressCallback
 
-                for f, h in mfstlist:
+                for fmri, h in mfstlist:
+                        f = fmri.get_url_path()
                         url = urlparse.urljoin(baseurl, f)
                         urllist.append(url)
                         fn = os.path.join(dest, f)
@@ -312,36 +387,6 @@ class HTTPRepo(TransportRepo):
                 # exception, if we were able to figure it out.
 
                 return self._annotate_exceptions(errors)
-
-        @staticmethod
-        def _annotate_exceptions(errors):
-                """Walk a list of transport errors, examine the
-                url, and add a field that names the request.  This request
-                information is derived from the URL."""
-
-                for e in errors:
-                        eurl = e.url
-                        utup = urlparse.urlsplit(eurl)
-                        req = utup[2]
-                        req = os.path.basename(req)
-                        e.request = req
-
-                return errors
-
-        @staticmethod
-        def _url_to_request(urllist):
-                """Take a list of urls and remove the protocol information,
-                leaving just the information about the request."""
-
-                reqlist = []
-
-                for u in urllist:
-                        utup = urlparse.urlsplit(u)
-                        req = utup[2]
-                        req = os.path.basename(req)
-                        reqlist.append(req)
-
-                return reqlist
 
         def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
@@ -478,6 +523,449 @@ class HTTPSRepo(HTTPRepo):
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel)
 
+
+class FileRepo(TransportRepo):
+
+        def __init__(self, repostats, repouri, engine):
+                """Create a file repo.  Repostats is a RepoStats object.
+                Repouri is a RepositoryURI object.  Engine is a transport
+                engine object.
+
+                The convenience function new_repo() can be used to create
+                the correct repo."""
+
+                self._frepo = None
+                self._url = repostats.url
+                self._repouri = repouri
+                self._engine = engine
+                self._verdata = None
+                self.__stats = repostats
+
+                try:
+                        scheme, netloc, path, params, query, fragment = \
+                            urlparse.urlparse(self._repouri.uri, "file",
+                            allow_fragments=0)
+                        path = urllib.url2pathname(path)
+                        self._frepo = svr_repo.Repository(read_only=True,
+                            repo_root=path)
+                except svr_rcfg.PropertyError, e:
+                        reason = _("The configuration file for the repository "
+                            "is invalid or incomplete:\n%s") % e
+                        ex = tx.TransportProtoError("file", errno.EINVAL,
+                            reason=reason, repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except svr_repo.RepositoryInvalidError, e:
+                        ex = tx.TransportProtoError("file", errno.EINVAL,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+        def __del__(self):
+                # Dump search cache if repo goes out of scope.
+                if self._frepo:
+                        sqp.TermQuery.clear_cache(self._frepo.index_root)
+                        self._frepo = None
+
+        def _add_file_url(self, url, filepath=None, progclass=None,
+            progtrack=None, header=None, compress=False):
+                self._engine.add_url(url, filepath=filepath,
+                    progclass=progclass, progtrack=progtrack, repourl=self._url,
+                    header=header, compressible=False)
+
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
+                return self._engine.get_url(url, header, repourl=self._url,
+                    compressible=False, ccancel=ccancel)
+
+        def _fetch_url_header(self, url, header=None, ccancel=None):
+                return self._engine.get_url_header(url, header,
+                    repourl=self._url, ccancel=ccancel)
+
+        def __record_proto_error(self, ex):
+                """Private helper function that records a protocol error that
+                was raised by the class instead of the transport engine.  It
+                records both that a transaction was initiated and that an
+                error occurred."""
+
+                self.__stats.record_tx()
+                self.__stats.record_error(decayable=ex.decayable)
+
+        def add_version_data(self, verdict):
+                """Cache the information about what versions a repository
+                supports."""
+
+                self._verdata = verdict
+
+        def do_search(self, data, header=None, ccancel=None):
+                """Perform a search against repo."""
+
+                if not self._frepo.search_available:
+                        ex = tx.TransportProtoError("file", errno.EAGAIN,
+                            reason=_("Search temporarily unavailable."),
+                            repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+                try:
+                        res_list = self._frepo.search(data)
+                except sqp.QueryException, e:
+                        ex = tx.TransportProtoError("file", errno.EINVAL,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+                # In order to be able to have a return code distinguish between
+                # no results and search unavailable, we need to use a different
+                # http code.  Check and see if there's at least one item in
+                # the results.  If not, set the result code to be NO_CONTENT
+                # and return.  If there is at least one result, put the result
+                # examined back at the front of the results and stream them
+                # to the user.
+                if len(res_list) == 1:
+                        try:
+                                tmp = res_list[0].next()
+                                res_list = [itertools.chain([tmp], res_list[0])]
+                        except StopIteration:
+                                self.__stats.record_tx()
+                                raise apx.NegativeSearchResult(self._url)
+
+                def output():
+                        # Yield the string used to let the client know it's
+                        # talking to a valid search server.
+                        yield str(sqp.Query.VALIDATION_STRING[1])
+                        for i, res in enumerate(res_list):
+                                for v, return_type, vals in res:
+                                        if return_type == \
+                                            sqp.Query.RETURN_ACTIONS:
+                                                fmri_str, fv, line = vals
+                                                yield "%s %s %s %s %s\n" % \
+                                                    (i, return_type, fmri_str,
+                                                    urllib.quote(fv),
+                                                    line.rstrip())
+                                        elif return_type == \
+                                            sqp.Query.RETURN_PACKAGES:
+                                                fmri_str = vals
+                                                yield "%s %s %s\n" % \
+                                                    (i, return_type, fmri_str)
+                return output()
+
+        def get_catalog1(self, filelist, destloc, header=None, ts=None,
+            progtrack=None):
+                """Get the files that make up the catalog components
+                that are listed in 'filelist'.  Download the files to
+                the directory specified in 'destloc'.  The caller
+                may optionally specify a dictionary with header
+                elements in 'header'.  If a conditional get is
+                to be performed, 'ts' should contain a floating point
+                value of seconds since the epoch."""
+
+                urllist = []
+                progclass = None
+                if progtrack:
+                        progclass = ProgressCallback
+
+                # create URL for requests
+                for f in filelist:
+                        url = urlparse.urlunparse(("file", "", 
+                            urllib.pathname2url(self._frepo.catalog_1(f)), "",
+                            "", ""))
+                        urllist.append(url)
+                        fn = os.path.join(destloc, f)
+                        self._add_file_url(url, filepath=fn, header=header,
+                            progtrack=progtrack, progclass=progclass)
+
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
+
+                errors = self._engine.check_status(urllist)
+
+                # Transient errors are part of standard control flow.
+                # The repo's caller will look at these and decide whether
+                # to throw them or not.  Permanent failures are raised
+                # by the transport engine as soon as they occur.
+                #
+                # This adds an attribute that describes the request to the
+                # exception, if we were able to figure it out.
+
+                return self._annotate_exceptions(errors)
+
+        def get_datastream(self, fhash, header=None, ccancel=None):
+                """Get a datastream from a repo.  The name of the
+                file is given in fhash."""
+
+                try:
+                        requesturl = urlparse.urlunparse(("file", "", 
+                            urllib.pathname2url(self._frepo.file(fhash)), "",
+                            "", ""))
+                except svr_repo.RepositoryFileNotFoundError, e:
+                        ex = tx.TransportProtoError("file", errno.ENOENT,
+                            reason=str(e), repourl=self._url, request=fhash)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except svr_repo.RepositoryError, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url, request=fhash)
+                        self.__record_proto_error(ex)
+                        raise ex
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
+
+        def get_publisherinfo(self, header=None, ccancel=None):
+                """Get publisher/0 information from the repository."""
+
+                try:
+                        rargs = {}
+                        for prop in ("collection_type", "description",
+                            "legal_uris", "mirrors", "name", "origins",
+                            "refresh_seconds", "registration_uri",
+                            "related_uris"):
+                                rargs[prop] = self._frepo.cfg.get_property(
+                                    "repository", prop)
+
+                        repo = publisher.Repository(**rargs)
+                        alias = self._frepo.cfg.get_property("publisher",
+                            "alias")
+                        pfx = self._frepo.cfg.get_property("publisher",
+                            "prefix")
+                        pub = publisher.Publisher(pfx, alias=alias,
+                            repositories=[repo])
+
+                        buf = cStringIO.StringIO()
+                        p5i.write(buf, [pub])
+                except Exception, e:
+                        reason = "Unable to retrieve publisher configuration " \
+                            "data:\n%s" % e
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=reason, repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                buf.seek(0)
+                return buf
+
+        def get_manifest(self, fmri, header=None, ccancel=None):
+                """Get a manifest from repo.  The fmri of the package for the
+                manifest is given in fmri."""
+
+                try:
+                        requesturl = urlparse.urlunparse(("file", "", 
+                            urllib.pathname2url(self._frepo.manifest(fmri)), "",
+                            "", ""))
+                except svr_repo.RepositoryError, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url, request=str(fmri))
+                        self.__record_proto_error(ex)
+                        raise ex
+
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
+
+        def get_manifests(self, mfstlist, dest, progtrack=None):
+                """Get manifests named in list.  The mfstlist argument contains
+                tuples (fmri, header).  This is so that each manifest may have
+                unique header information.  The destination directory is spec-
+                ified in the dest argument."""
+
+                urllist = []
+                progclass = None
+
+                if progtrack:
+                        progclass = ProgressCallback
+
+                # Errors that happen before the engine is executed must be
+                # collected and added to the errors raised during engine
+                # execution so that batch processing occurs as expected.
+                pre_exec_errors = []
+                for fmri, h in mfstlist:
+                        try:
+                                url = urlparse.urlunparse(("file", "", 
+                                    urllib.pathname2url(self._frepo.manifest(
+                                    fmri)), "", "", ""))
+                        except svr_repo.RepositoryError, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=str(fmri))
+                                self.__record_proto_error(ex)
+                                pre_exec_errors.append(ex)
+                                continue
+                        urllist.append(url)
+                        fn = os.path.join(dest, fmri.get_url_path())
+                        self._add_file_url(url, filepath=fn, header=h,
+                            progtrack=progtrack, progclass=progclass)
+
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors +
+                            pre_exec_errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
+
+                errors = self._engine.check_status(urllist)
+
+                # Transient errors are part of standard control flow.
+                # The repo's caller will look at these and decide whether
+                # to throw them or not.  Permanant failures are raised
+                # by the transport engine as soon as they occur.
+                #
+                # This adds an attribute that describes the request to the
+                # exception, if we were able to figure it out.
+
+                return self._annotate_exceptions(errors + pre_exec_errors)
+
+        def get_files(self, filelist, dest, progtrack, header=None):
+                """Get multiple files from the repo at once.
+                The files are named by hash and supplied in filelist.
+                If dest is specified, download to the destination
+                directory that is given.  If progtrack is not None,
+                it contains a ProgressTracker object for the
+                downloads."""
+
+                urllist = []
+                progclass = None
+
+                if progtrack:
+                        progclass = FileProgress
+
+                # Errors that happen before the engine is executed must be
+                # collected and added to the errors raised during engine
+                # execution so that batch processing occurs as expected.
+                pre_exec_errors = []
+                for f in filelist:
+                        try:
+                                url = urlparse.urlunparse(("file", "", 
+                                    urllib.pathname2url(self._frepo.file(f)),
+                                    "", "", ""))
+                        except svr_repo.RepositoryFileNotFoundError, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.ENOENT, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                pre_exec_errors.append(ex)
+                                continue
+                        except svr_repo.RepositoryError, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                pre_exec_errors.append(ex)
+                                continue
+                        urllist.append(url)
+                        fn = os.path.join(dest, f)
+                        self._add_file_url(url, filepath=fn,
+                            progclass=progclass, progtrack=progtrack,
+                            header=header)
+
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors +
+                            pre_exec_errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
+
+                errors = self._engine.check_status(urllist)
+
+                # Transient errors are part of standard control flow.
+                # The repo's caller will look at these and decide whether
+                # to throw them or not.  Permanant failures are raised
+                # by the transport engine as soon as they occur.
+                #
+                # This adds an attribute that describes the request to the
+                # exception, if we were able to figure it out.
+
+                return self._annotate_exceptions(errors + pre_exec_errors)
+
+        def get_url(self):
+                """Returns the repo's url."""
+
+                return self._url
+
+        def get_versions(self, header=None, ccancel=None):
+                """Query the repo for versions information.
+                Returns a file-like object."""
+
+                buf = cStringIO.StringIO()
+                vops = {
+                    "catalog": ["1"],
+                    "file": ["0"],
+                    "manifest": ["0"],
+                    "publisher": ["0"],
+                    "search": ["1"],
+                    "versions": ["0"],
+                }
+
+                buf.write("pkg-server %s\n" % pkg.VERSION)
+                buf.write("\n".join(
+                    "%s %s" % (op, " ".join(vers))
+                    for op, vers in vops.iteritems()
+                ) + "\n")
+                buf.seek(0)
+                self.__stats.record_tx()
+                return buf
+
+        def has_version_data(self):
+                """Returns true if this repo knows its version information."""
+
+                return self._verdata is not None
+
+        def supports_version(self, op, ver):
+                """Returns true if operation named in string 'op'
+                supports integer version in 'ver' argument."""
+
+                return self.has_version_data() and \
+                    (op in self._verdata and ver in self._verdata[op])
+
+        def touch_manifest(self, mfst, header=None, ccancel=None):
+                """No-op for file://."""
+
+                return True
+
+
 # ProgressCallback objects that bridge the interfaces between ProgressTracker,
 # and the necessary callbacks for the TransportEngine.
 
@@ -581,6 +1069,7 @@ class RepoCache(object):
 
         # Schemes supported by the cache.
         supported_schemes = {
+            "file": FileRepo,
             "http": HTTPRepo,
             "https": HTTPSRepo,
         }

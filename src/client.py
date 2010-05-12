@@ -27,9 +27,6 @@
 #
 # pkg - package system client utility
 #
-# We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
-# operations.
-#
 # The client is going to maintain an on-disk cache of its state, so that
 # startup assembly of the graph is reduced.
 #
@@ -60,7 +57,6 @@ import sys
 import textwrap
 import time
 import traceback
-import urllib2
 import urlparse
 import warnings
 
@@ -1421,14 +1417,14 @@ def v1_extract_info(tup, return_type, pub):
                 try:
                         pfmri, match, action = tup
                 except ValueError:
-                        error(_("The server returned a malformed result.\n"
+                        error(_("The repository returned a malformed result.\n"
                             "The problematic structure:%r") % (tup,))
                         return False
                 try:
                         action = actions.fromstr(action.rstrip())
                 except actions.ActionError, e:
-                        error(_("The server returned an invalid action.\n%s") %
-                            e)
+                        error(_("The repository returned an invalid "
+                            "action.\n%s") % e)
                         return False
                 match_type = produce_matching_type(action, match)
                 match = produce_matching_token(action, match)
@@ -1488,7 +1484,7 @@ def search(img, args):
                                 arg = "http://" + arg
                                 if not misc.valid_pub_url(arg):
                                         error(_("%s is not a valid "
-                                            "server URL.") % orig_arg)
+                                            "repository URL.") % orig_arg)
                                         return EXIT_OOPS
                         remote = True
                         servers.append({"origin": arg})
@@ -1564,8 +1560,9 @@ def search(img, args):
                                                     (v, return_type, tmp) = \
                                                     raw_value
                                         except ValueError, e:
-                                                error(_("The server returned a "
-                                                    "malformed result:%r") %
+                                                error(_("The repository "
+                                                    "returned a malformed "
+                                                    "result:%r") %
                                                     (raw_value,))
                                                 bad_res = True
                                                 continue
@@ -2359,25 +2356,8 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
                 return succeeded + len(cre.failed)
 
         for pub, err in cre.failed:
-                if isinstance(err, urllib2.HTTPError):
-                        logger.error("   %s: %s - %s" % \
-                            (err.filename, err.code, err.msg))
-                elif isinstance(err, urllib2.URLError):
-                        if err.args[0][0] == 8:
-                                logger.error("    %s: %s" % \
-                                    (urlparse.urlsplit(
-                                        pub["origin"])[1].split(":")[0],
-                                    err.args[0][1]))
-                        else:
-                                if isinstance(err.args[0], socket.timeout):
-                                        logger.error("    %s: %s" % \
-                                            (pub["origin"], "timeout"))
-                                else:
-                                        logger.error("    %s: %s" % \
-                                            (pub["origin"], err.args[0][1]))
-                else:
-                        logger.error("   ")
-                        logger.error(str(err))
+                logger.error("   ")
+                logger.error(str(err))
 
         if cre.errmessage:
                 logger.error(cre.errmessage)
@@ -2453,21 +2433,24 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
-                return EXIT_OOPS, _("Could not refresh the catalog for %s") % \
+                txt = _("Could not refresh the catalog for %s\n") % \
                     pfx
+                for pub, err in e.failed:
+                        txt += "   \n%s" % err
+                return EXIT_OOPS, txt
         except api_errors.InvalidDepotResponseException, e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
                                 raise
                 if pfx:
                         return EXIT_OOPS, _("The origin URIs for '%(pubname)s' "
-                            "do not appear to point to a valid pkg server.\n"
-                            "Please check the server's address and client's "
-                            "network configuration."
+                            "do not appear to point to a valid pkg repository."
+                            "\nPlease verify the repository's location and the "
+                            "client's network configuration."
                             "\nAdditional details:\n\n%(details)s") % {
                             "pubname": pfx, "details": str(e) }
                 return EXIT_OOPS, _("The specified URI does not appear to "
-                    "point to a valid pkg server.\nPlease check the URI "
+                    "point to a valid pkg repository.\nPlease check the URI "
                     "and the client's network configuration."
                     "\nAdditional details:\n\n%s") % str(e)
         except api_errors.ApiException, e:
@@ -3472,8 +3455,8 @@ def image_create(args):
                 # Ensure messages are displayed after the spinner.
                 logger.error("\n")
                 error(_("The URI '%(pub_url)s' does not appear to point to a "
-                    "valid pkg server.\nPlease check the server's "
-                    "address and client's network configuration."
+                    "valid pkg repository.\nPlease check the repository's "
+                    "location and the client's network configuration."
                     "\nAdditional details:\n\n%(error)s") %
                     { "pub_url": pub_url, "error": e },
                     cmd="image-create")
@@ -3889,11 +3872,11 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
         except api_errors.InvalidDepotResponseException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                logger.error(_("\nUnable to contact a valid package depot. "
-                    "This may be due to a problem with the server, "
-                    "network misconfiguration, or an incorrect pkg client "
-                    "configuration.  Please check your network settings and "
-                    "attempt to contact the server using a web browser."))
+                logger.error(_("\nUnable to contact a valid package "
+                    "repository. This may be due to a problem with the "
+                    "repository, network misconfiguration, or an incorrect "
+                    "pkg client configuration.  Please verify the client's "
+                    "network configuration and repository's location."))
                 logger.error(_("\nAdditional details:\n\n%s") % __e)
                 print_proxy_config()
                 __ret = EXIT_OOPS

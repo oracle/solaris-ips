@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -49,22 +48,21 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test1", "test1", "nopubconfig"])
 
-                self.durl1 = self.dcs[1].get_depot_url()
-                self.durl2 = self.dcs[2].get_depot_url()
-                self.durl3 = self.dcs[3].get_depot_url()
-                self.durl4 = self.dcs[4].get_depot_url()
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.rurl3 = self.dcs[3].get_repo_url()
+                self.rurl4 = self.dcs[4].get_repo_url()
                 self.durl5 = self.dcs[5].get_depot_url()
 
                 # The fifth depot is purposefully one with the publisher
                 # operation disabled.
-                self.dcs[5].stop()
                 self.dcs[5].set_disable_ops(["publisher/0"])
                 self.dcs[5].start()
 
         def test_basic(self):
                 """ Create an image, verify it. """
 
-                self.pkg_image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.rurl1, prefix="test1")
                 self.pkg("verify")
 
         def test_image_create_bad_opts(self):
@@ -119,25 +117,25 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # Bug 3588: Make sure we can't create an image where one
                 # already exists
                 self.pkg("image-create -p test1=%s %s/3588_image" % (
-                    self.durl1, self.get_img_path()))
+                    self.rurl1, self.get_img_path()))
                 self.pkg("image-create -p test1=%s %s/3588_image" % (
-                    self.durl1, self.get_img_path()), exit=1)
+                    self.rurl1, self.get_img_path()), exit=1)
 
                 # Make sure we can create an image where one
                 # already exists with the -f (force) flag
                 self.pkg("image-create -p test1=%s %s/3588_image_1" % (
-                    self.durl1, self.get_img_path()))
+                    self.rurl1, self.get_img_path()))
                 self.pkg("image-create -f -p test1=%s %s/3588_image_1" %
-                         (self.durl1, self.get_img_path()))
+                         (self.rurl1, self.get_img_path()))
 
                 # Bug 3588: Make sure we can't create an image where a
                 # non-empty directory exists
                 p = os.path.join(self.get_img_path(), "3588_2_image")
                 os.mkdir(p)
                 self.cmdline_run("touch %s/%s" % (p, "somefile"))
-                self.pkg("image-create -p test1=%s %s" % (self.durl1, p),
+                self.pkg("image-create -p test1=%s %s" % (self.rurl1, p),
                     exit=1)
-                self.pkg("image-create -f -p test1=%s %s" % (self.durl1, p))
+                self.pkg("image-create -f -p test1=%s %s" % (self.rurl1, p))
 
         def __verify_pub_cfg(self, img_path, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""
@@ -182,25 +180,25 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 img_path = os.path.join(self.test_root, "test_4_img")
                 for opt in ("-a", "-p", "--publisher"):
                         self.pkg("image-create %s test1=%s %s" % (opt,
-                            self.durl1, img_path))
+                            self.rurl1, img_path))
                         shutil.rmtree(img_path)
 
                 # Verify that specifying additional mirrors and origins works.
                 mirrors = " ".join(
                     "-m %s" % u
-                    for u in (self.durl3, self.durl4)
+                    for u in (self.rurl3, self.rurl4)
                 )
                 origins = " ".join(
                     "-g %s" % u
-                    for u in (self.durl3, self.durl4)
+                    for u in (self.rurl3, self.rurl4)
                 )
 
-                self.pkg("image-create -p test1=%s %s %s %s" % (self.durl1,
+                self.pkg("image-create -p test1=%s %s %s %s" % (self.rurl1,
                     mirrors, origins, img_path))
 
                 self.pkg("-R %s publisher | grep origin.*%s" % (img_path,
-                    self.durl1))
-                for u in (self.durl3, self.durl4):
+                    self.rurl1))
+                for u in (self.rurl3, self.rurl4):
                         self.pkg("-R %s publisher | grep mirror.*%s" % (
                             img_path, u))
                         self.pkg("-R %s publisher | grep origin.*%s" % (
@@ -220,20 +218,20 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # Verify that -p auto-configuration works as expected for a
                 # a v1 repository when no prefix is provided.
-                self.pkg("image-create -p %s %s" % (self.durl1, img_path))
+                self.pkg("image-create -p %s %s" % (self.rurl1, img_path))
                 pub_cfg = {
                     "publisher": { "prefix": "test1" },
-                    "repository": { "origins": self.durl1 }
+                    "repository": { "origins": self.rurl1 }
                 }
                 self.__verify_pub_cfg(img_path, "test1", pub_cfg)
                 shutil.rmtree(img_path)
 
                 # Verify that -p auto-configuration works as expected for a
                 # a v1 repository when a prefix is provided.
-                self.pkg("image-create -p test1=%s %s" % (self.durl1, img_path))
+                self.pkg("image-create -p test1=%s %s" % (self.rurl1, img_path))
                 pub_cfg = {
                     "publisher": { "prefix": "test1" },
-                    "repository": { "origins": self.durl1 }
+                    "repository": { "origins": self.rurl1 }
                 }
                 self.__verify_pub_cfg(img_path, "test1", pub_cfg)
                 shutil.rmtree(img_path)
@@ -241,11 +239,11 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # Verify that -p auto-configuration works as expected for a
                 # a v1 repository with additional origins and mirrors.
                 self.pkg("image-create -p test1=%s -g %s -m %s %s" % (
-                    self.durl1, self.durl3, self.durl5, img_path))
+                    self.rurl1, self.rurl3, self.durl5, img_path))
                 pub_cfg = {
                     "publisher": { "prefix": "test1" },
                     "repository": {
-                        "origins": "%s,%s" % (self.durl1,self.durl3),
+                        "origins": "%s,%s" % (self.rurl1,self.rurl3),
                         "mirrors": self.durl5,
                     },
                 }
@@ -271,13 +269,13 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # Valid URI but without prefix and with --no-refresh; auto-
                 # configuration isn't possible in this scenario and so
                 # an image should not be created.
-                self.pkg("image-create --no-refresh -p %s %s" % (self.durl1, p),
+                self.pkg("image-create --no-refresh -p %s %s" % (self.rurl1, p),
                     exit=2)
                 self.assertFalse(os.path.exists(p))
 
                 # Valid URI but with the wrong publisher prefix should
                 # not create an image.
-                self.pkg("image-create -p nosuchpub=%s %s" % (self.durl1, p),
+                self.pkg("image-create -p nosuchpub=%s %s" % (self.rurl1, p),
                     exit=1)
                 self.assertFalse(os.path.exists(p))
 
@@ -300,7 +298,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # specified image root if the specified root doesn't already
                 # exist.
                 os.chdir(self.test_root)
-                self.pkg("image-create -p test1=%s %s" % (self.durl1,
+                self.pkg("image-create -p test1=%s %s" % (self.rurl1,
                     img_path))
                 os.chdir(pwd)
                 self.assertFalse(os.path.exists(os.path.join(abs_img_path,
@@ -311,7 +309,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # specified image root if the specified root already exists.
                 os.chdir(self.test_root)
                 os.mkdir(img_path)
-                self.pkg("image-create -p test1=%s %s" % (self.durl1,
+                self.pkg("image-create -p test1=%s %s" % (self.rurl1,
                     img_path))
                 os.chdir(pwd)
                 self.assertFalse(os.path.exists(os.path.join(abs_img_path,
@@ -326,18 +324,18 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 open baz@0.0
                 close
                 """
-                self.pkgsend_bulk(self.durl1, pkgsend_data)
+                self.pkgsend_bulk(self.rurl1, pkgsend_data)
 
                 # First, check to be certain that an image-create --no-refresh
                 # will succeed.
-                self.pkg_image_create(self.durl2, prefix="test1",
+                self.pkg_image_create(self.rurl2, prefix="test1",
                     additional_args="--no-refresh")
                 self.pkg("list --no-refresh -a | grep baz", exit=1)
 
                 # Finally, verify that using set-publisher will cause a refresh
                 # which in turn should cause 'baz' to be listed *if* the origin
                 # has changed (setting it to the same value again won't work).
-                self.pkg("set-publisher -O %s test1" % self.durl1)
+                self.pkg("set-publisher -O %s test1" % self.rurl1)
                 self.pkg("list --no-refresh -a | grep baz")
 
         def test_8_image_upgrade(self):
@@ -346,14 +344,14 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 correctly when a privileged user uses it."""
 
                 # Publish some sample packages (to separate repositories).
-                self.pkgsend_bulk(self.durl1, "open quux@1.0\nclose")
-                self.pkgsend_bulk(self.durl2, "open corge@1.0\nclose")
+                self.pkgsend_bulk(self.rurl1, "open quux@1.0\nclose")
+                self.pkgsend_bulk(self.rurl2, "open corge@1.0\nclose")
 
                 # First, create a new image.
-                self.pkg_image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.rurl1, prefix="test1")
 
                 # Add the second repository.
-                self.pkg("set-publisher -O %s test2" % self.durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Next, install the packages.
                 self.pkg("install quux")
@@ -428,13 +426,13 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 gracefully."""
 
                 # Publish a package.
-                self.pkgsend_bulk(self.durl1, """
+                self.pkgsend_bulk(self.rurl1, """
                 open foo@0.0
                 close
                 """)
 
                 # First, create a new image.
-                self.pkg_image_create(self.durl1, prefix="test1")
+                self.pkg_image_create(self.rurl1, prefix="test1")
 
                 # Verify pkg info works as expected.
                 self.pkg("info -r foo")
@@ -479,7 +477,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 os.mkdir(p)
 
                 self.pkg("image-create -p test1=%s %s/image" % (
-                    self.durl1, p), su_wrap=True, exit=1)
+                    self.rurl1, p), su_wrap=True, exit=1)
 
 
 class TestImageCreateNoDepot(pkg5unittest.CliTestCase):

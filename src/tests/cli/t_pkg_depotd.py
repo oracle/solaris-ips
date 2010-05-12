@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -87,7 +86,8 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         misc_files = [ "tmp/libc.so.1", "tmp/cat" ]
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                # This suite, for obvious reasons, actually needs a depot.
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
                 self.make_misc_files(self.misc_files)
 
         def test_depot_ping(self):
@@ -581,7 +581,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
         }
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
 
                 # All of the tests will start depot if needed.
                 self.dc.stop()
@@ -629,8 +629,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 self.dc.set_port(12000)
                                 self.dc.start()
                                 durl = self.dc.get_depot_url()
-                                self.pkgsend_bulk(durl, self.info10 +
-                                    self.quux10 + self.system10)
+                                self.pkgsend_bulk(durl, (self.info10,
+                                    self.quux10, self.system10))
                                 self.dc.stop()
 
                         for set_method, unset_method in mode_methods:
@@ -723,8 +723,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 # Then, publish some packages we can abuse for testing.
                 durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.info10 + self.quux10 + \
-                    self.system10 + self.zfsextras10 + self.zfsutils10)
+                plist = self.pkgsend_bulk(durl, (self.info10, self.quux10,
+                    self.system10, self.zfsextras10, self.zfsutils10))
 
                 # Now, for each published package, attempt to get a p5i file
                 # and then verify that the parsed response has the expected
@@ -774,7 +774,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Then, publish some packages we can abuse for testing.
                 durl = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(durl, self.quux10)
-                
+
                 time.sleep(1)
                 surl = urlparse.urljoin(durl,
                     "en/search.shtml?action=Search&token=*")

@@ -28,20 +28,14 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
 
-import pkg.client.api as api
-import pkg.client.progress as progress
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
 import pkg.portable as portable
 
-API_VERSION = 37
-PKG_CLIENT_NAME = "pkg"
 
 class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -617,7 +611,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # To test pkgdepend resolve properly, we need an image.
                 # Side by side with the image, we create a testing proto area.
                 #
-                self.pkg_image_create(self.dc.get_depot_url())
+                self.pkg_image_create(self.rurl)
 
                 self.test_proto_dir = os.path.join(self.test_root, "proto")
                 os.makedirs(self.test_proto_dir)
@@ -1251,7 +1245,6 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.check_res(self.dup_variant_deps_resolved, res)
 
                 # Check that the results can be installed correctly.
-                durl = self.dc.get_depot_url()
                 self.make_proto_text_file("var/log/file2")
                 self.make_proto_text_file("var/log/authlog")
                 self.make_proto_text_file("var/log/f1")
@@ -1264,30 +1257,29 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     "platform/i86pc/kernel/dacf/amd64/consconfig_dacf")
                 self.make_proto_text_file(
                     "platform/i86pc/kernel/dacf/consconfig_dacf")
-                self.pkgsend(durl, "publish -d %s dup-v-deps@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s dup-v-deps@0.1-0.2 %s" %
                     (self.test_proto_dir, m1_path + ".res"))
-                self.pkgsend(durl, "publish -d %s s-v-bar@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s s-v-bar@0.1-0.2 %s" %
                     (self.test_proto_dir, m2_path + ".res"))
-                self.pkgsend(durl, "publish -d %s s-v-baz-one@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s s-v-baz-one@0.1-0.2 %s" %
                     (self.test_proto_dir, m3_path + ".res"))
-                self.pkgsend(durl, "publish -d %s s-v-baz-two@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s s-v-baz-two@0.1-0.2 %s" %
                     (self.test_proto_dir, m4_path + ".res"))
-                self.pkgsend(durl, "publish -d %s dup-prov@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s dup-prov@0.1-0.2 %s" %
                     (self.test_proto_dir, m5_path + ".res"))
-                self.pkgsend(durl, "publish -d %s sep_vars@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s sep_vars@0.1-0.2 %s" %
                     (self.test_proto_dir, m6_path + ".res"))
-                self.pkgsend(durl, "publish -d %s subset-prov@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s subset-prov@0.1-0.2 %s" %
                     (self.test_proto_dir, m7_path + ".res"))
-                self.pkgsend(durl, "publish -d %s hand-dep@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s hand-dep@0.1-0.2 %s" %
                     (self.test_proto_dir, m8_path + ".res"))
                 foo_vars = ["bar", "baz"]
                 num_vars = ["one", "two"]
                 for fv in foo_vars:
                         for nv in num_vars:
-                                var_settings = "--variant variant.foo=%s " \
-                                    "--variant num=%s" % (fv, nv)
-                                self.pkg_image_create(durl,
-                                    additional_args=var_settings)
+                                variants = { "variant.foo": fv,
+                                    "variant.num": nv }
+                                self.image_create(self.rurl, variants=variants)
                                 self.pkg("install dup-v-deps")
                                 self.image_destroy()
 
@@ -1295,13 +1287,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 """Test that -S switch disables resolving dependencies against
                 the installed system."""
 
-                durl = self.dc.get_depot_url()
                 self.make_misc_files(["tmp/foo"])
-                self.pkgsend_bulk(durl, self.inst_pkg)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(),
-                    API_VERSION, progresstracker, lambda x: False,
-                    PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.inst_pkg)
+                api_obj = self.get_img_api_obj()
                 api_obj.refresh(immediate=True)
                 self._api_install(api_obj, ["example2_pkg"])
 

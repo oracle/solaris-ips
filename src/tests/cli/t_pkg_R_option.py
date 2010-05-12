@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -29,6 +28,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import unittest
+
 
 class TestROption(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -39,18 +39,16 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
             close """
 
 	def test_bad_cli_options(self):
-		durl = self.dc.get_depot_url()
-		self.image_create(durl)
 
+		self.image_create(self.rurl)
 		self.pkg("-@", exit=2)
 		self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
 
         def test_1(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
 
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                self.image_create(self.rurl)
 
                 imgpath = self.img_path
                 badpath = "/this/dir/should/not/ever/exist/foo/bar/afsddfas"
@@ -64,7 +62,7 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 self.pkg("-R %s list" % badpath, exit=1)
                 self.pkg("-R %s list" % imgpath)
 
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(self.rurl, self.foo10)
                 self.pkg("-R %s refresh" % imgpath)
 
                 self.pkg("-R %s image-update" % badpath, exit=1)
@@ -77,6 +75,6 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 self.pkg("-R %s info foo" % badpath, exit=1)
                 self.pkg("-R %s info foo" % imgpath)
 
+
 if __name__ == "__main__":
         unittest.main()
-

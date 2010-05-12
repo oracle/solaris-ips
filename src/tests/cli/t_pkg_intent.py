@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -31,17 +30,11 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import time
 import sys
 import unittest
-from stat import *
 import pkg.fmri as fmri
 import pkg.client.api as api
-import pkg.client.api_errors as api_errors
-import pkg.client.progress as progress
 
-API_VERSION = 37
-PKG_CLIENT_NAME = "pkg"
 
 class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
@@ -79,7 +72,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         baz10 = """
@@ -92,8 +85,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
+                # This test suite needs an actual depot.
                 pkg5unittest.SingleDepotTestCase.setUp(self,
-                    debug_features=["headers"])
+                    debug_features=["headers"], start_depot=True)
                 self.make_misc_files(self.misc_files)
 
         def get_intent_entries(self):
@@ -156,20 +150,15 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 """Verify that informational operations do not send
                 intent information."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                plist = self.pkgsend_bulk(self.durl, self.foo10)
+                api_obj = self.image_create(self.durl)
 
                 api_obj.info(plist, False, frozenset([api.PackageInfo.IDENTITY,
                     api.PackageInfo.STATE, api.PackageInfo.PREF_PUBLISHER]))
 
                 entries = self.get_intent_entries()
                 self.assert_(entries == [])
-                
+
                 api_obj.info(plist, False,
                     frozenset([api.PackageInfo.DEPENDENCIES]))
 
@@ -182,14 +171,10 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 """Verify that the install and uninstall of a single package
                 sends the expected intent information."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
+                plist = self.pkgsend_bulk(self.durl, self.foo10)
+                api_obj = self.image_create(self.durl)
 
                 # Test install.
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo"], noexecute=True)
                 entries = self.get_intent_entries()
                 # no data should be there
@@ -200,7 +185,6 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 entries = self.get_intent_entries()
 
                 foo = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
-
 
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
@@ -224,17 +208,13 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 upgrade (install of newer version) of that package sends the
                 expected intent information."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10 + self.foo11)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
+                plist = self.pkgsend_bulk(self.durl, (self.foo10, self.foo11))
+                api_obj = self.image_create(self.durl)
 
                 foo10 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
                 foo11 = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True)
 
                 # Test install.
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo@1.0"])
                 self.__do_install(api_obj, ["foo@1.1"])
 
@@ -266,13 +246,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 """Verify that an install or uninstall of a single package with
                 a single dependency sends the expected intent information."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10 + self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
+                plist = self.pkgsend_bulk(self.durl, (self.foo10, self.bar10))
+                api_obj = self.image_create(self.durl)
 
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["bar@1.0"])
                 self.__do_uninstall(api_obj, ["bar", "foo"])
 
@@ -298,21 +274,17 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 image upgrade."""
 
                 fmri_list = ["foo10", "foo11", "bar10", "foo12", "bar11"]
-                
+
                 plist = []
-                durl = self.dc.get_depot_url()
-                plist.extend(self.pkgsend_bulk(durl, self.foo10 + self.foo11 + \
-                    self.bar10))
+                plist.extend(self.pkgsend_bulk(self.durl, (self.foo10,
+                    self.foo11, self.bar10)))
 
+                api_obj = self.image_create(self.durl)
 
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["bar@1.0"])
 
-                plist.extend(self.pkgsend_bulk(durl, self.foo12 + self.bar11))
+                plist.extend(self.pkgsend_bulk(self.durl, (self.foo12,
+                    self.bar11)))
 
                 def print_fmri(a):
                         return fmri.PkgFmri(a).get_fmri(anarchy=True)
@@ -328,7 +300,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
                 # uninstall foo & bar
                 self.__do_uninstall(api_obj, ["foo"], True)
-                                       
+
                 entries = self.get_intent_entries()
                 # Verify that foo11 was installed when upgrading to foo12.
                 self.assert_(self.intent_entry_exists(entries, {
@@ -355,6 +327,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                     "old_fmri" : fmris["foo12"],
                     "reference": "foo"
                 }))
+
 
 if __name__ == "__main__":
         unittest.main()

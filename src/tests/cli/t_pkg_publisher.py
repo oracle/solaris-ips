@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -35,6 +34,7 @@ import pkg.client.image as image
 import tempfile
 import unittest
 
+
 class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -42,8 +42,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         def test_pkg_publisher_bogus_opts(self):
                 """ pkg bogus option checks """
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("set-publisher -@ test3", exit=2)
                 self.pkg("publisher -@ test5", exit=2)
@@ -54,8 +53,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_publisher_add_remove(self):
                 """pkg: add and remove a publisher"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
 
                 self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
                     exit=1)
@@ -118,8 +117,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         def test_publisher_uuid(self):
                 """verify uuid is set manually and automatically for a
                 publisher"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
                 self.pkg("set-publisher -O http://%s1 --no-refresh --reset-uuid test1" %
                     self.bogus_url)
                 self.pkg("set-publisher --no-refresh --reset-uuid test1")
@@ -130,8 +129,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_publisher_bad_opts(self):
                 """pkg: more insidious option abuse for set-publisher"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
 
                 key_fh, key_path = tempfile.mkstemp()
                 cert_fh, cert_path = tempfile.mkstemp()
@@ -174,8 +173,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_publisher_validation(self):
                 """Verify that we catch poorly formed auth prefixes and URL"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="test")
+
+                self.image_create(self.rurl, prefix="test")
 
                 self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
                     exit=1)
@@ -194,8 +193,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_missing_perms(self):
                 """Bug 2393"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="test")
+
+                self.image_create(self.rurl, prefix="test")
 
                 self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
                     self.bogus_url, su_wrap=True, exit=1)
@@ -207,7 +206,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("unset-publisher foo", su_wrap=True, exit=1)
                 self.pkg("unset-publisher foo")
 
-                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url, \
+                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url,
                     su_wrap=True, exit=1)
                 self.pkg("set-publisher -m http://%s2 test" %
                     self.bogus_url)
@@ -242,20 +241,19 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         def test_publisher_tsv_format(self):
                 """Ensure tsv formatted output is correct."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
-                base_string= ("test\ttrue\ttrue\ttrue\torigin\tonline\t"
-                    "http://localhost:12001/\n"
+                base_string = ("test\ttrue\ttrue\ttrue\torigin\tonline\t"
+                    "%s/\n"
                     "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
                     "https://test.invalid1/\n"
                     "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "http://test.invalid2/\n")
+                    "http://test.invalid2/\n" % self.rurl)
                 # With headers
                 self.pkg("publisher -F tsv")
                 expected = "PUBLISHER\tSTICKY\tPREFERRED\tENABLED" \
@@ -268,6 +266,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 expected = base_string
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
+
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -306,8 +305,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         }
 
         def setUp(self):
+                # This test suite needs actual depots.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3",  "test1", "test1", "test3"])
+                    "test3",  "test1", "test1", "test3"], start_depots=True)
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -612,6 +612,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # make sure we cannot get ahead or behind of ourselves
                 self.pkg("set-publisher --search-before=test3 test3", exit=1)
                 self.pkg("set-publisher --search-after=test3 test3", exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

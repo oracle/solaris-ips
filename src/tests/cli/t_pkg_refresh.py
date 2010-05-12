@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -33,10 +32,10 @@ import os
 import re
 import shutil
 import tempfile
-import time
 import unittest
 
 import pkg.catalog as catalog
+
 
 class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
@@ -65,8 +64,9 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
             close """
 
         def setUp(self):
+                # This test suite needs actual depots.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test1", "test1"])
+                    "test1", "test1"], start_depots=True)
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()

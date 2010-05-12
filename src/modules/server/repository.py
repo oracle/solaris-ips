@@ -44,7 +44,8 @@ import pkg.portable as portable
 import pkg.misc as misc
 import pkg.pkgsubprocess as subprocess
 import pkg.search_errors as se
-import pkg.server.query_parser as query_p
+import pkg.query_parser as qp
+import pkg.server.query_parser as sqp
 import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
 import pkg.version as version
@@ -69,15 +70,6 @@ class RepositoryError(Exception):
                 return str(self.data)
 
 
-class RepositoryCatalogNotFoundError(RepositoryError):
-        """Used to indicate that a file for the specified catalog name does not
-        exist."""
-
-        def __str__(self):
-                return _("The specified catalog file '%s', could not be "
-                    "found.") % self.data
-
-
 class RepositoryFileNotFoundError(RepositoryError):
         """Used to indicate that the hash name provided for the requested file
         does not exist."""
@@ -92,8 +84,8 @@ class RepositoryInvalidError(RepositoryError):
         specified location."""
 
         def __str__(self):
-                return _("The specified repository root '%s' does not contain "
-                    "a valid repository.") % self.data
+                return _("The path '%s' does not contain a valid package "
+                    "repository.") % self.data
 
 
 class RepositoryInvalidFMRIError(RepositoryError):
@@ -908,8 +900,24 @@ class Repository(object):
                 self.__tmp_root = os.path.join(root, "tmp")
                 self.catalog_root = os.path.join(root, "catalog")
                 self.feed_cache_root = root
-                self.cache_store = file_manager.FileManager(
-                    os.path.join(root, "file"), self.read_only)
+                try:
+                        self.cache_store = file_manager.FileManager(
+                            os.path.join(root, "file"), self.read_only)
+                except file_manager.NeedToModifyReadOnlyFileManager:
+                        try:
+                                fs = os.lstat(self.repo_root)
+                        except OSError, e:
+                                # If the stat failed due to this, then assume
+                                # the repository is possibly valid but that
+                                # there is a permissions issue.
+                                if e.errno == EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+                        # If the stat succeeded, then regardless of whether
+                        # repo_root is really a directory, the repository is
+                        # invalid.
+                        raise RepositoryInvalidError(self.repo_root)
                 self.index_root = os.path.join(root, "index")
                 self.pkg_root = os.path.join(root, "pkg")
                 self.trans_root = os.path.join(root, "trans")
@@ -1088,13 +1096,7 @@ class Repository(object):
                 assert name
                 self.inc_catalog()
 
-                try:
-                        return os.path.normpath(os.path.join(
-                            self.catalog_root, name))
-                except EnvironmentError, e:
-                        if e.errno == errno.ENOENT:
-                                raise RepositoryFileNotFoundError(e.filename)
-                        raise
+                return os.path.normpath(os.path.join(self.catalog_root, name))
 
         def close(self, trans_id, refresh_index=True, add_to_catalog=True):
                 """Closes the transaction specified by 'trans_id'.
@@ -1284,9 +1286,9 @@ class Repository(object):
 
                 def _search(q):
                         assert self.index_root
-                        l = query_p.QueryLexer()
+                        l = sqp.QueryLexer()
                         l.build()
-                        qp = query_p.QueryParser(l)
+                        qp = sqp.QueryParser(l)
                         query = qp.parse(q.text)
                         query.set_info(num_to_return=q.num_to_return,
                             start_point=q.start_point,
@@ -1299,12 +1301,12 @@ class Repository(object):
                 query_lst = []
                 try:
                         for s in queries:
-                                if not isinstance(s, query_p.Query):
+                                if not isinstance(s, qp.Query):
                                         query_lst.append(
-                                            query_p.Query.fromstr(s))
+                                            sqp.Query.fromstr(s))
                                 else:
                                         query_lst.append(s)
-                except query_p.QueryException, e:
+                except sqp.QueryException, e:
                         raise RepositoryError(e)
                 return [_search(q) for q in query_lst]
 

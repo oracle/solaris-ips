@@ -29,21 +29,19 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import os
-import unittest
-import shutil
 import copy
+import os
+import shutil
 import sys
-import time
+import unittest
 import urllib2
-
-import pkg.depotcontroller as dc
 
 import pkg.catalog as catalog
 import pkg.client.query_parser as query_parser
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.search_storage as ss
+
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -276,7 +274,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_pkg_options_local = set([pkg_headers, pkg_results_no_pub])
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                # This test needs an actual depot for now.
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
                 self.make_misc_files(self.misc_files)
                 self.init_mem_setting = None
 
@@ -776,6 +775,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 self.pkg("search -l -a -o pkg.shortfmri,action.key 'a'")
                 self.assertEqual(len(self.output.splitlines()), 4)
+
 
 if __name__ == "__main__":
         unittest.main()

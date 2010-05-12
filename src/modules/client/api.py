@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 37
+CURRENT_API_VERSION = 38
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -126,7 +126,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([36, CURRENT_API_VERSION])
+                compatible_versions = set([36, 37, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -282,6 +282,14 @@ class ImageInterface(object):
                 assert self.__activity_lock._is_owned()
                 self.__img.cleanup_downloads()
                 self.__img.unlock()
+                try:
+                
+                        if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                self.__img.transport.stats.dump()
+                except ValueError:
+                        # Don't generate stats if an invalid value
+                        # is supplied.
+                        pass
                 self.__activity_lock.release()
 
         def __plan_common_exception(self, log_op_end=None):
@@ -313,6 +321,14 @@ class ImageInterface(object):
                         # Must be called before reset_unlock, and only if
                         # the exception was not a locked error.
                         self.__img.unlock()
+
+                try:
+                        if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                self.__img.transport.stats.dump()
+                except ValueError:
+                        # Don't generate stats if an invalid value
+                        # is supplied.
+                        pass
 
                 self.__reset_unlock()
                 self.__activity_lock.release()
@@ -631,6 +647,13 @@ class ImageInterface(object):
                 finally:
                         self.__img.cleanup_downloads()
                         self.__img.unlock()
+                        try:
+                                if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                        self.__img.transport.stats.dump()
+                        except ValueError:
+                                # Don't generate stats if an invalid value
+                                # is supplied.
+                                pass
                         self.__activity_lock.release()
 
         def execute_plan(self):
@@ -778,13 +801,6 @@ class ImageInterface(object):
                 if self.__img.history.operation_name:
                         self.log_operation_end()
                 self.__executed = True
-                try:
-                        if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
-                                self.__img.transport.stats.dump()
-                except ValueError:
-                        # Don't generate stats if an invalid value
-                        # is supplied.
-                        pass
 
         def set_plan_license_status(self, pfmri, plicense, accepted=None,
             displayed=None):
@@ -860,6 +876,13 @@ class ImageInterface(object):
                         self.__cancel_done()
                         raise
                 finally:
+                        try:
+                                if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                        self.__img.transport.stats.dump()
+                        except ValueError:
+                                # Don't generate stats if an invalid value
+                                # is supplied.
+                                pass
                         self.__activity_lock.release()
 
         def __refresh(self, full_refresh=False, pubs=None, immediate=False):
@@ -2892,6 +2915,11 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                                 # origin.  Assume the repo_uri
                                                 # is the origin.
                                                 psrepo.add_origin(repo_uri)
+                                        elif repo not in psrepo.origins:
+                                                # If the repo_uri used is not
+                                                # in the list of sources, then
+                                                # add it as the first origin.
+                                                psrepo.origins.insert(0, repo)
 
                 if prefix and not repo_uri:
                         # Auto-configuration not possible or not requested.

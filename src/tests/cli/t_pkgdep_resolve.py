@@ -28,9 +28,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import shutil
 import sys
-import tempfile
 import unittest
 
 import pkg.client.api as api
@@ -41,6 +39,7 @@ import pkg.publish.dependencies as dependencies
 
 API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
+
 
 class TestApiDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -219,12 +218,8 @@ close"""
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
 
-                self.durl = self.dc.get_depot_url()
-                self.image_create(self.durl)
-                progresstracker = progress.NullProgressTracker()
-                self.api_obj = api.ImageInterface(self.get_img_path(),
-                    API_VERSION, progresstracker, lambda x: False,
-                    PKG_CLIENT_NAME)
+                self.image_create(self.rurl)
+                self.api_obj = self.get_img_api_obj()
 
         def test_resolve_cross_package(self):
                 """test that cross dependencies between published packages
@@ -255,8 +250,7 @@ close"""
                 resolver picks up the name of the package if it's defined in
                 the package."""
 
-
-                self.pkgsend_bulk(self.durl, self.inst_pkg)
+                self.pkgsend_bulk(self.rurl, self.inst_pkg)
                 self.api_obj.refresh(immediate=True)
                 self._api_install(self.api_obj, ["example2_pkg"])
 
@@ -513,8 +507,7 @@ close"""
                 """Test that resolving against an installed, cached, manifest
                 works with variants."""
 
-
-                self.pkgsend_bulk(self.durl, self.var_pkg)
+                self.pkgsend_bulk(self.rurl, self.var_pkg)
                 self.api_obj.refresh(immediate=True)
                 self._api_install(self.api_obj, ["variant_pkg"])
 
@@ -556,7 +549,7 @@ close"""
                                         [str(d) for d in pkg_deps[col_path]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
-
+                
                 col_path = self.make_manifest(self.collision_manf)
                 col_path_num_var = self.make_manifest(
                     self.collision_manf_num_var)

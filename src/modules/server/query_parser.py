@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -74,6 +73,8 @@ class TopQuery(qp.TopQuery):
 class TermQuery(qp.TermQuery):
         """This class handles the client specific search logic for searching
         for a specific query term."""
+
+        _global_data_dict = {}
 
         def search(self, restriction, fmris):
                 """This function performs the specific steps needed to do

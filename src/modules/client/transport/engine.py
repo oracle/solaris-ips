@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -45,6 +44,9 @@ import pkg.client.transport.fileobj     as fileobj
 
 from collections        import deque
 from pkg.client         import global_settings
+
+pipelined_protocols = ("http", "https")
+response_protocols = ("ftp", "http", "https")
 
 class TransportEngine(object):
         """This is an abstract class.  It shouldn't implement any
@@ -142,34 +144,53 @@ class CurlTransportEngine(TransportEngine):
                 errors_seen = 0
 
                 for h, en, em in bad:
-
                         # Get statistics for each handle.
                         repostats = self.__xport.stats[h.repourl]
                         visited_repos.add(repostats)
                         repostats.record_tx()
-                        bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
-                        seconds = h.getinfo(pycurl.TOTAL_TIME) - \
-                            h.getinfo(pycurl.STARTTRANSFER_TIME)
+                        nbytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
+                        seconds = h.getinfo(pycurl.TOTAL_TIME)
+                        conn_count = h.getinfo(pycurl.NUM_CONNECTS)
+                        conn_time = h.getinfo(pycurl.CONNECT_TIME)
+
+                        url = h.url
+                        uuid = h.uuid
+                        urlstem = h.repourl
+                        proto = urlparse.urlsplit(url)[0]
+
+                        # When using pipelined operations (only possible with
+                        # http or https), libcurl tracks the amount of time
+                        # taken for the entire pipelined request as opposed
+                        # to just the amount of time for a single file in the
+                        # pipeline.  So, if the connection time is 0 for a
+                        # request using http(s), then it was pipelined and
+                        # the total time must be obtained by subtracting the
+                        # time the transfer of the individual request started
+                        # from the total time.
+                        if conn_time == 0 and proto in pipelined_protocols:
+                                # Only performing this subtraction when the
+                                # conn_time is 0 allows the first request in
+                                # the pipeline to properly include connection
+                                # time, etc. to initiate the transfer.
+                                seconds -= h.getinfo(pycurl.STARTTRANSFER_TIME)
+                        elif conn_time > 0:
+                                seconds -= conn_time
 
                         # Sometimes libcurl will report no transfer time.
                         # In that case, just use starttransfer time if it's
                         # non-zero.
                         if seconds < 0:
                                 seconds = h.getinfo(pycurl.STARTTRANSFER_TIME)
-                        conn_count = h.getinfo(pycurl.NUM_CONNECTS)
-                        conn_time = h.getinfo(pycurl.CONNECT_TIME)
 
-                        repostats.record_progress(bytes, seconds)
+                        repostats.record_progress(nbytes, seconds)
+
                         # Only count connections if the connection time is
-                        # positive too.
+                        # positive for http(s); for all other protocols,
+                        # record the connection regardless.
                         if conn_count > 0 and conn_time > 0:
                                 repostats.record_connection(conn_time)
 
-                        httpcode = h.getinfo(pycurl.RESPONSE_CODE)
-                        url = h.url
-                        uuid = h.uuid
-                        urlstem = h.repourl
-                        proto = urlparse.urlsplit(url)[0]
+                        respcode = h.getinfo(pycurl.RESPONSE_CODE)
 
                         # If we were cancelled, raise an API error.
                         # Otherwise fall through to transport's exception
@@ -177,33 +198,40 @@ class CurlTransportEngine(TransportEngine):
                         if en == pycurl.E_ABORTED_BY_CALLBACK:
                                 ex = None
                                 ex_to_raise = api_errors.CanceledException
-                        elif en == pycurl.E_HTTP_RETURNED_ERROR:
-                                decay = httpcode in tx.decayable_http_errors
-                                repostats.record_error(decayable=decay)
-                                errors_seen += 1
+                        elif en in (pycurl.E_HTTP_RETURNED_ERROR,
+                            pycurl.E_FILE_COULDNT_READ_FILE):
+                                # E_HTTP_RETURNED_ERROR is only used for http://
+                                # and https://, but a more specific reason for
+                                # failure can be obtained from respcode.
+                                #
+                                # E_FILE_COULDNT_READ_FILE is only used for
+                                # file://, but unfortunately can mean ENOENT,
+                                # EPERM, etc. and libcurl doesn't differentiate
+                                # or provide a respcode.
+                                if proto not in response_protocols:
+                                        # For protocols that don't provide a
+                                        # pycurl.RESPONSE_CODE, use the
+                                        # pycurl error number instead.
+                                        respcode = en
                                 proto_reason = None
                                 if proto in tx.proto_code_map:
                                         # Look up protocol error code map
                                         # from transport exception's table.
                                         pmap = tx.proto_code_map[proto]
-                                        if httpcode in pmap:
-                                                proto_reason = pmap[httpcode]
-                                ex = tx.TransportProtoError(proto, httpcode,
+                                        if respcode in pmap:
+                                                proto_reason = pmap[respcode]
+                                ex = tx.TransportProtoError(proto, respcode,
                                     url, reason=proto_reason, repourl=urlstem,
                                     uuid=uuid)
-                        elif en == pycurl.E_OPERATION_TIMEOUTED:
-                                decay = en in tx.decayable_pycurl_errors
-                                repostats.record_error(decayable=decay,
-                                    timeout=True)
+                                repostats.record_error(decayable=ex.decayable)
                                 errors_seen += 1
-                                ex = tx.TransportFrameworkError(en, url, em,
-                                    repourl=urlstem, uuid=uuid)
                         else:
-                                decay = en in tx.decayable_pycurl_errors
-                                repostats.record_error(decayable=decay)
-                                errors_seen += 1
+                                timeout = en == pycurl.E_OPERATION_TIMEOUTED
                                 ex = tx.TransportFrameworkError(en, url, em,
                                     repourl=urlstem, uuid=uuid)
+                                repostats.record_error(decayable=ex.decayable,
+                                    timeout=timeout)
+                                errors_seen += 1
 
                         if ex and ex.retryable:
                                 failures.append(ex) 
@@ -217,70 +245,91 @@ class CurlTransportEngine(TransportEngine):
                         repostats = self.__xport.stats[h.repourl]
                         visited_repos.add(repostats)
                         repostats.record_tx()
-                        bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
-                        seconds = h.getinfo(pycurl.TOTAL_TIME) - \
-                            h.getinfo(pycurl.STARTTRANSFER_TIME)
+                        nbytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
+                        seconds = h.getinfo(pycurl.TOTAL_TIME)
                         conn_count = h.getinfo(pycurl.NUM_CONNECTS)
                         conn_time = h.getinfo(pycurl.CONNECT_TIME)
                         h.filetime = h.getinfo(pycurl.INFO_FILETIME)
 
+                        url = h.url
+                        uuid = h.uuid
+                        urlstem = h.repourl
+                        proto = urlparse.urlsplit(url)[0]
+
+                        # When using pipelined operations (only possible with
+                        # http or https), libcurl tracks the amount of time
+                        # taken for the entire pipelined request as opposed
+                        # to just the amount of time for a single file in the
+                        # pipeline.  So, if the connection time is 0 for a
+                        # request using http(s), then it was pipelined and
+                        # the total time must be obtained by subtracting the
+                        # time the transfer of the individual request started
+                        # from the total time.
+                        if conn_time == 0 and proto in pipelined_protocols:
+                                # Only performing this subtraction when the
+                                # conn_time is 0 allows the first request in
+                                # the pipeline to properly include connection
+                                # time, etc. to initiate the transfer and
+                                # the correct calculations of bytespersec.
+                                seconds -= h.getinfo(pycurl.STARTTRANSFER_TIME)
+                        elif conn_time > 0:
+                                seconds -= conn_time
+
                         if seconds > 0:
-                                bytespersec = bytes / seconds
+                                bytespersec = nbytes / seconds
                         else:
                                 bytespersec = 0
+
                         # If a request ahead of a successful request fails due
                         # to a timeout, sometimes libcurl will report impossibly
                         # large total time values.  In this case, check that the
-                        # bytes/sec exceeds our minimum threshold.  If it does
+                        # nbytes/sec exceeds our minimum threshold.  If it does
                         # not, and the total time is longer than our timeout,
                         # discard the time calculation as it is bogus.
                         if (bytespersec < 
                             global_settings.pkg_client_lowspeed_limit) and (
                             seconds > 
                             global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT):
-                                bytes = 0
+                                nbytes = 0
                                 seconds = 0
-                        repostats.record_progress(bytes, seconds)
+                        repostats.record_progress(nbytes, seconds)
+
                         # Only count connections if the connection time is
-                        # positive too.
+                        # positive for http(s); for all other protocols,
+                        # record the connection regardless.
                         if conn_count > 0 and conn_time > 0:
                                 repostats.record_connection(conn_time)
 
-                        httpcode = h.getinfo(pycurl.RESPONSE_CODE)
-                        url = h.url
-                        uuid = h.uuid
-                        urlstem = h.repourl
-                        proto = urlparse.urlsplit(url)[0]
+                        respcode = h.getinfo(pycurl.RESPONSE_CODE)
 
-                        if httpcode == httplib.OK:
+                        if proto not in response_protocols or \
+                            respcode == httplib.OK:
                                 h.success = True
                                 repostats.clear_consecutive_errors()
                                 success.append(url)
                         else:
                                 proto_reason = None
-
                                 if proto in tx.proto_code_map:
                                         # Look up protocol error code map
                                         # from transport exception's table.
                                         pmap = tx.proto_code_map[proto]
-                                        if httpcode in pmap:
-                                                proto_reason = pmap[httpcode]
+                                        if respcode in pmap:
+                                                proto_reason = pmap[respcode]
                                 ex = tx.TransportProtoError(proto,
-                                    httpcode, url, reason=proto_reason,
+                                    respcode, url, reason=proto_reason,
                                     repourl=urlstem, uuid=uuid)
 
                                 # If code >= 400, record this as an error.
                                 # Handlers above the engine get to decide
                                 # for 200/300 codes that aren't OK
-                                if httpcode >= 400: 
-                                        decay = httpcode in \
-                                            tx.decayable_http_errors
-                                        repostats.record_error(decayable=decay)
+                                if respcode >= 400: 
+                                        repostats.record_error(
+                                            decayable=ex.decayable)
                                         errors_seen += 1
                                 # If code == 0, libcurl failed to read
                                 # any HTTP status.  Response is almost
                                 # certainly corrupted.
-                                elif httpcode == 0:
+                                elif respcode == 0:
                                         repostats.record_error()
                                         errors_seen += 1
                                         reason = "Invalid HTTP status code " \
@@ -331,7 +380,6 @@ class CurlTransportEngine(TransportEngine):
                                 raise tx.ExcessiveTransientFailure(rs.url,
                                     numce)
 
-
         def check_status(self, urllist=None, good_reqs=False):
                 """Return information about retryable failures that occured
                 during the request.
@@ -369,11 +417,11 @@ class CurlTransportEngine(TransportEngine):
 
                 # otherwise, look for failures that match just the URLs
                 # in urllist.
-                rf = []
-
-                for tf in self.__failures:
-                        if hasattr(tf, "url") and tf.url in urllist:
-                                rf.append(tf)
+                rf = [
+                    tf
+                    for tf in self.__failures
+                    if hasattr(tf, "url") and tf.url in urllist
+                ]
 
                 # remove failues in separate pass, or else for loop gets
                 # confused.
@@ -717,6 +765,10 @@ class CurlTransportEngine(TransportEngine):
                         hdl.setopt(pycurl.NOPROGRESS, 0)
                         hdl.setopt(pycurl.PROGRESSFUNCTION, treq.progfunc)
 
+                proto = urlparse.urlsplit(treq.url)[0]
+                if not proto in ("http", "https"):
+                        return
+
                 if treq.compressible:
                         hdl.setopt(pycurl.ENCODING, "")
 
@@ -737,8 +789,8 @@ class CurlTransportEngine(TransportEngine):
                         hdl.setopt(pycurl.SSLCERT, treq.sslcert)
                 if treq.sslkey:
                         hdl.setopt(pycurl.SSLKEY, treq.sslkey)
+
                 # Options that apply when SSL is enabled
-                proto = urlparse.urlsplit(treq.url)[0]
                 if proto == "https":
                         # Verify that peer's CN matches CN on certificate
                         hdl.setopt(pycurl.SSL_VERIFYHOST, 2)

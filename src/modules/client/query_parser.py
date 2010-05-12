@@ -21,6 +21,7 @@
 #
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
+import os
 import sys
 import threading
 import pkg.client.api_errors as api_errors
@@ -168,18 +169,8 @@ class TermQuery(qp.TermQuery):
         """This class handles the client specific search logic for searching
         for a base query term."""
 
-        # This lock is used so that only one instance of a term query object
-        # is ever modifying the class wide variable, _global_data_dict.
-        client_dict_lock = threading.Lock()
-
-        # Client search needs to account for the packages which have been
-        # installed or removed since the last time the indexes were rebuilt.
-        qp.TermQuery._global_data_dict["fast_add"] = \
-            ss.IndexStoreSet(ss.FAST_ADD)
-        qp.TermQuery._global_data_dict["fast_remove"] = \
-            ss.IndexStoreSet(ss.FAST_REMOVE)
-        qp.TermQuery._global_data_dict["fmri_hash"] = \
-            ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
+        __client_dict_locks = {}
+        _global_data_dict = {}
 
         def __init__(self, term):
                 qp.TermQuery.__init__(self, term)
@@ -188,6 +179,34 @@ class TermQuery(qp.TermQuery):
                 self._data_fast_remove = None
                 self.full_fmri_hash = None
                 self._data_fast_add = None
+
+        def __init_gdd(self, path):
+                gdd = self._global_data_dict
+                if path in gdd:
+                        return
+
+                # Setup default global dictionary for this index path.
+                qp.TermQuery.__init_gdd(self, path)
+
+                # Client search needs to account for the packages which have
+                # been installed or removed since the last time the indexes
+                # were rebuilt. Add client-specific global data dictionaries
+                # for this index path.
+                tq_gdd = gdd[path]
+                tq_gdd["fast_add"] = ss.IndexStoreSet(ss.FAST_ADD)
+                tq_gdd["fast_remove"] = ss.IndexStoreSet(ss.FAST_REMOVE)
+                tq_gdd["fmri_hash"] = ss.IndexStoreSetHash(
+                    ss.FULL_FMRI_HASH_FILE)
+
+        def _lock_client_gdd(self, index_dir):
+                # This lock is used so that only one instance of a term query
+                # object is ever modifying the class wide variable for this
+                # index.
+                self.__client_dict_locks.setdefault(index_dir,
+                    threading.Lock()).acquire()
+
+        def _unlock_client_gdd(self, index_dir):
+                self.__client_dict_locks[index_dir].release()
 
         def set_info(self, gen_installed_pkg_names, get_use_slow_search,
             set_use_slow_search, **kwargs):
@@ -206,7 +225,8 @@ class TermQuery(qp.TermQuery):
 
                 self.get_use_slow_search = get_use_slow_search
                 self._efn = gen_installed_pkg_names()
-                TermQuery.client_dict_lock.acquire()
+                index_dir = kwargs["index_dir"]
+                self._lock_client_gdd(index_dir)
                 try:
                         try:
                                 qp.TermQuery.set_info(self,
@@ -219,19 +239,17 @@ class TermQuery(qp.TermQuery):
                                 # dictionaries so that if another thread
                                 # changes the shared data structure, this
                                 # instance's objects won't be affected.
-                                self._data_fast_add = \
-                                    TermQuery._global_data_dict["fast_add"]
-                                self._data_fast_remove = \
-                                    TermQuery._global_data_dict["fast_remove"]
-                                self.full_fmri_hash = \
-                                    self._global_data_dict["fmri_hash"]
+                                tq_gdd = self._get_gdd(index_dir)
+                                self._data_fast_add = tq_gdd["fast_add"]
+                                self._data_fast_remove = tq_gdd["fast_remove"]
+                                self.full_fmri_hash = tq_gdd["fmri_hash"]
                                 set_use_slow_search(False)
                         except se.NoIndexException:
                                 # If no index was found, the slower version of
                                 # search will be used.
                                 set_use_slow_search(True)
                 finally:
-                        TermQuery.client_dict_lock.release()
+                        self._unlock_client_gdd(index_dir)
                 
         def search(self, restriction, fmris, manifest_func, excludes):
                 """This function performs performs local client side search.

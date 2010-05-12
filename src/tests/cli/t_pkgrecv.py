@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -102,10 +101,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
             close 
         """
 
-        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2",
-                    "tmp/bronze1", "tmp/bronze2",
-                    "tmp/copyright2", "tmp/copyright3",
-                    "tmp/libc.so.1", "tmp/sh"]
+        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
+            "tmp/bronze2", "tmp/copyright2", "tmp/copyright3", "tmp/libc.so.1",
+            "tmp/sh"]
 
         def setUp(self):
                 """ Start two depots.
@@ -113,21 +111,23 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test1 (alternate) """
 
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1"])
+                # This test suite needs actual depots.
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1"],
+                    start_depots=True)
 
                 self.make_misc_files(self.misc_files)
 
                 self.dpath1 = self.dcs[1].get_repodir()
                 self.durl1 = self.dcs[1].get_depot_url()
-                self.published = self.pkgsend_bulk(self.durl1, self.amber10 + \
-                    self.amber20 + self.bronze10 + self.bronze20)
+                self.published = self.pkgsend_bulk(self.durl1, (self.amber10,
+                    self.amber20, self.bronze10, self.bronze20))
 
                 # Purposefully republish bronze20 a second later so a version
                 # exists that only differs in timestamp.  Also publish tree
                 # and scheme after that.
                 time.sleep(1)
                 self.published.extend(self.pkgsend_bulk(self.durl1,
-                    self.bronze20 + self.tree10 + self.scheme10))
+                    (self.bronze20, self.tree10, self.scheme10)))
 
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()

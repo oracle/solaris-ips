@@ -20,16 +20,16 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import unittest
 import os
+import unittest
+
 
 class TestPkgRebuildIndex(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -38,9 +38,7 @@ class TestPkgRebuildIndex(pkg5unittest.SingleDepotTestCase):
         def test_rebuild_index_bad_opts(self):
                 """Test pkg with bad options."""
 
-		durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
+                self.image_create(self.rurl)
                 self.pkg("rebuild-index -@", exit=2)
                 self.pkg("rebuild-index foo", exit=2)
                 self.pkg("rebuild-index --", exit=2)
@@ -48,8 +46,7 @@ class TestPkgRebuildIndex(pkg5unittest.SingleDepotTestCase):
         def test_rebuild_index_bad_perms(self):
                 """Testing for bug 4570."""
 
-		durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("rebuild-index")
                 self.pkg("rebuild-index", exit=1, su_wrap=True)
 

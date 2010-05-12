@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -37,10 +36,10 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import re
 import shutil
+import stat
 import time
 import unittest
-import urllib
-from stat import *
+
 
 class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -175,8 +174,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_cli(self):
                 """Test bad cli options"""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("-@", exit=2)
                 self.pkg("-s status", exit=2)
@@ -191,9 +189,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
@@ -210,10 +207,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("install foo")
@@ -226,11 +221,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("search -r blah", exit=1)
 
                 # check to make sure timestamp was set to correct value
-
                 libc_path = os.path.join(self.get_img_path(), "lib/libc.so.1")
-                stat = os.stat(libc_path)
+                lstat = os.stat(libc_path)
 
-                assert (stat[ST_MTIME] == self.foo11_timestamp)
+                assert (lstat[stat.ST_MTIME] == self.foo11_timestamp)
 
                 # check that verify finds changes
                 now = time.time()
@@ -245,10 +239,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_basics_3(self):
                 """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                self.image_create(self.rurl)
 
                 self.pkg("install foo@1.0")
                 self.pkg("list foo@1.0")
@@ -267,11 +259,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_basics_4(self):
                 """ Add bar@1.0, dependent on foo@1.0, install, uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("install bar@1.0")
@@ -286,9 +276,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_basics_5(self):
                 """ Add bar@1.1, install bar@1.0. """
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.xbar11)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, self.xbar11)
+                self.image_create(self.rurl)
                 self.pkg("install xbar@1.0", exit=1)
 
         def test_basics_6(self):
@@ -296,16 +286,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 Boring should be left alone, while
                 foo gets upgraded as needed"""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar10)
-                self.pkgsend_bulk(durl, self.bar11)
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.foo12)
-                self.pkgsend_bulk(durl, self.boring10)
-                self.pkgsend_bulk(durl, self.boring11)
-
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.bar10, self.bar11,
+                    self.foo10, self.foo11, self.foo12, self.boring10,
+                    self.boring11))
+                self.image_create(self.rurl)
 
                 self.pkg("install foo@1.0 bar@1.0 boring@1.0")
                 self.pkg("list")
@@ -315,19 +299,16 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list bar@1.1 foo@1.2 boring@1.0")
 
         def test_image_upgrade(self):
-                """ Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
-                    List all packages.  Upgrade image. """
+                """ Send package bar@1.1, dependent on foo@1.2.  Install
+                    bar@1.0.  List all packages.  Upgrade image. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                self.image_create(self.rurl)
 
                 self.pkg("install bar@1.0")
 
-                self.pkgsend_bulk(durl, self.foo12)
-                self.pkgsend_bulk(durl, self.bar11)
+                self.pkgsend_bulk(self.rurl, (self.foo12, self.bar11))
                 self.pkg("refresh")
 
                 self.pkg("contents -H")
@@ -346,13 +327,12 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
 
         def test_recursive_uninstall(self):
-                """Install bar@1.0, dependent on foo@1.0, uninstall foo recursively."""
+                """Install bar@1.0, dependent on foo@1.0, uninstall foo
+                recursively."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                self.image_create(self.rurl)
 
                 self.pkg("install bar@1.0")
 
@@ -368,10 +348,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """Trying to remove a package that's a dependency of another
                 package should fail if the uninstall isn't recursive."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10))
+                self.image_create(self.rurl)
 
                 self.pkg("install bar@1.0")
 
@@ -382,10 +360,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
 
-                durl = self.dc.get_depot_url()
                 self.pkg("list -a")
-                self.pkgsend_bulk(durl, self.bar11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.bar11)
+                self.image_create(self.rurl)
 
                 self.pkg("install xbar@1.1", exit=1)
 
@@ -393,10 +370,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
                     on foo@1.0, install baz@1.0 and bar@1.1. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar11)
-                self.pkgsend_bulk(durl, self.baz10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.bar11, self.baz10))
+                self.image_create(self.rurl)
                 self.pkg("list -a")
                 self.pkg("install baz@1.0 bar@1.1")
 
@@ -404,10 +379,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
                     depends on xfoo@1.0, install xdeep@1.0. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.xbar10)
-                self.pkgsend_bulk(durl, self.xdeep10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.xbar10, self.xdeep10))
+                self.image_create(self.rurl)
 
                 self.pkg("install xdeep@1.0", exit=1)
 
@@ -415,19 +388,16 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
                 on xfoo@1.0, install ydeep@1.0. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.ydeep10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.ydeep10)
+                self.image_create(self.rurl)
 
                 self.pkg("install ydeep@1.0", exit=1)
 
         def test_bug_2795(self):
                 """ Try to install two versions of the same package """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.foo12)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo11, self.foo12))
+                self.image_create(self.rurl)
 
                 self.pkg("install foo@1.1 foo@1.2", exit=1)
 
@@ -449,11 +419,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 However, "pkg install a@2" works.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.a6018_1)
-                self.pkgsend_bulk(durl, self.a6018_2)
-                self.pkgsend_bulk(durl, self.b6018_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.a6018_1, self.a6018_2,
+                    self.b6018_1))
+                self.image_create(self.rurl)
                 self.pkg("install b6018@1 a6018@1")
                 self.pkg("image-update")
                 self.pkg("list b6018@1 a6018@2")
@@ -461,11 +429,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         def test_install_matching(self):
                 """ Try to [un]install packages matching a pattern """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.pkgsend_bulk(durl, self.baz10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10,
+                    self.baz10))
+                self.image_create(self.rurl)
                 # don't specify versions here; we have many
                 # different versions of foo, bar & baz in repo
                 # when entire class is run w/ one repo instance.
@@ -485,9 +451,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 # First, publish the package that will be corrupted and create
                 # an image for testing.
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.badfile10 + self.baddir10)
-                self.image_create(durl)
+                plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
+                    self.baddir10))
+                self.image_create(self.rurl)
 
                 # This should succeed and cause the manifest to be cached.
                 self.pkg("install %s" % " ".join(plist))
@@ -548,32 +514,38 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 self.pkg("install %s" % pfmri.pkg_name, exit=1)
 
         def test_bug_3770(self):
-                """ Try to install two versions of the same package """
+                """ Try to install a package from a publisher with an
+                unavailable repository. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
-                self.dc.stop()
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
+
+                # Depot hasn't been started, so client can't connect.
+                self.pkg("set-publisher --no-refresh -O %s test" % self.durl)
                 self.pkg("install foo@1.1", exit=1)
-                self.dc.start()
 
         def test_bug_9929(self):
                 """Make sure that we can uninstall/install a package that
-                already has its contents on disk."""
+                already has its contents on disk even when the repository
+                isn't accessible."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                # Depot required for this test since client doesn't cache
+                # files from a file repository by default.
+                self.dc.start()
+                self.pkgsend_bulk(self.durl, self.foo11)
+                self.image_create(self.durl)
 
                 self.pkg("install foo")
 
+                # Stop depot,  so client can't connect.
                 self.dc.stop()
+                self.pkg("set-publisher --no-refresh -O %s test" % self.durl)
+
                 self.pkg("uninstall foo")
                 lr_path = os.path.join(self.img_path, "var","pkg","publisher",
                     "test", "last_refreshed")
                 os.unlink(lr_path)
                 self.pkg("install --no-refresh foo")
-                self.dc.start()
 
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
@@ -620,11 +592,10 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
         def test_bug_4204(self):
                 """Don't stack trace when printing a PlanCreationException with
                 "multiple_matches" populated (on uninstall)."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.afoo10)
-                self.pkgsend_bulk(durl, self.bfoo10)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.afoo10, self.bfoo10,
+                    self.bar10))
+                self.image_create(self.rurl)
 
                 self.pkg("install foo", exit=1)
                 self.pkg("install a/foo b/foo", exit=0)
@@ -635,10 +606,9 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
         def test_bug_6874(self):
                 """Don't stack trace when printing a PlanCreationException with
                 "multiple_matches" populated (on install and image-update)."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.afoo10)
-                self.pkgsend_bulk(durl, self.bfoo10)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.afoo10, self.bfoo10))
+                self.image_create(self.rurl)
 
                 self.pkg("install foo", exit=1)
 
@@ -646,13 +616,12 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 """An image-update should never get confused about an existing
                 package being part of an ambiguous set of package names."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(self.rurl, self.foo10)
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install foo")
 
-                self.pkgsend_bulk(durl, self.anotherfoo11)
+                self.pkgsend_bulk(self.rurl, self.anotherfoo11)
                 self.pkg("refresh")
                 self.pkg("image-update -v", exit=4)
 
@@ -660,16 +629,13 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 """A dependency on a package should pull in an exact name
                 match."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.depender10)
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(self.rurl, (self.depender10, self.foo10))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install depender")
 
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.anotherfoo11)
-                self.pkgsend_bulk(durl, self.depender11)
+                self.pkgsend_bulk(self.rurl, (self.foo11, self.anotherfoo11,
+                    self.depender11))
                 self.pkg("refresh")
 
                 self.pkg("install depender")
@@ -681,15 +647,14 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 """We should be able to refer to a package by its "basename", if
                 that component is unique."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.anotherfoo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.anotherfoo11)
+                self.image_create(self.rurl)
 
                 # Right now, this is not exact, but still unambiguous
                 self.pkg("install foo")
 
                 # Create ambiguity
-                self.pkgsend_bulk(durl, self.foo11)
+                self.pkgsend_bulk(self.rurl, self.foo11)
                 self.pkg("refresh")
 
                 # This is unambiguous, should succeed
@@ -697,6 +662,7 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
                 # This is now ambiguous, should fail
                 self.pkg("install foo", exit=1)
+
 
 class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -745,12 +711,10 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
                 """
 
                 # Send 1.0 versions of packages.
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.pkg10)
-                self.pkgsend_bulk(durl, self.pkg20)
-                self.pkgsend_bulk(durl, self.pkg30)
+                self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
+                    self.pkg30))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install pkg1")
                 self.pkg("list")
                 self.pkg("verify -v")
@@ -760,13 +724,11 @@ class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
                 circular dependencies w/ versions
                 """
 
-                # Send 1.0 versions of packages.
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.pkg11)
-                self.pkgsend_bulk(durl, self.pkg21)
-                self.pkgsend_bulk(durl, self.pkg31)
+                # Send 1.1 versions of packages.
+                self.pkgsend_bulk(self.rurl, (self.pkg11, self.pkg21,
+                    self.pkg31))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install pkg1")
                 self.pkg("list")
                 self.pkg("verify -v")
@@ -1183,7 +1145,6 @@ adm
             add set name=foo value=bar
             close """
 
-
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files1)
@@ -1192,23 +1153,20 @@ adm
         def test_incorp_install(self):
                 """Make sure we don't round up packages we specify on
                 install"""
-                durl = self.dc.get_depot_url()
-                first_bronze = self.pkgsend_bulk(durl, self.bronze20)
-                self.pkgsend_bulk(durl, self.incorp20)
-                self.pkgsend_bulk(durl, self.amber10)
-                self.pkgsend_bulk(durl, self.bronze10)
-                self.pkgsend_bulk(durl, self.amber20)
-                self.pkgsend_bulk(durl, self.bronze20)
+
+                first_bronze = self.pkgsend_bulk(self.rurl, self.bronze20)[0]
+                self.pkgsend_bulk(self.rurl, (self.incorp20, self.amber10,
+                    self.bronze10, self.amber20, self.bronze20))
 
                 # create image
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 # install incorp2
                 self.pkg("install incorp@2.0")
                 # try to install version 1
                 self.pkg("install bronze@1.0", exit=1)
                 # install earliest version bronze@2.0
-                self.pkg("install %s" % first_bronze[0])
-                self.pkg("list -v %s" % first_bronze[0])
+                self.pkg("install %s" % first_bronze)
+                self.pkg("list -v %s" % first_bronze)
                 self.pkg("install bronze@2.0")
 
         def test_upgrade1(self):
@@ -1222,27 +1180,26 @@ adm
                 """
 
                 # Send 1.0 versions of packages.
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.incorp10)
-                self.pkgsend_bulk(durl, self.amber10)
-                self.pkgsend_bulk(durl, self.bronze10)
+                self.pkgsend_bulk(self.rurl, (self.incorp10, self.amber10,
+                    self.bronze10))
 
                 #
                 # In version 2.0, several things happen:
                 #
-                # Amber and Bronze swap a file with each other in both directions.
-                # The dependency flips over (Amber now depends on Bronze)
-                # Amber and Bronze swap ownership of various directories.
+                # Amber and Bronze swap a file with each other in both
+                # directions.  The dependency flips over (Amber now depends
+                # on Bronze).  Amber and Bronze swap ownership of various
+                # directories.
                 #
-                # Bronze's 1.0 hardlink to amber's libc goes away and is replaced
-                # with a file of the same name.  Amber hardlinks to that.
+                # Bronze's 1.0 hardlink to amber's libc goes away and is
+                # replaced with a file of the same name.  Amber hardlinks
+                # to that.
                 #
-                self.pkgsend_bulk(durl, self.incorp20)
-                self.pkgsend_bulk(durl, self.amber20)
-                self.pkgsend_bulk(durl, self.bronze20)
+                self.pkgsend_bulk(self.rurl, (self.incorp20, self.amber20,
+                    self.bronze20))
 
                 # create image and install version 1
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install incorp@1.0")
                 self.pkg("install bronze")
 
@@ -1259,7 +1216,8 @@ adm
                 self.pkg("list amber@2.0 bronze@2.0")
                 self.pkg("verify -v")
                 # make sure old implicit directories for bronzeA1 were removed
-                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(), "A")))
+                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(),
+                    "A")))
                 # Remove packages
                 self.pkg("uninstall amber bronze")
                 self.pkg("verify -v")
@@ -1276,20 +1234,12 @@ adm
                         """
 
                 # Send all pkgs
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.incorp10)
-                self.pkgsend_bulk(durl, self.incorp20)
-                self.pkgsend_bulk(durl, self.incorp30)
-                self.pkgsend_bulk(durl, self.iridium10)
-                self.pkgsend_bulk(durl, self.concorp10)
-                self.pkgsend_bulk(durl, self.amber10)
-                self.pkgsend_bulk(durl, self.amber20)
-                self.pkgsend_bulk(durl, self.bronze10)
-                self.pkgsend_bulk(durl, self.bronze20)
-                self.pkgsend_bulk(durl, self.bronze30)
-                self.pkgsend_bulk(durl, self.brass10)
+                self.pkgsend_bulk(self.rurl, (self.incorp10, self.incorp20,
+                    self.incorp30, self.iridium10, self.concorp10, self.amber10,
+                    self.amber20, self.bronze10, self.bronze20, self.bronze30,
+                    self.brass10))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("install incorp@1.0")
                 # install files that conflict w/ existing incorps
@@ -1316,31 +1266,31 @@ adm
         def test_upgrade3(self):
                 """Test for editable files moving between packages or locations
                 or both."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.silver10 + self.silver20 + \
-                    self.silver30 + self.gold10 + self.gold20 + self.gold30 + \
-                    self.golduser10 + self.golduser20 + self.silveruser)
 
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.silver10, self.silver20,
+                    self.silver30, self.gold10, self.gold20, self.gold30,
+                    self.golduser10, self.golduser20, self.silveruser))
+
+                self.image_create(self.rurl)
 
                 # test 1: move an editable file between packages
                 self.pkg("install gold@1.0 silver@1.0")
                 self.pkg("verify -v")
 
                 # modify config file
-                str = "this file has been modified 1"
+                test_str= "this file has been modified 1"
                 file_path = "etc/passwd"
-                self.file_append(file_path, str)
+                self.file_append(file_path, test_str)
 
                 # make sure /etc/passwd contains correct string
-                self.file_contains(file_path, str)
+                self.file_contains(file_path, test_str)
 
                 # update packages
                 self.pkg("install gold@3.0 silver@2.0")
                 self.pkg("verify -v")
 
                 # make sure /etc/passwd contains still correct string
-                self.file_contains(file_path, str)
+                self.file_contains(file_path, test_str)
 
                 self.pkg("uninstall silver gold")
 
@@ -1350,16 +1300,16 @@ adm
                 self.pkg("verify -v")
 
                 # modify config file
-                str = "this file has been modified test 2"
+                test_str= "this file has been modified test 2"
                 file_path = "etc/passwd"
-                self.file_append(file_path, str)
+                self.file_append(file_path, test_str)
 
                 self.pkg("install gold@2.0")
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 contains correct string
                 file_path = "etc/config2"
-                self.file_contains(file_path, str)
+                self.file_contains(file_path, test_str)
 
                 self.pkg("uninstall gold")
                 self.pkg("verify -v")
@@ -1371,17 +1321,17 @@ adm
 
                 # modify config file
                 file_path = "etc/passwd"
-                str = "this file has been modified test 3"
-                self.file_append(file_path, str)
+                test_str= "this file has been modified test 3"
+                self.file_append(file_path, test_str)
 
-                self.file_contains(file_path, str)
+                self.file_contains(file_path, test_str)
 
                 self.pkg("install gold@3.0 silver@3.0")
                 self.pkg("verify -v")
 
                 # make sure /etc/config2 now contains correct string
                 file_path = "etc/config2"
-                self.file_contains(file_path, str)
+                self.file_contains(file_path, test_str)
 
                 self.pkg("uninstall gold silver")
 
@@ -1423,13 +1373,12 @@ adm
                 self.assertEqual(os.stat(silly_path).st_ino, silly_inode)
 
         def test_upgrade4(self):
-                """ test to make sure hardlinks are correctly restored when file they point to is updated """
+                """Test to make sure hardlinks are correctly restored when file
+                they point to is updated."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.iron10)
-                self.pkgsend_bulk(durl, self.iron20)
+                self.pkgsend_bulk(self.rurl, (self.iron10, self.iron20))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("install iron@1.0")
                 self.pkg("verify -v")
@@ -1438,17 +1387,18 @@ adm
                 self.pkg("verify -v")
 
         def test_upgrade_liveroot(self):
-                """ test to make sure upgrade of package fails if on live root
-                and reboot is needed"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.liveroot10)
-                self.pkgsend_bulk(durl, self.liveroot20)
-                self.image_create(durl)
+                """Test to make sure upgrade of package fails if on live root
+                and reboot is needed."""
+
+                self.pkgsend_bulk(self.rurl, (self.liveroot10, self.liveroot20))
+                self.image_create(self.rurl)
 
                 self.pkg("--debug simulate_live_root=True install liveroot@1.0")
                 self.pkg("verify -v")
-                self.pkg("--debug simulate_live_root=True install liveroot@2.0", exit=5)
-                self.pkg("--debug simulate_live_root=True uninstall liveroot", exit=5)
+                self.pkg("--debug simulate_live_root=True install liveroot@2.0",
+                    exit=5)
+                self.pkg("--debug simulate_live_root=True uninstall liveroot",
+                    exit=5)
                 # "break" liveroot@1
                 self.file_append("etc/liveroot", "this file has been changed")
                 self.pkg("--debug simulate_live_root=True fix liveroot", exit=5)
@@ -1457,12 +1407,10 @@ adm
                 """Test to make sure driver_aliases conflicts don't cause
                 add_drv to fail."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.dricon1)
-                self.pkgsend_bulk(durl, self.dricon2)
-                self.pkgsend_bulk(durl, self.dricon3)
+                self.pkgsend_bulk(self.rurl, (self.dricon1, self.dricon2,
+                    self.dricon3))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("list -afv")
                 self.pkg("install dricon@1")
@@ -1483,11 +1431,9 @@ adm
                 works successfully.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.dripol1)
-                self.pkgsend_bulk(durl, self.dripol2)
+                self.pkgsend_bulk(self.rurl, (self.dripol1, self.dripol2))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("list -afv")
 
@@ -1513,11 +1459,9 @@ adm
                 """Verify that file preserve=true works as expected during
                 package install, upgrade, and removal."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.preserve1)
-                self.pkgsend_bulk(durl, self.preserve2)
-                self.pkgsend_bulk(durl, self.preserve3)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.preserve1, self.preserve2,
+                    self.preserve3))
+                self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
@@ -1581,10 +1525,9 @@ adm
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.renameold1 +
-                    self.renameold2 + self.renameold3)
-                self.image_create(durl)
+                plist = self.pkgsend_bulk(self.rurl, (self.renameold1,
+                    self.renameold2, self.renameold3))
+                self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
@@ -1641,10 +1584,9 @@ adm
         def test_file_preserve_renamenew(self):
                 """Make sure that file ugprade with preserve=renamenew works."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.renamenew1 +
-                    self.renamenew2 + self.renamenew3)
-                self.image_create(durl)
+                plist = self.pkgsend_bulk(self.rurl, (self.renamenew1,
+                    self.renamenew2, self.renamenew3))
+                self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
                 # done.  First with no content change ...
@@ -2024,10 +1966,8 @@ adm:NP:6445::::::
         def test_basics_0(self):
                 """Send basic infrastructure, install and uninstall."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1))
+                self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
@@ -2042,11 +1982,10 @@ adm:NP:6445::::::
                 self.pkg("verify")
 
         def test_grouptest(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
-                self.pkgsend_bulk(durl, self.grouptest)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
+                    self.grouptest))
+                self.image_create(self.rurl)
                 self.pkg("install basics")
                 self.pkg("install basics1")
 
@@ -2056,12 +1995,10 @@ adm:NP:6445::::::
                 self.pkg("verify")
 
         def test_usertest(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
-                self.pkgsend_bulk(durl, self.grouptest)
-                self.pkgsend_bulk(durl, self.usertest10)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
+                    self.grouptest, self.usertest10))
+                self.image_create(self.rurl)
                 self.pkg("install basics")
                 self.pkg("install basics1")
 
@@ -2069,7 +2006,7 @@ adm:NP:6445::::::
                 self.pkg("verify")
                 self.pkg("contents -m usertest")
 
-                self.pkgsend_bulk(durl, self.usertest11)
+                self.pkgsend_bulk(self.rurl, self.usertest11)
                 self.pkg("refresh")
                 self.pkg("install usertest")
                 self.pkg("verify")
@@ -2096,12 +2033,9 @@ adm:NP:6445::::::
                 add user username=gonzo group=root
                 close"""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, notftpuser)
-                self.pkgsend_bulk(durl, ftpuserexp)
-                self.pkgsend_bulk(durl, ftpuserimp)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, notftpuser,
+                    ftpuserexp, ftpuserimp))
+                self.image_create(self.rurl)
 
                 self.pkg("install basics")
 
@@ -2160,10 +2094,8 @@ adm:NP:6445::::::
                 add group groupname=muppets
                 close"""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, simplegroup)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, simplegroup))
+                self.image_create(self.rurl)
 
                 self.pkg("install basics")
                 self.pkg("install simplegroup")
@@ -2184,10 +2116,8 @@ adm:NP:6445::::::
                 add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh
                 close"""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, simpleuser)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, simpleuser))
+                self.image_create(self.rurl)
 
                 self.pkg("install basics")
                 self.pkg("install simpleuser")
@@ -2230,7 +2160,8 @@ adm:NP:6445::::::
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
                 sdata[-1] = "misspiggy:*LK*:14579:7:::::"
                 file(ppath, "w").writelines(pdata)
-                os.chmod(spath, S_IMODE(os.stat(spath).st_mode)| S_IWUSR)
+                os.chmod(spath,
+                    stat.S_IMODE(os.stat(spath).st_mode)|stat.S_IWUSR)
                 file(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("min: '7' should be '<empty>'")
@@ -2290,10 +2221,8 @@ adm:NP:6445::::::
                 """Ensure that an unspecified uid/gid results in the first
                 unused."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.ugidtest)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.ugidtest))
+                self.image_create(self.rurl)
 
                 # This will lay down the sample passwd file, group file, etc.
                 self.pkg("install basics")
@@ -2316,13 +2245,10 @@ adm:NP:6445::::::
                 """Ensure that we can add a user and change file ownership to
                 that user in the same delta (mysql tripped over this early on
                 in IPS development)."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
-                self.pkgsend_bulk(durl, self.silver10)
-                self.pkgsend_bulk(durl, self.silver20)
-                self.pkgsend_bulk(durl, self.grouptest)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.basics1,
+                    self.silver10, self.silver20, self.grouptest))
+                self.image_create(self.rurl)
                 self.pkg("install basics@1.0")
                 self.pkg("install basics1@1.0")
                 self.pkg("install silver@1.0")
@@ -2335,10 +2261,8 @@ adm:NP:6445::::::
                 """If a user is present in a secondary group list when the user
                 is installed, the client shouldn't crash."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.only_user10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.only_user10))
+                self.image_create(self.rurl)
                 self.pkg("install basics@1.0")
                 group_path = os.path.join(self.get_img_path(), "etc/group")
                 with file(group_path, "r+") as group_file:
@@ -2352,11 +2276,10 @@ adm:NP:6445::::::
                 """Send invalid package definitions (invalid fmris); expect
                 failure."""
 
-                durl = self.dc.get_depot_url()
-
                 for char in self.pkg_name_valid_chars["never"]:
                         invalid_name = "invalid%spkg@1.0,5.11-0" % char
-                        self.pkgsend(durl, "open '%s'" % invalid_name, exit=1)
+                        self.pkgsend(self.rurl, "open '%s'" % invalid_name,
+                            exit=1)
 
                 for char in self.pkg_name_valid_chars["after-first"]:
                         invalid_name = "%sinvalidpkg@1.0,5.11-0" % char
@@ -2364,42 +2287,39 @@ adm:NP:6445::::::
                                 cmd = "open -- '%s'" % invalid_name
                         else:
                                 cmd = "open '%s'" % invalid_name
-                        self.pkgsend(durl, cmd, exit=1)
+                        self.pkgsend(self.rurl, cmd, exit=1)
 
                         invalid_name = "invalid/%spkg@1.0,5.11-0" % char
                         cmd = "open '%s'" % invalid_name
-                        self.pkgsend(durl, cmd, exit=1)
+                        self.pkgsend(self.rurl, cmd, exit=1)
 
         def test_valid_open(self):
                 """Send a series of valid packages; expect success."""
 
-                durl = self.dc.get_depot_url()
                 for char in self.pkg_name_valid_chars["always"]:
                         valid_name = "%svalid%s/%spkg%s@1.0,5.11-0" % (char,
                             char, char, char)
-                        self.pkgsend(durl, "open '%s'" % valid_name)
-                        self.pkgsend(durl, "close -A")
+                        self.pkgsend(self.rurl, "open '%s'" % valid_name)
+                        self.pkgsend(self.rurl, "close -A")
 
                 for char in self.pkg_name_valid_chars["after-first"]:
                         valid_name = "v%salid%spkg@1.0,5.11-0" % (char, char)
-                        self.pkgsend(durl, "open '%s'" % valid_name)
-                        self.pkgsend(durl, "close -A")
+                        self.pkgsend(self.rurl, "open '%s'" % valid_name)
+                        self.pkgsend(self.rurl, "close -A")
 
                 for char in self.pkg_name_valid_chars["at-end"]:
                         valid_name = "validpkg%s@1.0,5.11-0" % char
-                        self.pkgsend(durl, "open '%s'" % valid_name)
-                        self.pkgsend(durl, "close -A")
+                        self.pkgsend(self.rurl, "open '%s'" % valid_name)
+                        self.pkgsend(self.rurl, "close -A")
 
         def test_devlink(self):
                 # driver actions are not valid except on OpenSolaris
                 if portable.util.get_canonical_os_name() != "sunos":
                         return
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.devicebase)
-                self.pkgsend_bulk(durl, self.devlink10)
-                self.pkgsend_bulk(durl, self.devlink20)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.devicebase, self.devlink10,
+                    self.devlink20))
+                self.image_create(self.rurl)
 
                 def readfile():
                         dlf = file(os.path.join(self.get_img_path(),
@@ -2519,7 +2439,6 @@ adm:NP:6445::::::
 
         def test_uninstall_without_perms(self):
                 """Test for bug 4569"""
-                durl = self.dc.get_depot_url()
 
                 pkg_list = [self.foo10, self.only_attr10, self.only_depend10,
                     self.only_directory10, self.only_file10,
@@ -2530,10 +2449,10 @@ adm:NP:6445::::::
                 if portable.util.get_canonical_os_name() == 'sunos':
                         pkg_list += [self.only_driver10]
 
-                self.pkgsend_bulk(durl, "".join(pkg_list) + self.devicebase + \
-                    self.basics0 + self.basics1)
+                self.pkgsend_bulk(self.rurl, pkg_list + [
+                    self.devicebase + self.basics0 + self.basics1])
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 name_pat = re.compile("^\s+open\s+(\S+)\@.*$")
 
@@ -2577,9 +2496,9 @@ adm:NP:6445::::::
                         self.pkg("install --no-refresh %s" % pname)
 
                 for p in pkg_list:
-                        self.pkgsend_bulk(durl, p)
-                self.pkgsend_bulk(durl, self.devicebase + self.basics0 + \
-                    self.basics1)
+                        self.pkgsend_bulk(self.rurl, p)
+                self.pkgsend_bulk(self.rurl, (self.devicebase, self.basics0,
+                    self.basics1))
 
                 # Modifying operations require permissions needed to create and
                 # manage lock files.
@@ -2600,15 +2519,11 @@ adm:NP:6445::::::
                     cause further package operations to fail.  This can happen
                     when there are time synchronization issues within a virtual
                     environment or in other cases. """
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.only_user10)
-                self.pkgsend_bulk(durl, self.only_user_file10)
-                self.pkgsend_bulk(durl, self.only_group10)
-                self.pkgsend_bulk(durl, self.only_group_file10)
-                self.pkgsend_bulk(durl, self.grouptest)
-                self.pkgsend_bulk(durl, self.usertest10)
-                self.image_create(durl)
+
+                self.pkgsend_bulk(self.rurl, (self.basics0, self.only_user10,
+                    self.only_user_file10, self.only_group10,
+                    self.only_group_file10, self.grouptest, self.usertest10))
+                self.image_create(self.rurl)
                 fname = os.path.join(self.get_img_path(), "etc", "passwd")
                 self.pkg("install basics")
 
@@ -2633,10 +2548,9 @@ adm:NP:6445::::::
         def test_bad_hardlinks(self):
                 """A couple of bogus hard link target tests."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.badhardlink1)
-                self.pkgsend_bulk(durl, self.badhardlink2)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.badhardlink1,
+                    self.badhardlink2))
+                self.image_create(self.rurl)
 
                 # A package which tries to install a hard link to a target that
                 # doesn't exist shouldn't stack trace, but exit sanely.
@@ -2885,33 +2799,23 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
-
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.pkg10)
-                self.pkgsend_bulk(durl, self.pkg20)
-                self.pkgsend_bulk(durl, self.pkg11)
-                self.pkgsend_bulk(durl, self.pkg21)
-                self.pkgsend_bulk(durl, self.pkg30)
-                self.pkgsend_bulk(durl, self.pkg40)
-                self.pkgsend_bulk(durl, self.pkg50)
-                self.pkgsend_bulk(durl, self.pkg505)
-                self.pkgsend_bulk(durl, self.pkg51)
-                self.pkgsend_bulk(durl, self.pkg60)
-                self.pkgsend_bulk(durl, self.pkg61)
-                self.pkgsend_bulk(durl, self.bug_7394_incorp)
+                self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
+                    self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
+                    self.pkg505, self.pkg51, self.pkg60, self.pkg61,
+                    self.bug_7394_incorp))
 
                 for t in self.leaf_expansion:
-                        self.pkgsend_bulk(durl, self.leaf_template % t)
+                        self.pkgsend_bulk(self.rurl, self.leaf_template % t)
 
                 for i in self.incorps:
-                        self.pkgsend_bulk(durl, i)
+                        self.pkgsend_bulk(self.rurl, i)
 
         def test_require_dependencies(self):
-                """ exercise require dependencies"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                """ exercise require dependencies """
+
+                self.image_create(self.rurl)
                 self.pkg("install pkg1@1.0")
                 self.pkg("verify  pkg1@1.0")
                 self.pkg("install pkg3@1.0")
@@ -2919,8 +2823,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
         def test_exclude_dependencies(self):
                 """ exercise exclude dependencies """
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
                 # install pkg w/ exclude dep.
                 self.pkg("install pkg4@1.0")
                 self.pkg("verify  pkg4@1.0")
@@ -2960,8 +2864,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
         def test_optional_dependencies(self):
                 """ check to make sure that optional dependencies are enforced
                 """
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
                 self.pkg("install pkg1@1.0")
 
                 # pkg2 is optional, it should not have been installed
@@ -2982,8 +2886,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
         def test_incorporation_dependencies(self):
                 """ shake out incorporation dependencies """
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
                 self.pkg("list -a") # help w/ debugging
 
                 # simple pkg requiring controlling incorp
@@ -3035,6 +2939,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install incorp@1.3")
                 self.pkg("list pkgA_1@1.3")
                 self.pkg("list A_incorp@1.3")
+
 
 class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -3107,8 +3012,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
             close"""
 
         def setUp(self):
-                """ Start four depots.
-                    depot 1 gets foo and moo, depot 2 gets foo and bar,
+                """ depot 1 gets foo and moo, depot 2 gets foo and bar,
                     depot 3 is empty, depot 4 gets upgrade_np@1.1
                     depot 5 gets corge10, depot6 is empty
                     depot7 is a copy of test1's repository for test3
@@ -3123,37 +3027,39 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3", "test2", "test4", "test1", "test3"])
 
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
-                    self.quux10 + self.optional10 + self.upgrade_p10 + \
-                    self.upgrade_np11 + self.incorp_p10 + self.incorp_p11 + \
-                    self.incorp_np10 + self.incorp_np11 + self.baz10 + \
-                    self.corge10)
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.pkgsend_bulk(self.rurl1, (self.foo10, self.moo10,
+                    self.quux10, self.optional10, self.upgrade_p10,
+                    self.upgrade_np11, self.incorp_p10, self.incorp_p11,
+                    self.incorp_np10, self.incorp_np11, self.baz10,
+                    self.corge10))
 
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
-                    self.upgrade_p11 + self.upgrade_np10 + self.corge10)
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.pkgsend_bulk(self.rurl2, (self.foo10, self.bar10,
+                    self.upgrade_p11, self.upgrade_np10, self.corge10))
 
-                durl4 = self.dcs[4].get_depot_url()
-                self.pkgsend_bulk(durl4, self.upgrade_np11)
+                self.rurl3 = self.dcs[3].get_repo_url()
 
-                durl5 = self.dcs[5].get_depot_url()
-                self.pkgsend_bulk(durl5, self.corge10)
+                self.rurl4 = self.dcs[4].get_repo_url()
+                self.pkgsend_bulk(self.rurl4, self.upgrade_np11)
+
+                self.rurl5 = self.dcs[5].get_repo_url()
+                self.pkgsend_bulk(self.rurl5, self.corge10)
+
+                self.rurl6 = self.dcs[6].get_repo_url()
+                self.rurl7 = self.dcs[7].get_repo_url()
 
                 # Copy contents of test1's repo to a repo for test3.
-                self.dcs[7].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[7].get_repodir()
                 self.copy_repository(d1dir, "test1", d2dir, "test3")
-                self.dcs[7].set_rebuild()
-                self.dcs[7].start()
-                self.dcs[7].set_norebuild()
+                self.dcs[7].get_repo(auto_create=True).rebuild()
 
                 # Create image and hence primary publisher
-                self.image_create(durl1, prefix="test1")
+                self.image_create(self.rurl1, prefix="test1")
 
                 # Create second publisher using depot #2
-                self.pkg("set-publisher -O " + durl2 + " test2")
+                self.pkg("set-publisher -O " + self.rurl2 + " test2")
 
         def test_01_basics(self):
                 self.pkg("list -a")
@@ -3246,7 +3152,8 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 --no-refresh is used."""
 
                 # Change the second publisher to point to an unreachable URI.
-                self.pkg("set-publisher --no-refresh -O http://test.invalid7 test2")
+                self.pkg("set-publisher --no-refresh -O http://test.invalid7 "
+                    "test2")
 
                 # Verify that no packages are installed.
                 self.pkg("list", exit=1)
@@ -3255,28 +3162,27 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # test2 cannot be reached (and needs a refresh).
                 self.pkg("install moo", exit=1)
 
-                # Verify moo can be installed (as only depot1 has it) even though
-                # test2 cannot be reached (and needs a refresh) if --no-refresh
-                # is used.
+                # Verify moo can be installed (as only depot1 has it) even
+                # though test2 cannot be reached (and needs a refresh) if
+                # --no-refresh is used.
                 self.pkg("install --no-refresh moo")
 
                 self.pkg("uninstall moo")
 
                 # Reset the test2 publisher.
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Install v1.0 of upgrade-np from test2 to prepare for
                 # image-update.
                 self.pkg("install upgrade-np@1.0")
 
                 # Set test1 to point to an unreachable URI.
-                self.pkg("set-publisher --no-refresh -O http://test.invalid7 test1")
+                self.pkg("set-publisher --no-refresh -O http://test.invalid7 "
+                    "test1")
 
                 # Set test2 so that upgrade-np has a new version available
                 # even though test1's repository is not accessible.
-                durl4 = self.dcs[4].get_depot_url()
-                self.pkg("set-publisher -O %s test2" % durl4)
+                self.pkg("set-publisher -O %s test2" % self.rurl4)
 
                 # Verify image-update does not work since test1 is unreachable
                 # even though upgrade-np@1.1 is available from test2.
@@ -3289,9 +3195,8 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 # Now reset everything for the next test.
                 self.pkg("uninstall upgrade-np")
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkg("set-publisher --no-refresh -O %s test1" % durl1)
-                self.pkg("set-publisher -O %s test2" % durl2)
+                self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl1)
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
         def test_09_uninstall_from_wrong_publisher(self):
                 """Install a package from a publisher and try to remove it
@@ -3317,15 +3222,15 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # exists.
                 self.pkg("install quux@1.0", exit=4)
 
-                # Image update should work if we don't see the optional dependency
+                # Image update should work if we don't see the optional
+                # dependency.
                 self.pkg("image-update", exit=4)
 
                 # Add back the installed package's publisher, but using a
                 # a repository with an empty catalog.  After that, attempt to
                 # install the package again, which should succeed even though
                 # the fmri is no longer in the publisher's catalog.
-                self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[6].get_depot_url())
+                self.pkg("set-publisher -O %s test1" % self.rurl6)
                 self.pkg("install quux@1.0", exit=4)
                 self.pkg("info quux@1.0")
                 self.pkg("unset-publisher test1")
@@ -3335,17 +3240,14 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # but using an empty repository.  After that, attempt to install
                 # the package again, which should succeed since at least one
                 # publisher has the package in its catalog.
-                self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[7].get_depot_url())
-                self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[6].get_depot_url())
+                self.pkg("set-publisher -O %s test3" % self.rurl7)
+                self.pkg("set-publisher -O %s test1" % self.rurl6)
                 self.pkg("info -r pkg://test3/quux@1.0")
                 self.pkg("install quux@1.0", exit=4)
                 self.pkg("unset-publisher test1")
                 self.pkg("unset-publisher test3")
 
-                self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[1].get_depot_url())
+                self.pkg("set-publisher -O %s test1" % self.rurl1)
                 self.pkg("info -r pkg://test1/quux@1.0")
                 self.pkg("unset-publisher test1")
 
@@ -3354,15 +3256,13 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # which should succeed even though the fmri is only in a
                 # different publisher's catalog.
                 #
-                self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[7].get_depot_url())
+                self.pkg("set-publisher -O %s test3" % self.rurl7)
                 self.pkg("install quux@1.0", exit=1) # no viable publisher
                 self.pkg("unset-publisher test3")
 
                 # Change the image metadata back to where it was, in preparation
                 # for subsequent tests.
-                self.pkg("set-publisher -O %s -P test1" % \
-                    self.dcs[1].get_depot_url())
+                self.pkg("set-publisher -O %s -P test1" % self.rurl1)
 
                 # Remove the installed packages.
                 self.pkg("uninstall quux")
@@ -3394,8 +3294,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # a repository with an empty catalog.  After that, attempt to
                 # uninstall the package again, which should succeed even though
                 # the fmri is no longer in the publisher's catalog.
-                self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[6].get_depot_url())
+                self.pkg("set-publisher -O %s test1" % self.rurl6)
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test1")
 
@@ -3406,10 +3305,8 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # even though the package's installed publisher is known, but
                 # doesn't have the package's fmri in its catalog, but the
                 # package's fmri is in a different publisher's catalog.
-                self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[7].get_depot_url())
-                self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[6].get_depot_url())
+                self.pkg("set-publisher -O %s test3" % self.rurl7)
+                self.pkg("set-publisher -O %s test1" % self.rurl6)
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test1")
                 self.pkg("unset-publisher test3")
@@ -3418,8 +3315,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # as the installed publisher.  After that, attempt to uninstall
                 # the package again, which should succeed even though the fmri
                 # is only in a different publisher's catalog.
-                self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[7].get_depot_url())
+                self.pkg("set-publisher -O %s test3" % self.rurl7)
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test3")
 
@@ -3428,15 +3324,13 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 # Change the image metadata back to where it was, in preparation
                 # for subsequent tests.
-                self.pkg("set-publisher -O %s -P test1" % \
-                    self.dcs[1].get_depot_url())
+                self.pkg("set-publisher -O %s -P test1" % self.rurl1)
 
         def test_13_non_preferred_multimatch(self):
                 """Verify that when multiple non-preferred publishers offer the
                 same package that the expected install behaviour occurs."""
 
-                self.pkg("set-publisher -P -O %s test3" % \
-                    self.dcs[3].get_depot_url())
+                self.pkg("set-publisher -P -O %s test3" % self.rurl3)
 
                 # make sure we look here first; tests rely on that
                 self.pkg("set-publisher --search-before=test2 test1")
@@ -3536,8 +3430,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher | egrep sticky", exit=1 )
 
         def test_17_dependency_is_from_deleted_publisher(self):
-                self.pkg("set-publisher -O %s test4" %
-                    self.dcs[5].get_depot_url())
+                self.pkg("set-publisher -O %s test4" % self.rurl5)
                 self.pkg("install pkg://test4/corge")
                 self.pkg("set-publisher --disable test2")
                 self.pkg("set-publisher --disable test4")
@@ -3546,6 +3439,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # this should work, since dependency is already installed
                 # even though it is from a disabled publisher
                 self.pkg("install baz@1.0")
+
 
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """
@@ -3594,11 +3488,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         def test_empty_var_pkg(self):
                 """ Creates an empty bad_dir. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher", "cfg_cache", "file", "pkg", "index"]),
                     ["var/pkg"])
 
@@ -3608,11 +3501,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates bad_dir with only the publisher and known/state
                 dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_absent", "known_absent"]),
                     ["var/pkg"])
 
@@ -3621,11 +3513,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         def test_var_pkg_missing_cfg_cache(self):
                 """ Creates bad_dir with only the cfg_cache file missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3633,11 +3524,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         def test_var_pkg_missing_file(self):
                 """ Creating bad_dir with only the file dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["file_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3645,11 +3535,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         def test_var_pkg_missing_pkg(self):
                 """ Creates bad_dir with only the pkg dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(["pkg_absent"]),
+                self.dir = self.corrupt_image_create(self.rurl, set(["pkg_absent"]),
                     ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3657,11 +3546,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         def test_var_pkg_missing_index(self):
                 """ Creates bad_dir with only the index dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(["index_absent"]),
+                self.dir = self.corrupt_image_create(self.rurl, set(["index_absent"]),
                     ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3671,11 +3559,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 with an empty publisher and state/known dir.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_empty", "known_empty"]), ["var/pkg"])
 
                 # This is expected to fail because it will see an empty
@@ -3691,11 +3578,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 also works.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_empty", "known_empty"]), ["var/pkg"])
 
                 self.pkg("install --no-refresh foo@1.1", exit=1)
@@ -3708,11 +3594,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 a bad_dir creates a good copy other than what's specified
                 to be wrong. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(), ["var/pkg"])
+                self.dir = self.corrupt_image_create(self.rurl, set(), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -3725,11 +3610,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating empty
                 bad_dir.  """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher", "cfg_cache", "file", "pkg", "index"]),
                     [".org.opensolaris,pkg"])
 
@@ -3739,11 +3623,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating bad_dir
                 with only the publisher and known/state dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_absent", "known_absent"]),
                         [".org.opensolaris,pkg"])
 
@@ -3753,11 +3636,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating
                 bad_dir with only the cfg_cache file missing.  """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3766,11 +3648,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating
                 bad_dir with only the file dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(["file_absent"]),
+                self.dir = self.corrupt_image_create(self.rurl, set(["file_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3779,11 +3660,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating
                 bad_dir with only the pkg dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(["pkg_absent"]),
+                self.dir = self.corrupt_image_create(self.rurl, set(["pkg_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3792,11 +3672,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Creates a corrupted image at bad_dir by creating
                 bad_dir with only the index dir missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(["index_absent"]),
+                self.dir = self.corrupt_image_create(self.rurl, set(["index_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3806,11 +3685,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 with all dirs and files present, but with an empty publisher
                 and known/state dir. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_empty", "known_empty"]),
                     [".org.opensolaris,pkg"])
 
@@ -3823,11 +3701,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 works.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["publisher_empty", "known_empty"]),
                     [".org.opensolaris,pkg"])
 
@@ -3840,11 +3717,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 a bad_dir creates a good copy other than what's specified
                 to be wrong. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(),
+                self.dir = self.corrupt_image_create(self.rurl, set(),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -3859,13 +3735,12 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 possible.
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), ["var/pkg"], destroy=False)
 
                 self.pkg("install foo@1.1")
@@ -3875,12 +3750,11 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Complete Full image besides a User image missing cfg_cache
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl, set(), ["var/pkg"])
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl, set(), ["var/pkg"])
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"],
                     destroy=False)
 
@@ -3890,13 +3764,12 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 """ Complete User image besides a Full image missing cfg_cache
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), ["var/pkg"])
-                self.dir = self.corrupt_image_create(durl, set(),
+                self.dir = self.corrupt_image_create(self.rurl, set(),
                     [".org.opensolaris,pkg"], destroy=False)
 
                 self.pkg("install foo@1.1")
@@ -3955,17 +3828,10 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, foo1)
-                self.pkgsend_bulk(durl, foo2)
-                self.pkgsend_bulk(durl, fbar)
-                self.pkgsend_bulk(durl, qbar)
-                self.pkgsend_bulk(durl, qux1)
-                self.pkgsend_bulk(durl, qux2)
-                self.pkgsend_bulk(durl, fred1)
+                self.pkgsend_bulk(self.rurl, (foo1, foo2, fbar, qbar, qux1, qux2,
+                    fred1))
 
-
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 # First install the non-obsolete version of foo
                 self.pkg("install foo@1")
@@ -4009,7 +3875,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo@2", exit=1)
                 # now add a version of fred that doesn't require foo, and
                 # show that update works
-                self.pkgsend_bulk(durl, fred2)
+                self.pkgsend_bulk(self.rurl, fred2)
                 self.pkg("refresh")
                 self.pkg("install foo@2")
                 self.pkg("uninstall '*'") #clean up for next test
@@ -4047,15 +3913,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t7ap1_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, t7ap1_1)
+                self.image_create(self.rurl)
 
                 self.pkg("install t7ap1")
 
-                self.pkgsend_bulk(durl, t7ap1_2)
-                self.pkgsend_bulk(durl, t7ap2_1)
-                self.pkgsend_bulk(durl, t7ap3_1)
+                self.pkgsend_bulk(self.rurl, (t7ap1_2, t7ap2_1, t7ap3_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4098,16 +3961,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t7bp1_1)
-                self.pkgsend_bulk(durl, t7bp2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t7bp1_1, t7bp2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install t7bp1")
 
-                self.pkgsend_bulk(durl, t7bp1_2)
-                self.pkgsend_bulk(durl, t7bp2_2)
-                self.pkgsend_bulk(durl, t7bp3_1)
+                self.pkgsend_bulk(self.rurl, (t7bp1_2, t7bp2_2, t7bp3_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4143,15 +4002,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t7cp1_1)
-                self.pkgsend_bulk(durl, t7cp2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t7cp1_1, t7cp2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install t7cp1")
 
-                self.pkgsend_bulk(durl, t7cp2_2)
-                self.pkgsend_bulk(durl, t7cp3_1)
+                self.pkgsend_bulk(self.rurl, (t7cp2_2, t7cp3_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4182,14 +4038,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 """
 
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t6ap1_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, t6ap1_1)
+                self.image_create(self.rurl)
 
                 self.pkg("install t6ap1")
 
-                self.pkgsend_bulk(durl, t6ap1_2)
-                self.pkgsend_bulk(durl, t6ap2_1)
+                self.pkgsend_bulk(self.rurl, (t6ap1_2, t6ap2_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update", exit=4) # does nothing
@@ -4223,16 +4077,13 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t6ap1_1)
-                self.pkgsend_bulk(durl, t6ap2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t6ap1_1, t6ap2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install t6ap1")
                 self.pkg("list")
 
-                self.pkgsend_bulk(durl, t6ap1_2)
-                self.pkgsend_bulk(durl, t6ap2_2)
+                self.pkgsend_bulk(self.rurl, (t6ap1_2, t6ap2_2))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4259,14 +4110,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t8ap1_1)
-                self.pkgsend_bulk(durl, t8ap2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t8ap1_1, t8ap2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install t8ap2")
 
-                self.pkgsend_bulk(durl, t8ap1_2)
+                self.pkgsend_bulk(self.rurl, t8ap1_2)
 
                 self.pkg("refresh")
                 self.pkg("image-update", exit=4) # does nothing
@@ -4300,15 +4149,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t13ap1_1)
-                self.pkgsend_bulk(durl, t13ap2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t13ap1_1, t13ap2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install t13ap1")
 
-                self.pkgsend_bulk(durl, t13ap1_2)
-                self.pkgsend_bulk(durl, t13ap2_2)
+                self.pkgsend_bulk(self.rurl, (t13ap1_2, t13ap2_2))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4329,10 +4175,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t11p1)
-                self.pkgsend_bulk(durl, t11p2)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t11p1, t11p2))
+                self.image_create(self.rurl)
 
                 self.pkg("install netbeans")
                 self.pkg("list pkg:/developer/netbeans")
@@ -4360,11 +4204,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t11p1)
-                self.pkgsend_bulk(durl, t11p2)
-                self.pkgsend_bulk(durl, t11p3)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t11p1, t11p2, t11p3))
+                self.image_create(self.rurl)
 
                 self.pkg("install netbonze", exit=1)
 
@@ -4396,12 +4237,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t11p1)
-                self.pkgsend_bulk(durl, t11p2)
-                self.pkgsend_bulk(durl, t11p3)
-                self.pkgsend_bulk(durl, t11p4)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (t11p1, t11p2, t11p3, t11p4))
+                self.image_create(self.rurl)
 
                 self.pkg("install netbooze")
                 self.pkg("list pkg:/developer/netbooze")
@@ -4428,14 +4265,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, t12p1_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, t12p1_1)
+                self.image_create(self.rurl)
 
                 self.pkg("install netbeenz")
 
-                self.pkgsend_bulk(durl, t12p1_2)
-                self.pkgsend_bulk(durl, t12p2_1)
+                self.pkgsend_bulk(self.rurl, (t12p1_2, t12p2_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update -v")
@@ -4469,15 +4304,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, p1_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, p1_1)
+                self.image_create(self.rurl)
 
                 self.pkg("install remrenA")
 
-                self.pkgsend_bulk(durl, p1_2)
-                self.pkgsend_bulk(durl, p2_1)
-                self.pkgsend_bulk(durl, p3_1)
+                self.pkgsend_bulk(self.rurl, (p1_2, p2_1, p3_1))
 
                 self.pkg("refresh")
                 self.pkg("image-update")
@@ -4536,10 +4368,9 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, A1 + A2 + B2 + C2 + X + Y + Z)
+                self.pkgsend_bulk(self.rurl, (A1, A2, B2, C2, X, Y, Z))
 
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("install chained_A@1 chained_X chained_Z")
                 for p in ["chained_A@1", "chained_X@1"]:
@@ -4597,16 +4428,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, pA_1)
-                self.pkgsend_bulk(durl, pA_2)
-                self.pkgsend_bulk(durl, pA_3)
-
-                self.pkgsend_bulk(durl, pB_1)
-                self.pkgsend_bulk(durl, pB_2)
-                self.pkgsend_bulk(durl, pB_3)
-
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (pA_1, pA_2, pA_3, pB_1, pB_2, pB_3))
+                self.image_create(self.rurl)
 
                 # Check installation of an unobsoleted package with no
                 # dependencies.
@@ -4683,10 +4506,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, p1_1)
-                self.pkgsend_bulk(durl, p2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (p1_1, p2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install inc1p1")
                 self.pkg("install inc1p2", exit=4)
@@ -4720,15 +4541,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, p1_1)
-                self.pkgsend_bulk(durl, p2_1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (p1_1, p2_1))
+                self.image_create(self.rurl)
 
                 self.pkg("install inc2p1 inc2p2")
 
-                self.pkgsend_bulk(durl, p1_2)
-                self.pkgsend_bulk(durl, p2_2)
+                self.pkgsend_bulk(self.rurl, (p1_2, p2_2))
 
                 self.pkg("refresh")
                 self.pkg("list -afv")
@@ -4754,20 +4572,19 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
 
         def test_01(self):
                 """If an obsolete package is found in a preferred publisher and
                 a non-obsolete package of the same name is found in a
                 non-preferred publisher, pick the preferred pub as usual """
 
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(self.rurl1, self.obs)
+                self.pkgsend_bulk(self.rurl2, self.nonobs)
 
-                self.pkgsend_bulk(durl1, self.obs)
-                self.pkgsend_bulk(durl2, self.nonobs)
-
-                self.image_create(durl1, prefix="test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
+                self.image_create(self.rurl1, prefix="test1")
+                self.pkg("set-publisher -O " + self.rurl2 + " test2")
                 self.pkg("list -a")
 
                 self.pkg("install stem", exit=4) # noting to do since it's obs
@@ -4789,14 +4606,11 @@ class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
                     close
                 """
 
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(self.rurl1, (self.obs, lobs))
+                self.pkgsend_bulk(self.rurl2, (self.nonobs, lobs))
 
-                self.pkgsend_bulk(durl1, self.obs + lobs)
-                self.pkgsend_bulk(durl2, self.nonobs + lobs)
-
-                self.image_create(durl1, prefix="test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
+                self.image_create(self.rurl1, prefix="test1")
+                self.pkg("set-publisher -O " + self.rurl2 + " test2")
 
                 self.pkg("install stem", exit=1)
 
@@ -4845,16 +4659,14 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
                 self.make_misc_files(self.misc_files)
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.licensed10 + \
-                    self.licensed12 + self.licensed13 + self.baz10)
+                plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
+                    self.licensed12, self.licensed13, self.baz10))
 
         def test_01_install_update(self):
                 """Verifies that install and image-update handle license
                 acceptance and display."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="bobcat")
+                self.image_create(self.rurl, prefix="bobcat")
 
                 # First, test the basic install case to see if a license that
                 # does not require viewing or acceptance will be installed.
@@ -4924,8 +4736,9 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                plist = self.pkgsend_bulk(self.dc.get_depot_url(), self.dir10 +
-                    self.filesub10 + self.hardlink10)
+
+                plist = self.pkgsend_bulk(self.rurl, (self.dir10,
+                    self.filesub10, self.hardlink10))
 
                 self.plist = {}
                 for p in plist:
@@ -4946,7 +4759,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 """Verify that directory install fails as expected when it has
                 been replaced with a link prior to install."""
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
 
                 # The dest_dir's installed path.
                 dest_dir_name = "dir"
@@ -4961,7 +4774,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 """Verify that file install works as expected when its parent
                 directory has been replaced with a link."""
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
 
                 # File's parent directory replaced with a link.
                 self.pkg("install dir")
@@ -4976,7 +4789,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 """Verify that hardlink install fails as expected when
                 hardlink target is missing."""
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
 
                 # Hard link target is missing (failure expected).
                 self.pkg("install hardlink", exit=1)

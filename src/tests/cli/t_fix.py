@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -33,10 +32,9 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
-import shutil
-import stat
 import time
 import unittest
+
 
 class TestFix(pkg5unittest.SingleDepotTestCase):
 
@@ -103,18 +101,17 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
         misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum", "amber1", "amber2"]
 
-        misc_files2 = {"tmp/empty": ""}
+        misc_files2 = { "tmp/empty": "" }
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.make_misc_files(self.misc_files2)
-                durl = self.dc.get_depot_url()
                 self.plist = {}
-                for p in self.pkgsend_bulk(durl, self.amber10 +
-                    self.licensed13 + self.dir10 + self.file10 +
-                    self.preserve10 + self.preserve11 + self.preserve12 +
-                    self.driver10 + self.driver_prep10):
+                for p in self.pkgsend_bulk(self.rurl, (self.amber10,
+                    self.licensed13, self.dir10, self.file10, self.preserve10,
+                    self.preserve11, self.preserve12, self.driver10,
+                    self.driver_prep10)):
                         pfmri = fmri.PkgFmri(p, "5.11")
                         pfmri.publisher = None
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
@@ -139,8 +136,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 """Basic fix test: install the amber package, modify one of the
                 files, and make sure it gets fixed.  """
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install amber@1.0")
 
                 index_file = os.path.join(self.img_path, "var","pkg","index",
@@ -177,8 +173,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 """Hardlink test: make sure that a file getting fixed gets any
                 hardlinks that point to it updated"""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install amber@1.0")
 
                 victim = "etc/amber1"
@@ -199,8 +194,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 """Verify that fix works with licenses that require acceptance
                 and/or display."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install --accept licensed@1.3")
 
                 victim = "lib/libc.so.1"
@@ -299,8 +293,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 """Ensure that files and directories will have their owner,
                 group, and modes fixed."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 # Because fix and install operations for directories and
                 # files can indirectly interact, each package must be
@@ -318,8 +311,7 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 """Verify that fixing a name collision for drivers doesn't
                 cause a stack trace. Bug 14948"""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 self.pkg("install drv-prep")
                 self.pkg("install drv")

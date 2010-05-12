@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -66,7 +65,12 @@ class RepoChooser(object):
 
                         url_tup = urlparse.urlsplit(ds.url)
 
-                        misc.msg(dfmt % (url_tup[1], ds.success, ds.failures,
+                        res_path = url_tup[1]
+                        if not res_path:
+                                # Some schemes don't have a netloc.
+                                res_path = url_tup[2]
+
+                        misc.msg(dfmt % (res_path, ds.success, ds.failures,
                             ds.num_connect, speedstr, sizestr, ds.used,
                             ds.connect_time, ds.quality))
 
@@ -107,10 +111,17 @@ class RepoChooser(object):
                         url = ouri.uri.rstrip("/")
                         if url in self.__rsobj:
                                 rs = self.__rsobj[url]
-                                origin_speed += rs.transfer_speed
-                                origin_count += 1
-                                origin_cspeed += rs.connect_time
-                                origin_ccount += 1
+                                if rs.bytes_xfr > 0:
+                                        # Exclude sources that don't
+                                        # contribute to transfer speed.
+                                        origin_speed += rs.transfer_speed
+                                        origin_count += 1
+                                if rs.connect_time > 0:
+                                        # Exclude sources that don't
+                                        # contribute to connection
+                                        # time.
+                                        origin_cspeed += rs.connect_time
+                                        origin_ccount += 1
                         else:
                                 rs = RepoStats(ouri)
                                 self.__rsobj[rs.url] = rs
@@ -175,6 +186,7 @@ class RepoStats(object):
                 repository URI."""
 
                 self.__url = repouri.uri.rstrip("/")
+                self.__scheme = urlparse.urlsplit(self.__url)[0]
                 self.__priority = repouri.priority
 
                 self._err_decay = 0
@@ -259,6 +271,13 @@ class RepoStats(object):
                 self.__total_tx += 1
 
         def reset(self):
+                """Reset transport stats in preparation for next operation."""
+
+                # The connection stats (such as number, cspeed, time) are not
+                # reset because the metadata bandwidth calculation would be
+                # skewed when picking a host that gives us fast data.  In that
+                # case, keeping track of the latency helps quality make a
+                # better choice.
                 self.__bytes_xfr = 0.0
                 self.__seconds_xfr = 0.0
                 self.__failed_tx = 0
@@ -320,6 +339,12 @@ class RepoStats(object):
                 return self.__priority
 
         @property
+        def scheme(self):
+                """Return the scheme of the RepoURI. (e.g. http, file.)"""
+
+                return self.__scheme
+
+        @property
         def quality(self):
                 """Return the quality, as an integer value, of the
                 repository.  A higher value means better quality.
@@ -379,7 +404,7 @@ class RepoStats(object):
                 #
                 # The equation is currently defined as:
                 #
-                # Q = Unused_bonus() + Cspeed * ((bytes/1+seconds) /
+                # Q = Unused_bonus() + Cspeed * ((bytes/.001+seconds) /
                 # origin_speed)^2 + random_bonus(Crand_max) - Cconn_speed *
                 # (connect_speed / origin_connect_speed)^2 - 
                 # Ccontent_error * (content_errors)^2 - Cerror *
@@ -396,15 +421,13 @@ class RepoStats(object):
                 # The constants were derived by live testing, and using
                 # a simulated environment.
                 #
-                
                 q = unused_bonus(self) + \
-                    (Cspeed * ((self.__bytes_xfr / (1 + self.__seconds_xfr))
+                    (Cspeed * ((self.__bytes_xfr / (.001 + self.__seconds_xfr))
                     / ospeed)**2) + \
                     int(random.gauss(0, Crand_max)) - \
                     (Cconn_speed * (self.connect_time / ocspeed)**2) - \
                     (Ccontent_err * (self.__content_err)**2) - \
                     (Cerror * (self.__failed_tx + self._err_decay)**2)
-
                 return int(q)
 
         @property

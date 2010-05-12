@@ -784,6 +784,16 @@ EXAMPLES
           -c /root/creds/example.cert -g https://secure.example.com/repo \
           example.com
 
+     Example 11:  Add new publisher with a repository located at
+     /export/repo using automatic configuration:
+
+     $ pkg set-publisher -p file:/export/repo
+
+     Example 12:  Add new publisher example.org with a repository located
+     at /export/repo/example.com using manual configuration:
+
+     $ pkg set-publisher -g file:/export/repo example.com
+
 
 EXIT STATUS
      The following exit values are returned:

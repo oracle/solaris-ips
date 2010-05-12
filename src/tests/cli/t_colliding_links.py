@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -29,13 +28,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import re
-import time
-import errno
 import unittest
-import shutil
-import sys
-from stat import *
+
 
 class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -69,20 +63,16 @@ class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-
-                depot = self.dc.get_depot_url()
-                self.pkgsend_bulk(depot, self.pkg_A)
-                self.pkgsend_bulk(depot, self.pkg_B)
-                self.pkgsend_bulk(depot, self.pkg_C)
+                self.pkgsend_bulk(self.rurl, (self.pkg_A, self.pkg_B,
+                    self.pkg_C))
 
         def test_1(self):
                 """Verify symlinks are correctly reference counted
                 during installation & removal of packages"""
                 # create an image w/ locales set
-                depot = self.dc.get_depot_url()
-                self.image_create(depot)
+                self.image_create(self.rurl)
                 # install packages and verify
-              
+
                 self.pkg("install pkg_A pkg_B")
                 self.pkg("verify")
 
@@ -100,6 +90,7 @@ class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("uninstall pkg_B pkg_C")
                 self.pkg("verify")
+
 
 if __name__ == "__main__":
         unittest.main()

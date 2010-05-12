@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -119,7 +118,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
           "mirrors": [], 
           "name": "source", 
           "origins": [
-            "http://localhost:12001/"
+            "%REAL_ORIGIN%/"
           ], 
           "refresh_seconds": 43200, 
           "registration_uri": "", 
@@ -139,6 +138,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
                 self.make_misc_files(self.misc_files)
+                self.p5i_bobcat = self.p5i_bobcat.replace("%REAL_ORIGIN%",
+                    self.rurl)
 
         def __try_bad_installs(self, api_obj):
 
@@ -176,13 +177,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                     api_obj.execute_plan)
 
         def test_bad_orderings(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl, prefix="bobcat")
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                api_obj = self.image_create(self.rurl, prefix="bobcat")
 
                 self.assert_(api_obj.describe() is None)
 
@@ -198,7 +195,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 self.assert_(api_obj.describe() is None)
 
-                self.pkgsend_bulk(durl, self.foo12)
+                self.pkgsend_bulk(self.rurl, self.foo12)
                 api_obj.refresh(immediate=True)
 
                 api_obj.plan_update_all(sys.argv[0])
@@ -220,13 +217,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         def test_reset(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl, prefix="bobcat")
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                api_obj = self.image_create(self.rurl, prefix="bobcat")
 
                 recursive_removal = False
 
@@ -249,7 +241,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("verify")
 
-                self.pkgsend_bulk(durl, self.foo12)
+                self.pkgsend_bulk(self.rurl, self.foo12)
                 api_obj.refresh(immediate=True)
 
                 api_obj.plan_update_all(sys.argv[0])
@@ -294,14 +286,13 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 if the client transitions from v0 to v1 or back that the correct
                 state information is recorded in the image catalog."""
 
+                # This test requires an actual depot due to v0 operation usage.
                 # First create the image and get v1 catalog.
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10 + self.quux10)
-                self.image_create(durl, prefix="bobcat")
+                self.dc.start()
+                self.pkgsend_bulk(self.durl, (self.foo10, self.quux10))
+                api_obj = self.image_create(self.durl, prefix="bobcat")
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self.pkg("publisher")
                 img = api_obj.img
                 kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
                 entry = [e for f, e in kcat.entries()][0]
@@ -311,9 +302,15 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Next, disable v1 catalog for the depot and force a client
                 # refresh.  Only v0 state should be present.
-                self.dc.set_disable_ops(["catalog/1"])
                 self.dc.stop()
+                self.dc.set_disable_ops(["catalog/1"])
                 self.dc.start()
+
+                # Since the depot state changed while the API object was
+                # still active, it needs to be reset to clear the internal
+                # transport state cache.
+                api_obj.reset()
+
                 api_obj.refresh(immediate=True)
                 api_obj.reset()
                 img = api_obj.img
@@ -450,13 +447,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 """Verify that properties of the ImageInterface api object are
                 accessible and return expected values."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="bobcat")
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
+                api_obj = self.image_create(self.rurl, prefix="bobcat")
                 self.assertEqual(api_obj.root, self.img_path)
 
         def test_publisher_apis(self):
@@ -466,13 +457,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 redundant since other tests for the client will use those
                 methods indirectly."""
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10 + self.bar10)
-                self.image_create(durl, prefix="bobcat")
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                plist = self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10))
+                api_obj = self.image_create(self.rurl, prefix="bobcat")
 
                 # Verify that existence tests succeed.
                 self.assertTrue(api_obj.has_publisher("bobcat"))
@@ -574,7 +560,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Verify that output matches expected output.
                 fobj.seek(0)
                 output = fobj.read()
-                self.assertEqual(output, self.p5i_bobcat)
+                self.assertEqualDiff(output, self.p5i_bobcat)
 
                 def validate_results(results):
                         # First result should be 'bobcat' publisher and its
@@ -713,14 +699,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 update operations will raise the correct exceptions or
                 enforce the requirements of the license actions within. """
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.licensed10 + \
-                    self.licensed12 + self.licensed13 + self.bar10 + self.baz10)
-                self.image_create(durl, prefix="bobcat")
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                plist = self.pkgsend_bulk(self.rurl, (self.licensed10,
+                    self.licensed12, self.licensed13, self.bar10, self.baz10))
+                api_obj = self.image_create(self.rurl, prefix="bobcat")
 
                 # First, test the basic install case to see if expected license
                 # data is returned.

@@ -1196,6 +1196,12 @@ class CliTestCase(Pkg5TestCase):
         def get_img_path(self):
                 return self.img_path
 
+        def get_img_api_obj(self):
+                progresstracker = pkg.client.progress.NullProgressTracker()
+                return pkg.client.api.ImageInterface(self.get_img_path(),
+                    CLIENT_API_VERSION, progresstracker, lambda x: False,
+                    PKG_CLIENT_NAME)
+
         def image_create(self, repourl, prefix="test", variants=EmptyDict):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
@@ -1444,8 +1450,10 @@ class CliTestCase(Pkg5TestCase):
                 # This is a nasty hack which is here as a placeholder until
                 # pkgsend can give us better error granularity.
                 #
-                if cmdop in ["publish", "open"] and "status '400'" in out and \
-                    "already exists" in out and retry400:
+                if cmdop in ["publish", "open"] and retry400 and \
+                    ("status '400'" in out or
+                    "'open' failed for transaction ID" in out) and \
+                    "already exists" in out:
                         time.sleep(1)
                         return self.pkgsend(depot_url, command, exit,
                             comment, retry400=False)
@@ -1469,6 +1477,9 @@ class CliTestCase(Pkg5TestCase):
                     A list containing the fmris of any packages that were
                     published as a result of the commands executed will be
                     returned; it will be empty if none were. """
+
+                if isinstance(commands, (list, tuple)):
+                        commands = "".join(commands)
 
                 plist = []
                 try:
@@ -1684,18 +1695,31 @@ class CliTestCase(Pkg5TestCase):
 
                 return retcode
 
-        def start_depot(self, port, depotdir, logpath, refresh_index=False,
-            debug_features=EmptyI, properties=EmptyI, set_origins=False):
-                """ Convenience routine to help subclasses start
+        def create_repo(self, repodir, properties=EmptyI):
+                """ Convenience routine to help subclasses create a package
+                    repository.  Returns a pkg.server.repository.Repository
+                    object. """
+
+                # Note that this must be deferred until after PYTHONPATH
+                # is set up.
+                import pkg.server.repository as sr
+                repo = sr.Repository(auto_create=True, properties=properties,
+                    repo_root=repodir)
+                self.debug("created repository %s" % repodir)
+                return repo
+
+        def prep_depot(self, port, repodir, logpath, refresh_index=False,
+            debug_features=EmptyI, properties=EmptyI, start=False):
+                """ Convenience routine to help subclasses prepare
                     depots.  Returns a depotcontroller. """
 
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.depotcontroller as depotcontroller
 
-                self.debug("start_depot: depot listening on port %d" % port)
-                self.debug("start_depot: depot data in %s" % depotdir)
-                self.debug("start_depot: depot logging to %s" % logpath)
+                self.debug("prep_depot: set depot port %d" % port)
+                self.debug("prep_depot: set depot repository %s" % repodir)
+                self.debug("prep_depot: set depot log to %s" % logpath)
 
                 dc = depotcontroller.DepotController(
                     wrapper_start=self.coverage_cmd.split(),
@@ -1704,25 +1728,26 @@ class CliTestCase(Pkg5TestCase):
                 dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
                 for f in debug_features:
                         dc.set_debug_feature(f)
-                dc.set_repodir(depotdir)
+                dc.set_repodir(repodir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)
-
-                if set_origins: 
-                        # Since only this routine knows the URI for the depot
-                        # at this point, callers must ask to have this property
-                        # set for them.  Not automatically doing it allows tests
-                        # that use start_depot directly to not be affected.
-                        dc.set_property("repository", "origins",
-                            dc.get_depot_url())
 
                 for section in properties:
                         for prop, val in properties[section].iteritems():
                                 dc.set_property(section, prop, val)
                 if refresh_index:
                         dc.set_refresh_index()
-                dc.start()
-                self.debug("start_depot: started")
+
+                if start:
+                        # If the caller requested the depot be started, then let
+                        # the depot process create the repository.
+                        dc.start()
+                        self.debug("depot on port %s started" % port)
+                else:
+                        # Otherwise, create the repository with the assumption
+                        # that the caller wants that at the least, but doesn't
+                        # need the depot server (yet).
+                        self.create_repo(repodir, properties=properties)
                 return dc
 
         def _api_install(self, api_obj, pkg_list, **kwargs):
@@ -1745,17 +1770,18 @@ class CliTestCase(Pkg5TestCase):
                 api_obj.execute_plan()
                 api_obj.reset()
 
+
 class ManyDepotTestCase(CliTestCase):
 
-        def __init__(self, methodName='runTest'):
+        def __init__(self, methodName="runTest"):
                 super(ManyDepotTestCase, self).__init__(methodName)
                 self.dcs = {}
 
-        def setUp(self, publishers, debug_features=EmptyI):
+        def setUp(self, publishers, debug_features=EmptyI, start_depots=False):
                 CliTestCase.setUp(self)
 
                 self.debug("setup: %s" % self.id())
-                self.debug("starting %d depot(s)" % len(publishers))
+                self.debug("creating %d repo(s)" % len(publishers))
                 self.debug("publishers: %s" % publishers)
                 self.debug("debug_features: %s" % list(debug_features))
                 self.dcs = {}
@@ -1764,26 +1790,26 @@ class ManyDepotTestCase(CliTestCase):
                         i = n + 1
                         testdir = os.path.join(self.test_root)
 
-                        depotdir = os.path.join(testdir,
-                            "depot_contents%d" % i)
+                        repodir = os.path.join(testdir,
+                            "repo_contents%d" % i)
 
-                        for dir in (testdir, depotdir):
+                        for dir in (testdir, repodir):
                                 try:
                                         os.makedirs(dir, 0755)
                                 except OSError, e:
                                         if e.errno != errno.EEXIST:
                                                 raise e
 
-                        # We pick an arbitrary base port.  This could be more
-                        # automated in the future.
                         depot_logfile = os.path.join(testdir,
                             "depot_logfile%d" % i)
 
                         props = { "publisher": { "prefix": pub } }
-                        self.dcs[i] = self.start_depot(12000 + i,
-                            depotdir, depot_logfile,
-                            debug_features=debug_features,
-                            properties=props)
+
+                        # We pick an arbitrary base port.  This could be more
+                        # automated in the future.
+                        self.dcs[i] = self.prep_depot(12000 + i, repodir,
+                            depot_logfile, debug_features=debug_features,
+                            properties=props, start=start_depots)
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.
@@ -1818,11 +1844,15 @@ class ManyDepotTestCase(CliTestCase):
                 oldhdlr = signal.signal(signal.SIGINT, self.killall_sighandler)
 
                 try:
+                        check_dc = []
                         for i in sorted(self.dcs.keys()):
                                 dc = self.dcs[i]
-                                dir = dc.get_repodir()
+                                if not dc.started:
+                                        continue
+                                check_dc.append(dc)
+                                path = dc.get_repodir()
                                 self.debug("stopping depot at url: %s, %s" % \
-                                    (dc.get_depot_url(), dir))
+                                    (dc.get_depot_url(), path))
 
                                 status = 0
                                 try:
@@ -1832,9 +1862,8 @@ class ManyDepotTestCase(CliTestCase):
 
                                 if status:
                                         self.debug("depot: %s" % status)
-                                
-                        for i in sorted(self.dcs.keys()):
-                                dc = self.dcs[i]
+
+                        for dc in check_dc:
                                 try:
                                         self.check_traceback(dc.get_logpath())
                                 except Exception:
@@ -1860,15 +1889,24 @@ class ManyDepotTestCase(CliTestCase):
 
 class SingleDepotTestCase(ManyDepotTestCase):
 
-        def setUp(self, debug_features=EmptyI, publisher="test"):
+        def setUp(self, debug_features=EmptyI, publisher="test",
+            start_depot=False):
                 ManyDepotTestCase.setUp(self, [publisher],
-                    debug_features=debug_features)
+                    debug_features=debug_features, start_depots=start_depot)
 
         def __get_dc(self):
                 if self.dcs:
                         return self.dcs[1]
                 else:
                         return None
+
+        @property
+        def durl(self):
+                return self.dc.get_depot_url()
+
+        @property
+        def rurl(self):
+                return self.dc.get_repo_url()
 
         # dc is a readonly property which is an alias for self.dcs[1],
         # for convenience of writing test cases.
@@ -1887,10 +1925,11 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         for example).
         """
 
-        def setUp(self, debug_features=EmptyI, publisher="test"):
+        def setUp(self, debug_features=EmptyI, publisher="test",
+            start_depot=False):
                 self.backup_img_path = None
                 SingleDepotTestCase.setUp(self, debug_features=debug_features,
-                    publisher=publisher)
+                    publisher=publisher, start_depot=start_depot)
 
         def tearDown(self):
                 self.__uncorrupt_img_path()

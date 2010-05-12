@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -32,6 +31,7 @@ import os
 import pkg.fmri as fmri
 import shutil
 import unittest
+
 
 class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -68,23 +68,23 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                self.plist = self.pkgsend_bulk(self.dc.get_depot_url(),
-                    self.badfile10 + self.baddir10 + self.bronze10)
+                self.plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
+                    self.baddir10, self.bronze10))
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""
 
-		durl = self.dc.get_depot_url()
                 pkg1 = """
                     open jade@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
                     close
                 """
-                self.pkgsend_bulk(durl, pkg1)
-		self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, pkg1)
+		self.image_create(self.rurl)
 
                 self.pkg("info foo@x.y", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129",
+                    exit=1)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T1", exit=1)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.95:", exit=1)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.", exit=1)
@@ -111,7 +111,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 """local pkg info should fail in an empty image; remote
                 should succeed on a match """
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.rurl)
                 self.pkg("info", exit=1)
 
         def test_info_local_remote(self):
@@ -139,13 +139,11 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-
-                self.pkgsend_bulk(durl, pkg1)
-                self.pkgsend_bulk(durl, pkg2)
-                self.pkgsend_bulk(durl, pkg3)
-
-                self.image_create(durl)
+                # This unit test needs an actual depot due to unprivileged user
+                # testing.
+                self.dc.start()
+                self.pkgsend_bulk(self.durl, (pkg1, pkg2, pkg3))
+                self.image_create(self.durl)
 
                 # Install one package and verify
                 self.pkg("install jade")
@@ -197,6 +195,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(lines[6], "         State: Not installed")
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
+                self.dc.stop()
 
         def test_bug_2274(self):
                 """Verify that a failure to retrieve license information, for
@@ -208,9 +207,8 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, pkg1)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, pkg1)
+                self.image_create(self.rurl)
                 self.pkg("info --license -r bronze")
                 self.pkg("info --license -r silver", exit=1)
                 self.pkg("info --license -r bronze silver", exit=1)
@@ -228,8 +226,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 """Verify that pkg info handles packages with invalid
                 metadata."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 # Verify that no packages are installed.
                 self.pkg("list", exit=1)
@@ -303,14 +300,13 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, target10 + ren_correct10 +
-                    ren_op_variant10 + ren_variant_missing10 +
-                    ren_partial_variant10)
+                plist = self.pkgsend_bulk(self.rurl, (target10, ren_correct10,
+                    ren_op_variant10, ren_variant_missing10,
+                    ren_partial_variant10))
 
                 # Create an image.
                 variants = { "variant.cat": "bobcat" }
-                self.image_create(durl, variants=variants)
+                self.image_create(self.rurl, variants=variants)
 
                 # First, verify that a renamed package (for all variants), and
                 # with the correct dependencies will provide the expected info.

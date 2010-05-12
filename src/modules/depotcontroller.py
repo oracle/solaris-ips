@@ -19,17 +19,19 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import httplib
 import os
 import pkg.pkgsubprocess as subprocess
+import pkg.server.repository as sr
 import sys
 import signal
 import time
+import urllib
 import urllib2
+import urlparse
 
 from pkg.misc import versioned_urlopen
 
@@ -121,6 +123,14 @@ class DepotController(object):
 
         def get_repodir(self):
                 return self.__dir
+
+        def get_repo(self, auto_create=False):
+                return sr.Repository(auto_create=auto_create,
+                    cfgpathname=self.__cfg_file, repo_root=self.__dir)
+
+        def get_repo_url(self):
+                return urlparse.urlunparse(("file", "", urllib.pathname2url(
+                    self.__dir), "", "", ""))
 
         def set_readonly(self):
                 self.__readonly = True
@@ -221,6 +231,13 @@ class DepotController(object):
                 if status != None:
                         return False
                 return self.__network_ping()
+
+        @property
+        def started(self):
+                """ Return a boolean value indicating whether a depot process
+                    has been started using this depotcontroller. """
+
+                return self.__depot_handle != None
 
         def get_args(self):
                 """ Return the equivalent command line invocation (as an

@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -31,17 +30,18 @@ import pkg5unittest
 import unittest
 import os
 
+
 class TestPkgVersion(pkg5unittest.SingleDepotTestCase):
 
         def test_pkg_version_bad_opts(self):
                 """ test pkg version with bad options """
-			
-		durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
 
                 self.pkg("version -vq", exit=2)
                 self.pkg("version foo", exit=2)
                 self.pkg("version --", exit=2)
+
 
 if __name__ == "__main__":
         unittest.main()

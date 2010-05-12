@@ -20,22 +20,17 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import errno
 import os
 import re
-import time
-import errno
 import unittest
-import shutil
-import sys
-from stat import *
 
 # needed to get variant settings
 import pkg.client.imageconfig as imageconfig
@@ -94,45 +89,40 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         close"""
 
         pkg_list_all = set([
-                "pkg_i386",
-                "pkg_sparc",
-                "pkg_shared",
-                "pkg_inc",
-                "pkg_cluster"
+            "pkg_i386",
+            "pkg_sparc",
+            "pkg_shared",
+            "pkg_inc",
+            "pkg_cluster"
         ])
 
         misc_files = [
-                "tmp/pkg_i386/shared/pkg_i386_shared",
-                "tmp/pkg_i386/unique/pkg_i386",
+            "tmp/pkg_i386/shared/pkg_i386_shared",
+            "tmp/pkg_i386/unique/pkg_i386",
 
-                "tmp/pkg_sparc/shared/pkg_sparc_shared",
-                "tmp/pkg_sparc/unique/pkg_sparc",
+            "tmp/pkg_sparc/shared/pkg_sparc_shared",
+            "tmp/pkg_sparc/unique/pkg_sparc",
 
-                "tmp/pkg_shared/shared/common",
-                "tmp/pkg_shared/shared/pkg_shared_i386",
-                "tmp/pkg_shared/shared/pkg_shared_sparc",
-                "tmp/pkg_shared/shared/global_motd",
-                "tmp/pkg_shared/shared/nonglobal_motd",
-                "tmp/pkg_shared/unique/global",
-                "tmp/pkg_shared/unique/nonglobal"
+            "tmp/pkg_shared/shared/common",
+            "tmp/pkg_shared/shared/pkg_shared_i386",
+            "tmp/pkg_shared/shared/pkg_shared_sparc",
+            "tmp/pkg_shared/shared/global_motd",
+            "tmp/pkg_shared/shared/nonglobal_motd",
+            "tmp/pkg_shared/unique/global",
+            "tmp/pkg_shared/unique/nonglobal"
         ]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
 
                 self.make_misc_files(self.misc_files)
-
-                depot = self.dc.get_depot_url()
-                self.pkgsend_bulk(depot, self.pkg_i386)
-                self.pkgsend_bulk(depot, self.pkg_sparc)
-                self.pkgsend_bulk(depot, self.pkg_shared)
-                self.pkgsend_bulk(depot, self.pkg_inc)
-                self.pkgsend_bulk(depot, self.pkg_cluster)
+                self.pkgsend_bulk(self.rurl, (self.pkg_i386, self.pkg_sparc,
+                    self.pkg_shared, self.pkg_inc, self.pkg_cluster))
 
                 # verify pkg search indexes
                 self.verify_search = True
 
-                # verify installed images before we changing variants
+                # verify installed images before changing variants
                 self.verify_install = False
 
         def f_verify(self, path, token=None, negate=False):
@@ -154,10 +144,12 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         self.assert_(False,
                             "File exists when it shouldn't: %s" % path)
 
-                token_re = re.compile("^"     + token  + "$"   \
-                                      "|^"    + token + "[/_]" \
-                                      "|[/_]" + token + "$"    \
-                                      "|[/_]" + token + "[/_]")
+                token_re = re.compile(
+                    "^"     + token  + "$"   \
+                    "|^"    + token + "[/_]" \
+                    "|[/_]" + token + "$"    \
+                    "|[/_]" + token + "[/_]")
+
                 found = False
                 for line in f:
                         if token_re.search(line):
@@ -305,11 +297,11 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 assert v_zone2 == 'global' or v_zone2 == 'nonglobal'
 
                 # create an image
-                ic_args = "";
-                ic_args += " --variant variant.arch=%s " % v_arch
-                ic_args += " --variant variant.opensolaris.zone=%s " % v_zone
-                depot = self.dc.get_depot_url()
-                self.pkg_image_create(depot, additional_args=ic_args)
+                variants = {
+                    "variant.arch": v_arch,
+                    "variant.opensolaris.zone": v_zone
+                }
+                self.image_create(self.rurl, variants=variants)
                 self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch))
                 self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone))
 
@@ -317,8 +309,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 ii_args = "";
                 for p in pl:
                         ii_args += " %s " % p
-                self.pkg("install %s" % ii_args)                
-                
+                self.pkg("install %s" % ii_args)
+
                 # if we're paranoid, then verify the image we just installed
                 if self.verify_install:
                         self.i_verify(v_arch, v_zone, pl)
@@ -339,12 +331,15 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_01_none_1(self):
                 self.cv_test("i386", "global", ["pkg_cluster",],
                     "i386", "global", ["pkg_cluster"])
+
         def test_cv_01_none_2(self):
                 self.cv_test("i386", "nonglobal", ["pkg_cluster",],
                     "i386", "nonglobal", ["pkg_cluster"])
+
         def test_cv_01_none_3(self):
                 self.cv_test("sparc", "global", ["pkg_cluster",],
                     "sparc", "global", ["pkg_cluster"])
+
         def test_cv_01_none_4(self):
                 self.cv_test("sparc", "nonglobal", ["pkg_cluster",],
                     "sparc", "nonglobal", ["pkg_cluster"])
@@ -352,6 +347,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_02_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_shared"],
                     "sparc", "global", ["pkg_shared"])
+
         def test_cv_02_arch_2(self):
                 self.cv_test("sparc", "global", ["pkg_shared"],
                     "i386", "global", ["pkg_shared"])
@@ -359,6 +355,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_03_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_inc",],
                     "sparc", "global", ["pkg_inc"])
+
         def test_cv_03_arch_2(self):
                 self.cv_test("sparc", "global", ["pkg_inc"],
                     "i386", "global", ["pkg_inc"])
@@ -366,6 +363,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_04_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_i386"],
                     "sparc", "global", [])
+
         def test_cv_04_arch_2(self):
                 self.cv_test("sparc", "global", ["pkg_sparc"],
                     "i386", "global", [])
@@ -374,6 +372,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.cv_test("i386", "global",
                     ["pkg_i386", "pkg_shared", "pkg_inc"],
                     "sparc", "global", ["pkg_shared", "pkg_inc"])
+
         def test_cv_05_arch_2(self):
                 self.cv_test("sparc", "global",
                     ["pkg_sparc", "pkg_shared", "pkg_inc"],
@@ -382,6 +381,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_06_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_cluster",],
                     "sparc", "global", ["pkg_cluster"])
+
         def test_cv_06_arch_2(self):
                 self.cv_test("sparc", "global", ["pkg_cluster"],
                     "i386", "global", ["pkg_cluster"])
@@ -389,6 +389,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_07_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_cluster", "pkg_inc"],
                     "sparc", "global", ["pkg_cluster", "pkg_inc"])
+
         def test_cv_07_arch_2(self):
                 self.cv_test("sparc", "global", ["pkg_cluster", "pkg_inc"],
                     "i386", "global", ["pkg_cluster", "pkg_inc"])
@@ -396,6 +397,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_08_zone_1(self):
                 self.cv_test("i386", "global", ["pkg_cluster",],
                     "i386", "nonglobal", ["pkg_cluster"])
+
         def test_cv_08_zone_2(self):
                 self.cv_test("i386", "nonglobal", ["pkg_cluster"],
                     "i386", "global", ["pkg_cluster"])
@@ -403,6 +405,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_09_zone_1(self):
                 self.cv_test("sparc", "global", ["pkg_cluster",],
                     "sparc", "nonglobal", ["pkg_cluster"])
+
         def test_cv_09_zone_2(self):
                 self.cv_test("sparc", "nonglobal", ["pkg_cluster"],
                     "sparc", "global", ["pkg_cluster"])
@@ -410,6 +413,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_10_arch_and_zone_1(self):
                 self.cv_test("i386", "global", ["pkg_cluster",],
                     "sparc", "nonglobal", ["pkg_cluster"])
+
         def test_cv_10_arch_and_zone_2(self):
                 self.cv_test("sparc", "nonglobal", ["pkg_cluster"],
                     "i386", "global", ["pkg_cluster"])
@@ -417,9 +421,11 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         def test_cv_11_arch_and_zone_1(self):
                 self.cv_test("i386", "nonglobal", ["pkg_cluster",],
                     "sparc", "global", ["pkg_cluster"])
+
         def test_cv_11_arch_and_zone_2(self):
                 self.cv_test("sparc", "global", ["pkg_cluster"],
                     "i386", "nonglobal", ["pkg_cluster"])
+
 
 if __name__ == "__main__":
         unittest.main()

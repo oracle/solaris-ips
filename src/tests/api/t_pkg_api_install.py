@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -43,7 +42,7 @@ import pkg.misc as misc
 import pkg.portable as portable
 import shutil
 
-API_VERSION = 37
+
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
@@ -201,13 +200,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
@@ -225,14 +219,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
-
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.__do_install(api_obj, ["foo"])
@@ -246,7 +234,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("search -r blah", exit = 1)
 
                 # check to make sure timestamp was set to correct value
-
                 libc_path = os.path.join(self.get_img_path(), "lib/libc.so.1")
                 stat = os.stat(libc_path)
 
@@ -267,13 +254,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_basics_3(self):
                 """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                api_obj = self.image_create(self.rurl)
 
                 self.__do_install(api_obj, ["foo@1.0"])
 
@@ -295,14 +277,9 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_basics_4(self):
                 """ Add bar@1.0, dependent on foo@1.0, install, uninstall. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 api_obj.reset()
@@ -322,13 +299,10 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Verify that package install and uninstall works as expected
                 when files or directories are missing. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar09 + self.bar10 + self.bar11 + \
-                    self.foo10 + self.foo12 + self.moving10 + self.moving20)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.bar09, self.bar10,
+                    self.bar11, self.foo10, self.foo12, self.moving10,
+                    self.moving20))
+                api_obj = self.image_create(self.rurl)
 
                 # Verify that missing files will be replaced during upgrade if
                 # the file action has changed (even if the content hasn't),
@@ -376,22 +350,16 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_uninstall(api_obj, ["moving@2.0"])
 
         def test_image_upgrade(self):
-                """ Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
-                    List all packages.  Upgrade image. """
+                """ Send package bar@1.1, dependent on foo@1.2.  Install
+                    bar@1.0.  List all packages.  Upgrade image. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                api_obj = self.image_create(self.rurl)
 
                 self.__do_install(api_obj, ["bar@1.0"])
 
-                self.pkgsend_bulk(durl, self.foo12)
-                self.pkgsend_bulk(durl, self.bar11)
+                self.pkgsend_bulk(self.rurl, (self.foo12, self.bar11))
 
                 self.pkg("contents -H")
                 self.pkg("list")
@@ -415,12 +383,9 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_ipkg_out_of_date(self):
                 """Make sure that packaging system out-of-date testing works."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10 + self.foo12 + self.corepkgs)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo12,
+                    self.corepkgs))
+                api_obj = self.image_create(self.rurl)
 
                 # We need to pretend that we're running out of the image we just
                 # created, so that the up to date code looks in that image to do
@@ -503,16 +468,12 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.plan_update_all(argv0)
 
         def test_recursive_uninstall(self):
-                """Install bar@1.0, dependent on foo@1.0, uninstall foo recursively."""
+                """Install bar@1.0, dependent on foo@1.0, uninstall foo
+                recursively."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                    self.bar10))
+                api_obj = self.image_create(self.rurl)
 
                 self.__do_install(api_obj, ["bar@1.0"])
 
@@ -529,13 +490,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """Trying to remove a package that's a dependency of another
                 package should fail if the uninstall isn't recursive."""
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10))
+                api_obj = self.image_create(self.rurl)
 
                 self.__do_install(api_obj, ["bar@1.0"])
 
@@ -548,12 +504,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_basics_5(self):
                 """ Add bar@1.1, install bar@1.0. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.xbar11)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.xbar11)
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["xbar@1.0"])
@@ -561,12 +513,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar11)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.bar11)
+                api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
 
@@ -577,13 +525,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
                     on foo@1.0, install baz@1.0 and bar@1.1. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar11)
-                self.pkgsend_bulk(durl, self.baz10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.bar11, self.baz10))
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["baz@1.0", "bar@1.1"])
@@ -592,13 +535,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
                     depends on xfoo@1.0, install xdeep@1.0. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.xbar10)
-                self.pkgsend_bulk(durl, self.xdeep10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.xbar10, self.xdeep10))
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["xdeep@1.0"])
@@ -607,12 +545,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
                 on xfoo@1.0, install ydeep@1.0. """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.ydeep10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, self.ydeep10)
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["ydeep@1.0"])
@@ -620,36 +554,26 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bug_2795(self):
                 """ Try to install two versions of the same package """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo11)
-                self.pkgsend_bulk(durl, self.foo12)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo11, self.foo12))
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["foo@1.1", "foo@1.2"])
 
-                self.pkg("list foo", exit = 1)
+                self.pkg("list foo", exit=1)
 
                 self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["foo@1.1", "foo@1.2"])
 
-
-                self.pkg("list foo", exit = 1)
+                self.pkg("list foo", exit=1)
 
         def test_install_matching(self):
                 """ Try to [un]install packages matching a pattern """
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.pkgsend_bulk(durl, self.bar10)
-                self.pkgsend_bulk(durl, self.baz10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10,
+                    self.baz10))
+                api_obj = self.image_create(self.rurl)
+
                 self.__do_install(api_obj, ['ba*'])
                 self.pkg("list foo@1.0", exit=0)
                 self.pkg("list bar@1.0", exit=0)
@@ -663,11 +587,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bad_fmris(self):
                 """ Test passing problematic fmris into the api """
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                api_obj = self.image_create(self.rurl)
 
                 def check_unfound(e):
                         return e.unmatched_fmris
@@ -677,7 +597,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 def check_missing(e):
                         return e.missing_matches
-
 
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_unfound, api_obj.plan_install, ["foo"])
@@ -694,7 +613,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(self.rurl, self.foo10)
 
                 api_obj.refresh(False)
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
@@ -714,11 +633,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     check_missing, api_obj.plan_uninstall, ["foo"], False)
 
         def test_bug_4109(self):
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                api_obj = self.image_create(self.rurl)
 
                 def check_illegal(e):
                         return e.illegal
@@ -731,17 +647,14 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """Test install from a publisher's repository that only supports
                 catalog v0, and then the transition from v0 to v1."""
 
-                self.dc.stop()
+                # Actual depot required for this test due to v0 repository
+                # operation usage.
                 self.dc.set_disable_ops(["catalog/1"])
                 self.dc.start()
 
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.durl, self.foo10)
+                api_obj = self.image_create(self.durl)
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo"])
 
                 api_obj.reset()
@@ -750,7 +663,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["pkg://test/foo"])
 
-                self.pkgsend_bulk(durl, self.bar10)
+                self.pkgsend_bulk(self.durl, self.bar10)
                 self.dc.stop()
                 self.dc.unset_disable_ops()
                 self.dc.start()
@@ -760,6 +673,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 self.__do_install(api_obj, ["pkg://test/bar@1.0"])
+                self.dc.stop()
 
         def test_bad_package_actions(self):
                 """Test the install of packages that have actions that are
@@ -769,12 +683,9 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 # First, publish the package that will be corrupted and create
                 # an image for testing.
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.badfile10 + self.baddir10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
+                    self.baddir10))
+                api_obj = self.image_create(self.rurl)
 
                 # This should succeed and cause the manifest to be cached.
                 self.__do_install(api_obj, plist)
@@ -891,9 +802,9 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                plist = self.pkgsend_bulk(self.dc.get_depot_url(), self.dir10 +
-                    self.file10 + self.filesub10 + self.link10 + self.link20 +
-                    self.hardlink10 + self.hardlink20)
+                plist = self.pkgsend_bulk(self.rurl, (self.dir10, self.file10,
+                    self.filesub10, self.link10, self.link20, self.hardlink10,
+                    self.hardlink20))
 
                 self.plist = {}
                 for p in plist:
@@ -942,7 +853,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 when directory is already present before install or has been
                 replaced with a file or link during install or removal."""
 
-                api_obj = self.image_create(self.dc.get_depot_url())
+                api_obj = self.image_create(self.rurl)
 
                 # The dest_dir's installed path.
                 dest_dir_name = "dir"
@@ -995,7 +906,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 install is attempted when its parent directory has been
                 replaced with a link."""
 
-                api_obj = self.image_create(self.dc.get_depot_url())
+                api_obj = self.image_create(self.rurl)
 
                 # The dest_file's installed path.
                 dest_file_name = "file"
@@ -1063,7 +974,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 link is already present before install or has been replaced
                 with a directory or file during install or removal."""
 
-                api_obj = self.image_create(self.dc.get_depot_url())
+                api_obj = self.image_create(self.rurl)
 
                 # The dest_link's installed path.
                 dest_link_name = "link"
@@ -1130,7 +1041,7 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                 when the link is already present before install or has been
                 replaced with a directory or link during install or removal."""
 
-                api_obj = self.image_create(self.dc.get_depot_url())
+                api_obj = self.image_create(self.rurl)
 
                 # The dest_hlink's installed path.
                 dest_hlink_name = "hardlink"

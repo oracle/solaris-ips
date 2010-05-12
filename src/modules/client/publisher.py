@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -72,7 +71,7 @@ REPO_COLLECTION_TYPES = {
 }
 
 # Supported Protocol Schemes
-SUPPORTED_SCHEMES = set(("http", "https"))
+SUPPORTED_SCHEMES = set(("file", "http", "https"))
 
 # SSL Protocol Schemes
 SSL_SCHEMES = set(("https",))
@@ -199,7 +198,8 @@ class RepositoryURI(object):
 
                 # XXX valid_pub_url's check isn't quite right and could prevent
                 # usage of IDNs (international domain names).
-                if not netloc or not misc.valid_pub_url(uri):
+                if (scheme.lower().startswith("http") and not netloc) or \
+                    not misc.valid_pub_url(uri):
                         raise api_errors.BadRepositoryURI(uri)
 
                 # Normalize URI scheme.

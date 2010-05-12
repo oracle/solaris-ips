@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -32,6 +31,7 @@ import os
 import pkg.portable as portable
 import time
 import unittest
+
 
 class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
@@ -66,24 +66,19 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(self.rurl, self.foo10)
 
         def test_pkg_verify_bad_opts(self):
                 """ test pkg verify with bad options """
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
+                self.image_create(self.rurl)
                 self.pkg("verify -vq", exit=2)
 
         def test_bug_1463(self):
                 """When multiple FMRIs are given to pkg verify,
                 if any of them aren't installed it should fail."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
                 self.pkg("install foo")
                 self.pkg("verify foo nonexistent", exit=1)
                 self.pkg("uninstall foo")
@@ -94,8 +89,7 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
                 # XXX either this should be more comprehensive or more testing
                 # needs to be added somewhere else appropriate.
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
                 # Should fail since foo is not installed.
                 self.pkg("verify foo", exit=1)
@@ -151,4 +145,3 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

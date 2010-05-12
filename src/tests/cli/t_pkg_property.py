@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -30,11 +29,9 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import unittest
 import os
-import re
-import shutil
-import difflib
+import unittest
+
 
 class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -43,8 +40,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         def test_pkg_properties(self):
                 """pkg: set, unset, and display properties"""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(self.rurl)
 
 		self.pkg("set-property -@", exit=2)
                 self.pkg("get-property -@", exit=2)
@@ -67,24 +63,27 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
 
         def test_missing_permssions(self):
                 """Bug 2393"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
 
                 self.pkg("property")
-                self.pkg("set-property require-optional True", su_wrap=True, exit=1)
+                self.pkg("set-property require-optional True", su_wrap=True,
+                    exit=1)
                 self.pkg("set-property require-optional True")
-                self.pkg("unset-property require-optional", su_wrap=True, exit=1)
+                self.pkg("unset-property require-optional", su_wrap=True,
+                    exit=1)
                 self.pkg("unset-property require-optional")
 
         def test_bug_4372(self):
                 """Verify that preferred-publisher cannot be changed using the
                 property commands, but can be read."""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
+
+                self.image_create(self.rurl)
 
                 self.pkg("set-property preferred-publisher foo", exit=1)
                 self.pkg("unset-property preferred-publisher", exit=1)
                 self.pkg("property preferred-publisher")
+
 
 if __name__ == "__main__":
         unittest.main()

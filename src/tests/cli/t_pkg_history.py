@@ -32,8 +32,8 @@ import pkg5unittest
 import os
 import re
 import shutil
-import time
 import unittest
+
 
 class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -55,20 +55,17 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo1)
+                rurl1 = self.dcs[1].get_repo_url()
+                self.pkgsend_bulk(rurl1, self.foo1)
 
                 # Ensure that the second repo's packages are exactly the same
                 # as those in the first ... by duplicating the repo.
-                self.dcs[2].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
                 self.copy_repository(d1dir, "test1", d2dir, "test2")
-                self.dcs[2].set_rebuild()
-                self.dcs[2].start()
-                self.dcs[2].set_norebuild()
+                self.dcs[2].get_repo(auto_create=True).rebuild()
 
-                self.image_create(durl1, prefix="test1")
+                self.image_create(rurl1, prefix="test1")
 
         def test_1_history_options(self):
                 """Verify all history options are accepted or rejected as
@@ -88,15 +85,15 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 recorded as expected.
                 """
 
-                durl2 = self.dcs[2].get_depot_url()
+                rurl2 = self.dcs[2].get_repo_url()
                 commands = [
                     ("install foo", 0),
                     ("uninstall foo", 0),
                     ("image-update", 4),
-                    ("set-publisher -O " + durl2 + " test2", 0),
+                    ("set-publisher -O " + rurl2 + " test2", 0),
                     ("set-publisher -P test1", 0),
-                    ("set-publisher -m " + durl2 + " test1", 0),
-                    ("set-publisher -M " + durl2 + " test1", 0),
+                    ("set-publisher -m " + rurl2 + " test1", 0),
+                    ("set-publisher -M " + rurl2 + " test1", 0),
                     ("unset-publisher test2", 0),
                     ("rebuild-index", 0)
                 ]
@@ -170,12 +167,13 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 """Test that install and uninstall of non-existent packages
                 both make the same history entry.
                 """
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.bar1)
+
+                rurl1 = self.dcs[1].get_repo_url()
+                self.pkgsend_bulk(rurl1, self.bar1)
                 self.pkg("refresh")
                 self.pkg("install bar")
                 self.pkg("install foo")
-                self.pkgsend_bulk(durl1, self.foo2)
+                self.pkgsend_bulk(rurl1, self.foo2)
                 self.pkg("refresh")
                 self.pkg("purge-history")
                 self.pkg("install foo@2", exit=1)
@@ -227,7 +225,6 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 are recorded as expected.
                 """
 
-                durl2 = self.dcs[2].get_depot_url()
                 commands = [
                     "install nosuchpackage",
                     "uninstall nosuchpackage",
@@ -309,4 +306,3 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

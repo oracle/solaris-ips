@@ -683,7 +683,7 @@ if __name__ == "__main__":
                     read_only=readonly, refresh_index=not add_content, 
                     repo_root=repo_path, sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
-        except sr.RepositoryError, _e:
+        except (RuntimeError, sr.RepositoryError), _e:
                 emsg("pkg.depotd: %s" % _e)
                 sys.exit(1)
         except rc.RequiredPropertyValueError, _e:

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -31,14 +30,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import pkg.catalog as catalog
 import pkg.fmri as fmri
-import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
-import shutil
-import sys
 import tempfile
 import time
 import urllib
@@ -47,6 +42,7 @@ import unittest
 import zlib
 
 path_to_pub_util = "../util/publish"
+
 
 class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
@@ -116,26 +112,27 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2 """
 
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["os.org", "os.org"])
+                # This test suite needs an actual depot.
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["os.org", "os.org"],
+                    start_depots=True)
                 self.make_misc_files(self.misc_files)
 
                 # Publish a set of packages to one repository.
                 self.dpath1 = self.dcs[1].get_repodir()
                 self.durl1 = self.dcs[1].get_depot_url()
-                self.published = self.pkgsend_bulk(self.durl1, self.amber10 + \
-                    self.amber20 + self.bronze10 + self.bronze20 + \
-                    self.tree10 + self.scheme10)
+                self.published = self.pkgsend_bulk(self.durl1, (self.amber10,
+                    self.amber20, self.bronze10, self.bronze20, self.tree10,
+                    self.scheme10))
 
                 # Ensure timestamps of all successive publications are greater.
-                import time
                 time.sleep(1)
 
                 # Publish the same set to another repository (minus the tree
                 # and scheme packages).
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
-                self.published += self.pkgsend_bulk(self.durl2, self.amber10 + \
-                    self.amber20 + self.bronze10 + self.bronze20)
+                self.published += self.pkgsend_bulk(self.durl2, (self.amber10,
+                    self.amber20, self.bronze10, self.bronze20))
 
                 self.merge_dir = tempfile.mkdtemp(dir=self.test_root)
 

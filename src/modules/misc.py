@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import calendar
 import cStringIO
@@ -204,7 +203,7 @@ def versioned_urlopen(base_uri, operation, versions = None, tail = None,
 
 _hostname_re = re.compile("^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9]+\.?)*$")
 _invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.]+")
-_valid_proto = ["http", "https"]
+_valid_proto = ["file", "http", "https"]
 
 def valid_pub_prefix(prefix):
         """Verify that the publisher prefix only contains valid characters."""
@@ -234,6 +233,17 @@ def valid_pub_url(url):
 
         if not o[0] in _valid_proto:
                 return False
+
+        if o[0] == "file":
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(url, "file", allow_fragments=0)
+                path = urllib.url2pathname(path)
+                if not os.path.abspath(path):
+                        return False
+                if not os.path.exists(path):
+                        return False
+                # No further validation to be done.
+                return True
 
         # Next verify that the network location is valid
         host, port = urllib.splitport(o[1])

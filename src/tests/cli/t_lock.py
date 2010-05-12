@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -32,18 +31,12 @@ import pkg5unittest
 
 import cStringIO
 import os
-import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.fmri as fmri
 import pkg.nrlock as nrlock
-import sys
-import tempfile
-import time
 import unittest
 
-API_VERSION = 37
-PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         # restart the depot for every test
@@ -59,9 +52,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10 + self.foo11)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                self.image_create(self.rurl)
 
         def test_api_locking(self):
                 """Verify that a locked image cannot be modified if it is
@@ -69,9 +61,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 exception."""
 
                 # Get an image object and tests its manual lock mechanism.
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
                 img = api_obj.img
 
                 # Verify a lock file is created and is not zero size.
@@ -105,9 +95,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Verify that if a state change occurs at any point after
                 # planning before a plan successfully executes, that an
                 # InvalidPlanError will be raised.
-                progtrack2 = progress.NullProgressTracker()
-                api_obj2 = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progtrack2, lambda x: False, PKG_CLIENT_NAME)
+                api_obj2 = self.get_img_api_obj()
 
                 # Both of these should succeed since no state change exists yet.
                 api_obj.plan_install(["foo"])
@@ -141,9 +129,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 """Verify that image locking works across processes."""
 
                 # Get an image object and tests its manual lock mechanism.
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
                 img = api_obj.img
 
                 # Verify a lock file is created.

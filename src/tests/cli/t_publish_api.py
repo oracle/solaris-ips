@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -41,6 +40,10 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
 
         # Restart the depot and recreate the repository every test.
         persistent_setup = False
+
+        def setUp(self):
+                # This test suite needs an actual depot.
+                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
 
         def test_stress_http_publish(self):
                 """Publish lots of packages rapidly ensuring that http

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -239,13 +238,11 @@ add set name=pkg.description value="%(desc)s"
 
                         pkg_data += "close\n"
 
-                durl1 = self.dcs[1].get_depot_url()
-                plist = self.pkgsend_bulk(durl1, pkg_data)
-                durl2 = self.dcs[2].get_depot_url()
+                rurl1 = self.dcs[1].get_repo_url()
+                plist = self.pkgsend_bulk(rurl1, pkg_data)
 
                 # Ensure that the second repo's packages have exactly the same
                 # timestamps as those in the first ... by copying the repo over.
-                self.dcs[2].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
                 self.copy_repository(d1dir, "test1", d2dir, "test2")
@@ -264,18 +261,16 @@ add set name=pkg.description value="%(desc)s"
                 self.dlist1.sort()
                 self.dlist2.sort()
 
-                # The new repository won't have a catalog, so set the depot
-                # server to rebuild it.
-                self.dcs[2].set_rebuild()
-                self.dcs[2].start()
-                self.dcs[2].set_norebuild()
+                # The new repository won't have a catalog, so rebuild it.
+                self.dcs[2].get_repo(auto_create=True).rebuild()
 
                 # The third repository should remain empty and not be
                 # published to.
 
                 # Next, create the image and configure publishers.
-                self.image_create(durl1, prefix="test1")
-                self.pkg("set-publisher -g " + durl2 + " test2")
+                self.image_create(rurl1, prefix="test1")
+                rurl2 = self.dcs[2].get_repo_url()
+                self.pkg("set-publisher -g " + rurl2 + " test2")
 
         def assertPrettyEqual(self, actual, expected):
                 if actual == expected:

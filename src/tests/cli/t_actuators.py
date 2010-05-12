@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -270,10 +269,10 @@ exit $RETURN
         def test_actuators(self):
                 """test actuators"""
 
-                durl = self.dc.get_depot_url()
+                rurl = self.dc.get_repo_url()
                 for pkg in self.pkg_list:
-                        self.pkgsend_bulk(durl, pkg)
-                self.image_create(durl)
+                        self.pkgsend_bulk(rurl, pkg)
+                self.image_create(rurl)
                 os.environ["PKG_TEST_DIR"] = self.testdata_dir
                 os.environ["PKG_SVCADM_EXIT_CODE"] = "0"
                 os.environ["PKG_SVCPROP_EXIT_CODE"] = "0"

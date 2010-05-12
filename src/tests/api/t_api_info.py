@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -42,9 +41,6 @@ import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.fmri as fmri
 
-API_VERSION = 37
-PKG_CLIENT_NAME = "pkg"
-
 class TestApiInfo(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
@@ -53,10 +49,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 """Verify that ImageInterface.info() works as expected
                 for both local (installed or cached) and remote packages."""
 
-                self.image_create(self.dc.get_depot_url())
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.NoPackagesInstalledException,
                     api_obj.info, [], True, api.PackageInfo.ALL_OPTIONS -
@@ -83,11 +76,6 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     open turquoise@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
                     add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
-                    close
-                """
-
-                pkg3 = """
-                    open foo@1.0,5.11-0
                     close
                 """
 
@@ -128,10 +116,9 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-
-                self.pkgsend_bulk(durl, pkg1 + pkg2 + pkg4 + pkg5 + pkg6 + pkg7)
-                self.image_create(durl)
+                self.pkgsend_bulk(self.rurl, (pkg1, pkg2, pkg4, pkg5, pkg6,
+                    pkg7))
+                api_obj = self.image_create(self.rurl)
 
                 local = True
                 get_license = False
@@ -337,11 +324,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 """Verify that the info operation handles packages with invalid
                 metadata."""
 
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(self.rurl)
 
                 self.assertRaises(api_errors.NoPackagesInstalledException,
                     api_obj.info, [], True, api.PackageInfo.ALL_OPTIONS -
@@ -362,7 +345,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                plist = self.pkgsend_bulk(durl, badfile10 + baddir10)
+                plist = self.pkgsend_bulk(self.rurl, (badfile10, baddir10))
                 api_obj.refresh(immediate=True)
 
                 # This should succeed and cause the manifests to be cached.
@@ -436,17 +419,13 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, target10 + ren_correct10 +
-                    ren_op_variant10 + ren_variant_missing10 +
-                    ren_partial_variant10)
+                plist = self.pkgsend_bulk(self.rurl, (target10, ren_correct10,
+                    ren_op_variant10, ren_variant_missing10,
+                    ren_partial_variant10))
 
                 # Create an image and get the api object needed to run tests.
                 variants = { "variant.cat": "bobcat" }
-                self.image_create(durl, variants=variants)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.image_create(self.rurl, variants=variants)
 
                 info_needed = api.PackageInfo.ALL_OPTIONS - \
                     (api.PackageInfo.ACTION_OPTIONS -
