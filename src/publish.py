@@ -552,7 +552,7 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError), _e:
+            RuntimeError, pkg.fmri.IllegalFmri), _e:
                 print >> sys.stderr, "pkgsend: %s" % _e
                 __ret = 1
         except (PipeError, KeyboardInterrupt):
