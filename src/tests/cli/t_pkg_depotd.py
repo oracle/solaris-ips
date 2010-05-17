@@ -20,7 +20,9 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -368,8 +370,8 @@ class TestDepotController(pkg5unittest.CliTestCase):
         def test_writable_root(self):
                 """Tests whether the index and feed cache file are written to
                 the writable root parameter."""
-                self.make_misc_files(TestPkgDepot.misc_files)
 
+                self.make_misc_files(TestPkgDepot.misc_files)
                 writable_root = os.path.join(self.test_root,
                     "writ_root")
                 index_dir = os.path.join(writable_root, "index")
@@ -538,6 +540,12 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
             open info@1.0,5.11-0
             close """
 
+        file10 = """
+            open file@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/var
+            add file tmp/file path=var/file mode=644 owner=root group=bin
+            close """
+
         system10 = """
             open system/libc@1.0,5.11-0
             add set name="description" value="Package to test package names with slashes"
@@ -596,6 +604,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 self.tpath = tempfile.mkdtemp(prefix="tpath",
                     dir=self.test_root)
+
+                self.make_misc_files("tmp/file")
 
         def test_0_depot_bui_output(self):
                 """Verify that a non-error response and valid HTML is returned
@@ -760,6 +770,53 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 except urllib2.HTTPError, e:
                         if e.code != httplib.NOT_FOUND:
                                 raise
+
+        def test_3_headers(self):
+                """Ensure expected headers are present for client operations
+                (excluding publication)."""
+
+                # Now update the repository configuration while the depot is
+                # stopped so changes won't be overwritten on exit.
+                self.__update_repo_config()
+
+                # Start the depot.
+                self.dc.start()
+
+                durl = self.dc.get_depot_url()
+                pfmri = fmri.PkgFmri(self.pkgsend_bulk(durl, self.file10)[0],
+                    "5.11")
+
+                def get_headers(req_path):
+                        try:
+                                rinfo = urllib2.urlopen(urlparse.urljoin(durl,
+                                    req_path)).info()
+                                return rinfo.items()
+                        except Exception, e:
+                                raise RuntimeError("retrieval of %s "
+                                    "failed: %s" % (req_path, str(e)))
+
+                for req_path in ("publisher/0", 'search/0/%2Fvar%2Ffile',
+                    'search/1/False_2_None_None_%2Fvar%2Ffile',
+                    "versions/0", "manifest/0/%s" % pfmri.get_url_path(),
+                    "catalog/0", "catalog/1/catalog.attrs",
+                    "file/0/3aad0bca6f3a6f502c175700ebe90ef36e312d7e",
+                    "filelist/0"):
+                        hdrs = dict(get_headers(req_path))
+
+                        # Fields must be referenced in lowercase.
+                        if req_path.startswith("filelist"):
+                                self.assertEqual(hdrs.get("expires", ""), "0")
+                                self.assertEqual(hdrs.get("cache-control", ""),
+                                    "no-cache, no-transform, must-revalidate")
+                                self.assertEqual(hdrs.get("pragma", None),
+                                    "no-cache")
+                        else:
+                                cc = hdrs.get("cache-control", "")
+                                self.assert_(cc.startswith("must-revalidate, "
+                                    "no-transform, max-age="))
+                                exp = hdrs.get("expires", None)
+                                self.assertNotEqual(exp, None)
+                                self.assert_(exp.endswith(" GMT"))
 
         def test_bug_15482(self):
                 """Test to make sure BUI search doesn't trigger a traceback."""

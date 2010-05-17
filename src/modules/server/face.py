@@ -18,9 +18,10 @@
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
+
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 """face - provides the BUI (Browser User Interface) for the image packaging server"""
 
@@ -80,6 +81,8 @@ def respond(repo, content_root, web_root, request, response):
         if path == "":
                 path = "index.shtml"
         elif path.split("/")[0] == "feed":
+                response.headers.update({ "Expires": 0, "Pragma": "no-cache",
+                    "Cache-Control": "no-cache, no-transform, must-revalidate" })
                 return feed(repo, request, response)
 
         if not path.endswith(".shtml"):
@@ -94,6 +97,8 @@ def respond(repo, content_root, web_root, request, response):
                             web_root, spath))
 
         try:
+                response.headers.update({ "Expires": 0, "Pragma": "no-cache",
+                    "Cache-Control": "no-cache, no-transform, must-revalidate" })
                 return __render_template(repo, content_root, web_root, request,
                     path)
         except sae.VersionException, e:

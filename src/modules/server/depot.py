@@ -26,6 +26,7 @@
 
 import cherrypy
 from cherrypy.lib.static import serve_file
+from email.utils import formatdate
 
 import cStringIO
 import errno
@@ -62,9 +63,11 @@ import pkg.version as version
 
 from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
+
 class Dummy(object):
         """Dummy object used for dispatch method mapping."""
         pass
+
 
 class DepotHTTP(object):
         """The DepotHTTP object is intended to be used as a cherrypy
@@ -174,6 +177,42 @@ class DepotHTTP(object):
                         # This handles SIGUSR1
                         cherrypy.engine.subscribe("graceful", self.refresh)
 
+        def __set_response_expires(self, op_name, expires, max_age=None):
+                """Used to set expiration headers on a response dynamically
+                based on the name of the operation.
+
+                'op_name' is a string containing the name of the depot
+                operation as listed in the REPO_OPS_* constants.
+
+                'expires' is an integer value in seconds indicating how
+                long from when the request was made the content returned
+                should expire.  The maximum value is 365*86400.
+
+                'max_age' is an integer value in seconds indicating the
+                maximum length of time a response should be considered
+                valid.  For some operations, the maximum value for this
+                parameter is equal to the repository's refresh_seconds
+                property."""
+
+                rs = self._repo.cfg.get_property("repository",
+                    "refresh_seconds")
+                if max_age is None:
+                        max_age = min((rs, expires))
+
+                now = cherrypy.response.time
+                if op_name == "publisher" or op_name == "search" or \
+                    op_name == "catalog":
+                        # For these operations, cap the value based on
+                        # refresh_seconds.
+                        expires = now + min((rs, max_age))
+                else:
+                        expires = now + expires
+
+                headers = cherrypy.response.headers
+                headers["Cache-Control"] = \
+                    "must-revalidate, no-transform, max-age=%d" % max_age
+                headers["Expires"] = formatdate(timeval=expires, usegmt=True)
+
         def refresh(self):
                 """Catch SIGUSR1 and reload the depot information."""
                 self._repo.reload()
@@ -212,12 +251,13 @@ class DepotHTTP(object):
                 raise cherrypy.HTTPError(httplib.NOT_FOUND, "Version '%s' not "
                     "supported for operation '%s'\n" % (ver, op))
 
-        @cherrypy.tools.response_headers(headers = \
-            [("Content-Type", "text/plain")])
+        @cherrypy.tools.response_headers(headers=\
+            [("Content-Type", "text/plain; charset=utf-8")])
         def versions_0(self, *tokens):
                 """Output a text/plain list of valid operations, and their
                 versions, supported by the repository."""
 
+                self.__set_response_expires("versions", 5*60, 5*60)
                 versions = "pkg-server %s\n" % pkg.VERSION
                 versions += "\n".join(
                     "%s %s" % (op, " ".join(vers))
@@ -230,7 +270,8 @@ class DepotHTTP(object):
                 pairs."""
 
                 response = cherrypy.response
-                response.headers["Content-type"] = "text/plain"
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
+                self.__set_response_expires("search", 86400, 86400)
 
                 try:
                         token = tokens[0]
@@ -274,7 +315,6 @@ class DepotHTTP(object):
 
         search_0._cp_config = { "response.stream": True }
 
-
         def search_1(self, *args, **params):
                 """Based on the request path, return a list of packages that
                 match the specified criteria."""
@@ -296,8 +336,6 @@ class DepotHTTP(object):
                 if not query_str_lst:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST)
 
-                response = cherrypy.response
-
                 if not self._repo.search_available:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             "Search temporarily unavailable")
@@ -316,7 +354,9 @@ class DepotHTTP(object):
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
-                response.headers["Content-type"] = "text/plain"
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
+                self.__set_response_expires("search", 86400, 86400)
 
                 # In order to be able to have a return code distinguish between
                 # no results and search unavailable, we need to use a different
@@ -365,9 +405,10 @@ class DepotHTTP(object):
                 # that yields the catalog content.
                 c = self._repo.catalog
                 response = cherrypy.response
-                response.headers["Content-type"] = "text/plain"
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
                 response.headers["Last-Modified"] = c.last_modified.isoformat()
                 response.headers["X-Catalog-Type"] = "full"
+                self.__set_response_expires("catalog", 86400, 86400)
 
                 def output():
                         try:
@@ -401,7 +442,9 @@ class DepotHTTP(object):
                         # information.
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
-                return serve_file(fpath, "text/plain")
+
+                self.__set_response_expires("catalog", 86400, 86400)
+                return serve_file(fpath, "text/plain; charset=utf-8")
 
         catalog_1._cp_config = { "response.stream": True }
 
@@ -421,6 +464,10 @@ class DepotHTTP(object):
                 # A broken proxy (or client) has caused a fully-qualified FMRI
                 # to be split up.
                 comps = [t for t in tokens]
+                if not comps:
+                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
+                            _("Directory listing not allowed."))
+
                 if comps[0] == "pkg:" and comps[1] in pubs:
                         # Only one slash here as another will be added below.
                         comps[0] += "/"
@@ -443,7 +490,8 @@ class DepotHTTP(object):
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
                 # Send manifest
-                return serve_file(fpath, "text/plain")
+                self.__set_response_expires("manifest", 86400*365, 86400*365)
+                return serve_file(fpath, "text/plain; charset=utf-8")
 
         manifest_0._cp_config = { "response.stream": True }
 
@@ -534,10 +582,14 @@ class DepotHTTP(object):
         # before the response even begins and the point at which @tools
         # hooks in is too late.
         filelist_0._cp_config = {
-                "response.stream": True,
-                "tools.response_headers.on": True,
-                "tools.response_headers.headers": [("Content-Type",
-                "application/data")]
+            "response.stream": True,
+            "tools.response_headers.on": True,
+            "tools.response_headers.headers": [
+                ("Content-Type", "application/data"),
+                ("Pragma", "no-cache"),
+                ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+                ("Expires", 0)
+            ]
         }
 
         def file_0(self, *tokens):
@@ -560,10 +612,14 @@ class DepotHTTP(object):
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
+                self.__set_response_expires("file", 86400*365, 86400*365)
                 return serve_file(fpath, "application/data")
 
         file_0._cp_config = { "response.stream": True }
 
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
         def open_0(self, *tokens):
                 """Starts a transaction for the package name specified in the
                 request path.  Returns no output."""
@@ -582,7 +638,7 @@ class DepotHTTP(object):
 
                 try:
                         trans_id = self._repo.open(client_release, pfmri)
-                        response.headers["Content-type"] = "text/plain"
+                        response.headers["Content-type"] = "text/plain; charset=utf-8"
                         response.headers["Transaction-ID"] = trans_id
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
@@ -591,6 +647,9 @@ class DepotHTTP(object):
                         # operation.
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
         def close_0(self, *tokens):
                 """Ends an in-flight transaction for the Transaction ID
                 specified in the request path.
@@ -635,6 +694,9 @@ class DepotHTTP(object):
                 response.headers["Package-FMRI"] = pfmri
                 response.headers["State"] = pstate
 
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
         def abandon_0(self, *tokens):
                 """Aborts an in-flight transaction for the Transaction ID
                 specified in the request path.  Returns no output."""
@@ -654,6 +716,9 @@ class DepotHTTP(object):
                         # operation.
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
         def add_0(self, *tokens):
                 """Adds an action and its content to an in-flight transaction
                 for the Transaction ID specified in the request path.  The
@@ -719,10 +784,13 @@ class DepotHTTP(object):
         # set the timeout higher since the default is five minutes; not really
         # enough for a slow connection to upload content.
         add_0._cp_config = {
-                "request.process_request_body": False,
-                "response.timeout": 3600,
+            "request.process_request_body": False,
+            "response.timeout": 3600,
         }
 
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
         def index_0(self, *tokens):
                 """Triggers a refresh of the search indices.
                 Returns no output."""
@@ -742,8 +810,8 @@ class DepotHTTP(object):
                         cherrypy.log("Unknown index subcommand: %s" % cmd)
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
-        @cherrypy.tools.response_headers(headers = \
-            [("Content-Type", "text/plain")])
+        @cherrypy.tools.response_headers(headers=\
+            [("Content-Type", "text/plain; charset=utf-8")])
         def info_0(self, *tokens):
                 """ Output a text/plain summary of information about the
                     specified package. The request is an encoded pkg FMRI.  If
@@ -818,6 +886,7 @@ class DepotHTTP(object):
                         misc.gunzip_from_stream(lfile, lsummary)
                 lsummary.seek(0)
 
+                self.__set_response_expires("info", 86400*365, 86400*365)
                 return """\
           Name: %s
        Summary: %s
@@ -873,6 +942,7 @@ License:
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 buf.seek(0)
+                self.__set_response_expires("publisher", 86400*365, 86400*365)
                 return buf.getvalue()
 
         @cherrypy.tools.response_headers(headers=[(
@@ -972,6 +1042,7 @@ License:
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 buf.seek(0)
+                self.__set_response_expires("p5i", 86400*365, 86400*365)
                 return buf.getvalue()
 
 
@@ -1025,7 +1096,7 @@ class NastyDepotHTTP(DepotHTTP):
                 # that yields the catalog content.
                 c = self._repo.catalog
                 response = cherrypy.response
-                response.headers["Content-type"] = "text/plain"
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
                 response.headers["Last-Modified"] = c.last_modified.isoformat()
                 response.headers["X-Catalog-Type"] = "full"
 
@@ -1041,9 +1112,11 @@ class NastyDepotHTTP(DepotHTTP):
 
                 return output()
 
-        catalog_0._cp_config = { "response.stream": True,
-                                 "tools.nasty_httperror.on": True,
-                                 "tools.nasty_httperror.bonus": 1 }
+        catalog_0._cp_config = {
+            "response.stream": True,
+            "tools.nasty_httperror.on": True,
+            "tools.nasty_httperror.bonus": 1
+        }
 
         def manifest_0(self, *tokens):
                 """The request is an encoded pkg FMRI.  If the version is
@@ -1108,11 +1181,11 @@ class NastyDepotHTTP(DepotHTTP):
                             len(self.requested_manifests) - 1)
                         badpath = self.requested_manifests[pick]
 
-                        return serve_file(badpath, "text/plain")
+                        return serve_file(badpath, "text/plain; charset=utf-8")
 
                 # NASTY
                 # Call a misbehaving serve_file
-                return self.nasty_serve_file(fpath, "text/plain")
+                return self.nasty_serve_file(fpath, "text/plain; charset=utf-8")
 
         manifest_0._cp_config = { "response.stream": True }
 
@@ -1233,11 +1306,15 @@ class NastyDepotHTTP(DepotHTTP):
         # before the response even begins and the point at which @tools
         # hooks in is too late.
         filelist_0._cp_config = {
-                "response.stream": True,
-                "tools.nasty_httperror.on": True,
-                "tools.response_headers.on": True,
-                "tools.response_headers.headers": [("Content-Type",
-                "application/data")]
+            "response.stream": True,
+            "tools.nasty_httperror.on": True,
+            "tools.response_headers.on": True,
+            "tools.response_headers.headers": [
+                ("Content-Type", "application/data"),
+                ("Pragma", "no-cache"),
+                ("Cache-Control", "no-cache, must-revalidate"),
+                ("Expires", 0)
+            ]
         }
 
         def __get_bad_path(self, v):
@@ -1343,11 +1420,11 @@ class NastyDepotHTTP(DepotHTTP):
                             len(self.requested_catalogs) - 1)
                         badpath = self.requested_catalogs[pick]
 
-                        return serve_file(badpath, "text/plain")
+                        return serve_file(badpath, "text/plain; charset=utf-8")
 
                 # NASTY
                 # Call a misbehaving serve_file
-                return self.nasty_serve_file(fpath, "text/plain")
+                return self.nasty_serve_file(fpath, "text/plain; charset=utf-8")
 
         catalog_1._cp_config = { "response.stream": True }
 
