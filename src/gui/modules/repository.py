@@ -1881,3 +1881,12 @@ class Repository(progress.GuiProgressTracker):
 
         def stop_bouncing_progress(self):
                 pass
+
+        def display_download_info(self, cur_n, goal_n):
+                pass
+
+        def display_phase_info(self, phase_name, cur_n, goal_n):
+                pass
+
+        def reset_label_text_after_delay(self):
+                pass

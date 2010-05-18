@@ -146,8 +146,8 @@ max-attributes=155
 min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
-# Increase from 56 to 65 as we are deriving off various classes and can't reduce the number further
-max-public-methods=65
+# Increase from 56 to 66 as we are deriving off various classes and can't reduce the number further
+max-public-methods=66
 
 [IMPORTS]
 

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
@@ -30,7 +29,6 @@ MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progress
                                  # otherwise it will bounce
 
 from pkg.client.progress import NullProgressTracker
-import pkg.misc
 
 class GuiProgressTracker(NullProgressTracker):
 
@@ -86,6 +84,7 @@ class GuiProgressTracker(NullProgressTracker):
                         self.prev_pkg = self.eval_cur_fmri
                         text = _("Evaluating: %s") % self.eval_cur_fmri.get_name()
                         self.update_label_text(text)
+                        self.reset_label_text_after_delay()
 
         def eval_output_done(self):
                 return
@@ -100,17 +99,7 @@ class GuiProgressTracker(NullProgressTracker):
                 return
 
         def dl_output(self):
-                self.update_progress(self.dl_cur_nbytes, self.dl_goal_nbytes)
-                size_a_str = ""
-                size_b_str = ""
-                if self.dl_cur_nbytes >= 0:
-                        size_a_str = pkg.misc.bytes_to_str(self.dl_cur_nbytes)
-                if self.dl_goal_nbytes >= 0:
-                        size_b_str = pkg.misc.bytes_to_str(self.dl_goal_nbytes)
-                c = _("Downloaded %(current)s of %(total)s") % \
-                    {"current" : size_a_str,
-                    "total" : size_b_str}
-                self.update_label_text(c)
+                self.display_download_info(self.dl_cur_nbytes, self.dl_goal_nbytes)
                 if self.prev_pkg != self.dl_cur_pkg:
                         self.prev_pkg = self.dl_cur_pkg
                         self.update_details_text(
@@ -124,8 +113,9 @@ class GuiProgressTracker(NullProgressTracker):
                 if self.act_phase != self.act_phase_last:
                         self.act_phase_last = self.act_phase
                         self.update_label_text(self.act_phase)
-                        self.update_details_text(_("%s\n") % self.act_phase, "level1")
-                self.update_progress(self.act_cur_nactions, self.act_goal_nactions)
+                        self.update_details_text("%s\n" % self.act_phase, "level1")
+                self.display_phase_info(self.act_phase, self.act_cur_nactions,
+                    self.act_goal_nactions)
                 return
 
         def act_output_done(self):
@@ -136,7 +126,7 @@ class GuiProgressTracker(NullProgressTracker):
                         self.ind_started = self.ind_phase
                         self.update_label_text(self.ind_phase)
                         self.update_details_text(
-                            _("%s\n") % (self.ind_phase), "level1")
+                            "%s\n" % (self.ind_phase), "level1")
                 self.__indexing_progress()
 
         def ind_output_done(self):
@@ -145,7 +135,8 @@ class GuiProgressTracker(NullProgressTracker):
         def __indexing_progress(self):
                 #It doesn't look nice if the progressive is just for few elements
                 if self.ind_goal_nitems > MIN_IND_ELEMENTS_BOUNCE:
-                        self.update_progress(self.ind_cur_nitems-1, self.ind_goal_nitems)
+                        self.display_phase_info(self.ind_phase,
+                            self.ind_cur_nitems-1, self.ind_goal_nitems)
                 else:
                         if not self.is_progress_bouncing():
                                 self.start_bouncing_progress()
@@ -164,6 +155,19 @@ class GuiProgressTracker(NullProgressTracker):
 
         def stop_bouncing_progress(self):
                 raise NotImplementedError("abstract method stop_bouncing_progress() "
+                    "not implemented in superclass")
+
+        def display_download_info(self, cur_n_bytes, goal_n_bytes):
+                raise NotImplementedError("abstract method display_download_info() "
+                    "not implemented in superclass")
+
+        def display_phase_info(self, phase_name, cur_n, goal_n):
+                raise NotImplementedError("abstract method display_phase_info() "
+                    "not implemented in superclass")
+
+        def reset_label_text_after_delay(self):
+                raise NotImplementedError(
+                    "abstract method reset_label_text_after_delay() "
                     "not implemented in superclass")
 
         def update_label_text(self, text):
