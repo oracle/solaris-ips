@@ -144,6 +144,13 @@ class RepositorySearchUnavailableError(RepositoryError):
                 return _("Search functionality is temporarily unavailable.")
 
 
+class RepositoryUnsupportedOperationError(RepositoryError):
+        """Raised when the repository is unable to support an operation,
+        based upon its current configuration."""
+
+        def __str__(self):
+                return("Operation not supported for this configuration.")
+
 class RepositoryUpgradeError(RepositoryError):
         """Used to indicate that the specified repository root cannot be used
         as the catalog or format of it is an older version that needs to be
@@ -167,7 +174,7 @@ class Repository(object):
         def __init__(self, auto_create=False, catalog_root=None,
             cfgpathname=None, fork_allowed=False, index_root=None, log_obj=None,
             mirror=False, pkg_root=None, properties=EmptyDict, read_only=False,
-            repo_root=None, trans_root=None, refresh_index=True,
+            repo_root=None, trans_root=None, file_root=None, refresh_index=True,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
@@ -184,8 +191,16 @@ class Repository(object):
                 self.read_only = read_only
                 self.__sort_file_max_size = sort_file_max_size
                 self.__tmp_root = None
+                self.__file_root = None
 
-                # Must be set before other roots.
+                # Set before repo root, since it's possible to have
+                # the file root in an entirely different location.  Repo
+                # root will govern file_root, if an argument to file_root
+                # is not supplied in __init__.
+                if file_root:
+                        self.file_root = file_root
+
+                # Must be set before most other roots.
                 self.repo_root = repo_root
 
                 # These are all overrides for the default values that setting
@@ -202,8 +217,11 @@ class Repository(object):
                         self.trans_root = trans_root
 
                 # Must be set before writable_root.
-                self.__required_dirs = [self.trans_root, self.pkg_root,
-                    self.catalog_root]
+                if self.mirror:
+                        self.__required_dirs = [self.file_root]
+                else:
+                        self.__required_dirs = [self.trans_root, self.pkg_root,
+                            self.catalog_root, self.file_root]
 
                 # Ideally, callers would just specify overrides for the feed
                 # cache root, index_root, etc.  But this must be set after all
@@ -314,6 +332,9 @@ class Repository(object):
                 """Create a temp directory under repository directory for
                 various purposes."""
 
+                if not self.repo_root:
+                        return
+
                 root = self.repo_root
                 if self.writable_root:
                         root = self.writable_root
@@ -343,6 +364,9 @@ class Repository(object):
                                         return None
                                 raise
                         return datetime.datetime.utcfromtimestamp(mod_time)
+
+                if not self.catalog_root:
+                        return
 
                 # To determine if an upgrade is needed, first check for a v0
                 # catalog attrs file.
@@ -424,7 +448,7 @@ class Repository(object):
                     "take some time."))
                 self.__rebuild(lm=v0_lm)
 
-                if not self.read_only:
+                if not self.read_only and self.repo_root:
                         v0_cat = os.path.join(self.repo_root, "catalog",
                             "catalog")
                         for f in v0_attrs, v0_cat:
@@ -466,7 +490,7 @@ class Repository(object):
                 """Destroy the catalog."""
 
                 self.__catalog = None
-                if os.path.exists(self.catalog_root):
+                if self.catalog_root and os.path.exists(self.catalog_root):
                         shutil.rmtree(self.catalog_root)
 
         @staticmethod
@@ -535,10 +559,23 @@ class Repository(object):
                                 self.cfg.set_property(section, prop, value)
 
                 # Verify that all required configuration information is set.
-                self.cfg.validate()
+                try:
+                        self.cfg.validate()
+                except rc.RequiredPropertyValueError, ex:
+                        # In mirror mode, the repository may be configured
+                        # with a file store that contains content from multiple
+                        # publishers.  In this case, eschew the requirement that
+                        # the publisher prefix must be set.
+                        if self.mirror and ex.section == "publisher" and \
+                            ex.prop == "prefix":
+                                pass
+                        else:
+                                raise
 
         def __init_dirs(self):
                 """Verify and instantiate repository directory structure."""
+                if not self.repo_root:
+                        return
                 emsg = _("repository directories incomplete")
                 for d in self.__required_dirs + self.__optional_dirs:
                         if self.auto_create or (self.writable_root and
@@ -573,6 +610,10 @@ class Repository(object):
                 """Load stored configuration data and configure the repository
                 appropriately."""
 
+                if not self.repo_root:
+                        self.cfg = rc.RepositoryConfig(pathname=None)
+                        return
+
                 default_cfg_path = False
 
                 # Now load our repository configuration / metadata.
@@ -602,6 +643,9 @@ class Repository(object):
                         # Mirrors don't permit publication.
                         return
 
+                if not self.trans_root:
+                        return
+
                 self.__in_flight_trans = {}
                 for txn in os.walk(self.trans_root):
                         if txn[0] == self.trans_root:
@@ -625,6 +669,9 @@ class Repository(object):
         def __rebuild(self, lm=None, incremental=False):
                 """Private version; caller responsible for repository
                 locking."""
+
+                if not self.pkg_root:
+                        return
 
                 default_pub = self.cfg.get_property("publisher", "prefix")
 
@@ -682,6 +729,9 @@ class Repository(object):
         def __refresh_index(self, synchronous=False):
                 """Private version; caller responsible for repository
                 locking."""
+
+                if not self.index_root:
+                        return
 
                 self.__searchdb_update_handle_lock.acquire()
 
@@ -774,8 +824,8 @@ class Repository(object):
                 # to load it.
                 self.__upgrade()
 
-                if self.mirror:
-                        # In mirror-mode, nothing else to do.
+                if self.mirror or not self.repo_root:
+                        # In mirror-mode, or no repo_root, nothing to do.
                         return
 
                 # If no catalog exists on-disk yet, ensure an empty one does
@@ -893,34 +943,54 @@ class Repository(object):
                         self.catalog.meta_root = root
 
         def __set_repo_root(self, root):
-                assert root is not None
+                if root:
+                        root = os.path.abspath(root)
+                        self.__repo_root = root
+                        self.__tmp_root = os.path.join(root, "tmp")
+                        self.catalog_root = os.path.join(root, "catalog")
+                        self.feed_cache_root = root
+                        self.index_root = os.path.join(root, "index")
+                        self.pkg_root = os.path.join(root, "pkg")
+                        self.trans_root = os.path.join(root, "trans")
+                        if not self.file_root:
+                                self.file_root = os.path.join(root, "file")
+                else:
+                        self.__repo_root = None
+                        self.catalog_root = None
+                        self.feed_cache_root = None
+                        self.index_root = None
+                        self.pkg_root = None
+                        self.trans_root = None
+ 
+        def __get_file_root(self):
+                return self.__file_root
 
-                root = os.path.abspath(root)
-                self.__repo_root = root
-                self.__tmp_root = os.path.join(root, "tmp")
-                self.catalog_root = os.path.join(root, "catalog")
-                self.feed_cache_root = root
+        def __set_file_root(self, root):
+                self.__file_root = root
                 try:
-                        self.cache_store = file_manager.FileManager(
-                            os.path.join(root, "file"), self.read_only)
+                        self.cache_store = file_manager.FileManager(root,
+                            self.read_only)
                 except file_manager.NeedToModifyReadOnlyFileManager:
-                        try:
-                                fs = os.lstat(self.repo_root)
-                        except OSError, e:
-                                # If the stat failed due to this, then assume
-                                # the repository is possibly valid but that
-                                # there is a permissions issue.
-                                if e.errno == EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                raise
-                        # If the stat succeeded, then regardless of whether
-                        # repo_root is really a directory, the repository is
-                        # invalid.
-                        raise RepositoryInvalidError(self.repo_root)
-                self.index_root = os.path.join(root, "index")
-                self.pkg_root = os.path.join(root, "pkg")
-                self.trans_root = os.path.join(root, "trans")
+                        if self.repo_root:
+                                try:
+                                        fs = os.lstat(self.repo_root)
+                                except OSError, e:
+                                        # If the stat failed due to this, then
+                                        # assume the repository is possibly
+                                        # valid but that there is a permissions
+                                        # issue.
+                                        if e.errno == EACCES:
+                                                raise api_errors.\
+                                                    PermissionsException(
+                                                    e.filename)
+                                        raise
+                                # If the stat succeeded, then regardless of
+                                # whether repo_root is really a directory, the
+                                # repository is invalid.
+                                raise RepositoryInvalidError(self.repo_root)
+                        # If repository root hasn't been specified yet,
+                        # just raise the error with the path that is available.
+                        raise RepositoryInvalidError(root)
 
         def __set_writable_root(self, root):
                 if root is not None:
@@ -928,10 +998,14 @@ class Repository(object):
                         self.__tmp_root = os.path.join(root, "tmp")
                         self.feed_cache_root = root
                         self.index_root = os.path.join(root, "index")
-                else:
+                elif self.repo_root:
                         self.__tmp_root = os.path.join(self.repo_root, "tmp")
                         self.feed_cache_root = self.repo_root
                         self.index_root = os.path.join(self.repo_root, "index")
+                else:
+                        self.__tmp_root = None
+                        self.feed_cache_root = None
+                        self.index_root = None
                 self.__writable_root = root
 
         def __unlock_repository(self):
@@ -993,6 +1067,8 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1019,6 +1095,8 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1042,6 +1120,8 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1071,6 +1151,9 @@ class Repository(object):
                 as the v0 updatelog does not support renames, obsoletion,
                 package removal, etc."""
 
+                if not self.catalog_root:
+                        raise RepositoryUnsupportedOperationError()
+
                 c = self.catalog
                 self.inc_catalog()
 
@@ -1092,6 +1175,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.catalog_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 assert name
                 self.inc_catalog()
@@ -1106,6 +1191,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 try:
                         t = self.__in_flight_trans[trans_id]
@@ -1163,6 +1250,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.inc_manifest()
 
@@ -1183,6 +1272,8 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1203,6 +1294,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1215,6 +1308,8 @@ class Repository(object):
                 in the catalog and adds them in"""
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1230,6 +1325,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
@@ -1261,6 +1358,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.index_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 c = self.catalog
                 fmris_to_index = indexer.Indexer.check_for_updates(
@@ -1283,6 +1382,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.index_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 def _search(q):
                         assert self.index_root
@@ -1322,6 +1423,8 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
                 if not fmri.is_valid_pkg_name(pfmri.get_name()):
                         return False
                 if not pfmri.version:
@@ -1341,6 +1444,7 @@ class Repository(object):
                         self.__unlock_repository()
 
         catalog_root = property(__get_catalog_root, __set_catalog_root)
+        file_root = property(__get_file_root, __set_file_root)
         repo_root = property(__get_repo_root, __set_repo_root)
         writable_root = property(__get_writable_root, __set_writable_root)
 

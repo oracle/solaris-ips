@@ -39,6 +39,7 @@ import pkg.client.imageconfig as imageconfig
 import pkg.client.publisher as publisher
 import pkg.client.transport.engine as engine
 import pkg.client.transport.exception as tx
+import pkg.client.transport.mdetect as mdetect
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
 import pkg.file_layout.file_manager as fm
@@ -70,6 +71,7 @@ class Transport(object):
                 self.__cadir = None
                 self.__portal_test_executed = False
                 self.__repo_cache = None
+                self.__dynamic_mirrors = []
                 self.__lock = nrlock.NRLock()
                 self._caches = None
                 self.stats = tstats.RepoChooser()
@@ -83,6 +85,16 @@ class Transport(object):
                 self.__engine.set_user_agent(ua)
 
                 self.__repo_cache = trepo.RepoCache(self.__engine)
+
+                cc = self.__img.cfg_cache
+                if cc and cc.get_policy(imageconfig.MIRROR_DISCOVERY):
+                        self.__dynamic_mirrors = mdetect.MirrorDetector()
+                        try:
+                                self.__dynamic_mirrors.locate()
+                        except tx.mDNSException:
+                                # Not fatal.  Suppress.
+                                pass
+
 
         def _reset_caches(self):
                 # For now, transport write caches all publisher data in one
@@ -135,6 +147,12 @@ class Transport(object):
                         self.__engine.reset()
                         self.__repo_cache.clear_cache()
                         self._reset_caches()
+                        if self.__dynamic_mirrors:
+                                try:
+                                        self.__dynamic_mirrors.locate()
+                                except tx.mDNSException:
+                                        # Not fatal. Suppress.
+                                        pass
                 finally:
                         self.__lock.release()
 
@@ -154,6 +172,7 @@ class Transport(object):
                                 self.__repo_cache.clear_cache()
                         self.__repo_cache = None
                         self._caches = None
+                        self.__dynamic_mirrors = []
                 finally:
                         self.__lock.release()
 
@@ -1568,6 +1587,7 @@ class Transport(object):
                         repo = pub.selected_repository
                         repolist = repo.mirrors[:]
                         repolist.extend(repo.origins)
+                        repolist.extend(self.__dynamic_mirrors)
                         rslist = self.stats.get_repostats(repolist,
                             repo.origins)
                         for rs, ruri in rslist:

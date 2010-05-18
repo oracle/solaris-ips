@@ -47,27 +47,52 @@ PROP_TYPE_REPO_COLL_TYPE = 9
 class PropertyError(Exception):
         """Base exception class for property errors."""
 
-        def __init__(self, *args):
-                Exception.__init__(self, *args)
+        def __init__(self, section, prop):
+                self.section = section
+                self.prop = prop
 
+        def __str__(self):
+                raise NotImplementedError()
 
 class InvalidPropertyError(PropertyError):
         """Exception class used to indicate an invalid property."""
 
+        def __str__(self):
+                return "Invalid property %s.%s" % (self.section, self.prop)
+
+class InvalidSectionError(InvalidPropertyError):
+        """Exception class used to indicate an invalid section."""
+
+        def __init__(self, section):
+                InvalidPropertyError.__init__(self, section, None)
+
+        def __str__(self):
+                return "Invalid Property. Unknown section: %s." % self.section
 
 class InvalidPropertyValueError(PropertyError):
         """Exception class used to indicate an invalid property value."""
 
+        def __init__(self, section, prop, value):
+                PropertyError.__init__(self, section, prop)
+                self.value = value
+
+        def __str__(self):
+                return "Invalid value '%s' for %s.%s." % (self.value,
+                    self.section, self.prop)
 
 class RequiredPropertyValueError(PropertyError):
         """Exception class used to indicate a required property value is
         missing."""
 
+        def __str__(self):
+                return "%s.%s is required." % (self.section, self.prop)
 
 class ReadOnlyPropertyError(PropertyError):
         """Exception class used to indicate when an attempt to set a read-only
         value was made."""
 
+        def __str__(self):
+                return "%s.%s is read-only." % (self.section, self.prop)
 
 class RepositoryConfig(object):
         """A RepositoryConfig object is a collection of configuration
@@ -93,18 +118,15 @@ class RepositoryConfig(object):
                 "description": {},
                 "detailed_url": {
                     "type": PROP_TYPE_URI,
-                    "default": "http://www.opensolaris.com"
                 },
                 "legal_uris": {
                     "type": PROP_TYPE_URI_LIST
                 },
                 "maintainer": {
-                    "default":
-                        "Project Indiana <indiana-discuss@opensolaris.org>"
+                    "type": PROP_TYPE_STR
                 },
                 "maintainer_url": {
                     "type": PROP_TYPE_URI,
-                    "default": "http://www.opensolaris.org/os/project/indiana/"
                 },
                 "mirrors": {
                     "type": PROP_TYPE_URI_LIST
@@ -132,7 +154,7 @@ class RepositoryConfig(object):
                     "readonly": True,
                 },
                 "name": {
-                    "default": "opensolaris.org repository feed"
+                    "default": "package repository feed"
                 },
                 "description": {},
                 "icon": {
@@ -160,7 +182,7 @@ class RepositoryConfig(object):
                 self.__dirty = False
                 self.__pathname = pathname
 
-                if os.path.exists(pathname):
+                if pathname and os.path.exists(pathname):
                         # If a pathname was provided, read the data in.
                         self.__read(overrides=properties)
                 else:
@@ -207,16 +229,12 @@ class RepositoryConfig(object):
                 """
                 if section not in cls._props:
                         if raise_error:
-                                raise InvalidPropertyError("Invalid "
-                                    " property. Unknown section: %s." % \
-                                    (section))
+                                raise InvalidSectionError(section)
                         else:
                                 return False
                 if prop not in cls._props[section]:
                         if raise_error:
-                                raise InvalidPropertyError("Invalid "
-                                    "property %s.%s." % \
-                                    (section, prop))
+                                raise InvalidPropertyError(section, prop)
                         else:
                                 return False
                 return True
@@ -322,11 +340,9 @@ class RepositoryConfig(object):
                                 if raise_error:
                                         if value in (None, ""):
                                                 raise RequiredPropertyValueError(
-                                                    "%s.%s is required." % \
-                                                    (section, prop))
+                                                    section, prop)
                                         raise InvalidPropertyValueError(
-                                            "Invalid value '%s' for %s.%s." % \
-                                            (value, section, prop))
+                                            section, prop, value)
                                 else:
                                         return False
                 else:
@@ -395,14 +411,16 @@ class RepositoryConfig(object):
                 if not self.is_readonly_property(section, prop):
                         return self._set_property(section, prop, value)
                 else:
-                        raise ReadOnlyPropertyError("%s.%s is read-only." % \
-                            (prop, section))
+                        raise ReadOnlyPropertyError(section, prop)
 
         def __read(self, overrides=misc.EmptyDict):
                 """Reads the specified pathname and populates the configuration
                 object based on the data contained within.  The file is
                 expected to be in a ConfigParser-compatible format.
                 """
+
+                if not self.__pathname:
+                        return
 
                 # Reset to initial state to ensure we only have default values
                 # so that any values not overwritten by the saved configuration
@@ -470,7 +488,10 @@ class RepositoryConfig(object):
                 """Saves the current configuration object to the specified
                 pathname using ConfigParser.
                 """
-                if os.path.exists(self.__pathname) and not self.__dirty:
+
+                if not self.__pathname:
+                        return
+                elif os.path.exists(self.__pathname) and not self.__dirty:
                         return
 
                 cp = ConfigParser.SafeConfigParser()

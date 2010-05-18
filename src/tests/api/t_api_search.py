@@ -1523,6 +1523,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._search_op(api_obj, remote, 'unique_dir',
                     self.res_space_unique)
                 remote = True
+                time.sleep(1)
                 self._search_op(api_obj, remote, 'with', set())
                 self._search_op(api_obj, remote, 'with*',
                     self.res_space_with_star)
@@ -1762,7 +1763,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 tok_file = os.path.join(ind_dir, ss.BYTE_OFFSET_FILE)
                 main_file = os.path.join(ind_dir, ss.MAIN_FILE)
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(1)
+                time.sleep(2)
                 fh = open(tok_file)
                 tok_1 = fh.readlines()
                 tok_len = len(tok_1)
@@ -1771,7 +1772,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 main_1 = fh.readlines()
                 main_len = len(main_1)
                 self.pkgsend_bulk(durl, self.example_pkg10, optional=False)
-                time.sleep(1)
+                time.sleep(2)
                 fh = open(tok_file)
                 tok_2 = fh.readlines()
                 new_tok_len = len(tok_2)
@@ -2117,7 +2118,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self._run_remote_empty_tests(api_obj)
                 os.rmdir(tmp_dir)
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(1)
+                time.sleep(2)
                 self._run_remote_tests(api_obj)
                 self._search_op(api_obj, True, "unique_dir",
                     self.res_space_unique)

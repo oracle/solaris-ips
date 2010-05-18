@@ -340,3 +340,13 @@ class ExcessiveTransientFailure(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.count, other.count)
+
+class mDNSException(TransportException):
+        """Used when mDNS operations fail."""
+
+        def __init__(self, errstr):
+                TransportException.__init__(self)
+                self.err = errstr
+
+        def __str__(self):
+                return self.err

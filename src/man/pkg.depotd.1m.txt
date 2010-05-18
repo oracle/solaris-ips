@@ -48,6 +48,10 @@ DESCRIPTION
                                         Logs the headers of every request to
                                         the error log.
 
+     pkg/file_root		(astring) The root of the file content
+     				for this repository.  If undefined, this
+				defaults to <repo_root>/file.
+
      pkg/inst_root              (astring) The file system path at which
                                 the instance should find its repository
                                 data.  The default value is
@@ -148,6 +152,26 @@ DESCRIPTION
                                         value is read-authorization
                                         protected.
 
+     The pkg depot is also able to act as a mirror server for local
+     client images from pkg(5).  This allows clients that share a subnet
+     on a LAN to mirror their file caches.  Clients may download files
+     from one another, thereby reducing load on the package depot
+     server.  This functionality is available as an alternate depot
+     service configured by smf(5).  It uses mDNS and dns-sd for service
+     discovery.
+
+     The mDNS mirror is generally configured via the smf(5) properties
+     associated with its service.  The following properties are recognized:
+
+     pkg/file_root              (astring) The file system path at which
+                                the instance should find its file
+				content.  The default value is
+                                /var/pkg/download.
+
+     pkg/port                   (count) The port number on which the
+                                instance should listen for incoming
+                                package requests.  The default value is
+ 
 OPTIONS
      The following options alter the default behavior, if present, and
      will override the settings from the service instance when managed
@@ -188,6 +212,9 @@ OPTIONS
                                 serving content.  This is useful for making
                                 sure search indices are built, new content
                                 cataloged, etc.
+
+     --file-root path		Overrides pkg/file_root with value given
+     				by path.
 
      --log-access dest          Overrides pkg/log_access with the value
                                 given by dest.
@@ -248,6 +275,17 @@ EXAMPLES
      # svccfg -s application/pkg/server setprop pkg/port = 10000
      # svcadm refresh application/pkg/server
      # svcadm restart application/pkg/server
+
+     Example 3:  Enabling the mirror.
+
+     # svcadm enable application/pkg/dynamic-mirror
+
+     Example 4:  Changing the listening port of the server.
+
+     # svccfg -s application/pkg/server setprop pkg/port = 20000
+     # svcadm refresh application/pkg/server
+     # svcadm restart application/pkg/server
+
 
 ENVIRONMENT VARIABLES
      PKG_DEPOT_CONTENT          Specifies the directory containing static
@@ -379,7 +417,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg(1), pkgsend(1), syslogd(1M), attributes(5), smf(5)
+     dns-sd(1), mdnsd(1), pkg(1), pkgsend(1), syslogd(1M), attributes(5), smf(5)
 
 NOTES
      The image packaging system is an under-development feature.
@@ -394,9 +432,14 @@ NOTES
 
           svc:/application/pkg/server
 
-     Because the depot server expects to be run by an smf(5) restarter,
-     it does not daemonize.  Error messages are generally sent to
-     standard output, or to the syslogd(1M) system.
+     The mDNS mirror service is managed by the service management
+     facility, smf(5), under the service identifier:
+
+          svc:/application/pkg/dynamic-mirror
+
+     Because the depot server and mirror expect to be run by an smf(5)
+     restarter, they do not daemonize.  Error messages are generally
+     sent to standard output, or to the syslogd(1M) system.
 
      When publishing individual package files that are greater than 128MB
      in size, filesystem-based publication must be used due to publication

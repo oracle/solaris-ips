@@ -10,6 +10,7 @@ d none lib 755 root bin
 d none lib/svc 755 root bin
 d none lib/svc/method 755 root bin
 f none lib/svc/method/svc-pkg-depot 755 root bin
+f none lib/svc/method/svc-pkg-mdns 755 root bin
 d none usr 755 root sys
 d none usr/bin 755 root bin
 f none usr/bin/pkg 755 root bin
@@ -122,6 +123,8 @@ f none usr/lib/python2.6/vendor-packages/pkg/client/transport/exception.py 444 r
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/exception.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/fileobj.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/fileobj.pyc 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/client/transport/mdetect.py 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/client/transport/mdetect.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/repo.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/repo.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/stats.py 444 root bin
@@ -322,3 +325,4 @@ d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
 f none var/svc/manifest/application/pkg-server.xml 444 root sys
+f none var/svc/manifest/application/pkg-mdns.xml 444 root sys

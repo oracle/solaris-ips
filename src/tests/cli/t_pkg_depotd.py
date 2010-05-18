@@ -322,6 +322,38 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 shutil.rmtree(dpath)
                 self.dc.set_repodir(opath)
 
+        def test_repo_file_only(self):
+                """Test that if a depot is created with only --file-root
+                supplied, it comes up in mirror mode, with only file content
+                available."""
+
+                if self.dc.is_alive():
+                        self.dc.stop()
+
+                fpath = "/var/pkg/download"
+                opath = self.dc.get_repodir()
+                self.dc.set_repodir(None)
+                self.dc.set_file_root(fpath)
+                self.dc.set_readwrite()
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+
+                durl = self.dc.get_depot_url()
+                verdata = urllib2.urlopen("%s/versions/0/" % durl)
+                verlines = verdata.readlines()
+                verdict = dict(
+                    s.split(None, 1)
+                    for s in (l.strip() for l in verlines)
+                )
+
+                self.assert_("file" in verdict)
+                self.assert_("catalog" not in verdict)
+                self.assert_("manifest" not in verdict)
+
+                self.dc.stop()
+                self.dc.set_repodir(opath)
+                self.dc.set_file_root(None)
+
 
 class TestDepotController(pkg5unittest.CliTestCase):
 

@@ -73,7 +73,8 @@ def init(repo):
         for feeds to work correctly.
         """
 
-        if not (repo.read_only and not repo.writable_root):
+        if repo.feed_cache_root and not \
+            (repo.read_only and not repo.writable_root):
                 # RSS/Atom feeds require a unique identifier, so
                 # generate one if isn't defined already.  This
                 # needs to be a persistent value, so we only

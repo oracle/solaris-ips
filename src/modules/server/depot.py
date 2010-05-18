@@ -27,6 +27,14 @@
 import cherrypy
 from cherrypy.lib.static import serve_file
 from email.utils import formatdate
+from cherrypy.process.plugins import SimplePlugin
+
+try:
+        import pybonjour
+except (OSError, ImportError):
+        pass
+else:
+        import select
 
 import cStringIO
 import errno
@@ -39,6 +47,7 @@ import re
 import socket
 import tarfile
 import time
+import urlparse
 # Without the below statements, tarfile will trigger calls to getpwuid and
 # getgrgid for every file downloaded.  This in turn leads to nscd usage which
 # limits the throughput of the depot process.  Setting these attributes to
@@ -132,8 +141,10 @@ class DepotHTTP(object):
                 # Store any possible configuration changes.
                 repo.write_config()
 
-                if repo.mirror:
-                        self.ops_list = self.REPO_OPS_MIRROR
+                if repo.mirror or not repo.repo_root:
+                        self.ops_list = self.REPO_OPS_MIRROR[:]
+                        if not repo.cfg.get_property("publisher", "prefix"):
+                                self.ops_list.remove("publisher")
                 elif repo.read_only:
                         self.ops_list = self.REPO_OPS_READONLY
                 else:
@@ -1476,3 +1487,94 @@ class NastyDepotHTTP(DepotHTTP):
                         response.body = nfile.read(filesz)
 
                 return response.body
+
+class DNSSD_Plugin(SimplePlugin):
+        """Allow a depot to configure DNS-SD through mDNS."""
+
+        def __init__(self, bus, scfg, gconf):
+                """Bus is cherrypy engine, scfg is SvrConfig, and gconf
+                is dictionary containing the CherryPy configuration."""
+
+                SimplePlugin.__init__(self, bus)
+
+                if "pybonjour" not in globals():
+                        self.start = lambda: None
+                        self.exit = lambda: None
+                        return
+
+                self.name = "pkg(5) mirror on %s" % socket.gethostname()
+                self.wanted_name = self.name
+                self.regtype = "_pkg5._tcp"
+                self.port = gconf["server.socket_port"]
+                self.sd_hdl = None
+                self.reg_ok = False
+
+                if gconf["server.ssl_certificate"] and \
+                    gconf["server.ssl_private_key"]:
+                        proto = "https"
+                else:
+                        proto = "http"
+
+                netloc = "%s:%s" % (socket.getfqdn(), self.port)
+                self.url = urlparse.urlunsplit((proto, netloc, '', '', ''))
+
+        def reg_cb(self, sd_hdl, flags, error_code, name, regtype, domain):
+                """Callback invoked by service register function.  Arguments
+                are determined by the pybonjour framework, and must not
+                be changed."""
+
+                if error_code != pybonjour.kDNSServiceErr_NoError:
+                        self.bus.log("Error in DNS-SD registration: %s" %
+                            pybonjour.BonjourError(error_code))
+
+                self.reg_ok = True
+                self.name = name
+                if self.name != self.wanted_name:
+                        self.bus.log("DNS-SD service name changed to: %s" %
+                            self.name)
+
+        def start(self):
+                self.bus.log("Starting DNS-SD registration.")
+
+                txt_r = pybonjour.TXTRecord()
+                txt_r["url"] = self.url
+                txt_r["type"] = "mirror"
+
+                to_val = 10
+                timedout = False
+
+                try:
+                        self.sd_hdl = pybonjour.DNSServiceRegister(
+                            name=self.name, regtype=self.regtype,
+                            port=self.port, txtRecord=txt_r,
+                            callBack=self.reg_cb)
+                except pybonjour.BonjourError, e:
+                        self.bus.log("DNS-SD service registration failed: %s" %
+                            e)
+                        return
+
+                try:
+                        while not timedout:
+                                avail = select.select([self.sd_hdl], [], [],
+                                    to_val)
+                                if self.sd_hdl in avail[0]:
+                                        pybonjour.DNSServiceProcessResult(
+                                            self.sd_hdl)
+                                        to_val = 0
+                                else:
+                                        timedout = True
+                except pybonjour.BonjourError, e:
+                        self.bus.log("DNS-SD service registration failed: %s" %
+                            e)
+
+                if not self.reg_ok:
+                        self.bus.log("DNS-SD registration timed out.")
+                        return
+                self.bus.log("Finished DNS-SD registration.")
+
+        def exit(self):
+                self.bus.log("DNS-SD plugin exited")
+                if self.sd_hdl:
+                        self.sd_hdl.close()
+                self.sd_hdl = None
+                self.bus.log("Service unregistration for DNS-SD complete.")

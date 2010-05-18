@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2009, 2010 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2010 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -29,10 +29,10 @@
 
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 
-<service_bundle type='manifest' name=':pkg-server'>
+<service_bundle type='manifest' name=':pkg-mdns'>
 
 <service
-	name='application/pkg/server'
+	name='application/pkg/dynamic-mirror'
 	type='service'
 	version='1'>
 
@@ -82,50 +82,29 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-depot %m'
-		timeout_seconds='0' />
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-mdns %m'
+		timeout_seconds='0'>
+		<method_context>
+			<method_credential user='pkg5srv' group='pkg5srv' />
+		</method_context>
+	</exec_method>
 
 	<exec_method
 		type='method'
 		name='stop'
-		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-depot %m %{restarter/contract}'
-		timeout_seconds='30' />
+		exec='%{pkg/pkg_root}/lib/svc/method/svc-pkg-mdns %m %{restarter/contract}'
+		timeout_seconds='30'>
+	</exec_method>
 
 	<property_group name='startd' type='framework'>
 		<propval name='duration' type='astring' value='child' />
 	</property_group>
 
 	<property_group name='pkg' type='application'>
+		<propval name='file_root' type='astring'
+			value='/var/pkg/download' />
 		<propval name='pkg_root' type='astring' value='/' />
-		<propval name='inst_root' type='astring'
-			value='/var/pkg/repo' />
-		<propval name='port' type='count' value='80' />
-		<propval name='proxy_base' type='astring' value='' />
-		<propval name='socket_timeout' type='count' value='60' />
-		<propval name='threads' type='count' value='10' />
-		<propval name='cfg_file' type='astring' value='' />
-		<propval name='content_root' type='astring'
-			value='usr/share/lib/pkg' />
-		<propval name='debug' type='astring'
-			value='' />
-		<propval name='log_access' type='astring'
-			value='none' />
-		<propval name='log_errors' type='astring'
-			value='stderr' />
-		<propval name='mirror' type='boolean' value='false'/>
-		<propval name='readonly' type='boolean' value='true'/>
-		<propval name='ssl_cert_file' type='astring' value='none' />
-		<propval name='ssl_dialog' type='astring' value='smf' />
-		<propval name='ssl_key_file' type='astring' value='none' />
-		<propval name='writable_root' type='astring' value=''/>
-		<propval name='sort_file_max_size' type='astring' value=''/>
-		<propval name='file_root' type='astring' value='' />
-	</property_group>
-
-	<property_group name='pkg_secure' type='application'>
-		<propval name='read_authorization' type='astring'
-			value='solaris.smf.read.pkg-server' />
-		<propval name='ssl_key_passphrase' type='astring' value='' />
+		<propval name='port' type='count' value='10000' />
 	</property_group>
 
 	<stability value='Unstable' />

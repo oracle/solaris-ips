@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
+#
 
 import ConfigParser
 import errno
@@ -44,14 +45,12 @@ from pkg.misc import DictProperty
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
 
-PURSUE_LATEST = "pursue-latest"
-DISPLAY_COPYRIGHTS = "display-copyrights"
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
+MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
 default_policies = {
-    PURSUE_LATEST: True,
-    DISPLAY_COPYRIGHTS: True,
     FLUSH_CONTENT_CACHE: False,
+    MIRROR_DISCOVERY: False,
     SEND_UUID: True
 }
 

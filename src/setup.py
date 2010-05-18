@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -198,6 +197,7 @@ scripts_sunos = {
                 ],
         svc_method_dir: [
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
+                ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
                 ],
         }
 
@@ -301,6 +301,7 @@ etcbrand_files = [
         'brand/smf_disable.conf',
         ]
 smf_files = [
+        'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
         'svc/pkg-update.xml',
         ]

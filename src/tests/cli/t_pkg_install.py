@@ -298,6 +298,24 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("list bar@1.1 foo@1.2 boring@1.0")
 
+        def test_basics_mdns(self):
+                """ Send empty package foo@1.0, install and uninstall """
+
+                self.pkgsend_bulk(self.rurl, self.foo11)
+                self.image_create(self.rurl)
+
+                self.pkg("set-property mirror-discovery True")
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
+
+                self.pkg("install foo")
+
+                self.pkg("list")
+                self.pkg("verify")
+
+                self.pkg("uninstall foo")
+                self.pkg("verify")
+
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install
                     bar@1.0.  List all packages.  Upgrade image. """

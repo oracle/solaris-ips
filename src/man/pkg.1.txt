@@ -681,6 +681,43 @@ SUBCOMMANDS
           string is not guaranteed to be comparable in any fashion between
           versions.
 
+IMAGE PROPERTIES
+     The following properties are part of the image and may be set using
+     the set-property subcommand.  The values of these properties are
+     viewable with the property subcommand.
+
+     flush-content-cache-on-success
+          (boolean) If this is set to True, the package client will
+	  remove the files in its content-cache when install or
+	  image-update operations complete.  For image-update
+	  operations, the content is removed only from the source BE.
+	  When a packaging operation next occurs in the destination BE,
+	  it will flush its content cache, provided this option has not
+	  been changed.
+	  
+	  This property may be used to keep the content-cache small on
+	  systems with limited disk space, but it may cause operations
+	  to take longer to complete.
+
+	  Default value: False
+
+     mirror-discovery
+          (boolean)  Mirror-discovery tells the client to discover
+	  link-local content mirrors using mDNS and DNS-SD.  If this is
+	  set to True, the client will attempt to download package content
+	  from mirrors it dynamically discovers.  To run a mirror that
+	  advertises its content via mDNS, see pkg.mdnsd(1m).
+
+	  Default value: False
+
+     send-uuid
+          (boolean)  Send the image's Universally Unique Identifier
+	  (UUID) when performing network operations.  Although users may
+	  disable this option, some network repositories may refuse to talk
+	  to clients that do not supply a UUID.
+
+	  Default value: True
+
 EXAMPLES
      Example 1:  Create a new, full image, with publisher example.com,
      stored at /aux0/example_root.
@@ -859,7 +896,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5)
+     pkgsend(1), pkg.depotd(1M), pkg.mdnsd(1M), glob(3C), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.

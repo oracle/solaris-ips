@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -39,8 +38,6 @@
 # client, we should probably provide a query API to do same on the server, for
 # dumb clients (like a notification service).
 
-# The default repository path.
-REPO_PATH_DEFAULT = "/var/pkg/repo"
 # The default path for static and other web content.
 CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
 # cherrypy has a max_request_body_size parameter that determines whether the
@@ -71,6 +68,8 @@ REBUILD_DEFAULT = False
 REINDEX_DEFAULT = False
 # Not in mirror mode by default
 MIRROR_DEFAULT = False
+# Not in link-local mirror mode my default
+LL_MIRROR_DEFAULT = False
 
 import getopt
 import gettext
@@ -139,8 +138,8 @@ def usage(text=None, retcode=2, full=False):
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [-t socket_timeout] [--cfg-file] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
-           [--log-access dest] [--log-errors dest] [--mirror] [--nasty]
-           [--set-property <section.property>=<value>]
+           [--file-root dir] [--log-access dest] [--log-errors dest]
+           [--mirror] [--nasty] [--set-property <section.property>=<value>]
            [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
            [--ssl-dialog] [--ssl-key-file] [--sort-file-max-size size]
            [--writable-root dir]
@@ -165,6 +164,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
         --exit-ready    Perform startup processing (including rebuilding
                         catalog or indices, if requested) and exit when
                         ready to start serving packages.
+        --file-root     The path to the root of the file content for a given
+                        repository.  This is used to override the default,
+                        <repo_root>/file.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -213,7 +215,6 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         access.  Used with --readonly to allow server to
                         create needed files, such as search indices, without
                         needing write access to the package information.
-
 Options:
         --help or -?
 
@@ -247,9 +248,12 @@ if __name__ == "__main__":
         reindex = REINDEX_DEFAULT
         proxy_base = None
         mirror = MIRROR_DEFAULT
+        ll_mirror = LL_MIRROR_DEFAULT
+        file_root = None
         nasty = False
         nasty_value = 0
         repo_config_file = None
+        repo_path = None
         sort_file_max_size = indexer.SORT_FILE_MAX_SIZE
         ssl_cert_file = None
         ssl_key_file = None
@@ -260,8 +264,6 @@ if __name__ == "__main__":
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
-        else:
-                repo_path = REPO_PATH_DEFAULT
 
         try:
                 content_root = os.environ["PKG_DEPOT_CONTENT"]
@@ -289,10 +291,11 @@ if __name__ == "__main__":
         repo_props = {}
         try:
                 long_opts = ["add-content", "cfg-file=", "content-root=",
-                    "debug=", "disable-ops=", "exit-ready", "help", "mirror",
-                    "nasty=", "set-property=", "proxy-base=", "readonly",
-                    "rebuild", "refresh-index", "ssl-cert-file=", "ssl-dialog=",
-                    "ssl-key-file=", "sort-file-max-size=", "writable-root="]
+                    "debug=", "disable-ops=", "exit-ready", "file-root=",
+                    "help", "llmirror", "mirror", "nasty=", "proxy-base=",
+                    "readonly", "rebuild", "refresh-index", "set-property=",
+                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
+                    "sort-file-max-size=", "writable-root="]
 
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
@@ -327,6 +330,11 @@ if __name__ == "__main__":
                                         raise OptionError, "You must specify " \
                                             "a directory path."
                                 content_root = arg
+                        elif opt == "--file-root":
+                                if arg == "":
+                                        raise OptionError, "You must specify " \
+                                            "a directory path."
+                                file_root = arg
                         elif opt == "--debug":
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -378,6 +386,10 @@ if __name__ == "__main__":
                                 show_usage = True
                         elif opt == "--mirror":
                                 mirror = True
+                        elif opt == "--llmirror":
+                                mirror = True
+                                ll_mirror = True
+                                readonly = True
                         elif opt == "--nasty":
                                 value_err = None
                                 try:
@@ -536,6 +548,10 @@ if __name__ == "__main__":
                 usage("--readonly can only be used with --refresh-index if "
                     "--writable-root is used")
 
+        if not repo_path and not file_root:
+                usage("At least one of PKG_REPO, -d, or --file-root" 
+                    " must be provided")
+
         if (ssl_cert_file and not ssl_key_file) or (ssl_key_file and not
             ssl_cert_file):
                 usage("The --ssl-cert-file and --ssl-key-file options must "
@@ -678,10 +694,11 @@ if __name__ == "__main__":
         fork_allowed = not reindex and not exit_ready  
         try:
                 repo = sr.Repository(auto_create=not readonly,
-                    cfgpathname=repo_config_file, fork_allowed=fork_allowed,
-                    log_obj=cherrypy, mirror=mirror, properties=repo_props,
-                    read_only=readonly, refresh_index=not add_content, 
-                    repo_root=repo_path, sort_file_max_size=sort_file_max_size,
+                    cfgpathname=repo_config_file,  file_root=file_root,
+                    fork_allowed=fork_allowed, log_obj=cherrypy,
+                    mirror=mirror, properties=repo_props, read_only=readonly,
+                    refresh_index=not add_content, repo_root=repo_path,
+                    sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except (RuntimeError, sr.RepositoryError), _e:
                 emsg("pkg.depotd: %s" % _e)
@@ -778,6 +795,9 @@ if __name__ == "__main__":
                 # existing configuration.
                 for entry in proxy_conf:
                         conf["/"][entry] = proxy_conf[entry]
+
+        if ll_mirror:
+                ds.DNSSD_Plugin(cherrypy.engine, conf, gconf).subscribe()
 
         try:
                 root = cherrypy.Application(depot)

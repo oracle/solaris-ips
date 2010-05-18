@@ -57,6 +57,7 @@ class DepotController(object):
                 self.__dir = None
                 self.__disable_ops = None
                 self.__exit_ready = False
+                self.__file_root = None
                 self.__logpath = "/tmp/depot.log"
                 self.__mirror = False
                 self.__output = None
@@ -117,6 +118,12 @@ class DepotController(object):
 
         def get_property(self, section, prop):
                 return self.__props.get(section, {}).get(prop)
+
+        def set_file_root(self, f_root):
+                self.__file_root = f_root
+
+        def get_file_root(self):
+                return self.__file_root
 
         def set_repodir(self, repodir):
                 self.__dir = repodir
@@ -260,6 +267,8 @@ class DepotController(object):
                 if self.__dir != None:
                         args.append("-d")
                         args.append(self.__dir)
+                if self.__file_root != None:
+                        args.append("--file-root=%s" % self.__file_root)
                 if self.__readonly:
                         args.append("--readonly")
                 if self.__rebuild:
