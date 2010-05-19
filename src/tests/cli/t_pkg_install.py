@@ -962,6 +962,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         dricon1 = """
             open dricon@1
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -971,6 +973,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         dricon2 = """
             open dricon@2
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -981,6 +985,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         dricon3 = """
             open dricon@3
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -992,6 +998,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         dripol1 = """
             open dripol@1
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
@@ -1004,6 +1012,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         dripol2 = """
             open dripol@2
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/run mode=755 owner=root group=root
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
@@ -1937,6 +1947,8 @@ adm:NP:6445::::::
 
                 self.devicebase = """
                     open devicebase@1.0,5.11-0
+                    add dir mode=0755 owner=root group=root path=/var
+                    add dir mode=0755 owner=root group=root path=/var/run
                     add dir mode=0755 owner=root group=root path=/tmp
                     add dir mode=0755 owner=root group=root path=/etc
                     add dir mode=0755 owner=root group=root path=/etc/security

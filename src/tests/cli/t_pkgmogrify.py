@@ -19,9 +19,9 @@
 #
 # CDDL HEADER END
 #
-
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -50,9 +50,9 @@ depend fmri=SUNWfreetype2@2.3.9-$(BUILDID) type=require
 depend fmri=SUNWlibms@0.5.11-$(BUILDID) type=require
 $(i386_ONLY)depend fmri=SUNWxorg-mesa@7.4.4-$(BUILDID) type=require
 file NOHASH elfarch=i386 elfbits=32 group=bin mode=0755 \
- owner=root path=usr/X11/bin/xkbprint
+owner=root path=usr/X11/bin/xkbprint
 file NOHASH group=bin mode=0755 owner=root path=usr/X11/bin/Xserver
-file group=bin mode=0755 owner=root path=usr/X11/bin/bdftopcf
+file NOHASH group=bin mode=0755 owner=root path=usr/X11/bin/bdftopcf
 link path=usr/X11/lib/libXdmcp.so target=./libXdmcp.so.6
 link path=usr/X11/lib/libXevie.so target=./libXevie.so.1
 link path=usr/X11/lib/libXext.so target=./libXext.so.0
@@ -223,6 +223,15 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                         "grep -w '3'" % (print_file, output_file,
                         self.transform_files[10], self.transform_files[11],
                         source_file, print_file))
-
+        def test_10(self):
+                """test to make sure we can handle leading macros, preserve comments"""
+                input_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
+                self.pkgmogrify("-O %s %s; diff %s %s" % (
+                    output_file,
+                    input_file,
+                    input_file,
+                    output_file))
+                
 if __name__ == "__main__":
         unittest.main()

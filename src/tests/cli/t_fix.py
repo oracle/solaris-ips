@@ -90,6 +90,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
         driver_prep10 = """
             open drv-prep@1.0,5.11-0
             add dir path=/tmp mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=/var
+            add dir mode=0755 owner=root group=root path=/var/run
             add file tmp/empty path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
             add file tmp/empty path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file tmp/empty path=/etc/driver_classes mode=644 owner=root group=sys

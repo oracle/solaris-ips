@@ -1,0 +1,66 @@
+User Commands                                            pkgfmt(1)
+
+
+NAME
+     pkgfmt - format a package manifest
+
+SYNOPSIS
+     /usr/bin/pkgfmt [package-manifest-file]
+
+
+DESCRIPTION
+
+     Pkgfmt without the -c option will format a package 
+     manifest in a consistant manner, wrapping lines at 
+     80 characters, sorting actions by type, placing key 
+     attributes first, etc.  Pkgfmt tries to be robust
+     in the case of lines that don't parse into actions;
+     such lines will not appear in sorted order.
+
+     If no arguments are given, pkgfmt will read the stdin
+     until EOF, and then write the formated manifest on the
+     stdout.  Any manifests specified on the command line
+     are formated in place.
+
+     Pkgfmt with the -c option will check to make sure the
+     manifest(s) are formated in pkgfmt style.
+
+OPTIONS
+     
+     -c   Check if the manifest is formated in the pkgfmt style.
+
+     -u   Do not wrap lines at 80 characters; this is useful for
+          applying traditional text processing tools to package
+          manifests.
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Normal execution
+
+     1     The -c option was specified, and one or more manifests
+           are not in pkgfmt-normal form.
+
+     99    An unanticipated exception occurred
+
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the following attributes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     attributes(5), pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://hub.opensolaris.org/bin/view/Project+pkg/

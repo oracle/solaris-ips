@@ -5,7 +5,7 @@ NAME
      pkgmogrify - image packaging system manifest transmogrifier
 
 SYNOPSIS
-     /usr/bin/pkgmogrify [-v] [-I includedir ...] [-D macro=value ...]
+     /usr/bin/pkgmogrify [-vi] [-I includedir ...] [-D macro=value ...]
            [-O outputfile] [-P printfile] [inputfile ...]
 
 DESCRIPTION
@@ -69,6 +69,9 @@ OPTIONS
           if an error occurs or if a transform directive causes an
           abort operation.  By default, print output is written to
           stdout.
+
+     -i   Ignore include directives in files; only files specified on 
+          the command line (or stdin) are processed.
 
      -v   Write out comments into output manifest showing effect of
           transforms to aid debugging.

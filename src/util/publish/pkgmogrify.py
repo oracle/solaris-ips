@@ -18,9 +18,9 @@
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
+
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -29,6 +29,7 @@ import os
 import re
 import shlex
 import sys
+import traceback
 import warnings
 
 import pkg.actions
@@ -50,7 +51,7 @@ def usage(errmsg="", exitcode=2):
                 print >> sys.stderr, "pkgmogrify: %s" % errmsg
         
         print _(
-            "/usr/bin/pkgmogrify [-v] [-I includedir ...] [-D macro=value ...] "
+            "/usr/bin/pkgmogrify [-vi] [-I includedir ...] [-D macro=value ...] "
             "[-O outputfile] [-P printfile] [inputfile ...]")
         sys.exit(exitcode)
 
@@ -318,9 +319,9 @@ def apply_macros(s):
                         break # no more substitutable tokens
         return s
 
-def read_file(tp):
+def read_file(tp, ignoreincludes):
         """ return the lines in the file as a list of 
-        tuples containing (line, filename line number);
+        tuples containing (line, filename, line number);
         handle continuation and <include "path">"""
         ret = []
         filename, f = tp
@@ -329,6 +330,9 @@ def read_file(tp):
         for lineno, line in enumerate(f):
                 lineno = lineno + 1 # number from 1
                 line = line.strip()
+                if not line: # preserve blanks
+                        ret.append((line, filename, lineno))
+                        continue
                 if line.endswith("\\"):
                         accumulate += line[0:-1]
                         continue
@@ -341,17 +345,21 @@ def read_file(tp):
 
                 line = line.strip()
 
-                if not line or line[0] == '#':
+                if not line:
                         continue
 
                 try:
                         if line.startswith("<") and line.endswith(">"):
-                                line = line[1:-1]
-                                if line.startswith("include"):
-                                        line = line[7:].strip()
-                                        line = line.strip('"')
-                                        ret.extend(read_file(searching_open(line)))
-                                elif line.startswith("transform"):
+                                if line.startswith("<include"):
+                                        if not ignoreincludes:
+                                                line = line[1:-1]
+                                                line = line[7:].strip()
+                                                line = line.strip('"')
+                                                ret.extend(read_file(searching_open(line), ignoreincludes))
+                                        else:
+                                                ret.append((line, filename, lineno))     
+                                elif line.startswith("<transform"):
+                                        line = line[1:-1]
                                         add_transform(line, filename, lineno)
                                 else:
                                         raise RuntimeError, _("unknown command %s") % (
@@ -380,9 +388,10 @@ def main_func():
         outfilename = None
         printfilename = None
         verbose = False
+        ignoreincludes = False
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "vD:I:O:P:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "ivD:I:O:P:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-D":
                                 if "=" not in arg:
@@ -391,6 +400,8 @@ def main_func():
                                 if a[0] == "":
                                         error(_("macros must be of form name=value"))
                                 macros.update([("$(%s)" % a[0], a[1])])
+                        if opt == "-i":
+                                ignoreincludes=True
                         if opt == "-I":
                                 includes.append(arg)
                         if opt == "-O":
@@ -399,7 +410,6 @@ def main_func():
                                 printfilename = arg
                         if opt == "-v":                                
                                 verbose = True
-
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
@@ -417,13 +427,24 @@ def main_func():
                 error(_("Error processing input arguments: %s" % e))
         try:
                 for f in infiles:
-                        lines.extend(read_file(f))
+                        lines.extend(read_file(f, ignoreincludes))
         except RuntimeError, e:
                 sys.exit(1)
 
         output = []
 
         for line, filename, lineno in lines:
+                if not line or line.startswith("#") or line.startswith("<"):
+                        output.append(([line], None, None))
+                        continue
+
+                if line.startswith("$("): #prepended unexpanded macro
+                        # doesn't handle nested macros
+                        eom = line.index(")") + 1
+                        prepended_macro = line[0:eom]
+                        line = line[eom:]
+                else:
+                        prepended_macro = None
                 try:
                         act = pkg.actions.fromstr(line)
                 except (pkg.actions.MalformedActionError,
@@ -431,9 +452,8 @@ def main_func():
                     pkg.actions.InvalidActionError), e:
                         error("File %s line %d: %s" % (filename, lineno, e))
                 try:
-                        a = apply_transforms(act, verbose)
-                        output.append(a)
-
+                        comment, a = apply_transforms(act, verbose)
+                        output.append((comment, a, prepended_macro))
                 except RuntimeError, e:
                         error("File %s line %d: %s" % (filename, lineno, e))
 
@@ -454,12 +474,16 @@ def main_func():
                 else:
                         outfile = file(outfilename, "w")
                         
-                for comment, action in output:
+                for comment, action, prepended_macro in output:
                         if comment:
                                 for l in comment:
                                         print >> outfile, "%s" % l
                         if action:
-                                print >> outfile, "%s" % action
+                                if prepended_macro is None:
+                                        print >> outfile, "%s" % action
+                                else:
+                                        print >> outfile, "%s%s" % (
+                                            prepended_macro, action)
         except IOError, e:
                 error(_("Cannot write output %s") % e)
                 
@@ -477,6 +501,7 @@ if __name__ == "__main__":
         except SystemExit, __e:
                 exit_code = __e
         except Exception, __e: 
+                traceback.print_exc()
                 print >> sys.stderr, "pkgmogrify: caught %s, %s" % (Exception, __e)
                 exit_code = 99
 

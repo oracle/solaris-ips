@@ -1,0 +1,54 @@
+As of 2010/03, we always create new boot environments
+when doing an image-update, and never do so for
+install, instead failing the operation should an action
+tagged w/ reboot-needed be affected.  We also always 
+create new boot environments for change-variant and
+change-facet operations, and never for fix.
+
+This needs work.
+
+Instead, I'd like to propose the following:
+
+1) We support the creation of a new optional backup
+boot environment before executing the operation
+on the live image.  Non-live images can easily
+use snapshots for this; this option would have
+no effect in the case that the operation creates
+a new BE.
+
+2) All image-modifying operations on a live image
+would create a new boot environment only if needed.
+This behavior could be altered via command line flags
+to always create a new boot environment or to never 
+create one, failing instead if the operation needs
+one.
+
+pkg install 
+pkg fix 
+would both get the following new options:
+
+[--backup-be]
+[--backup-be-name name]
+[--no-new-be | --always-new-be]
+[--be-name name]
+
+pkg image-update
+pkg change-facet
+pkg change-variant
+
+would all get the following new options:
+
+[--backup-be]
+[--backup-be-name name]
+[--no-new-be | --always-new-be]
+
+So, to retain the current behavior,
+
+invoke pkg install --no-new-be ....
+
+invoke pkg image-update --always-new-be ...
+       pkg change-facet --always-nes-be ...
+       pkg change-variant --always-new-be ...
+
+- Bart
+
