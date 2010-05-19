@@ -16,6 +16,7 @@ d none usr/bin 755 root bin
 f none usr/bin/pkg 755 root bin
 f none usr/bin/pkgdepend 755 root bin
 f none usr/bin/pkgdiff 755 root bin
+f none usr/bin/pkgfmt 755 root bin
 f none usr/bin/pkgmogrify 755 root bin
 f none usr/bin/pkgrecv 755 root bin
 f none usr/bin/pkgsend 755 root bin
@@ -309,6 +310,7 @@ d none usr/share/man/cat1 755 root bin
 f none usr/share/man/cat1/pkg.1 444 root bin
 f none usr/share/man/cat1/pkgdepend.1 444 root bin
 f none usr/share/man/cat1/pkgdiff.1 444 root bin
+f none usr/share/man/cat1/pkgfmt.1 444 root bin
 f none usr/share/man/cat1/pkgmogrify.1 444 root bin
 f none usr/share/man/cat1/pkgrecv.1 444 root bin
 f none usr/share/man/cat1/pkgsend.1 444 root bin
