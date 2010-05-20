@@ -38,6 +38,7 @@ import socket
 import traceback
 import tempfile
 import re
+import string
 import threading
 try:
         import gobject
@@ -441,7 +442,7 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
 
 def set_package_details(pkg_name, local_info, remote_info, textview,
     installed_icon, not_installed_icon, update_available_icon, 
-    is_all_publishers_installed=None, pubs_info=None):
+    is_all_publishers_installed=None, pubs_info=None, renamed_info=None):
         installed = True
 
         if not local_info:
@@ -461,6 +462,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         labs["cat"] = _("Category:")
         labs["ins"] = _("Installed:")
         labs["available"] = _("Version Available:")
+        labs["renamed_to"] = _("Renamed To:")
         labs["lat"] = _("Latest Version:")
         labs["repository"] = _("Publisher:")
 
@@ -475,6 +477,13 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         text["name"] = pkg_name
         text["summ"] = summary
         text["desc"] = description
+        renamed_to = ""
+        if renamed_info != None and \
+                len(renamed_info.dependencies) > 0:
+                renamed_to += renamed_info.dependencies[0] + "\n"
+                for dep in renamed_info.dependencies[1:]:
+                        renamed_to += "\t" + dep + "\n"
+        text["renamed_to"] = renamed_to
         if installed:
                 ver_text = _("%(version)s (Build %(build)s-%(branch)s)")
                 text["ins"] = ver_text % \
@@ -566,6 +575,22 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i = 0
         __add_line_to_generalinfo(infobuffer, i, labs["name"], text["name"])
         i += 1
+        if text["renamed_to"] != "":
+                rename_list = string.split(text["renamed_to"], "\n", 1)
+                start = ""
+                remainder = ""
+                if rename_list != None:
+                        if len(rename_list) > 0:
+                                start = rename_list[0]
+                        if len(rename_list) > 1:
+                                remainder = rename_list[1]
+                __add_line_to_generalinfo(infobuffer, i, labs["renamed_to"],
+                    start)
+                i += 1
+                if len(remainder) > 0:
+                        itr = infobuffer.get_iter_at_line(i)
+                        infobuffer.insert(itr, remainder)
+                        i += remainder.count("\n")
         __add_line_to_generalinfo(infobuffer, i, labs["summ"], text["summ"])
         i += 1
         installed = False

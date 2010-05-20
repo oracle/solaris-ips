@@ -746,7 +746,8 @@ class PackageManager:
                         gobject.TYPE_BOOLEAN,     # enumerations.IS_VISIBLE_COLUMN
                         gobject.TYPE_PYOBJECT,    # enumerations.CATEGORY_LIST_COLUMN
                         gobject.TYPE_STRING,      # enumerations.PUBLISHER_COLUMN
-                        gobject.TYPE_STRING       # enumerations.PUBLISHER_PREFIX_COLUMN
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_PREFIX_COLUMN
+                        gobject.TYPE_BOOLEAN      # enumerations.RENAMED_COLUMN
                         )
 
         @staticmethod
@@ -1696,7 +1697,7 @@ class PackageManager:
                         application_list.append(
                             [False, None, name, '...', api.PackageInfo.KNOWN, None, 
                             gui_misc.get_pkg_stem(name, pub), None, True, None, 
-                            pub_name, pub])
+                            pub_name, pub, False])
                 return application_list
 
         def __get_full_list_from_search(self, search_result):
@@ -3046,7 +3047,7 @@ class PackageManager:
                 self.detailspanel.set_empty_details()
 
         def __update_package_info(self, pkg, local_info, remote_info, dep_info,
-            installed_dep_info, info_id):
+            installed_dep_info, info_id, renamed_info=None):
                 if self.detailspanel.showing_empty_details or (info_id != 
                     self.last_show_info_id):
                         return
@@ -3054,7 +3055,8 @@ class PackageManager:
                     remote_info, dep_info, installed_dep_info, self.api_o.root,
                     self.installed_icon, self.not_installed_icon,
                     self.update_available_icon,
-                    self.is_all_publishers_installed, self.pubs_info)
+                    self.is_all_publishers_installed, self.pubs_info,
+                    renamed_info)
                 self.unset_busy_cursor()
 
         def __update_package_license(self, licenses, license_id):
@@ -3160,17 +3162,22 @@ class PackageManager:
                 pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                pkg_renamed = model.get_value(itr, enumerations.RENAMED_COLUMN)
                 self.set_busy_cursor()
                 Thread(target = self.__show_package_info,
-                    args = (pkg, pkg_stem, pkg_status, self.last_show_info_id)).start()
+                    args = (pkg, pkg_stem, pkg_status, self.last_show_info_id,
+                        pkg_renamed)).start()
 
-        def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id):
+        def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id,
+            pkg_renamed):
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
-                self.__show_package_info_without_lock(pkg, pkg_stem, pkg_status, info_id)
+                self.__show_package_info_without_lock(pkg, pkg_stem, pkg_status,
+                    info_id, pkg_renamed)
                 self.api_lock.release()
 
-        def __show_package_info_without_lock(self, pkg, pkg_stem, pkg_status, info_id):
+        def __show_package_info_without_lock(self, pkg, pkg_stem, pkg_status,
+            info_id, pkg_renamed):
                 local_info = None
                 remote_info = None
                 if not self.detailspanel.showing_empty_details and (info_id ==
@@ -3230,9 +3237,18 @@ class PackageManager:
                                                 gobject.idle_add(self.error_occurred, err)
                                 finally:
                                         gobject.idle_add(self.unset_busy_cursor)
+                        
+                        renamed_info = None
+                        if pkg_renamed:
+                                if local_info != None and \
+                                        len(local_info.dependencies) > 0:
+                                        renamed_info = local_info
+                                elif remote_info != None and \
+                                        len(remote_info.dependencies) > 0:
+                                        renamed_info = remote_info
                         gobject.idle_add(self.__update_package_info, pkg,
-                            local_info, remote_info, dep_info, installed_dep_info,
-                            info_id)
+                            local_info, remote_info, dep_info,
+                            installed_dep_info, info_id, renamed_info)
                 return
 
         def __get_active_section_and_category(self):
@@ -3504,7 +3520,7 @@ class PackageManager:
                         pkg_fmri = fmri.PkgFmri(result.fmri)
                         pkg_stem = pkg_fmri.get_pkg_stem()
                         summ = result.summary
-
+                        pkg_renamed = (api.PackageInfo.RENAMED in result.states)
                         if api.PackageInfo.INSTALLED in result.states:
                                 if api.PackageInfo.UPGRADABLE in result.states:
                                         status_icon = self.update_available_icon
@@ -3532,7 +3548,7 @@ class PackageManager:
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
                                 pkg_fmri, pkg_stem, result.pkg_stem, True,
-                                None, pub_name, pkg_pub
+                                None, pub_name, pkg_pub, pkg_renamed
                             ]
                         application_list.insert(pkg_add, next_app)
                         pkg_add += 1
@@ -3558,6 +3574,7 @@ class PackageManager:
                         pkg_stem = pkg_fmri.get_pkg_stem()
                         gui_misc.add_pkgname_to_dic(self.package_names, pkg_name, 
                             self.special_package_names)
+                        pkg_renamed = (api.PackageInfo.RENAMED in states)
                         if api.PackageInfo.INSTALLED in states:
                                 pkg_state = api.PackageInfo.INSTALLED
                                 if api.PackageInfo.UPGRADABLE in states:
@@ -3577,8 +3594,8 @@ class PackageManager:
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, pkg_name, True, None, pub_name,
-                                pkg_pub
+                                pkg_fmri, pkg_stem, pkg_name, True, None,
+                                pub_name, pkg_pub, pkg_renamed
                             ]
                         self.__add_package_to_list(next_app,
                             application_list,

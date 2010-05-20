@@ -28,6 +28,7 @@ This module consists of user readable enumerations for the data models
 used in the IPS GUI
 """
 
+#Application List
 (
 MARK_COLUMN,
 STATUS_ICON_COLUMN,
@@ -41,7 +42,8 @@ IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
 PUBLISHER_COLUMN,        # Publisher for this package
 PUBLISHER_PREFIX_COLUMN, # Publisher prefix for this package
-) = range(12)
+RENAMED_COLUMN,          # True indicates this package has been
+) = range(13)
 
 #Categories
 (
