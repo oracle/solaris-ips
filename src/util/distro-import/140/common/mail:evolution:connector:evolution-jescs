@@ -1,0 +1,9 @@
+package mail/evolution/connector/evolution-jescs
+consolidation "gnome"
+obsoleted 140
+end package
+
+package SUNWevolution-jescs
+consolidation "gnome"
+obsoleted 140
+end package

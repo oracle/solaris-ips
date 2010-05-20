@@ -1,0 +1,9 @@
+package gnome/theme/cursor/neutral_plus_inv
+consolidation "gnome"
+obsoleted 140
+end package
+
+package SUNWneutral-plus-cursors
+consolidation "gnome"
+obsoleted 140
+end package

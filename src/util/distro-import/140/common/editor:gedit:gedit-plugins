@@ -1,0 +1,7 @@
+package editor/gedit/gedit-plugins
+consolidation "gnome"
+classification "Applications/Accessories"
+classification "Development/Editors"
+import SUNWgnome-gedit-plugins
+import SUNWgnome-gedit-plugins-root
+end package

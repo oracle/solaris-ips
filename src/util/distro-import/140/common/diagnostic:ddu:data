@@ -1,0 +1,5 @@
+package diagnostic/ddu/data
+consolidation "hcts"
+classification "System/Hardware"
+import SUNWddu-DB
+end package

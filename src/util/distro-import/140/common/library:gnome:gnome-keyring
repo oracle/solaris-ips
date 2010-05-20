@@ -1,0 +1,6 @@
+package library/gnome/gnome-keyring
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWlibgnome-keyring
+import SUNWlibgnome-keyring-devel
+end package

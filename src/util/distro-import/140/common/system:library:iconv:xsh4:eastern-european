@@ -1,0 +1,9 @@
+package system/library/iconv/xsh4/eastern-european
+consolidation "l10n"
+obsoleted 140
+end package
+
+package SUNWislcc
+consolidation "l10n"
+obsoleted 140
+end package

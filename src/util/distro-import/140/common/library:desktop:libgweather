@@ -1,0 +1,6 @@
+package library/desktop/libgweather
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWlibgweather
+import SUNWlibgweather-root
+end package

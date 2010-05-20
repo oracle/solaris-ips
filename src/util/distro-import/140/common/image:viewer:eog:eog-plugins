@@ -1,0 +1,5 @@
+package image/viewer/eog/eog-plugins
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWgnome-eog-plugins
+end package
