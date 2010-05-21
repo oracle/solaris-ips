@@ -56,6 +56,7 @@ import pkg.gui.beadmin as beadm
 import pkg.gui.uarenamebe as uarenamebe
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
+import pkg.gui.pmgconf as pmgconf
 from pkg.client import global_settings
 
 logger = global_settings.logger
@@ -64,10 +65,11 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
             action = -1, parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
-            confirmation_list = None, api_lock = None):
+            confirmation_list = None, api_lock = None, gconf = pmgconf.PMGConf()):
                 if action == -1:
                         return
                 progress.GuiProgressTracker.__init__(self)
+                self.gconf = gconf
                 self.web_install = web_install
                 self.web_updates_list = None
                 self.web_install_all_installed = False
@@ -400,14 +402,11 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __on_confirm_donotshow_toggled(self, widget):
                 if self.action == enumerations.REMOVE:
-                        self.parent.on_confirm_remove_checkbutton_toggled(widget,
-                            reverse=True)
+                        self.gconf.set_show_remove(not self.gconf.show_remove)
                 elif self.action == enumerations.IMAGE_UPDATE:
-                        self.parent.on_confirm_updateall_checkbutton_toggled(widget,
-                            reverse=True)
+                        self.gconf.set_show_image_update(not self.gconf.show_image_update)
                 elif self.action == enumerations.INSTALL_UPDATE:
-                        self.parent.on_confirm_install_checkbutton_toggled(widget,
-                            reverse=True)
+                        self.gconf.set_show_install(not self.gconf.show_install)
 
         def __on_confirm_ok_button_clicked(self, widget):
                 if self.action == enumerations.INSTALL_UPDATE or \

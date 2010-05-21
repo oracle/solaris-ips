@@ -2607,7 +2607,8 @@ class PackageManager:
                 installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list, api_lock = self.api_lock)
+                    confirmation_list = confirmation_list, api_lock = self.api_lock,
+                    gconf = self.gconf)
 
         def __on_update_all(self, widget):
                 if not self.__do_api_reset():
@@ -2622,7 +2623,8 @@ class PackageManager:
                     gui_misc.package_name["SUNWipkg-gui"]],
                     main_window = self.w_main_window,
                     icon_confirm_dialog = self.window_icon,
-                    confirmation_list = confirmation, api_lock = self.api_lock)
+                    confirmation_list = confirmation, api_lock = self.api_lock,
+                    gconf = self.gconf)
                 return
 
         def __on_help_about(self, widget):
@@ -2673,7 +2675,8 @@ class PackageManager:
                 installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list, api_lock = self.api_lock)
+                    confirmation_list = confirmation_list, api_lock = self.api_lock,
+                    gconf = self.gconf)
 
         def __on_reload(self, widget):
                 self.force_reload_packages = True
