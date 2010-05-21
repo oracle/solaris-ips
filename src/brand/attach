@@ -537,7 +537,7 @@ ZNAME=za$RANDOM
 
 LC_ALL=C $PKG set-publisher --no-refresh -P -g http://localhost:10000 $ZNAME
 for key in ${!gz_publishers[*]}; do
-	typeset newlocation=""
+	typeset newloc=""
 
 	args=$(print_publisher_pkg_defn gz_publishers $key)
 
@@ -556,18 +556,18 @@ for key in ${!gz_publishers[*]}; do
 	fi
 
 	if [[ ${publisher.keyfile} != "None" ]]; then
-		newlocation="$KEYDIR/$(basename ${publisher.keyfile})"
-		safe_copy ${publisher.keyfile} $newlocation
-		chmod 644 $newlocation
-		chown -h root:root $newlocation
-		args="$args -k $newlocation"
+		newloc="$ZONEROOT/$KEYDIR/$(basename ${publisher.keyfile})"
+		safe_copy ${publisher.keyfile} $newloc
+		chmod 644 $newloc
+		chown -h root:root $newloc
+		args="$args -k $newloc"
 	fi
 	if [[ ${publisher.certfile} != "None" ]]; then
-		newlocation="$KEYDIR/$(basename ${publisher.certfile})"
-		safe_copy ${publisher.certfile} $newlocation
-		chmod 644 $newlocation
-		chown -h root:root $newlocation
-		args="$args -c $newlocation"
+		newloc="$ZONEROOT/$KEYDIR/$(basename ${publisher.certfile})"
+		safe_copy ${publisher.certfile} $newloc
+		chmod 644 $newloc
+		chown -h root:root $newloc
+		args="$args -c $newloc"
 	fi
 	LC_ALL=C $PKG unset-publisher $key >/dev/null 2>&1
 	LC_ALL=C $PKG set-publisher $args $key
