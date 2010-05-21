@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import sys
@@ -108,7 +107,7 @@ class PMGConf:
                         self.show_install = True
                         self.show_remove = True
                         self.save_state = True
-                        self.start_insearch = False
+                        self.start_insearch = True
                         self.lastsource = ""
                         self.not_show_repos = ""
                         self.initial_app_width = 800
@@ -130,6 +129,20 @@ class PMGConf:
 
                 if not self.not_show_repos:
                         self.not_show_repos = ""
+
+        def set_lastsource(self, value):
+                try:
+                        self.lastsource = value
+                        self.client.set_string(LASTSOURCE_PREFERENCES, value)
+                except GError:
+                        pass
+
+        def set_start_insearch(self, value):
+                try:
+                        self.start_insearch = value
+                        self.client.set_bool(START_INSEARCH_PREFERENCES, value)
+                except GError:
+                        pass
 
         def set_show_startpage(self, value):
                 try:

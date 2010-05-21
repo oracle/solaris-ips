@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import os
@@ -353,6 +352,9 @@ class StartPage:
                 self.document.write_stream(display)
                 self.document.close_stream()
 
+        def load_blank(self):
+                self.__link_load_page()
+
         def link_load_error(self, link):
                 self.document.clear()
                 self.document.open_stream('text/html')
@@ -376,7 +378,7 @@ class StartPage:
                 else:
                         self.__link_load_page(self.link_load_string)
 
-        def setup_search_all_page(self, publisher_list):
+        def setup_search_all_page(self, publisher_list, publisher_all):
                 header = INFORMATION_PAGE_HEADER
                 header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
                     "<TD><h3><b>Search All Publishers</b></h3><TD></TD></TR>"
@@ -401,7 +403,6 @@ class StartPage:
                                 name = pub_name
                         pub_browse_list += " <b>%s</b>'>%s</a></li>" % \
                             (prefix, name)
-
                 body += "<TD></TD></TR>"
                 body += _("<TR><TD></TD><TD></TD></TR>"
                     "<TR><TD></TD><TD>Click on the Publishers below to view their list "
@@ -409,6 +410,19 @@ class StartPage:
                     )
                 body += "<TR><TD></TD><TD>"
                 body += pub_browse_list
+                body += "<TD></TD></TR>"
+                
+                pub_browse_all = "<li style='padding-left:7px'><a href="
+                pub_browse_all += "'pm?pm-action=internal&search=%s" % \
+                        INTERNAL_SEARCH_VIEW_PUB
+                pub_browse_all += " <b>%s</b>'>%s</a></li>" % \
+                            (publisher_all, publisher_all)
+                body += _("<TR><TD></TD><TD></TD></TR>"
+                    "<TR><TD></TD><TD>Click on the link below to view the full list "
+                    "of packages:</TD></TR>"
+                    )
+                body += "<TR><TD></TD><TD>"
+                body += pub_browse_all
                 body += "<TD></TD></TR>"
                 footer = "</table>"
                 self.__link_load_page(header + body + footer)

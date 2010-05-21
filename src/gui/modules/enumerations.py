@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 """
@@ -35,7 +34,6 @@ STATUS_ICON_COLUMN,
 NAME_COLUMN,
 DESCRIPTION_COLUMN,
 STATUS_COLUMN,
-FMRI_COLUMN,             # This should go once, the api will be fully functionall
 STEM_COLUMN,
 ACTUAL_NAME_COLUMN,
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
@@ -43,7 +41,7 @@ CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
 PUBLISHER_COLUMN,        # Publisher for this package
 PUBLISHER_PREFIX_COLUMN, # Publisher prefix for this package
 RENAMED_COLUMN,          # True indicates this package has been
-) = range(13)
+) = range(12)
 
 #Categories
 (

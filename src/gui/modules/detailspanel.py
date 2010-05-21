@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
 #
 
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
@@ -104,7 +103,7 @@ class DetailsPanel:
                         leg_txt = _("Fetching legal information...")
                         licbuffer.set_text(leg_txt)
 
-        def update_package_info(self, pkg, local_info, remote_info,
+        def update_package_info(self, pkg_name, local_info, remote_info,
             dep_info, installed_dep_info, root, installed_icon,
             not_installed_icon, update_available_icon, is_all_publishers_installed,
             pubs_info, renamed_info=None):
@@ -127,7 +126,7 @@ class DetailsPanel:
                             network_str)
                         return
 
-                gui_misc.set_package_details(pkg.get_name(), local_info,
+                gui_misc.set_package_details(pkg_name, local_info,
                     remote_info, self.w_generalinfo_textview,
                     installed_icon, not_installed_icon,
                     update_available_icon,

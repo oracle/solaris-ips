@@ -26,9 +26,10 @@ NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 PM_LAUNCH_OPEN_CMD = "pm-launch: OPEN:"   # Command to tell pm-launch to open link.
-PUBLISHER_INSTALLED = 0                   # Index for "All Publishers (Installed)" string
-PUBLISHER_ALL = 1                         # Index for "All Publishers (Search)" string
-PUBLISHER_ADD = 2                         # Index for "Add..." string
+PUBLISHER_ALL = 0                         # Index for "All Publishers" string
+PUBLISHER_INSTALLED = 1                   # Index for "All Installed Packages" string
+PUBLISHER_ALL_SEARCH = 2                  # Index for "All Publishers (Search)" string
+PUBLISHER_ADD = 3                         # Index for "Add..." string
 SHOW_INFO_DELAY = 600       # Delay before showing selected package information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 RESIZE_DELAY = 600          # Delay before handling resize for startpage
@@ -204,8 +205,9 @@ class PackageManager:
                     _('Selected Packages'))
                     ]
                 self.publisher_options = { 
-                    PUBLISHER_INSTALLED : _("All Publishers (Installed)"),
-                    PUBLISHER_ALL : _("All Publishers (Search)"),
+                    PUBLISHER_ALL : _("All Publishers"),
+                    PUBLISHER_INSTALLED : _("All Installed Packages"),
+                    PUBLISHER_ALL_SEARCH : _("All Publishers (Search)"),
                     PUBLISHER_ADD : _("Add...")
                     }
                 self.pubs_info = {}
@@ -214,7 +216,7 @@ class PackageManager:
                 self.publisher_changed = True
                 self.search_start = 0
                 self.search_time_sec = 0
-                self.search_all_pub_being_searched = None
+                self.publisher_being_searched = None
                 self.section_list = None
                 self.filter_list = self.__get_new_filter_liststore()
                 self.length_visible_list = 0
@@ -224,8 +226,9 @@ class PackageManager:
                 self.application_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
-                self.repo_combobox_all_pubs_installed_index = 0
                 self.repo_combobox_all_pubs_index = 0
+                self.repo_combobox_all_pubs_installed_index = 0
+                self.repo_combobox_all_pubs_search_index = 0
                 self.repo_combobox_add_index = 0
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
@@ -328,6 +331,7 @@ class PackageManager:
                 self.progress_cancel = w_tree_main.get_widget("progress_cancel")
                 self.is_all_publishers = False
                 self.is_all_publishers_installed = False
+                self.is_all_publishers_search = False
                 self.saved_repository_combobox_active = -1
                 self.saved_section_active = 0
                 self.saved_application_list = None
@@ -557,19 +561,19 @@ class PackageManager:
                         self.w_copy_menuitem.set_sensitive(False)
                         self.w_deselect_menuitem.set_sensitive(False)
 
-        def __set_all_publishers_mode(self):
-                if self.is_all_publishers:
+        def __set_all_publishers_search_mode(self):
+                if self.is_all_publishers_search:
                         return
-                self.__setup_before_all_publishers_mode()
+                self.__setup_before_all_publishers_search_mode()
 
         def __setup_startpage(self, show_startpage):
                 self.startpage.setup_startpage()
-                if show_startpage:
+                if show_startpage or self.gconf.start_insearch:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_START_PAGE)
-                else:
                         if self.gconf.start_insearch:
                                 self.startpage.document.clear()
+                else:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_PACKAGE_LIST_PAGE)
                 self.w_startpage_scrolled_window.add(self.startpage.view)
@@ -639,7 +643,9 @@ class PackageManager:
                 term = self.previous_search_text
                 self.__set_search_start()
                 self.is_all_publishers_installed = False
-                self.w_repository_combobox.set_active(self.repo_combobox_all_pubs_index)
+                self.is_all_publishers = False
+                self.w_repository_combobox.set_active(
+                    self.repo_combobox_all_pubs_search_index)
                 self.__set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
                 self.w_searchentry.set_text(term)
                 gobject.idle_add(self.__do_search)
@@ -721,7 +727,7 @@ class PackageManager:
                         print "%s%s" % (PM_LAUNCH_OPEN_CMD, link)
                         sys.stdout.flush()
                         gobject.timeout_add(1000, self.unset_busy_cursor)
-                except Exception, ex:
+                except IOError, ex:
                         # Any exception from the above likely means that the
                         # link wasn't loaded.  For example, an IOError or
                         # some other exception might be raised if the launch
@@ -730,6 +736,10 @@ class PackageManager:
                         self.unset_busy_cursor()
 
                         # Log the error for post-mortem evaluation.
+                        logger.error(str(ex))
+                except Exception, ex:
+                        self.startpage.link_load_error(link)
+                        self.unset_busy_cursor()
                         logger.error(str(ex))
 
         @staticmethod
@@ -740,7 +750,6 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.NAME_COLUMN
                         gobject.TYPE_STRING,      # enumerations.DESCRIPTION_COLUMN
                         gobject.TYPE_INT,         # enumerations.STATUS_COLUMN
-                        gobject.TYPE_PYOBJECT,    # enumerations.FMRI_COLUMN
                         gobject.TYPE_STRING,      # enumerations.STEM_COLUMN
                         gobject.TYPE_STRING,      # enumerations.ACTUAL_NAME_COLUMN
                         gobject.TYPE_BOOLEAN,     # enumerations.IS_VISIBLE_COLUMN
@@ -838,8 +847,8 @@ class PackageManager:
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
-                if self.is_all_publishers or self.is_all_publishers_installed or \
-                        self.in_recent_search:
+                if self.is_all_publishers_search or self.is_all_publishers_installed or \
+                        self.is_all_publishers or self.in_recent_search:
                         repository_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Publisher'),
                             repository_renderer,
@@ -1204,7 +1213,8 @@ class PackageManager:
                         return
                 self.last_resize = widget.get_size()
 
-                if self.w_main_view_notebook.get_current_page() == NOTEBOOK_START_PAGE:
+                if self.w_main_view_notebook.get_current_page() == \
+                        NOTEBOOK_START_PAGE  and not self.first_run:
                         self.startpage.handle_resize()
                 
         def __on_mainwindow_check_resize(self, widget):
@@ -1248,7 +1258,7 @@ class PackageManager:
                 self.__enable_disable_entry_selection(widget)
 
         def __update_statusbar_for_search(self):
-                if self.is_all_publishers:
+                if self.is_all_publishers_search or self.is_all_publishers:
                         self.update_statusbar_message(_("Search all publishers"))
                 else:
                         self.update_statusbar_message(_("Search current publisher"))
@@ -1271,9 +1281,10 @@ class PackageManager:
                 if self.w_main_statusbar_label:
                         self.w_main_statusbar_label.set_markup(message)
 
-        def __setup_before_all_publishers_mode(self):
+        def __setup_before_all_publishers_search_mode(self):
                 self.is_all_publishers_installed = False
-                self.is_all_publishers = True
+                self.is_all_publishers = False
+                self.is_all_publishers_search = True
                 self.w_infosearch_frame.hide()
                 if not self.w_searchentry.is_focus():
                         self.__set_searchentry_to_prompt()
@@ -1282,10 +1293,10 @@ class PackageManager:
                 first_run = self.first_run
                 self.first_run = False
                 self.__clear_before_search(False)
-                # Show the Search all page if not showing the Start Page on startup
                 show_search_all_page = not first_run or (first_run 
-                    and not self.gconf.show_startpage)
-                if show_search_all_page:
+                    and not self.gconf.show_startpage) or (first_run
+                    and self.gconf.start_insearch)
+                if show_search_all_page: 
                         gobject.idle_add(self.__setup_search_all_page)
                 elif self.gconf.show_startpage:
                         gobject.idle_add(self.w_main_view_notebook.set_current_page,
@@ -1304,7 +1315,8 @@ class PackageManager:
                         if (prefix and prefix not in self.publisher_options.values()):
                                 pub_alias = pub[enumerations.REPOSITORY_ALIAS]
                                 publisher_list.append((prefix, pub_alias))
-                self.startpage.setup_search_all_page(publisher_list)
+                self.startpage.setup_search_all_page(publisher_list,
+                    self.publisher_options[PUBLISHER_ALL])
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
         def __setup_search_installed_page(self, text):
@@ -1340,10 +1352,10 @@ class PackageManager:
                                 break
                 return description
                 
-        def __setup_search_zero_results_page(self, pub, text):
+        def __setup_search_zero_results_page(self, pub, text, search_all):
                 name =  self.get_publisher_name_from_prefix(pub)
                 self.startpage.setup_search_zero_results_page(name, text,
-                    self.is_all_publishers)
+                    search_all)
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 self.__set_focus_on_searchentry()
 
@@ -1371,13 +1383,18 @@ class PackageManager:
         def __restore_setup_for_browse(self):
                 self.in_search_mode = False
                 self.in_recent_search = False
-                self.is_all_publishers = False
+                self.is_all_publishers_search = False
                 self.w_infosearch_frame.hide()
                 if self.last_visible_publisher == \
                         self.publisher_options[PUBLISHER_INSTALLED]:
                         self.is_all_publishers_installed = True
                 else:
                         self.is_all_publishers_installed = False 
+                if self.last_visible_publisher == \
+                        self.publisher_options[PUBLISHER_ALL]:
+                        self.is_all_publishers = True
+                else:
+                        self.is_all_publishers = False 
                 self.set_busy_cursor()
                 if (self.w_repository_combobox.get_active() != 
                     self.saved_repository_combobox_active):
@@ -1429,7 +1446,7 @@ class PackageManager:
                 self.saved_section_list = self.section_list
 
                 pub_index = self.w_repository_combobox.get_active()
-                if pub_index != self.repo_combobox_all_pubs_index and \
+                if pub_index != self.repo_combobox_all_pubs_search_index and \
                         pub_index != self.repo_combobox_add_index:
                         self.saved_repository_combobox_active = pub_index
 
@@ -1445,12 +1462,15 @@ class PackageManager:
                         return                
                 contains_asterix = txt.count("*") > 0
                 contains_asterix_only = False
+                is_search_all = self.is_all_publishers_search or \
+                        self.__get_selected_publisher() == \
+                                self.publisher_options[PUBLISHER_ALL]
                 if contains_asterix:
                         contains_asterix_only = len(txt.replace("*", " ").strip()) == 0
                 if contains_asterix_only:
                         self.w_searchentry.set_text("*")
                         self.__set_focus_on_searchentry()
-                        if self.is_all_publishers:
+                        if is_search_all:
                                 gobject.idle_add(self.__setup_search_wildcard_page)
                         else:
                                 if self.in_search_mode:
@@ -1458,7 +1478,7 @@ class PackageManager:
                                 if self.w_categories_treeview.get_model() != None:
                                         self.w_categories_treeview.set_cursor(0)
                         return
-                if not self.is_all_publishers:
+                if not self.is_all_publishers_search:
                         self.__save_setup_before_search(single_search=True)
                 self.__clear_before_search()
                 self.__set_focus_on_searchentry()
@@ -1468,7 +1488,7 @@ class PackageManager:
                 self.w_infosearch_frame.hide()
                 gobject.idle_add(self.__set_main_view_package_list)
                 Thread(target = self.__do_api_search,
-                    args = (self.is_all_publishers, )).start()
+                    args = (is_search_all, )).start()
 
         def __get_selection_and_category_path(self):
                 selection = self.w_categories_treeview.get_selection()
@@ -1486,8 +1506,8 @@ class PackageManager:
                         selection.unselect_all()
 
         def __process_after_cancel(self):
-                if self.is_all_publishers:
-                        self.__setup_before_all_publishers_mode()
+                if self.is_all_publishers_search:
+                        self.__setup_before_all_publishers_search_mode()
                 else:
                         self.__unset_search(True)
 
@@ -1518,7 +1538,7 @@ class PackageManager:
                 search_str = SEARCH_STR_FORMAT % text
                 pargs.append(search_str)
                 if search_all:
-                        self.search_all_pub_being_searched = _("All Publishers")
+                        self.publisher_being_searched = _("All Publishers")
                         servers = None
                         try:
                                 pref_pub = self.api_o.get_preferred_publisher()
@@ -1544,7 +1564,7 @@ class PackageManager:
                                 return
                         origin_uri = gui_misc.get_origin_uri(pub.selected_repository)
                         servers.append({"origin": origin_uri})
-                        self.search_all_pub_being_searched = \
+                        self.publisher_being_searched = \
                                 self.get_publisher_display_name_from_prefix(pub.prefix)
                 if debug:
                         print "Search: pargs %s servers: %s" % (pargs, servers)
@@ -1595,10 +1615,11 @@ class PackageManager:
                         if len(result) == 0:
                                 if search_all:
                                         self.__process_after_search_with_zero_results(
-                                                _("All Publishers"), text)
+                                                _("All Publishers"), text,
+                                                search_all)
                                 else:
                                         self.__process_after_search_with_zero_results(
-                                                pub_prefix, text)
+                                                pub_prefix, text, search_all)
                                 return
                 except api_errors.CanceledException:
                         self.__reset_search_start()
@@ -1624,10 +1645,10 @@ class PackageManager:
                                 print "No search results"
                         if search_all:
                                 self.__process_after_search_with_zero_results(
-                                        _("All Publishers"), text)
+                                        _("All Publishers"), text, search_all)
                         else:
                                 self.__process_after_search_with_zero_results(
-                                        pub_prefix, text)
+                                        pub_prefix, text, search_all)
                         return
                 #Now fetch full result set with Status
                 if self.exiting:
@@ -1637,7 +1658,7 @@ class PackageManager:
                         print "Time for search:", time.time() - self.search_start
                 application_list = self.__get_full_list_from_search(result)
                 gobject.idle_add(self.__add_recent_search, text, pub_prefix,
-                    application_list)
+                    application_list, search_all)
                 if self.search_start > 0:
                         self.search_time_sec = int(time.time() - self.search_start)
                         if debug:
@@ -1663,11 +1684,14 @@ class PackageManager:
         def __reset_search_start(self):
                 self.search_start = 0
                 
-        def __process_after_search_with_zero_results(self, pub, text):
+        def __process_after_search_with_zero_results(self, pub, text,
+            search_all):
                 if self.search_start > 0:
-                        self.search_time_sec = int(time.time() - self.search_start)
+                        self.search_time_sec = \
+                                int(time.time() - self.search_start)
                 self.__reset_search_start()
-                gobject.idle_add(self.__setup_search_zero_results_page, pub, text)
+                gobject.idle_add(self.__setup_search_zero_results_page, pub, text,
+                    search_all)
                 self.in_setup = True
                 application_list = self.__get_new_application_liststore()
                 gobject.idle_add(self.__set_empty_details_panel)
@@ -1694,9 +1718,10 @@ class PackageManager:
                 application_list = self.__get_new_application_liststore()
                 for name, pub in search_result:
                         pub_name = self.get_publisher_name_from_prefix(pub)
+                        #Add to application_list
                         application_list.append(
-                            [False, None, name, '...', api.PackageInfo.KNOWN, None, 
-                            gui_misc.get_pkg_stem(name, pub), None, True, None, 
+                            [False, None, name, '...', api.PackageInfo.KNOWN,
+                            gui_misc.get_pkg_stem(name, pub), None, True, None,
                             pub_name, pub, False])
                 return application_list
 
@@ -1831,10 +1856,10 @@ class PackageManager:
 
         def __clear_search_results(self):
                 # Only clear out search results
-                if self.in_search_mode or self.is_all_publishers:
+                if self.in_search_mode or self.is_all_publishers_search:
                         self.__clear_before_search()
                         self.update_statusbar_message(_("Search cleared"))
-                if self.is_all_publishers:
+                if self.is_all_publishers_search:
                         if self.w_main_view_notebook.get_current_page() \
                                 != NOTEBOOK_START_PAGE:
                                 gobject.idle_add(self.__setup_search_all_page)
@@ -2067,7 +2092,7 @@ class PackageManager:
                 if self.w_filter_combobox.get_model():
                         self.w_filter_combobox.set_active(
                             self.saved_filter_combobox_active)
-                if self.in_search_mode or self.is_all_publishers:
+                if self.in_search_mode or self.is_all_publishers_search:
                         self.__unset_search(True)
                         return
                 self.__set_main_view_package_list()
@@ -2180,7 +2205,7 @@ class PackageManager:
                 if sel_category[enumerations.CATEGORY_ID] == RECENT_SEARCH_ID:
                         if not self.adding_recent_search:
                                 self.__setup_recent_search_page()
-                                if not self.is_all_publishers:
+                                if not self.is_all_publishers_search:
                                         self.__save_setup_before_search(
                                             single_search=True)
                                 self.in_search_mode = True
@@ -2192,7 +2217,7 @@ class PackageManager:
                         self.__restore_recent_search(sel_category)
                         return
                 self.__save_active_category(path)
-                if self.in_search_mode or self.is_all_publishers:
+                if self.in_search_mode or self.is_all_publishers_search:
                         #Required for A11Y support because focus event not triggered
                         #when A11Y enabled and user clicks on Category after Search
                         self.__unset_search(True)
@@ -2357,7 +2382,7 @@ class PackageManager:
                 self.__update_tooltips()
                 self.in_search_mode = False
                 self.in_recent_search = False
-                self.is_all_publishers = False
+                self.is_all_publishers_search = False
                 if same_repo:
                         self.__restore_setup_for_browse()
 
@@ -2366,7 +2391,7 @@ class PackageManager:
                 if debug_perf:
                         print "Start change publisher", time.time()
                 if self.same_publisher_on_setup:
-                        if self.is_all_publishers:
+                        if self.is_all_publishers_search:
                                 self.__clear_search_results()
                         self.same_publisher_on_setup = False
                         self.unset_busy_cursor()
@@ -2375,12 +2400,12 @@ class PackageManager:
                         return
                 selected_publisher = self.__get_selected_publisher()
                 index =  self.w_repository_combobox.get_active()
-                if self.is_all_publishers:
-                        if index == self.repo_combobox_all_pubs_index:
+                if self.is_all_publishers_search:
+                        if index == self.repo_combobox_all_pubs_search_index:
                                 return
                         if index == self.repo_combobox_add_index:
                                 self.w_repository_combobox.set_active(
-                                    self.repo_combobox_all_pubs_index)
+                                    self.repo_combobox_all_pubs_search_index)
                                 self.__on_file_add_publisher(None)
                                 return
                         same_repo = self.saved_repository_combobox_active == index
@@ -2392,8 +2417,8 @@ class PackageManager:
                         selected_publisher = self.__get_selected_publisher()
                 if selected_publisher == self.last_visible_publisher:
                         return
-                if index == self.repo_combobox_all_pubs_index:
-                        self.__set_all_publishers_mode()
+                if index == self.repo_combobox_all_pubs_search_index:
+                        self.__set_all_publishers_search_mode()
                         return
                         
                 if index == self.repo_combobox_add_index:
@@ -2402,11 +2427,14 @@ class PackageManager:
                         self.w_repository_combobox.set_active(index)
                         self.__on_file_add_publisher(None)
                         return
+                self.is_all_publishers = False
                 if index == self.repo_combobox_all_pubs_installed_index:
                         self.w_filter_combobox.set_active(enumerations.FILTER_ALL)
                         self.is_all_publishers_installed = True
                 else:
                         self.is_all_publishers_installed = False
+                        if index == self.repo_combobox_all_pubs_index:
+                                self.is_all_publishers = True
 
                 self.__do_set_publisher()
 
@@ -2461,7 +2489,7 @@ class PackageManager:
                 status_str = _("Refreshing package catalog information")
                 gobject.idle_add(self.update_statusbar_message,
                     status_str)
-                if self.is_all_publishers_installed: 
+                if self.is_all_publishers_installed or self.is_all_publishers: 
                         self.__do_refresh()
                 else:
                         self.__do_refresh(pubs=[pub])
@@ -2685,7 +2713,7 @@ class PackageManager:
         def __do_reload(self, widget):
                 self.w_repository_combobox.grab_focus()
                 if self.force_reload_packages and (self.in_search_mode 
-                    or self.is_all_publishers):
+                    or self.is_all_publishers_search):
                         self.__unset_search(False)
                 self.__set_empty_details_panel()
                 self.in_setup = True
@@ -2750,9 +2778,11 @@ class PackageManager:
                 start_insearch = False
                 width = height = hpos = vpos = -1
                 if self.gconf.save_state:
-                        if self.is_all_publishers:
+                        if self.is_all_publishers_search:
                                 start_insearch = True
-                        if self.is_all_publishers or self.is_all_publishers_installed:
+                                sel_pub = self.publisher_options[PUBLISHER_INSTALLED]
+                        elif (self.is_all_publishers_installed or
+                            self.is_all_publishers):
                                 sel_pub = self.__get_publisher_name_from_index(
                                     self.saved_repository_combobox_active)
                         else:
@@ -2763,18 +2793,16 @@ class PackageManager:
                         height = save_height
                         hpos = save_hpos
                         vpos = save_vpos
+                else:
+                        # Reset to start in search mode having loaded installed pkgs
+                        pub = self.publisher_options[PUBLISHER_INSTALLED]
+                        start_insearch = True
                 self.gconf.save_values(pub, start_insearch, width, height,
                     hpos, vpos)
 
                 if restart:
                         gobject.spawn_async([self.application_path, "-R",
                             self.image_directory, "-U"])
-                else:
-                        if self.is_all_publishers or self.is_all_publishers_installed:
-                                pub = self.__get_publisher_name_from_index(
-                                    self.saved_repository_combobox_active)
-                        else:
-                                pub = self.__get_selected_publisher()
 
                 if len(self.search_completion) > 0:
                         self.cache_o.dump_search_completion_info(
@@ -2846,18 +2874,35 @@ class PackageManager:
                         self.repositories_list.append([i, display_name, prefix, alias ])
                         enabled_repos.append(prefix)
                         i = i + 1
+                self.repo_combobox_all_pubs_index = i
+                self.repositories_list.append([self.repo_combobox_all_pubs_index,
+                    self.publisher_options[PUBLISHER_ALL],
+                    self.publisher_options[PUBLISHER_ALL], None, ])
+                i = i + 1
                 self.repositories_list.append([-1, "", None, None, ])
                 i = i + 1
                 self.repo_combobox_all_pubs_installed_index = i
-                self.repositories_list.append(
-                    [self.repo_combobox_all_pubs_installed_index, 
-                    self.publisher_options[PUBLISHER_INSTALLED],
-                    self.publisher_options[PUBLISHER_INSTALLED], None, ])
+                #Workaround to display Publisher All Search during startup
+                #If stating in Search mode
+                if self.first_run and self.gconf.start_insearch:
+                        self.repositories_list.append(
+                            [self.repo_combobox_all_pubs_installed_index,
+                            self.publisher_options[PUBLISHER_ALL_SEARCH],
+                            self.publisher_options[PUBLISHER_INSTALLED],
+                            None, ])
+                else:
+                        self.repositories_list.append(
+                            [self.repo_combobox_all_pubs_installed_index,
+                            self.publisher_options[PUBLISHER_INSTALLED],
+                            self.publisher_options[PUBLISHER_INSTALLED],
+                            None, ])
                 i = i + 1
-                self.repo_combobox_all_pubs_index = i
-                self.repositories_list.append([self.repo_combobox_all_pubs_index, 
-                    self.publisher_options[PUBLISHER_ALL],
-                    self.publisher_options[PUBLISHER_ALL], None, ])
+                self.repositories_list.append([-1, "", None, None, ])
+                i = i + 1
+                self.repo_combobox_all_pubs_search_index = i
+                self.repositories_list.append([self.repo_combobox_all_pubs_search_index,
+                    self.publisher_options[PUBLISHER_ALL_SEARCH],
+                    self.publisher_options[PUBLISHER_ALL_SEARCH], None, ])
                 i = i + 1
                 self.repositories_list.append([-1, "", None, None, ])
                 i = i + 1
@@ -2876,6 +2921,12 @@ class PackageManager:
                 self.w_repository_combobox.set_model(self.repositories_list)
                 selected_id = -1
                 self.same_publisher_on_setup = False
+                if self.gconf.lastsource == None or self.gconf.lastsource == "":
+                        # Start in search mode having loaded installed pkgs
+                        self.gconf.set_lastsource(
+                            self.publisher_options[PUBLISHER_INSTALLED])
+                        self.gconf.set_start_insearch(True)
+                        
                 if self.first_run:
                         for repo in self.repositories_list:
                                 if (repo[enumerations.REPOSITORY_PREFIX] == \
@@ -2891,7 +2942,9 @@ class PackageManager:
                                     repo[enumerations.REPOSITORY_ID] != -1):
                                         selected_id = \
                                            repo[enumerations.REPOSITORY_ID]
-                                        if not self.force_reload_packages:
+                                        if (previous_publisher != \
+                                            self.publisher_options[PUBLISHER_ALL] and
+                                            not self.force_reload_packages):
                                                 self.same_publisher_on_setup = True
                                         break
                         if self.saved_repository_combobox_active != -1:
@@ -3049,12 +3102,12 @@ class PackageManager:
                         self.show_licenses_id = 0
                 self.detailspanel.set_empty_details()
 
-        def __update_package_info(self, pkg, local_info, remote_info, dep_info,
+        def __update_package_info(self, pkg_name, local_info, remote_info, dep_info,
             installed_dep_info, info_id, renamed_info=None):
                 if self.detailspanel.showing_empty_details or (info_id != 
                     self.last_show_info_id):
                         return
-                self.detailspanel.update_package_info(pkg, local_info,
+                self.detailspanel.update_package_info(pkg_name, local_info,
                     remote_info, dep_info, installed_dep_info, self.api_o.root,
                     self.installed_icon, self.not_installed_icon,
                     self.update_available_icon,
@@ -3162,24 +3215,24 @@ class PackageManager:
                                 self.selected_path = None
 
                 itr = model.get_iter(path)
-                pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
+                pkg_name = model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 pkg_renamed = model.get_value(itr, enumerations.RENAMED_COLUMN)
                 self.set_busy_cursor()
                 Thread(target = self.__show_package_info,
-                    args = (pkg, pkg_stem, pkg_status, self.last_show_info_id,
+                    args = (pkg_name, pkg_stem, pkg_status, self.last_show_info_id,
                         pkg_renamed)).start()
 
-        def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id,
+        def __show_package_info(self, pkg_name, pkg_stem, pkg_status, info_id,
             pkg_renamed):
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
-                self.__show_package_info_without_lock(pkg, pkg_stem, pkg_status,
+                self.__show_package_info_without_lock(pkg_name, pkg_stem, pkg_status,
                     info_id, pkg_renamed)
                 self.api_lock.release()
 
-        def __show_package_info_without_lock(self, pkg, pkg_stem, pkg_status,
+        def __show_package_info_without_lock(self, pkg_name, pkg_stem, pkg_status,
             info_id, pkg_renamed):
                 local_info = None
                 remote_info = None
@@ -3249,7 +3302,7 @@ class PackageManager:
                                 elif remote_info != None and \
                                         len(remote_info.dependencies) > 0:
                                         renamed_info = remote_info
-                        gobject.idle_add(self.__update_package_info, pkg,
+                        gobject.idle_add(self.__update_package_info, pkg_name,
                             local_info, remote_info, dep_info,
                             installed_dep_info, info_id, renamed_info)
                 return
@@ -3342,19 +3395,6 @@ class PackageManager:
                 elif filter_id == enumerations.FILTER_NOT_INSTALLED:
                         return status == api.PackageInfo.KNOWN
 
-        def __is_pkg_repository_visible(self, model, itr):
-                if len(self.repositories_list) <= 1:
-                        return True
-                else:
-                        visible_publisher = self.__get_selected_publisher()
-                        pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
-                        if not pkg:
-                                return False
-                        if cmp(pkg.get_publisher(), visible_publisher) == 0:
-                                return True
-                        else:
-                                return False
-
         def __enable_disable_selection_menus(self):
                 if self.in_setup:
                         return
@@ -3445,13 +3485,15 @@ class PackageManager:
             category_list, section_list):
                 pubs = []
                 pkgs_from_api = []
-
                 status_str = _("Loading package list")
                 gobject.idle_add(self.update_statusbar_message, status_str)
                 try:                
                         if self.is_all_publishers_installed:
                                 pkgs_from_api = self.api_o.get_pkg_list(pubs = pubs,
                                     pkg_list = api.ImageInterface.LIST_INSTALLED)
+                        elif self.is_all_publishers:
+                                pkgs_from_api = self.api_o.get_pkg_list(pubs = pubs,
+                                    pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST)
                         else:
                                 pubs.append(pub)
                                 pkgs_from_api = self.api_o.get_pkg_list(pubs = pubs,
@@ -3520,8 +3562,7 @@ class PackageManager:
                 for result in results:
                         pkg_pub = result.publisher
                         pkg_name = result.pkg_stem
-                        pkg_fmri = fmri.PkgFmri(result.fmri)
-                        pkg_stem = pkg_fmri.get_pkg_stem()
+                        pkg_stem  = "pkg://" + pkg_pub + "/"  + pkg_name
                         summ = result.summary
                         pkg_renamed = (api.PackageInfo.RENAMED in result.states)
                         if api.PackageInfo.INSTALLED in result.states:
@@ -3534,7 +3575,7 @@ class PackageManager:
                         else:
                                 status_icon = self.not_installed_icon
                                 pkg_state = api.PackageInfo.KNOWN
-                        if not self.is_all_publishers and \
+                        if not self.is_all_publishers_search and \
                             not self.is_all_publishers_installed:
                                 pkg_name = gui_misc.get_minimal_unique_name(
                                     self.package_names, pkg_name,
@@ -3547,11 +3588,12 @@ class PackageManager:
                                 if pkg_stem in pkgs:
                                         marked = True
                         pub_name = self.get_publisher_name_from_prefix(pkg_pub)
+                        #Add to application_list
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, result.pkg_stem, True,
-                                None, pub_name, pkg_pub, pkg_renamed
+                                pkg_stem, result.pkg_stem, True, None, pub_name,
+                                pkg_pub, pkg_renamed
                             ]
                         application_list.insert(pkg_add, next_app)
                         pkg_add += 1
@@ -3567,16 +3609,14 @@ class PackageManager:
                         a = time.time()
                 self.package_names = {}
                 self.special_package_names = []
-
+                pub_names = {}
                 for entry in pkgs_from_api:
                         (pkg_pub, pkg_name, ver), summ, cats, states = entry
                         if debug:
-                                print entry
-                        pkg_fmri = fmri.PkgFmri("%s@%s" % (pkg_name,
-                            ver), publisher=pkg_pub)
-                        pkg_stem = pkg_fmri.get_pkg_stem()
-                        gui_misc.add_pkgname_to_dic(self.package_names, pkg_name, 
-                            self.special_package_names)
+                                print entry, ver
+                        pkg_stem  = "pkg://" + pkg_pub + "/"  + pkg_name
+                        gui_misc.add_pkgname_to_dic(self.package_names,
+                            pkg_name, self.special_package_names)
                         pkg_renamed = (api.PackageInfo.RENAMED in states)
                         if api.PackageInfo.INSTALLED in states:
                                 pkg_state = api.PackageInfo.INSTALLED
@@ -3593,12 +3633,17 @@ class PackageManager:
                         if pkgs != None:
                                 if pkg_stem in pkgs:
                                         marked = True
-                        pub_name = self.get_publisher_name_from_prefix(pkg_pub)
+                        if not pub_names.has_key(pkg_pub):
+                                pub_names[pkg_pub] = \
+                                        self.get_publisher_name_from_prefix(
+                                            pkg_pub)
+                        pub_name = pub_names[pkg_pub]
+                        #Add to application_list
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, pkg_name, True, None,
-                                pub_name, pkg_pub, pkg_renamed
+                                pkg_stem, pkg_name, True, None, pub_name,
+                                pkg_pub, pkg_renamed
                             ]
                         self.__add_package_to_list(next_app,
                             application_list,
@@ -3750,12 +3795,13 @@ class PackageManager:
                         return
                 self.__restore_category_state()
 
-        def __add_recent_search(self, text, pub_prefix, application_list):
+        def __add_recent_search(self, text, pub_prefix, application_list,
+            search_all):
                 self.adding_recent_search = True
                 category_tree = self.w_categories_treeview.get_model()
                 if category_tree == None:
                         return
-                if self.is_all_publishers:
+                if search_all:
                         pub_name = _("All Publishers")
                 else:
                         pub_name = self.get_publisher_display_name_from_prefix(
@@ -3886,7 +3932,7 @@ class PackageManager:
         def __restore_recent_search(self, sel_category):
                 if not sel_category:
                         return
-                if not self.is_all_publishers:
+                if not self.is_all_publishers_search:
                         self.__save_setup_before_search(single_search=True)
 
                 application_list = sel_category[enumerations.SECTION_LIST_OBJECT]
@@ -4035,7 +4081,7 @@ class PackageManager:
 
         @staticmethod
         def cell_data_function(column, renderer, model, itr, data):
-                '''Function which sets the background colour to black if package is
+                '''Function which sets the background colour if package is
                 selected'''
                 if itr:
                         if model.get_value(itr, enumerations.MARK_COLUMN):
@@ -4158,7 +4204,14 @@ class PackageManager:
                 if self.first_run:
                         if self.gconf.start_insearch:
                                 self.w_repository_combobox.set_active(
-                                    self.repo_combobox_all_pubs_index)
+                                    self.repo_combobox_all_pubs_search_index)
+                                self.repositories_list[ \
+                                        self.repo_combobox_all_pubs_installed_index] = \
+                                    ([self.repo_combobox_all_pubs_installed_index,
+                                    self.publisher_options[PUBLISHER_INSTALLED],
+                                    self.publisher_options[PUBLISHER_INSTALLED],
+                                    None, ])
+                                   
                         self.first_run = False
 
         def get_icon_pixbuf_from_glade_dir(self, icon_name):
@@ -4201,7 +4254,7 @@ class PackageManager:
                 s1, e1 = self.get_start_end_strings()
 
                 if self.__doing_search():
-                        active_pub = self.search_all_pub_being_searched
+                        active_pub = self.publisher_being_searched
                         status_str  = ""
                         if active_pub != None and active_pub != "":
                                 status_str = \
@@ -4254,8 +4307,7 @@ class PackageManager:
 
         def __update_publisher_list(self, pub, full_list, package_list):
                 for row in full_list:
-                        if row[enumerations.FMRI_COLUMN] and \
-                            row[enumerations.FMRI_COLUMN].pkg_name in package_list:
+                        if row[enumerations.ACTUAL_NAME_COLUMN] in package_list:
                                 self.__reset_row_status(row)
 
         def update_package_list(self, update_list):
@@ -4270,8 +4322,8 @@ class PackageManager:
                         self.__on_reload(None)
                         return
                 visible_list = update_list.get(visible_publisher)
-                if self.is_all_publishers or self.is_all_publishers_installed \
-                    or self.in_recent_search:
+                if self.is_all_publishers_search or self.is_all_publishers_installed \
+                    or self.is_all_publishers or self.in_recent_search:
                         try:
                                 pubs = self.api_o.get_publishers()
                         except api_errors.ApiException, ex:
@@ -4292,7 +4344,7 @@ class PackageManager:
                                                 self.__update_publisher_list(prefix,
                                                         self.saved_application_list,
                                                         package_list)
-                        if self.is_all_publishers_installed:
+                        if self.is_all_publishers_installed or self.is_all_publishers:
                                 self.__do_set_publisher()
                 elif visible_list:
                         self.__update_publisher_list(visible_publisher, 
@@ -4320,7 +4372,7 @@ class PackageManager:
                         self.__on_reload(None)
                         return
                 self.img_timestamp = self.cache_o.get_index_timestamp()
-                if self.is_all_publishers_installed:
+                if self.is_all_publishers_installed or self.is_all_publishers:
                         return
                 # We need to reset status descriptions if a11y is enabled
                 self.__set_visible_status(False)
