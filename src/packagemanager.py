@@ -474,7 +474,7 @@ class PackageManager:
                 self.versioninfo.set_modal_and_transient(self.w_main_window)
 
                 self.__setup_text_signals()
-                gui_misc.setup_logging(gui_misc.get_pm_name())
+                gui_misc.setup_logging()
                 
         def __set_initial_sizes(self):
                 if self.gconf.initial_app_width >= MIN_APP_WIDTH and \

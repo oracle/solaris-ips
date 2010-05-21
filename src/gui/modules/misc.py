@@ -137,9 +137,9 @@ def __notify_log_error(app):
         app.w_infosearch_frame.show()
         app.w_infosearch_frame.set_tooltip_text(_("Errors logged: click to view"))
 
-def setup_logging(client_name):
-        su_logging(client_name)
-        
+def setup_logging():
+        su_logging(global_settings.client_name)
+
 def shutdown_logging():
         sd_logging()
         

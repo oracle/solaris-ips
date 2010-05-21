@@ -204,7 +204,7 @@ class Updatemanager:
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
-                gui_misc.setup_logging(gui_misc.get_um_name())
+                gui_misc.setup_logging()
 
         @staticmethod
         def __get_um_liststore():

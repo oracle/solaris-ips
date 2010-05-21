@@ -134,7 +134,7 @@ class Webinstall:
                 self.w_webinstall_dialog.set_icon(self.window_icon)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
-                gui_misc.setup_logging(gui_misc.get_wi_name())
+                gui_misc.setup_logging()
         
         def __output_new_pub_tasks(self, infobuffer, textiter, num_tasks):
                 if num_tasks == 0:

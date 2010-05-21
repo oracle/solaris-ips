@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import sys
@@ -57,6 +56,8 @@ class PMLogging:
                     {
                         "on_log_close_button_clicked": \
                             self.__on_log_close_button_clicked,
+                        "on_log_clear_button_clicked": \
+                            self.__on_log_clear_button_clicked,
                         "on_view_log_dialog_delete_event": \
                             self.__on_log_dialog_delete_event
                     }
@@ -73,6 +74,28 @@ class PMLogging:
 
         def __on_log_close_button_clicked(self, widget):
                 self.w_view_log_dialog.hide()
+
+        def __on_log_clear_button_clicked(self, widget):
+                log_dir = gui_misc.get_log_dir()
+                ext = gui_misc.get_log_error_ext()
+                self.__clear_logs(log_dir, ext) 
+                ext = gui_misc.get_log_info_ext()
+                self.__clear_logs(log_dir, ext) 
+                gui_misc.shutdown_logging()
+                gui_misc.setup_logging()
+                self.log_activate()
+
+        def __clear_logs(self, log_dir, ext):
+                self.__clear_log(os.path.join(log_dir, gui_misc.get_pm_name() + ext))
+                self.__clear_log(os.path.join(log_dir, gui_misc.get_wi_name() + ext))
+                self.__clear_log(os.path.join(log_dir, gui_misc.get_um_name() + ext))
+
+        @staticmethod
+        def __clear_log(path):
+                try:
+                        os.unlink(path)
+                except OSError:
+                        pass
 
         def log_activate(self):
                 textbuffer = self.w_log_errors_textview.get_buffer()
