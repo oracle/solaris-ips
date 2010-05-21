@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -182,15 +181,25 @@ class PublishingDependency(Dependency):
                 delivering the action was published.
 
                 'proto_dir' is the proto area where the file the action delivers
-                lives.
+                lives.  It may be None if the notion of a proto_dir is
+                meaningless for a particular PublishingDependency.
 
                 'kind' is the kind of dependency that this is.
                 """
 
                 self.base_names = sorted(base_names)
-                self.run_paths = sorted([
-                    self.make_relative(rp, proto_dir) for rp in run_paths
-                ])
+
+                if proto_dir is None:
+                        self.run_paths = sorted(run_paths)
+                        # proto_dir is set to "" so that the proto_dir can be
+                        # joined unconditionally with other paths.  This makes
+                        # the code path in _check_path simpler.
+                        proto_dir = ""
+                else:
+                        self.run_paths = sorted([
+                            self.make_relative(rp, proto_dir)
+                            for rp in run_paths
+                        ])
 
                 attrs = {
                     "%s.file" % self.DEPEND_DEBUG_PREFIX: self.base_names,

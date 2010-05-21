@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -33,7 +32,7 @@ import sys
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as modulefinder
 
-from pkg.portable import PD_LOCAL_PATH
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
 
 class PythonModuleMissingPath(base.DependencyAnalysisError):
         """Exception that is raised when a module reports a module as a
@@ -128,11 +127,8 @@ class PythonDependency(base.PublishingDependency):
 py_bin_re = re.compile(r"^\#\!\s*/usr/bin/python(?P<major>\d+)\.(?P<minor>\d+)")
 py_lib_re = re.compile(r"^usr/lib/python(?P<major>\d+)\.(?P<minor>\d+)/")
 
-def process_python_dependencies(proto_dir, action, pkg_vars, script_path):
+def process_python_dependencies(action, pkg_vars, script_path):
         """Analyze the file delivered by the action for any python dependencies.
-
-        The 'proto_dir' parameter points to the proto area containing the file
-        which 'action' uses.
 
         The 'action' parameter contain the action which delivers the file.
 
@@ -227,7 +223,8 @@ def process_python_dependencies(proto_dir, action, pkg_vars, script_path):
         # If the version implied by the directory hierarchy matches the version
         # of python running, use the default analyzer and don't fork and exec.
         if cur_major == analysis_major and cur_minor == analysis_minor:
-                mf = modulefinder.DepthLimitedModuleFinder(proto_dir)
+                mf = modulefinder.DepthLimitedModuleFinder(
+                    action.attrs[PD_PROTO_DIR])
                 loaded_modules = mf.run_script(local_file)
 
                 for names, dirs in set([
@@ -235,7 +232,7 @@ def process_python_dependencies(proto_dir, action, pkg_vars, script_path):
                     for m in loaded_modules
                 ]):
                         deps.append(PythonDependency(action, names, dirs,
-                            pkg_vars, proto_dir))
+                            pkg_vars, action.attrs[PD_PROTO_DIR]))
                 missing, maybe = mf.any_missing_maybe()
                 for name in missing:
                         errs.append(PythonModuleMissingPath(name,
@@ -249,7 +246,7 @@ def process_python_dependencies(proto_dir, action, pkg_vars, script_path):
         exec_file = os.path.join(root_dir,
             "depthlimitedmf%s%s.py" % (analysis_major, analysis_minor))
         cmd = ["python%s.%s" % (analysis_major, analysis_minor), exec_file,
-            proto_dir, local_file]
+            action.attrs[PD_PROTO_DIR], local_file]
         try:
                 sp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
@@ -269,7 +266,7 @@ def process_python_dependencies(proto_dir, action, pkg_vars, script_path):
                                 bad_lines.append(l)
                         else:
                                 deps.append(PythonDependency(action, names,
-                                    dirs, pkg_vars, proto_dir))
+                                    dirs, pkg_vars, action.attrs[PD_PROTO_DIR]))
                 elif l.startswith("ERR "):
                         errs.append(PythonModuleMissingPath(l[4:],
                             action.attrs[PD_LOCAL_PATH]))

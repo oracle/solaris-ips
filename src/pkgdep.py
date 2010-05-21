@@ -24,7 +24,6 @@
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-import errno
 import getopt
 import gettext
 import locale
@@ -77,7 +76,8 @@ Usage:
         pkgdepend [options] command [cmd_options] [operands]
 
 Subcommands:
-        pkgdepend generate [-DIkMm] manifest proto_dir
+        pkgdepend generate [-IMm] -d dir [-d dir] [-D name=value] [-k path]
+            manifest_path
         pkgdepend [options] resolve [-dmosv] manifest ...
 
 Options:
@@ -92,7 +92,7 @@ def generate(args):
         """Produce a list of file dependencies from a manfiest and a proto
         area."""
         try:
-                opts, pargs = getopt.getopt(args, "D:Ik:Mm?",
+                opts, pargs = getopt.getopt(args, "d:D:Ik:Mm?",
                     ["help"])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
@@ -105,9 +105,15 @@ def generate(args):
         kernel_paths = []
         platform_paths = []
         dyn_tok_conv = {}
+        proto_dirs = []
 
         for opt, arg in opts:
-                if opt == "-D":
+                if opt == "-d":
+                        if not os.path.isdir(arg):
+                                usage(_("The proto directory %s could not be "
+                                    "found." % arg), retcode=2)
+                        proto_dirs.append(os.path.abspath(arg))
+                elif opt == "-D":
                         try:
                                 dyn_tok_name, dyn_tok_val = arg.split("=", 1)
                         except:
@@ -129,8 +135,8 @@ def generate(args):
                         show_usage = True
         if show_usage:
                 usage(retcode=0)
-        if len(pargs) != 2:
-                usage(_("Generate only accepts exactly two arguments."))
+        if len(pargs) > 2 or len(pargs) < 1:
+                usage(_("Generate only accepts one or two arguments."))
 
         if not kernel_paths:
                 kernel_paths = ["/kernel", "/usr/kernel"]
@@ -142,18 +148,22 @@ def generate(args):
         retcode = 0
 
         manf = pargs[0]
-        proto_dir = pargs[1]
 
         if not os.path.isfile(manf):
                 usage(_("The manifest file %s could not be found." % manf),
                     retcode=2)
 
-        if not os.path.isdir(proto_dir):
-                usage(_("The proto directory %s could not be found." %
-                    proto_dir), retcode=2)
+        if len(pargs) > 1:
+                if not os.path.isdir(pargs[1]):
+                        usage(_("The proto directory %s could not be found." %
+                            pargs[1]), retcode=2)
+                proto_dirs.insert(0, os.path.abspath(pargs[1]))
+        if not proto_dirs:
+                usage(_("At least one proto directory must be provided."),
+                    retcode=2)
 
         try:
-                ds, es, ms = dependencies.list_implicit_deps(manf, proto_dir,
+                ds, es, ms = dependencies.list_implicit_deps(manf, proto_dirs,
                     dyn_tok_conv, kernel_paths, remove_internal_deps)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse manifest %(manifest)s because of the "

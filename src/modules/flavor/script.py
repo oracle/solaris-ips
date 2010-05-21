@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -31,7 +30,7 @@ import stat
 import pkg.flavor.base as base
 import pkg.flavor.python as python
 
-from pkg.portable import PD_LOCAL_PATH
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
 
 class ScriptNonAbsPath(base.DependencyAnalysisError):
         """Exception that is raised when a file uses a relative path for the
@@ -61,11 +60,11 @@ class ScriptDependency(base.PublishingDependency):
                     self.base_names, self.run_paths, self.pkg_vars,
                     self.dep_vars)
 
-def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
-        """Given an action and a place to find the file it references, if the
-        file starts with #! a list containing a ScriptDependency is returned.
-        Further, if the file is of a known type, it is further analyzed and
-        any dependencies found are added to the list returned."""
+def process_script_deps(action, pkg_vars, **kwargs):
+        """Given an action, if the file starts with #! a list containing a
+        ScriptDependency is returned.  Further, if the file is of a known type,
+        it is further analyzed and any dependencies found are added to the list
+        returned."""
 
         if action.name != "file":
                 return []
@@ -96,10 +95,10 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
                                         # Use p[1:] to strip off the leading /.
                                         p = os.path.join("/usr", p[1:])
                                 deps.append(ScriptDependency(action, p,
-                                    pkg_vars, proto_dir))
+                                    pkg_vars, action.attrs[PD_PROTO_DIR]))
                                 script_path = l
                 if "python" in l:
-                        ds, errs = python.process_python_dependencies(proto_dir,
+                        ds, errs = python.process_python_dependencies(
                             action, pkg_vars, script_path)
                         elist.extend(errs)
                         deps.extend(ds)

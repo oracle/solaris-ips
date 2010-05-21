@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -157,13 +156,11 @@ from pkg_test.misc_test import EmptyI
 
         def make_python_test_files(self, py_version):
                 pdir = "usr/lib/python%s/vendor-packages" % py_version
-                for p in ["pkg_test/indexer_test/foobar",
-                    "pkg_test/search_storage_test", "pkg_test/misc_test"]:
-                        self.make_proto_text_file("%s/%s.py" % (pdir, p))
                 self.make_proto_text_file("%s/pkg_test/__init__.py" % pdir,
                     "#!/usr/bin/python\n")
-                self.make_proto_text_file("%s/pkg_test/indexer_test/__init__.py" %
-                    pdir, "#!/usr/bin/python")
+                self.make_proto_text_file(
+                    "%s/pkg_test/indexer_test/__init__.py" % pdir,
+                    "#!/usr/bin/python")
                 
         def make_elf(self, final_path, static=False):
                 out_file = os.path.join(self.proto_dir, final_path)
@@ -213,9 +210,9 @@ from pkg_test.misc_test import EmptyI
                                             d.action.attrs["path"], "baz")
                 t_path = self.make_manifest(self.ext_hardlink_manf)
                 _check_results(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_results(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [],
+                    [self.proto_dir], {}, [],
                     remove_internal_deps=False))
 
         def test_int_hardlink(self):
@@ -226,8 +223,8 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(self.int_hardlink_manf)
                 self.make_proto_text_file(self.paths["syslog_path"])
                 ds, es, ms = \
-                    dependencies.list_implicit_deps(t_path, self.proto_dir, {},
-                        [])
+                    dependencies.list_implicit_deps(t_path, [self.proto_dir],
+                        {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -236,7 +233,7 @@ from pkg_test.misc_test import EmptyI
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -268,11 +265,12 @@ from pkg_test.misc_test import EmptyI
                         self.assertEqual(d.action.attrs["path"],
                             self.paths["script_path"])
                 t_path = self.make_manifest(self.ext_script_manf)
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_int_script(self):
                 """Check that a file that starts with #! and references a file
@@ -281,9 +279,10 @@ from pkg_test.misc_test import EmptyI
 
                 t_path = self.make_manifest(self.int_script_manf)
                 self.make_elf(self.paths["ksh_path"])
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])
+                    [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -298,7 +297,7 @@ from pkg_test.misc_test import EmptyI
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
                 self.assertEqual(len(ds), 2)
                 for d in ds:
                         self.assert_(d.is_error())
@@ -341,9 +340,9 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(self.ext_elf_manf)
                 self.make_elf(self.paths["curses_path"])
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_int_elf(self):
                 """Check that an elf file that requires a library inside its
@@ -372,7 +371,7 @@ from pkg_test.misc_test import EmptyI
                 self.make_elf(self.paths["curses_path"])
                 self.make_elf(self.paths["libc_path"], static=True)
                 d_map, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])
+                    [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -381,7 +380,7 @@ from pkg_test.misc_test import EmptyI
 
                 # Check that internal dependencies are as expected.
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_ext_python_dep(self):
                 """Check that a python file that imports a module outside its
@@ -427,9 +426,9 @@ from pkg_test.misc_test import EmptyI
                 self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_ext_python_abs_import_dep(self):
                 """Check that a python file that uses absolute imports a module
@@ -478,9 +477,9 @@ from pkg_test.misc_test import EmptyI
                 self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_abs_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_ext_python_pkg_dep(self):
                 """Check that a python file that is the __init__.py file for a
@@ -523,11 +522,12 @@ from pkg_test.misc_test import EmptyI
                 self.__debug = True
                 t_path = self.make_manifest(self.ext_python_pkg_manf)
                 self.make_python_test_files(2.6)
-                self.make_proto_text_file(self.paths["pkg_path"], self.python_text)
+                self.make_proto_text_file(self.paths["pkg_path"],
+                    self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, []))
+                    [self.proto_dir], {}, []))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False))
 
         def test_variants_1(self):
                 """Test that a file which satisfies a dependency only under a
@@ -535,10 +535,11 @@ from pkg_test.misc_test import EmptyI
                 for the other set of variants."""
 
                 t_path = self.make_manifest(self.variant_manf_1)
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])
+                    [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -581,7 +582,7 @@ from pkg_test.misc_test import EmptyI
                 self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])    
+                    [self.proto_dir], {}, [])    
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -596,7 +597,7 @@ from pkg_test.misc_test import EmptyI
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -627,10 +628,11 @@ from pkg_test.misc_test import EmptyI
                 reported as an external dependency."""
 
                 t_path = self.make_manifest(self.variant_manf_3)
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])
+                    [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -683,7 +685,7 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(
                     self.int_hardlink_manf_test_symlink)
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    self.proto_dir, {}, [])
+                    [self.proto_dir], {}, [])
 
         def test_str_methods(self):
                 """Test the str methods of objects in the flavor space."""
@@ -700,5 +702,178 @@ from pkg_test.misc_test import EmptyI
                 str(mi)
                 mi.make_package()
                 str(mi)
+
+        def test_multi_proto_dirs(self):
+                """Check that analysis works correctly when multiple proto_dirs
+                are given."""
+
+                def _check_all_res(res):
+                        ds, es, ms = res
+                        if es != []:
+                                raise RuntimeError("Got errors in results:" +
+                                    "\n".join([str(s) for s in es]))
+                        self.assertEqual(ms, {})
+                        self.assertEqual(len(ds), 1)
+                        d = ds[0]
+                        self.assert_(d.is_error())
+                        self.assert_(d.dep_vars.is_satisfied())
+                        self.assertEqual(d.base_names[0], "libc.so.1")
+                        self.assertEqual(set(d.run_paths),
+                            set(["lib", "usr/lib"]))
+                        self.assertEqual(d.dep_key(),
+                            self.__path_to_key(self.paths["libc_path"]))
+                        self.assertEqual(d.action.attrs["path"],
+                            self.paths["curses_path"])
+
+                t_path = self.make_manifest(self.int_elf_manf)
+                self.make_elf(os.path.join("foo", self.paths["curses_path"]))
+                self.make_elf(self.paths["libc_path"], static=True)
+
+                # This should fail because the "foo" directory is not given
+                # as a proto_dir.
+                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [])
+                if len(es) != 1:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                if es[0].file_path != \
+                    os.path.join(self.proto_dir, self.paths["curses_path"]):
+                        raise RuntimeError("Wrong file was found missing:\n%s" %
+                            es[0])
+                self.assertEqual(ms, {})
+                self.assert_(len(d_map) == 0)
+
+                # This should work since the "foo" directory has been added to
+                # the list of proto_dirs to use.
+                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir, os.path.join(self.proto_dir, "foo")],
+                    {}, [])
+                if es:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assert_(len(d_map) == 0)
+
+                # This should be different because the empty text file
+                # is found before the binary file.
+                self.make_proto_text_file(self.paths["curses_path"])
+                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir, os.path.join(self.proto_dir, "foo")],
+                    {}, [], remove_internal_deps=False)
+                if es:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                if len(ms) != 1:
+                        raise RuntimeError("Didn't get expected types of "
+                            "missing files:\n%s" % ms)
+                self.assertEqual(ms.keys()[0], "empty file")
+                self.assert_(len(d_map) == 0)
+
+                # This should find the binary file first and thus produce
+                # a depend action.
+                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                    [os.path.join(self.proto_dir, "foo"), self.proto_dir],
+                    {}, [], remove_internal_deps=False)
+                if es:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assert_(len(d_map) == 1)
+
+                # Check alternative proto_dirs with hardlinks.
+                t_path = self.make_manifest(self.int_hardlink_manf)
+                self.make_proto_text_file(os.path.join("foo",
+                    self.paths["syslog_path"]))
+                # This test should fail because "foo" is not included in the
+                # list of proto_dirs.
+                ds, es, ms = \
+                    dependencies.list_implicit_deps(t_path, [self.proto_dir],
+                        {}, [])
+                if len(es) != 1:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                if es[0].file_path != \
+                    os.path.join(self.proto_dir, self.paths["syslog_path"]):
+                        raise RuntimeError("Wrong file was found missing:\n%s" %
+                            es[0])
+                self.assert_(len(ms) == 0)
+                self.assert_(len(ds) == 1)
+
+                # This test should pass because the needed directory has been
+                # added to the list of proto_dirs.
+                ds, es, ms = \
+                    dependencies.list_implicit_deps(t_path,
+                        [self.proto_dir, os.path.join(self.proto_dir, "foo")],
+                        {}, [])
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assert_(len(ms) == 1)
+                self.assert_(len(ds) == 0)
+
+                # Check alternative proto_dirs work with python files and
+                # scripts.
+
+                def _py_check_all_res(res):
+                        ds, es, ms = res
+                        mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo"]
+                        mod_names = ["foobar", "misc_test", "os",
+                            "search_storage"]
+                        pkg_names = ["indexer_test", "pkg", "pkg_test"]
+                        expected_deps = set([("python",)] +
+                            [tuple(sorted([
+                                "%s%s" % (n,s) for s in mod_suffs
+                            ]))
+                            for n in mod_names] +
+                            [("%s/__init__.py" % n,) for n in pkg_names])
+                        if es != []:
+                                raise RuntimeError("Got errors in results:" +
+                                    "\n".join([str(s) for s in es]))
+
+                        self.assertEqual(ms, {})
+                        for d in ds:
+                                self.assert_(d.is_error())
+                                if d.dep_vars is None:
+                                        raise RuntimeError("This dep had "
+                                            "depvars of None:%s" % d)
+                                self.assert_(d.dep_vars.is_satisfied())
+                                if not d.dep_key()[0] in expected_deps:
+                                        raise RuntimeError("Got this "
+                                            "unexpected dep:%s\n\nd:%s" %
+                                            (d.dep_key()[0], d))
+                                expected_deps.remove(d.dep_key()[0])
+                                self.assertEqual(d.action.attrs["path"],
+                                        self.paths["indexer_path"])
+                        if expected_deps:
+                                raise RuntimeError("Couldn't find these "
+                                    "dependencies:\n" + "\n".join(
+                                    [str(s) for s in sorted(expected_deps)]))
+                self.__debug = True
+                t_path = self.make_manifest(self.ext_python_manf)
+
+                self.make_proto_text_file(
+                    os.path.join("d5", self.paths["indexer_path"]),
+                    self.python_text)
+                # This should have an error because it cannot find the file
+                # needed.
+                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [])
+                if len(es) != 1:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                if es[0].file_path != \
+                    os.path.join(self.proto_dir, self.paths["indexer_path"]):
+                        raise RuntimeError("Wrong file was found missing:\n%s" %
+                            es[0])
+                self.assertEqual(len(ds), 0)
+                self.assertEqual(len(ms), 0)
+
+                # Because d5 is in the list of proto dirs, this test should work
+                # normally.
+                _py_check_all_res(dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir, os.path.join(self.proto_dir, "d5")], {},
+                    []))
+
+
 if __name__ == "__main__":
         unittest.main()

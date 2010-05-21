@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -49,7 +48,7 @@ def get_release():
 def get_platform():
         return arch.get_platform()
 
-def get_file_type(actions, proto_dir):
+def get_file_type(actions):
         t_fd, t_path = tempfile.mkstemp()
         t_fh = os.fdopen(t_fd, "w")
         for a in actions:

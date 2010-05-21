@@ -7,8 +7,8 @@ NAME
 SYNOPSIS
      /usr/bin/pkgdepend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgdepend generate [-IMm] [-D name=value] [-k path] manifest_path
-         proto_dir
+     /usr/bin/pkgdepend generate [-IMm] -d dir [...] [-D name=value]
+         [-k path] manifest_path
 
      /usr/bin/pkgdepend resolve [-dmosSv] manifest_path ...
 
@@ -40,9 +40,9 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     generate [-IMm] [-D name=value] [-k path] manifest_path proto_dir
+     generate [-IMm] -d dir [-d dir] [-D name=value] [-k path] manifest_path
           Produce the dependencies on files of the manifest specified by
-          manifest_path, whose contents are found in proto_dir.
+          manifest_path.
 
           With -I, the dependencies which are satisfied within the
           manifest given will be shown.
@@ -52,6 +52,9 @@ SUBCOMMANDS
 
           With -m, the original manifest will be repeated with any
           discovered dependencies added after.
+
+          With -d, add the directory provided to a list of directories 
+          to search for the manifest's files.
 
           For each -D, add the 'value' as a way to expand the token
           'name' in run paths for elf file dependencies.

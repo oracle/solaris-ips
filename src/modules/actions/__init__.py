@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -300,7 +299,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         if ahash:
                 action.hash = ahash
 
-        local_path = set_action_data(data, action, basedirs)
+        local_path, used_basedir = set_action_data(data, action, basedirs)
         return action, local_path
 
 def internalizestr(string, basedirs=None, load_data=True):
@@ -328,14 +327,15 @@ def internalizestr(string, basedirs=None, load_data=True):
         action = fromstr(string)
 
         if atype not in ("file", "license") or not load_data:
-                return action, None
+                return action, None, None
 
-        local_path = set_action_data(args[0], action, basedirs)
-        return action, local_path
+        local_path, used_basedir = set_action_data(args[0], action, basedirs)
+        return action, local_path, used_basedir
 
 def set_action_data(payload, action, basedirs):
         """Sets the data field of an action using the information in the
-        payload and returns the actual path used to set the data.
+        payload and returns the actual path used to set the data and the basedir
+        used to find the path to the data.
 
         The "payload" parameter is the representation of the data to assign to
         the action's data field. It can either be NOHASH or a path to the file.
@@ -346,22 +346,24 @@ def set_action_data(payload, action, basedirs):
         the payload in."""
 
         if not payload:
-                return None
-        
+                return None, None
+
         if payload == "NOHASH":
                 filepath = os.path.sep + action.attrs["path"]
         else:
                 filepath = payload
 
+        used_basedir = None
         if basedirs:
                 path = filepath.lstrip(os.path.sep)
                 # look for file in specified dirs
                 for d in basedirs:
                         data = os.path.join(d, path)
                         if os.path.isfile(data):
+                                used_basedir = d
                                 break
         else:
                 data = filepath
 
         action.set_data(data)
-        return data
+        return data, used_basedir

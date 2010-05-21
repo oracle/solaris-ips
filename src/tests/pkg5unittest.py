@@ -1335,11 +1335,11 @@ class CliTestCase(Pkg5TestCase):
                             exit, retcode, self.output, comment)
                 return retcode
 
-        def pkgdepend_generate(self, args, proto, exit=0, comment=""):
+        def pkgdepend_generate(self, args, exit=0, comment=""):
                 wrapper = self.coverage_cmd
 
-                cmdline = "%s %s/usr/bin/pkgdepend generate %s %s" % (wrapper,
-                    g_proto_area, args, proto)
+                cmdline = "%s %s/usr/bin/pkgdepend generate %s" % \
+                    (wrapper, g_proto_area, args)
                 self.debugcmd(cmdline)
 
                 newenv = os.environ.copy()

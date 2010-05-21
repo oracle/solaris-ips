@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -74,7 +73,7 @@ def get_platform():
         information, e.g. "i86pc"."""
         raise NotImplementedError
 
-def get_file_type(paths):
+def get_file_type(actions):
         """ Return a list containing the file type for each file in paths."""
         raise NotImplementedError
 
@@ -215,6 +214,7 @@ ELF, EXEC, UNFOUND = range(0, 3)
 # String to be used for an action attribute created for the internal use of
 # dependency analysis.
 PD_LOCAL_PATH = "pkg.internal.depend.localpath"
+PD_PROTO_DIR = "pkg.internal.depend.protodir"
 
 
 import platform

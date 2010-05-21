@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -30,7 +29,7 @@ import os
 import pkg.elf as elf
 import pkg.flavor.base as base
 
-from pkg.portable import PD_LOCAL_PATH
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
 
 class BadElfFile(base.DependencyAnalysisError):
         """Exception that is raised when the elf dependency checker is given
@@ -143,7 +142,7 @@ def expand_variables(paths, dyn_tok_conv):
 
 default_run_paths = ["/lib", "/usr/lib"]
 
-def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
+def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
     kernel_paths, **kwargs):
         """Produce the elf dependencies for the file delivered in the action
         provided.
@@ -152,8 +151,6 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
 
         'pkg_vars' is the list of variants against which the package delivering
         the action was published.
-
-        'proto_dir' is the proto area where the file the action delivers lives.
 
         'dyn_tok_conv' is the dictionary which maps the dynamic tokens, like
         $PLATFORM, to the values they should be expanded to.
@@ -264,6 +261,6 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
                         if head:
                                 pathlist.append(head)
                 res.append(ElfDependency(action, fn, pathlist, pkg_vars,
-                    proto_dir))
+                    action.attrs[PD_PROTO_DIR]))
         del dyn_tok_conv["$ORIGIN"]
         return res, elist
