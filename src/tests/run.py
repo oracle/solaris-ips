@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import os
 import sys
@@ -296,16 +297,21 @@ if __name__ == "__main__":
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
-                import gui.testutils
-                if not gui.testutils.check_for_gtk():
-                        print "# GTK not present or $DISPLAY not " \
-                            "set, GUI tests disabled."
-                elif not gui.testutils.check_if_a11y_enabled():
-                        print "# Accessibility not enabled, GUI tests disabled."
+                try:
+                        import gui.testutils
+                except Exception, e:
+                        print "# %s" % e
                 else:
-                        gui_suite = find_tests("gui", onlyval,
-                            startattest, output)
-                        suites.append(gui_suite)
+                        if not gui.testutils.check_for_gtk():
+                                print "# GTK not present or $DISPLAY not " \
+                                    "set, GUI tests disabled."
+                        elif not gui.testutils.check_if_a11y_enabled():
+                                print "# Accessibility not enabled, GUI " \
+                                    "tests disabled."
+                        else:
+                                gui_suite = find_tests("gui", onlyval,
+                                    startattest, output)
+                                suites.append(gui_suite)
 
         # This is primarily of interest to developers altering the test suite,
         # so don't enable it for now.  The testsuite suite tends to emit a bunch
