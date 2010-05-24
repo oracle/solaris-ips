@@ -225,8 +225,8 @@ class StartPage:
                 # Change view to All Publishers (Installed)
                 if search_action and search_action == INTERNAL_SEARCH_ALL_PUBS_INSTALLED:
                         if handle_what == DISPLAY_LINK:
-                                return _("View installed packages for %(s1)sAll "
-                                    "Publishers%(e1)s") % {"s1": s1, "e1": e1}
+                                return _("View %(s1)sAll Installed Packages%(e1)s") % \
+                                        {"s1": s1, "e1": e1}
                         self.parent.handle_view_all_publishers_installed()
                         return
                 # Launch Search Help
@@ -430,9 +430,9 @@ class StartPage:
         def setup_search_installed_page(self, text):
                 header = INFORMATION_PAGE_HEADER
                 header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
-                    "<TD><h3><b>Search in All Publishers (Installed)</b></h3><TD></TD>"
+                    "<TD><h3><b>Search in All Installed Packages</b></h3><TD></TD>"
                     "</TR><TR><TD></TD><TD> Search is <b>not</b> supported in "
-                    "All Publishers (Installed).</TD></TR>"
+                    "All Installed Packages.</TD></TR>"
                     )
 
                 body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
@@ -440,8 +440,8 @@ class StartPage:
                     "<TR><TD></TD><TD<TD>"
                     )
 
-                body += _("<li style='padding-left:7px'>Return to view packages for "
-                    "All Publishers <a href='pm?pm-action=internal&search="
+                body += _("<li style='padding-left:7px'>Return to view "
+                    "All Installed Packages <a href='pm?pm-action=internal&search="
                     "%s'>(Installed)</a></li>")  % INTERNAL_SEARCH_ALL_PUBS_INSTALLED
                 body += _("<li style='padding-left:7px'>Search for <b>%(text)s"
                     "</b> using All Publishers <a href='pm?pm-action=internal&search="
