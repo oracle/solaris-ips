@@ -451,7 +451,6 @@ class PackageManager:
                 self.application_list_filter = None
                 self.application_list_sort = None
                 self.application_refilter_id = 0
-                self.application_refilter_idle_id = 0
                 self.last_status_id = 0
                 self.last_show_info_id = 0
                 self.show_info_id = 0
@@ -1785,10 +1784,9 @@ class PackageManager:
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
                 performance when assistive technologies are enabled'''
+                self.application_refilter_id = 0
                 if self.in_setup:
                         return
-                self.application_refilter_id = 0
-                self.application_refilter_idle_id = 0
                 model = self.w_application_treeview.get_model()
                 self.w_application_treeview.set_model(None)
                 app_id, order = self.application_list_sort.get_sort_column_id()
@@ -2065,8 +2063,8 @@ class PackageManager:
                 if self.application_refilter_id != 0:
                         gobject.source_remove(self.application_refilter_id)
                         self.application_refilter_id = 0
-                if self.application_refilter_idle_id == 0:
-                        self.application_refilter_idle_id = gobject.idle_add(
+                if self.application_refilter_id == 0:
+                        self.application_refilter_id = gobject.idle_add(
                             self.__application_refilter)
 
         def __on_category_focus_in(self, widget, event, user):
