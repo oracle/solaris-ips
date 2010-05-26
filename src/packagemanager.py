@@ -33,6 +33,7 @@ PUBLISHER_ADD = 3                         # Index for "Add..." string
 SHOW_INFO_DELAY = 600       # Delay before showing selected package information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 RESIZE_DELAY = 600          # Delay before handling resize for startpage
+INC_RESULTS_DELAY = 800    # Delay before updating incremental search results
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
@@ -126,6 +127,8 @@ class PackageManager:
                 self.set_section = 0
                 self.after_install_remove = False
                 self.in_search_mode = False
+                self.search_results_id = 0
+                self.search_results = []
                 self.in_recent_search = False
                 self.recent_searches = {}
                 self.recent_searches_cat_iter = None
@@ -1518,6 +1521,15 @@ class PackageManager:
                 gobject.idle_add(self.unset_busy_cursor)
                 self.in_setup = False
 
+        def __handle_inc_search_results(self, sort_col):
+                self.search_results_id = 0
+                if debug:
+                        print "handle_inc_search_results: ", \
+                                time.time() - self.search_start, len(self.search_results)
+                application_list = self.__get_min_list_from_search(self.search_results)
+                self.in_setup = True
+                self.__init_tree_views(application_list, None, None, None, None, sort_col)
+
         def __do_api_search(self, search_all = True):
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
@@ -1528,11 +1540,12 @@ class PackageManager:
                 self.__set_search_start()
                 gobject.idle_add(self.update_statusbar)
                 self.search_time_sec = 0
+                self.search_results = []
+                self.__clear_inc_search_results_task()
                 text = self.w_searchentry.get_text()
                 # Here we call the search API to get the results
                 searches = []
                 servers = []
-                result = []
                 pargs = []
                 search_str = SEARCH_STR_FORMAT % text
                 pargs.append(search_str)
@@ -1598,20 +1611,19 @@ class PackageManager:
                                                 print "Result Name: %s (%s)" \
                                                     % (name, active_pub)
                                         a_res = name, active_pub
-                                        result.append(a_res)
-                                        #Ignore Status when fetching
-                                        application_list = \
-                                                self.__get_min_list_from_search(result)
-                                        self.in_setup = True
-                                        gobject.idle_add(self.__init_tree_views, 
-                                            application_list, None, None, None, None,
-                                            sort_col)
+                                        self.search_results.append(a_res)
+                                        if self.search_results_id == 0:
+                                                self.search_results_id = (
+                                                    gobject.timeout_add(
+                                                        INC_RESULTS_DELAY,
+                                                        self.__handle_inc_search_results,
+                                                        sort_col))
                                 last_name = name
                                 self.pylintstub = query_num
                 except api_errors.ProblematicSearchServers, ex:
                         self.__process_api_search_error(ex)
                         gobject.idle_add(self.__handle_api_search_error)
-                        if len(result) == 0:
+                        if len(self.search_results) == 0:
                                 if search_all:
                                         self.__process_after_search_with_zero_results(
                                                 _("All Publishers"), text,
@@ -1637,9 +1649,11 @@ class PackageManager:
                         gui_misc.notify_log_error(self)
                         self.__process_after_search_failure()
                         return
+                finally:
+                        self.__clear_inc_search_results_task()
                 if debug:
-                        print "Number of search results:", len(result)
-                if len(result) == 0:
+                        print "Number of search results:", len(self.search_results)
+                if len(self.search_results) == 0:
                         if debug:
                                 print "No search results"
                         if search_all:
@@ -1655,7 +1669,7 @@ class PackageManager:
                 self.in_setup = True
                 if debug_perf:
                         print "Time for search:", time.time() - self.search_start
-                application_list = self.__get_full_list_from_search(result)
+                application_list = self.__get_full_list_from_search(self.search_results)
                 gobject.idle_add(self.__add_recent_search, text, pub_prefix,
                     application_list, search_all)
                 if self.search_start > 0:
@@ -1670,6 +1684,11 @@ class PackageManager:
 
                 gobject.idle_add(self.__check_zero_results_afterfilter, text,
                     len(application_list))
+
+        def __clear_inc_search_results_task(self):
+                if self.search_results_id != 0:
+                        gobject.source_remove(self.search_results_id)
+                        self.search_results_id = 0
 
         def __check_zero_results_afterfilter(self, text, num):
                 if self.length_visible_list != 0:
