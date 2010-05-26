@@ -2565,7 +2565,7 @@ class PackageManager:
                                                 pkg_name = pkgs.get(pkg_stem)[2]
                                                 confirmation_list.append(
                                                     [pkg_name, pub_display_name,
-                                                    desc, status])
+                                                    desc, status, pkg_stem])
                                                     
         def __on_log_activate(self, widget):                                
                 if self.error_logged:
@@ -2682,7 +2682,7 @@ class PackageManager:
                                                 pkg_name = pkgs.get(pkg_stem)[2]
                                                 confirmation_list.append(
                                                     [pkg_name, pub_display_name,
-                                                    desc, status])
+                                                    desc, status, pkg_stem])
 
         def __on_remove(self, widget):
                 if not self.__do_api_reset():

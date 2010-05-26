@@ -70,6 +70,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 progress.GuiProgressTracker.__init__(self)
                 self.gconf = gconf
+                self.retry = False
                 self.web_install = web_install
                 self.web_updates_list = None
                 self.web_install_all_installed = False
@@ -155,13 +156,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_dialog = w_tree_dialog.get_widget("createplandialog")
                 self.w_expander = w_tree_dialog.get_widget("expander3")
                 self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
+                self.w_close_button = w_tree_dialog.get_widget("closecreateplan")
                 self.w_release_notes = w_tree_dialog.get_widget("release_notes")
                 self.w_release_notes_link = \
                     w_tree_dialog.get_widget("ua_release_notes_button")
                 self.w_progressbar = w_tree_dialog.get_widget("createplanprogress")
                 self.w_details_textview = w_tree_dialog.get_widget("createplantextview")
 
-                w_stage2 = w_tree_dialog.get_widget("stage2")
+                self.w_stage2 = w_tree_dialog.get_widget("stage2")
                 self.w_stages_box = w_tree_dialog.get_widget("stages_box")
                 self.w_stage1_label = w_tree_dialog.get_widget("label_stage1")
                 self.w_stage1_icon = w_tree_dialog.get_widget("icon_stage1")
@@ -224,6 +226,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                             {
                                 "on_cancelcreateplan_clicked": \
                                     self.__on_cancelcreateplan_clicked,
+                                "on_closecreateplan_clicked": \
+                                    self.__on_closecreateplan_clicked,
                                 "on_createplandialog_delete_event": \
                                     self.__on_createplandialog_delete,
                             }
@@ -263,12 +267,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_license_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_license_dialog,
                     self.w_dialog)
+                self.__start_action()
 
+        def __start_action(self):
                 if self.action == enumerations.REMOVE:
                         # For the remove, we are not showing the download stage
                         self.stages[3] = [_("Removing..."), _("Remove")]
                         self.w_stage3_label.set_text(self.stages[3][1])
-                        w_stage2.hide()
+                        self.w_stage2.hide()
                         self.w_dialog.set_title(_("Remove"))
 
                         if self.confirmation_list != None:
@@ -281,7 +287,9 @@ class InstallUpdate(progress.GuiProgressTracker):
 
                                 self.w_install_expander.hide()
                                 self.w_update_expander.hide()
-                                self.__init_confirmation_tree_view(self.w_remove_treeview)
+                                if not self.retry:
+                                        self.__init_confirmation_tree_view(
+                                            self.w_remove_treeview)
                                 liststore = gtk.ListStore(str, str, str)
                                 for sel_pkg in self.confirmation_list:
                                         liststore.append(
@@ -456,6 +464,16 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
 
+        def __on_closecreateplan_clicked(self, widget):
+                self.w_close_button.hide()
+                self.w_dialog.hide()
+                buf = self.w_details_textview.get_buffer()
+                buf.set_text("")
+                self.w_expander.set_expanded(False)
+                self.__start_action()
+                self.retry = False
+                return
+
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:
                         return True
@@ -560,6 +578,29 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 "depend on it:\n") % nlpe[0].get_name()
                         for pkg_a in nlpe[1]:
                                 msg += "\t" + pkg_a.get_name() + "\n"
+
+                        stem = nlpe[0].get_pkg_stem()
+                        self.list_of_packages.remove(stem)
+                        if self.confirmation_list:
+                                for item in self.confirmation_list:
+                                        if item[enumerations.CONFIRM_STEM] == stem:
+                                                self.confirmation_list.remove(item)
+                                                break 
+                        if len(self.list_of_packages) > 0:
+                                if self.w_close_button.get_use_stock():
+                                        label = gui_misc.get_stockbutton_label_label(
+                                            self.w_close_button)
+                                else:
+                                        label = self.w_close_button.get_label()
+                                label = label.replace("_", "")
+                                msg += "\n"
+                                msg += _("Press %(button)s "
+                                    "button to continue removal without"
+                                    "\n\t%(package)s\n") % \
+                                    {"button": label,
+                                     "package": nlpe[0].get_name()}
+                                self.retry = True
+                                self.w_close_button.show()
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ProblematicPermissionsIndexException, err:
