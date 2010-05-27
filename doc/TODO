@@ -60,10 +60,3 @@ TODO
 	  sides
 
 	- SSH tunnel support in pkgsend(1)
-
-5.  Demonstration distro
-
-	- x64/x86 first, based on Indiana requests
-
-	- Need pkg(1), pkgsend(1), pkg.depotd(1M) manual pages
-

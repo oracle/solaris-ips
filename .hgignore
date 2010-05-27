@@ -14,6 +14,14 @@
 ^packages
 ^nbproject
 # Specific build products
+^doc/html-out
+^doc/guide-main.aux
+^doc/guide-main.cb
+^doc/guide-main.cb2
+^doc/guide-main.log
+^doc/guide-main.pdf
+^doc/guide-main.tex
+^doc/guide-main.toc
 ^src/extern/.*
 ^src/brand/fmri_compare$
 ^src/brand/support$

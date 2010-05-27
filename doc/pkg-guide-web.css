@@ -1,0 +1,67 @@
+/*
+ * This specification may be enough for adequate printing.
+ */
+@page {
+	margin:			2.5cm;
+}
+
+body {
+	font-family:		serif;
+	margin:			5%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family:		sans-serif;
+}
+
+a {
+	text-decoration:	none;
+	color:			#4444aa;
+}
+
+a:hover {
+	color:			#222288;
+	background-color:	#eeeeee;
+}
+
+.subtitle {
+	font-style:		italic;
+}
+
+th .docinfo-name {
+	text-align:		right;
+}
+
+div .admonition {
+	border-color:		#aaaaaa;
+
+	border-right-style:	none;
+	border-left-style:	none;
+
+	border-top-style:	solid;
+	border-top-width:	thick;
+
+	border-bottom-style:	solid;
+	border-bottom-width:	thin;
+
+	margin-right:		20em;
+}
+
+div .sidebar {
+	border-color:		#ffaaaa;
+	border-width:		thin;
+	float:			right;
+	width:			20em;
+	background-color:	#eeeecc;
+}
+
+p .sidebar-title {
+	font-family:		sans-serif;
+	text-size:		24px;
+
+}
+
+p .topic-title {
+	font-family:		sans-serif;
+	text-size:		24px;
+}

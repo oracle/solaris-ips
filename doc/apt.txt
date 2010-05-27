@@ -11,8 +11,7 @@ apt-get upgrade
 apt-get dist-upgrade
 	upgrades everything, handling relationship changes
 
-apt-get clean
-apt-get autoclean
+apt-get clean; apt-get autoclean
 	remove cached packages under varying conditions
 
 /etc/apt/apt.conf
