@@ -227,7 +227,10 @@ class Updatemanager:
         def __set_initial_selection(self):
                 self.__selectall_toggle(True)
                 if len(self.um_list) == 0:
-                        self.__display_noupdates()
+                        # Handle the case where there are no packages to be
+                        # updated but plan for image update indicates something
+                        # needs to be done; most likely some package removal.
+                        self.__do_image_update(um_special = True)
                 else:
                         self.initial_selection = True
                         self.w_um_treeview.set_cursor(0, None)
@@ -532,6 +535,9 @@ class Updatemanager:
 
         def __on_updateall_button_clicked(self, widget):
                 self.__selectall_toggle(True)
+                self.__do_image_update()
+
+        def __do_image_update(self, um_special = False):
                 try:
                         self.__get_api_obj().reset()
                 except api_errors.ApiException, ex:
@@ -547,6 +553,7 @@ class Updatemanager:
                     gui_misc.package_name["SUNWipkg-um"]],
                     main_window = self.w_um_dialog,
                     icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36),
+                    um_special = um_special,
                     api_lock = self.api_lock)
                 return
                
@@ -665,6 +672,9 @@ class Updatemanager:
         def shutdown_after_image_update(self, exit_um = False):
                 if exit_um == False:
                         self.__exit_app()
+
+        def install_terminated(self):
+                self.__exit_app()
 
 #-------------------- remove those
 def main():

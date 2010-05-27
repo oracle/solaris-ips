@@ -65,7 +65,8 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
             action = -1, parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
-            confirmation_list = None, api_lock = None, gconf = pmgconf.PMGConf()):
+            confirmation_list = None, api_lock = None, gconf = pmgconf.PMGConf(),
+            um_special = False):
                 if action == -1:
                         return
                 progress.GuiProgressTracker.__init__(self)
@@ -82,6 +83,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 self.parent_name = parent_name
                 self.confirmation_list = confirmation_list
+                self.um_special = um_special
                 self.ipkg_ipkgui_list = pkg_list
                 self.icon_confirm_dialog = icon_confirm_dialog
                 self.title = title
@@ -148,6 +150,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                     w_tree_confirmdialog.get_widget("confirm_ok_button")
                 self.w_confirm_label =  \
                     w_tree_confirmdialog.get_widget("confirm_label")
+                if self.um_special:
+                        w_confirm_donotshow =  \
+                            w_tree_confirmdialog.get_widget("confirm_donotshow")
+                        w_confirm_donotshow.hide()
 
                 self.w_confirm_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_confirm_dialog,
@@ -462,6 +468,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         gobject.idle_add(self.parent.update_package_list,
                                             self.web_updates_list)
                                 return
+                        if self.um_special:
+                                self.parent.install_terminated()
                         gobject.idle_add(self.parent.update_package_list, None)
 
         def __on_closecreateplan_clicked(self, widget):
@@ -740,8 +748,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 stuff_todo = self.__plan_stage()
                 if stuff_todo:
 
-                        if self.action == enumerations.IMAGE_UPDATE and \
-                            self.confirmation_list != None:
+                        if (self.action == enumerations.IMAGE_UPDATE and
+                            (self.confirmation_list != None or self.um_special)):
                                 gobject.idle_add(self.__show_image_update_confirmation)
                         else:
                                 self.__continue_with_stages_thread()
@@ -834,7 +842,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                             "Review the package which will be affected by Updates",
 		            "Review the packages which will be affected by Updates", no_pkgs)
                 else:
-                        operation_txt = _("Update All Confirmation")
+                        if self.um_special:
+                                operation_txt = _("Update All - Removal Only")
+                        else:
+                                operation_txt = _("Update All Confirmation")
                         install_text = ngettext(
                             "Review the package which will be affected by Update All",
 		            "Review the packages which will be affected by Update All", no_pkgs)
@@ -899,6 +910,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.api_o.prepare()
                 except api_errors.PlanLicenseErrors:
                         gobject.idle_add(self.w_dialog.hide)
+                        if self.um_special:
+                                gobject.idle_add(self.parent.install_terminated)
                         self.stop_bouncing_progress()
                         return
                 self.__start_stage_three()
