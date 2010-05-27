@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple
@@ -108,8 +107,9 @@ class ImagePlan(object):
                 self.__target_removal_count = 0
 
                 self.__directories = None  # implement ref counting
-                self.__symlinks = None     # for dirs and links
-                self.__cached_actions = {}
+                self.__symlinks = None     # for dirs and links and
+                self.__hardlinks = None    # hardlinks
+                self.__cached_actions = {} 
 
                 self.__old_excludes = image.list_excludes()
                 self.__new_excludes = self.__old_excludes
@@ -441,6 +441,15 @@ class ImagePlan(object):
                                         ))
                 return self.__symlinks
 
+        def __get_hardlinks(self):
+                """ return a set of all hardlinks in target image"""
+                if self.__hardlinks == None:
+                        self.__hardlinks = set((
+                                        a.attrs["path"]
+                                        for a in self.gen_new_installed_actions_bytype("hardlink")
+                                        ))
+                return self.__hardlinks
+
         @staticmethod
         def default_keyfunc(name, act):
                 """This is the default function used by get_actions when
@@ -706,6 +715,14 @@ class ImagePlan(object):
                             self.__get_symlinks():
                                 self.removal_actions[i] = None
                                 continue
+                        # discard hardlink removal if hardlink is still in final
+                        # image.
+                        if ap.src.name == "hardlink" and \
+                            os.path.normpath(ap.src.attrs["path"]) in \
+                            self.__get_hardlinks():
+                                self.removal_actions[i] = None
+                                continue
+                       
                         # store names of files being removed under own name
                         # or original name if specified
                         if ap.src.globally_unique:
@@ -870,12 +887,16 @@ class ImagePlan(object):
                         # For any files being updated that are the target of
                         # _any_ hardlink actions, append the hardlink actions
                         # to the update list so that they are not broken.
+                        # Since we reference count hardlinks, update each one
+                        # only once.
                         if a[2].name == "file":
                                 path = a[2].attrs["path"]
                                 if path in l_actions:
+                                        unique_links = dict((l.attrs["path"], l) 
+                                            for l in l_actions[path])
                                         l_refresh.extend([
                                             ActionPlan(a[0], l, l)
-                                            for l in l_actions[path]
+                                            for l in unique_links.values()
                                         ])
                                 path = None
 
@@ -1213,6 +1234,8 @@ class ImagePlan(object):
                 self.__directories   = []
                 self.__actuators     = []
                 self.__cached_actions = {}
+                self.__symlinks = None
+                self.__hardlinks = None
 
                 # Perform the incremental update to the search indexes
                 # for all changed packages

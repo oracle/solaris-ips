@@ -389,11 +389,11 @@ def check_pathdict_actions(my_path_dict, remove_dups=False, allow_dir_goofs=Fals
                 elif dups[0].name == "license": #XXX double check this
                         continue
 
-                elif dups[0].name == "link":
+                elif dups[0].name == "link" or dups[0].name == "hardlink":
                         targets = set((d.attrs["target"] for d in dups))
                         if len(targets) > 1:
-                                errorlist.append("Multiple link actions with same path and different targets:\n\t%s\n" %
-                                    ("\n\t".join(str(d) for d in dups)))
+                                errorlist.append("Multiple %s actions with same path and different targets:\n\t%s\n" %
+                                    (dups[0].name, "\n\t".join(str(d) for d in dups)))
                         continue
                         
                 elif dups[0].name != "dir":
