@@ -4476,10 +4476,6 @@ if __name__ == '__main__':
         app_path = None
         image_dir = None
         info_install_arg = None
-        save_selected = _("Save selected...")
-        save_selected_pkgs = _("Save selected packages...")
-        reboot_needed = _("The installed package(s) require a reboot before "
-            "installation can be completed.")
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "hR:Ui:", \

@@ -688,10 +688,14 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __reset_window_title(self):
                 if self.reset_window_id:
                         gobject.source_remove(self.reset_window_id)
+                        self.reset_window_id = 0
                 if self.w_main_window:
                         self.w_main_window.set_title(self.original_title)
 
         def __do_cancel(self):
+                self.__do_dialog_hide()
+
+        def __do_dialog_hide(self):
                 self.w_dialog.hide()
                 self.__reset_window_title()
     
@@ -704,7 +708,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __handle_nospace_error(self):
                 gobject.idle_add(self.__prompt_to_load_beadm)
-                gobject.idle_add(self.w_dialog.hide)
+                gobject.idle_add(self.__do_dialog_hide)
                 self.stop_bouncing_progress()
 
         def __handle_error(self):
@@ -909,7 +913,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 try:
                         self.api_o.prepare()
                 except api_errors.PlanLicenseErrors:
-                        gobject.idle_add(self.w_dialog.hide)
+                        gobject.idle_add(self.__do_dialog_hide)
                         if self.um_special:
                                 gobject.idle_add(self.parent.install_terminated)
                         self.stop_bouncing_progress()
@@ -974,6 +978,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.__do_end_stage)
 
         def __g_error_stage(self, msg):
+                self.__reset_window_title()
                 if self.action == enumerations.IMAGE_UPDATE:
                         info_url = misc.get_release_notes_url()
                         if info_url and len(info_url) == 0:
@@ -997,6 +1002,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.w_cancel_button.set_sensitive, True)
 
         def __g_exception_stage(self, tracebk):
+                self.__reset_window_title()
                 self.operations_done = True
                 self.operations_done_ex = True
                 self.stop_bouncing_progress()
@@ -1116,6 +1122,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 prog = self.update_progress(cur_n, goal_n)
                 if self.reset_window_id != 0:
                         gobject.source_remove(self.reset_window_id)
+                        self.reset_window_id = 0
                 if self.w_main_window:
                         progtimes100 = int(prog * 100)
                         if progtimes100 != self.prev_prog:
