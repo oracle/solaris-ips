@@ -43,7 +43,6 @@ except ImportError:
 
 import pkg.client.publisher as publisher
 import pkg.client.api_errors as api_errors
-import pkg.misc as misc
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 import pkg.gui.progress as progress
@@ -559,19 +558,20 @@ class Repository(progress.GuiProgressTracker):
                 self.name_error = None
                 if len(name) == 0:
                         return False
-                if not misc.valid_pub_prefix(name):
+                try:
+                        publisher.Publisher(prefix=name)
+                except api_errors.BadPublisherPrefix, e:
                         self.name_error = _("Name contains invalid characters")
                         return False
                 try:
-                        pubs = self.api_o.get_publishers()
+                        self.api_o.get_publisher(prefix=name)
+                        self.name_error = _("Name already in use")
+                        return False
+                except api_errors.UnknownPublisher, e:
+                        return True
                 except api_errors.ApiException, e:
                         self.__show_errors([("", e)])
                         return False
-                for p in pubs:
-                        if name == p.prefix or name == p.alias:
-                                self.name_error = _("Name already in use")
-                                return False
-                return True
 
         def __get_selected_publisher_itr_model(self):
                 itr, sorted_model = self.__get_fitr_model_from_tree(
@@ -1505,8 +1505,6 @@ class Repository(progress.GuiProgressTracker):
                 self.__rm_origin()
                 
         def __on_repositorymodifyok_clicked(self, widget):
-                if self.w_repositorymodifyok_button.get_property('sensitive') == 0:
-                        return
                 self.publishers_apply.set_title(_("Applying Changes"))
                 self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok,
                     self.w_manage_publishers_dialog)
