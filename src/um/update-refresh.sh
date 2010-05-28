@@ -52,14 +52,43 @@
 #
 # ##########################################################################
 
+# Refresh the IPS catalog
+fmri=svc:/application/pkg/update
+image_dir=`svcprop -p update/image_dir $fmri`
+
+# We want to limit the number of times we hit the servers, but our
+# calculations are all based on the canonical crontab entry.  If the
+# user has modified that, then use the times as they specified.
+cronentry=$(crontab -l | grep update-refresh.sh)
+if [[ $cronentry == "30 0,9,12,18,21 * * * "* ]]; then
+	# When did we last run, and how many times have we tried since?
+	lastrun=$(svcprop -p update/lastrun $fmri 2> /dev/null)
+
+	# Easiest way to get seconds since the epoch.
+	now=$(/usr/bin/python -ESc 'import time; print int(time.time())')
+
+	# The canonical crontab entry runs this script five times a day,
+	# seven days a week.  We want it to complete roughly once a week.
+	# But because we're not at 100% after even two weeks, we increase
+	# the chance of success every fifth of a day until we're at 100%.
+	rolls=$(((now - lastrun) / 17280))
+	(( rolls > 34 )) && rolls=34
+	chance=$((35 - rolls))
+	roll=$((RANDOM % chance))
+	(( roll > 0 )) && exit 0
+
+	# Otherwise, we will run, so record the current time for later.
+	cat <<-EOF | svccfg -s pkg/update
+	setprop update/lastrun = integer: $now
+	select default
+	refresh
+	EOF
+fi
+
 # Wait a random part of 30 minutes so servers do not get hit all at once
 let dither=1800*$RANDOM
 let dither=dither/32767
 sleep $dither
-
-# Refresh the IPS catalog
-fmri=svc:/application/pkg/update
-image_dir=`svcprop -p update/image_dir $fmri`
 
 cd $image_dir
 
