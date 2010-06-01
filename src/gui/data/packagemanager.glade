@@ -1378,10 +1378,11 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkExpander" id="expander3">
+              <widget class="GtkExpander" id="details_expander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <signal name="activate" handler="on_details_expander_activate"/>
                 <child>
                   <widget class="GtkFrame" id="frame1">
                     <property name="visible">True</property>

@@ -129,16 +129,16 @@
       </locale>
     </schema>
     <schema>
-      <key>/schemas/apps/packagemanager/preferences/typeahead_search</key>
-      <applyto>/apps/packagemanager/preferences/typeahead_search</applyto>
+      <key>/schemas/apps/packagemanager/preferences/details_expanded</key>
+      <applyto>/apps/packagemanager/preferences/details_expanded</applyto>
       <owner>packagemanager</owner>
       <type>bool</type>
-      <default>False</default>
+      <default>True</default>
       <locale name="C">
-         <short>Enable type ahead search</short>
+         <short>Expand Details in Install Remove</short>
          <long>
-          A boolean which determines if the search is executed dynamically as user types
-          or only when user hits the return key.
+          A boolean which determines if the Details panel in the Install Remove
+          progress dialog is expanded or not.
          </long>
       </locale>
     </schema>

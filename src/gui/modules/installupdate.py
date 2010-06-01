@@ -160,7 +160,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                     self.w_main_window)
 
                 self.w_dialog = w_tree_dialog.get_widget("createplandialog")
-                self.w_expander = w_tree_dialog.get_widget("expander3")
+                self.w_expander = w_tree_dialog.get_widget("details_expander")
                 self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
                 self.w_close_button = w_tree_dialog.get_widget("closecreateplan")
                 self.w_release_notes = w_tree_dialog.get_widget("release_notes")
@@ -236,6 +236,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                                     self.__on_closecreateplan_clicked,
                                 "on_createplandialog_delete_event": \
                                     self.__on_createplandialog_delete,
+                                "on_details_expander_activate": \
+                                    self.__on_details_expander_activate,
+
                             }
                         dic_license = \
                             {
@@ -428,6 +431,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__on_confirm_cancel_button_clicked(None)
                         self.__proceed_with_stages()
                 else:
+                        self.w_expander.set_expanded(self.gconf.details_expanded)
                         self.w_dialog.show()
                         self.__on_confirm_cancel_button_clicked(None)
                         self.__proceed_with_stages(continue_operation = True)
@@ -442,6 +446,9 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __on_createplandialog_delete(self, widget, event):
                 self.__on_cancelcreateplan_clicked(None)
                 return True
+
+        def __on_details_expander_activate(self, widget):
+                self.gconf.set_details_expanded(not self.gconf.details_expanded)
 
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press
@@ -492,6 +499,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __proceed_with_stages(self, continue_operation = False):
                 if continue_operation == False:
                         self.__start_stage_one()
+                        self.w_expander.set_expanded(self.gconf.details_expanded)
                         self.w_dialog.show()
                 Thread(target = self.__proceed_with_stages_thread_ex,
                     args = (continue_operation, )).start()

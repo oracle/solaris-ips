@@ -48,6 +48,7 @@ SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
 START_INSEARCH_PREFERENCES = "/apps/packagemanager/preferences/start_insearch"
 LASTSOURCE_PREFERENCES = "/apps/packagemanager/preferences/lastsource"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
+DETAILS_EXPANDED_PREFERENCES = "/apps/packagemanager/preferences/details_expanded"
 
 class PMGConf:
         def __init__(self):
@@ -95,6 +96,8 @@ class PMGConf:
                             self.__show_remove_changed)
                         self.client.notify_add(SAVE_STATE_PREFERENCES,
                             self.__save_state_changed)
+                        self.details_expanded = \
+                            self.client.get_bool(DETAILS_EXPANDED_PREFERENCES)
                 except GError:
                         # Default values - the same as in the
                         # packagemanager-preferences.schemas
@@ -114,7 +117,7 @@ class PMGConf:
                         self.initial_app_height = 600
                         self.initial_app_hpos = 200
                         self.initial_app_vpos = 320
-
+                        self.details_expanded = True
                 self.__fix_initial_values()
 
         def __fix_initial_values(self):
@@ -134,6 +137,13 @@ class PMGConf:
                 try:
                         self.lastsource = value
                         self.client.set_string(LASTSOURCE_PREFERENCES, value)
+                except GError:
+                        pass
+
+        def set_details_expanded(self, value):
+                try:
+                        self.details_expanded = value
+                        self.client.set_bool(DETAILS_EXPANDED_PREFERENCES, value)
                 except GError:
                         pass
 
