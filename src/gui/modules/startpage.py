@@ -180,7 +180,7 @@ class StartPage:
                         f = self.__open_url(url)
                 except  (IOError, OSError), err:
                         logger.error(str(err))
-                        gui_misc.notify_log_error(self)
+                        gui_misc.notify_log_error(self.parent)
                         return
                 stream.set_cancel_func(self.__stream_cancel)
                 stream.write(f.read())
