@@ -286,8 +286,7 @@ class Updatemanager:
                 self.w_um_intro_label.set_markup(_(
                     "<b>Updates are available for the following packages</b>"))
                 self.w_um_intro2_label.set_markup(_(
-                    "Click Update All to create a new boot environment and "
-                    "install all packages into it."))
+                    "Click Update All to update all these packages."))
                         
                 render_pixbuf = gtk.CellRendererPixbuf()
                 column = gtk.TreeViewColumn()
