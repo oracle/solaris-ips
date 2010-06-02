@@ -38,7 +38,6 @@ import socket
 import traceback
 import tempfile
 import re
-import string
 import threading
 try:
         import gobject
@@ -321,6 +320,10 @@ def error_occurred(parent, error_msg, msg_title = None,
         msgbox.run()
         msgbox.destroy()
 
+def get_version_fmt_string():
+        build_str = _("Build")
+        return "%(version)s (" + build_str + " %(build)s-%(branch)s)"
+
 def set_dependencies_text(textview, info, dep_info, installed_dep_info,
     installed_icon, not_installed_icon):
         names = []
@@ -330,7 +333,7 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
                 states = dep_info[0]
         if installed_dep_info != None and len(installed_dep_info.get(0)) >= 0:
                 installed_states = installed_dep_info[0]
-        version_fmt = _("%(version)s (Build %(build)s-%(branch)s)")
+        version_fmt = get_version_fmt_string()
         i = 0
         for x in info.dependencies:
                 if states != None and len(states) > 0:
@@ -576,7 +579,7 @@ def set_package_details_text(labs, text, textview, installed_icon,
         __add_line_to_generalinfo(infobuffer, i, labs["name"], text["name"])
         i += 1
         if text["renamed_to"] != "":
-                rename_list = string.split(text["renamed_to"], "\n", 1)
+                rename_list = text["renamed_to"].split("\n", 1)
                 start = ""
                 remainder = ""
                 if rename_list != None:
@@ -914,3 +917,13 @@ def setup_package_license(licenses):
                         lic_u = _("License could not be shown "
                             "due to conversion problem.")
         return lic_u
+
+def get_state_from_states(states):
+        if api.PackageInfo.INSTALLED in states:
+                pkg_state = api.PackageInfo.INSTALLED
+                if api.PackageInfo.UPGRADABLE in states:
+                        pkg_state = api.PackageInfo.UPGRADABLE
+        else:
+                pkg_state = api.PackageInfo.KNOWN
+
+        return pkg_state

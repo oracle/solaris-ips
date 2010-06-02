@@ -25,6 +25,7 @@
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
+INFO_NOTEBOOK_VERSIONS_PAGE = 4            # Versions Tab index
 PM_LAUNCH_OPEN_CMD = "pm-launch: OPEN:"   # Command to tell pm-launch to open link.
 PUBLISHER_ALL = 0                         # Index for "All Publishers" string
 PUBLISHER_INSTALLED = 1                   # Index for "All Installed Packages" string
@@ -32,6 +33,7 @@ PUBLISHER_ALL_SEARCH = 2                  # Index for "All Publishers (Search)" 
 PUBLISHER_ADD = 3                         # Index for "Add..." string
 SHOW_INFO_DELAY = 600       # Delay before showing selected package information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
+SHOW_VERSIONS_DELAY = 600    # Delay before showing versions information
 RESIZE_DELAY = 600          # Delay before handling resize for startpage
 INC_RESULTS_DELAY = 800    # Delay before updating incremental search results
 SEARCH_STR_FORMAT = "<%s>"
@@ -168,6 +170,8 @@ class PackageManager:
                 self.current_repos_with_search_errors = []
                 self.exiting = False
                 self.first_run = True
+                self.selected_pkg_name = None
+                self.selected_pkg_pub = None
                 self.selected_pkgstem = None
                 self.selected_model = None
                 self.selected_path = None
@@ -347,7 +351,7 @@ class PackageManager:
                 self.statusbar_message_id = 0
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
-                self.detailspanel = detailspanel.DetailsPanel(w_tree_main)
+                self.detailspanel = detailspanel.DetailsPanel(self, w_tree_main)
                 self.exportconfirm = exportconfirm.ExportConfirm(self.gladefile,
                     self.window_icon, self.gconf, self)
                 self.logging = logging.PMLogging(self.gladefile,
@@ -459,6 +463,8 @@ class PackageManager:
                 self.show_info_id = 0
                 self.last_show_licenses_id = 0
                 self.show_licenses_id = 0
+                self.last_show_versions_id = 0
+                self.show_versions_id = 0
                 self.resize_id = 0
                 self.last_resize = (0, 0)
                 self.in_setup = True
@@ -1900,6 +1906,14 @@ class PackageManager:
                         self.last_show_licenses_id = self.show_licenses_id = \
                             gobject.timeout_add(SHOW_LICENSE_DELAY,
                                 self.__show_licenses)
+                elif (pagenum == INFO_NOTEBOOK_VERSIONS_PAGE):
+                        self.detailspanel.set_fetching_versions()
+                        if self.show_versions_id != 0:
+                                gobject.source_remove(self.show_versions_id)
+                                self.show_versions_id = 0
+                        self.last_show_versions_id = self.show_versions_id = \
+                            gobject.timeout_add(SHOW_VERSIONS_DELAY,
+                                self.__show_versions)
 
         def __toggle_select_all(self, select_all=True):
                 focus_widget = self.w_main_window.get_focus()
@@ -2362,19 +2376,27 @@ class PackageManager:
                 if itr:
                         self.selected_pkgstem = \
                                model.get_value(itr, enumerations.STEM_COLUMN)
+                        self.selected_pkg_name = \
+                               model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
+                        self.selected_pkg_pub = \
+                               model.get_value(itr, enumerations.PUBLISHER_PREFIX_COLUMN)
                         self.detailspanel.process_selected_package(self.selected_pkgstem)
                         self.last_show_info_id = self.show_info_id = \
                             gobject.timeout_add(SHOW_INFO_DELAY,
                                 self.__show_info, model, model.get_path(itr))
-                        if (self.w_info_notebook.get_current_page() == 
-                            INFO_NOTEBOOK_LICENSE_PAGE):
+                        current_page = self.w_info_notebook.get_current_page()
+                        if (current_page == INFO_NOTEBOOK_LICENSE_PAGE or
+                            current_page == INFO_NOTEBOOK_VERSIONS_PAGE):
                                 self.__on_notebook_change(None, None, 
-                                    INFO_NOTEBOOK_LICENSE_PAGE)
+                                    current_page)
+                         
                         self.w_version_info_menuitem.set_sensitive(True)
                 else:
                         self.selected_model = None
                         self.selected_path = None
                         self.selected_pkgstem = None
+                        self.selected_pkg_name = None
+                        self.selected_pkg_pub = None
                         self.w_version_info_menuitem.set_sensitive(False)
 
         def __on_package_selection_changed(self, selection, widget):
@@ -3117,6 +3139,9 @@ class PackageManager:
                 if self.show_licenses_id != 0:
                         gobject.source_remove(self.show_licenses_id)
                         self.show_licenses_id = 0
+                if self.show_versions_id != 0:
+                        gobject.source_remove(self.show_versions_id)
+                        self.show_versions_id = 0
                 self.detailspanel.set_empty_details()
 
         def __update_package_info(self, pkg_name, local_info, remote_info, dep_info,
@@ -3131,6 +3156,65 @@ class PackageManager:
                     self.is_all_publishers_installed, self.pubs_info,
                     renamed_info)
                 self.unset_busy_cursor()
+
+        def __update_package_versions(self, versions, versions_id):
+                if (versions_id != self.last_show_versions_id):
+                        return
+                self.detailspanel.update_package_versions(versions)
+                self.unset_busy_cursor()
+
+        def __show_versions(self):
+                self.show_versions_id = 0
+                if self.selected_pkg_name == None:
+                        return
+                gobject.idle_add(self.set_busy_cursor)
+                Thread(target = self.__show_package_versions,
+                    args = (self.selected_pkg_name, self.selected_pkg_pub,
+                    self.last_show_versions_id,)).start()
+
+        def __show_package_versions(self, selected_pkg_name, selected_pkg_pub,
+            versions_id):
+                self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
+                self.__show_package_versions_without_lock(selected_pkg_name,
+                    self.selected_pkg_pub, versions_id)
+                self.api_lock.release()
+
+        def __show_package_versions_without_lock(self, selected_pkg_name,
+            selected_pkg_pub, versions_id):
+                if selected_pkg_name == None:
+                        return
+                if debug:
+                        a = time.time()
+                # Get versions for package
+                try:
+                        versions_list = self.api_o.get_pkg_list(
+                            pkg_list = api.ImageInterface.LIST_ALL,
+                            pubs =  [selected_pkg_pub],
+                            patterns = [selected_pkg_name]) 
+                except api_errors.ApiException, apiex:
+                        err = str(apiex)
+                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
+                        gobject.idle_add(self.unset_busy_cursor)
+                        return
+                try:
+                        versions = []
+                        for entry in versions_list:
+                                states = entry[3] 
+                                ver = entry[0][2] 
+                                versions.append((ver, states))
+                        if debug:
+                                print "Time to get versions:", time.time() - a
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                        gobject.idle_add(self.unset_busy_cursor)
+                except api_errors.ApiException, apiex:
+                        err = str(apiex)
+                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
+                        gobject.idle_add(self.unset_busy_cursor)
+                gobject.idle_add(self.__update_package_versions, versions, versions_id)
 
         def __update_package_license(self, licenses, license_id):
                 if (license_id != self.last_show_licenses_id):
@@ -3504,7 +3588,7 @@ class PackageManager:
                 pkgs_from_api = []
                 status_str = _("Loading package list")
                 gobject.idle_add(self.update_statusbar_message, status_str)
-                try:                
+                try:
                         if self.is_all_publishers_installed:
                                 pkgs_from_api = self.api_o.get_pkg_list(pubs = pubs,
                                     pkg_list = api.ImageInterface.LIST_INSTALLED)
@@ -3574,6 +3658,15 @@ class PackageManager:
                 self.__add_pkgs_to_lists_from_results(remote_results,
                     pkg_add, application_list)
 
+        def __get_icon_for_state(self, state):
+                if state == api.PackageInfo.UPGRADABLE:
+                        status_icon = self.update_available_icon
+                elif state == api.PackageInfo.INSTALLED:
+                        status_icon = self.installed_icon
+                else:
+                        status_icon = self.not_installed_icon
+                return status_icon
+
         def __add_pkgs_to_lists_from_results(self, results, pkg_add,
             application_list):
                 for result in results:
@@ -3582,16 +3675,8 @@ class PackageManager:
                         pkg_stem  = "pkg://" + pkg_pub + "/"  + pkg_name
                         summ = result.summary
                         pkg_renamed = (api.PackageInfo.RENAMED in result.states)
-                        if api.PackageInfo.INSTALLED in result.states:
-                                if api.PackageInfo.UPGRADABLE in result.states:
-                                        status_icon = self.update_available_icon
-                                        pkg_state = api.PackageInfo.UPGRADABLE
-                                else:
-                                        status_icon = self.installed_icon
-                                        pkg_state = api.PackageInfo.INSTALLED
-                        else:
-                                status_icon = self.not_installed_icon
-                                pkg_state = api.PackageInfo.KNOWN
+                        pkg_state = gui_misc.get_state_from_states(result.states)
+                        status_icon = self.__get_icon_for_state(pkg_state)
                         if not self.is_all_publishers_search and \
                             not self.is_all_publishers_installed:
                                 pkg_name = gui_misc.get_minimal_unique_name(
@@ -3635,16 +3720,8 @@ class PackageManager:
                         gui_misc.add_pkgname_to_dic(self.package_names,
                             pkg_name, self.special_package_names)
                         pkg_renamed = (api.PackageInfo.RENAMED in states)
-                        if api.PackageInfo.INSTALLED in states:
-                                pkg_state = api.PackageInfo.INSTALLED
-                                if api.PackageInfo.UPGRADABLE in states:
-                                        status_icon = self.update_available_icon
-                                        pkg_state = api.PackageInfo.UPGRADABLE
-                                else:
-                                        status_icon = self.installed_icon
-                        else:
-                                pkg_state = api.PackageInfo.KNOWN
-                                status_icon = self.not_installed_icon
+                        pkg_state = gui_misc.get_state_from_states(states)
+                        status_icon = self.__get_icon_for_state(pkg_state)
                         marked = False
                         pkgs = self.selected_pkgs.get(pkg_pub)
                         if pkgs != None:
@@ -4397,6 +4474,22 @@ class PackageManager:
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
+
+        def install_version(self, version):
+                ''' Installed specified version of selected package'''
+                if not self.__do_api_reset():
+                        return
+                to_install = "%s@%s" % (self.selected_pkgstem, version)
+                install_update = [to_install]
+                confirmation_list = None
+
+                if self.img_timestamp != self.cache_o.get_index_timestamp():
+                        self.img_timestamp = None
+
+                installupdate.InstallUpdate(install_update, self, \
+                    self.image_directory, action = enumerations.INSTALL_UPDATE,
+                    main_window = self.w_main_window,
+                    confirmation_list = confirmation_list, api_lock = self.api_lock)
 
         def get_current_repos_with_search_errors(self):
                 return self.current_repos_with_search_errors
