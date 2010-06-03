@@ -170,6 +170,8 @@ class PackageManager:
                 self.current_repos_with_search_errors = []
                 self.exiting = False
                 self.first_run = True
+                self.license_pkgstem = None
+                self.versions_pkgstem = None
                 self.selected_pkg_name = None
                 self.selected_pkg_pub = None
                 self.selected_pkgstem = None
@@ -1898,22 +1900,35 @@ class PackageManager:
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
         def __on_notebook_change(self, widget, event, pagenum):
+                self.__do_notebook_change(pagenum, True)
+
+        def __do_notebook_change(self, pagenum, immediate = False):
                 if (pagenum == INFO_NOTEBOOK_LICENSE_PAGE):
+                        if self.selected_pkgstem == self.license_pkgstem:
+                                return
                         self.detailspanel.set_fetching_license()
                         if self.show_licenses_id != 0:
                                 gobject.source_remove(self.show_licenses_id)
                                 self.show_licenses_id = 0
-                        self.last_show_licenses_id = self.show_licenses_id = \
-                            gobject.timeout_add(SHOW_LICENSE_DELAY,
-                                self.__show_licenses)
+                        if immediate:
+                                source_id = gobject.idle_add(self.__show_licenses)
+                        else:
+                                source_id = gobject.timeout_add(SHOW_LICENSE_DELAY,
+                                    self.__show_licenses)
+                        self.last_show_licenses_id = self.show_licenses_id = source_id
                 elif (pagenum == INFO_NOTEBOOK_VERSIONS_PAGE):
+                        if self.selected_pkgstem == self.versions_pkgstem:
+                                return
                         self.detailspanel.set_fetching_versions()
                         if self.show_versions_id != 0:
                                 gobject.source_remove(self.show_versions_id)
                                 self.show_versions_id = 0
-                        self.last_show_versions_id = self.show_versions_id = \
-                            gobject.timeout_add(SHOW_VERSIONS_DELAY,
-                                self.__show_versions)
+                        if immediate:
+                                source_id = gobject.idle_add(self.__show_versions)
+                        else:
+                                source_id = gobject.timeout_add(SHOW_VERSIONS_DELAY,
+                                    self.__show_versions)
+                        self.last_show_versions_id = self.show_versions_id = source_id
 
         def __toggle_select_all(self, select_all=True):
                 focus_widget = self.w_main_window.get_focus()
@@ -2387,8 +2402,7 @@ class PackageManager:
                         current_page = self.w_info_notebook.get_current_page()
                         if (current_page == INFO_NOTEBOOK_LICENSE_PAGE or
                             current_page == INFO_NOTEBOOK_VERSIONS_PAGE):
-                                self.__on_notebook_change(None, None, 
-                                    current_page)
+                                self.__do_notebook_change(current_page)
                          
                         self.w_version_info_menuitem.set_sensitive(True)
                 else:
@@ -3142,6 +3156,8 @@ class PackageManager:
                 if self.show_versions_id != 0:
                         gobject.source_remove(self.show_versions_id)
                         self.show_versions_id = 0
+                self.license_pkgstem = None
+                self.versions_pkgstem = None
                 self.detailspanel.set_empty_details()
 
         def __update_package_info(self, pkg_name, local_info, remote_info, dep_info,
@@ -3157,7 +3173,8 @@ class PackageManager:
                     renamed_info)
                 self.unset_busy_cursor()
 
-        def __update_package_versions(self, versions, versions_id):
+        def __update_package_versions(self, versions, versions_id, pkgstem):
+                self.versions_pkgstem = pkgstem
                 if (versions_id != self.last_show_versions_id):
                         return
                 self.detailspanel.update_package_versions(versions)
@@ -3170,18 +3187,18 @@ class PackageManager:
                 gobject.idle_add(self.set_busy_cursor)
                 Thread(target = self.__show_package_versions,
                     args = (self.selected_pkg_name, self.selected_pkg_pub,
-                    self.last_show_versions_id,)).start()
+                    self.selected_pkgstem, self.last_show_versions_id,)).start()
 
         def __show_package_versions(self, selected_pkg_name, selected_pkg_pub,
-            versions_id):
+            selected_pkgstem, versions_id):
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
                 self.__show_package_versions_without_lock(selected_pkg_name,
-                    self.selected_pkg_pub, versions_id)
+                    selected_pkg_pub, selected_pkgstem, versions_id)
                 self.api_lock.release()
 
         def __show_package_versions_without_lock(self, selected_pkg_name,
-            selected_pkg_pub, versions_id):
+            selected_pkg_pub, selected_pkgstem, versions_id):
                 if selected_pkg_name == None:
                         return
                 if debug:
@@ -3214,9 +3231,11 @@ class PackageManager:
                         err = str(apiex)
                         gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
                         gobject.idle_add(self.unset_busy_cursor)
-                gobject.idle_add(self.__update_package_versions, versions, versions_id)
+                gobject.idle_add(self.__update_package_versions, versions,
+                    versions_id, selected_pkgstem)
 
-        def __update_package_license(self, licenses, license_id):
+        def __update_package_license(self, licenses, license_id, pkgstem):
+                self.license_pkgstem = pkgstem
                 if (license_id != self.last_show_licenses_id):
                         return
                 self.detailspanel.update_package_license(licenses)
@@ -3225,7 +3244,7 @@ class PackageManager:
                 self.show_licenses_id = 0
                 if self.selected_pkgstem == None:
                         gobject.idle_add(self.__update_package_license, None,
-                            self.last_show_licenses_id)
+                            self.last_show_licenses_id, self.selected_pkgstem)
                         return
                 Thread(target = self.__show_package_licenses,
                     args = (self.selected_pkgstem, self.last_show_licenses_id,)).start()
@@ -3294,11 +3313,11 @@ class PackageManager:
                         no_licenses = len(package_info.licenses)
                 if no_licenses == 0:
                         gobject.idle_add(self.__update_package_license, None, 
-                            license_id)
+                            license_id, selected_pkgstem)
                         return
                 else:
                         gobject.idle_add(self.__update_package_license,
-                            package_info.licenses, license_id)
+                            package_info.licenses, license_id, selected_pkgstem)
 
         def __show_info(self, model, path):
                 self.show_info_id = 0
