@@ -3,4 +3,5 @@ consolidation "gnome"
 classification "Development/GNOME and GTK+"
 import SUNWlibgnome-keyring
 import SUNWlibgnome-keyring-devel
+depend gnome/gnome-keyring
 end package

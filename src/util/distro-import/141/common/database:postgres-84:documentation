@@ -1,0 +1,13 @@
+package database/postgres-84/documentation
+consolidation "sfw"
+classification "System/Databases"
+import SUNWpostgr-84-docs
+version 8.4.4
+end package
+
+package SUNWpostgr-84-docs
+consolidation "sfw"
+renamed 133
+depend database/postgres-84/documentation
+version 8.4.2
+end package

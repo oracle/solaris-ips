@@ -1,0 +1,13 @@
+package database/postgres-82/documentation
+consolidation "sfw"
+classification "System/Databases"
+import SUNWpostgr-82-docs
+version 8.2.17
+end package
+
+package SUNWpostgr-82-docs
+consolidation "sfw"
+renamed 133
+depend database/postgres-82/documentation
+version 8.2.15
+end package

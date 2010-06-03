@@ -2,7 +2,7 @@ package developer/gnome/gnome-doc-utils
 consolidation "gnome"
 classification "Development/GNOME and GTK+"
 import SUNWgnome-doc-utils
-depend library/python-2/libxml2-24
+depend library/python-2/libxml2-26
 end package
 
 package SUNWgnome-doc-utils
