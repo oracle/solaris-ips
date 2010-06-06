@@ -280,7 +280,7 @@ class FileInUseException(PermissionsException):
 
 
 class ReadOnlyFileSystemException(PermissionsException):
-        """Used to indicate that the operation was attempted on a 
+        """Used to indicate that the operation was attempted on a
         read-only filesystem"""
 
         def __init__(self, path):
@@ -298,8 +298,8 @@ class ReadOnlyFileSystemException(PermissionsException):
 class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,
-            badarch=EmptyI, installed=EmptyI, multispec=EmptyI, 
-            no_solution=False, no_version=EmptyI, missing_dependency=EmptyI, 
+            badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
+            no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
             wrong_publishers=EmptyI, obsolete=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris       = unmatched_fmris
@@ -372,7 +372,7 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                                         ", ".join(
                                         [t[i] for i in range(1, len(t))])
                                         + ": %s" % t[0]
-                                        ] 
+                                        ]
                 if self.no_solution:
                         res += [_("No solution was found to satisfy constraints")]
 
@@ -380,8 +380,11 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += self.no_version
 
                 if self.missing_dependency:
-                        res += _("Package %s is missing a dependency: %s" % self.missing_dependency)
-                        
+                        res += [_("Package %(pkg)s is missing a dependency: "
+                            "%(dep)s") %
+                            {"pkg": self.missing_dependency[0],
+                             "dep": self.missing_dependency[1]}]
+
                 return "\n".join(res)
 
 
@@ -622,7 +625,7 @@ class InventoryException(ApiException):
                 self.notfound.update(version)
                 self.notfound = list(self.notfound)
 
-                assert self.illegal or self.notfound 
+                assert self.illegal or self.notfound
 
         def __str__(self):
                 outstr = ""
@@ -742,7 +745,7 @@ class UnsupportedSearchError(SearchException):
 
         def __cmp__(self, other):
                 if not isinstance(other, UnsupportedSearchError):
-                        return -1        
+                        return -1
                 r = cmp(self.url, other.url)
                 if r != 0:
                         return r
@@ -949,7 +952,7 @@ class InvalidBENameException(BEException):
                     self.be_name
 
 class DuplicateBEName(BEException):
-        """Used to indicate that there is an existing boot environment 
+        """Used to indicate that there is an existing boot environment
         with this name"""
 
         def __init__(self, be_name):

@@ -367,7 +367,10 @@ def read_file(tp, ignoreincludes):
                         else:
                                 ret.append((line, filename, lineno))             
                 except RuntimeError, e:
-                        error(_("File %s, line %d: %s" % (filename, lineno, e)), 
+                        error(_("File %(file)s, line %(line)d: %(exception)s") %
+                            {'file': filename,
+                             'line': lineno,
+                             'exception': e},
                             exitcode=None)
                         raise RuntimeError, "<included from>"
           
@@ -424,7 +427,7 @@ def main_func():
 
                 lines = []
         except RuntimeError, e:
-                error(_("Error processing input arguments: %s" % e))
+                error(_("Error processing input arguments: %s") % e)
         try:
                 for f in infiles:
                         lines.extend(read_file(f, ignoreincludes))

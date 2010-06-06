@@ -611,8 +611,8 @@ def fix_image(img, args):
                 try:
                         be = bootenv.BootEnv(img.get_root())
                         if be.exists():
-                                msg(_("Created ZFS snapshot: %s" %
-                                    be.snapshot_name))
+                                msg(_("Created ZFS snapshot: %s") %
+                                    be.snapshot_name)
                 except RuntimeError:
                         # Error is printed by the BootEnv call.
                         be = bootenv.BootEnvNull(img.get_root())

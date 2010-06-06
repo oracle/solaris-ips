@@ -150,13 +150,13 @@ def generate(args):
         manf = pargs[0]
 
         if not os.path.isfile(manf):
-                usage(_("The manifest file %s could not be found." % manf),
+                usage(_("The manifest file %s could not be found.") % manf,
                     retcode=2)
 
         if len(pargs) > 1:
                 if not os.path.isdir(pargs[1]):
-                        usage(_("The proto directory %s could not be found." %
-                            pargs[1]), retcode=2)
+                        usage(_("The proto directory %s could not be found.") %
+                            pargs[1], retcode=2)
                 proto_dirs.insert(0, os.path.abspath(pargs[1]))
         if not proto_dirs:
                 usage(_("At least one proto directory must be provided."),
@@ -228,14 +228,14 @@ def resolve(args, img_dir):
 
         for manifest in manifest_paths:
             if not os.path.isfile(manifest):
-                usage(_("The manifest file %s could not be found." % manifest),
+                usage(_("The manifest file %s could not be found.") % manifest,
                     retcode=2)
 
         if out_dir:
                 out_dir = os.path.abspath(out_dir)
                 if not os.path.isdir(out_dir):
-                        usage(_("The output directory %s is not a directory." %
-                            out_dir), retcode=2)
+                        usage(_("The output directory %s is not a directory.") %
+                            out_dir, retcode=2)
 
         if img_dir is None:
                 try:
