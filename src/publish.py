@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 # pkgsend - publish package transactions
@@ -92,7 +91,7 @@ Packager subcommands:
         pkgsend import [-T file_pattern] bundlefile ...
         pkgsend include [-d basedir] .. [manifest] ...
         pkgsend close [-A | [--no-index] [--no-catalog]]
-        pkgsend publish [ -d basedir] ... [--no-index] 
+        pkgsend publish [ -d basedir] ... [--no-index]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
         pkgsend generate [-T file_pattern] bundlefile ....
         pkgsend refresh-index
@@ -187,7 +186,7 @@ def trans_close(repo_uri, args):
                         usage(_("No transaction ID specified using -t or in "
                             "$PKG_TRANS_ID."), cmd="close")
 
-        t = trans.Transaction(repo_uri, trans_id=trans_id, 
+        t = trans.Transaction(repo_uri, trans_id=trans_id,
             add_to_catalog=add_to_catalog)
         pkg_state, pkg_fmri = t.close(abandon, refresh_index)
         for val in (pkg_state, pkg_fmri):
@@ -204,7 +203,7 @@ def trans_add(repo_uri, args):
 
         if not args:
                 usage(_("No arguments specified for subcommand."), cmd="add")
-                
+
         action, lp = pkg.actions.internalizelist(args[0], args[1:])
 
         if action.name in nopub_actions:
@@ -216,7 +215,7 @@ def trans_add(repo_uri, args):
         return 0
 
 def trans_publish(repo_uri, fargs):
-        opts, pargs = getopt.getopt(fargs, "d:", ["no-index", 
+        opts, pargs = getopt.getopt(fargs, "d:", ["no-index",
             "no-catalog", "fmri-in-manifest"])
         basedirs = []
 
@@ -260,7 +259,7 @@ def trans_publish(repo_uri, fargs):
                         data = f.read()
                 except IOError, e:
                         error(e, cmd="publish")
-                        return 1                
+                        return 1
                 lines += data
                 linecnt = len(data.splitlines())
                 linecnts.append((linecounter, linecounter + linecnt))
@@ -286,7 +285,7 @@ def trans_publish(repo_uri, fargs):
 
         if embedded_fmri:
                 if "pkg.fmri" not in m:
-                        error(_("Manifest does not set fmri and " + 
+                        error(_("Manifest does not set fmri and " +
                             "--fmri-in-manifest specified"))
                         return 1
                 pkg_name = pkg.fmri.PkgFmri(m["pkg.fmri"]).get_short_fmri()
@@ -311,7 +310,7 @@ def trans_publish(repo_uri, fargs):
                         t.close(abandon=True)
                         raise
 
-        pkg_state, pkg_fmri = t.close(abandon=False, 
+        pkg_state, pkg_fmri = t.close(abandon=False,
             refresh_index=refresh_index, add_to_catalog=add_to_catalog)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
@@ -355,7 +354,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                         data = f.read()
                 except IOError, e:
                         error(e, cmd="include")
-                        return 1                
+                        return 1
                 lines.append(data)
                 linecnt = len(data.splitlines())
                 linecnts.append((linecounter, linecounter + linecnt))
@@ -506,9 +505,7 @@ def trans_refresh_index(repo_uri, args):
         return 0
 
 def main_func():
-
-        # XXX /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkgsend", "/usr/lib/locale")
+        gettext.install("pkg", "/usr/share/locale")
 
         try:
                 repo_uri = os.environ["PKG_REPO"]
@@ -569,7 +566,7 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
-        
+
         # Make all warnings be errors.
         warnings.simplefilter('error')
 

@@ -385,8 +385,7 @@ def error(text, exitcode=1):
                 sys.exit(exitcode)
 
 def main_func():
-        # /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkgmogrify", "/usr/lib/locale")
+        gettext.install("pkg", "/usr/share/locale")
 
         outfilename = None
         printfilename = None

@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -42,7 +43,7 @@ def usage(errmsg="", exitcode=2):
 
         if errmsg:
                 print >> sys.stderr, "pkgdiff: %s" % errmsg
-        
+
         print _(
             "/usr/bin/pkgdiff [-i attribute] [-o attribute]  file1 file2")
         sys.exit(exitcode)
@@ -56,8 +57,7 @@ def error(text, exitcode=1):
                 sys.exit(exitcode)
 
 def main_func():
-        # /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkgdiff", "/usr/lib/locale")
+        gettext.install("pkg", "/usr/share/locale")
 
         ignoreattrs = []
         onlyattrs = []
@@ -71,7 +71,7 @@ def main_func():
                                 onlyattrs.append(arg)
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
-     
+
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
 
@@ -100,7 +100,7 @@ def main_func():
                 manifest2 = manifest.Manifest()
                 manifest2.set_content(file2)
         except pkg.actions.ActionError, e:
-                error(_("Action error in file %s: %s") % (pargs[1], e))                
+                error(_("Action error in file %s: %s") % (pargs[1], e))
 
         # we need to be a little clever about variants, since
         # we can have multiple actions w/ the same key attributes
@@ -129,7 +129,7 @@ def main_func():
         diffs = []
 
         for tup in product(*v_values.values()):
-                # build excludes closure to examine only actions exactly 
+                # build excludes closure to examine only actions exactly
                 # matching current variant values... this is needed to
                 # avoid confusing manifest difference code w/ multiple
                 # actions w/ same key attribute values or getting dups
@@ -148,8 +148,8 @@ def main_func():
                 diffs += c
                 diffs += r
         # License action still causes spurious diffs... check again for now.
-              
-        real_diffs = [ 
+
+        real_diffs = [
             (a,b)
             for a, b in diffs
             if a is None or b is None or a.different(b)
@@ -161,7 +161,7 @@ def main_func():
         # define some ordering functions so that output is easily readable
         # First, a human version of action comparison that works across
         # variants and action changes...
-        def compare(a, b):                
+        def compare(a, b):
                 if hasattr(a, "key_attr") and hasattr(b, "key_attr") and \
                     a.key_attr == b.key_attr:
                         res = cmp(a.attrs[a.key_attr], b.attrs[b.key_attr])
@@ -188,7 +188,7 @@ def main_func():
         diffs = sorted(diffs, key=tuple_key, cmp=compare)
 
         # handle list attributes
-        def attrval(attrs, k, elide_iter=tuple()):                
+        def attrval(attrs, k, elide_iter=tuple()):
                 def q(s):
                         if " " in s or s == "":
                                 return '"%s"' % s
@@ -197,7 +197,7 @@ def main_func():
 
                 v = attrs[k]
                 if isinstance(v, list) or isinstance(v, set):
-                        out = " ".join(["%s=%s" % 
+                        out = " ".join(["%s=%s" %
                             (k, q(lmt)) for lmt in sorted(v) if lmt not in elide_iter])
                 elif " " in v or v == "":
                         out = k + "=\"" + v + "\""
@@ -213,7 +213,7 @@ def main_func():
                 elif ignoreattrs:
                         if not set(a.attrs.keys()) - ignoreattrs:
                                 return False
-                print "%s %s" % (s, a)               
+                print "%s %s" % (s, a)
                 return True
 
         different = False
@@ -232,7 +232,7 @@ def main_func():
                                                 s.append("  - %s" % new.hash)
                                                 s.append("  + %s" % old.hash)
                                 attrdiffs = set(new.differences(old)) - ignoreattrs
-                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) - 
+                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) -
                                     set(new.differences(old))))
                         else:
                                 if hasattr(old, "hash") and "hash"  in onlyattrs:
@@ -240,14 +240,14 @@ def main_func():
                                                 s.append("  - %s" % new.hash)
                                                 s.append("  + %s" % old.hash)
                                 attrdiffs = set(new.differences(old)) & onlyattrs
-                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) - 
-                                    set(new.differences(old))))                                
+                                attrsames = sorted(list(set(old.attrs.keys() + new.attrs.keys()) -
+                                    set(new.differences(old))))
 
                         for a in sorted(attrdiffs):
                                 if a in old.attrs and a in new.attrs and \
                                     isinstance(old.attrs[a], list) and \
                                     isinstance(new.attrs[a], list):
-                                        elide_set = set(old.attrs[a]) & set(new.attrs[a]) 
+                                        elide_set = set(old.attrs[a]) & set(new.attrs[a])
                                 else:
                                         elide_set = set()
                                 if a in old.attrs:
@@ -261,9 +261,9 @@ def main_func():
                         # print out part of action that is the same
                         if s:
                                 different = True
-                                print "%s %s %s" % (old.name, 
-                                    attrval(old.attrs, old.key_attr), 
-                                    " ".join(("%s" % attrval(old.attrs,v) 
+                                print "%s %s %s" % (old.name,
+                                    attrval(old.attrs, old.key_attr),
+                                    " ".join(("%s" % attrval(old.attrs,v)
                                     for v in attrsames if v != old.key_attr)))
                                 for l in s:
                                         print l
@@ -280,15 +280,15 @@ def product(*args, **kwds):
                 result = [x+[y] for x in result for y in pool]
         for prod in result:
                 yield tuple(prod)
-                        
+
 if __name__ == "__main__":
         try:
-                exit_code = main_func()        
+                exit_code = main_func()
         except (PipeError, KeyboardInterrupt):
                 exit_code = 1
         except SystemExit, __e:
                 exit_code = __e
-        except Exception, __e: 
+        except Exception, __e:
                 traceback.print_exc()
                 print >> sys.stderr, "pkgdiff: caught %s, %s" % (Exception, __e)
                 exit_code = 99

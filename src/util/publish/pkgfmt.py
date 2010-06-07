@@ -57,7 +57,7 @@ def usage(errmsg="", exitcode=2):
 
         if errmsg:
                 error(errmsg)
-        
+
         print >> sys.stderr, _("""\
 Usage:
         pkgfmt [-cu] [file1] ... """)
@@ -84,7 +84,7 @@ def error(text, exitcode=1):
                 sys.exit(exitcode)
 
 def read_line(f):
-        """Generates the lines in the file as tuples containing 
+        """Generates the lines in the file as tuples containing
         (action, prepended macro, list of prepended comment lines);
         handles continuation lines, transforms, etc."""
 
@@ -240,8 +240,7 @@ def write_line(line, fileobj):
 
 
 def main_func():
-        # /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkgdiff", "/usr/lib/locale")
+        gettext.install("pkg", "/usr/share/locale")
         global opt_unwrap
         global opt_check
 

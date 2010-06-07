@@ -60,7 +60,7 @@ if "DEBUG" in os.environ:
 #
 # XXX?
 #
-gettext.install("pkg", "/usr/lib/locale")
+gettext.install("pkg", "/usr/share/locale")
 
 OUTPUT_DOTS=0           # Dots ...
 OUTPUT_VERBOSE=1        # Verbose
@@ -494,7 +494,7 @@ class Pkg5TestCase(unittest.TestCase):
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
-        
+
         def assertEqualDiff(self, expected, actual):
                 """Compare two strings."""
 
@@ -508,7 +508,7 @@ class Pkg5TestCase(unittest.TestCase):
                     "\n".join(difflib.unified_diff(
                         expected.splitlines(), actual.splitlines(),
                         "Expected output", "Actual output", lineterm="")))
-        
+
 
 class _Pkg5TestResult(unittest._TextTestResult):
         baseline = None

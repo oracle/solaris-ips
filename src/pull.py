@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -564,8 +563,7 @@ def main_func():
         src_uri = None
         target = None
 
-        # XXX /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkgrecv", "/usr/lib/locale")
+        gettext.install("pkg", "/usr/share/locale")
 
         global_settings.client_name = "pkgrecv"
         target = os.environ.get("PKG_DEST", None)
