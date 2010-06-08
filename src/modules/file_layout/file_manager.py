@@ -122,7 +122,16 @@ class FileManager(object):
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EROFS:
                                         raise FMPermissionsException(e.filename)
-                                raise
+                                # If the parent directory already exists at this
+                                # point (due to a race between the check for
+                                # existence), then it doesn't matter.  If for
+                                # some reason the error was from creating one
+                                # of the parents of the immediate parent, then
+                                # a traceback is believed to be the best course
+                                # of action for analysis purposes.
+                                if not (e.errno == errno.EEXIST and
+                                        e.filename == self.root):
+                                        raise
 
         def set_read_only(self):
                 """Make the FileManager read only."""
@@ -185,7 +194,25 @@ class FileManager(object):
                                         if os.path.isdir(p_ddir):
                                                 raise
 
-                                        os.makedirs(p_ddir)
+                                        try:
+                                                os.makedirs(p_ddir)
+                                        except EnvironmentError, e:
+                                                if e.errno == errno.EACCES or \
+                                                    e.errno == errno.EROFS:
+                                                        raise FMPermissionsException(
+                                                            e.filename)
+                                                # If directory creation failed
+                                                # due to EEXIST, but the entry
+                                                # it failed for isn't the
+                                                # immediate parent, assume
+                                                # there's a larger problem
+                                                # and re-raise the exception.
+                                                # For file_manager, this is
+                                                # believed to be unlikely.
+                                                if not (e.errno == errno.EEXIST and
+                                                    e.filename == p_ddir):
+                                                        raise
+
                                         portable.rename(cur_full_path,
                                             dest_full_path)
 
@@ -241,6 +268,22 @@ class FileManager(object):
                         if e.errno == errno.ENOENT and not os.path.isdir(p_dir):
                                 try:
                                         os.makedirs(p_dir)
+                                except EnvironmentError, e:
+                                        if e.errno == errno.EACCES or \
+                                            e.errno == errno.EROFS:
+                                                raise FMPermissionsException(
+                                                    e.filename)
+                                        # If directory creation failed due to
+                                        # EEXIST, but the entry it failed for
+                                        # isn't the immediate parent, assume
+                                        # there's a larger problem and re-raise
+                                        # the exception.  For file_manager, this
+                                        # is believed to be unlikely.
+                                        if not (e.errno == errno.EEXIST and
+                                            e.filename == p_dir):
+                                                raise
+
+                                try:
                                         portable.rename(src_path,
                                             dest_full_path)
                                 except EnvironmentError, e:
