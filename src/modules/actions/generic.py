@@ -214,8 +214,13 @@ class Action(object):
                         out += " " + self.hash
 
                 def q(s):
-                        if " " in s or s == "":
-                                return '"%s"' % s
+                        if " " in s or "'" in s or "\"" in s or s == "":
+                                if "\"" not in s:
+                                        return '"%s"' % s
+                                elif "'" not in s:
+                                        return "'%s'" % s
+                                else:
+                                        return '"%s"' % s.replace("\"", "\\\"")
                         else:
                                 return s
 
@@ -227,8 +232,13 @@ class Action(object):
                                 out += " " + " ".join([
                                     "%s=%s" % (k, q(lmt)) for lmt in v
                                 ])
-                        elif " " in v or v == "":
-                                out += " " + k + "=\"" + v + "\""
+                        elif " " in v or "'" in v or "\"" in v or v == "":
+                                if "\"" not in v:
+                                        out += " " + k + "=\"" + v + "\""
+                                elif "'" not in v:
+                                        out += " " + k + "='" + v + "'"
+                                else:
+                                        out += " " + k + "=\"" + v.replace("\"", "\\\"") + "\""
                         else:
                                 out += " " + k + "=" + v
 

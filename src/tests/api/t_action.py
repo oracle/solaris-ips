@@ -191,44 +191,63 @@ Incorrect attribute list.
                 self.assertEqual(a.must_display, False)
 
         def test_action_tostr(self):
-                str(action.fromstr("file 12345 name=foo path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo attr=bar path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo attr=bar attr=bar path=/tmp/foo"))
+                """Test that actions convert to strings properly.  This means
+                that we can feed the resulting string back into fromstr() and
+                get an identical action back."""
 
-                str(action.fromstr("file 12345 name=foo     attr=bar path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   "))
-                str(action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   "))
+                strings = [
+                    "set name=foo value=foo",
+                    "set name=foo value=\"\"",
+                    "set name=foo value=f'o'o",
+                    "set name=foo value='f\"o \"o'",
+                    "set name=foo value='b\"a \"r' value='f\"o \"o'",
+                    "set name=foo value=\"f'o 'o\"",
+                    "set name=foo value=\"b'a 'r\" value=\"f'o 'o\"",
+                    "set name=foo value='f\"o \\' \"o'",
+                    "set name=foo value='b\"a \\' \"r' value='f\"o \\' \"o'",
+                    "set name=foo value='\"foo\"'",
+                    "set name=foo value='\"bar\"'value='\"foo\"'",
+                    "set name=foo value=\"'foo'\"",
+                    "set name=foo value=\"'bar'\" value=\"'foo'\"",
+                    "set name=foo value='\"fo\\\'o\"'",
+                    "set name=foo value='\"ba\\\'r\"' value='\"fo\\\'o\"'",
+                    "set name=foo value=\"'fo\\\"o'\"",
+                    "set name=foo value=\"'ba\\\"r'\" value=\"'fo\\\"o'\"",
+                    'set name=foo value=ab value="" value=c',
+                    "file 12345 name=foo path=/tmp/foo",
+                    "file 12345 name=foo attr=bar path=/tmp/foo",
+                    "file 12345 name=foo attr=bar attr=bar path=/tmp/foo",
+                    "file 12345 name=foo     attr=bar path=/tmp/foo",
+                    "file 12345 name=foo     path=/tmp/foo attr=bar   ",
+                    "file 12345 name=foo     path=/tmp/foo attr=bar   ",
+                    "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
+                    "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
+                    "file 12345 name=foo  value=barbaz path=/tmp/foo",
+                    "file 12345 name=foo  value=\"bar baz\" path=/tmp/foo",
+                    "file 12345 name=\"foo bar\"  value=baz path=/tmp/foo",
+                    "file 12345 name=foo  value=barbazquux path=/tmp/foo",
+                    "file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo",
+                    "file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo",
+                    "file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo",
+                    "file 12345 name=foo  value=\"bar\" path=/tmp/foo",
+                    "file 12345 name=\"foo\"  value=bar path=/tmp/foo",
+                    "file 12345 name='foo' value=bar path=/tmp/foo",
+                    "file 12345 name='f\"o\"o' value=bar path=/tmp/foo",
+                    "file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo",
+                    "file 12345 name=foo\tvalue=bar path=/tmp/foo",
+                    "driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega",
+                    "signature foo=v bar=y",
+                ]
 
-                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo"))
-
-                str(action.fromstr("file 12345 name=foo  value=barbaz path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo  value=\"bar baz\" path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=\"foo bar\"  value=baz path=/tmp/foo"))
-
-                str(action.fromstr("file 12345 name=foo  value=barbazquux path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo"))
-
-                str(action.fromstr("file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=foo  value=\"bar\" path=/tmp/foo"))
-                str(action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo"))
-
-                str(action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo"))
-                str(action.fromstr("file 12345 name='f\"o\"o' value=bar path=/tmp/foo"))
-                str(action.fromstr("file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo"))
-
-                str(action.fromstr("file 12345 name=foo\tvalue=bar path=/tmp/foo"))
-
-                str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
-
-                str(action.fromstr("signature foo=v bar=y"))
-
-                a = 'set name=foo value=""'
-                self.assertEqual(str(action.fromstr(a)), a)
-
-                a = 'set name=foo value=ab value="" value=c'
-                self.assertEqual(str(action.fromstr(a)), a)
+                for s in strings:
+                        self.debug(str(s))
+                        a = action.fromstr(s)
+                        s2 = str(a)
+                        a2 = action.fromstr(s2)
+                        if a.different(a2):
+                                self.debug("a1 " + str(a))
+                                self.debug("a2 " + str(a2))
+                                self.assert_(not a.different(a2))
 
         def assertMalformed(self, text):
                 malformed = False
