@@ -228,7 +228,7 @@ class Transaction(object):
                 #
                 # always create a minimal manifest
                 #
-                tfile = file("%s/manifest" % self.dir, "ab")
+                tfile = file("%s/manifest" % self.dir, "ab+")
 
                 # Build a set action containing the fully qualified FMRI and add
                 # it to the manifest.  While it may seem inefficient to create
@@ -270,13 +270,14 @@ class Transaction(object):
 
                 # Find out if the package is renamed or obsolete.
                 try:
-                        tfile = file("%s/manifest" % self.dir, "rb")
+                        tfile = file("%s/manifest" % self.dir, "rb+")
                 except IOError, e:
                         if e.errno == errno.ENOENT:
                                 return
                         raise
                 m = pkg.manifest.Manifest()
                 m.set_content(tfile.read())
+                tfile.close()
                 self.obsolete = m.getbool("pkg.obsolete", "false")
                 self.renamed = m.getbool("pkg.renamed", "false")
                 self.types_found = set((
@@ -469,7 +470,7 @@ class Transaction(object):
 
                 # Now that the action is known to be sane, we can add it to the
                 # manifest.
-                tfile = file("%s/manifest" % self.dir, "a")
+                tfile = file("%s/manifest" % self.dir, "ab+")
                 print >> tfile, action
                 tfile.close()
 
