@@ -20,24 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import itertools
-import datetime
-import os
-import shutil
-import stat
-import sys
-import tempfile
-import time
 import unittest
-
 import pkg.variant as variant
 
 class TestVariants(pkg5unittest.Pkg5TestCase):
@@ -46,7 +36,7 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(sorted(v1.keys()), sorted(v2.keys()))
                 for k in v1:
                         self.assertEqual(sorted(v1[k]), sorted(v2[k]))
-        
+
         def test_1(self):
                 """Test basic functionality of variants."""
                 v1 = variant.VariantSets(dict([(1, ["a"]), (3, ["b"])]))
@@ -79,7 +69,7 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
 
                 v4.merge_unknown(v1)
                 self.__check_equal(v4, v4_v1_merge_unknown)
-                
+
                 v2.merge(v1)
                 self.__check_equal(v2, v1_v2_merge)
                 v1.merge(v3)
@@ -87,6 +77,25 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
 
                 v1.remove_identical(v5)
                 self.__check_equal(v1, dict([(3, ["b", "c"])]))
+
+        def test_get_sat_unset(self):
+                """Verify that get_satisfied() and get_unsatisfied() behave as
+                expected.
+                """
+
+                v1 = variant.VariantSets(dict([(1, set(["a", "b"])),
+                            (2, set(["c", "d"]))]))
+                self.__check_equal(v1, v1.get_unsatisfied())
+                self.__check_equal(v1.get_satisfied(), dict())
+
+                v2 = variant.VariantSets(dict([(1, ["b"]), (2, ["d", "c"])]))
+                v1.mark_as_satisfied(v2)
+                self.__check_equal(v1.get_satisfied(), v2)
+
+                # neither 2:C nor 2:D satisfied with 1:A
+                self.__check_equal(v1.get_unsatisfied(),
+                    variant.VariantSets(dict([(1, ["a"]), (2, ["c", "d"])])))
+
 
 if __name__ == "__main__":
         unittest.main()

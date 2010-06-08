@@ -88,7 +88,7 @@ class UnresolvedDependencyError(DependencyError):
                     (self.path, self.file_dep,
                     "\n".join([
                         " ".join([("%s:%s" % (name, val)) for name, val in grp])
-                        for grp in self.pvars.get_unsatisfied()
+                        for grp in self.pvars.get_unsatisfied().groups()
                     ]))
 
 def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, kernel_paths,
@@ -388,6 +388,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                 delivered_list = []
                 if p in delivered:
                         delivered_list = delivered[p]
+
                 # XXX Eventually, this needs to be changed to use the
                 # link information provided by the manifests being
                 # resolved against, including the packages currently being
@@ -443,8 +444,8 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         """Find the packages which resolve the dependency. It returns a list of
         dependency actions with the fmri tag resolved.
 
-        'delivered' is a dictionary mapping paths to a list of fmri, variants
-        pairs.
+        'delivered' and 'installed' are dictionaries mapping paths to
+        a list of fmri, variants pairs.
 
         'file_dep' is the dependency being resolved.
 
@@ -458,18 +459,22 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
                 file_dep, dep_vars, orig_dep_vars)
         if (res and dep_vars.is_satisfied()) or not use_system:
                 return res, dep_vars, errs
+
         # If the dependency isn't fully satisfied, resolve it against the
         # files installed in the current image.
+        #
+        # We only need to resolve for the variants not already satisfied
+        # above.
         inst_res, dep_vars, inst_errs = find_package_using_delivered_files(
-            installed, file_dep, dep_vars, orig_dep_vars)
+            installed, file_dep, dep_vars, dep_vars.get_unsatisfied())
         res.extend(inst_res)
         errs.extend(inst_errs)
         return res, dep_vars, errs
 
 def is_file_dependency(act):
-        return act.name == "depend" and \
-            act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
-            "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX in act.attrs
+        return (act.name == "depend" and
+            act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI
+            and files_prefix in act.attrs)
 
 def merge_deps(dest, src):
         """Add the information contained in src's attrs to dest."""

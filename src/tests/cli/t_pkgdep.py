@@ -474,9 +474,8 @@ file NOHASH group=bin mode=0644 owner=root path=usr/bin/pkg \
 """
 
         # The #! line has lots of spaces to test for bug 14632.
-        pyver_python_text = """\
-#!                  /usr/bin/python%s     -S    
-
+        pyver_python_text = "#!                  /usr/bin/python%s     -S  " + \
+"""
 import pkg.indexer as indexer
 import pkg.search_storage as ss
 from pkg.misc import EmptyI
@@ -505,6 +504,31 @@ depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.6/v-p/pkg/misc.py pkg.de
 set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.6/v-p/pkg/misc.py
 """
+
+        unsatisfied_manf = """\
+set name=fmri value=pkg:/unsatisfied_manf
+set name=variant.foo value=bar
+depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require
+"""
+
+        unsatisfied_error = """\
+%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require' under the following combinations of variants:
+variant.foo:bar"""
+
+        partially_satisfied_manf = """\
+set name=fmri value=pkg:/partially_satisfied_manf
+set name=variant.foo value=bar value=baz
+depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require
+"""
+
+        satisfying_manf = """\
+set name=fmri value=pkg:/satisfying_manf
+set name=variant.foo value=baz
+file NOHASH path=usr/bin/unsatisfied owner=root group=staff mode=0555
+"""
+
+        satisfying_out = """\
+depend fmri=pkg:/satisfying_manf type=require variant.foo=baz"""
 
         def make_pyver_python_res(self, ver, proto_area=None):
                 """Create the python dependency results with paths expected for
@@ -1188,6 +1212,34 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.check_res(self.errout, "%s/bar/foo says it should be run "
                     "with 'perl' which is a relative path." %
                     self.test_proto_dir)
+
+        def test_unsatisfied_deps(self):
+                """Test resolution behaviour with various unsatisfied
+                dependencies"""
+                unsat = self.make_manifest(self.unsatisfied_manf)
+                partial = self.make_manifest(self.partially_satisfied_manf)
+                satisfying = self.make_manifest(self.satisfying_manf)
+
+                # Generally unsatisfied dependency
+                self.pkgdepend_resolve(" -o %s" % unsat, exit=1)
+                self.check_res(self.unsatisfied_error % unsat, self.errout)
+
+                # Dependency that would be satisfied were it not for
+                # mismatched variants
+                self.pkgdepend_resolve(" -o %s %s" % (unsat, satisfying),
+                    exit=1)
+                self.check_res(self.unsatisfied_error % unsat, self.errout)
+
+                # Partially satisfied dependency (for one variant
+                # value, not another)
+                self.pkgdepend_resolve(" -o %s %s" % (partial, satisfying),
+                    exit=1)
+                self.check_res(self.unsatisfied_error % partial, self.errout)
+                self.check_res("%s\n\n%s\n%s" % (partial, satisfying,
+                    self.satisfying_out), self.output)
+
+                # No dependencies at all
+                self.pkgdepend_resolve(" -o %s" % satisfying)
 
         def test_bug_14118(self):
                 """Check that duplicate dependency actions are consolitdated

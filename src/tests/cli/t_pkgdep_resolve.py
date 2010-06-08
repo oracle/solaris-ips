@@ -36,6 +36,7 @@ import pkg.client.progress as progress
 import pkg.flavor.base as base
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
+from pkg.fmri import PkgFmri
 
 API_VERSION = 37
 PKG_CLIENT_NAME = "pkg"
@@ -211,6 +212,23 @@ add set name=variant.foo value=bar value=baz
 add file tmp/foo group=sys mode=0644 owner=root path=var/log/syslog
 close"""
 
+        double_deps = """\
+set name=pkg.fmri value=double_deps@1.0,5.11-0
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=elfexec pkg.debug.depend.path=kernel/exec pkg.debug.depend.path=platform/i86hvm/kernel/exec pkg.debug.depend.path=platform/i86pc/kernel/exec pkg.debug.depend.path=platform/i86xpv/kernel/exec pkg.debug.depend.path=usr/kernel/exec pkg.debug.depend.reason=usr/kernel/brand/s10_brand pkg.debug.depend.type=elf type=require
+depend fmri=__TBD pkg.debug.depend.file=elfexec pkg.debug.depend.path=kernel/exec/amd64 pkg.debug.depend.path=platform/i86hvm/kernel/exec/amd64 pkg.debug.depend.path=platform/i86pc/kernel/exec/amd64 pkg.debug.depend.path=platform/i86xpv/kernel/exec/amd64 pkg.debug.depend.path=usr/kernel/exec/amd64 pkg.debug.depend.reason=usr/kernel/brand/amd64/s10_brand pkg.debug.depend.type=elf type=require
+"""
+        installed_double_provides = """\
+open double_provides@1.0,5.11-0
+add file tmp/foo group=sys mode=0755 owner=root path=kernel/exec/amd64/elfexec reboot-needed=true variant.opensolaris.zone=global
+add file tmp/foo group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-needed=true variant.opensolaris.zone=global
+close"""
+
+        newer_double_provides = """\
+set name=pkg.fmri value=double_provides@1.0,5.11-1
+file NOHASH group=sys mode=0755 owner=root path=kernel/exec/amd64/elfexec reboot-needed=true variant.opensolaris.zone=global
+file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-needed=true variant.opensolaris.zone=global
+"""
 
         misc_files = ["tmp/foo"]
 
@@ -309,7 +327,29 @@ close"""
                                     "usr/bin/python2.6")
                         else:
                                 raise RuntimeError("Unexpected error:%s" % e)
-                        
+
+        def test_bug_15647(self):
+                """Verify that in cases where both the provided manifests and
+                installed image provide a resolution for a given dependency
+                that the dependency is only resolved once for a given variant
+                and that the resolution provided by the manifests is used."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_double_provides)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["double_provides"])
+
+                manifests = [self.make_manifest(x) for x in
+                    (self.newer_double_provides, self.double_deps)]
+
+                pkg_deps, errs = dependencies.resolve_deps(manifests,
+                    self.api_obj)
+
+                self.assertEqual(len(pkg_deps[manifests[1]]), 1)
+                for d in pkg_deps[manifests[1]]:
+                        fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
+                        if str(fmri).startswith("pkg:/double_provides"):
+                                self.assertEqual(str(fmri.version.branch), "1")
+
         def test_simple_variants_1(self):
                 """Test that variants declared on the actions work correctly
                 when resolving dependencies."""
@@ -549,7 +589,7 @@ close"""
                                         [str(d) for d in pkg_deps[col_path]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
-                
+
                 col_path = self.make_manifest(self.collision_manf)
                 col_path_num_var = self.make_manifest(
                     self.collision_manf_num_var)

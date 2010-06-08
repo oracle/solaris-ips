@@ -20,15 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
-# basic variant support 
+# basic variant support
 
 from pkg.misc import EmptyI
 
 class Variants(dict):
-        # store information on variants; subclass dict 
+        # store information on variants; subclass dict
         # and maintain set of keys for performance reasons
 
         def __init__(self, init=EmptyI):
@@ -47,7 +46,7 @@ class Variants(dict):
 
         def pop(self, item, default=None):
                 self.__keyset.discard(item)
-                return dict.pop(self, item, default) 
+                return dict.pop(self, item, default)
 
         def popitem(self):
                 popped = dict.popitem(self)
@@ -114,7 +113,7 @@ class VariantSets(Variants):
 
         def copy(self):
                 return VariantSets(self)
-        
+
         def __setitem__(self, item, value):
                 assert(not self.set_sats)
                 if isinstance(value, list):
@@ -122,7 +121,7 @@ class VariantSets(Variants):
                 elif not isinstance(value, set):
                         value = set([value])
                 Variants.__setitem__(self, item, value)
-        
+
         def merge(self, var):
                 """Combine two sets of variants into one."""
                 for name in var:
@@ -199,7 +198,7 @@ class VariantSets(Variants):
                         ])
                         tmp = new_tmp
                 return set([tuple(v) for v in tmp])
-                                
+
         def mark_as_satisfied(self, var):
                 """Mark those variant combinations seen in var as being
                 satisfied in self."""
@@ -215,24 +214,42 @@ class VariantSets(Variants):
 
                 return (self.set_sats and not self.not_sat_set) or not self
 
+        def groups(self):
+                """Return a grouped list of the variant combinations in this
+                VariantSets object"""
+
+                var_names = sorted(self)
+                return [zip(var_names, tup)
+                    for tup in sorted(self.__variant_cross_product())]
+
         def get_satisfied(self):
                 """Returns the combinations of variants which have been
                 satisfied for this VariantSets."""
-                if self == {}:
-                        return None
-                sats = self.__variant_cross_product()
+
+                if self == {} or not self.set_sats:
+                        return VariantSets()
+
                 var_names = sorted(self)
-                return [zip(var_names, tup) for tup in sorted(sats)]
+                satisfied = self.__variant_cross_product() - self.not_sat_set
+                f = {}
+                for tup in sorted(satisfied):
+                        for key, var in zip(var_names, tup):
+                                f.setdefault(key, set()).add(var)
+                return VariantSets(f)
 
         def get_unsatisfied(self):
                 """Returns the variant combinations for self which have not
                 been satisfied."""
-
                 if not self.set_sats:
                         self.set_sats = True
                         self.not_sat_set = self.__variant_cross_product()
+
                 var_names = sorted(self)
-                return [zip(var_names, tup) for tup in sorted(self.not_sat_set)]
+                f = {}
+                for tup in sorted(self.not_sat_set):
+                        for key, var in zip(var_names, tup):
+                                f.setdefault(key, set()).add(var)
+                return VariantSets(f)
 
         def remove_identical(self, var):
                 """For each key in self, remove it from the dictionary if its

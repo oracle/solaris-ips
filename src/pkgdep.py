@@ -308,8 +308,8 @@ def resolve_echo_line(l):
                     act.attrs["type"] != "require"
 
 def explode(dep_with_variantsets):
-        sat_tups = dep_with_variantsets.get_variants().get_satisfied()
-        if sat_tups is None:
+        sat_tups = dep_with_variantsets.get_variants().get_satisfied().groups()
+        if not sat_tups:
                 return dep_with_variantsets
         res = []
         for tup in sat_tups:
