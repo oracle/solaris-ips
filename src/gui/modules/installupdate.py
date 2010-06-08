@@ -1224,7 +1224,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         if self.uarenamebe_o:
                                 be_rename_dialog = \
                                     self.uarenamebe_o.show_rename_dialog(
-                                    self.update_list, self.reboot_needed)
+                                    self.update_list)
                                 if be_rename_dialog == True:
                                         self.w_dialog.hide()
 

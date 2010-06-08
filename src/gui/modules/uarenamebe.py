@@ -61,6 +61,13 @@ class RenameBeAfterUpdateAll:
                         msgbox.destroy()
                         return
 
+                # Before performing update all (image-update) task, we are storing
+                # the active on reboot be name. If the be name after update is different
+                # it means that new BE was created and we can show BE rename dialog
+                # otherwise we can show update completed dialog.
+                # Also we need to store original BE name to work-around the bug: 6472202
+                self.active_be_before_update_all = self.__get_activated_be_name()
+
                 self.parent = parent
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
@@ -134,9 +141,10 @@ class RenameBeAfterUpdateAll:
                             "Check declare_signals()") \
                             % error
 
-        def show_rename_dialog(self, updated_packages_list, reboot_needed):
+        def show_rename_dialog(self, updated_packages_list):
                 '''Returns False if no BE rename is needed'''
-                if not reboot_needed:
+                orig_name = self.__get_activated_be_name()
+                if orig_name == self.active_be_before_update_all:
                         self.w_ua_completed_dialog.hide()
                         self.parent.update_package_list(updated_packages_list)
                         return False
