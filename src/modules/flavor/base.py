@@ -60,7 +60,7 @@ class Dependency(depend.DependencyAction):
         DUMMY_FMRI = "__TBD"
         DEPEND_DEBUG_PREFIX = "pkg.debug.depend"
         DEPEND_TYPE = "require"
-        
+
         def __init__(self, action, pkg_vars, proto_dir, attrs):
                 """Each dependency needs to know the action that generated it
                 and the variants for the package containing that action.
@@ -89,9 +89,9 @@ class Dependency(depend.DependencyAction):
 
                 if self.dep_vars is not None:
                         attrs.update(self.dep_vars)
-                
+
                 depend.DependencyAction.__init__(self, **attrs)
-        
+
         def is_error(self):
                 """Return true if failing to resolve this external dependency
                 should be considered an error."""
@@ -149,7 +149,7 @@ class Dependency(depend.DependencyAction):
                         return " " + " ".join([
                             ("%s=%s" % (k, ",".join(self.dep_vars[k])))
                             for k in sorted(self.dep_vars.keys())
-                        ])                
+                        ])
 
                 return ""
 
@@ -169,7 +169,7 @@ class PublishingDependency(Dependency):
         def __init__(self, action, base_names, run_paths, pkg_vars, proto_dir,
             kind):
                 """Construct a PublishingDependency object.
-                
+  
                 'action' is the action which produced this dependency.
 
                 'base_names' is the list of files of the dependency.

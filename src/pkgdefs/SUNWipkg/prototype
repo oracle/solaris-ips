@@ -167,6 +167,8 @@ f none usr/lib/python2.6/vendor-packages/pkg/flavor/python.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/python.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/script.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/script.pyc 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/flavor/smf_manifest.py 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/flavor/smf_manifest.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/fmri.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/fmri.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/indexer.py 444 root bin
@@ -239,8 +241,6 @@ f none usr/lib/python2.6/vendor-packages/pkg/server/repositoryconfig.py 444 root
 f none usr/lib/python2.6/vendor-packages/pkg/server/repositoryconfig.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/transaction.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/transaction.pyc 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/smf.py 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/smf.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/solver.so 755 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/sysvpkg.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/sysvpkg.pyc 444 root bin

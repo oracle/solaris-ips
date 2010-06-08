@@ -34,6 +34,7 @@ import pkg.flavor.base as base
 import pkg.flavor.elf as elf_dep
 import pkg.flavor.hardlink as hardlink
 import pkg.flavor.script as script
+import pkg.flavor.smf_manifest as smf_manifest
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
@@ -109,11 +110,11 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, kernel_paths,
 
         m, missing_manf_files = __make_manifest(file_path, proto_dirs)
         pkg_vars = m.get_all_variants()
-        deps, elist, missing = list_implicit_deps_for_manifest(m, proto_dirs,
-            pkg_vars, dyn_tok_conv, kernel_paths)
+        deps, elist, missing, pkg_attrs = list_implicit_deps_for_manifest(m,
+            proto_dirs, pkg_vars, dyn_tok_conv, kernel_paths)
         if remove_internal_deps:
                 deps = resolve_internal_deps(deps, m, proto_dirs, pkg_vars)
-        return deps, missing_manf_files + elist, missing
+        return deps, missing_manf_files + elist, missing, pkg_attrs
 
 def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         """Given a list of dependencies, remove those which are satisfied by
@@ -136,6 +137,8 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
                 pvars = variants.VariantSets(a.get_variants())
                 if not pvars:
                         pvars = pkg_vars
+                else:
+                        pvars.merge_unknown(pkg_vars)
                 p = a.attrs["path"]
                 delivered.setdefault(p, variants.VariantSets()).merge(pvars)
                 p = os.path.join(a.attrs[portable.PD_PROTO_DIR], p)
@@ -160,13 +163,14 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
 def no_such_file(action, **kwargs):
         """Function to handle dispatch of files not found on the system."""
 
-        return [], [base.MissingFile(action.attrs["path"])]
+        return [], [base.MissingFile(action.attrs["path"])], {}
 
 # Dictionary which maps codes from portable.get_file_type to the functions which
 # find dependencies for those types of files.
 dispatch_dict = {
     portable.ELF: elf_dep.process_elf_dependencies,
     portable.EXEC: script.process_script_deps,
+    portable.SMF_MANIFEST: smf_manifest.process_smf_manifest_deps,
     portable.UNFOUND: no_such_file
 }
 
@@ -178,7 +182,7 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
         'mfst' is the Manifest of the package that delivered the dependencies
         found in deps.
 
-        'proto_dir' is the path to the proto area which holds the files that
+        'proto_dirs' are the paths to the proto areas which hold the files that
         will be delivered by the package.
 
         'pkg_vars' are the variants that this package was published against.
@@ -195,11 +199,16 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
         'elist' is a list of errors encountered while finding dependencies.
 
         'missing' is a dictionary mapping a file type that isn't recognized by
-        portable.get_file_type to a file which produced that filetype."""
+        portable.get_file_type to a file which produced that filetype.
+
+        'pkg_attrs' is a dictionary containing metadata that was gathered
+        during dependency analysis. Typically these would get turned into
+        AttributeActions for that package. """
 
         deps = []
         elist = []
         missing = {}
+        pkg_attrs = {}
         act_list = list(mfst.gen_actions_by_type("file"))
         file_types = portable.get_file_type(act_list)
 
@@ -213,17 +222,24 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                                     a.attrs[portable.PD_LOCAL_PATH]
                 else:
                         try:
-                                ds, errs = func(action=a,
+                                ds, errs, attrs = func(action=a,
                                     pkg_vars=pkg_vars,
                                     dyn_tok_conv=dyn_tok_conv,
                                     kernel_paths=kernel_paths)
                                 deps.extend(ds)
                                 elist.extend(errs)
+                                __update_pkg_attrs(pkg_attrs, attrs)
+
                         except base.DependencyAnalysisError, e:
                                 elist.append(e)
         for a in mfst.gen_actions_by_type("hardlink"):
                 deps.extend(hardlink.process_hardlink_deps(a, pkg_vars))
-        return deps, elist, missing
+        return deps, elist, missing, pkg_attrs
+
+def __update_pkg_attrs(pkg_attrs, new_attrs):
+        """Update the pkg_attrs dictionary with the contents of new_attrs."""
+        for key in new_attrs:
+                pkg_attrs.setdefault(key, []).extend(new_attrs[key])
 
 def __make_manifest(fp, basedirs=None, load_data=True):
         """Given the file path, 'fp', return a Manifest for that path."""
@@ -251,6 +267,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                                 assert portable.PD_LOCAL_PATH not in a.attrs
                                 a.attrs[portable.PD_LOCAL_PATH] = local_path
                                 a.attrs[portable.PD_PROTO_DIR] = used_bd
+                                a.attrs[portable.PD_PROTO_DIR_LIST] = basedirs
                         acts.append(a)
                 except actions.ActionDataError, e:
                         new_a, local_path, used_bd = actions.internalizestr(

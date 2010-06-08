@@ -159,7 +159,7 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
         """
 
         if not action.name == "file":
-                return []
+                return [], [], {}
 
         installed_path = action.attrs[action.key_attr]
 
@@ -169,7 +169,7 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
                 raise base.MissingFile(proto_file)
 
         if not elf.is_elf_object(proto_file):
-                return []
+                return [], [], {}
 
         try:
                 ei = elf.get_info(proto_file)
@@ -263,4 +263,4 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
                 res.append(ElfDependency(action, fn, pathlist, pkg_vars,
                     action.attrs[PD_PROTO_DIR]))
         del dyn_tok_conv["$ORIGIN"]
-        return res, elist
+        return res, elist, {}

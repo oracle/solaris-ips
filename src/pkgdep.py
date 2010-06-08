@@ -163,8 +163,9 @@ def generate(args):
                     retcode=2)
 
         try:
-                ds, es, ms = dependencies.list_implicit_deps(manf, proto_dirs,
-                    dyn_tok_conv, kernel_paths, remove_internal_deps)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
+                    proto_dirs, dyn_tok_conv, kernel_paths,
+                    remove_internal_deps)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse manifest %(manifest)s because of the "
                     "following line:\n%(line)s") % { 'manifest': manf ,
@@ -179,6 +180,9 @@ def generate(args):
 
         for d in sorted(ds):
                 msg(d)
+
+        for key, value in pkg_attrs.iteritems():
+                msg(actions.attribute.AttributeAction(**{key: value}))
 
         if show_missing:
                 for m in ms:

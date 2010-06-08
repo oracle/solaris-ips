@@ -36,7 +36,8 @@ from os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
     is_admin, get_userid, get_username, chown, rename, remove, link, \
     copyfile, split_path, get_root, assert_mode
-from pkg.portable import ELF, EXEC, PD_LOCAL_PATH, UNFOUND
+from pkg.portable import ELF, EXEC, PD_LOCAL_PATH, UNFOUND, SMF_MANIFEST
+
 import pkg.arch as arch
 
 def get_isainfo():
@@ -76,6 +77,12 @@ def get_file_type(actions):
                         yield EXEC
                 elif joined_ft == "cannot open: No such file or directory":
                         yield UNFOUND
+                elif file_type[0] == "XML":
+                        from pkg.flavor.smf_manifest import is_smf_manifest
+                        if is_smf_manifest(proto_file):
+                                yield SMF_MANIFEST
+                        else:
+                                yield joined_ft
                 else:
-                        yield " ".join(file_type)
+                        yield joined_ft
                 

@@ -27,6 +27,32 @@ DESCRIPTION
      Currently, the reference set of packages is defined as the packages
      currently installed on the publisher's system.
 
+     Several aspects of delivered files are used as sources of 
+     dependency information:
+
+     ELF             ELF headers in delivered files are analyzed for
+                     dependency information, with the -k and -D options
+                     modifying the information obtained.  For more
+                     details on ELF dependencies, please see ldd(1)
+                     and the Solaris Linker and Libraries Guide.
+
+     Scripts         Shell scripts that contain '#!' lines referencing
+                     an interpreter will result in a dependency on the
+                     package that delivers that interpreter.
+
+     Python          Python scripts are first analyzed as scripts.  In
+                     addition, any imports the script declares may also
+                     serve as sources of dependency information.
+
+     Hard links      Hard links in manifests will result in a
+                     dependency on the package that delivers the link
+                     target.
+
+     SMF             SMF service manifests delivered that include 
+                     "require_all" dependencies will result in
+                     dependencies on the packages that deliver the SMF
+                     manifests that provide those FMRIs.
+
 OPTIONS
      The following options are supported:
 

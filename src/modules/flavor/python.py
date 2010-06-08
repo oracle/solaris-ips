@@ -158,7 +158,7 @@ def process_python_dependencies(action, pkg_vars, script_path):
         # !X  D !F   || Y
         # !X !D  F   || N
         # !X !D !F   || N
-        
+
         local_file = action.attrs[PD_LOCAL_PATH]
         deps = []
         errs = []
@@ -175,7 +175,7 @@ def process_python_dependencies(action, pkg_vars, script_path):
         # Version of python to use to do the analysis.
         analysis_major = None
         analysis_minor = None
-        
+
         cur_major, cur_minor = sys.version_info[0:2]
         install_match = py_lib_re.match(action.attrs["path"])
         if install_match:
@@ -215,7 +215,7 @@ def process_python_dependencies(action, pkg_vars, script_path):
                 analysis_minor = dir_minor
 
         if analysis_major is None or analysis_minor is None:
-                return deps, errs
+                return deps, errs, {}
 
         analysis_major = int(analysis_major)
         analysis_minor = int(analysis_minor)
@@ -237,7 +237,7 @@ def process_python_dependencies(action, pkg_vars, script_path):
                 for name in missing:
                         errs.append(PythonModuleMissingPath(name,
                             action.attrs[PD_LOCAL_PATH]))
-                return deps, errs
+                return deps, errs, {}
 
         # If the version implied by the directory hierarchy does not match the
         # version of python running, it's necessary to fork and run the
@@ -251,7 +251,8 @@ def process_python_dependencies(action, pkg_vars, script_path):
                 sp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         except Exception, e:
-                return [], [PythonSubprocessError(None, " ".join(cmd), str(e))]
+                return [], [PythonSubprocessError(None, " ".join(cmd),\
+                    str(e))], {}
         out, err = sp.communicate()
         if sp.returncode:
                 errs.append(PythonSubprocessError(sp.returncode, " ".join(cmd),
@@ -274,4 +275,4 @@ def process_python_dependencies(action, pkg_vars, script_path):
                         bad_lines.append(l)
         if bad_lines:
                 errs.append(PythonSubprocessBadLine(" ".join(cmd), bad_lines))
-        return deps, errs
+        return deps, errs, {}

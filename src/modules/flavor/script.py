@@ -54,7 +54,7 @@ class ScriptDependency(base.PublishingDependency):
                 paths = [os.path.dirname(path)]
                 base.PublishingDependency.__init__(self, action,
                     base_names, paths, pkg_vars, proto_dir, "script")
-        
+
         def __repr__(self):
                 return "PBDep(%s, %s, %s, %s, %s)" % (self.action,
                     self.base_names, self.run_paths, self.pkg_vars,
@@ -62,12 +62,12 @@ class ScriptDependency(base.PublishingDependency):
 
 def process_script_deps(action, pkg_vars, **kwargs):
         """Given an action, if the file starts with #! a list containing a
-        ScriptDependency is returned.  Further, if the file is of a known type,
+        ScriptDependency is returned. Further, if the file is of a known type,
         it is further analyzed and any dependencies found are added to the list
         returned."""
 
         if action.name != "file":
-                return []
+                return [], [], {}
 
         f = action.data()
         l = f.readline()
@@ -75,6 +75,8 @@ def process_script_deps(action, pkg_vars, **kwargs):
 
         deps = []
         elist = []
+        pkg_attrs = {}
+
         script_path = None
         # add #! dependency
         if l.startswith("#!"):
@@ -98,8 +100,13 @@ def process_script_deps(action, pkg_vars, **kwargs):
                                     pkg_vars, action.attrs[PD_PROTO_DIR]))
                                 script_path = l
                 if "python" in l:
-                        ds, errs = python.process_python_dependencies(
+                        ds, errs, py_attrs = python.process_python_dependencies(
                             action, pkg_vars, script_path)
                         elist.extend(errs)
                         deps.extend(ds)
-        return deps, elist
+                        for key in py_attrs:
+                                if key in pkg_attrs:
+                                        pkg_attrs[key].extend(py_attrs[key])
+                                else:
+                                        pkg_attrs[key] = py_attrs[key]
+        return deps, elist, pkg_attrs

@@ -209,13 +209,13 @@ def assert_mode(path, mode):
 
 # File type constants
 # -------------------
-ELF, EXEC, UNFOUND = range(0, 3)
+ELF, EXEC, UNFOUND, SMF_MANIFEST = range(0, 4)
 
 # String to be used for an action attribute created for the internal use of
 # dependency analysis.
 PD_LOCAL_PATH = "pkg.internal.depend.localpath"
 PD_PROTO_DIR = "pkg.internal.depend.protodir"
-
+PD_PROTO_DIR_LIST = "pkg.internal.depend.protodirlist"
 
 import platform
 import util as os_util

@@ -19,7 +19,6 @@
 #
 # CDDL HEADER END
 #
-
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
@@ -28,11 +27,19 @@ import fnmatch
 import getopt
 import gettext
 import os
+import pkg
+import pkg.client
+import pkg.client.publisher
+import pkg.client.api
+import pkg.client.progress
+import pkg.flavor.smf_manifest as smf_manifest
 import pkg.fmri
 import pkg.manifest            as manifest
+import pkg.misc
 import pkg.pkgsubprocess       as subprocess
 import pkg.publish.transaction as trans
 import pkg.server.catalog      as catalog
+import pkg.server.repository   as repository
 import pkg.variant             as variant
 import pkg.version             as version
 import platform
@@ -43,11 +50,18 @@ import sys
 import tempfile
 import time
 import urllib
+import urlparse
 
 from datetime import datetime
 from pkg      import actions, elf
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
-from pkg.misc import versioned_urlopen, emsg
+from pkg.misc import versioned_urlopen, emsg, gunzip_from_stream
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
+
+CLIENT_API_VERSION = 37
+PKG_CLIENT_NAME = "importer.py"
+pkg.client.global_settings.client_name = PKG_CLIENT_NAME
+
 from tempfile import mkstemp
 
 gettext.install("import", "/usr/lib/locale")
@@ -91,6 +105,8 @@ summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)", " (/usr)", \
 svr4pkgsseen = {}    #svr4 pkgs seen - pkgs indexed by name
 timestamp_files = [] # patterns of files that retain timestamps from svr4 pkgs
 wos_path = []        # list of search pathes for svr4 packages
+
+local_smf_manifests = tempfile.mkdtemp(prefix="pkg_smf.") # where we store our SMF manifests
 
 class Package(object):
         def __init__(self, name):
@@ -161,6 +177,14 @@ class Package(object):
                 else:
                         hollow = False
 
+                # Only pull the actual SVR4 file data into the bundle if it's likely
+                # to contain an SMF manifest.
+                for a in bundle:
+                        if a.name == "file" and \
+                            smf_manifest.has_smf_manifest_dir(a.attrs["path"]):
+                                bundle = SolarisPackageDirBundle(ppath, data=True)
+                                break
+
                 for action in bundle:
                         if includes:
                                 if action.name == "license":
@@ -190,9 +214,9 @@ class Package(object):
                                 # The "path" attribute is confusing and
                                 # unnecessary for licenses.
                                 del action.attrs["path"]
-
-                        # is this a file for which we need a timestamp?
+                        
                         if action.name == "file":
+                                # is this a file for which we need a timestamp?
                                 basename = os.path.basename(action.attrs["path"])
                                 for file_pattern in timestamp_files:
                                         if fnmatch.fnmatch(basename, file_pattern):
@@ -200,6 +224,11 @@ class Package(object):
                                 else:
                                         del action.attrs["timestamp"]
 
+                                # is this file likely to be an SMF manifest? If so,
+                                # save a copy of the file to use for dependency analysis
+                                if smf_manifest.has_smf_manifest_dir(action.attrs["path"]):
+                                        fetch_file(action, local_smf_manifests)
+                                        
                         if hollow:
                                 action.attrs["opensolaris.zone"] = "global"
                                 action.attrs["variant.opensolaris.zone"] = "global"
@@ -522,9 +551,11 @@ def publish_action(t, pkg, a):
                 
                 raise
         
-def publish_pkg(pkg):
+def publish_pkg(pkg, proto_dir):
         """ send this package to the repo """
 
+        smf_fmris = []
+        
         svr4_pkg_list = sorted(list(set([
             a.attrs["importer.svr4pkg"]
             for a in pkg.actions
@@ -561,7 +592,6 @@ def publish_pkg(pkg):
         # publish actions w/ data from imported svr4 pkgs
         # do so by looping through svr4 packages; use traversal_dict
         # to get the right action corresponding to its source.
-
         for p in svr4_pkg_list:
                 bundle = SolarisPackageDirBundle(pkg_path(p))
                 for a in bundle:
@@ -590,8 +620,21 @@ def publish_pkg(pkg):
                         publish_action(t, pkg, actual_action)
                         if "path" in actual_action.attrs:
                                 pkg.actions.extend(gen_file_depend_actions(
-                                    actual_action, tmp))
+                                    actual_action, tmp, proto_dir))
+
+                                fmris = get_smf_fmris(tmp, actual_action.attrs["path"])
+                                if fmris:
+                                        smf_fmris.extend(fmris)
                         os.unlink(tmp)
+
+        # declare the SMF FMRIs that this package delivers
+        if smf_fmris:
+                values = ""
+                for fmri in smf_fmris:
+                        values = values + " value=%s" % fmri
+                publish_action(t, pkg,
+                    actions.fromstr("set name=opensolaris.smf.fmri %s" % values))
+
         # publish any actions w/ data defined in import file
         for a in pkg.actions:
                 if a.name not in ["license", "file"] or \
@@ -608,7 +651,7 @@ def publish_pkg(pkg):
 
                 publish_action(t, pkg, a)
                 if "path" in a.attrs:
-                        pkg.actions.extend(gen_file_depend_actions(a, fname))
+                        pkg.actions.extend(gen_file_depend_actions(a, fname, proto_dir))
 
         # resolve & combine dependencies
 
@@ -705,6 +748,64 @@ def search_dicts(path):
                         print "unexpected action %s in path %s" % (path_dict[p][0], path)
         return []
 
+def get_smf_fmris(file, action_path):
+        """ pull the delivered SMF FMRIs from file, associated with action_path """
+        
+        if smf_manifest.has_smf_manifest_dir(action_path):
+                instance_mf, instance_deps = smf_manifest.parse_smf_manifest(file)
+                if instance_mf:
+                        return instance_mf.keys()
+
+def fetch_file(action, proto_dir, server_url=None):
+        """ Save the file action contents to proto_dir """
+        basename = os.path.basename(action.attrs["path"])
+        dirname = os.path.dirname(action.attrs["path"])
+        tmppath = os.path.join(proto_dir, dirname)
+        try:
+                os.makedirs(tmppath)
+        except OSError, e:
+                if e.errno != os.errno.EEXIST:
+                        raise
+        f = os.path.join(tmppath, basename)
+
+        if not server_url and action.data() is not None:
+                ao = action.data()
+                bufsz = 256 * 1024
+                sz = int(action.attrs["pkg.size"])
+                fd = os.open(f, os.O_CREAT|os.O_RDWR)
+                while sz > 0:
+                        d = ao.read(min(bufsz, sz))
+                        os.write(fd, d)
+                        sz -= len(d)
+                d = None
+        elif server_url.startswith("http://"):
+                ofile = file(f, "w")
+                ifile, version = versioned_urlopen(server_url, "file", [0], action.hash)
+                gunzip_from_stream(ifile, ofile)
+
+        elif server_url.startswith("file://"):
+                try:
+                        repo = get_repo(server_url)
+                        ifile = file(repo.file(action.hash), "rb")
+                        ofile = open(f, "wb")
+                        gunzip_from_stream(ifile, ofile)
+                        ifile.close()
+                        ofile.close()
+                except repository.RepositoryError, e:
+                        print "Unable to download %s from %s" % (action.attrs["path"],
+                            server_url)
+                        raise
+        else:
+                raise RuntimeError("Unable to save file %s - no URL provided."
+                    % action.attrs["path"])
+
+def get_repo(server_url):
+        """Return a Repository object from a given file URL"""
+        parts = urlparse.urlparse(server_url, "file", allow_fragments=0)
+        path = urllib.url2pathname(parts[2])
+
+        return repository.Repository(read_only=True, repo_root=path)
+
 def gen_hardlink_depend_actions(action):
         """ generate dependency action for hardlinks; action is the
         hardlink action we're analyzing"""
@@ -717,7 +818,7 @@ def gen_hardlink_depend_actions(action):
             "depend importer.file=%s fmri=none type=require importer.source=hardlink" %
             target)]
 
-def gen_file_depend_actions(action, fname):
+def gen_file_depend_actions(action, fname, proto_dir):
         """ generate dependency action for each file; action is the action
         being analyzed for dependencies, fname is the path to the local
         version of the file"""
@@ -741,9 +842,28 @@ def gen_file_depend_actions(action, fname):
                 elif "perl" in l or path.endswith(".pl"):
                         pass # and here
 
-                return return_actions
-        # handle elf files
+                # handle smf manifests
+                if smf_manifest.has_smf_manifest_dir(path):
+                        
+                        # pkg.flavor.* used by pkgdepend wants PD_LOCAL_PATH, PD_PROTO_DIR
+                        # and PD_PROTO_DIR_LIST set
+                        action.attrs[PD_LOCAL_PATH] = fname
+                        action.attrs[PD_PROTO_DIR] = proto_dir
+                        action.attrs[PD_PROTO_DIR_LIST] = [proto_dir]
+                        instance_deps, errs, attrs = \
+                            smf_manifest.process_smf_manifest_deps(action,
+                            local_smf_manifests)
 
+                        for dep in instance_deps:
+                                # strip the proto_area dir name
+                                manifest = dep.manifest.replace(local_smf_manifests, "", 1)
+                                return_actions.append(actions.fromstr(
+                                    "depend fmri=none importer.file=%s type=require importer.depsource=%s" % \
+                                    (manifest.lstrip("/"), path)))
+                        del(action.attrs[PD_LOCAL_PATH])
+                return return_actions
+
+        # handle elf files
         ei = elf.get_info(fname)
         try:
                 ed = elf.get_dynamic(fname)
@@ -879,8 +999,16 @@ def fetch_manifest(server_url, fmri):
         # Request manifest from server
 
         try:
-                m, v = versioned_urlopen(server_url, "manifest", [0],
-                    fmri.get_url_path())
+                if server_url.startswith("http://"):
+                        m, v = versioned_urlopen(server_url, "manifest", [0],
+                        fmri.get_url_path())
+
+                elif server_url.startswith("file://"):
+                        repo = get_repo(server_url)
+                        m = file(repo.manifest(fmri), "rb")
+                else:
+                        raise RuntimeError("Repo url %s has an unknown scheme." %
+                            server_url)
         except:
                 error(_("Unable to download manifest %s from %s") %
                     (fmri.get_url_path(), server_url))
@@ -979,6 +1107,58 @@ def _get_dependencies(s, server_url, fmri):
                         if new_fmri and new_fmri not in s: # ignore missing, already planned
                                 _get_dependencies(s, server_url, new_fmri)
 
+def get_smf_packages(server_url, manifest_locations, filter):
+        """ Performs a search against server_url looking for packages which contain
+        SMF manifests, returning a list of those pfmris """
+
+        dir = os.getcwd()
+        tracker = pkg.client.progress.QuietProgressTracker()
+        image_dir = tempfile.mkdtemp("", "pkg_importer_smfsearch.")
+
+        is_zone = False
+        pub_name = "opensolaris.org"
+        refresh_allowed = True
+
+        # create a temporary image
+        api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
+            CLIENT_API_VERSION, image_dir, pkg.client.api.IMG_TYPE_USER,
+            is_zone, facets=pkg.facet.Facets(), force=False, prefix=pub_name,
+            progtrack=tracker, refresh_allowed=refresh_allowed,
+            repo_uri=server_url)
+
+        api_inst = pkg.client.api.ImageInterface(image_dir,
+            pkg.client.api.CURRENT_API_VERSION, tracker, None, PKG_CLIENT_NAME)
+
+        # restore the current directory, which ImageInterace had changed
+        os.chdir(dir)
+        searches = []
+        fmris = set()
+
+        case_sensitive = False
+        return_actions = True
+
+        query = []
+        for manifest_loc in manifest_locations:
+                query.append(pkg.client.api.Query(":directory:path:/%s" % manifest_loc,
+                    case_sensitive, return_actions))
+        searches.append(api_inst.remote_search(query))
+        shutil.rmtree(image_dir, True)
+
+        for item in searches:
+                for result in item:
+                        pfmri = None
+                        try:
+                                query_num, pub, (v, return_type, tmp) = result
+                                pfmri, index, action = tmp
+                        except ValueError:
+                                raise
+                        if pfmri is None:
+                                continue
+                        if filter in pfmri.get_fmri():
+                                fmris.add(pfmri.get_fmri())
+
+        return [pkg.fmri.PkgFmri(pfmri) for pfmri in fmris]
+        
 def zap_strings(instr, strings):
         """takes an input string and a list of strings to be removed, ignoring
         case"""
@@ -1170,9 +1350,9 @@ def SolarisParse(mf):
                         curpkg.actions.append(action)
 
                 elif token == "consolidation":
-			# Add to consolidation incorporation and
-			# include the org.opensolaris.consolidation
-			# package property.
+                        # Add to consolidation incorporation and
+                        # include the org.opensolaris.consolidation
+                        # package property.
                         curpkg.consolidation = lexer.get_token()
                         cons_dict.setdefault(curpkg.consolidation, []).append(curpkg.name)
 
@@ -1324,7 +1504,6 @@ def main_func():
                         def_repo = arg
                         if def_repo.startswith("file://"):
                                 file_repo = True
-
                 elif opt == "-v":
                         def_vers = arg
                 elif opt == "-w":
@@ -1390,6 +1569,27 @@ def main_func():
                 sys.exit(0)
 
         start_time = time.clock()
+
+        print "Seeding local SMF manifest database from %s" % def_repo
+
+        # Pull down any existing SMF manifests in the repo for
+        # this build to help with dependency analysis later.  When we
+        # do first pass import via SolarisParse, any newer SMF manifests
+        # from the packages we're importing will overwrite these.
+        for pfmri in get_smf_packages(def_repo, smf_manifest.manifest_locations,
+            ",5.11-" + def_branch):
+                pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
+                manifest = None
+                try:
+                        manifest = get_manifest(def_repo, pfmri)
+                except:
+                        print "No manifest found for %s" % str(pfmri)
+                        raise
+                for action in manifest.gen_actions_by_type("file"):
+                        if smf_manifest.has_smf_manifest_dir(action.attrs["path"]):
+                                fetch_file(action, local_smf_manifests,
+                                    server_url=def_repo)
+
         print "First pass: initial import", datetime.now()
 
         for _mf in filelist:
@@ -1405,10 +1605,16 @@ def main_func():
                 ]
 
         for pkg in pkgs_to_elide:
-                del pkgdict[pkg]
+                try:
+                        del pkgdict[pkg]
+                except KeyError:
+                        print "elided package %s not in pkgdict" % pkg
 
-	for pkg in not_these_pkgs:
-                del pkgdict[pkg]
+        for pkg in not_these_pkgs:
+                try:
+                        del pkgdict[pkg]
+                except KeyError:
+                        print "excluded package %s not in pkgdict" % pkg
 
         # Unless we are publishing all obsolete and renamed packages 
         # (-A command line option), remove obsolete and renamed packages
@@ -1454,6 +1660,12 @@ def main_func():
                                 if rename_branch != def_branch.split(".", 1)[1]:
                                         # Not publishing this renamed package.
                                         del pkgdict[pkg]
+
+        # we've now pulled any SMF manifests found in the repository for this
+        # branch, as well as those present in the packages to import.
+        # Update our SMF manifest cache now.
+        smf_manifest.SMFManifestDependency.populate_cache(local_smf_manifests,
+            force_update=True)
 
         print "Second pass: global crosschecks", datetime.now()
         # perform global crosschecks
@@ -1511,6 +1723,8 @@ def main_func():
                 for uri in reference_uris:
                         server, fmri_string = uri.split("@", 1)
                         for pfmri in get_dependencies(server, [fmri_string]):
+                                if pfmri is None:
+                                        continue
                                 if pfmri.get_name() in pkgdict:
                                         continue # ignore pkgs already seen
                                 pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
@@ -1613,7 +1827,7 @@ def main_func():
                         action = actions.fromstr("depend fmri=%s type=incorporate" % extra)
                         action.attrs["importer.source"] = "command-line"
                         curpkg.actions.append(action)
-			extra_noversion = extra.split("@")[0] # remove version
+                        extra_noversion = extra.split("@")[0] # remove version
                         action = actions.fromstr("depend fmri=%s type=require" % extra_noversion)
                         action.attrs["importer.source"] = "command-line"
                         action.attrs["importer.no-version"] = "true"
@@ -1671,7 +1885,7 @@ def main_func():
                         print "  Summary:", _p.summary
                         print "  Classification:", ",".join(_p.classification)
                 try:
-                        publish_pkg(_p)
+                        publish_pkg(_p, g_proto_area)
                 except trans.TransactionError, _e:
                         print "%s: FAILED: %s\n" % (_p.name, _e)
                         error_count += 1
@@ -1693,6 +1907,7 @@ def main_func():
                 if code:
                         sys.exit(code)
 
+        shutil.rmtree(local_smf_manifests, True)
         print "Done:", datetime.now()
         elapsed = time.clock() - start_time 
         print "publication took %d:%.2d" % (elapsed/60, elapsed % 60)

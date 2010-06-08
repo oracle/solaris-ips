@@ -41,6 +41,7 @@ import pkg.flavor.elf as elf
 import pkg.flavor.hardlink as hl
 import pkg.flavor.python as py
 import pkg.flavor.script as scr
+import pkg.flavor.smf_manifest as smf
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
@@ -59,7 +60,23 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
                 "usr/lib/python2.6/vendor-packages/pkg_test/client/__init__.py",
             "script_path": "lib/svc/method/svc-pkg-depot",
             "syslog_path": "var/log/syslog"
-        }   
+        }
+
+        smf_paths = {
+            "broken":
+                "var/svc/manifest/broken-service.xml",
+            "delivered_many_nodeps":
+                "var/svc/manifest/delivered-many-nodeps.xml",
+            "foreign_many_nodeps":
+                "var/svc/manifest/foreign-many-nodeps.xml",
+            "foreign_single_nodeps":
+                "var/svc/manifest/foreign-single-nodeps.xml",
+            "service_many": "var/svc/manifest/service-many.xml",
+            "service_single": "var/svc/manifest/service-single.xml",
+            "service_unknown": "var/svc/manifest/service-single-unknown.xml"
+        }
+
+        paths.update(smf_paths)
 
         ext_hardlink_manf = """ \
 hardlink path=usr/foo target=../%(syslog_path)s
@@ -121,6 +138,13 @@ file NOHASH group=bin mode=0755 owner=root path=%(script_path)s variant.arch=bar
 file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.arch=foo
 """ % paths
 
+        variant_manf_4 = """ \
+set name=variant.arch value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH group=bin mode=0755 owner=root path=%(script_path)s variant.opensolaris.zone=global
+file NOHASH group=bin mode=0755 owner=root path=%(ksh_path)s variant.opensolaris.zone=global
+""" % paths
+
         python_abs_text = """\
 #!/usr/bin/python
 
@@ -143,6 +167,512 @@ import pkg.search_storage as ss
 from pkg_test.misc_test import EmptyI
 """
 
+        smf_fmris = {}
+        smf_known_deps = {}
+
+        smf_fmris["service_single"] = [ \
+            "svc:/application/pkg5test/service-default",
+            "svc:/application/pkg5test/service-default:default" ]
+
+        smf_known_deps["svc:/application/pkg5test/service-default"] = \
+            ["svc:/application/pkg5test/delivered-many"]
+        smf_known_deps["svc:/application/pkg5test/service-default:default"] = \
+            ["svc:/application/pkg5test/delivered-many"]
+
+        smf_manifest_text = {}
+        smf_manifest_text["service_single"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='service-default'>
+
+<!-- we deliver:
+  svc:/application/pkg5test/service-default
+      (deps: svc:/application/pkg5test/delivered-many)
+  svc:/application/pkg5test/service-default:default
+-->
+<service
+	name='application/pkg5test/service-default'
+	type='service'
+	version='0.1'>
+
+	<dependency
+		name="delivered-service"
+		grouping="require_all"
+		restart_on="none"
+		type="service">
+		<service_fmri value="svc:/application/pkg5test/delivered-many" />
+	</dependency>
+
+        <!-- We should not pick this up as an IPS dependency -->
+        <dependency
+                name="my-path"
+                grouping="require_all"
+                restart_on="none"
+                type="path">
+                <service_fmri value="/var/foo/something.conf" />
+        </dependency>
+
+	<create_default_instance enabled='true' />
+	<single_instance/>
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["service_many"] = [ \
+            "svc:/application/pkg5test/service-many",
+            "svc:/application/pkg5test/service-many:default",
+            "svc:/application/pkg5test/service-many:one",
+            "svc:/application/pkg5test/service-many:two" ]
+
+        smf_known_deps["svc:/application/pkg5test/service-many"] = \
+            ["svc:/application/pkg5test/foreign-many"]
+        smf_known_deps["svc:/application/pkg5test/service-many:default"] = \
+            ["svc:/application/pkg5test/foreign-many"]
+        smf_known_deps["svc:/application/pkg5test/service-many:one"] = \
+            ["svc:/application/pkg5test/foreign-many",
+            "svc:/application/pkg5test/foreign-many:default"]
+        smf_known_deps["svc:/application/pkg5test/service-many:two"] = \
+            ["svc:/application/pkg5test/foreign-many"]
+
+        smf_manifest_text["service_many"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='pkg5test-many-instances'>
+
+<!-- we deliver:
+  svc:/application/pkg5test/service-many
+     (deps: svc:/application/pkg5test/foreign-many
+            svc:/application/pkg5test/foreign-opt (not required))
+
+  svc:/application/pkg5test/service-many:default
+  svc:/application/pkg5test/service-many:one
+     (deps: svc:/application/pkg5test/foreign-opt:default (not required)
+            svc:/application/pkg5test/foreign-many:default)
+  svc:/application/pkg5test/service-many:two
+-->
+<service
+	name='application/pkg5test/service-many'
+	type='service'
+	version='0.1'>
+
+	<!-- a dependency a different package delivers -->
+	<dependency
+		name="foreign-service"
+		grouping="require_all"
+		restart_on="none"
+		type="service">
+		<service_fmri value="svc:/application/pkg5test/foreign-many" />
+	</dependency>
+
+	<!-- pkg(5) shouldn't see this as a dependency -->
+        <dependency
+                name="optional-service"
+                grouping="optional_all"
+                restart_on="none"
+                type="service">
+                <service_fmri value="svc:/application/pkg5test/foreign-opt" />
+        </dependency>
+
+        <create_default_instance enabled='true' />
+
+        <exec_method
+                type='method'
+                name='start'
+                exec=':true'
+                timeout_seconds='0'>
+        </exec_method>
+
+        <exec_method
+                type='method'
+                name='stop'
+                exec=':true'
+                timeout_seconds='0'>
+        </exec_method>
+
+
+	<instance name='one' enabled='false' >
+
+            <dependency
+                name="optional-service"
+                grouping="require_all"
+                restart_on="none"
+                type="service">
+                <service_fmri value="svc:/application/pkg5test/foreign-many:default" />
+            </dependency>
+	</instance>
+
+	<!-- no dependencies here -->
+	<instance name='two' enabled='false' />
+
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["service_unknown"] = [ \
+            "svc:/application/pkg5test/service-unknown",
+            "svc:/application/pkg5test/service-unknown:default",
+            "svc:/application/pkg5test/service-unknown:one"]
+
+
+        smf_known_deps["svc:/application/pkg5test/service-unknown"] = \
+            ["svc:/application/pkg5test/delivered-many",
+            "svc:/application/pkg5test/unknown-service"]
+        smf_known_deps["svc:/application/pkg5test/service-unknown:default"] = \
+            ["svc:/application/pkg5test/delivered-many",
+            "svc:/application/pkg5test/unknown-service"]
+        smf_known_deps["svc:/application/pkg5test/service-unknown:one"] = \
+            ["svc:/application/pkg5test/delivered-many",
+            "svc:/application/pkg5test/unknown-service",
+            "svc:/application/pkg5test/another-unknown:default"]
+
+        smf_manifest_text["service_unknown"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='service-unknown'>
+
+<!-- we deliver:
+  svc:/application/pkg5test/service-unknown
+      (deps: svc:/application/pkg5test/delivered-many
+             svc:/application/pkg5test/unknown-service
+  svc:/application/pkg5test/service-unknown:default
+      (deps: svc:/application/pkg5test/delivered-many
+             svc:/application/pkg5test/unknown-service)
+  svc:/application/pkg5test/service-unknown:one
+      (deps: svc:/application/pkg5test/delivered-many
+             svc:/application/pkg5test/unknown-service
+             svc:/application/pkg5test/another-unknown:default)
+-->
+<service
+	name='application/pkg5test/service-unknown'
+	type='service'
+	version='0.1'>
+
+	<dependency
+		name="delivered-service"
+		grouping="require_all"
+		restart_on="none"
+		type="service">
+		<service_fmri value="svc:/application/pkg5test/delivered-many" />
+	</dependency>
+
+
+        <!-- pkg(5) should throw an error here, as we don't deliver this
+             service, nor does any other package in our test suite -->
+        <dependency
+                name="unknown-service"
+                grouping="require_all"
+                restart_on="none"
+                type="service">
+                <service_fmri value="svc:/application/pkg5test/unknown-service" />
+        </dependency>
+
+	<create_default_instance enabled='true' />
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+        <instance name='one' enabled='false' >
+
+    	    <!-- pkg(5) should throw an error being unable to resolve this -->
+            <dependency
+                name="another"
+                grouping="require_all"
+                restart_on="none"
+                type="service">
+                <service_fmri value="svc:/application/pkg5test/another-unknown:default" />
+            </dependency>
+	</instance>
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["delivered_many_nodeps"] = [ \
+            "svc:/application/pkg5test/delivered-many",
+            "svc:/application/pkg5test/delivered-many:nodeps",
+            "svc:/application/pkg5test/delivered-many:nodeps1" ]
+
+        smf_known_deps["svc:/application/pkg5test/delivered-many"] = []
+        smf_known_deps["svc:/application/pkg5test/delivered-many:nodeps"] = []
+        smf_known_deps["svc:/application/pkg5test/delivered-many:nodeps1"] = []
+
+        smf_manifest_text["delivered_many_nodeps"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='default-service-many'>
+<!-- we deliver
+
+svc:/application/pkg5test/delivered-many
+svc:/application/pkg5test/delivered-many:nodeps
+svc:/application/pkg5test/delivered-many:nodeps1
+
+None of these services or instances declare any dependencies.
+
+-->
+<service
+	name='application/pkg5test/delivered-many'
+	type='service'
+	version='0.1'>
+
+	<single_instance />
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<instance name="nodeps" enabled="true" />
+	<instance name='nodeps1' enabled='false' />
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["foreign_single_nodeps"] = [ \
+            "svc:/application/pkg5test/foreign-single",
+            "svc:/application/pkg5test/foreign-single:nodeps" ]
+
+        smf_known_deps["svc:/application/pkg5test/foreign-single"] = []
+        smf_known_deps["svc:/application/pkg5test/foreign-single:nodeps"] = []
+
+        smf_manifest_text["foreign_single_nodeps"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='SUNWcsr:cron'>
+
+<!-- we deliver
+
+svc:/application/pkg5test/foreign-single
+svc:/application/pkg5test/foreign-single:nodeps
+
+None of these services or instances declare any dependencies.
+
+-->
+<service
+	name='application/pkg5test/foreign-single'
+	type='service'
+	version='0.1'>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<instance name='nodeps' enabled='false' />
+</service>
+</service_bundle>
+"""
+
+        smf_fmris["foreign_many_nodeps"] = [ \
+            "svc:/application/pkg5test/foreign-many",
+            "svc:/application/pkg5test/foreign-many:default",
+            "svc:/application/pkg5test/foreign-many:nodeps",
+            "svc:/application/pkg5test/foreign-opt",
+            "svc:/application/pkg5test/foreign-opt:nodeps" ]
+
+        smf_known_deps["svc:/application/pkg5test/foreign-many"] = []
+        smf_known_deps["svc:/application/pkg5test/foreign-many:default"] = []
+        smf_known_deps["svc:/application/pkg5test/foreign-many:nodeps"] = []
+        smf_known_deps["svc:/application/pkg5test/foreign-opt"] = []
+        smf_known_deps["svc:/application/pkg5test/foreign-opt:nodeps"] = []
+
+        smf_manifest_text["foreign_many_nodeps"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='foreign-many-instances'>
+
+<!-- we deliver
+
+svc:/application/pkg5test/foreign-many
+svc:/application/pkg5test/foreign-many:default
+svc:/application/pkg5test/foreign-many:nodeps
+svc:/application/pkg5test/foreign-opt
+svc:/application/pkg5test/foreign-opt:nodeps
+
+Note that this manifest contains two <service> elements.
+
+None of these services or instances declare any dependencies.
+
+-->
+
+<service
+	name='application/pkg5test/foreign-many'
+	type='service'
+	version='0.1'>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<!-- intentionally declaring the default service, as opposed to using
+             create_default_service - to test smf manifest parsing code in pkg5 -->
+	<instance name='default' enabled='false' />
+	<instance name='nodeps' enabled='false' />
+</service>
+
+<service
+	name='application/pkg5test/foreign-opt'
+	type='service'
+	version='0.1'>
+
+	<single_instance />
+
+	<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<instance name='nodeps' enabled='false' />
+</service>
+</service_bundle>
+"""
+
+        smf_manifest_text["broken"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='broken-service'>
+
+<!-- we deliver nothing - this service manifest is intentionally broken
+-->
+<service <<>  This is the broken line
+
+	name='application/pkg5test/brokenservice'
+	type='service'
+	version='0.1'>
+
+	<single_instance />
+
+		<exec_method
+		type='method'
+		name='start'
+		exec=':true'
+		timeout_seconds='60'>
+		<method_context>
+			<method_credential user='root' group='root' />
+		</method_context>
+	</exec_method>
+
+	<instance name='default' enabled='false' />
+</service>
+</service_bundle>
+"""
+        int_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+""" % paths
+
+        ext_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(service_many)s
+file NOHASH group=sys mode=0644 owner=root path=%(foreign_single_nodeps)s
+""" % paths
+
+        broken_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(broken)s
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
+""" % paths
+
+        faildeps_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
+file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
+file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
+""" % paths
+
         script_text = "#!/usr/bin/ksh -p\n"
 
         def setUp(self):
@@ -162,6 +692,11 @@ from pkg_test.misc_test import EmptyI
                     "%s/pkg_test/indexer_test/__init__.py" % pdir,
                     "#!/usr/bin/python")
                 
+	def make_smf_test_files(self):
+                for manifest in self.smf_paths.keys():
+                        self.make_proto_text_file(self.paths[manifest],
+                            self.smf_manifest_text[manifest])
+
         def make_elf(self, final_path, static=False):
                 out_file = os.path.join(self.proto_dir, final_path)
 
@@ -187,7 +722,7 @@ from pkg_test.misc_test import EmptyI
                 reported as a dependency."""
 
                 def _check_results(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -222,7 +757,7 @@ from pkg_test.misc_test import EmptyI
 
                 t_path = self.make_manifest(self.int_hardlink_manf)
                 self.make_proto_text_file(self.paths["syslog_path"])
-                ds, es, ms = \
+                ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
                         {}, [])
                 if es != []:
@@ -232,7 +767,7 @@ from pkg_test.misc_test import EmptyI
                 self.assert_(len(ds) == 0)
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -251,7 +786,7 @@ from pkg_test.misc_test import EmptyI
                 outside its package is reported as a dependency."""
                 
                 def _check_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -281,7 +816,7 @@ from pkg_test.misc_test import EmptyI
                 self.make_elf(self.paths["ksh_path"])
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -296,7 +831,7 @@ from pkg_test.misc_test import EmptyI
                     "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False)
                 self.assertEqual(len(ds), 2)
                 for d in ds:
@@ -319,7 +854,7 @@ from pkg_test.misc_test import EmptyI
                 package is reported as a dependency."""
 
                 def _check_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -350,7 +885,7 @@ from pkg_test.misc_test import EmptyI
                 internal dependencies is set."""
 
                 def _check_all_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         if es != []:
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
@@ -370,7 +905,7 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(self.int_elf_manf)
                 self.make_elf(self.paths["curses_path"])
                 self.make_elf(self.paths["libc_path"], static=True)
-                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -387,7 +922,7 @@ from pkg_test.misc_test import EmptyI
                 package is reported as a dependency."""
 
                 def _check_all_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo"]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage"]
@@ -435,7 +970,7 @@ from pkg_test.misc_test import EmptyI
                 is handled correctly."""
 
                 def _check_all_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo"]
                         mod_names = ["foobar", "os", "search_storage"]
                         pkg_names = ["indexer_test", "pkg", "pkg_test"]
@@ -486,7 +1021,7 @@ from pkg_test.misc_test import EmptyI
                 package is handled correctly."""
 
                 def _check_all_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo"]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage"]
@@ -538,7 +1073,7 @@ from pkg_test.misc_test import EmptyI
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -581,8 +1116,8 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(self.variant_manf_2)
                 self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])    
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -596,7 +1131,7 @@ from pkg_test.misc_test import EmptyI
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -631,7 +1166,7 @@ from pkg_test.misc_test import EmptyI
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
@@ -662,6 +1197,63 @@ from pkg_test.misc_test import EmptyI
                                 raise RuntimeError("Unexpected "
                                     "dependency path:%s" % (d.dep_key(),))
 
+        def test_variants_4(self):
+                """Test that an action with a variant that depends on a delivered action
+                also tagged with that variant, but not with a package-level variant is
+                reported as an internal dependency, not an external one."""
+
+                t_path = self.make_manifest(self.variant_manf_4)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_elf(self.paths["ksh_path"])
+
+                # Check that we only report a single external dependency
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [])
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assert_(len(ds) == 1)
+                d = ds[0]
+
+                self.assert_(d.is_error())
+                self.assertEqual(set(d.dep_vars.keys()), set(["variant.arch",
+                    "variant.opensolaris.zone"]))
+                self.assertEqual(set(d.dep_vars["variant.arch"]), set(["foo"]))
+                self.assertEqual(set(d.dep_vars["variant.opensolaris.zone"]),
+                    set(["global"]))
+
+                self.assertEqual(d.base_names[0], "libc.so.1")
+                self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
+
+                # Check that internal dependencies are as expected.
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assertEqual(pkg_attrs, {})
+                self.assert_(len(ds) == 2)
+                for d in ds:
+                        self.assert_(d.is_error())
+                        self.assertEqual(set(d.dep_vars.keys()),
+                            set(["variant.opensolaris.zone"]))
+                        self.assertEqual(set(d.dep_vars["variant.opensolaris.zone"]),
+                            set(["global"]))
+
+                        if d.dep_key() == self.__path_to_key(
+                            self.paths["ksh_path"]):
+                                self.assertEqual(d.action.attrs["path"],
+                                    self.paths["script_path"])
+                        elif d.dep_key() == self.__path_to_key(
+                            self.paths["libc_path"]):
+                                self.assertEqual(d.action.attrs["path"],
+                                    self.paths["ksh_path"])
+                        else:
+                                raise RuntimeError(
+                                    "Unexpected dependency path:%s" % (d.dep_key(),))
+
         def test_symlinks(self):
                 """Test that a file is recognized as delivered when a symlink
                 is involved."""
@@ -684,7 +1276,7 @@ from pkg_test.misc_test import EmptyI
 
                 t_path = self.make_manifest(
                     self.int_hardlink_manf_test_symlink)
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
 
         def test_str_methods(self):
@@ -731,7 +1323,7 @@ from pkg_test.misc_test import EmptyI
 
                 # This should fail because the "foo" directory is not given
                 # as a proto_dir.
-                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
@@ -745,7 +1337,7 @@ from pkg_test.misc_test import EmptyI
 
                 # This should work since the "foo" directory has been added to
                 # the list of proto_dirs to use.
-                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir, os.path.join(self.proto_dir, "foo")],
                     {}, [])
                 if es:
@@ -757,7 +1349,7 @@ from pkg_test.misc_test import EmptyI
                 # This should be different because the empty text file
                 # is found before the binary file.
                 self.make_proto_text_file(self.paths["curses_path"])
-                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir, os.path.join(self.proto_dir, "foo")],
                     {}, [], remove_internal_deps=False)
                 if es:
@@ -771,7 +1363,7 @@ from pkg_test.misc_test import EmptyI
 
                 # This should find the binary file first and thus produce
                 # a depend action.
-                d_map, es, ms = dependencies.list_implicit_deps(t_path,
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [os.path.join(self.proto_dir, "foo"), self.proto_dir],
                     {}, [], remove_internal_deps=False)
                 if es:
@@ -786,7 +1378,7 @@ from pkg_test.misc_test import EmptyI
                     self.paths["syslog_path"]))
                 # This test should fail because "foo" is not included in the
                 # list of proto_dirs.
-                ds, es, ms = \
+                ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
                         {}, [])
                 if len(es) != 1:
@@ -801,7 +1393,7 @@ from pkg_test.misc_test import EmptyI
 
                 # This test should pass because the needed directory has been
                 # added to the list of proto_dirs.
-                ds, es, ms = \
+                ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path,
                         [self.proto_dir, os.path.join(self.proto_dir, "foo")],
                         {}, [])
@@ -815,7 +1407,7 @@ from pkg_test.misc_test import EmptyI
                 # scripts.
 
                 def _py_check_all_res(res):
-                        ds, es, ms = res
+                        ds, es, ms, pkg_attrs = res
                         mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo"]
                         mod_names = ["foobar", "misc_test", "os",
                             "search_storage"]
@@ -856,7 +1448,7 @@ from pkg_test.misc_test import EmptyI
                     self.python_text)
                 # This should have an error because it cannot find the file
                 # needed.
-                ds, es, ms = dependencies.list_implicit_deps(t_path,
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [])
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
@@ -873,6 +1465,214 @@ from pkg_test.misc_test import EmptyI
                 _py_check_all_res(dependencies.list_implicit_deps(t_path,
                     [self.proto_dir, os.path.join(self.proto_dir, "d5")], {},
                     []))
+
+
+        def test_smf_manifest_parse(self):
+                """ We parse valid SMF manifests returning instance
+                and dependency info."""
+
+                for manifest in self.smf_paths.keys():
+                        self.make_proto_text_file(self.paths[manifest],
+                            self.smf_manifest_text[manifest])
+
+                        # This should not parse, returning empty lists
+                        if manifest == "broken":
+                                instances, deps = smf.parse_smf_manifest(
+                                    self.proto_dir+ "/" + self.paths[manifest])
+                                self.assertEqual(instances, None)
+                                self.assertEqual(deps, None)
+                                continue
+
+                        # Ensuring each manifest can be parsed
+                        # and we detect declared dependencies and
+                        # FMRIs according to those hardcoded in the test
+                        instances, deps = smf.parse_smf_manifest(
+                            self.proto_dir+ "/" + self.paths[manifest])
+                        for fmri in instances:
+
+                                for dep in self.smf_known_deps[fmri]:
+                                        if dep not in deps[fmri]:
+                                                self.assert_(False,
+                                                    "%s not found in "
+                                                    "dependencies for %s" %
+                                                    (dep, manifest))
+                                expected = len(self.smf_known_deps[fmri])
+                                actual = len(deps[fmri])
+
+                                self.assertEqual(expected, actual,
+                                    "expected number of deps (%s) != "
+                                    "actual (%s) for %s"
+                                    % (expected, actual, fmri))
+
+
+        def check_smf_fmris(self, pkg_attrs, expected, manifest_name):
+                """ Given a list of expected SMF FMRIs, verify that each is
+                present in the provided pkg_attrs dictionary. Errors are
+                reported in an assertion message that includes manifest_name."""
+
+                self.assert_(pkg_attrs.has_key("opensolaris.smf.fmri"),
+                    "Missing opensolaris.smf.fmri key for %s" % manifest_name)
+
+                found = len(pkg_attrs["opensolaris.smf.fmri"])
+                self.assertEqual(found, len(expected),
+                    "Wrong no. of SMF instances/services found for %s: expected"
+                    " %s got %s" % (manifest_name, len(expected), found))
+
+                for fmri in expected:
+                            self.assert_(
+                                fmri in pkg_attrs["opensolaris.smf.fmri"],
+                                "%s not in list of SMF instances/services "
+                                "from %s" % (fmri, manifest_name))
+
+        def print_deps(self, deps):
+                for dep in deps:
+                        print dep.base_names
+
+        def test_int_smf_manifest(self):
+                """We identify SMF dependencies delivered in the same package"""
+
+                t_path = self.make_manifest(self.int_smf_manf)
+                self.make_smf_test_files()
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
+                    len(ds))
+                d = ds[0]
+
+                # verify we have identified the one internal file we depend on
+                actual = d.manifest.replace(self.proto_dir + "/", "")
+                expected = self.paths["delivered_many_nodeps"]
+                self.assertEqual(actual, expected,
+                    "Expected dependency path %s, got %s" % (actual, expected))
+
+                self.check_smf_fmris(pkg_attrs,
+                    self.smf_fmris["service_single"] +
+                    self.smf_fmris["delivered_many_nodeps"],
+                    "int_smf_manf")
+
+                # verify that removing internal dependencies works as expected
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=True)
+                self.assert_(len(ds) == 0, "Expected 0 dependencies, got %s" %
+                    len(ds))
+
+
+        def test_ext_smf_manifest(self):
+                """We identify SMF dependencies delivered in a different
+                package"""
+
+                t_path = self.make_manifest(self.ext_smf_manf)
+                self.make_smf_test_files()
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
+                    len(ds))
+
+                # verify we have identified the one external file we depend on
+                actual = ds[0].manifest.replace(self.proto_dir + "/", "")
+                expected = self.paths["foreign_many_nodeps"]
+                self.assertEqual(actual, expected ,
+                    "Expected dependency path %s, got %s" % (actual, expected))
+
+                self.check_smf_fmris(pkg_attrs,
+                    self.smf_fmris["service_many"] +
+                    self.smf_fmris["foreign_single_nodeps"],
+                    "ext_smf_manf")
+
+
+        def test_broken_manifest(self):
+                """We report errors when dealing with a broken SMF manifest."""
+
+                # as it happens, file(1) isn't good at spotting broken
+                # XML documents, it only sniffs the header - so this file
+                # gets reported as an 'XML document' despite it being invalid
+                # XML.
+                t_path = self.make_manifest(self.broken_smf_manf)
+                self.make_smf_test_files()
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
+
+                self.assertEqual(len(ms), 1, "No unknown files reported during "
+                    "analysis")
+
+                if "XML document" not in ms:
+                        self.assert_(False, "Broken SMF manifest file not"
+                            " declared")
+
+                broken_path = os.path.join(self.proto_dir, self.paths["broken"])
+                self.assertEqual(ms["XML document"], broken_path,
+                    "Did not detect broken SMF manifest file: %s != %s" % (
+                    broken_path, ms["XML document"]))
+
+                # We should still be able to resolve the other dependencies
+                # though and it's important to check that the one broken SMF
+                # manifest file didn't break the rest of the SMF manifest
+                # backend.  This has been implicitly tested in other tests,
+                # as the broken file is always installed in the manifest
+                # location.
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+
+                # our dependency comes from service_single depending on
+                # delivered_many
+                self.assert_(len(ds) == 1, "Expected 1 dependency, got %s" %
+                    len(ds))
+                d = ds[0]
+
+                # verify we have identified the one internal file we depend on
+                actual = d.manifest.replace(self.proto_dir + "/", "")
+                expected = self.paths["delivered_many_nodeps"]
+                self.assertEqual(actual, expected ,
+                    "Expected dependency path %s, got %s" % (actual, expected))
+
+                self.check_smf_fmris(pkg_attrs,
+                    self.smf_fmris["service_single"] +
+                    self.smf_fmris["delivered_many_nodeps"],
+                    "broken_smf_manf")
+
+
+        def test_faildeps_smf_manifest(self):
+                """We report failed attempts to resolve dependencies"""
+
+                t_path = self.make_manifest(self.faildeps_smf_manf)
+                self.make_smf_test_files()
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False)
+
+                self.assert_(len(es) == 3,
+                    "Detected %s error(s), expected 3" % len(es))
+
+                # our two dependencies come from:
+                # service_single depending on delivered_many_nodeps
+                # service_unknown depending on delivered_many_nodeps
+                self.assert_(len(ds) == 2, "Expected 2 dependencies, got %s" %
+                    len(ds))
+
+                for d in ds:
+                        actual = d.manifest.replace(self.proto_dir + "/", "")
+                        expected = self.paths["delivered_many_nodeps"]
+                        self.assertEqual(actual, expected,
+                            "Expected dependency path %s, got %s" %
+                            (actual, expected))
+
+                self.check_smf_fmris(pkg_attrs,
+                    self.smf_fmris["service_single"] +
+                    self.smf_fmris["delivered_many_nodeps"] +
+                    self.smf_fmris["service_unknown"],
+                    "faildeps_smf_manf")
 
 
 if __name__ == "__main__":
