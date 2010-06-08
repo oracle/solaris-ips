@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 38
+CURRENT_API_VERSION = 39
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -126,7 +126,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([36, 37, CURRENT_API_VERSION])
+                compatible_versions = set([36, 37, 38, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -2761,8 +2761,9 @@ class PlanDescription(object):
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
     cancel_state_callable=None, facets=misc.EmptyDict, force=False,
     mirrors=misc.EmptyI, origins=misc.EmptyI, prefix=None, refresh_allowed=True,
-    repo_uri=None, ssl_cert=None, ssl_key=None, user_provided_dir=False,
-    progtrack=None, variants=misc.EmptyDict):
+    repo_uri=None, socket_path=None, ssl_cert=None, ssl_key=None,
+    sys_repo=None, user_provided_dir=False, progtrack=None,
+    variants=misc.EmptyDict):
         """Creates an image at the specified location.
 
         'pkg_client_name' is a string containing the name of the client,
@@ -2847,7 +2848,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         # Caller must provide a prefix and repository, or no prefix and a
         # repository, or a prefix and origins.
         assert (prefix and repo_uri) or (not prefix and repo_uri) or (prefix and
-            origins)
+            origins) or (prefix and sys_repo and socket_path)
 
         # If prefix isn't provided, and refresh isn't allowed, then auto-config
         # cannot be done.
@@ -2932,6 +2933,9 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                                 repo.add_origin(o)
                         for m in mirrors:
                                 repo.add_mirror(m)
+                        if sys_repo and socket_path:
+                                repo.set_system_repo(sys_repo,
+                                    socket_path=socket_path)
                         pub = publisher.Publisher(prefix,
                             repositories=[repo])
                         pubs = [pub]

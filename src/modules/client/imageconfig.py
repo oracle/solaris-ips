@@ -370,6 +370,15 @@ class ImageConfig(object):
                         c.set(section, "mirrors",
                             str([u.uri for u in repo.mirrors]))
 
+                        if repo.system_repo:
+                                c.set(section, "sysrepo.uri",
+                                    str(repo.system_repo))
+                                c.set(section, "sysrepo.sock_path",
+                                    repo.system_repo.socket_path)
+                        else:
+                                c.set(section, "sysrepo.uri", "None")
+                                c.set(section, "sysrepo.sock_path", "None")
+
                         #
                         # For zones, where the reachability of an absolute path
                         # changes depending on whether you're in the zone or
@@ -481,6 +490,15 @@ class ImageConfig(object):
 
                 origin = cp.get(s, "origin")
                 try:
+                        sysrepo_uristr = cp.get(s, "sysrepo.uri")
+                except ConfigParser.NoOptionError:
+                        sysrepo_uristr = "None"
+                try:
+                        sysrepo_sock_path = cp.get(s, "sysrepo.sock_path")
+                except ConfigParser.NoOptionError:
+                        sysrepo_sock_path = "None"
+
+                try:
                         org_str = cp.get(s, "origins")
                 except ConfigParser.NoOptionError:
                         org_str = "None"
@@ -494,6 +512,9 @@ class ImageConfig(object):
                 origins = set(origins)
                 if origin != "None":
                         origins.add(origin)
+
+                if sysrepo_uristr in origins:
+                        origins.remove(sysrepo_uristr)
 
                 mir_str = cp.get(s, "mirrors")
                 if mir_str == "None":
@@ -615,6 +636,9 @@ class ImageConfig(object):
                                 ssl_cert = None
 
                 r = publisher.Repository(**repo_data)
+                if sysrepo_uristr != "None" and sysrepo_sock_path != "None":
+                        r.set_system_repo(sysrepo_uristr,
+                            socket_path=sysrepo_sock_path)
                 for o in origins:
                         r.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
                 for m in mirrors:

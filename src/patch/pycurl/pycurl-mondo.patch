@@ -1,0 +1,298 @@
+--- src/pycurl.c.orig	Fri Aug 07 15:00:51 2009 -0700
++++ src/pycurl.c	Tue May 18 15:49:30 2010 -0700
+@@ -42,6 +42,7 @@
+ #include <Python.h>
+ #include <pythread.h>
+ #include <sys/types.h>
++#include <sys/socket.h>
+ #include <stddef.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+@@ -163,6 +164,7 @@
+     /* misc */
+     void *options[OPTIONS_SIZE];    /* for OBJECTPOINT options */
+     char error[CURL_ERROR_SIZE+1];
++    char *socket_path;
+ } CurlObject;
+ 
+ /* Throw exception based on return value `res' and `self->error' */
+@@ -744,9 +746,64 @@
+     memset(self->options, 0, sizeof(self->options));
+     memset(self->error, 0, sizeof(self->error));
+ 
++    self->socket_path = NULL;
++
+     return self;
+ }
+ 
++/* initializer - used to intialize curl easy handles for use with pycurl */
++static int
++util_curl_init(CurlObject *self)
++{
++    int res;
++    char *s = NULL;
++
++    /* Set curl error buffer and zero it */
++    res = curl_easy_setopt(self->handle, CURLOPT_ERRORBUFFER, self->error);
++    if (res != CURLE_OK) {
++        return (-1);
++    }
++    memset(self->error, 0, sizeof(self->error));
++
++    /* Set backreference */
++    res = curl_easy_setopt(self->handle, CURLOPT_PRIVATE, (char *) self);
++    if (res != CURLE_OK) {
++        return (-1);
++    }
++
++    /* Enable NOPROGRESS by default, i.e. no progress output */
++    res = curl_easy_setopt(self->handle, CURLOPT_NOPROGRESS, (long)1);
++    if (res != CURLE_OK) {
++        return (-1);
++    }
++
++    /* Disable VERBOSE by default, i.e. no verbose output */
++    res = curl_easy_setopt(self->handle, CURLOPT_VERBOSE, (long)0);
++    if (res != CURLE_OK) {
++        return (-1);
++    }
++
++    /* Set FTP_ACCOUNT to NULL by default */
++    res = curl_easy_setopt(self->handle, CURLOPT_FTP_ACCOUNT, NULL);
++    if (res != CURLE_OK) {
++        return (-1);
++    }
++
++    /* Set default USERAGENT */
++    s = (char *) malloc(7 + strlen(LIBCURL_VERSION) + 1);
++    if (s == NULL) {
++        return (-1);
++    }
++    strcpy(s, "PycURL/"); strcpy(s+7, LIBCURL_VERSION);
++    res = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, (char *) s);
++    if (res != CURLE_OK) {
++        free(s);
++        return (-1);
++    }
++    self->options[ OPT_INDEX(CURLOPT_USERAGENT) ] = s; s = NULL;
++
++    return (0);
++}
+ 
+ /* constructor - this is a module-level function returning a new instance */
+ static CurlObject *
+@@ -754,7 +811,6 @@
+ {
+     CurlObject *self = NULL;
+     int res;
+-    char *s = NULL;
+ 
+     UNUSED(dummy);
+ 
+@@ -768,44 +824,9 @@
+     if (self->handle == NULL)
+         goto error;
+ 
+-    /* Set curl error buffer and zero it */
+-    res = curl_easy_setopt(self->handle, CURLOPT_ERRORBUFFER, self->error);
+-    if (res != CURLE_OK)
+-        goto error;
+-    memset(self->error, 0, sizeof(self->error));
+-
+-    /* Set backreference */
+-    res = curl_easy_setopt(self->handle, CURLOPT_PRIVATE, (char *) self);
+-    if (res != CURLE_OK)
+-        goto error;
+-
+-    /* Enable NOPROGRESS by default, i.e. no progress output */
+-    res = curl_easy_setopt(self->handle, CURLOPT_NOPROGRESS, (long)1);
+-    if (res != CURLE_OK)
+-        goto error;
+-
+-    /* Disable VERBOSE by default, i.e. no verbose output */
+-    res = curl_easy_setopt(self->handle, CURLOPT_VERBOSE, (long)0);
+-    if (res != CURLE_OK)
+-        goto error;
+-
+-    /* Set FTP_ACCOUNT to NULL by default */
+-    res = curl_easy_setopt(self->handle, CURLOPT_FTP_ACCOUNT, NULL);
+-    if (res != CURLE_OK)
+-        goto error;
+-
+-    /* Set default USERAGENT */
+-    s = (char *) malloc(7 + strlen(LIBCURL_VERSION) + 1);
+-    if (s == NULL)
+-        goto error;
+-    strcpy(s, "PycURL/"); strcpy(s+7, LIBCURL_VERSION);
+-    res = curl_easy_setopt(self->handle, CURLOPT_USERAGENT, (char *) s);
+-    if (res != CURLE_OK) {
+-        free(s);
+-        goto error;
+-    }
+-    self->options[ OPT_INDEX(CURLOPT_USERAGENT) ] = s; s = NULL;
+-
++    res = util_curl_init(self);
++    if (res < 0)
++            goto error;
+     /* Success - return new object */
+     return self;
+ 
+@@ -917,6 +938,11 @@
+     SFREE(self->prequote);
+ #undef SFREE
+ 
++    if (self->socket_path) {
++        free(self->socket_path);
++        self->socket_path = NULL;
++    }
++
+     /* Last, free the options.  This must be done after the curl handle
+      * is closed since libcurl assumes that some options are valid when
+      * invoking curl_easy_cleanup(). */
+@@ -1418,6 +1444,28 @@
+     goto silent_error;
+ }
+ 
++curl_socket_t
++uds_opensocket_cb(void *clientp, curlsocktype purpose,
++    struct curl_sockaddr *addrp)
++{
++    int fd;
++    CurlObject *self = (CurlObject *)clientp;
++    struct sockaddr_un *s_un = (struct sockaddr_un *)&addrp->addr;
++
++    s_un->sun_family = AF_UNIX;
++    strlcpy(s_un->sun_path, self->socket_path, sizeof (s_un->sun_path));
++
++    addrp->family = AF_UNIX;
++    addrp->addrlen = SUN_LEN(s_un);
++
++    fd = socket(AF_UNIX, addrp->socktype, 0);
++    if (fd < 0) {
++        return (CURL_SOCKET_BAD);
++    }
++
++    return ((curl_socket_t)fd);
++}
++
+ 
+ /* ------------------------ reset ------------------------ */
+ 
+@@ -1425,6 +1473,7 @@
+ do_curl_reset(CurlObject *self)
+ {
+     unsigned int i;
++    int res;
+ 
+     curl_easy_reset(self->handle);
+ 
+@@ -1444,6 +1493,11 @@
+     SFREE(self->prequote);
+ #undef SFREE
+ 
++    if (self->socket_path) {
++        free(self->socket_path);
++        self->socket_path = NULL;
++    }
++
+     /* Last, free the options */
+     for (i = 0; i < OPTIONS_SIZE; i++) {
+         if (self->options[i] != NULL) {
+@@ -1452,7 +1506,17 @@
+         }
+     }
+ 
+-    return Py_None;
++    res = util_curl_init(self);
++    if (res < 0)
++            goto error;
++
++    Py_INCREF(Py_None);
++    return Py_None;
++
++error:
++    Py_DECREF(self);    /* this also closes self->handle */
++    PyErr_SetString(ErrorObject, "resetting curl failed");
++    return NULL;
+ }
+ 
+ /* --------------- unsetopt/setopt/getinfo --------------- */
+@@ -1627,6 +1691,7 @@
+         case CURLOPT_SSH_HOST_PUBLIC_KEY_MD5:
+         case CURLOPT_CRLFILE:
+         case CURLOPT_ISSUERCERT:
++        case CURLOPT_NOPROXY:
+ /* FIXME: check if more of these options allow binary data */
+             str = PyString_AsString_NoNUL(obj);
+             if (str == NULL)
+@@ -2233,6 +2298,46 @@
+     return NULL;
+ }
+ 
++static PyObject *
++do_curl_unix(CurlObject *self, PyObject *args)
++{
++    const char *in_path;
++    struct sockaddr_un *s_un;
++    size_t max_len;
++    size_t path_len;
++
++    if (!PyArg_ParseTuple(args, "s:unix_socket", &in_path)) {
++        return NULL;
++    }
++    if (check_curl_state(self, 1 | 2, "unix_socket") != 0) {
++        return NULL;
++    }
++
++    /* Inbound string can't exceed this size */
++    max_len = sizeof (s_un->sun_path);
++    path_len = strlen(in_path) + 1;
++
++    /* Only copy max_len bytes */
++    if (path_len > max_len) {
++        path_len = max_len;
++    }
++
++    self->socket_path = malloc(path_len);
++    if (self->socket_path == NULL) {
++        return PyErr_NoMemory();
++    }
++
++    (void) strlcpy(self->socket_path, in_path, path_len);
++
++    curl_easy_setopt(self->handle, CURLOPT_OPENSOCKETFUNCTION,
++        uds_opensocket_cb);
++    curl_easy_setopt(self->handle, CURLOPT_OPENSOCKETDATA, self);
++
++    Py_INCREF(Py_None);
++    return Py_None;
++}
++
++
+ /*************************************************************************
+ // CurlMultiObject
+ **************************************************************************/
+@@ -2946,6 +3051,7 @@
+ static char co_setopt_doc [] = "setopt(option, parameter) -> None.  Set curl session option.  Throws pycurl.error exception upon failure.\n";
+ static char co_unsetopt_doc [] = "unsetopt(option) -> None.  Reset curl session option to default value.  Throws pycurl.error exception upon failure.\n";
+ static char co_reset_doc [] = "reset() -> None. Reset all options set on curl handle to default values, but preserves live connections, session ID cache, DNS cache, cookies, and shares.\n";
++static char co_unix_doc [] = "unix_socket(path) -> None. Set up callbacks so that the client may perform a connection from the UNIX socket named by path.\n";
+ 
+ static char co_multi_fdset_doc [] = "fdset() -> Tuple.  Returns a tuple of three lists that can be passed to the select.select() method .\n";
+ static char co_multi_info_read_doc [] = "info_read([max_objects]) -> Tuple. Returns a tuple (number of queued handles, [curl objects]).\n";
+@@ -2966,6 +3072,7 @@
+     {"setopt", (PyCFunction)do_curl_setopt, METH_VARARGS, co_setopt_doc},
+     {"unsetopt", (PyCFunction)do_curl_unsetopt, METH_VARARGS, co_unsetopt_doc},
+     {"reset", (PyCFunction)do_curl_reset, METH_NOARGS, co_reset_doc},
++    {"unix_socket", (PyCFunction)do_curl_unix, METH_VARARGS, co_unix_doc},
+     {NULL, NULL, 0, NULL}
+ };
+ 
+@@ -3735,6 +3842,7 @@
+     insint_c(d, "CRLFILE", CURLOPT_CRLFILE);
+     insint_c(d, "ISSUERCERT", CURLOPT_ISSUERCERT);
+     insint_c(d, "ADDRESS_SCOPE", CURLOPT_ADDRESS_SCOPE);
++    insint_c(d, "NOPROXY", CURLOPT_NOPROXY);
+ 
+     insint_c(d, "M_TIMERFUNCTION", CURLMOPT_TIMERFUNCTION);
+     insint_c(d, "M_SOCKETFUNCTION", CURLMOPT_SOCKETFUNCTION);

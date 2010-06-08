@@ -354,6 +354,26 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.dc.set_repodir(opath)
                 self.dc.set_file_root(None)
 
+        def test_unix_socket_repo(self):
+                """Test that if a depot is created with --socket-path,
+                the depot starts, and a socket is created at the path."""
+
+                if self.dc.is_alive():
+                        self.dc.stop()
+
+                spath = os.path.join(self.test_root, "/tmp/test_sock")
+                
+                self.dc.set_socket_path(spath)
+                self.dc.set_readwrite()
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+
+                self.assert_(os.path.exists(spath))
+
+                self.dc.stop()
+                self.dc.set_socket_path(None)
+                os.unlink(spath)
+
 
 class TestDepotController(pkg5unittest.CliTestCase):
 

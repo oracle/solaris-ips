@@ -26,6 +26,7 @@ import httplib
 import os
 import pkg.pkgsubprocess as subprocess
 import pkg.server.repository as sr
+import socket
 import sys
 import signal
 import time
@@ -68,6 +69,7 @@ class DepotController(object):
                 self.__refresh_index = False
                 self.__state = self.HALTED
                 self.__writable_root = None
+                self.__socket_path = None
                 self.__sort_file_max_size = None
                 self.__starttime = 0
                 self.__wrapper_start = []
@@ -169,6 +171,12 @@ class DepotController(object):
         def get_logpath(self):
                 return self.__logpath
 
+        def set_socket_path(self, sock_path):
+                self.__socket_path = sock_path
+
+        def get_socket_path(self):
+                return self.__socket_path
+
         def set_refresh_index(self):
                 self.__refresh_index = True
 
@@ -211,7 +219,27 @@ class DepotController(object):
         def unset_disable_ops(self):
                 self.__disable_ops = None
 
+        def __ping_unix_socket(self):
+
+                if not os.path.exists(self.__socket_path):
+                        return False
+
+                try:
+                        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                        s.connect(self.__socket_path)
+                        s.close()
+                except socket.error:
+                        return False
+
+                # If we connected without error, the server is listening on
+                # the socket.  That's good enough for now.
+                return True
+
         def __network_ping(self):
+
+                if self.__socket_path:
+                        return self.__ping_unix_socket()
+
                 try:
                         versioned_urlopen(self.get_depot_url(),
                             "versions", [0])
@@ -279,6 +307,8 @@ class DepotController(object):
                         args.append("--refresh-index")
                 if self.__add_content:
                         args.append("--add-content")
+                if self.__socket_path:
+                        args.append("--socket-path=%s" % self.__socket_path)
                 if self.__exit_ready:
                         args.append("--exit-ready")
                 if self.__cfg_file:

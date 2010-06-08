@@ -1,3 +1,10 @@
+Version 39:
+Compatible with clients using versions 36-38.
+
+    Introduces the notion of a system repository to the publisher
+    heirarchy.  This specific type of repository is a subclass of
+    RepositoryURI.  A few new api exceptions are added, too.
+
 Version 38:
 Compatible with clients using versions 36-37.
 

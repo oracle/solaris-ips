@@ -169,24 +169,29 @@ class HTTPRepo(TransportRepo):
                 self._repouri = repouri
                 self._engine = engine
                 self._verdata = None
+                self._sock_path = getattr(self._repouri, "socket_path", None)
 
         def _add_file_url(self, url, filepath=None, progclass=None,
             progtrack=None, header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
-                    header=header, compressible=compress)
+                    header=header, compressible=compress,
+                    sock_path=self._sock_path)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None):
                 return self._engine.get_url(url, header, repourl=self._url,
-                    compressible=compress, ccancel=ccancel)
+                    compressible=compress, ccancel=ccancel,
+                    sock_path=self._sock_path)
 
         def _fetch_url_header(self, url, header=None, ccancel=None):
                 return self._engine.get_url_header(url, header,
-                    repourl=self._url, ccancel=ccancel)
+                    repourl=self._url, ccancel=ccancel,
+                    sock_path=self._sock_path)
 
         def _post_url(self, url, data, header=None, ccancel=None):
                 return self._engine.send_data(url, data, header,
-                    repourl=self._url, ccancel=ccancel)
+                    repourl=self._url, ccancel=ccancel,
+                    sock_path=self._sock_path)
 
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
@@ -503,25 +508,27 @@ class HTTPSRepo(HTTPRepo):
                     progclass=progclass, progtrack=progtrack,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    header=header, compressible=compress)
+                    header=header, compressible=compress,
+                    sock_path=self._sock_path)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None):
                 return self._engine.get_url(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    compressible=compress, ccancel=ccancel)
+                    compressible=compress, ccancel=ccancel,
+                    sock_path=self._sock_path)
 
         def _fetch_url_header(self, url, header=None, ccancel=None):
                 return self._engine.get_url_header(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel)
+                    ccancel=ccancel, sock_path=self._sock_path)
 
         def _post_url(self, url, data, header=None, ccancel=None):
                 return self._engine.send_data(url, data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel)
+                    ccancel=ccancel, sock_path=self._sock_path)
 
 
 class FileRepo(TransportRepo):

@@ -1,0 +1,53 @@
+pkg(5): image packaging system
+
+SYSTEM REPOSITORY
+[transitional]
+
+1.0  Synopsis
+
+     The system repository requirements have not been finalized with the
+     Zones team; however, this document attempts to describe the current
+     state of the system repository support.  This document should be
+     updated and finalized when the system repository support is
+     complete.
+
+
+1.1  Description
+
+     The system repository is a zones specific repository that should
+     always be available in a local zone.  These exist to provide
+     content for publishers that the local zone must have configured,
+     but may not be able to reach by network.  This allows local zones
+     to perform an image-update without being directly connected to all
+     required repositories.  The current assumption is that there will
+     be only one system repository per publisher.
+
+
+2.0  Client Implementaton
+
+     Since the current assumption is that only one system repository is
+     present per publisher, the client implements the system repository
+     functionality by creating a SystemRepositoryURI class that is a
+     subclass of RepositoryURI.  This subclass contains additional
+     properties that are used exclusively for connecting to a system
+     repository.  At the moment, the only property is socket_path, which
+     names a path to a UNIX domain socket where a depot will be
+     answering requests.
+
+     Due to currently existing limitations in configuration file syntax,
+     the system repository is stored as a property of the publisher in
+     the image-config.  When we later have a more expressive config file
+     syntax SystemRepositoryURIs can be created for any repository, or
+     the interface can be genericized so that SystemRepositoryURIs are
+     removed, and code simply tests for a socket_path being set. This
+     would be the way to enable UNIX domain sockets for any repository.
+
+2.1  Server Implementation
+
+     The server implementation is planned, but not implemented.  Bug
+     16149 describes requirements for the server-side implementation.
+
+     See http://defect.opensolaris.org/bz/show_bug.cgi?id=16149 for
+     details.
+
+

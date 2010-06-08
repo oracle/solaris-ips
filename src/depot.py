@@ -50,6 +50,7 @@ MAX_REQUEST_BODY_SIZE = 128 * 1024 * 1024
 HOST_DEFAULT = "0.0.0.0"
 PORT_DEFAULT = 80
 SSL_PORT_DEFAULT = 443
+SOCKET_FILE_DEFAULT = ""
 # The minimum number of threads allowed.
 THREADS_MIN = 1
 # The default number of threads to start.
@@ -140,9 +141,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--file-root dir] [--log-access dest] [--log-errors dest]
            [--mirror] [--nasty] [--set-property <section.property>=<value>]
-           [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
-           [--ssl-dialog] [--ssl-key-file] [--sort-file-max-size size]
-           [--writable-root dir]
+           [--proxy-base url] [--readonly] [--rebuild] [--socket-path] 
+           [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+           [--sort-file-max-size size] [--writable-root dir]
 
         --add-content   Check the repository on startup and add any new
                         packages found.  Cannot be used with --mirror or 
@@ -194,6 +195,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         property values or to update existing ones; can
                         be specified multiple times.  If used with --readonly
                         this acts as a temporary override.
+        --socket-path   The absolute pathname to a Unix domain socket.
+                        If this option is specified, the depot will answer
+                        connections through the UNIX socket instead of over IP.
         --ssl-cert-file The absolute pathname to a PEM-encoded Certificate file.
                         This option must be used with --ssl-key-file.  Usage of
                         this option will cause the depot to only respond to SSL
@@ -255,6 +259,7 @@ if __name__ == "__main__":
         repo_config_file = None
         repo_path = None
         sort_file_max_size = indexer.SORT_FILE_MAX_SIZE
+        socket_path = SOCKET_FILE_DEFAULT
         ssl_cert_file = None
         ssl_key_file = None
         ssl_dialog = "builtin"
@@ -294,8 +299,8 @@ if __name__ == "__main__":
                     "debug=", "disable-ops=", "exit-ready", "file-root=",
                     "help", "llmirror", "mirror", "nasty=", "proxy-base=",
                     "readonly", "rebuild", "refresh-index", "set-property=",
-                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
-                    "sort-file-max-size=", "writable-root="]
+                    "socket-path=", "ssl-cert-file=", "ssl-dialog=",
+                    "ssl-key-file=", "sort-file-max-size=", "writable-root="]
 
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
@@ -452,6 +457,8 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
+                        elif opt == "--socket-path":
+                                socket_path = arg
                         elif opt == "--ssl-cert-file":
                                 if arg == "none":
                                         continue
@@ -633,6 +640,7 @@ if __name__ == "__main__":
             "log.screen": False,
             "server.max_request_body_size": MAX_REQUEST_BODY_SIZE,
             "server.shutdown_timeout": 0,
+            "server.socket_file": socket_path,
             "server.socket_host": HOST_DEFAULT,
             "server.socket_port": port,
             "server.socket_timeout": socket_timeout,
