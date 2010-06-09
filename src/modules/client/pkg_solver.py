@@ -1150,7 +1150,7 @@ class PkgSolver(object):
                 # XXX need to set up per disgruntled publisher reasons
                 if pkg_name in self.__publisher:
                         acceptable_pubs = [self.__publisher[pkg_name]]
-                        reason = _("Publisher differs from installed or specifed version")
+                        reason = _("Publisher differs from installed or specified version")
                 else:
                         # order by pub_rank; choose highest possible tier for
                         # pkgs; guard against unconfigured publishers in known catalog
