@@ -29,6 +29,7 @@ import os
 import re
 import shlex
 import sys
+import traceback
 
 import pkg.actions
 import pkg.manifest as manifest
@@ -288,6 +289,7 @@ if __name__ == "__main__":
         except SystemExit, __e:
                 exit_code = __e
         except Exception, __e: 
+                traceback.print_exc()
                 print >> sys.stderr, "pkgdiff: caught %s, %s" % (Exception, __e)
                 exit_code = 99
 
