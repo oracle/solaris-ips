@@ -125,7 +125,7 @@ class TransportRepo(object):
                 raise NotImplementedError
 
         @staticmethod
-        def _annotate_exceptions(errors):
+        def _annotate_exceptions(errors, mapping=None):
                 """Walk a list of transport errors, examine the
                 url, and add a field that names the request.  This request
                 information is derived from the URL."""
@@ -135,19 +135,31 @@ class TransportRepo(object):
                                 # Error may have been raised before request path
                                 # was determined; nothing to annotate.
                                 continue
+                        
+                        # If caller specified a mapping object, use that
+                        # instead of trying to deduce the request's name.
+                        if mapping and e.url in mapping:
+                                e.request = str(mapping[e.url])
+                                continue
+
                         # Request is basename of path portion of URI.
                         e.request = os.path.basename(urlparse.urlsplit(
                             e.url)[2])
                 return errors
 
         @staticmethod
-        def _url_to_request(urllist):
+        def _url_to_request(urllist, mapping=None):
                 """Take a list of urls and remove the protocol information,
                 leaving just the information about the request."""
 
                 reqlist = []
 
                 for u in urllist:
+                        if mapping and u in mapping:
+                                req = str(mapping[u])
+                                reqlist.append(req)
+                                continue
+
                         utup = urlparse.urlsplit(u)
                         req = utup[2]
                         req = os.path.basename(req)
@@ -346,7 +358,7 @@ class HTTPRepo(TransportRepo):
                 ified in the dest argument."""
 
                 methodstr = "manifest/0/"
-                urllist = []
+                urlmapping = {}
                 progclass = None
 
                 # create URL for requests
@@ -358,10 +370,13 @@ class HTTPRepo(TransportRepo):
                 for fmri, h in mfstlist:
                         f = fmri.get_url_path()
                         url = urlparse.urljoin(baseurl, f)
-                        urllist.append(url)
+                        urlmapping[url] = fmri
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn, header=h,
                             progtrack=progtrack, progclass=progclass)
+
+                # Compute urllist from keys in mapping
+                urllist = urlmapping.keys()
 
                 try:
                         while self._engine.pending:
@@ -372,8 +387,8 @@ class HTTPRepo(TransportRepo):
                         errors, success = self._engine.check_status(urllist,
                             True)
 
-                        errors = self._annotate_exceptions(errors)
-                        success = self._url_to_request(success)
+                        errors = self._annotate_exceptions(errors, urlmapping)
+                        success = self._url_to_request(success, urlmapping)
                         e.failures = errors
                         e.success = success
 
@@ -391,7 +406,7 @@ class HTTPRepo(TransportRepo):
                 # This adds an attribute that describes the request to the
                 # exception, if we were able to figure it out.
 
-                return self._annotate_exceptions(errors)
+                return self._annotate_exceptions(errors, urlmapping)
 
         def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
@@ -795,7 +810,7 @@ class FileRepo(TransportRepo):
                 unique header information.  The destination directory is spec-
                 ified in the dest argument."""
 
-                urllist = []
+                urlmapping = {}
                 progclass = None
 
                 if progtrack:
@@ -817,10 +832,12 @@ class FileRepo(TransportRepo):
                                 self.__record_proto_error(ex)
                                 pre_exec_errors.append(ex)
                                 continue
-                        urllist.append(url)
+                        urlmapping[url] = fmri
                         fn = os.path.join(dest, fmri.get_url_path())
                         self._add_file_url(url, filepath=fn, header=h,
                             progtrack=progtrack, progclass=progclass)
+
+                urllist = urlmapping.keys()
 
                 try:
                         while self._engine.pending:
@@ -831,9 +848,9 @@ class FileRepo(TransportRepo):
                         errors, success = self._engine.check_status(urllist,
                             True)
 
-                        errors = self._annotate_exceptions(errors +
-                            pre_exec_errors)
-                        success = self._url_to_request(success)
+                        errors = self._annotate_exceptions(errors, urlmapping)
+                        errors.extend(pre_exec_errors)
+                        success = self._url_to_request(success, urlmapping)
                         e.failures = errors
                         e.success = success
 
@@ -850,8 +867,9 @@ class FileRepo(TransportRepo):
                 #
                 # This adds an attribute that describes the request to the
                 # exception, if we were able to figure it out.
+                errors = self._annotate_exceptions(errors, urlmapping)
 
-                return self._annotate_exceptions(errors + pre_exec_errors)
+                return errors + pre_exec_errors
 
         def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
@@ -905,8 +923,8 @@ class FileRepo(TransportRepo):
                         errors, success = self._engine.check_status(urllist,
                             True)
 
-                        errors = self._annotate_exceptions(errors +
-                            pre_exec_errors)
+                        errors = self._annotate_exceptions(errors)
+                        errors.extend(pre_exec_errors)
                         success = self._url_to_request(success)
                         e.failures = errors
                         e.success = success
@@ -924,8 +942,9 @@ class FileRepo(TransportRepo):
                 #
                 # This adds an attribute that describes the request to the
                 # exception, if we were able to figure it out.
+                errors = self._annotate_exceptions(errors)
 
-                return self._annotate_exceptions(errors + pre_exec_errors)
+                return errors + pre_exec_errors
 
         def get_url(self):
                 """Returns the repo's url."""

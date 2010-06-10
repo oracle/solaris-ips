@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -357,6 +356,9 @@ class PkgFmri(object):
         def __cmp__(self, other):
                 if not other:
                         return 1
+
+                if not isinstance(other, PkgFmri):
+                        return -1
 
                 c = cmp(self.publisher, other.publisher)
 

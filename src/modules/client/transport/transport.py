@@ -1075,12 +1075,17 @@ class Transport(object):
                                 # successful requests.  Everything else failed.
                                 failedreqs = [
                                     x[0] for x in mfstlist
-                                    if x[0] not in success
+                                    if str(x[0]) not in success
+                                ]
+                                # Transform success list back into FMRI objects
+                                success = [
+                                    x[0] for x in mfstlist
+                                    if str(x[0]) in success
                                 ]
                         elif failedreqs:
                                 success = [
                                     x[0] for x in mfstlist
-                                    if x[0] not in failedreqs
+                                    if str(x[0]) not in failedreqs
                                 ]
                         else:
                                 success = [ x[0] for x in mfstlist ]
@@ -1127,7 +1132,7 @@ class Transport(object):
                                 # reqs that failed during verification.
                                 mfstlist = [
                                     (x,y) for x,y in mfstlist
-                                    if x in failedreqs
+                                    if str(x) in failedreqs
                                 ]
                         # Return if everything was successful
                         else:
