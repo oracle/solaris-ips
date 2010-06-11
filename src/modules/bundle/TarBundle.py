@@ -68,7 +68,4 @@ class TarBundle(object):
                         return unknown.UnknownAction(path=tarinfo.name)
 
 def test(filename):
-        try:
-                return tarfile.is_tarfile(filename)
-        except:
-                return False
+        return tarfile.is_tarfile(filename)

@@ -90,7 +90,4 @@ class DirectoryBundle(object):
                             group="bin", path=pubpath)
 
 def test(filename):
-        try:
-                return stat.S_ISDIR(os.stat(filename).st_mode)
-        except:
-                return False
+        return stat.S_ISDIR(os.stat(filename).st_mode)

@@ -522,6 +522,15 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 rc, out1 = self.pkgsend(url, "generate %s" % src_dir1)
                 rc, out2 = self.pkgsend(url, "generate %s/" % src_dir2)
 
+                # Test with non existing bundle
+                non_existing_bundle = os.path.join(self.test_root,
+                    "non_existing_bundle.tar")
+                rc, out3 = self.pkgsend(url, "generate %s" % non_existing_bundle, exit=1)
+
+                # Test with unknown bundle
+                unknown_bundle = self.make_misc_files("tmp/unknown_file")
+                rc, out3 = self.pkgsend(url, "generate %s" % unknown_bundle, exit=1)
+
                 self.pkgsend(url, "open bar@1.0")
                 mpath = self.make_misc_files({ "bar.mfst": out1 + out2 })[0]
                 self.pkgsend(url, "include -d %s -d %s %s" % (src_dir1,

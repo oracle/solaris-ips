@@ -44,6 +44,7 @@ import os
 import sys
 import traceback
 import warnings
+import errno
 
 import pkg.actions
 import pkg.bundle
@@ -436,7 +437,8 @@ def trans_import(repo_uri, args):
                     cmd="import")
         t = trans.Transaction(repo_uri, trans_id=trans_id)
 
-        for action, err in gen_actions(pargs, timestamp_files):
+        try:
+                for action, err in gen_actions(pargs, timestamp_files):
                         if err:
                                 error(_("invalid action for publication: %s") %
                                     action, cmd="import")
@@ -444,6 +446,17 @@ def trans_import(repo_uri, args):
                                 return 1
                         else:
                                 t.add(action)
+        except TypeError, e:
+                error(e, cmd="import")
+                return 1
+        except EnvironmentError, e:
+                if e.errno == errno.ENOENT:
+                        error("%s: '%s'" % (e.args[1], e.filename),
+                            cmd="import")
+                        return 1
+                else:
+                        raise
+
         return 0
 
 def trans_generate(args):
@@ -459,11 +472,22 @@ def trans_generate(args):
                 usage(_("No arguments specified for subcommand."),
                     cmd="generate")
 
-        for action, err in gen_actions(pargs, timestamp_files):
-                if "path" in action.attrs and hasattr(action, "hash") \
-                    and action.hash == "NOHASH":
-                        action.hash = action.attrs["path"]
-                print action
+        try:
+                 for action, err in gen_actions(pargs, timestamp_files):
+                        if "path" in action.attrs and hasattr(action, "hash") \
+                            and action.hash == "NOHASH":
+                                action.hash = action.attrs["path"]
+                        print action
+        except TypeError, e:
+                error(e, cmd="generate")
+                return 1
+        except EnvironmentError, e:
+                if e.errno == errno.ENOENT:
+                        error("%s: '%s'" % (e.args[1], e.filename),
+                            cmd="generate")
+                        return 1
+                else:
+                        raise
 
         return 0
 
