@@ -111,7 +111,7 @@ class GlobalExceptionHandler:
                 close_btn = md.add_button(gtk.STOCK_CLOSE, 100)
                 md.set_default_response(100)
 
-                dmsg = _("Please let the developers know about this problem by\n"
+                dmsg = _("Please let the developers know about this problem by "
                     "filing a bug together with the error details listed below at:")
                 md.format_secondary_text(dmsg)
                 md.set_title(_('Unexpected Error'))
@@ -128,6 +128,8 @@ class GlobalExceptionHandler:
                 textview = gtk.TextView()
                 textview.show()
                 textview.set_editable(False)
+                textview.set_wrap_mode(gtk.WRAP_WORD)
+
                 sw = gtk.ScrolledWindow()
                 sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
                 sw.add(textview)

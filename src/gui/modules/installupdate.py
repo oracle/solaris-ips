@@ -22,12 +22,20 @@
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-DEFAULT_CONFIRMATION_WIDTH = 550                # Width & height of single confirmation
-DEFAULT_CONFIRMATION_HEIGHT = 200               # frame. The confirmation dialog may
-                                                # consist of frames for packages to be 
-                                                # installed, removed or updated.
-RESET_PACKAGE_DELAY = 2000    # Delay before label text is reset
-                              # Also used to reset window text during install
+DEFAULT_CONFIRMATION_WIDTH = 550        # Width & height of single confirmation
+DEFAULT_CONFIRMATION_HEIGHT = 200       # frame. The confirmation dialog may
+                                        # consist of frames for packages to be 
+                                        # installed, removed or updated.
+RESET_PACKAGE_DELAY = 2000              # Delay before label text is reset
+                                        # Also used to reset window text during install
+DIALOG_DEFAULT_WIDTH = 450              # Default Width of Progress Dialog
+DIALOG_EXPANDED_DETAILS_HEIGHT = 462    # Height of Progress Dialog when Details expanded
+DIALOG_INSTALL_COLLAPSED_HEIGHT = 232   # Heights of progress dialog when Details
+                                        # collapsed for install, remove and done stages
+DIALOG_REMOVE_COLLAPSED_HEIGHT = 210
+DIALOG_DONE_COLLAPSED_HEIGHT = 126
+DIALOG_RELEASE_NOTE_OFFSET = 34         # Additional space required if displaying
+                                        # Release notes link below Details
 import errno
 import os
 import sys
@@ -60,6 +68,7 @@ import pkg.gui.pmgconf as pmgconf
 from pkg.client import global_settings
 
 logger = global_settings.logger
+debug = False
 
 class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
@@ -118,6 +127,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                           2:[_("Downloading..."), _("Download")],
                           3:[_("Installing..."), _("Install")],
                          }
+                self.current_stage_label_done = self.stages[1][1]
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
                 self.update_list = {}
@@ -181,7 +191,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_stages_icon = w_tree_dialog.get_widget("icon_stages")
                 self.current_stage_label = self.w_stage1_label
                 self.current_stage_icon = self.w_stage1_icon
-                self.current_stage_label_done = None
 
                 self.done_icon = gui_misc.get_icon(
                     self.parent.icon_theme, "progress_checkmark")
@@ -226,6 +235,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.packages_with_license = None
                 self.packages_with_license_result = []
                 self.n_licenses = 0
+                self.dlg_expanded_details_h = DIALOG_EXPANDED_DETAILS_HEIGHT
+                self.dlg_width = DIALOG_DEFAULT_WIDTH
+                self.dlg_install_collapsed_h = DIALOG_INSTALL_COLLAPSED_HEIGHT
+                self.dlg_remove_collapsed_h = DIALOG_REMOVE_COLLAPSED_HEIGHT
+                self.dlg_done_collapsed_h = DIALOG_DONE_COLLAPSED_HEIGHT
 
                 try:
                         dic_createplan = \
@@ -277,6 +291,92 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gui_misc.set_modal_and_transient(self.w_license_dialog,
                     self.w_dialog)
                 self.__start_action()
+                self.__setup_createplan_dlg_sizes()
+
+        @staticmethod
+        def __get_scale(textview):
+                style = textview.get_style()
+                font_size_in_pango_unit = style.font_desc.get_size()
+                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+                s = gtk.settings_get_default()
+                dpi = s.get_property("gtk-xft-dpi") / 1024
+
+                # AppFontSize*DPI/72 = Cairo Units
+                # DefaultFont=10, Default DPI=96: 10*96/72 = 13.3 Default FontInCairoUnits
+                def_font_cunits = 13.3
+                app_cunits = round(font_size_in_pixel*dpi/72.0, 1)
+                scale = 1
+                if app_cunits >= def_font_cunits:
+                        scale = round(
+                            ((app_cunits - def_font_cunits)/def_font_cunits) + 1, 2)
+                return scale
+
+        def __setup_createplan_dlg_sizes(self):
+                #Get effective screen space available (net of panels and docks)
+                #instead of using gtk.gdk.screen_width() and gtk.gdk.screen_height()
+                root_win = gtk.gdk.get_default_root_window()
+                net_workarea_prop = gtk.gdk.atom_intern('_NET_WORKAREA')
+                sw, sh = root_win.property_get(net_workarea_prop)[2][2:4]
+                sw -= 28 # Default width of Panel accounts for bottom or side System Panel
+                sh -= 28
+                scale = self.__get_scale(self.w_details_textview)
+
+                if DIALOG_EXPANDED_DETAILS_HEIGHT * scale <= sh:
+                        self.dlg_expanded_details_h = \
+                                (int) (DIALOG_EXPANDED_DETAILS_HEIGHT * scale)
+                        self.dlg_install_collapsed_h = \
+                                (int) (DIALOG_INSTALL_COLLAPSED_HEIGHT * scale)
+                        self.dlg_remove_collapsed_h = \
+                                (int) (DIALOG_REMOVE_COLLAPSED_HEIGHT * scale)
+                        self.dlg_done_collapsed_h = \
+                                (int) (DIALOG_DONE_COLLAPSED_HEIGHT * scale)
+                else:
+                        self.dlg_expanded_details_h = sh
+                        if DIALOG_INSTALL_COLLAPSED_HEIGHT * scale <= sh:
+                                self.dlg_install_collapsed_h = \
+                                        (int) (DIALOG_INSTALL_COLLAPSED_HEIGHT * scale)
+                                self.dlg_remove_collapsed_h = \
+                                        (int) (DIALOG_REMOVE_COLLAPSED_HEIGHT * scale)
+                                self.dlg_done_collapsed_h = \
+                                        (int) (DIALOG_DONE_COLLAPSED_HEIGHT * scale)
+                        else:
+                                self.dlg_install_collapsed_h = sh
+                                if DIALOG_REMOVE_COLLAPSED_HEIGHT * scale <= sh:
+                                        self.dlg_remove_collapsed_h = (int) \
+                                                (DIALOG_REMOVE_COLLAPSED_HEIGHT * scale)
+                                        self.dlg_done_collapsed_h = (int) \
+                                                (DIALOG_DONE_COLLAPSED_HEIGHT * scale)
+                                else:
+                                        self.dlg_remove_collapsed_h = sh
+                                        if DIALOG_DONE_COLLAPSED_HEIGHT * scale <= sh:
+                                                self.dlg_done_collapsed_h = (int) \
+                                                        (DIALOG_DONE_COLLAPSED_HEIGHT * \
+                                                        scale)
+                                        else:
+                                                self.dlg_done_collapsed_h = sh
+
+                if DIALOG_DEFAULT_WIDTH * scale <= sw:
+                        self.dlg_width = \
+                                (int) (DIALOG_DEFAULT_WIDTH * scale)
+                else:
+                        self.dlg_width = sw
+
+                if debug:
+                        print "CreatePlan Dialog Sizes: window", sw, sh, scale, " dlg ", \
+                                self.dlg_width, self.dlg_expanded_details_h, " coll ", \
+                                self.dlg_install_collapsed_h, \
+                                self.dlg_remove_collapsed_h, self.dlg_done_collapsed_h
+
+                if self.gconf.details_expanded:
+                        self.__set_dialog_size(self.dlg_width,
+                            self.dlg_expanded_details_h)
+                else:
+                        if not (self.w_stage2.flags() & gtk.VISIBLE):
+                                self.__set_dialog_size(self.dlg_width,
+                                        self.dlg_remove_collapsed_h)
+                        else:
+                                self.__set_dialog_size(self.dlg_width,
+                                        self.dlg_install_collapsed_h)
 
         def __start_action(self):
                 if self.action == enumerations.REMOVE:
@@ -447,7 +547,26 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__on_cancelcreateplan_clicked(None)
                 return True
 
+        def __set_dialog_size(self, w, h):
+                self.w_dialog.set_size_request(w, h)
+                self.w_dialog.resize(w, h)
+
         def __on_details_expander_activate(self, widget):
+                collapsed = self.w_expander.get_expanded()
+                if collapsed:
+                        if not (self.w_stages_box.flags() & gtk.VISIBLE):
+                                self.__set_dialog_size(self.dlg_width,
+                                        self.dlg_done_collapsed_h)
+                        elif not (self.w_stage2.flags() & gtk.VISIBLE):
+                                self.__set_dialog_size(self.dlg_width,
+                                        self.dlg_remove_collapsed_h)
+                        else:
+                                self.__set_dialog_size(self.dlg_width,
+                                        self.dlg_install_collapsed_h)
+                else:
+                        self.__set_dialog_size(self.dlg_width,
+                            self.dlg_expanded_details_h)
+
                 self.gconf.set_details_expanded(not self.gconf.details_expanded)
 
         def __on_cancelcreateplan_clicked(self, widget):
@@ -576,7 +695,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.InvalidDepotResponseException, e:
                         msg = _("\nUnable to contact a valid package depot. "
-                            "Please check your network\nsettings and "
+                            "Please check your network settings and "
                             "attempt to contact the server using a web "
                             "browser.\n\n%s") % str(e)
                         self.__g_error_stage(msg)
@@ -622,22 +741,22 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except api_errors.ProblematicPermissionsIndexException, err:
                         msg = str(err)
                         msg += _("\nFailure of consistent use of pfexec or gksu when "
-                            "running\n%s is often a source of this problem.") % \
+                            "running %s is often a source of this problem.") % \
                             self.parent_name
                         msg += _("\nTo rebuild index, please use the terminal command:")
                         msg += _("\n\tpfexec pkg rebuild-index")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CorruptedIndexException:
-                        msg = _("There was an error during installation. The search\n"
-                            "index is corrupted. You might want try to fix this\n"
+                        msg = _("There was an error during installation. The search "
+                            "index is corrupted. You might want try to fix this "
                             "problem by running command:\n"
                             "\tpfexec pkg rebuild-index")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ImageUpdateOnLiveImageException:
-                        msg = _("This is an Live Image. The install"
-                            "\noperation can't be performed.")
+                        msg = _("This is an Live Image. The install "
+                            "operation can't be performed.")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.RebootNeededOnLiveImageException:
@@ -648,15 +767,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.PlanMissingException:
                         msg = _("There was an error during installation.\n"
-                            "The Plan of the operation is missing and the operation\n"
-                            "can't be finished. You might want try to fix this\n"
+                            "The Plan of the operation is missing and the operation "
+                            "can't be finished. You might want try to fix this "
                             "problem by restarting %s\n") % self.parent_name
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ImageplanStateException:
                         msg = _("There was an error during installation.\n"
-                            "The State of the image is incorrect and the operation\n"
-                            "can't be finished. You might want try to fix this\n"
+                            "The State of the image is incorrect and the operation "
+                            "can't be finished. You might want try to fix this "
                             "problem by restarting %s\n") % self.parent_name
                         self.__g_error_stage(msg)
                         return
@@ -742,7 +861,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         pass
                 except api_errors.WrapIndexingException, wex:
                         err = _("\n\nDespite the error while indexing, the "
-                                    "image-update, install, or uninstall\nhas completed "
+                                    "image-update, install, or uninstall has completed "
                                     "successfuly.")
                         err = err.replace("\n\n", "")
                         err += "\n" + str(wex)
@@ -936,7 +1055,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         pass
                 except api_errors.WrapIndexingException, wex:
                         err = _("\n\nDespite the error while indexing, the "
-                                    "image-update, install, or uninstall\nhas completed "
+                                    "image-update, install, or uninstall has completed "
                                     "successfuly.")
                         err = err.replace("\n\n", "")
                         err += "\n" + str(wex)
@@ -986,14 +1105,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.__do_end_stage)
 
         def __g_error_stage(self, msg):
-                self.__reset_window_title()
-                if self.action == enumerations.IMAGE_UPDATE:
-                        info_url = misc.get_release_notes_url()
-                        if info_url and len(info_url) == 0:
-                                info_url = gui_misc.RELEASE_URL
-                        self.w_release_notes.show()
-                        self.w_release_notes_link.set_uri(info_url)
-
                 if msg == None or len(msg) == 0:
                         msg = _("No futher information available")
                 self.operations_done = True
@@ -1003,11 +1114,27 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.update_details_text("%s" % msg, "level1")
                 self.update_details_text("\n")
                 txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
-                gobject.idle_add(self.current_stage_label.set_markup, txt)
-                gobject.idle_add(self.current_stage_icon.set_from_stock,
-                    gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
-                gobject.idle_add(self.w_expander.set_expanded, True)
-                gobject.idle_add(self.w_cancel_button.set_sensitive, True)
+                gobject.idle_add(self.__g_error_stage_setup, txt)
+                gobject.idle_add(self.w_dialog.queue_draw)
+
+        def __g_error_stage_setup(self, txt):
+                self.__reset_window_title()
+                if self.action == enumerations.IMAGE_UPDATE:
+                        info_url = misc.get_release_notes_url()
+                        if info_url and len(info_url) == 0:
+                                info_url = gui_misc.RELEASE_URL
+                        self.w_release_notes.show()
+                        self.w_release_notes_link.set_uri(info_url)
+                        self.dlg_expanded_details_h += DIALOG_RELEASE_NOTE_OFFSET * 2
+                        self.dlg_install_collapsed_h += DIALOG_RELEASE_NOTE_OFFSET
+                        self.dlg_remove_collapsed_h += DIALOG_RELEASE_NOTE_OFFSET
+
+                self.current_stage_label.set_markup(txt)
+                self.current_stage_icon.set_from_stock(gtk.STOCK_DIALOG_ERROR,
+                    gtk.ICON_SIZE_MENU)
+                self.w_expander.set_expanded(True)
+                self.w_cancel_button.set_sensitive(True)
+                self.__set_dialog_size(self.dlg_width, self.dlg_expanded_details_h)
 
         def __g_exception_stage(self, tracebk):
                 self.__reset_window_title()
@@ -1025,7 +1152,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
                 msg_1 = _("An unknown error occurred in the %s stage.\n"
-                    "Please let the developers know about this problem by\n"
+                    "Please let the developers know about this problem by "
                     "filing a bug together with the error details listed below at:\n"
                     ) % self.current_stage_name
                 msg_2 = "http://defect.opensolaris.org\n\n"
@@ -1081,6 +1208,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         gobject.idle_add(self.w_progressbar.pulse)
                         time.sleep(0.1)
                 self.stopped_bouncing_progress = True
+                gobject.idle_add(self.w_progressbar.set_fraction, 0.0)
 
         def is_progress_bouncing(self):
                 return not self.stopped_bouncing_progress
@@ -1204,6 +1332,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_progressbar.hide()
                 self.stop_bouncing_progress()
                 self.operations_done = True
+                if not self.gconf.details_expanded:
+                        self.__set_dialog_size(self.dlg_width, self.dlg_done_collapsed_h)
                 if self.parent != None:
                         if not self.web_install and not self.ips_update \
                             and not self.action == enumerations.IMAGE_UPDATE:
