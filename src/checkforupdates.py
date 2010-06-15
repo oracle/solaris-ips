@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -39,7 +38,7 @@ from pkg.client import global_settings
 from cPickle import UnpicklingError
 
 PKG_CLIENT_NAME = "check_for_updates"
-CACHE_VERSION =  2
+CACHE_VERSION =  3
 CACHE_NAME = ".last_refresh_cache"
 
 def __check_for_updates(image_directory, nice):
@@ -105,6 +104,7 @@ def __check_last_refresh(api_obj):
                         if debug:
                                 print "No cache"
                         return enumerations.UPDATES_UNDETERMINED
+                # pylint: disable-msg=E1103
                 if info.get("version") != CACHE_VERSION:
                         if debug:
                                 print "Cache version mismatch:", \
@@ -134,7 +134,21 @@ def __check_last_refresh(api_obj):
 
                 if count != len(old_publishers):
                         return enumerations.UPDATES_UNDETERMINED
+                n_updates = 0
+                n_installs = 0
+                n_removes = 0
                 if info.get("updates_available"):
+                        n_updates = info.get("updates")
+                        n_installs = info.get("installs")
+                        n_removes = info.get("removes")
+                # pylint: enable-msg=E1103
+                if n_updates > 0:
+                        print "n_updates: ", n_updates
+                if n_installs > 0:
+                        print "n_installs: ", n_installs
+                if n_removes > 0:
+                        print "n_removes: ", n_removes
+                if (n_updates + n_installs + n_removes) > 0:
                         return enumerations.UPDATES_AVAILABLE
                 else:
                         return enumerations.NO_UPDATES_AVAILABLE
@@ -153,12 +167,33 @@ def __dump_updates_available(api_obj, stuff_to_do):
                 publisher_list[p.prefix] = p.last_refreshed
         if debug:
                 print "publisher_list:", publisher_list
+        n_installs = 0
+        n_removes = 0
+        n_updates = 0
+        plan_desc = api_obj.describe()
+        if plan_desc:
+                plan = plan_desc.get_changes()
+                for pkg_plan in plan:
+                        orig = pkg_plan[0]
+                        dest = pkg_plan[1]
+                        if orig and dest:
+                                n_updates += 1
+                        elif not orig and dest:
+                                n_installs += 1
+                        elif orig and not dest:
+                                n_removes += 1
         dump_info = {}
         dump_info["version"] = CACHE_VERSION
         dump_info["os_release"] = os.uname()[2]
         dump_info["os_version"] = os.uname()[3]
         dump_info["updates_available"] = stuff_to_do
         dump_info["publishers"] = publisher_list
+        dump_info["updates"] = n_updates
+        dump_info["installs"] = n_installs
+        dump_info["removes"] = n_removes
+        print "n_updates: ", n_updates
+        print "n_installs: ", n_installs
+        print "n_removes: ", n_removes
 
         try:
                 nongui_misc.dump_cache_file(os.path.join(

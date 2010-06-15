@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -47,6 +46,7 @@ import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
+from gettext import ngettext
 try:
         import pynotify
 except ImportError:
@@ -107,6 +107,9 @@ class UpdateManagerNotifier:
                 self.last_check_filename = None
                 self.time_until_next_check = 0
                 self.status_icon = None
+                self.n_updates = 0
+                self.n_installs = 0
+                self.n_removes = 0
                 self.notify = None
                 self.host = None
                 self.last_check_time = 0
@@ -164,6 +167,7 @@ class UpdateManagerNotifier:
                 if start_delay == 0:
                         start_delay = START_DELAY_DEFAULT
                 if debug == True:
+                        start_delay = 1
                         print "start_delay: %d" % start_delay
                 return start_delay
 
@@ -269,6 +273,39 @@ class UpdateManagerNotifier:
                         self.status_icon = self.create_status_icon()
                 self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, value)
                 self.status_icon.set_visible(value)
+                if not value:
+                        return
+
+                toolfmt = _("<b>Updates are available: </b>\n"
+                    "%(updates)s %(installs)s %(removes)s")
+                tooltip = self.__set_updates_str(toolfmt)
+                self.status_icon.set_tooltip_markup(tooltip)
+
+        def __set_updates_str(self, str_fmt):
+                if self.n_updates == 0:
+                        updates_str = ""
+                else:
+                        updates_fmt = ngettext("%d Update,", "%d Updates,",
+                            self.n_updates)
+                        updates_str = updates_fmt % self.n_updates
+                if self.n_installs == 0:
+                        installs_str = ""
+                else:
+                        installs_fmt = ngettext("%d Install,", "%d Installs,",
+                            self.n_installs)
+                        installs_str = installs_fmt % self.n_installs
+                if self.n_removes == 0:
+                        removes_str = ""
+                else:
+                        removes_fmt = ngettext("%d Remove", "%d Removes",
+                            self.n_removes)
+                        removes_str = removes_fmt % self.n_removes
+                updates_str = str_fmt % \
+                    {"updates": updates_str,
+                    "installs": installs_str,
+                    "removes": removes_str}
+                updates_str = updates_str.rstrip(', ')
+                return updates_str
 
         def schedule_check_for_updates(self):
                 self.last_check_time = time.time()
@@ -286,12 +323,31 @@ class UpdateManagerNotifier:
                         print "image_directory: %s" % image_directory
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
-                return_code = subprocess.call([CHECK_FOR_UPDATES,
-                    '--nice', image_directory])
+                proc = subprocess.Popen([CHECK_FOR_UPDATES,
+                    '--nice', image_directory], stdout=subprocess.PIPE)
+                output = proc.communicate()[0].strip()
+                lines = output.splitlines()
+                n_updates = 0
+                n_installs = 0
+                n_removes = 0
+                for line in lines:
+                        if line.startswith("n_updates"):
+                                updates = line.split(":", 1)
+                                n_updates = int(updates[1]) 
+                        if line.startswith("n_installs"):
+                                installs = line.split(":", 1)
+                                n_installs = int(installs[1]) 
+                        if line.startswith("n_removes"):
+                                removes = line.split(":", 1)
+                                n_removes = int(removes[1]) 
+                return_code = proc.wait()
                 if debug:
                         print "return from subprocess is %d" % return_code
                 self.set_last_check_time()
                 if return_code == enumerations.UPDATES_AVAILABLE:
+                        self.n_updates = n_updates
+                        self.n_installs = n_installs
+                        self.n_removes = n_removes
                         self.show_status_icon(True)
                 else:
                         self.show_status_icon(False)
@@ -306,7 +362,6 @@ class UpdateManagerNotifier:
                 status_icon.set_visible(False)
                 status_icon.connect('activate', self.activate_status_icon)
                 status_icon.connect('notify', self.notify_status_icon)
-                status_icon.set_tooltip(_("Updates are available"))
                 return status_icon
 
         def notify_status_icon(self, status_icon, paramspec):
@@ -326,9 +381,12 @@ class UpdateManagerNotifier:
         def show_notify_message(self):
                 if self.notify == None:
                         if pynotify.init("UpdateManager"):
+                                notify_fmt = _("Updates available\n"
+                                    "%(updates)s %(installs)s %(removes)s")
+                                notify_str = self.__set_updates_str(notify_fmt)
+                                notify_str += _("\nPlease click on icon to update.")
                                 self.notify = pynotify.Notification(\
-                _("Update Manager"), \
-                _("Updates available\nPlease click on icon to update."))
+                                    _("Update Manager"), notify_str)
 
                 if self.notify != None:
                         self.set_notify_position()
