@@ -1537,17 +1537,25 @@ class CliTestCase(Pkg5TestCase):
 
 
         def cmdline_run(self, cmdline, exit=0):
+                """Run the command specified in 'cmdline'.  If the exit code of
+                the command is not the value specified in 'exit', raise an
+                UnexpectedExitCodeException."""
+
+                self.debugcmd(cmdline)
+
                 p = subprocess.Popen(cmdline,
                     shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
 
-                output = p.stdout.read()
+                self.output = p.stdout.read()
                 retcode = p.wait()
-                self.debugresult(retcode, exit, output)
+                self.debugresult(retcode, exit, self.output)
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, exit,
-                            retcode, output)
+                            retcode, self.output)
+
+                return retcode
 
 
         def copy_repository(self, src, src_pub, dest, dest_pub):

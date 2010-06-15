@@ -9,69 +9,67 @@ SYNOPSIS
            [-O outputfile] [-P printfile] [inputfile ...]
 
 DESCRIPTION
-     pkgmogrify provides for the automated editing of package manifests
+     pkgmogrify(1) provides for programmatic editing of package manifests
      to simplify the typical transformations needed when automating
-     software builds and package republication.
+     software builds and package publication.
 
-     pkgmogrify provides the following:
+     pkgmogrify(1) provides the following:
 
-     * Macro replacement to facilitate sharing of a
-     single manifest across various architectures and platforms.
+     * Macro replacement to facilitate sharing of a single manifest across
+       various architectures and platforms.
 
-     * An include file mechanism to allow the inclusion of standard
-     components and transforms.
+     * Inclusion of other manifests or manifest fragments such as standard
+       components and transforms.
 
-     * Transformations of package actions, allowing the modification,
-     deletion or addition of action tags.
+     * Transformation of package actions, including the modification,
+       deletion, or addition of action attributes.
 
 OPTIONS
      The following options are supported:
 
-     -D macro=value
-          Defines the specified macro to have the defined value.  Macros
-          appear in the input file as $(macro); substitution is repeated
-          until no more translations are found.  Common idioms include:
+     -D name=value
+          Defines "name" as a macro, with the value "value".  Macros appear
+          in the input file as "$(macro)"; substitution is repeated until
+          no more translations are found.  Common idioms include:
 
       *   Elimination of lines in a manifest on other architectures by
           using an architecture-specific tag at the beginning of the line:
 
-          $(sparc_ONLY)file ....
+              $(sparc_ONLY)file ....
 
-          When processing the SPARC architecture, this macro would be
-          set to the empty string.  When processing other
-          architectures, this macro would be set to '#' on the command
-          line, thus eliminating this action from the manifest on the
-          current architecture.
+          When processing the SPARC architecture, this macro would be set
+          to the empty string.  When processing other architectures, this
+          macro would be set to '#' on the command line, thus eliminating
+          this action from the manifest on the current architecture.
 
-      *   Specifying the name of the 64 bit architecture directory for
-          executables and libraries:
+      *   Specifying platform-specific portions of pathnames, such as the
+          name of the 64-bit architecture directory for executables and
+          libraries:
 
-          file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
+              file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
 
-          Again, the expectation is that these macros would be set to
-          the desired value on the command line; there are no predefined
-          macro values.
+          Again, the expectation is that these macros would be set to the
+          desired value on the command line; there are no predefined macro
+          values.
 
      -I include_directory
           Adds the specified directory to the search path for both files
-          specified on the command line and the embedded <include path>
-          directives.
+          specified on the command line and embedded include directives.
 
      -O outputfile
           Write manifest output to the specified file.  The file is not
-          written if an error occurs or if a transform directive
-          causes an abort operation.  By default, manifest output is
-          written to stdout.
-
-     -P printfile
-          Write output resulting from transform directive print
-          operations to the specified file.  The file is not written
-          if an error occurs or if a transform directive causes an
-          abort operation.  By default, print output is written to
+          written if an error occurs or if a transform directive causes an
+          abort operation.  By default, manifest output is written to
           stdout.
 
-     -i   Ignore include directives in files; only files specified on 
-          the command line (or stdin) are processed.
+     -P printfile
+          Write output resulting from transform directive print operations
+          to the specified file.  The file is not written if an error
+          occurs or if a transform directive causes an abort operation.  By
+          default, print output is written to stdout.
+
+     -i   Ignore include directives in files; only files specified on the
+          command line (or stdin) are processed.
 
      -v   Write out comments into output manifest showing effect of
           transforms to aid debugging.
@@ -80,58 +78,137 @@ OPTIONS
           Displays a usage message.
 
 EMBEDDED DIRECTIVES
-
-     There are two types of directives supported in manifest files:
-     include directives and transform directives.  Include directives
-     insert the specified file (searched for along the paths specified
-     with the -I option) into the manifest at the point they're
-     encountered; transform directives are accumulated until all the
-     file(s) have been read into memory, and then are applied in the
-     order they were encountered.
+     There are two types of directives supported in manifest files: include
+     directives and transform directives.
 
      Include directives are of the form:
 
-     <include path>
+         <include file>
 
-     This causes the named file to be searched for at the specified path,
-     prepending the specified search directories.  When found, the
-     specified file is included.
+     This causes pkgmogrify(1) to search for a file named "file" first in
+     the current directory and then in the directories specified with the
+     -I option.  If found, the contents of the file are inserted into the
+     manifest at the point at which the directive is encountered.  If not
+     found, pkgmogrify(1) exits with an error.
 
-     <transform matching-criteria -> operation>
+     Transform directives are of the form:
 
-     where matching-criteria are of the form:
+         <transform matching-criteria -> operation>
+
+     These are accumulated until all inputs have been read into memory, and
+     then applied to the actions in the order in which they were
+     encountered.
 
      Matching criteria are of the form:
 
-     [action-type ... ] [attribute=<value-regexp> ...]
+         [action-type ... ] [attribute=<value-regexp> ...]
 
      One of the action-types specified must match.  All of the attributes
      specified must match.  The regular expression syntax used is that of
-     python; more information is available via the command "pydoc re" or
-     (more completely) at http://docs.python.org/dev/howto/regex.html.
-     Some examples of matching expressions include:
-
-     file dir link                      # matches files, directories and links
-     path=var/svc/manifest/.*xml        # (note python regexp syntax)
-     mode=0?1[0-7][0-7][0-7]            #
+     Python; more information is available via the command "pydoc re" or
+     (more completely) at http://docs.python.org/dev/howto/regex.html.  The
+     regular expression is anchored at the beginning, but not the end, so
+     the regular expression matching files by their extensions would have
+     to include a leading ".*" and, for safety, a trailing "$".
 
      Multiple criteria may be specified, separated by spaces.
 
-     Operation syntax is of the form:
+     The following operations are available:
 
-     abort                              # immediately exit with status 0
-                                        # and no manifest or print output
-     drop                               # discard this action
-     edit attribute regexp replace      # apply regexp to value of attribute;
-                                        # if match occurs, substitute replace for
-                                        # portion of attribute value that matches
-     delete attribute regexp            # remove attribute values matching regexp
-     set attribute value                # set specified attribute to value
-     add attribute value                # add value to attribute
-     default attribute value            # if attribute is missing, add with
-                                        # specified value
-     print message                      # send message to output file
-                                        # specified via -P
+     add       Add a value to an attribute.  Two arguments are taken.  The
+               first is the name of the attribute, and the second is the
+               value.
+
+     default   Set the value of an attribute if it doesn't already exist.
+               The same two arguments are taken as for "add".
+
+     delete    Remove attribute values.  Two arguments are taken.  The
+               first is the name of the attribute, and the second is a
+               regular expression to match the attribute values deleted.
+               Unlike the regular expression used to match an action, this
+               expression is unanchored.
+
+     drop      Discards this action.
+
+     edit      Modifies an attribute of the action.  Three arguments are
+               taken.  The first is the name of the attribute, the second
+               is a regular expression matching the attribute value, and
+               the third is the replacement string substituted for the
+               portion of the value matched by the regular expression.
+               Unlike the regular expression used to match an action, this
+               expression is unanchored.
+
+     emit      Emit a line to the manifest output stream.  This must be a
+               valid action string, empty (which will result in a blank
+               line), or a comment (a "#" followed by arbitrary text).
+
+     exit      Terminate manifest processing.  No manifest is output and no
+               print operations are applied.  If one argument is given, it
+               must be an integer, and it is used as the exit code.  The
+               default is 0.  If two arguments are given, the first is the
+               exit code, and the second is a message to be printed to
+               stderr.
+
+     print     Print a message to the output file specified with -P.
+
+     set       Set the value of an attribute.  The same two arguments are
+               taken as for "add".
+
+     The "exit", "print", and "emit" operations all take optional output
+     strings.  These strings can refer to the values of attributes of the
+     current action by putting the name of the attribute inside parentheses
+     following a percent sign.  For example, "%(alias)" refers to the value
+     of the action's "alias" attribute.
+
+     Several synthetic attributes exist.  Two are unique to pkgmogrify(1):
+     pkg.manifest.filename and pkg.manifest.lineno.  These refer to the name
+     of the file in which the action was found and the line on which it was
+     found, respectively.  Three others are similar to ones used in pkg(1):
+     action.hash, action.key, and action.name, which refer to the hash
+     value of the action if the action carries a payload, the value of the
+     key attribute, and the name of the action type, respectively.
+
+     If the attribute whose value is requested doesn't exist, pkgmogrify(1)
+     will exit with an error.  To prevent this, the attribute name may be
+     followed by ";notfound=" and a value to substitute in its place.  For
+     example "%(alias;notfound='no alias')" will print the value of the
+     attribute "alias" if it exists, and "no alias" otherwise.
+
+     If the attribute whose value is requested is multi-valued, each value
+     will be printed, separated by spaces.  Similarly to the "notfound"
+     token, the tokens "prefix", "suffix, and "sep" may be used to change
+     this behavior.  The string denoted by "prefix" is prepended to each
+     value, the string denoted by "suffix" is appended to each value, and
+     "sep" is placed in between the suffix of one value and the prefix of
+     the next.
+
+     Similarly to action attributes, pkgmogrify(1) directives may reference
+     package attributes using braces instead of parentheses: "%{pkg.fmri}".
+     At the point at which the transform directive is applied, the
+     attribute must have been defined in a set action, or it is treated as
+     "notfound", described above.  When the processing reaches the end of
+     the manifest file describing the package, the attributes are cleared
+     for the next package.
+
+     It is useful not only to reference package attributes as if they were
+     action attributes, but also to match on them, and even temporarily
+     modify them.  Therefore a synthetic action name, "pkg", is available
+     (only in the context of pkgmogrify(1)) for use in these situations.
+
+     When pkgmogrify(1) finishes reading a manifest specified on the
+     commandline and that manifest defined a "pkg.fmri" package attribute,
+     it will create this synthetic "pkg" action, whose attributes are the
+     package's attributes.  A <transform> directive may then match on this
+     action, just like any other action type.
+
+     Operations on a "pkg" action are special, though, in that they take
+     place only in memory, and do not directly affect the emitted manifest.
+     For instance, trying to set an attribute on a "pkg" action via the
+     "add", "default", or "set" operations will not result in a "set"
+     action being added to the manifest, though it will be available for
+     other <transform> directives to match on.  Attempting to "emit" a
+     "pkg" action will cause an error.  If you wish to add a package
+     attribute, emit a "set" action instead.
 
      The order of processing is as follows:
 
@@ -143,21 +220,67 @@ EMBEDDED DIRECTIVES
         converted into actions and all transforms applied.
      5) Once processing is complete and successful, the output is written.
 
-EXAMPLES:
+EXAMPLES
+     Example 1:  Add tags to SMF manifests so they get imported when the
+     package is installed on a live system.
 
-     # add tags to smf manifests so they get imported on live pkg install
-     <transform file path=var/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
+         <transform file path=(var|lib)/svc/manifest/.*\.xml -> \
+             add restart_fmri svc:/system/manifest-import:default>
 
-     # move files from usr/sfw/bin to usr/bin
-     <transform file -> edit path usr/sfw/bin usr/bin>
+     Example 2:  Move files from usr/sfw/bin to usr/bin.
 
-     # Add reboot-needed tags to files that aren't .conf files under /kernel.
-     # Can also be done w/ regexp magic in a single expression,
-     # but this is easier.  Note that this leverages how transforms
-     # are applied to each action in the order seen in the input files
+         <transform file -> edit path usr/sfw/bin usr/bin>
 
-     <transform file path=kernel/.* -> set reboot-needed true>
-     <transform file path=kernel/.*\.conf -> delete reboot-needed .*>
+     Example 3:  Add "reboot-needed" tags to files under /kernel which
+     aren't .conf files.  This can also be done in a single transform rule
+     with regular expression magic, but this formulation will make more
+     sense to most people.  Note that this leverages how transforms are
+     applied to each action in the order seen in the input files.
+
+         <transform file path=kernel/.* -> set reboot-needed true>
+         <transform file path=kernel/.*\.conf -> delete reboot-needed .*>
+
+     Example 4:  Convert the package attribute "pkg.fmri" into a depend
+     action to become part of an incorporation.
+
+         <transform set name=pkg.fmri -> \
+             emit depend type=incorporate fmri=%(value)>
+         <transform set name=pkg.fmri -> drop>
+
+     Example 5:  Print a comma-separated list of quoted and prefixed bug
+     numbers.
+
+         set name=bugs value=12345 value=54321 value=13579 value=97531
+         <transform set name=bugs -> \
+             print %(value;sep=",";prefix="bug='";suffix="'")>
+
+     Example 6:  Safely print a message even when an attribute is missing.
+
+         <transform driver -> print Found aliases: %(alias;notfound=<none>)>
+
+     Example 7:  Set some default permissions.
+
+         <transform file dir -> default owner root>
+         <transform file dir -> default group bin>
+         <transform file -> default mode 0444>
+         <transform dir -> default mode 0755>
+
+     Example 8:  For any package which isn't marked obsolete, add a
+     dependency on the incorporation for the consolidation that delivers
+     it.  This set of transforms must occur after the manifest has been
+     read in, or the dependency will always be emitted.  Because modifying
+     a "pkg" action has no permanent effect, there is no need to clean up
+     attributes matching "pkg.obsolete=false".
+
+         <transform pkg -> default pkg.obsolete false>
+         <transform pkg pkg.obsolete=false -> emit depend \
+             fmri=consolidation/$(CONS)/$(CONS)-incorporation type=require>
+
+     Example 9:  Error out with a message when an obsolete attribute is
+     found in a manifest.
+
+         <transform file dir link hardlink opensolaris.zone=.* -> \
+             exit 1 The opensolaris.zone attribute is obsolete.>
 
 EXIT STATUS
      The following exit values are returned:
@@ -182,7 +305,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     attributes(5), pkg(5)
+     pkg(1), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
