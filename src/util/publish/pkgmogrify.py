@@ -70,6 +70,7 @@ def add_transform(transform, filename, lineno):
         matching = s[0:index].strip().split()
         types = [a for a in matching if "=" not in a]
         attrdict = pkg.actions.attrsfromstr(" ".join([a for a in matching if "=" in a]))
+
         for a in attrdict:
                 try:
                         attrdict[a] = re.compile(attrdict[a])
@@ -87,7 +88,7 @@ def add_transform(transform, filename, lineno):
                         raise RuntimeError, \
                             _("transform (%s) has 'drop' operation syntax error"
                             ) % transform
-                operation = lambda a, p, f, l: None
+                operation = lambda a, m, p, f, l: None
 
         elif op[0] == "set":
                 try:
@@ -96,8 +97,16 @@ def add_transform(transform, filename, lineno):
                         raise RuntimeError, \
                             _("transform (%s) has 'set' operation syntax error"
                             ) % transform
-                def set_func(action, pkg_attrs, filename, lineno):
-                        action.attrs[attr] = value
+                def set_func(action, matches, pkg_attrs, filename, lineno):
+                        newattr = substitute_values(attr, action, matches,
+                            pkg_attrs, filename, lineno)
+                        newval = substitute_values(value, action, matches,
+                            pkg_attrs, filename, lineno)
+                        if newattr == "action.hash":
+                                if hasattr(action, "hash"):
+                                        action.hash = newval
+                        else:
+                                action.attrs[newattr] = newval
                         return action
                 operation = set_func
 
@@ -109,11 +118,13 @@ def add_transform(transform, filename, lineno):
                             _("transform (%s) has 'default' operation syntax error"
                             ) % transform
 
-                def default_func(action, pkg_attrs, filename, lineno):
-                        if attr not in action.attrs:
+                def default_func(action, matches, pkg_attrs, filename, lineno):
+                        newattr = substitute_values(attr, action, matches,
+                            pkg_attrs, filename, lineno)
+                        if newattr not in action.attrs:
                                 newval = substitute_values(value, action,
-                                    pkg_attrs, filename, lineno)
-                                action.attrs[attr] = newval
+                                    matches, pkg_attrs, filename, lineno)
+                                action.attrs[newattr] = newval
                         return action
                 operation = default_func
 
@@ -122,7 +133,7 @@ def add_transform(transform, filename, lineno):
                         raise RuntimeError, _("transform (%s) has 'abort' "
                             "operation syntax error") % transform
 
-                def abort_func(action, pkg_attrs, filename, lineno):
+                def abort_func(action, matches, pkg_attrs, filename, lineno):
                         sys.exit(0)
 
                 operation = abort_func
@@ -142,10 +153,10 @@ def add_transform(transform, filename, lineno):
                         if len(args) == 2:
                                 msg = args[1]
 
-                def exit_func(action, pkg_attrs, filename, lineno):
+                def exit_func(action, matches, pkg_attrs, filename, lineno):
                         if msg:
                                 newmsg = substitute_values(msg, action,
-                                    pkg_attrs, filename, lineno)
+                                    matches, pkg_attrs, filename, lineno)
                                 print >> sys.stderr, newmsg
                         sys.exit(exitval)
 
@@ -159,15 +170,19 @@ def add_transform(transform, filename, lineno):
                             _("transform (%s) has 'add' operation syntax error"
                             ) % transform
 
-                def add_func(action, pkg_attrs, filename, lineno):
-                        if attr in action.attrs:
-                                av = action.attrs[attr]
+                def add_func(action, matches, pkg_attrs, filename, lineno):
+                        newattr = substitute_values(attr, action, matches,
+                            pkg_attrs, filename, lineno)
+                        newval = substitute_values(value, action, matches,
+                            pkg_attrs, filename, lineno)
+                        if newattr in action.attrs:
+                                av = action.attrs[newattr]
                                 if isinstance(av, list):
-                                        action.attrs[attr].append(value)
+                                        action.attrs[newattr].append(newval)
                                 else:
-                                        action.attrs[attr] = [ av, value ]
+                                        action.attrs[newattr] = [ av, newval ]
                         else:
-                                action.attrs[attr] = value
+                                action.attrs[newattr] = newval
                         return action
                 operation = add_func
 
@@ -179,26 +194,50 @@ def add_transform(transform, filename, lineno):
                             ) % transform
                 attr = args[0]
 
+                # Run args[1] (the regexp) through substitute_values() with a
+                # bunch of bogus values to see whether it triggers certain
+                # exceptions.  If it does, then substitution would have
+                # occurred, and we can't compile the regex now, but wait until
+                # we can correctly run substitute_values().
                 try:
+                        substitute_values(args[1], None, [], None, None, None)
                         regexp = re.compile(args[1])
+                except (AttributeError, RuntimeError):
+                        regexp = args[1]
                 except re.error, e:
                         raise RuntimeError, \
                             _("transform (%s) has 'edit' operation with malformed"
                               "regexp (%s)") % (transform, e)
+
                 if len(args) == 3:
                         replace = args[2]
                 else:
                         replace = ""
 
-                def replace_func(action, pkg_attrs, filename, lineno):
-                        val = attrval_as_list(action.attrs, attr)
+                def replace_func(action, matches, pkg_attrs, filename, lineno):
+                        newattr = substitute_values(attr, action, matches,
+                            pkg_attrs, filename, lineno)
+                        newrep = substitute_values(replace, action, matches,
+                            pkg_attrs, filename, lineno)
+                        val = attrval_as_list(action.attrs, newattr)
+
                         if not val:
                                 return action
+
+                        # It's now appropriate to compile the regexp, if there
+                        # are substitutions to be made.  So do the substitution
+                        # and compile the result.
+                        if isinstance(regexp, basestring):
+                                rx = re.compile(substitute_values(regexp,
+                                    action, matches, pkg_attrs, filename, lineno))
+                        else:
+                                rx = regexp
+
                         try:
-                                action.attrs[attr] = [
-                                        regexp.sub(replace, v)
-                                        for v in val
-                                        ]
+                                action.attrs[newattr] = [
+                                    rx.sub(newrep, v)
+                                    for v in val
+                                ]
                         except re.error, e:
                                 raise RuntimeError, \
                                     _("transform (%s) has edit operation with replacement"
@@ -222,16 +261,16 @@ def add_transform(transform, filename, lineno):
                             _("transform (%s) has 'edit' operation with malformed"
                             "regexp (%s)") % (transform, e)
 
-                def delete_func(action, pkg_attrs, filename, lineno):
+                def delete_func(action, matches, pkg_attrs, filename, lineno):
                         val = attrval_as_list(action.attrs, attr)
                         if not val:
                                 return action
                         try:
                                 new_val = [
-                                        v
-                                        for v in val
-                                        if not regexp.search(v)
-                                        ]
+                                    v
+                                    for v in val
+                                    if not regexp.search(v)
+                                ]
 
                                 if new_val:
                                         action.attrs[attr] = new_val
@@ -255,9 +294,9 @@ def add_transform(transform, filename, lineno):
                 else:
                         msg = op[1]
 
-                def print_func(action, pkg_attrs, filename, lineno):
-                        newmsg = substitute_values(msg, action, pkg_attrs,
-                            filename, lineno)
+                def print_func(action, matches, pkg_attrs, filename, lineno):
+                        newmsg = substitute_values(msg, action, matches,
+                            pkg_attrs, filename, lineno)
 
                         printinfo.append("%s" % newmsg)
                         return action
@@ -274,9 +313,9 @@ def add_transform(transform, filename, lineno):
                 else:
                         msg = op[1]
 
-                def emit_func(action, pkg_attrs, filename, lineno):
-                        newmsg = substitute_values(msg, action, pkg_attrs,
-                            filename, lineno)
+                def emit_func(action, matches, pkg_attrs, filename, lineno):
+                        newmsg = substitute_values(msg, action, matches,
+                            pkg_attrs, filename, lineno)
 
                         if not newmsg.strip() or newmsg.strip()[0] == "#":
                                 return (newmsg, action)
@@ -294,7 +333,7 @@ def add_transform(transform, filename, lineno):
 
         transforms.append((types, attrdict, operation, filename, lineno, transform))
 
-def substitute_values(msg, action, pkg_attrs, filename=None, lineno=None):
+def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=None):
         """Substitute tokens in messages which can be expanded to the action's
         attribute values."""
 
@@ -371,6 +410,31 @@ def substitute_values(msg, action, pkg_attrs, filename=None, lineno=None):
                                 for v in attr
                             ])
                 prevend = i.end()
+
+        newmsg += msg[prevend:]
+
+        # Now see if there are any backreferences to match groups
+        msg = newmsg
+        newmsg = ""
+        prevend = 0
+        backrefs = sum((
+            group
+            for group in (
+                match.groups()
+                for match in matches
+                if match.groups()
+            )
+        ), (None,))
+        for i in re.finditer(r"%<\d>", msg):
+                ref = int(i.string[slice(*i.span())][2:-1])
+
+                if ref == 0 or ref > len(backrefs) - 1:
+                        raise RuntimeError, _("no match group %d (max %d)") % \
+                            (ref, len(backrefs) - 1)
+
+                newmsg += msg[prevend:i.start()] + backrefs[ref]
+                prevend = i.end()
+
         newmsg += msg[prevend:]
         return newmsg
 
@@ -406,18 +470,45 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                 if set(attrdict.keys()) - set(action.attrs.keys()):
                         continue
 
-                # check to make sure all matching attrs actually match
-                if False in [
-                    attrdict[key].match(attrval) != None
+                # Check to make sure all matching attrs actually match.  The
+                # order is effectively arbitrary, since they come from a dict.
+                matches = [
+                    attrdict[key].match(attrval)
                     for key in attrdict
                     for attrval in attrval_as_list(action.attrs, key)
-                ]:
+                ]
+
+                if not all(matches):
                         continue
+
+                s = transform[11:transform.index("->")]
+                # Map each pattern to its position in the original match string.
+                matchorder = {}
+                for attr, match in attrdict.iteritems():
+                        # Attributes might be quoted even if they don't need it,
+                        # and lead to a mis-match.  These three patterns are all
+                        # safe to try.  If we fail to find the match expression,
+                        # it's probably because it used different quoting rules
+                        # than the action code does, or from these three rules.
+                        # It might very well be okay, so we go ahead, but these
+                        # oddly quoted patterns will sort at the beginning, and
+                        # backref matching may be off.
+                        matchorder[match.pattern] = -1
+                        for qs in ("%s=%s", "%s=\"%s\"", "%s='%s'"):
+                                pos = s.find(qs % (attr, match.pattern))
+                                if pos != -1:
+                                        matchorder[match.pattern] = pos
+                                        break
+
+                # Then sort the matches list by those positions.
+                matches.sort(key=lambda x: matchorder[x.re.pattern])
+
                 # time to apply transform operation
                 try:
                         if verbose:
                                 orig_attrs = action.attrs.copy()
-                        action = operation(action, pkg_attrs, act_filename, act_lineno)
+                        action = operation(action, matches, pkg_attrs,
+                            act_filename, act_lineno)
                 except RuntimeError, e:
                         raise RuntimeError, \
                             "Transform specified in file %s, line %s reports %s" % (

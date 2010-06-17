@@ -136,7 +136,10 @@ EMBEDDED DIRECTIVES
                the third is the replacement string substituted for the
                portion of the value matched by the regular expression.
                Unlike the regular expression used to match an action, this
-               expression is unanchored.
+               expression is unanchored.  Normal regular expression
+               backreferences, of the form '\1', '\2', etc., are available
+               in the replacement string, if there are groups defined in
+               the regular expression.
 
      emit      Emit a line to the manifest output stream.  This must be a
                valid action string, empty (which will result in a blank
@@ -154,11 +157,16 @@ EMBEDDED DIRECTIVES
      set       Set the value of an attribute.  The same two arguments are
                taken as for "add".
 
-     The "exit", "print", and "emit" operations all take optional output
-     strings.  These strings can refer to the values of attributes of the
-     current action by putting the name of the attribute inside parentheses
-     following a percent sign.  For example, "%(alias)" refers to the value
-     of the action's "alias" attribute.
+     All operations aside from "delete" and "drop" take (possibly optional)
+     arguments whose contents will end up in the output stream.  These
+     strings can contain three different kinds of special tokens which
+     allow the output to contain information that isn't based on a fixed
+     transformation of each action.
+
+     The first kind of substitution allows the operation to refer to the
+     values of attributes of the current action by putting the name of the
+     attribute inside parentheses following a percent sign.  For example,
+     "%(alias)" refers to the value of the action's "alias" attribute.
 
      Several synthetic attributes exist.  Two are unique to pkgmogrify(1):
      pkg.manifest.filename and pkg.manifest.lineno.  These refer to the name
@@ -166,7 +174,9 @@ EMBEDDED DIRECTIVES
      found, respectively.  Three others are similar to ones used in pkg(1):
      action.hash, action.key, and action.name, which refer to the hash
      value of the action if the action carries a payload, the value of the
-     key attribute, and the name of the action type, respectively.
+     key attribute, and the name of the action type, respectively.  For
+     actions with payloads, the "set" operation can change the hash of the
+     action by operating on the action.hash attribute.
 
      If the attribute whose value is requested doesn't exist, pkgmogrify(1)
      will exit with an error.  To prevent this, the attribute name may be
@@ -209,6 +219,12 @@ EMBEDDED DIRECTIVES
      other <transform> directives to match on.  Attempting to "emit" a
      "pkg" action will cause an error.  If you wish to add a package
      attribute, emit a "set" action instead.
+
+     The third kind of substitution is a backreference, not like the ones
+     usable in the "edit" operation, but a reference to groups listed in
+     the transformation match on the left-hand side of the "->".  These are
+     indicated by "%<1>", "%<2>", etc., in the order seen in the matching
+     criteria.
 
      The order of processing is as follows:
 
@@ -281,6 +297,12 @@ EXAMPLES
 
          <transform file dir link hardlink opensolaris.zone=.* -> \
              exit 1 The opensolaris.zone attribute is obsolete.>
+
+     Example 10: Set the locale facet appropriate for the pathname under
+     consideration.
+
+         <transform dir file link hardlink path=.*/locale/([^/]+).* -> \
+             default facet.locale.%<1> true>
 
 EXIT STATUS
      The following exit values are returned:

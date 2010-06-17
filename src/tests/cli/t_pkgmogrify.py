@@ -73,6 +73,10 @@ set name=justonebug value=12345
 file thisismyhashvalue path=usr/bin/foo mode=0777 owner=root group=bin
 file thisismyotherhashvalue path=usr/sfw/bin/foo mode=0777 owner=root group=bin
 file path=usr/bin/bar mode=0777 owner=root group=bin
+depend type=require fmri=__TBD path=usr/bin/foo mode=0755
+file NOHASH path="'/usr/bin/quotedpath'" moo=cowssayit
+file NOHASH path=usr/share/locale/de/foo.mo
+file NOHASH path=usr/share/locale/fr/foo.mo locale.fr=oui
 """
 
         pkgcontents3 = """\
@@ -124,6 +128,17 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
             "pkggen": "<transform pkg $(MYATTR)=false -> emit depend fmri=consolidation type=require>",
             "recurse": "<transform file mode=0777 -> emit file path=usr/bin/bar mode=0777>",
             "rbneeded": "<transform file reboot-needed=true -> emit set name=magic value=true>",
+            "brdefault": "<transform depend fmri=__TBD path=([^/]*)/([^/]*)/ mode=0(.)55 -> default pkg.debug.depend.path %%<1>/%%<2>>",
+            "brdefault2": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<3>>",
+            "brdefault3": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<4>>",
+            "brdefault3a": "<transform depend fmri=__TBD mode=0(.)55 path=([^/]*)/([^/]*)/ -> default pkg.debug.depend.path %%<2>/%%<0>>",
+            "brdefault4": "<transform file path=usr/share/locale/([^/]+).* -> default locale.%%<1> true>",
+            "brweirdquote": "<transform file moo=(.*) path='\\'.*/([^/]*)\\'' -> default refs %%<1>,%%<2>>",
+            "bradd": "<transform file path=usr/share/locale/([^/]+).* -> add locale.%%<1> true>",
+            "brset": "<transform file path=usr/share/locale/([^/]+).* -> set locale.%%<1> true>",
+            "bredit": "<transform file path=usr/share/locale/([^/]+).* -> edit path .*/([^/]*\\.mo) another/place/for/locales/%%<1>/\\\\1>",
+            "bredit2": "<transform file path=usr/share/locale/([^/]+).* -> edit path %%<1> LANG>",
+            "edit1": "<transform file path=usr/(share|lib)/locale.* -> edit path usr/(lib|share)/locale place/\\\\1/langs>",
         }
 
         basic_defines = {
@@ -260,7 +275,6 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
 
         def test_3(self):
                 source_file = os.path.join(self.test_root, "source_file")
-                output_file = os.path.join(self.test_root, "output_file")
 
                 self.pkgmogrify([self.transforms["X11->Y11"], source_file])
                 self.assertNoMatch("X11")
@@ -531,6 +545,76 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 self.pkgmogrify([self.transforms["pkgmatch"],
                     self.transforms["pkggen"], source_file], defines=defines)
                 self.assertNoMatch("^depend fmri=consolidation type=require$")
+
+        def test_14(self):
+                """Test the use of backreferences to the matching portion of the
+                transform."""
+
+                source_file = os.path.join(self.test_root, "source_file2")
+
+                # Basic test of backreferences, using the default operation.
+                self.pkgmogrify([self.transforms["brdefault"], source_file])
+                self.assertMatch("pkg.debug.depend.path=usr/bin($| )")
+
+                # Same operation, but reorder the match criteria (and the
+                # references to match) to show that the reference numbers are
+                # based on the literal order of the match criteria, rather than
+                # some internal storage mechanism.
+                self.pkgmogrify([self.transforms["brdefault2"], source_file])
+                self.assertMatch("pkg.debug.depend.path=usr/bin($| )")
+
+                # A reference to a group that doesn't exist should die
+                # gracefully.
+                self.pkgmogrify([self.transforms["brdefault3"], source_file],
+                    exit=1)
+
+                # A reference to group 0 should die gracefully.
+                self.pkgmogrify([self.transforms["brdefault3a"], source_file],
+                    exit=1)
+
+                # A backreference may very well be used as part of an attribute
+                # name.  Make sure that the "default" operation takes the fully
+                # substituted attribute name into account.
+                self.pkgmogrify([self.transforms["brdefault4"], source_file])
+                self.assertMatch("locale.de=true")
+                self.assertMatch("locale.fr=oui")
+
+                # Quoting in a match attribute may not agree with the quoting
+                # that actions use, confusing the mechanism we use to ensure
+                # backreference numbers refer to the right groups.  Make sure
+                # we don't tip over, but show that we didn't get the backrefs
+                # right.  The right solution for this is probably to have a
+                # mode for fromstr() that returns a list rather than a dict.
+                self.pkgmogrify([self.transforms["brweirdquote"], source_file])
+                # XXX # self.assertMatch("refs=cowssayit,quotedpath")
+
+                # A "set" operation with a backreference works.
+                self.pkgmogrify([self.transforms["brset"], source_file])
+                self.assertMatch("locale.de=true")
+                self.assertMatch("locale.fr=true")
+
+                # An "add" operation with a backreference works.
+                self.pkgmogrify([self.transforms["bradd"], source_file])
+                self.assertMatch("locale.de=true", count=1)
+                self.assertMatch("locale.fr=oui", count=1)
+                self.assertMatch("locale.fr=true", count=1)
+
+                # This is the "normal" kind of backreferencing, only available
+                # for the "edit" operation, where a \1 in the replacement string
+                # refers to a group in the regex string, all on the operation
+                # side of the transform.
+                self.pkgmogrify([self.transforms["edit1"], source_file])
+                self.assertMatch("path=place/share/langs/de/foo.mo")
+
+                # An "edit" operation with a backreference in the replacement
+                # value works.  This one also uses the \1-style backreference.
+                self.pkgmogrify([self.transforms["bredit"], source_file])
+                self.assertMatch("path=another/place/for/locales/de/foo.mo")
+
+                # An "edit" operation with a backreference in the matching
+                # expression works.
+                self.pkgmogrify([self.transforms["bredit2"], source_file])
+                self.assertMatch("path=usr/share/locale/LANG/foo.mo")
 
 if __name__ == "__main__":
         unittest.main()
