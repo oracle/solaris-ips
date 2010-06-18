@@ -1116,13 +1116,12 @@ def get_smf_packages(server_url, manifest_locations, filter):
         image_dir = tempfile.mkdtemp("", "pkg_importer_smfsearch.")
 
         is_zone = False
-        pub_name = "opensolaris.org"
         refresh_allowed = True
 
         # create a temporary image
         api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
             CLIENT_API_VERSION, image_dir, pkg.client.api.IMG_TYPE_USER,
-            is_zone, facets=pkg.facet.Facets(), force=False, prefix=pub_name,
+            is_zone, facets=pkg.facet.Facets(), force=False,
             progtrack=tracker, refresh_allowed=refresh_allowed,
             repo_uri=server_url)
 
