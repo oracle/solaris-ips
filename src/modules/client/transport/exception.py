@@ -216,6 +216,28 @@ class TransportFrameworkError(TransportException):
                 return cmp(self.reason, other.reason)
 
 
+class TransportStallError(TransportException):
+        """Raised when stalls occur in the transport framework."""
+
+        def __init__(self, url=None, repourl=None, uuid=None):
+                TransportException.__init__(self)
+                self.url = url
+                self.urlstem = repourl
+                self.retryable = True
+                self.uuid = uuid
+
+        def __str__(self):
+                s = "Framework stall: " % self.code
+                if self.url:
+                        s += "\nURL: '%s'." % self.url
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, TransportStallError):
+                        return -1        
+                return cmp(self.url, other.url)
+
+
 class TransferContentException(TransportException):
         """Raised when there are problems downloading the requested content."""
 

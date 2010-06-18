@@ -28,6 +28,7 @@ import errno
 import httplib
 import os
 import pycurl
+import time
 import urlparse
 
 # Need to ignore SIGPIPE if using pycurl in NOSIGNAL mode.
@@ -80,6 +81,7 @@ class CurlTransportEngine(TransportEngine):
                 # Header bits and pieces
                 self.__user_agent = None
                 self.__common_header = {}
+                self.__last_stall_check = 0
 
                 # Set options on multi-handle
                 self.__mhandle.setopt(pycurl.M_PIPELINING, 1)
@@ -94,6 +96,7 @@ class CurlTransportEngine(TransportEngine):
                         eh.success = False
                         eh.fileprog = None
                         eh.filetime = -1
+                        eh.starttime = -1
                         eh.uuid = None
                         self.__chandles.append(eh)
 
@@ -130,6 +133,59 @@ class CurlTransportEngine(TransportEngine):
                     sock_path=sock_path)
 
                 self.__req_q.appendleft(t)
+
+        def __check_for_stalls(self):
+                """In some situations, libcurl can get itself
+                tied in a knot, and fail to make progress.  Check that the
+                active handles are making progress.  If none of the active
+                handles have downloaded any content for the timeout period,
+                reset the transport and generate exceptions for the failed
+                requests."""
+
+                current_time = time.time()
+                timeout = global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT
+                time_list = []
+                size_list = []
+                failures = []
+                q_hdls = [
+                    hdl for hdl in self.__chandles
+                    if hdl not in self.__freehandles
+                ]
+
+                # time.time() is based upon system clock.  Check that
+                # our time hasn't been set backwards.  If time is set forward,
+                # we'll have to expire the handles.  There's no way to detect
+                # this until python properly implements gethrtime().  Solaris
+                # implementations of time.clock() appear broken.
+
+                for h in q_hdls:
+                        time_elapsed = current_time - h.starttime
+                        if time_elapsed < 0:
+                                h.starttime = current_time
+                                time_elapsed = 0
+                        size_xfrd = h.getinfo(pycurl.SIZE_DOWNLOAD) + \
+                            h.getinfo(pycurl.SIZE_UPLOAD)
+                        time_list.append(time_elapsed)
+                        size_list.append(size_xfrd)
+
+                # If timeout is smaller than smallest elapsed time,
+                # and no data has been transferred, abort.
+                if timeout < min(time_list) and max(size_list) == 0:
+                        for h in q_hdls:
+                                url = h.url
+                                uuid = h.uuid
+                                urlstem = h.repourl
+                                ex = tx.TransportStallError(url,
+                                    repourl=urlstem, uuid=uuid)
+
+                                self.__mhandle.remove_handle(h)
+                                self.__teardown_handle(h)
+                                self.__freehandles.append(h)
+
+                                failures.append(ex)
+
+                self.__failures.extend(failures)
+
 
         def __cleanup_requests(self):
                 """Cleanup handles that have finished their request.
@@ -541,6 +597,16 @@ class CurlTransportEngine(TransportEngine):
 
                 self.__cleanup_requests()
 
+                if self.__active_handles and (not self.__freehandles or not
+                    self.__req_q):
+                        cur_clock = time.time()
+                        if cur_clock - self.__last_stall_check > 1:
+                                self.__last_stall_check = cur_clock
+                                self.__check_for_stalls()
+                        elif cur_clock - self.__last_stall_check < 0:
+                                self.__last_stall_check = cur_clock
+                                self.__check_for_stalls()
+
         def orphaned_request(self, url, uuid):
                 """Add the URL to the list of orphaned requests.  Any URL in
                 list will be removed from the transport next time run() is
@@ -724,6 +790,7 @@ class CurlTransportEngine(TransportEngine):
                 hdl.setopt(pycurl.URL, treq.url)
                 hdl.url = treq.url
                 hdl.uuid = treq.uuid
+                hdl.starttime = time.time()
                 # The repourl is the url stem that identifies the
                 # repository. This is useful to have around for coalescing
                 # error output, and statistics reporting.
@@ -867,6 +934,7 @@ class CurlTransportEngine(TransportEngine):
                 hdl.fileprog = None
                 hdl.uuid = None
                 hdl.filetime = -1
+                hdl.starttime = -1
 
 
 class TransportRequest(object):
