@@ -1,0 +1,13 @@
+package media/dvd+rw-tools
+consolidation "sfw"
+classification "System/Media"
+import SUNWdvdrw
+version 7.1
+end package
+
+package SUNWdvdrw
+consolidation "sfw"
+renamed 133
+depend media/dvd+rw-tools
+version 5.21.4.10.8
+end package

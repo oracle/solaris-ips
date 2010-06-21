@@ -1,0 +1,11 @@
+package library/java/jarjar
+consolidation "sfw"
+obsoleted 138
+version 1.0
+end package
+
+package SUNWjarjar
+consolidation "sfw"
+obsoleted 142
+version 1.0
+end package

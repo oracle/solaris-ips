@@ -1,0 +1,17 @@
+package library/openldap
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWopenldapr
+import SUNWopenldapu
+version 2.4.21
+add group groupname=openldap gid=75
+add user username=openldap uid=75 group=openldap gcos-field="OpenLDAP User" \
+	ftpuser=false
+end package
+
+package SUNWopenldap
+consolidation "sfw"
+renamed 133
+depend library/openldap
+version 2.4.11
+end package

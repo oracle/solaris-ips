@@ -87,3 +87,15 @@ depend SUNWsquid
 depend SUNWsvn
 depend netbeans
 end package
+
+package tomcat-dev
+classification "Development/Java"
+summary "Apache Tomcat Development cluster"
+depend SUNWapch22
+depend SUNWapch22m-dtrace
+depend SUNWapch22m-jk
+depend SUNWmysql51
+depend SUNWmysql5jdbc
+depend SUNWtcat
+depend developer/netbeans/netbeans-java
+end package

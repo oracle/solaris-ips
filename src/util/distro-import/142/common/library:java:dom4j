@@ -1,0 +1,11 @@
+package library/java/dom4j
+consolidation "sfw"
+obsoleted 138
+version 1.6.1
+end package
+
+package SUNWdom4j
+consolidation "sfw"
+obsoleted 142
+version 1.6.1
+end package

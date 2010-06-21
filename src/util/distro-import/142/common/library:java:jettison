@@ -1,0 +1,11 @@
+package library/java/jettison
+consolidation "sfw"
+obsoleted 138
+version 1.0
+end package
+
+package SUNWjettison
+consolidation "sfw"
+obsoleted 142
+version 1.0
+end package

@@ -1,0 +1,11 @@
+package library/java/pullparser
+consolidation "sfw"
+obsoleted 138
+version 2.1.10
+end package
+
+package SUNWpull-parser
+consolidation "sfw"
+obsoleted 142
+version 2.1.10
+end package

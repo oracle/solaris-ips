@@ -1,0 +1,6 @@
+package system/locale/bs
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-bs
+depend system/locale
+end package

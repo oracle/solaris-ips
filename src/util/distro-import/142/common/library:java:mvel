@@ -1,0 +1,11 @@
+package library/java/mvel
+consolidation "sfw"
+obsoleted 138
+version 1.2.22
+end package
+
+package SUNWmvel
+consolidation "sfw"
+obsoleted 142
+version 1.2.22
+end package

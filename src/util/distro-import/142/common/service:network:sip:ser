@@ -1,0 +1,11 @@
+package service/network/sip/ser
+consolidation "sfw"
+obsoleted 142
+version 0.8.12
+end package
+
+package SUNWser
+consolidation "sfw"
+obsoleted 142
+version 0.8.12
+end package

@@ -2,28 +2,29 @@ package web/webstack-ui
 classification "Web Services/Application and Web Servers"
 summary "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
-depend SUNWj6rt
-depend amp
+depend runtime/java
+depend web/amp
 add depend fmri=webstackui@0.5.11-1 type=optional
 end package
 
 package amp-dev
 classification "Development/Integrated Development Environments"
 summary "AMP Development cluster"
-depend SUNWPython
+depend SUNWaconf
 depend SUNWapch22d
-depend SUNWapch22m-jk
-depend SUNWcvs
-depend SUNWmemcached
-depend SUNWmercurial
+depend SUNWbison
+depend SUNWflexlex
+depend SUNWgcc
+depend SUNWgmake
+depend SUNWgnu-automake-110
+depend SUNWgnu-automake-19
+depend SUNWlibtool
 depend SUNWphp52-pear
-depend SUNWphp52-pgsql
 depend SUNWphp52d
-depend SUNWpython-twisted
-depend SUNWsquid
-depend SUNWsvn
-depend SUNWtcat
-depend netbeans
+depend SUNWsprot
+depend amp
+depend developer/netbeans/plugin/nb-dtrace
+depend netbeans-php
 depend web/webstack-ui
 end package
 

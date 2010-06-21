@@ -1,0 +1,26 @@
+package database/mysql-50
+consolidation "sfw"
+classification "System/Databases"
+import SUNWmysql5u
+import SUNWmysql5r
+depend database/mysql-common
+depend runtime/perl-584
+version 5.0.91
+
+chattr etc/mysql/5.0/my.cnf \
+	original_name=SUNWmysql5:etc/mysql/5.0/my.cnf
+end package
+
+package database/mysql-5
+consolidation "sfw"
+renamed 134
+depend database/mysql-50
+version 5.0.86
+end package
+
+package SUNWmysql5
+consolidation "sfw"
+renamed 133
+depend database/mysql-5
+version 5.0.86
+end package

@@ -1,0 +1,11 @@
+package library/java/cglib
+consolidation "sfw"
+obsoleted 138
+version 2.2
+end package
+
+package SUNWcglib
+consolidation "sfw"
+obsoleted 142
+version 2.2
+end package
