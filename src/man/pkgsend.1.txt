@@ -18,8 +18,8 @@ SYNOPSIS
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
      /usr/bin/pkgsend close [-A | --no-index] [--no-catalog]
 
-     /usr/bin/pkgsend generate [ -T pattern] bundlefile ...
-     /usr/bin/pkgsend import [-T pattern] bundlefile ...
+     /usr/bin/pkgsend generate [-T pattern] [--target file] bundlefile ...
+     /usr/bin/pkgsend import [-T pattern] [--target file] bundlefile ...
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
@@ -78,17 +78,34 @@ SUBCOMMANDS
           transaction.  Requires transaction context.  See ACTIONS
           below.
 
-     import [-T pattern] bundlefile ...
-          Add each given bundlefile (such as a SVR4 package) into the
-          current transaction.  If the basename of files in the bundle
-          match the optional pattern(s), the timestamp of the file is
-          added to the action for that file.  The pattern uses shell
-          matching rules:
+     import [-T pattern] [--target file] bundlefile ...
+          Add each given bundlefile into the current transaction.
+          Supported bundle types are:
+
+            - filesystem format SVr4 packages
+            - datastream format SVr4 packages
+            - tar files
+            - directories
+
+          If the basename of files in the bundle match the pattern(s)
+          specified with -T, the timestamp of the file is added to the
+          action for that file.  The pattern uses shell matching rules:
 
                *      matches everything
                ?      matches any single character
                [seq]  matches any character in seq
                [!seq] matches any character not in seq
+
+          When the bundle is a directory, there is no clear way to
+          distinguish a file action from a hardlink action when there are
+          multiple pathnames for a single inode.  Normally, the first one
+          found in the filesystem walk is treated as a file and the rest as
+          hardlinks.  This may be arbitrary, depending on the
+          implementation of the filesystem.  To specify which pathnames
+          should be treated as files, pass each pathname as an argument to
+          the --target option.  This option has no effect on other bundle
+          types, as they are capable of expressing which pathnames are
+          files and which are hardlinks.
 
      include [-d basedir] ... [manifest] ...
           Add resources associated with the multiple actions present in
@@ -132,14 +149,14 @@ SUBCOMMANDS
           with a --add-content flag (see pkg.depotd(1M) man page) to
           catalog and index the new content.
 
-     generate [ -T pattern] bundlefile ...
+     generate [-T pattern] [--target file] bundlefile ...
           Read each given bundlefile (such as an SVR4 package, directory,
           tarfile, etc) and emit the manifest describing the bundlefile to
-          the stdout.  The -T option works as in the import command.
-          The repo argument or PKG_TRANS_ID is not used with this subcommand.
-          Once obtained, the manifest can be annotated, have dependencies
-          analyzed, added, etc before being passed to the publish or import
-          subcommands.
+          the stdout.  The -T and --target options work as in the import
+          command.  The repo argument or PKG_TRANS_ID is not used with this
+          subcommand.  Once obtained, the manifest can be annotated, have
+          dependencies analyzed, added, etc before being passed to the
+          publish or import subcommands.
 
      refresh-index
           Update the repository's search indices.  Should be used after

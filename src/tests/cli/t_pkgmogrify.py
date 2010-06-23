@@ -77,6 +77,8 @@ depend type=require fmri=__TBD path=usr/bin/foo mode=0755
 file NOHASH path="'/usr/bin/quotedpath'" moo=cowssayit
 file NOHASH path=usr/share/locale/de/foo.mo
 file NOHASH path=usr/share/locale/fr/foo.mo locale.fr=oui
+set name=pkg.summary value="Doo wah diddy"
+legacy pkg=SUNWwombat version=3
 """
 
         pkgcontents3 = """\
@@ -139,6 +141,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
             "bredit": "<transform file path=usr/share/locale/([^/]+).* -> edit path .*/([^/]*\\.mo) another/place/for/locales/%%<1>/\\\\1>",
             "bredit2": "<transform file path=usr/share/locale/([^/]+).* -> edit path %%<1> LANG>",
             "edit1": "<transform file path=usr/(share|lib)/locale.* -> edit path usr/(lib|share)/locale place/\\\\1/langs>",
+            "doublequote": "<transform legacy -> default name %%{pkg.summary}>",
         }
 
         basic_defines = {
@@ -518,6 +521,9 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 # The "action.hash" attribute can have a "notfound" value.
                 self.pkgmogrify([self.transforms["synthetic5"], source_file])
                 self.assertMatch("^something$")
+
+                self.pkgmogrify([self.transforms["doublequote"], source_file])
+                self.assertNoMatch("^legacy .*'\"")
 
         def test_13(self):
                 """Test the use of package attributes."""

@@ -156,7 +156,8 @@ def add_transform(transform, filename, lineno):
                 def exit_func(action, matches, pkg_attrs, filename, lineno):
                         if msg:
                                 newmsg = substitute_values(msg, action,
-                                    matches, pkg_attrs, filename, lineno)
+                                    matches, pkg_attrs, filename, lineno,
+                                    quote=True)
                                 print >> sys.stderr, newmsg
                         sys.exit(exitval)
 
@@ -296,7 +297,7 @@ def add_transform(transform, filename, lineno):
 
                 def print_func(action, matches, pkg_attrs, filename, lineno):
                         newmsg = substitute_values(msg, action, matches,
-                            pkg_attrs, filename, lineno)
+                            pkg_attrs, filename, lineno, quote=True)
 
                         printinfo.append("%s" % newmsg)
                         return action
@@ -315,7 +316,7 @@ def add_transform(transform, filename, lineno):
 
                 def emit_func(action, matches, pkg_attrs, filename, lineno):
                         newmsg = substitute_values(msg, action, matches,
-                            pkg_attrs, filename, lineno)
+                            pkg_attrs, filename, lineno, quote=True)
 
                         if not newmsg.strip() or newmsg.strip()[0] == "#":
                                 return (newmsg, action)
@@ -333,7 +334,7 @@ def add_transform(transform, filename, lineno):
 
         transforms.append((types, attrdict, operation, filename, lineno, transform))
 
-def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=None):
+def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=None, quote=False):
         """Substitute tokens in messages which can be expanded to the action's
         attribute values."""
 
@@ -354,15 +355,23 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                                 if tok == ";":
                                         tok = tokstream.get_token()
                                 eq = tokstream.get_token()
-                                assert(eq == "=")
-                                val = tokstream.get_token()
-                                if ('"', '"') == (val[0], val[-1]):
-                                        val = val[1:-1]
-                                elif ("'", "'") == (val[0], val[-1]):
-                                        val = val[1:-1]
+                                if eq == "" or eq == ";":
+                                        val = True
+                                else:
+                                        assert(eq == "=")
+                                        val = tokstream.get_token()
+                                        if ('"', '"') == (val[0], val[-1]):
+                                                val = val[1:-1]
+                                        elif ("'", "'") == (val[0], val[-1]):
+                                                val = val[1:-1]
                                 d[tok] = val
                 else:
                         attrname = i.group(group)
+
+                d.setdefault("quote", quote)
+
+                if d.get("noquote", None):
+                        d["quote"] = False
 
                 if group == 2:
                         attr = pkg_attrs.get(attrname, d.get("notfound", None))
@@ -399,6 +408,9 @@ def substitute_values(msg, action, matches, pkg_attrs, filename=None, lineno=Non
                                         return '"%s"' % s.replace("\"", "\\\"")
                         else:
                                 return s
+
+                if not d["quote"]:
+                        q = lambda x: x
 
                 if isinstance(attr, basestring):
                         newmsg += msg[prevend:i.start()] + \
@@ -692,7 +704,7 @@ def main_func():
         try:
                 for f in infiles:
                         lines.extend(read_file(f, ignoreincludes))
-                        lines.append((None, f, None))
+                        lines.append((None, f[0], None))
         except RuntimeError, e:
                 sys.exit(1)
 

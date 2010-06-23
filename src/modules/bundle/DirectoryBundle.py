@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import os
@@ -47,17 +46,26 @@ class DirectoryBundle(object):
         caller once the action has been emitted.
         """
 
-        def __init__(self, path):
+        def __init__(self, path, targetpaths=()):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
                 self.rootdir = os.path.normpath(path)
                 self.pkgname = os.path.basename(self.rootdir)
                 self.inodes = {}
+                self.targetpaths = targetpaths
 
         def __iter__(self):
+                # Pre-populate self.inodes with the paths of known targets
+                for p in self.targetpaths:
+                        fp = os.path.join(self.rootdir, p)
+                        pstat = os.lstat(fp)
+                        self.inodes[pstat.st_ino] = fp
+
                 for root, dirs, files in os.walk(self.rootdir):
                         for obj in dirs + files:
-                                yield self.action(os.path.join(root, obj))
+                                act = self.action(os.path.join(root, obj))
+                                if act:
+                                        yield act
 
         def action(self, path):
                 rootdir = self.rootdir
@@ -68,9 +76,14 @@ class DirectoryBundle(object):
 
                 if stat.S_ISREG(pstat.st_mode):
                         inode = pstat.st_ino
-                        if inode not in self.inodes:
+                        # Any inode in self.inodes will either have been visited
+                        # before or will have been pre-populated from the list
+                        # of known targets.  Create file actions for known
+                        # targets and unvisited inodes.
+                        if pubpath in self.targetpaths or \
+                            inode not in self.inodes:
                                 if pstat.st_nlink > 1:
-                                        self.inodes[inode] = path
+                                        self.inodes.setdefault(inode, path)
                                 return pkg.actions.file.FileAction(
                                     open(path, "rb"), mode=mode, owner="root",
                                     group="bin", path=pubpath,

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -33,7 +32,7 @@ from pkg.actions import *
 
 class SolarisPackageDirBundle(object):
 
-        def __init__(self, filename, data=True):
+        def __init__(self, filename, data=True, targetpaths=()):
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
                 self.filename = filename

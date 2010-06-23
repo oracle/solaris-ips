@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The ordering is important -- SolarisPackageDirBundle must come before
@@ -39,14 +38,15 @@ import os
 import sys
 from pkg.bundle import *
 
-def make_bundle(filename):
+def make_bundle(filename, targetpaths=()):
         """Determines what kind of bundle is at the given filename, and returns
         the appropriate bundle object.
         """
 
         for type in __all__:
                 if eval("%s.test('%s')" % (type, filename)):
-                        return eval("%s.%s('%s')" % (type, type, filename))
+                        return eval("%s.%s('%s', targetpaths=%s)" %
+                            (type, type, filename, targetpaths))
 
         raise TypeError("Unknown bundle type for '%s'" % filename)
 

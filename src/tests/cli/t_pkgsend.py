@@ -928,5 +928,132 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkgsend(url, "include %s" % " ".join(misc), exit=1)
 
 
+class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
+
+        def test_bundle_dir_hardlinks(self):
+                """Verify that hardlink targeting works correctly."""
+
+                rootdir = self.test_root
+
+                def diffmf(src, dst):
+                        added, changed, removed = src.difference(dst)
+
+                        # Strip all attributes from file actions other than path
+                        for aa in added + changed + removed:
+                                for a in aa:
+                                        if a and a.name in ("file", "dir"):
+                                                a.attrs = {
+                                                    "path": a.attrs["path"]
+                                                }
+
+                        # Re-do the difference to eliminate actions, if the
+                        # above changed anything:
+                        added, changed, removed = src.difference(dst)
+
+                        res = []
+                        for a1, a2 in added:
+                                res.append("+ %s" % a2)
+                        for a1, a2 in changed:
+                                res.append("- %s" % a1)
+                                res.append("+ %s" % a2)
+                        for a1, a2 in removed:
+                                res.append("- %s" % a1)
+
+                        return "\n".join(res)
+
+                def dirlist(dir):
+                        l = [dir]
+                        while dir:
+                                dir = os.path.dirname(dir)
+                                l.append(dir)
+                        return l
+
+                def do_test(*pathnames):
+                        self.debug("=" * 70)
+                        self.debug("Testing: %s" % (pathnames,))
+                        for i in xrange(len(pathnames)):
+                                l = list(pathnames)
+                                p = l.pop(i)
+                                do_test_one(p, l)
+
+                def do_test_one(target, links):
+                        self.debug("-" * 70)
+                        self.debug("Testing: %s %s" % (target, links))
+                        tpath = self.make_misc_files(target)[0]
+                        expected_mf = "file %s path=%s\n" % (target, target)
+                        dirs = set()
+
+                        # Iterate over the links, creating them and adding them
+                        # to the expected manifest.
+                        for link in links:
+                                lpath = os.path.join(rootdir, link)
+                                ldir = os.path.dirname(lpath)
+                                if not os.path.exists(ldir):
+                                        os.makedirs(ldir)
+                                os.link(tpath, lpath)
+                                expected_mf += "hardlink path=%s target=%s\n" % (
+                                    link, os.path.relpath(tpath, ldir))
+                                # Add the directories implied by the link
+                                dirs.update(dirlist(os.path.dirname(link)))
+
+                        # Add the directories implied by the target
+                        dirs.update(dirlist(os.path.dirname(target)))
+                        dirs.discard(""); dirs.discard(".")
+                        for d in dirs:
+                                expected_mf += "dir path=%s\n" % d
+
+                        self.debug("EXPECTED:\n" + expected_mf + 40 * "=")
+
+                        # Generate the manifest
+                        targetargs = "".join(("--target %s " % t for t in
+                            [target]))
+                        rc, out = self.pkgsend(command="generate " +
+                            targetargs + rootdir)
+
+                        # Create manifest objects
+                        genmf = manifest.Manifest()
+                        genmf.set_content(out)
+                        cmpmf = manifest.Manifest()
+                        cmpmf.set_content(expected_mf)
+
+                        # Run the differ
+                        diffs = diffmf(genmf, cmpmf)
+
+                        # Print and fail if there are any diffs
+                        if diffs:
+                                self.debug(diffs)
+                                self.fail("YOU FAIL")
+
+                        # Remove the tree before starting over
+                        shutil.rmtree(rootdir)
+
+                # Target and link in the same directory
+                do_test("f1", "f2")
+
+                # Target and link in the same directory, one level down
+                do_test("d1/f1", "d1/f2")
+
+                # Target and link in different directories, at the same level
+                do_test("d1/f1", "d2/f2")
+
+                # Target and link at different levels
+                do_test("d1/f1", "f2")
+
+                # Just the reverse
+                do_test("f1", "d1/f2")
+
+                # Target and link at different levels, one level lower
+                do_test("d1/f1", "d2/d3/f2")
+
+                # Target and link at different levels, two levels apart
+                do_test("d1/f1", "d2/d3/d4/f2")
+
+                # Two links in the same directory as the target
+                do_test("f1", "f2", "f3")
+                do_test("d1/f1", "d1/f2", "f3")
+                do_test("d1/f1", "d1/f2", "d2/f3")
+
+
+
 if __name__ == "__main__":
         unittest.main()

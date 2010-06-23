@@ -88,12 +88,12 @@ Packager subcommands:
         pkgsend create-repository --set-property <section.property>=<value>
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
-        pkgsend import [-T file_pattern] bundlefile ...
-        pkgsend include [-d basedir] .. [manifest] ...
+        pkgsend import [-T pattern] [--target file] bundlefile ...
+        pkgsend include [-d basedir] ... [manifest] ...
         pkgsend close [-A | [--no-index] [--no-catalog]]
         pkgsend publish [ -d basedir] ... [--no-index]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
-        pkgsend generate [-T file_pattern] bundlefile ....
+        pkgsend generate [-T pattern] [--target file] bundlefile ...
         pkgsend refresh-index
 
 Options:
@@ -399,9 +399,9 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 return 0
 
-def gen_actions(files, timestamp_files):
+def gen_actions(files, timestamp_files, target_files):
         for filename in files:
-                bundle = pkg.bundle.make_bundle(filename)
+                bundle = pkg.bundle.make_bundle(filename, target_files)
                 for action in bundle:
                         if action.name == "file":
                                 basename = os.path.basename(action.attrs["path"])
@@ -409,11 +409,9 @@ def gen_actions(files, timestamp_files):
                                         if fnmatch.fnmatch(basename, pattern):
                                                 break
                                 else:
-                                        try:
-                                                del action.attrs["timestamp"]
-                                        except KeyError:
-                                                pass
-                        yield (action, action.name in nopub_actions)
+                                        action.attrs.pop("timestamp", None)
+
+                        yield action, action.name in nopub_actions
 
 def trans_import(repo_uri, args):
         try:
@@ -423,13 +421,16 @@ def trans_import(repo_uri, args):
                     _("No transaction ID specified in $PKG_TRANS_ID")
                 sys.exit(1)
 
-        opts, pargs = getopt.getopt(args, "T:")
+        opts, pargs = getopt.getopt(args, "T:", ["target="])
 
         timestamp_files = []
+        target_files = []
 
         for opt, arg in opts:
                 if opt == "-T":
                         timestamp_files.append(arg)
+                elif opt == "--target":
+                        target_files.append(arg)
 
         if not args:
                 usage(_("No arguments specified for subcommand."),
@@ -437,7 +438,8 @@ def trans_import(repo_uri, args):
         t = trans.Transaction(repo_uri, trans_id=trans_id)
 
         try:
-                for action, err in gen_actions(pargs, timestamp_files):
+                for action, err in gen_actions(pargs, timestamp_files,
+                    target_files):
                         if err:
                                 error(_("invalid action for publication: %s") %
                                     action, cmd="import")
@@ -459,20 +461,24 @@ def trans_import(repo_uri, args):
         return 0
 
 def trans_generate(args):
-        opts, pargs = getopt.getopt(args, "T:")
+        opts, pargs = getopt.getopt(args, "T:", ["target="])
 
         timestamp_files = []
+        target_files = []
 
         for opt, arg in opts:
                 if opt == "-T":
                         timestamp_files.append(arg)
+                elif opt == "--target":
+                        target_files.append(arg)
 
         if not args:
                 usage(_("No arguments specified for subcommand."),
                     cmd="generate")
 
         try:
-                 for action, err in gen_actions(pargs, timestamp_files):
+                 for action, err in gen_actions(pargs, timestamp_files,
+                     target_files):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]

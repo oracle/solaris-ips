@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -33,7 +32,7 @@ from pkg.actions import *
 
 class TarBundle(object):
 
-        def __init__(self, filename):
+        def __init__(self, filename, targetpaths=()):
                 self.tf = tarfile.open(filename)
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
