@@ -1075,17 +1075,12 @@ class Transport(object):
                                 # successful requests.  Everything else failed.
                                 failedreqs = [
                                     x[0] for x in mfstlist
-                                    if str(x[0]) not in success
-                                ]
-                                # Transform success list back into FMRI objects
-                                success = [
-                                    x[0] for x in mfstlist
-                                    if str(x[0]) in success
+                                    if x[0] not in success
                                 ]
                         elif failedreqs:
                                 success = [
                                     x[0] for x in mfstlist
-                                    if str(x[0]) not in failedreqs
+                                    if x[0] not in failedreqs
                                 ]
                         else:
                                 success = [ x[0] for x in mfstlist ]
@@ -1100,7 +1095,7 @@ class Transport(object):
                                         fmri = mxfr[s][1]
                                         self._verify_manifest(fmri, dl_path)
                                 except tx.InvalidContentException, e:
-                                        e.request = str(s)
+                                        e.request = s
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
                                         continue
@@ -1132,7 +1127,7 @@ class Transport(object):
                                 # reqs that failed during verification.
                                 mfstlist = [
                                     (x,y) for x,y in mfstlist
-                                    if str(x) in failedreqs
+                                    if x in failedreqs
                                 ]
                         # Return if everything was successful
                         else:

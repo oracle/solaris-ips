@@ -135,16 +135,21 @@ class TransportRepo(object):
                                 # Error may have been raised before request path
                                 # was determined; nothing to annotate.
                                 continue
-                        
-                        # If caller specified a mapping object, use that
-                        # instead of trying to deduce the request's name.
-                        if mapping and e.url in mapping:
-                                e.request = str(mapping[e.url])
+
+                        if not mapping:
+                                # Request is basename of path portion of URI.
+                                e.request = os.path.basename(urlparse.urlsplit(
+                                    e.url)[2])
                                 continue
 
-                        # Request is basename of path portion of URI.
-                        e.request = os.path.basename(urlparse.urlsplit(
-                            e.url)[2])
+                        # If caller specified a mapping object, use that
+                        # instead of trying to deduce the request's name.
+                        if e.url not in mapping:
+                                raise tx.TransportOperationError(
+                                    "No mapping found for URL %s" % e.url)
+
+                        e.request = mapping[e.url]
+
                 return errors
 
         @staticmethod
@@ -155,14 +160,19 @@ class TransportRepo(object):
                 reqlist = []
 
                 for u in urllist:
-                        if mapping and u in mapping:
-                                req = str(mapping[u])
+
+                        if not mapping:
+                                utup = urlparse.urlsplit(u)
+                                req = utup[2]
+                                req = os.path.basename(req)
                                 reqlist.append(req)
                                 continue
 
-                        utup = urlparse.urlsplit(u)
-                        req = utup[2]
-                        req = os.path.basename(req)
+                        if u not in mapping:
+                                raise tx.TransportOperationError(
+                                    "No mapping found for URL %s" % u)
+
+                        req = mapping[u]
                         reqlist.append(req)
 
                 return reqlist

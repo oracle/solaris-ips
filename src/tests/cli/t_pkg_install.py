@@ -165,6 +165,18 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add dir mode=755 owner=root group=bin path=/tmp/baz-dir
             close """
 
+        a16189 = """
+            open a16189@1.0,5.11-0
+            add depend type=require fmri=pkg:/b16189@1.0
+            close """
+
+        b16189 = """
+            open b16189@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -564,6 +576,39 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     "test", "last_refreshed")
                 os.unlink(lr_path)
                 self.pkg("install --no-refresh foo")
+
+        def test_bug_16189(self):
+                """Create a repository with a pair of manifests.  Have
+                pkg A depend upon pkg B.  Rename pkg B on the depot-side
+                and attempt to install. This should fail, but not traceback.
+                Then, modify the manifest on the serverside, ensuring that
+                the contents don't match the hash.  Then try the install again.
+                This should also fail, but not traceback."""
+
+                afmri = self.pkgsend_bulk(self.rurl, self.a16189)
+                bfmri = self.pkgsend_bulk(self.rurl, self.b16189)
+                self.image_create(self.rurl)
+
+                repo = self.dc.get_repo()
+
+                bpath = repo.manifest(bfmri[0])
+                old_dirname = os.path.basename(os.path.dirname(bpath))
+                old_dirpath = os.path.dirname(os.path.dirname(bpath))
+                new_dirname = "potato"
+                old_path = os.path.join(old_dirpath, old_dirname)
+                new_path = os.path.join(old_dirpath, new_dirname)
+                os.rename(old_path, new_path)
+                self.pkg("install a16189", exit=1)
+
+                os.rename(new_path, old_path)
+                self.image_destroy()
+                self.image_create(self.rurl)
+
+                apath = repo.manifest(afmri[0])
+                afobj = open(apath, "w")
+                afobj.write("set name=pkg.summary value=\"banana\"\n")
+                afobj.close()
+                self.pkg("install a16189", exit=1)
 
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
