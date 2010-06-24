@@ -27,16 +27,17 @@ Definitions
 ~~~~~~~~~~~
 
     Both packages and actions within a package can carry metadata, which
-    we informally refer to as attributes and tags.
+    we informally refer to as attributes and tags.  Both attributes and
+    tags have a name and one or more values.
 
-    Attributes:  settings that apply to an entire package.  Introduction
-    of an attribute that causes different deliveries by the client could
-    cause a conflict with the versioning algebra, so we attempt to avoid
-    them.
+    Attributes
+	settings that apply to an entire package.  Introduction
+	of an attribute that causes different deliveries by the client could
+    	cause a conflict with the versioning algebra, so we attempt to avoid
+    	them.
 
-    Tags are the settings that affect individual files within a package.
-    Tags may eventually have values, depending on how many tags are
-    required to handle the SPARC-based platform binaries.
+    Tags
+	settings that affect individual files within a package.
 
 Attribute and tag syntax and namespace
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,17 +45,33 @@ Attribute and tag syntax and namespace
 Syntax
 ``````
 
+Naming
+^^^^^^
+
     The syntax for attributes and tags is similar to that used for
-    pkg(5) and smf(5) FMRIs.
+    |pkg5| and |smf5| FMRIs.
 
     [org_prefix,][name][:locale]
 
     The organizational prefix is a forward-ordered or reverse-ordered
-    domain name, followed by a common.  The name field is a  
-    The default locale, if the locale field is omitted is "C", a 7-bit
+    domain name, followed by a comma.  The name field is an identifier
+    which may have a prefix ending in a period to allocate the namespace.
+    If the locale field is omitted, the default locale is "C", a 7-bit
     ASCII locale.
 
     Each of these fields is [A-Za-z][A-Za-z0-9\_-.]*.
+
+Manifests
+^^^^^^^^^
+
+    In package manifests, the syntax for an attribute is:
+
+       set name=<attribute name> value=<value> [value=<value2> ...]
+
+    In package manifests, tags are included in the action line
+    for the action they apply to:
+
+       <action> [...] <tag name>=<tag value> [<tag name>=<tag value2> ...]
 
 Unprefixed attributes and tags
 ``````````````````````````````
@@ -68,16 +85,18 @@ Unprefixed attributes and tags
 Attributes and tags common to all packages
 ``````````````````````````````````````````
 
-    The "pkg" attribute is to be used for attributes common to all
-    packages, regardless of which particular OS platforms that a specific
-    package may target.
+    Attributes and tags starting with "pkg." or "info." are for attributes
+    common to all packages, regardless of which particular OS platforms that
+    a specific package may target.   "pkg" attributes are used by the 
+    packaging system itself, while "info" attributes are purely informational,
+    possibly for use by other software.
 
 Common attributes
 ^^^^^^^^^^^^^^^^^
 
-    pkg.name
-       A short, descriptive name for the package.  In accordance with
-       2.1 above, pkg.name:fr would be the descriptive name in French.
+    pkg.summary
+       A short, descriptive name for the package.
+       pkg.summary:fr would be the descriptive name in French.
        Exact numerical version strings are discouraged in the
        descriptive name.
 
@@ -89,33 +108,62 @@ Common attributes
 
     pkg.detailed_url
        One or more URLs to pages or sites with further information about
-       the package.
+       the package. pkg.detailed_url:fr would be the URL to a page with
+       information in French.
+
+    pkg.renamed
+       A value of "true" indicates the package has been renamed or split
+       into the packages listed in the depend actions.
+
+    pkg.obsolete
+       A value of "true" indicates the package is obsolete and should be
+       removed on upgrade.
+
+    variant.*
+       See facets.txt
 
 Common tags
 ^^^^^^^^^^^
 
-    XXX variant/facet usage
+    disable_fmri
+       See "Actuators" section of |pkg5|
 
-    pkg.debug
-       This file is used when the package is intended to be installed in
-       a debug configuration.  For example, we expect to deliver a debug
-       version of the kernel, in addition to the standard non-debug
-       version.
+    facet.*
+       See facets.txt
 
-    XXX pkg.platform
+    reboot-needed
+       See "Actuators" section of |pkg5|
 
-    XXX ISA (particularly need to know i386 on i86pc vs amd64 on i86pc)
+    refresh_fmri
+       See "Actuators" section of |pkg5|
 
-    pkg.compatibility
-        (for shipping non-bleeding edge .so.x.y.z copies, perhaps)
-        XXX are we still going to use this?
+    restart_fmri
+       See "Actuators" section of |pkg5|
 
-Informational tags
-^^^^^^^^^^^^^^^^^^
+    suspend_fmri
+       See "Actuators" section of |pkg5|
 
-The following tags are not necessary for correct package installation,
+    variant.*
+       See facets.txt
+
+Informational attributes
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following attributes are not necessary for correct package installation,
 but having a shared convention lowers confusion between publishers and
 users.
+
+info.classification
+    A list of labels classifying the package into the categories
+    shared among |pkg5| graphical clients.
+
+    Values currently used for OpenSolaris are prefixed with
+    ``org.opensolaris.category.2008:`` and must match one of the
+    categories listed in ``src/gui/data/opensolaris.org.sections``
+
+info.keyword
+    A list of additional terms that should cause this package to be
+    returned by a search.
 
 info.maintainer
     A human readable string describing the entity providing the
@@ -145,16 +193,39 @@ info.repository_changeset
     A changeset ID for the version of the source code contained in
     info.repository_url.
 
-info.gui.classification
-    A list of labels classifying the package into the categories
-    shared among |pkg5| graphical clients.
-
 Attributes common to all packages for an OS platform
 ````````````````````````````````````````````````````
 
     Each OS platform is expected to define a string representing that
     platform.  For example, the |OS_Name| platform is represented by
     the string "opensolaris".
+
+OpenSolaris attributes
+^^^^^^^^^^^^^^^^^^^^^^
+
+    opensolaris.arc_url
+        One or more URLs associated with the ARC case or cases
+	associated with the component(s) delivered by the package.
+
+    opensolaris.smf.fmri
+	One or more FMRI's representing SMF services delivered by this
+	package.  Automatically generated by |pkgdepend1| for packages
+	containing SMF service manifests.
+
+    opensolaris.zone
+	Obsolete - replaced by variant.opensolaris.zone.
+
+    variant.opensolaris.zone
+	See facets.txt
+
+OpenSolaris tags
+^^^^^^^^^^^^^^^^
+
+    opensolaris.zone
+	Obsolete - replaced by variant.opensolaris.zone.
+
+    variant.opensolaris.zone
+	See facets.txt
 
 Organization specific attributes
 ````````````````````````````````
@@ -166,6 +237,42 @@ Organization specific attributes
     ``service.example.com,support_level`` or
     ``com.example.service,support_level`` to describe a level of support
     for a package and its contents.
+
+Attributes specific to certain types of actions
+```````````````````````````````````````````````
+
+    Each type of action also has specific attributes covered in the 
+    documentation of those actions.   These are generally documented 
+    in the section of the |pkg5| manual page for that action.
+
+Attributes specific to certain types of file
+````````````````````````````````````````````
+
+    These would generally appear on file actions for files in a specific
+    format.
+
+    elfarch, elfbits, elfhash
+
+	Data about ELF format binary files (may be renamed in the future
+	to info.file.elf.*).   Automatically generated during package 
+	publication.  See the "File Actions" section of |pkg5|.
+
+    info.file.font.name
+
+	The name of a font contained in a given file.   There may be multiple
+	values per file for formats which collect multiple typefaces into a
+	single file, such as .ttc (TrueType Collections), or for font aliases.
+	May also be provided in localized variants, such as a Chinese font 
+	providing both info.file.font.name:en and info.file.font.name:zh for
+	the English and	Chinese names for the font.
+
+    info.file.font.xlfd
+
+	An X Logical Font Description (XLFD) for a font contained in a
+	given file.   Should match an XLFD listed in fonts.dir or fonts.alias
+	for the file.  There may be multiple values per file due to font
+	aliases.
+
 
 .. 3.3.  Attributes best avoided
 
