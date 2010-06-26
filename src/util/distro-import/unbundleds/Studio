@@ -1,8 +1,34 @@
+#
+# Oracle Solaris Studio
+#
+
+#
+#        E N T E R P R I S E      R E L E A S E S 
+#
+# Enterprise releases get installed into a versioned directory
+# under /opt.  You can have multiple versions installed at once.
+# The unversioned package name is an alias for the latest Enterprise
+# release.  "sunstudio" -> "sunstudio12u1"
+#
+
+#
+# These are the global alias packages.
+# Currently: developer/sunstudio
+#
+
 package developer/sunstudio
 version 12.1.1
 depend developer/sunstudio12u1
+# This dependency is used as part of package renaming
+# Make sure the older sunstudio package is removed.
 add depend fmri=sunstudio@12.1.1-1 type=optional
 end package
+
+#
+# These are the version-specific packages for the Enterprise
+# release.  Currently: developer/sunstudio12u1
+# This installs into /opt/sunstudio12.1
+#
 
 package developer/sunstudio12u1
 classification "Development/C"
@@ -12,6 +38,18 @@ classification "Development/Integrated Development Environments"
 classification "Development/Suites"
 summary "Sun Studio - C, C++, & Fortran compilers and Tools"
 version 12.1.1
+# This dependency is necessary to get the express package to
+# remove its symlinks from /usr/bin.
+add depend fmri=developer/sunstudioexpress@0.2009.3.1 type=optional
+# This dependency is used as part of package renaming
+# Make sure the older sunstudio12u1 package is removed.
+add depend fmri=sunstudio12u1@12.1.1-1 type=optional
+add set name=info.keyword value="Fortran compiler module iropt optimizer \
+    autopar debug debugger debugging breakpoint parallelization tuning \
+    multi-thread multi-core productivity HPC linux collector platform \
+    xprofile profile profiling performance library blas lapack fftpack \
+    fft solver sparse C C++ OpenMP Studio IDE editor refactoring \
+    DLight"
 import sunstudio12u1
 depend SUNWarc
 depend SUNWcpp
@@ -27,62 +65,334 @@ depend SUNWj6rtx
 depend SUNWlibm
 depend SUNWsprot
 depend SUNWtoo
-add depend fmri=developer/sunstudioexpress@0.2009.3.1 type=optional
-add depend fmri=sunstudio12u1@12.1.1-1 type=optional
-add set name=info.keyword value="Fortran compiler module iropt optimizer \
-    autopar debug debugger debugging breakpoint parallelization tuning \
-    multi-thread multi-core productivity HPC linux collector platform \
-    xprofile profile profiling performance library blas lapack fftpack \
-    fft solver sparse autopar C C++ OpenMP Studio IDE editor refactoring \
-    DLight"
 end package
 
-package developer/sunstudioexpress
+#
+#        E X P R E S S      R E L E A S E S
+#
+# This section is for Express releases of Oracle Solaris Studio
+# They are all installed in the same directory, so you
+# can only have one at a time.
+# This installs into /opt/solstudioex
+#
+
+package developer/solaris-studio-express
 classification "Development/C"
 classification "Development/C++"
 classification "Development/High Performance Computing"
 classification "Development/Integrated Development Environments"
 classification "Development/Suites"
-summary "Sun Studio Express - C, C++, & Fortran compilers and Tools"
-version 0.2009.3.1
-import sunstudioexpress
-depend SUNWarc
-depend SUNWcpp
-depend SUNWhea
-depend SUNWj6cfg
-depend SUNWj6dev
-depend SUNWj6dmo
-depend SUNWj6dmx
-depend SUNWj6dvx
-depend SUNWj6man
-depend SUNWj6rt
-depend SUNWj6rtx
-depend SUNWlibm
-depend SUNWsprot
-depend SUNWtoo
-add depend fmri=sunstudioexpress@0.2009.3.1-1 type=optional
+summary "Solaris Studio Express - C, C++, & Fortran compilers and Tools"
+version 0.2010.6
+#
 add set name=info.keyword value="Fortran compiler module iropt optimizer \
     autopar debug debugger debugging breakpoint parallelization tuning \
     multi-thread multi-core productivity HPC linux collector platform \
     xprofile profile profiling performance library blas lapack fftpack \
-    fft solver sparse autopar C C++ OpenMP Studio IDE editor refactoring \
+    fft solver sparse C C++ OpenMP Studio IDE editor refactoring \
     DLight"
+# These dependencies are used as part of package renaming
+# Make sure the older sunstudioexpress package is removed.
+add depend fmri=sunstudioexpress@0.2009.3.1-1 type=optional
+add depend fmri=developer/sunstudioexpress@0.2009.3.1-1 type=optional
+depend developer/build/make
+depend developer/java/jdk
+depend developer/library/lint
+depend developer/linker
+depend developer/macro/cpp
+depend system/header
+depend system/library/c++/sunpro
+depend system/library/math
+depend system/library/math/header-math
+#
+depend developer/solaris-studio-express/solaris-studio-express-incorporation@0.2010.6
+#
+# Perhaps this next list should include only user-facing packages
+# (like cc) and not system packages (like backend)
+# We could let the dependencies pull in the rest.
+#
+depend developer/solaris-studio-express/analyzer
+depend developer/solaris-studio-express/backend
+depend developer/solaris-studio-express/c++
+depend developer/solaris-studio-express/c++-libs
+depend developer/solaris-studio-express/cc
+depend developer/solaris-studio-express/compiler-oslibs
+depend developer/solaris-studio-express/dbx
+depend developer/solaris-studio-express/dbxtool
+depend developer/solaris-studio-express/dlight
+depend developer/solaris-studio-express/dmake
+$(sparc_ONLY)depend developer/solaris-studio-express/f77-libs
+depend developer/solaris-studio-express/f90-libs
+depend developer/solaris-studio-express/fortran
+depend developer/solaris-studio-express/iblas
+depend developer/solaris-studio-express/math-libs
+depend developer/solaris-studio-express/perflib
+depend developer/solaris-studio-express/scalapack
+depend developer/solaris-studio-express/studio-common
+depend developer/solaris-studio-express/studio-ide
+depend developer/solaris-studio-express/studio-legal
+depend developer/solaris-studio-express/studio-netbeans
 end package
 
-package sunstudio
-add set name=pkg.renamed value=true
-depend developer/sunstudio
-version 12.1.1-1
+
+#
+# Components of Oracle Solaris Studio Express releases are
+# put into a subgroup to associate them together.
+#
+
+package developer/solaris-studio-express/analyzer
+classification "Development/C"
+classification "Development/C++"
+classification "Development/High Performance Computing"
+classification "Development/Observability"
+summary \
+    "Performance Analyzer (including collect, analyzer, er_print, ...)"
+version 0.2010.6
+add set name=info.keyword \
+    value="performance measurement performance tuning performance analysis"
+import studio-express-analyzer
+depend developer/solaris-studio-express/studio-common
 end package
 
-package sunstudio12u1
-add set name=pkg.renamed value=true
-depend developer/sunstudio12u1
-version 12.1.1-1
+package developer/solaris-studio-express/backend
+summary "Compiler Common Files"
+version 0.2010.6
+import studio-express-backend
+depend developer/solaris-studio-express/math-libs
+depend developer/solaris-studio-express/studio-common
 end package
 
-package sunstudioexpress
-add set name=pkg.renamed value=true
-depend developer/sunstudioexpress
+package developer/solaris-studio-express/c++
+classification "Development/C++"
+classification "Development/High Performance Computing"
+summary "C++ Compilers"
+version 0.2010.6
+add set name=info.keyword value="optimizer parallelization tuning \
+    multi-thread multi-core autopar OpenMP"
+import studio-express-cpp
+depend developer/solaris-studio-express/backend
+depend developer/solaris-studio-express/c++-libs
+depend developer/solaris-studio-express/cc
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/c++-libs
+summary "C++ dynamic libraries"
+version 0.2010.6
+import studio-express-cpp-libs
+end package
+
+package developer/solaris-studio-express/cc
+classification "Development/C"
+classification "Development/High Performance Computing"
+summary "C Compiler"
+version 0.2010.6
+add set name=info.keyword value="optimizer parallelization tuning \
+    multi-thread multi-core autopar OpenMP"
+import studio-express-cc
+depend developer/solaris-studio-express/backend
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/compiler-oslibs
+summary "Copies of libraries that are normally delivered through Solaris."
+version 0.2010.6
+import studio-express-compiler-oslibs
+end package
+
+package developer/solaris-studio-express/dbx
+classification "Development/System"
+summary "Studio Debugging Tools"
+version 0.2010.6
+import studio-express-dbx
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/dbxtool
+classification "Development/C"
+classification "Development/C++"
+classification "Development/Fortran"
+classification "Development/System"
+summary \
+    "A simple GUI for using dbx.  Based on a simplified Netbeans configuration."
+version 0.2010.6
+add set name=info.keyword value="dbx dbxgui sside dbxtool"
+import studio-express-dbxtool
+depend developer/solaris-studio-express/dbx
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/dlight
+classification "Development/Observability"
+summary "DLight Observability Tool"
+version 0.2010.6
+add set name=info.keyword value="C C++ Fortran observability profiler DTrace"
+import studio-express-dlight
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/dmake
+classification "Development/C"
+classification "Development/C++"
+classification "Development/Fortran"
+classification "Development/Distribution Tools"
+summary "Building Software including Distributed Make (dmake)"
+version 0.2010.6
+add set name=info.keyword \
+    value="distributed parallel build, make, dmake, grid, SGE, Sun Grid Engine"
+import studio-express-dmake
+depend developer/solaris-studio-express/studio-common
+end package
+
+$(sparc_ONLY)package developer/solaris-studio-express/f77-libs
+$(sparc_ONLY)summary "Fortran legacy dynamic libraries"
+$(sparc_ONLY)version 0.2010.6
+$(sparc_ONLY)import studio-express-f77-libs
+$(sparc_ONLY)end package
+
+package developer/solaris-studio-express/f90-libs
+summary "Fortran dynamic libraries"
+version 0.2010.6
+import studio-express-f90-libs
+end package
+
+package developer/solaris-studio-express/fortran
+classification "Development/Fortran"
+classification "Development/High Performance Computing"
+summary "Fortran Compiler"
+version 0.2010.6
+add set name=info.keyword value="optimizer parallelization tuning \
+    multi-thread multi-core autopar OpenMP"
+import studio-express-fortran
+depend developer/solaris-studio-express/backend
+$(sparc_ONLY)depend developer/solaris-studio-express/f77-libs
+depend developer/solaris-studio-express/f90-libs
+depend developer/solaris-studio-express/studio-common
+end package
+
+package developer/solaris-studio-express/iblas
+classification "Development/High Performance Computing"
+summary "Interval Arithmetic Libraries"
+version 0.2010.6
+add set name=info.keyword value="Interval_BLAS"
+import studio-express-iblas
+end package
+
+package developer/solaris-studio-express/math-libs
+summary "libsunmath math library"
+version 0.2010.6
+import studio-express-math-libs
+end package
+
+package developer/solaris-studio-express/perflib
+classification "Development/High Performance Computing"
+summary "Sun Performance Library"
+version 0.2010.6
+add set name=info.keyword value="BLAS LAPACK FFTPACK SuperLU SPSOLVE Sparse \
+    BLAS Sort Convolution Correlation"
+import studio-express-perflib
+end package
+
+package developer/solaris-studio-express/scalapack
+classification "Development/High Performance Computing"
+summary "ScaLAPACK - Scalable Linear Algebra Library"
+version 0.2010.6
+add set name=info.keyword value="ScaLAPACK BLACS"
+import studio-express-scalapack
+end package
+
+# This package delivers legal file into the filesystem.
+# We only want one copy per "product", so it's shared
+# by being a dependency of multiple packages.
+package developer/solaris-studio-express/studio-legal
+summary "Legal files for Studio Express release"
+version 0.2010.6
+add set name=info.keyword value="studio"
+import studio-express-studio-legal
+end package
+
+package developer/solaris-studio-express/studio-common
+summary "Common internal components needed by components of the Solaris Studio product"
+version 0.2010.6
+add set name=info.keyword value="studio"
+import studio-express-studio-common
+depend developer/solaris-studio-express/studio-legal
+end package
+
+package developer/solaris-studio-express/studio-ide
+classification "Development/System"
+classification "Development/Integrated Development Environments"
+summary "Solaris Studio IDE"
+version 0.2010.6
+add set name=info.keyword value="studio IDE netbeans dbx dbxgui sside"
+import studio-express-studio-ide
+depend developer/solaris-studio-express/dbx
+depend developer/solaris-studio-express/studio-common
+depend developer/solaris-studio-express/studio-netbeans
+end package
+
+package developer/solaris-studio-express/studio-netbeans
+summary "Solaris Studio IDE NetBeans Base"
+version 0.2010.6
+import studio-express-studio-netbeans
+end package
+
+# create the incorporation package for all Solaris Studio Express components
+# This is not needed for Enterprise releases, because those go into versioned
+# install directories.
+package developer/solaris-studio-express/solaris-studio-express-incorporation
+summary "incorporation to lock all Studio packages to same build"
+version 0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/analyzer@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/backend@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/c++-libs@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/c++@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/cc@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/compiler-oslibs@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/dbx@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/dbxtool@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/dlight@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/dmake@0.2010.6
+$(sparc_ONLY) add depend type=incorporate \
+$(sparc_ONLY) fmri=developer/solaris-studio-express/f77-libs@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/f90-libs@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/fortran@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/iblas@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/math-libs@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/perflib@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/scalapack@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/studio-common@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/studio-ide@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/studio-legal@0.2010.6
+add depend type=incorporate \
+    fmri=developer/solaris-studio-express/studio-netbeans@0.2010.6
+end package
+
+# rename from developer/sunstudioexpress --> developer/solaris-studio-express
+# The old package installed into /opt/SunStudioExpress
+# The new one installs into /opt/solstudioex
+package developer/sunstudioexpress
 version 0.2009.3.1-1
+add set name=pkg.renamed value=true
+depend developer/solaris-studio-express
 end package
+
