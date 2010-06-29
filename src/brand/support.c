@@ -19,8 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <ctype.h>
@@ -95,20 +94,6 @@ do_verify(char *xmlfile)
 	if (zonecfg_get_xml_handle(xmlfile, handle) != Z_OK) {
 		zonecfg_fini_handle(handle);
 		err(gettext("zonecfg provided an invalid XML file"));
-	}
-
-	/*
-	 * Check to see whether the zone has any inherit-pkg-dirs
-	 * configured.
-	 */
-	if (zonecfg_setipdent(handle) != Z_OK) {
-		zonecfg_fini_handle(handle);
-		err(gettext("zonecfg provided an invalid XML file"));
-	}
-
-	if (zonecfg_getipdent(handle, &fstab) == Z_OK) {
-		zonecfg_fini_handle(handle);
-		err(gettext("brand does not support inherit-pkg-dirs"));
 	}
 
 	zonecfg_fini_handle(handle);
