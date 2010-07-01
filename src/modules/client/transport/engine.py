@@ -46,7 +46,7 @@ import pkg.client.transport.fileobj     as fileobj
 from collections        import deque
 from pkg.client         import global_settings
 
-pipelined_protocols = ("http", "https")
+pipelined_protocols = ()
 response_protocols = ("ftp", "http", "https")
 
 class TransportEngine(object):
@@ -58,7 +58,7 @@ class TransportEngine(object):
 class CurlTransportEngine(TransportEngine):
         """Concrete class of TransportEngine for libcurl transport."""
 
-        def __init__(self, transport, max_conn=10):
+        def __init__(self, transport, max_conn=20):
 
                 # Backpointer to transport object
                 self.__xport = transport
@@ -84,7 +84,7 @@ class CurlTransportEngine(TransportEngine):
                 self.__last_stall_check = 0
 
                 # Set options on multi-handle
-                self.__mhandle.setopt(pycurl.M_PIPELINING, 1)
+                self.__mhandle.setopt(pycurl.M_PIPELINING, 0)
 
                 # initialize easy handles
                 for i in range(self.__max_handles):
@@ -215,12 +215,11 @@ class CurlTransportEngine(TransportEngine):
                         urlstem = h.repourl
                         proto = urlparse.urlsplit(url)[0]
 
-                        # When using pipelined operations (only possible with
-                        # http or https), libcurl tracks the amount of time
-                        # taken for the entire pipelined request as opposed
-                        # to just the amount of time for a single file in the
-                        # pipeline.  So, if the connection time is 0 for a
-                        # request using http(s), then it was pipelined and
+                        # When using pipelined operations, libcurl tracks the
+                        # amount of time taken for the entire pipelined request
+                        # as opposed to just the amount of time for a single
+                        # file in the pipeline.  So, if the connection time is 0
+                        # for a request using http(s), then it was pipelined and
                         # the total time must be obtained by subtracting the
                         # time the transfer of the individual request started
                         # from the total time.
@@ -313,12 +312,11 @@ class CurlTransportEngine(TransportEngine):
                         urlstem = h.repourl
                         proto = urlparse.urlsplit(url)[0]
 
-                        # When using pipelined operations (only possible with
-                        # http or https), libcurl tracks the amount of time
-                        # taken for the entire pipelined request as opposed
-                        # to just the amount of time for a single file in the
-                        # pipeline.  So, if the connection time is 0 for a
-                        # request using http(s), then it was pipelined and
+                        # When using pipelined operations, libcurl tracks the
+                        # amount of time taken for the entire pipelined request
+                        # as opposed to just the amount of time for a single
+                        # file in the pipeline.  So, if the connection time is 0
+                        # for a request using http(s), then it was pipelined and
                         # the total time must be obtained by subtracting the
                         # time the transfer of the individual request started
                         # from the total time.
