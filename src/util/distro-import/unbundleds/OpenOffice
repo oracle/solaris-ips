@@ -1,7 +1,8 @@
 package office/openoffice
 classification "Applications/Office"
-summary "OpenOffice.org 3.2.0"
-version 3.2.0
+summary "OpenOffice.org Office Productivity Suite"
+version 3.2.1
+import ooo-bundled-extensions
 import ooobasis32-base
 import ooobasis32-binfilter
 import ooobasis32-calc
@@ -52,12 +53,16 @@ import openofficeorg3-math
 import openofficeorg3-writer
 import openofficeorg-ure
 add depend fmri=openoffice@3.1.0-1 type=optional
+# add actuators for desktop files under /opt as these are not picked up
+# by the default global rules
+chattr_glob *.desktop type file \
+    restart_fmri=svc:/application/desktop-cache/desktop-mime-cache:default
 end package
 
 package office/openoffice/openoffice-sdk
 classification "Applications/Office"
-summary "Software Development Kit for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Software Development Kit for OpenOffice.org"
+version 3.2.1
 import ooobasis32-sdk
 depend office/openoffice
 add depend fmri=openoffice-sdk@3.1.0-1 type=optional
@@ -65,8 +70,8 @@ end package
 
 package office/openoffice/locale/de
 classification "Applications/Office"
-summary "German localization of OpenOffice.org 3.2.0"
-version 3.2.0
+summary "German localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-de
 import ooobasis32-de-base
 import ooobasis32-de-binfilter
@@ -87,8 +92,8 @@ end package
 
 package office/openoffice/locale/es
 classification "Applications/Office"
-summary "Spanish localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Spanish localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-es
 import ooobasis32-es-base
 import ooobasis32-es-binfilter
@@ -107,8 +112,8 @@ end package
 
 package office/openoffice/locale/fr
 classification "Applications/Office"
-summary "French localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "French localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-fr
 import ooobasis32-fr-base
 import ooobasis32-fr-binfilter
@@ -127,8 +132,8 @@ end package
 
 package office/openoffice/locale/hu
 classification "Applications/Office"
-summary "Hungarian localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Hungarian localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-hu
 import ooobasis32-hu-base
 import ooobasis32-hu-binfilter
@@ -147,8 +152,8 @@ end package
 
 package office/openoffice/locale/it
 classification "Applications/Office"
-summary "Italian localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Italian localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-it
 import ooobasis32-it-base
 import ooobasis32-it-binfilter
@@ -167,8 +172,8 @@ end package
 
 package office/openoffice/locale/ja
 classification "Applications/Office"
-summary "Japanese localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Japanese localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-ja
 import ooobasis32-ja-base
 import ooobasis32-ja-binfilter
@@ -186,8 +191,8 @@ end package
 
 package office/openoffice/locale/ko
 classification "Applications/Office"
-summary "Korean localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Korean localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-ko
 import ooobasis32-ko-base
 import ooobasis32-ko-binfilter
@@ -205,8 +210,8 @@ end package
 
 package office/openoffice/locale/nl
 classification "Applications/Office"
-summary "Dutch localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Dutch localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-nl
 import ooobasis32-nl-base
 import ooobasis32-nl-binfilter
@@ -225,8 +230,8 @@ end package
 
 package office/openoffice/locale/pl
 classification "Applications/Office"
-summary "Polish localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Polish localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-pl
 import ooobasis32-pl-base
 import ooobasis32-pl-binfilter
@@ -245,8 +250,8 @@ end package
 
 package office/openoffice/locale/pt
 classification "Applications/Office"
-summary "Portuguese localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Portuguese localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-pt
 import ooobasis32-pt-base
 import ooobasis32-pt-binfilter
@@ -265,8 +270,8 @@ end package
 
 package office/openoffice/locale/pt-BR
 classification "Applications/Office"
-summary "Portuguese Brazilian localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Portuguese Brazilian localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-pt-BR
 import ooobasis32-pt-BR-base
 import ooobasis32-pt-BR-binfilter
@@ -284,8 +289,8 @@ end package
 
 package office/openoffice/locale/ru
 classification "Applications/Office"
-summary "Russian localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Russian localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-ru
 import ooobasis32-ru-base
 import ooobasis32-ru-binfilter
@@ -304,8 +309,8 @@ end package
 
 package office/openoffice/locale/sv
 classification "Applications/Office"
-summary "Swedish localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Swedish localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-sv
 import ooobasis32-sv-base
 import ooobasis32-sv-binfilter
@@ -324,8 +329,8 @@ end package
 
 package office/openoffice/locale/zh-CN
 classification "Applications/Office"
-summary "Simplified Chinese localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Simplified Chinese localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-zh-CN
 import ooobasis32-zh-CN-base
 import ooobasis32-zh-CN-binfilter
@@ -343,8 +348,8 @@ end package
 
 package office/openoffice/locale/zh-TW
 classification "Applications/Office"
-summary "Traditional Chinese localization for OpenOffice.org 3.2.0"
-version 3.2.0
+summary "Traditional Chinese localization for OpenOffice.org"
+version 3.2.1
 import ooobasis32-zh-TW
 import ooobasis32-zh-TW-base
 import ooobasis32-zh-TW-binfilter
@@ -461,3 +466,4 @@ add set name=pkg.renamed value=true
 depend office/openoffice/locale/zh-TW
 version 3.1.0-1
 end package
+
