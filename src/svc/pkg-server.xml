@@ -102,7 +102,7 @@
 		<propval name='port' type='count' value='80' />
 		<propval name='proxy_base' type='astring' value='' />
 		<propval name='socket_timeout' type='count' value='60' />
-		<propval name='threads' type='count' value='10' />
+		<propval name='threads' type='count' value='60' />
 		<propval name='cfg_file' type='astring' value='' />
 		<propval name='content_root' type='astring'
 			value='usr/share/lib/pkg' />

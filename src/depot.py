@@ -54,9 +54,9 @@ SOCKET_FILE_DEFAULT = ""
 # The minimum number of threads allowed.
 THREADS_MIN = 1
 # The default number of threads to start.
-THREADS_DEFAULT = 10
+THREADS_DEFAULT = 60
 # The maximum number of threads that can be started.
-THREADS_MAX = 500
+THREADS_MAX = 5000
 # The default server socket timeout in seconds. We want this to be longer than
 # the normal default of 10 seconds to accommodate clients with poor quality
 # connections.
