@@ -24,6 +24,7 @@
 ARCH:sh=	uname -p
 REPO=http://localhost:10000
 ON_REPO=http://localhost:20000
+INSTALL_REPO=http://localhost:20001
 MERGEDIR=../../../proto/merge
 SETPUBLISHERDIR=../../../proto/set-publisher
 PROTO=../../../proto/root_$(ARCH)
@@ -41,22 +42,23 @@ $(SETPUBLISHERDIR):
 	mkdir -p $(SETPUBLISHERDIR)
 
 # add other targets as needed; -r flag recursively expands
-# incorporations 
+# incorporations
 # be sure to clobber between publish targets
 # note that multiple invocations of merge can be done
-# and followed by a single publish 
+# and followed by a single publish
 
 merge:
 	PYTHONPATH=$(PYTHONPATH) ./merge.py $(EXTRA_ARGS) -r -d $(MERGEDIR) -v sparc,$(SPARC_REPO) -v i386,$(i386_REPO) arch $(JUST_THESE_PKGS)
 
-publish: $(MERGEDIR) 
+publish: $(MERGEDIR)
 	for var in `(cd $(MERGEDIR); echo * )` ;\
 	do PYTHONPATH=$(PYTHONPATH) ./pkg_publish $(MERGEDIR)/$$var $(REPO); done
 
 publish_setpublisher: $(SETPUBLISHERDIR)
-	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh -b $(BUILDID) -d $(SETPUBLISHERDIR) -p $(REPO) $(ON_REPO)
+	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh -b $(BUILDID) \
+		-d $(SETPUBLISHERDIR) -p $(REPO) $(ON_REPO) $(INSTALL_REPO)
 
 clean:
-	
+
 clobber:
 	rm -rf $(MERGEDIR) $(SETPUBLISHERDIR)

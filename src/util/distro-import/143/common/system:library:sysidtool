@@ -1,0 +1,11 @@
+package system/library/sysidtool
+consolidation "admin"
+classification "System/Libraries"
+import SUNWadmlib-sysid
+end package
+
+package SUNWadmlib-sysid
+consolidation "install"
+renamed 133
+depend system/library/sysidtool
+end package

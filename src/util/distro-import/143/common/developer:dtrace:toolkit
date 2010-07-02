@@ -1,0 +1,11 @@
+package developer/dtrace/toolkit
+consolidation "admin"
+classification "Development/System"
+import SUNWDTraceToolkit
+end package
+
+package SUNWDTraceToolkit
+consolidation "install"
+renamed 133
+depend developer/dtrace/toolkit
+end package

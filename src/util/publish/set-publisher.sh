@@ -83,6 +83,7 @@ for repo in $*; do
 	fi
 
 	# Don't recv packages for other builds if $only_this_build is set.
+	modified_pkglist=""
 	if [ ! -z $only_this_build ]; then
 		for pkg in $pkglist; do
 			new=$(echo $pkg | grep -- "0.${only_this_build}:")

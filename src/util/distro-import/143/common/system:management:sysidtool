@@ -1,0 +1,11 @@
+package system/management/sysidtool
+consolidation "admin"
+classification "System/Administration and Configuration"
+import SUNWadmap
+end package
+
+package SUNWadmap
+consolidation "install"
+renamed 133
+depend system/management/sysidtool
+end package
