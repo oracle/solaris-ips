@@ -627,8 +627,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.api_lock:
                         self.api_lock.acquire()
                 self.__proceed_with_stages_thread_ex_with_lock(continue_operation)
-                if self.api_lock:
-                        self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __proceed_with_stages_thread_ex_with_lock(self, continue_operation = False):
                 try:
@@ -670,7 +669,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 msg = misc.out_of_memory()
                                 self.__g_error_stage(msg)
                                 return
-
+                        except RuntimeError, ex:
+                                msg = str(ex)
+                                if msg == "cannot release un-aquired lock":
+                                        logger.error(msg)
+                                else:
+                                        self.__g_error_stage(msg)
+                                        return
                 except api_errors.InventoryException, e:
                         msg = _("Inventory exception:\n")
                         if e.illegal:
@@ -1021,7 +1026,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.license_cv.acquire()
                         while not self.accept_license_done:
                                 self.license_cv.wait()
-                        self.license_cv.release()
+                        gui_misc.release_lock(self.license_cv)
                         self.__do_accept_licenses()
                 return
 
@@ -1546,7 +1551,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.license_cv.acquire()
                 self.accept_license_done = True
                 self.license_cv.notify()
-                self.license_cv.release()
+                gui_misc.release_lock(self.license_cv)
 
         def __on_license_accept_button_clicked(self, widget):
                 result = None
@@ -1564,7 +1569,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.license_cv.acquire()
                         self.accept_license_done = True
                         self.license_cv.notify()
-                        self.license_cv.release()
+                        gui_misc.release_lock(self.license_cv)
 
         def __on_license_dialog_delete(self, widget, event):
                 if self.w_license_reject_button.get_property('visible'):

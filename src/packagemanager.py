@@ -1542,7 +1542,7 @@ class PackageManager:
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
                 self.__do_api_search_without_lock(search_all)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __do_api_search_without_lock(self, search_all = True):
                 self.__set_search_start()
@@ -2517,7 +2517,7 @@ class PackageManager:
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
                 self.__setup_publisher_without_lock(publishers)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __setup_publisher_without_lock(self, publishers):
                 self.saved_filter_combobox_active = self.gconf.initial_show_filter
@@ -2643,7 +2643,7 @@ class PackageManager:
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
                 self.__get_info_without_lock(pkg_stem, name)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __get_info_without_lock(self, pkg_stem, name):
                 if not self.__do_api_reset():
@@ -2780,7 +2780,7 @@ class PackageManager:
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
                 self.__catalog_refresh_without_lock()
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __catalog_refresh_without_lock(self):
                 """Update image's catalogs."""
@@ -3195,7 +3195,7 @@ class PackageManager:
                 gobject.idle_add(self.set_busy_cursor)
                 self.__show_package_versions_without_lock(selected_pkg_name,
                     selected_pkg_pub, selected_pkgstem, versions_id)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __show_package_versions_without_lock(self, selected_pkg_name,
             selected_pkg_pub, selected_pkgstem, versions_id):
@@ -3252,7 +3252,7 @@ class PackageManager:
         def __show_package_licenses(self, selected_pkgstem, license_id):
                 self.api_lock.acquire()
                 self.__show_package_licenses_without_lock(selected_pkgstem, license_id)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __show_package_licenses_without_lock(self, selected_pkgstem, license_id):
                 if selected_pkgstem == None:
@@ -3350,7 +3350,7 @@ class PackageManager:
                 gobject.idle_add(self.set_busy_cursor)
                 self.__show_package_info_without_lock(pkg_name, pkg_stem, pkg_status,
                     info_id, pkg_renamed)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __show_package_info_without_lock(self, pkg_name, pkg_stem, pkg_status,
             info_id, pkg_renamed):

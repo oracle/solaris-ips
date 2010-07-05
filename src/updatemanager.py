@@ -474,7 +474,7 @@ class Updatemanager:
         def __show_package_info(self, stem, pkg_name, info_id):
                 self.api_lock.acquire()
                 self.__show_package_info_without_lock(stem, pkg_name, info_id)
-                self.api_lock.release()
+                gui_misc.release_lock(self.api_lock)
 
         def __show_package_info_without_lock(self, stem, pkg_name, info_id):
                 local_info = None

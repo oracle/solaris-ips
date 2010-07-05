@@ -270,6 +270,17 @@ def get_minimal_unique_name(dic, name, special_table):
                 n += part + "/"
         return n.strip("/")
 
+def release_lock(lock):
+        if not lock:
+                return
+        try:
+                lock.release()
+        except RuntimeError, ex:
+                msg = str(ex)
+                logger.error(msg)
+        except Exception:
+                pass
+
 def get_api_object(img_dir, progtrack, parent_dialog):
         api_o = None
         message = None
