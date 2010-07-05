@@ -41,7 +41,7 @@ PKG_CLIENT_NAME = "check_for_updates"
 CACHE_VERSION =  3
 CACHE_NAME = ".last_refresh_cache"
 
-def __check_for_updates(image_directory, nice):
+def __check_for_updates(image_directory, nice, silent):
         if nice:
                 os.nice(20)
         global_settings.client_name = PKG_CLIENT_NAME
@@ -64,7 +64,7 @@ def __check_for_updates(image_directory, nice):
 
         if api_obj == None:
                 return enumerations.UPDATES_UNDETERMINED
-        ret = __check_last_refresh(api_obj)
+        ret = __check_last_refresh(api_obj, silent)
         if ret != enumerations.UPDATES_UNDETERMINED:
                 return ret
         elif debug:
@@ -83,7 +83,7 @@ def __check_for_updates(image_directory, nice):
                 print "stuff_to_do: ", stuff_to_do
                 print "opensolaris_image: ", opensolaris_image
 
-        __dump_updates_available(api_obj, stuff_to_do)
+        __dump_updates_available(api_obj, stuff_to_do, silent)
         if stuff_to_do:
                 if debug:
                         print "Updates Available"
@@ -93,7 +93,7 @@ def __check_for_updates(image_directory, nice):
                         print "No updates Available"
                 return enumerations.NO_UPDATES_AVAILABLE
 
-def __check_last_refresh(api_obj):
+def __check_last_refresh(api_obj, silent):
         cache_dir = nongui_misc.get_cache_dir(api_obj)
         if not cache_dir:
                 return enumerations.UPDATES_UNDETERMINED
@@ -142,12 +142,13 @@ def __check_last_refresh(api_obj):
                         n_installs = info.get("installs")
                         n_removes = info.get("removes")
                 # pylint: enable-msg=E1103
-                if n_updates > 0:
-                        print "n_updates: ", n_updates
-                if n_installs > 0:
-                        print "n_installs: ", n_installs
-                if n_removes > 0:
-                        print "n_removes: ", n_removes
+                if not silent:
+                        if n_updates > 0:
+                                print "n_updates: ", n_updates
+                        if n_installs > 0:
+                                print "n_installs: ", n_installs
+                        if n_removes > 0:
+                                print "n_removes: ", n_removes
                 if (n_updates + n_installs + n_removes) > 0:
                         return enumerations.UPDATES_AVAILABLE
                 else:
@@ -156,7 +157,7 @@ def __check_last_refresh(api_obj):
         except (UnpicklingError, IOError):
                 return enumerations.UPDATES_UNDETERMINED
 
-def __dump_updates_available(api_obj, stuff_to_do):
+def __dump_updates_available(api_obj, stuff_to_do, silent):
         cache_dir = nongui_misc.get_cache_dir(api_obj)
         if not cache_dir:
                 return
@@ -191,9 +192,10 @@ def __dump_updates_available(api_obj, stuff_to_do):
         dump_info["updates"] = n_updates
         dump_info["installs"] = n_installs
         dump_info["removes"] = n_removes
-        print "n_updates: ", n_updates
-        print "n_installs: ", n_installs
-        print "n_removes: ", n_removes
+        if not silent:
+                print "n_updates: ", n_updates
+                print "n_installs: ", n_installs
+                print "n_removes: ", n_removes
 
         try:
                 nongui_misc.dump_cache_file(os.path.join(
@@ -209,16 +211,17 @@ def __dump_updates_available(api_obj, stuff_to_do):
 # Main
 #-----------------------------------------------------------------------------#
 
-def main(image_directory, nice):
-        return __check_for_updates(image_directory, nice)
+def main(image_directory, nice, silent):
+        return __check_for_updates(image_directory, nice, silent)
 
 if __name__ == '__main__':
         misc.setlocale(locale.LC_ALL, "")
         gettext.install("pkg", "/usr/share/locale")
         debug = False
         set_nice = False
+        set_silent = False
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "n", ["nice"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "ns", ["nice", "silent"])
         except getopt.GetoptError, ex:
                 print "Usage: illegal option -- %s" % ex.opt
                 sys.exit(enumerations.UPDATES_UNDETERMINED)
@@ -232,10 +235,12 @@ if __name__ == '__main__':
                         print "args: ", args
                 if opt in ( "-n", "--nice"):
                         set_nice = True
+                elif opt in ( "-s", "--silent"):
+                        set_silent = True
         if debug:
-                print "Start check_for_updates for: ", image_dir, set_nice
+                print "Start check_for_updates for: ", image_dir, set_nice, set_silent
                 a = time.time()
-        return_value = main(image_dir, set_nice)
+        return_value = main(image_dir, set_nice, set_silent)
         if debug:
                 print "time taken: ", time.time() - a
         sys.exit(return_value)
