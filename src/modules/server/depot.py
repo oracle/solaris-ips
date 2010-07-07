@@ -806,9 +806,6 @@ class DepotHTTP(_Depot):
                         # operation.
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
-        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
-            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
-            ("Expires", 0)])
         def add_0(self, *tokens):
                 """Adds an action and its content to an in-flight transaction
                 for the Transaction ID specified in the request path.  The
@@ -876,6 +873,12 @@ class DepotHTTP(_Depot):
         add_0._cp_config = {
             "request.process_request_body": False,
             "response.timeout": 3600,
+            "tools.response_headers.on": True,
+            "tools.response_headers.headers": [
+                ("Pragma", "no-cache"),
+                ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+                ("Expires", 0)
+            ]
         }
 
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
