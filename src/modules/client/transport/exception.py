@@ -227,9 +227,9 @@ class TransportStallError(TransportException):
                 self.uuid = uuid
 
         def __str__(self):
-                s = "Framework stall: " % self.code
+                s = "Framework stall"
                 if self.url:
-                        s += "\nURL: '%s'." % self.url
+                        s += ":\nURL: '%s'." % self.url
                 return s
 
         def __cmp__(self, other):
