@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import pkg.server.api as api
@@ -28,7 +27,7 @@
 <%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
 <%page args="g_vars"/>\
 <%
-        CLIENT_API_VERSION = 8
+        CLIENT_API_VERSION = 9
         base = g_vars["base"]
         catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
         config = api.ConfigInterface(CLIENT_API_VERSION, base)
@@ -68,7 +67,7 @@
         <title>${self.page_title(g_vars)}</title>
 % if not config.mirror:
         <link rel="alternate" type="application/atom+xml"
-            title="${self.shared.rcval(g_vars, "feed", "name")}"
+            title="${self.shared.dcval(g_vars, "pkg_bui", "feed_name")}"
             href="${self.shared.rpath(g_vars, "feed")}"/>
 % endif
 <%include file="${self.shared.ltipath(g_vars, 'head_end.shtml')}"

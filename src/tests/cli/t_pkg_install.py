@@ -3541,7 +3541,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
         misc_files = [ "tmp/libc.so.1" ]
 
-        PREFIX = "unset PKG_IMAGE; cd %s"
+        PREFIX = "unset PKG_IMAGE; cd %s;"
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCaseCorruptImage.setUp(self)

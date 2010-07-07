@@ -1,4 +1,4 @@
-System Administration Commands                           pkg.depotd(1M)
+System Administration Commands                         pkg.depotd(1M)
 
 
 NAME
@@ -6,264 +6,311 @@ NAME
 
 SYNOPSIS
      /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-         [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
-         [--disable-ops=<op[/1]>[,...]] [--exit-ready] [--log-access] [--log-errors]
-         [--mirror] [--set-property <section.property>=<value> ...]
-         [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
-         [--ssl-dialog] [--ssl-key-file] [--writable-root] [--add-content]
-
+         [-t socket_timeout] [--add-content] [--cfg] [--content-root]
+         [--debug] [--disable-ops=<op[/1]>[,...]] [--log-access]
+         [--log-errors] [--mirror] [--proxy-base url] [--readonly]
+         [--rebuild] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+         [--writable-root]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
-     It provides clients access to the data contained within a package
-     repository.  pkg(1), the retrieval client, makes requests of the depot
-     server for catalogs and packages.  pkgsend(1), the publication client,
-     sends new versions of packages to the depot server.  pkg.depotd is
-     typically run as a service on the system.  Package and software
-     developers may wish to run private copies for various testing
-     purposes.
+     It provides clients network access to the data contained within a
+     package repository.  pkg(1), the retrieval client, makes requests
+     to the depot server for catalogs and packages.  pkgsend(1), the
+     publication client, sends new versions of packages to the depot
+     server.  pkgrepo(1) provides creation, management, and summary
+     functionality for repositories.  pkg.depotd is typically run as
+     a service on the system.  Package and software developers may
+     wish to run private copies for various testing purposes.
 
-     The depot currently does not provide any access control mechanisms
+     The depot currently does not provide any access control methods
      of its own.  By default, all clients able to connect are able to
-     read all data and publish new package versions (when running under
-     SMF, the default is to run in a read-only mode).  The NOTES section
-     below describes some best practices for maintaining a public depot
-     with evolving content.
+     read all data publish new package versions (when running under
+     SMF, the default is to run in a read-only mode).  The NOTES
+     section below describes some best practices for maintaining
+     a public depot with evolving content.
 
-     The pkg.depot server is generally configured via the smf(5) properties
-     associated with its service.  The following properties are recognized:
+     The pkg.depot server is generally configured via the smf(5)
+     properties associated with its service.  The following
+     properties are recognized:
 
-     pkg/cfg_file               (astring) The pathname of the file from which
-                                to read and to write configuration information.
-
-     pkg/content_root           (astring) The file system path at which
+     pkg/content_root           (astring) The file system path at
+                                which
                                 the instance should find its static
                                 and other web content.  The default
                                 value is /usr/share/lib/pkg.
 
-     pkg/debug                  (astring) A comma-separated list of debug
-                                features to enable.  Possible values are:
+     pkg/debug                  (astring) A comma-separated list of
+                                debug features to enable.  Possible
+                                values are:
 
                                   headers
-                                        Logs the headers of every request to
-                                        the error log.
+                                        Logs the headers of every
+                                        request to the error log.
 
-     pkg/file_root		(astring) The root of the file content
-     				for this repository.  If undefined, this
-				defaults to <repo_root>/file.
+     pkg/default_publisher      (astring) The name of the default
+                                publisher for packages.  This value
+                                is used when an operation is requested
+                                that requires publisher identity and
+                                one has not been provided.  Required
+                                unless mirror mode is active.
 
-     pkg/inst_root              (astring) The file system path at which
-                                the instance should find its repository
-                                data.  The default value is
+     pkg/disable_ops            (astring) A comma-separated list of
+                                operations that should be disabled for
+                                the depot server.  Operations are
+                                given as <operation>[/<version>]
+                                (e.g. catalog, search_1).
+
+     pkg/file_root              (astring) The root of the file content
+                                for this repository.  If undefined,
+                                this defaults to <inst_root>/file.
+
+     pkg/inst_root              (astring) The file system path at
+                                which the instance should find its
+                                repository data.  Required unless
+                                file_root or PKG_REPO has been
+                                provided.  The default value is
                                 /var/pkg/repo.
 
-     pkg/log_access             (astring) The destination for any access
-                                related information logged by the depot
-                                process.  Possible values are: stderr,
-                                stdout, none, or an absolute pathname.
-                                The default value is stdout if stdout is
-                                a tty; otherwise the default value is
+     pkg/log_access             (astring) The destination for any
+                                access related information logged by
+                                the depot process.  Possible values
+                                are: stderr, stdout, none, or an
+                                absolute pathname.  The default value
+                                is stdout if stdout is a tty; if it
+                                is not a tty, the default value is
                                 none.
 
-     pkg/log_errors             (astring) The destination for any errors
-                                or other information logged by the depot
-                                process.  Possible values are: stderr,
-                                stdout, none, or an absolute pathname.
-                                The default value is stderr.
+     pkg/log_errors             (astring) The destination for any
+                                errors or other information logged by
+                                the depot process.  Possible values
+                                are: stderr, stdout, none, or an
+                                absolute pathname.  The default value
+                                is stderr.
 
-     pkg/mirror                 (boolean) Sets whether package mirror mode
-                                is used. When true, publishing and metadata
-                                operations are disabled and only a limited
-                                browser user interface is provided. This
-                                property may not be true when pkg/readonly is
-                                true. The default value is false.
+     pkg/mirror                 (boolean) Sets whether package mirror
+                                mode is used.  When true, publishing
+                                and metadata operations are disabled
+                                and only a limited browser user
+                                interface is provided.  This property
+                                may not be true when the pkg/readonly
+                                property is true.  The default value
+                                is false.
 
      pkg/port                   (count) The port number on which the
                                 instance should listen for incoming
-                                package requests.  The default value is
-                                80 if ssl certificate and key information has
-                                not been provided; otherwise, the default
-                                value is 443.
+                                package requests.  The default value
+                                is 80 if ssl certificate and key
+                                information has not been provided;
+                                otherwise, the default value is 443.
 
-     pkg/proxy_base             (uri) This changes the base URL for the
-                                depot server and is most useful when
-                                running behind Apache or some other
-                                webserver in a reverse proxy
+     pkg/proxy_base             (uri) This changes the base URL for
+                                the depot server and is most useful
+                                when running behind Apache or some
+                                other webserver in a reverse proxy
                                 configuration.
 
-     pkg/readonly               (boolean) Sets whether modifying operations,
-                                such as those initiated by pkgsend(1M) are
-                                disabled. Retrieval operations are still
-                                available. This property may not be true
-                                when pkg/mirror is true. The default value
-                                is true.
+     pkg/readonly               (boolean) Sets whether modifying
+                                operations, such as those initiated
+                                by pkgsend(1M) are disabled. Retrieval
+                                operations are still available. This
+                                property may not be true when the
+                                pkg/mirror property is true. The
+                                default value is true.
 
-     pkg/socket_timeout         (count) The maximum number of seconds the
-                                server should wait for a response from a
-                                client before closing a connection.  The
-                                default value is 60.
+     pkg/socket_timeout         (count) The maximum number of seconds
+                                the server should wait for a response
+                                from a client before closing a conn-
+                                ection.  The default value is 60.
 
-     pkg/sort_file_max_size
-                                (count) The maximum size of the indexer
-                                sort file. Used to limit the amount of
-                                RAM the depot uses for indexing, or
-                                increase it for speed.
+     pkg/sort_file_max_size     (count) The maximum size of the
+                                indexer sort file. Used to limit the
+                                amount of RAM the depot uses for
+                                indexing, or increase it for speed.
 
-     pkg/ssl_cert_file          (astring) The absolute pathname to a PEM-
-                                encoded Certificate file.  The default
-                                value is none.  This property must be used
-                                with ssl_key_file.  The depot will only
-                                respond to SSL requests if provided.
+     pkg/ssl_cert_file          (astring) The absolute pathname to a
+                                PEM-encoded Certificate file.  The
+                                default value is none.  This property
+                                must be used with ssl_key_file.  The
+                                depot will only respond to SSL
+                                requests if provided.
 
-     pkg/ssl_dialog             (astring) Specifies what method should be
-                                used to obtain the passphrase needed to de-
-                                crypt the ssl_key_file.  Possible values
-                                are: builtin, exec:/path/to/program or
-                                smf:fmri.  builtin will prompt for the
-                                passphrase; exec will execute the specified
-                                external program to obtain the passphrase,
-                                which should be printed to stdout.  The first
-                                argument to the program will be '', and is
-                                reserved.  The second argument to the
-                                program will be the port number of the
-                                server.  smf:fmri will attempt to retrieve
-                                the value of pkg_secure/ssl_key_passphrase
-                                from the service instance related to the
-                                fmri.  The default value is builtin.
+     pkg/ssl_dialog             (astring) Specifies what method should
+                                be used to obtain the passphrase used
+                                to decrypt the ssl_key_file.  Possible
+                                values are: exec:/path/to/program,
+                                builtin, or smf:fmri.  builtin will
+                                prompt for the passphrase; exec will
+                                execute the specified external program
+                                to obtain the passphrase, which should
+                                be printed to stdout.  The first
+                                argument to the program will be '',
+                                and is reserved.  The second argument
+                                to the program will be the port number
+                                of the server.  smf:fmri will attempt
+                                to retrieve the value of the property
+                                pkg_secure/ssl_key_passphrase from the
+                                service instance related to the fmri.
+                                The default value is builtin.
 
-     pkg/ssl_key_file           (astring) The absolute pathname to a PEM-
-                                encoded Private Key file.  This property
-                                must be used with ssl_cert_file.  The
-                                depot will only respond to SSL requests
-                                if provided.
-
-     pkg/threads                (count) The number of threads that will
-                                be started to serve requests.  The default
-                                value is 10.
-
-     pkg/writable_root          (astring) The file system path to a directory
-                                to which the program has write access.  Used
-                                with --readonly to allow server to create
-                                needed files, such as search indices, without
-                                needing write access to the package information.
-
-     pkg_secure/ssl_key_passphrase      (astring) The password to use to
-                                        decrypt the pkg/ssl_key_file.  This
-                                        value is read-authorization
-                                        protected.
-
-     The pkg depot is also able to act as a mirror server for local
-     client images from pkg(5).  This allows clients that share a subnet
-     on a LAN to mirror their file caches.  Clients may download files
-     from one another, thereby reducing load on the package depot
-     server.  This functionality is available as an alternate depot
-     service configured by smf(5).  It uses mDNS and dns-sd for service
-     discovery.
-
-     The mDNS mirror is generally configured via the smf(5) properties
-     associated with its service.  The following properties are recognized:
-
-     pkg/file_root              (astring) The file system path at which
-                                the instance should find its file
-				content.  The default value is
-                                /var/pkg/download.
-
-     pkg/port                   (count) The port number on which the
-                                instance should listen for incoming
-                                package requests.  The default value is
- 
-OPTIONS
-     The following options alter the default behavior, if present, and
-     will override the settings from the service instance when managed
-     via an smf(5) restarter:
-
-     -d repo_dir                Overrides pkg/inst_root with the value
-                                given by repo_dir.
-
-     -p port                    Overrides pkg/port with the value given
-                                by port.
-
-     -s threads                 Overrides pkg/threads with the value
-                                given by threads.
-
-     -t socket_timeout          Overrides pkg/socket_timeout with the
-                                value given by socket_timeout.
-
-     --add-content              On startup, look for new packages and
-                                add them to the catalog; also updates the
-                                search indices synchronously.
-
-     --cfg-file cfg_file        Overrides pkg/cfg_file with the value
-                                given by cfg_file.
-
-     --content-root root_dir    Overrides pkg/content_root with the
-                                value given by root_dir.
-
-     --disable-ops              Select operations that should be
-                                disabled in the depot server.
-                                Operations are given as <operation>[
-                                /<version>] (e.g. catalog, catalog_1)
-                                in a comma-separated list.
-
-     --debug features           Overrides pkg/debug with the value given
-                                by features.
-
-     --exit-ready               Prepare for startup, but exit just before
-                                serving content.  This is useful for making
-                                sure search indices are built, new content
-                                cataloged, etc.
-
-     --file-root path		Overrides pkg/file_root with value given
-     				by path.
-
-     --log-access dest          Overrides pkg/log_access with the value
-                                given by dest.
-
-     --log-errors dest          Overrides pkg/log_errors with the value
-                                given by dest.
-
-     --mirror                   Overrides pkg/mirror and sets it to be
-                                true.
-
-     --proxy-base url           Overrides pkg/proxy_base with the value
-                                given by url.  Ignored if empty value is
+     pkg/ssl_key_file           (astring) The absolute pathname to a
+                                PEM-encoded Private Key file.  This
+                                property must be used with the
+                                property ssl_cert_file.  The depot
+                                will only respond to SSL requests if
                                 provided.
 
-     --readonly                 Overrides pkg/readonly and sets it to be
-                                true.
+     pkg/threads                (count) The number of threads that
+                                will be started to serve requests.
+                                The default value is 10.
 
-     --rebuild                  Any existing repository catalog will be
-                                destroyed and then recreated on startup.
-                                Since the publication transaction
-                                history in the updatelog will be lost,
-                                this option resets the updatelog and
-                                associated syndication feeds.  The
-                                --add-content option should be used if
-                                an incremental update is desired.
+     pkg/writable_root          (astring) The file system path to a
+                                directory to which the program has
+                                write access.  This is used with
+                                --readonly to allow the depot server
+                                to create files, such as search
+                                indices, without needing write
+                                access to the package information.
 
-                                --rebuild may not be combined with the
-                                --mirror or --readonly options.
+     pkg_secure/ssl_key_passphrase (astring) The password to use to
+                                   decrypt the pkg/ssl_key_file.
+                                   This value is read-authorization
+                                   protected using the attribute
+                                   'solaris.smf.read.pkg-server'.
 
-     --set-property             Used to specify initial repository
-                                configuration property values or to
-                                update existing ones; can be specified
-                                multiple times.  If used with --readonly
-                                this acts as a temporary override.
+     The presentation and behaviour of the Browser User Interface
+     (BUI) of the depot server is controlled using the following
+     properties:
 
-     --sort-file-max-size bytes Overrides pkg/sort_file_max_size with the
-                                value given by bytes.
+     pkg_bui/feed_description   (astring) A descriptive paragraph
+                                for the RSS/Atom feed.
 
-     --ssl-cert-file source     Overrides pkg/ssl_cert_file with the
-                                value given by source.
+     pkg_bui/feed_icon          (astring) The pathname of a small
+                                image that will be used to visually
+                                represent the RSS/Atom feed.  The
+                                pathname should be relative to the
+                                content_root.  The default value is
+                                "web/_themes/pkg-block-icon.png"
 
-     --ssl-dialog type          Overrides pkg/ssl_dialog with the value
-                                given by type.
+     pkg_bui/feed_logo          (astring) The pathname of a large
+                                image that will be used to visually
+                                brand or identify the RSS/Atom feed.
+                                This value should be relative to the
+                                content_root.  The default value is
+                                "web/_themes/pkg-block-icon.png".
 
-     --ssl-key-file source      Overrides pkg/ssl_key_file with the
-                                value given by source.
+     pkg_bui/feed_name          (astring) A short, descriptive name
+                                for RSS/Atom feeds generated by the
+                                depot serving the repository.  The
+                                default value is "package repository
+                                feed".
 
-     --writable-root path       Overrides pkg/writable_root with the
-                                value given by path.
+     pkg_bui/feed_window        (count) A numeric value representing
+                                the number of hours, before the feed
+                                for the repository was last generated,
+                                to include when generating the feed.
+
+     The pkg depot is also able to act as a mirror server for local
+     client images from pkg(5).  This allows clients that share a
+     subnet on a LAN to mirror their file caches.  Clients may
+     download files from one another, thereby reducing load on the
+     package depot server.  This functionality is available as an
+     alternate depot service configured by smf(5).  It uses mDNS and
+     dns-sd for service discovery.
+
+     The mDNS mirror is generally configured via the smf(5) properties
+     associated with its service.  The following properties are
+     recognized:
+
+     pkg/file_root  (astring) The file system path at which the
+                    instance should find its file content.  The
+                    default value is /var/pkg/download.
+
+     pkg/port       (count) The port number on which the instance
+                    should listen for incoming package requests.
+                    The default value is 80.
+
+OPTIONS
+     pkg.depotd(1m) can read its base configuration information from
+     a file or from the property data of an existing smf(5) service
+     instance:
+
+     --cfg source   The pathname of the file to use when reading and
+                    writing configuration data, or a string of the
+                    form 'smf:fmri' where fmri is the service fault
+                    management resource identifier (FMRI) of the
+                    instance to read configuration data from.  See
+                    DEPOT CONFIGURATION below for details on the
+                    format of the file specified.
+
+     If no pre-existing configuration source is available, or to
+     override values read from a provided configuration file using
+     '--cfg', the following options can be used to alter the default
+     behavior of the depot server:
+
+     -d repo_dir                See pkg/repo_dir above.
+
+     -p port                    See pkg/port above.
+
+     -s threads                 See pkg/threads above.
+
+     -t socket_timeout          See pkg/socket_timeout above.
+
+     --content-root root_dir    See pkg/content_root above.
+
+     --disable-ops op_list      See pkg/disable_ops above.
+
+     --debug features           See pkg/debug above.
+
+     --default-publisher name   See pkg/default_publisher above.
+
+     --file-root path           See pkg/file_root above.
+
+     --log-access dest          See pkg/log_access above.
+
+     --log-errors dest          See pkg/log_errors above.
+
+     --mirror                   See pkg/mirror above.
+
+     --proxy-base url           See pkg/proxy_base above; ignored if
+                                empty value is provided.
+
+     --readonly                 See pkg/readonly above.
+
+     --sort-file-max-size bytes See pkg/sort_file_max_size above.
+
+     --ssl-cert-file source     See pkg/ssl_cert_file above.
+
+     --ssl-dialog type          See pkg/ssl_dialog above.
+
+     --ssl-key-file source      See pkg/ssl_key_file above.
+
+     --writable-root path       See pkg/writable_root above.
+
+     Additional administrative and management functionality for
+     package repositories is provided by pkgrepo(1).
+
+DEPOT CONFIGURATION
+
+     When a configuration file is provided (instead of an smf(5) FMRI)
+     using the --cfg option, the depot server will read and write all
+     configuration data (listed in DESRIPTION above) in a simple text
+     format that consists of sections, lead by a "[section]" header,
+     and followed by "name = value" entries, with continuations, etc.
+     in the style of RFC 822.  Values can be split over multiple lines
+     by beginning continuation lines with whitespace.
+
+     Any required values not provided in the configuration file must
+     be provided using the option listed in OPTIONS above.  A sample
+     configuration file might look like this:
+
+     [pkg]
+     port = 80
+     inst_root = /var/pkg/repo
+
+     [pub_example_com]
+     feed_description = example.com's software
+       update log
 
 EXAMPLES
      Example 1:  Enabling the depot server.
@@ -286,106 +333,17 @@ EXAMPLES
      # svcadm refresh application/pkg/server
      # svcadm restart application/pkg/server
 
-
 ENVIRONMENT VARIABLES
-     PKG_DEPOT_CONTENT          Specifies the directory containing static
-                                content served by the depot.  The files
-                                listed below under FILES should be present
-                                in this directory, although their content
-                                may differ from the supplied default
-                                content.
+     PKG_REPO                   Specifies the directory containing the
+                                repository to server.  This will be
+                                ignored if -d was used.
 
-REPOSITORY CONFIGURATION PROPERTIES
-    A package repository has the following configuration properties.  They
-    are categorized by section depending on their usage by the repository
-    and can be set using the --set-property option.
-
-        Section     Property            Description
-        ==========  ==========          ===============
-        feed        description         A descriptive paragraph for the
-                                        feed.
-
-                    icon                A filename of a small image that
-                                        is used to visually represent
-                                        the feed.
-
-                    logo                A filename of a large image that
-                                        is used to visually brand or
-                                        identify the feed.
-
-                    name                A short, descriptive name for
-                                        RSS/Atom feeds generated by the
-                                        depot serving the repository.
-
-                    window              A numeric value representing the
-                                        number of hours, before the feed
-                                        for the repository was last
-                                        generated, to include when
-                                        generating the feed for the
-                                        repository.
-
-        publisher   alias               An alternative name for the
-                                        default publisher of the
-                                        packages in the repository.
-
-                    prefix              The name of the default
-                                        publisher for packages;
-                                        required.
-
-        repository  collection_type     A string value indicating the
-                                        type of packages in the
-                                        repository.  See the pydoc for
-                                        pkg.client.publisher.Repository
-                                        for details.
-
-                    description         A string value containing a
-                                        descriptive paragraph for the
-                                        repository.
-
-                    detailed_url        A comma-separated list of URIs
-                                        where more information about the
-                                        repository can be found.
-
-                    legal_uris          A comma-separated list of URIs
-                                        where licensing, legal, and
-                                        terms of service information
-                                        for the repository can be found.
-
-                    maintainer          A human readable string
-                                        describing the entity
-                                        maintaining the repository.  For
-                                        an individual, this string is
-                                        expected to be their name or
-                                        name and email.
-
-                    maintainer_url      A URI associated with the entity
-                                        maintaining the repository.
-
-                    mirrors             A comma-separated list of URIs
-                                        where package content can be
-                                        retrieved.
-
-                    name                A short, descriptive name for
-                                        the repository.
-
-                    origins             A comma-separated list of URIs
-                                        where package metadata can be
-                                        retrieved.
-
-                    refresh_seconds     An integer value indicating the
-                                        number of seconds clients should
-                                        wait before refreshing cached
-                                        repository catalog or repository
-                                        metadata information.
-
-                    registration_uri    A URI indicating a location
-                                        clients can use to register or
-                                        obtain credentials needed to
-                                        access the repository.
-
-                    related_uris        A comma-separated list of URIs
-                                        of related repositories that a
-                                        client may be interested in.
+     PKG_DEPOT_CONTENT          Specifies the directory containing
+                                static content served by the depot.
+                                The files listed below under FILES
+                                should be present in this directory,
+                                although their content may differ
+                                from the supplied default content.
 
 EXIT STATUS
      The following exit values are returned:
@@ -417,13 +375,14 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     dns-sd(1), mdnsd(1), pkg(1), pkgsend(1), syslogd(1M), attributes(5), smf(5)
+     dns-sd(1), mdnsd(1), pkg(1), pkgrepo(1), pkgsend(1), syslogd(1M),
+     attributes(5), smf(5)
 
 NOTES
      The image packaging system is an under-development feature.
-     Command names, invocation, formats, and operations are all subject
-     to change.  Development is hosted in the OpenSolaris community
-     at:
+     Command names, invocation, formats, and operations are all
+     subject to change.  Development is hosted in the OpenSolaris
+     community at:
 
      http://hub.opensolaris.org/bin/view/Project+pkg/
 
@@ -441,29 +400,33 @@ NOTES
      restarter, they do not daemonize.  Error messages are generally
      sent to standard output, or to the syslogd(1M) system.
 
-     When publishing individual package files that are greater than 128MB
-     in size, filesystem-based publication must be used due to publication
-     protocol limitations.  See pkgsend(1) for more information.
+     When publishing individual package files that are greater than
+     128MB in size, filesystem-based publication must be used due to
+     publication protocol limitations.  See pkgsend(1) for more
+     information.
 
-     For controlling read access to the depot, it is suggested that admin-
-     istrators use an HTTP reverse proxy in combination with authentication
-     methods such as client-based SSL certificate access which pkg(1)
-     natively supports.
+     For controlling read access to the depot, it is suggested that
+     administrators use an HTTP reverse proxy in combination with
+     authentication methods such as client-based SSL certificate
+     access which pkg(1) natively supports.
 
-     If new package versions must be added to a public depot, it is sugg-
-     ested that filesystem-based publication be performed instead, and that
-     the depot server process be restarted afterwards.  For more information
-     about filesystem-based publication, see pkgsend(1).
+     If new package versions must be added to a public depot, it is
+     suggested that filesystem-based publication be performed instead,
+     and that the depot server process be restarted afterwards.  For
+     more information about filesystem-based publication, see
+     pkgsend(1).
 
-     Changes to configuration, or changes to package data using filesystem-
-     based operations require a restart of the depot server process so that
-     they can be reflected in operations and output.  This can be done by
-     using one of the following methods:
+     Changes to configuration, or changes to package data using file-
+     system based operations require a restart of the depot server
+     process so that they can be reflected in operations and output.
+     This can be done by using one of the following methods:
 
-        * using svcadm(1M) to restart the application/pkg/server instance
+        * using svcadm(1M) to restart the application/pkg/server
+          instance
 
-        * sending a SIGUSR1 signal to the depot server process using kill(1),
-          which will execute a 'graceful restart' that leaves the process
-          intact, but reloads all configuration, package, and search data:
+        * sending a SIGUSR1 signal to the depot server process using
+          kill(1), which will execute a 'graceful restart' that leaves
+          the process intact, but reloads all configuration, package,
+          and search data:
 
             kill -USR1 <pid>

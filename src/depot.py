@@ -50,7 +50,6 @@ MAX_REQUEST_BODY_SIZE = 128 * 1024 * 1024
 HOST_DEFAULT = "0.0.0.0"
 PORT_DEFAULT = 80
 SSL_PORT_DEFAULT = 443
-SOCKET_FILE_DEFAULT = ""
 # The minimum number of threads allowed.
 THREADS_MIN = 1
 # The default number of threads to start.
@@ -61,16 +60,6 @@ THREADS_MAX = 5000
 # the normal default of 10 seconds to accommodate clients with poor quality
 # connections.
 SOCKET_TIMEOUT_DEFAULT = 60
-# Whether modify operations should be allowed.
-READONLY_DEFAULT = False
-# Whether the repository catalog should be rebuilt on startup.
-REBUILD_DEFAULT = False
-# Whether the indexes should be rebuilt
-REINDEX_DEFAULT = False
-# Not in mirror mode by default
-MIRROR_DEFAULT = False
-# Not in link-local mirror mode my default
-LL_MIRROR_DEFAULT = False
 
 import getopt
 import gettext
@@ -100,13 +89,12 @@ import cherrypy.process.servers
 
 from pkg.misc import msg, emsg, setlocale
 import pkg.client.api_errors as api_errors
-import pkg.indexer as indexer
+import pkg.config as cfg
 import pkg.portable.util as os_util
 import pkg.search_errors as search_errors
 import pkg.server.depot as ds
 import pkg.server.depotresponse as dr
 import pkg.server.repository as sr
-import pkg.server.repositoryconfig as rc
 
 
 class LogSink(object):
@@ -137,19 +125,29 @@ def usage(text=None, retcode=2, full=False):
 
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-           [-t socket_timeout] [--cfg-file] [--content-root]
+           [-t socket_timeout] [--cfg] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--file-root dir] [--log-access dest] [--log-errors dest]
-           [--mirror] [--nasty] [--set-property <section.property>=<value>]
-           [--proxy-base url] [--readonly] [--rebuild] [--socket-path] 
-           [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+           [--mirror] [--nasty] [--proxy-base url] [--readonly]
+           [--socket-path] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
            [--sort-file-max-size size] [--writable-root dir]
 
-        --add-content   Check the repository on startup and add any new
-                        packages found.  Cannot be used with --mirror or 
-                        --readonly.
-        --cfg-file      The pathname of the file from which to read and to
-                        write configuration information.
+        -d              The file system path at which the server should find its
+                        repository data.  Required unless PKG_REPO has been set
+                        in the environment.
+        -p              The port number on which the instance should listen for
+                        incoming package requests.  The default value is 80 if
+                        ssl certificate and key information has not been
+                        provided; otherwise, the default value is 443.
+        -s              The maximum number of seconds the server should wait for
+                        a response from a client before closing a connection.
+                        The default value is 60.
+        -t              The number of threads that will be started to serve
+                        requests.  The default value is 10.
+        --cfg           The pathname of the file to use when reading and writing
+                        depot configuration data, or a fully qualified service
+                        fault management resource identifier (FMRI) of the SMF
+                        service or instance to read configuration data from.
         --content-root  The file system path to the directory containing the
                         the static and other web content used by the depot's
                         browser user interface.  The default value is
@@ -162,9 +160,6 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
         --debug         The name of a debug feature to enable; or a whitespace
                         or comma separated list of features to enable.
                         Possible values are: headers.
-        --exit-ready    Perform startup processing (including rebuilding
-                        catalog or indices, if requested) and exit when
-                        ready to start serving packages.
         --file-root     The path to the root of the file content for a given
                         repository.  This is used to override the default,
                         <repo_root>/file.
@@ -189,15 +184,6 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         redirects and content.
         --readonly      Read-only operation; modifying operations disallowed.
                         Cannot be used with --mirror or --rebuild.
-        --rebuild       Re-build the catalog from pkgs in depot.  Cannot be
-                        used with --mirror or --readonly.
-        --set-property  Used to specify initial repository configuration
-                        property values or to update existing ones; can
-                        be specified multiple times.  If used with --readonly
-                        this acts as a temporary override.
-        --socket-path   The absolute pathname to a Unix domain socket.
-                        If this option is specified, the depot will answer
-                        connections through the UNIX socket instead of over IP.
         --ssl-cert-file The absolute pathname to a PEM-encoded Certificate file.
                         This option must be used with --ssl-key-file.  Usage of
                         this option will cause the depot to only respond to SSL
@@ -205,8 +191,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
         --ssl-dialog    Specifies what method should be used to obtain the
                         passphrase needed to decrypt the file specified by
                         --ssl-key-file.  Supported values are: builtin,
-                        exec:/path/to/program, or smf:fmri.  The default value
-                        is builtin.
+                        exec:/path/to/program, smf, or an SMF FMRI.  The
+                        default value is builtin.  If smf is specified, an
+                        SMF FMRI must be provided using the --cfg option.
         --ssl-key-file  The absolute pathname to a PEM-encoded Private Key file.
                         This option must be used with --ssl-cert-file.  Usage of
                         this option will cause the depot to only respond to SSL
@@ -234,76 +221,52 @@ class OptionError(Exception):
         def __init__(self, *args):
                 Exception.__init__(self, *args)
 
+
 if __name__ == "__main__":
 
         setlocale(locale.LC_ALL, "")
         gettext.install("pkg", "/usr/share/locale")
 
-        debug_features = {
-            "headers": False,
-        }
-        disable_ops = {}
-        port = PORT_DEFAULT
-        port_provided = False
-        threads = THREADS_DEFAULT
-        socket_timeout = SOCKET_TIMEOUT_DEFAULT
-        readonly = READONLY_DEFAULT
-        rebuild = REBUILD_DEFAULT
-        reindex = REINDEX_DEFAULT
-        proxy_base = None
-        mirror = MIRROR_DEFAULT
-        ll_mirror = LL_MIRROR_DEFAULT
-        file_root = None
-        nasty = False
-        nasty_value = 0
-        repo_config_file = None
-        repo_path = None
-        sort_file_max_size = indexer.SORT_FILE_MAX_SIZE
-        socket_path = SOCKET_FILE_DEFAULT
-        ssl_cert_file = None
-        ssl_key_file = None
-        ssl_dialog = "builtin"
-        writable_root = None
         add_content = False
         exit_ready = False
+        mirror = False
+        rebuild = False
+        reindex = False
+        ll_mirror = False
+        nasty = False
+        nasty_value = 0
 
+        # Track initial configuration values.
+        ivalues = { "pkg": {} }
         if "PKG_REPO" in os.environ:
-                repo_path = os.environ["PKG_REPO"]
+                ivalues["pkg"]["inst_root"] = os.environ["PKG_REPO"]
 
         try:
                 content_root = os.environ["PKG_DEPOT_CONTENT"]
+                ivalues["pkg"]["content_root"] = content_root
         except KeyError:
                 try:
                         content_root = os.path.join(os.environ['PKG_HOME'],
                             'share/lib/pkg')
+                        ivalues["pkg"]["content_root"] = content_root
                 except KeyError:
-                        content_root = CONTENT_PATH_DEFAULT
-
-        # By default, if the destination for a particular log type is not
-        # specified, this is where we will send the output.
-        log_routes = {
-            "access": "none",
-            "errors": "stderr"
-        }
-        log_opts = ["--log-%s" % log_type for log_type in log_routes]
-
-        # If stdout is a tty, then send access output there by default instead
-        # of discarding it.
-        if os.isatty(sys.stdout.fileno()):
-                log_routes["access"] = "stdout"
+                        pass
 
         opt = None
+        debug_features = []
+        disable_ops = []
         repo_props = {}
+        socket_path = ""
+        user_cfg = None
         try:
-                long_opts = ["add-content", "cfg-file=", "content-root=",
-                    "debug=", "disable-ops=", "exit-ready", "file-root=",
-                    "help", "llmirror", "mirror", "nasty=", "proxy-base=",
-                    "readonly", "rebuild", "refresh-index", "set-property=",
-                    "socket-path=", "ssl-cert-file=", "ssl-dialog=",
-                    "ssl-key-file=", "sort-file-max-size=", "writable-root="]
+                long_opts = ["add-content", "cfg=", "cfg-file=",
+                    "content-root=", "debug=", "disable-ops=", "exit-ready",
+                    "file-root=", "help", "log-access=", "log-errors=",
+                    "llmirror", "mirror", "nasty=", "proxy-base=", "readonly",
+                    "rebuild", "refresh-index", "set-property=", "socket-path=",
+                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
+                    "sort-file-max-size=", "writable-root="]
 
-                for opt in log_opts:
-                        long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:?",
                     long_opts)
 
@@ -312,10 +275,9 @@ if __name__ == "__main__":
                         if opt == "-n":
                                 sys.exit(0)
                         elif opt == "-d":
-                                repo_path = arg
+                                ivalues["pkg"]["inst_root"] = arg
                         elif opt == "-p":
-                                port = int(arg)
-                                port_provided = True
+                                ivalues["pkg"]["port"] = arg
                         elif opt == "-s":
                                 threads = int(arg)
                                 if threads < THREADS_MIN:
@@ -324,26 +286,20 @@ if __name__ == "__main__":
                                 if threads > THREADS_MAX:
                                         raise OptionError, \
                                             "maximum value is %d" % THREADS_MAX
+                                ivalues["pkg"]["threads"] = threads
                         elif opt == "-t":
-                                socket_timeout = int(arg)
+                                ivalues["pkg"]["socket_timeout"] = arg
                         elif opt == "--add-content":
                                 add_content = True
+                        elif opt == "--cfg":
+                                user_cfg  = arg
                         elif opt == "--cfg-file":
-                                repo_config_file = os.path.abspath(arg)
+                                ivalues["pkg"]["cfg_file"] = arg
                         elif opt == "--content-root":
-                                if arg == "":
-                                        raise OptionError, "You must specify " \
-                                            "a directory path."
-                                content_root = arg
-                        elif opt == "--file-root":
-                                if arg == "":
-                                        raise OptionError, "You must specify " \
-                                            "a directory path."
-                                file_root = arg
+                                ivalues["pkg"]["content_root"] = arg
                         elif opt == "--debug":
                                 if arg is None or arg == "":
-                                        raise OptionError, \
-                                            "A debug feature must be specified."
+                                        continue
 
                                 # A list of features can be specified using a
                                 # "," or any whitespace character as separators.
@@ -351,13 +307,7 @@ if __name__ == "__main__":
                                         features = arg.split(",")
                                 else:
                                         features = arg.split()
-
-                                for f in features:
-                                        if f not in debug_features:
-                                                raise OptionError, \
-                                                    "Invalid debug feature: " \
-                                                    "%s." % f
-                                        debug_features[f] = True
+                                debug_features.extend(features)
                         elif opt == "--disable-ops":
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -376,25 +326,22 @@ if __name__ == "__main__":
                                                 raise OptionError(
                                                     "Invalid operation "
                                                     "'%s'." % s)
-
-                                        disable_ops.setdefault(op, [])
-                                        disable_ops[op].append(ver)
+                                        disable_ops.append(s)
                         elif opt == "--exit-ready":
                                 exit_ready = True
-                        elif opt in log_opts:
-                                if arg is None or arg == "":
-                                        raise OptionError, \
-                                            "You must specify a log " \
-                                            "destination."
-                                log_routes[opt.lstrip("--log-")] = arg
+                        elif opt == "--file-root":
+                                ivalues["pkg"]["file_root"] = arg
+                        elif opt.startswith("--log-"):
+                                prop = "log_%s" % opt.lstrip("--log-")
+                                ivalues["pkg"][prop] = arg
                         elif opt in ("--help", "-?"):
                                 show_usage = True
                         elif opt == "--mirror":
-                                mirror = True
+                                ivalues["pkg"]["mirror"] = True
                         elif opt == "--llmirror":
-                                mirror = True
-                                ll_mirror = True
-                                readonly = True
+                                ivalues["pkg"]["mirror"] = True
+                                ivalues["pkg"]["ll_mirror"] = True
+                                ivalues["pkg"]["readonly"] = True
                         elif opt == "--nasty":
                                 value_err = None
                                 try:
@@ -408,16 +355,6 @@ if __name__ == "__main__":
                                             "for nasty option.\n Please " \
                                             "choose a value between 1 and 100."
                                 nasty = True
-                        elif opt == "--set-property":
-                                try:
-                                        prop, p_value = arg.split("=", 1)
-                                        p_sec, p_name = prop.split(".", 1)
-                                except ValueError:
-                                        usage(_("property arguments must be of "
-                                            "the form '<section.property>="
-                                            "<value>'."))
-                                repo_props.setdefault(p_sec, {})
-                                repo_props[p_sec][p_name] = p_value
                         elif opt == "--proxy-base":
                                 # Attempt to decompose the url provided into
                                 # its base parts.  This is done so we can
@@ -440,10 +377,11 @@ if __name__ == "__main__":
                                             "schemes."
 
                                 # Rebuild the url with the sanitized components.
-                                proxy_base = urlparse.urlunparse((scheme,
-                                    netloc, path, params, query, fragment))
+                                ivalues["pkg"]["proxy_base"] = \
+                                    urlparse.urlunparse((scheme, netloc, path,
+                                    params, query, fragment))
                         elif opt == "--readonly":
-                                readonly = True
+                                ivalues["pkg"]["readonly"] = True
                         elif opt == "--rebuild":
                                 rebuild = True
                         elif opt == "--refresh-index":
@@ -457,49 +395,61 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
+                        elif opt == "--set-property":
+                                try:
+                                        prop, p_value = arg.split("=", 1)
+                                        p_sec, p_name = prop.split(".", 1)
+                                except ValueError:
+                                        usage(_("property arguments must be of "
+                                            "the form '<section.property>="
+                                            "<value>'."))
+                                repo_props.setdefault(p_sec, {})
+                                repo_props[p_sec][p_name] = p_value
                         elif opt == "--socket-path":
                                 socket_path = arg
                         elif opt == "--ssl-cert-file":
-                                if arg == "none":
-                                        continue
-
-                                ssl_cert_file = arg
-                                if not os.path.isabs(ssl_cert_file):
+                                if arg == "none" or arg == "":
+                                        # Assume this is an override to clear
+                                        # the value.
+                                        arg = ""
+                                elif not os.path.isabs(arg):
                                         raise OptionError, "The path to " \
                                            "the Certificate file must be " \
                                            "absolute."
-                                elif not os.path.exists(ssl_cert_file):
+                                elif not os.path.exists(arg):
                                         raise OptionError, "The specified " \
                                             "file does not exist."
-                                elif not os.path.isfile(ssl_cert_file):
+                                elif not os.path.isfile(arg):
                                         raise OptionError, "The specified " \
                                             "pathname is not a file."
+                                ivalues["pkg"]["ssl_cert_file"] = arg
                         elif opt == "--ssl-key-file":
-                                if arg == "none":
-                                        continue
-
-                                ssl_key_file = arg
-                                if not os.path.isabs(ssl_key_file):
+                                if arg == "none" or arg == "":
+                                        # Assume this is an override to clear
+                                        # the value.
+                                        arg = ""
+                                elif not os.path.isabs(arg):
                                         raise OptionError, "The path to " \
                                            "the Private Key file must be " \
                                            "absolute."
-                                elif not os.path.exists(ssl_key_file):
+                                elif not os.path.exists(arg):
                                         raise OptionError, "The specified " \
                                             "file does not exist."
-                                elif not os.path.isfile(ssl_key_file):
+                                elif not os.path.isfile(arg):
                                         raise OptionError, "The specified " \
                                             "pathname is not a file."
+                                ivalues["pkg"]["ssl_key_file"] = arg
                         elif opt == "--ssl-dialog":
-                                if arg != "builtin" and not \
+                                if arg != "builtin" and \
+                                    arg != "smf" and not \
                                     arg.startswith("exec:/") and not \
-                                    arg.startswith("smf:"):
+                                    arg.startswith("svc:"):
                                         raise OptionError, "Invalid value " \
                                             "specified.  Expected: builtin, " \
-                                            "exec:/path/to/program, or " \
-                                            "smf:fmri."
+                                            "exec:/path/to/program, smf, or " \
+                                            "an SMF FMRI."
 
-                                f = arg
-                                if f.startswith("exec:"):
+                                if arg.startswith("exec:"):
                                         if os_util.get_canonical_os_type() != \
                                           "unix":
                                                 # Don't allow a somewhat
@@ -510,29 +460,30 @@ if __name__ == "__main__":
                                                     "type for this operating " \
                                                     "system."
 
-                                        f = os.path.abspath(f.split(
+                                        f = os.path.abspath(arg.split(
                                             "exec:")[1])
-
                                         if not os.path.isfile(f):
                                                 raise OptionError, "Invalid " \
                                                     "file path specified for " \
                                                     "exec."
-
-                                        f = "exec:%s" % f
-
-                                ssl_dialog = f
+                                ivalues["pkg"]["ssl_dialog"] = arg
                         elif opt == "--sort-file-max-size":
-                                if arg == "":
-                                        raise OptionError, "You must specify " \
-                                            "a maximum sort file size."
-                                sort_file_max_size = arg
+                                ivalues["pkg"]["sort_file_max_size"] = arg
                         elif opt == "--writable-root":
-                                if arg == "":
-                                        raise OptionError, "You must specify " \
-                                            "a directory path."
-                                writable_root = arg
+                                ivalues["pkg"]["writable_root"] = arg
+
+                # Set accumulated values.
+                if debug_features:
+                        ivalues["pkg"]["debug"] = debug_features
+                if disable_ops:
+                        ivalues["pkg"]["disable_ops"] = disable_ops
+
+                # Build configuration object.
+                dconf = ds.DepotConfig(target=user_cfg, overrides=ivalues)
         except getopt.GetoptError, _e:
                 usage("pkg.depotd: %s" % _e.msg)
+        except api_errors.ApiException, _e:
+                usage("pkg.depotd: %s" % str(_e))
         except OptionError, _e:
                 usage("pkg.depotd: option: %s -- %s" % (opt, _e))
         except (ArithmeticError, ValueError):
@@ -542,6 +493,21 @@ if __name__ == "__main__":
         if show_usage:
                 usage(retcode=0, full=True)
 
+        if not dconf.get_property("pkg", "log_errors"):
+                dconf.set_property("pkg", "log_errors", "stderr")
+
+        # If stdout is a tty, then send access output there by default instead
+        # of discarding it.
+        if not dconf.get_property("pkg", "log_access"):
+                if os.isatty(sys.stdout.fileno()):
+                        dconf.set_property("pkg", "log_access", "stdout")
+                else:
+                        dconf.set_property("pkg", "log_access", "none")
+
+        # Check for invalid option combinations.
+        mirror = dconf.get_property("pkg", "mirror")
+        readonly = dconf.get_property("pkg", "readonly")
+        writable_root = dconf.get_property("pkg", "writable_root")
         if rebuild and add_content:
                 usage("--add-content cannot be used with --rebuild")
         if rebuild and reindex:
@@ -555,18 +521,42 @@ if __name__ == "__main__":
                 usage("--readonly can only be used with --refresh-index if "
                     "--writable-root is used")
 
-        if not repo_path and not file_root:
+        # Set any values using defaults if they weren't provided.
+        inst_root = dconf.get_property("pkg", "inst_root")
+        file_root = dconf.get_property("pkg", "file_root")
+        if not inst_root and not file_root:
                 usage("At least one of PKG_REPO, -d, or --file-root" 
                     " must be provided")
 
+        content_root = dconf.get_property("pkg", "content_root")
+        if not content_root:
+                dconf.set_property("pkg", "content_root", CONTENT_PATH_DEFAULT)
+                content_root = dconf.get_property("pkg", "content_root")
+
+        port = dconf.get_property("pkg", "port")
+        ssl_cert_file = dconf.get_property("pkg", "ssl_cert_file")
+        ssl_key_file = dconf.get_property("pkg", "ssl_key_file")
         if (ssl_cert_file and not ssl_key_file) or (ssl_key_file and not
             ssl_cert_file):
                 usage("The --ssl-cert-file and --ssl-key-file options must "
                     "must both be provided when using either option.")
-        elif ssl_cert_file and ssl_key_file and not port_provided:
-                # If they didn't already specify a particular port, use the
-                # default SSL port instead.
-                port = SSL_PORT_DEFAULT
+        elif not port:
+                if ssl_cert_file and ssl_key_file:
+                        dconf.set_property("pkg", "port", SSL_PORT_DEFAULT)
+                else:
+                        dconf.set_property("pkg", "port", PORT_DEFAULT)
+                port = dconf.get_property("pkg", "port")
+
+        socket_timeout = dconf.get_property("pkg", "socket_timeout")
+        if not socket_timeout:
+                dconf.set_property("pkg", "socket_timeout",
+                    SOCKET_TIMEOUT_DEFAULT)
+                socket_timeout = dconf.get_property("pkg", "socket_timeout")
+
+        threads = dconf.get_property("pkg", "threads")
+        if not threads:
+                dconf.set_property("pkg", "threads", THREADS_DEFAULT)
+                threads = dconf.get_property("pkg", "threads")
 
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
@@ -579,9 +569,44 @@ if __name__ == "__main__":
                         sys.exit(1)
         else:
                 # Not applicable if we're not going to serve content
-                content_root = None
+                dconf.set_property("pkg", "content_root", "")
 
+        # Any relative paths should be made absolute using pkg_root.  'pkg_root'
+        # is a special property that was added to enable internal deployment of
+        # multiple disparate versions of the pkg.depotd software.
+        pkg_root = dconf.get_property("pkg", "pkg_root")
+
+        repo_config_file = dconf.get_property("pkg", "cfg_file")
+        if repo_config_file and not os.path.isabs(repo_config_file):
+                repo_config_file = os.path.join(pkg_root, repo_config_file)
+
+        if content_root and not os.path.isabs(content_root):
+                content_root = os.path.join(pkg_root, content_root)
+
+        if file_root and not os.path.isabs(file_root):
+                file_root = os.path.join(pkg_root, file_root)
+
+        if inst_root and not os.path.isabs(inst_root):
+                inst_root = os.path.join(pkg_root, inst_root)
+
+        if ssl_cert_file:
+                if ssl_cert_file == "none":
+                        ssl_cert_file = None
+                elif not os.path.isabs(ssl_cert_file):
+                        ssl_cert_file = os.path.join(pkg_root, ssl_cert_file)
+
+        if ssl_key_file:
+                if ssl_key_file == "none":
+                        ssl_key_file = None
+                elif not os.path.isabs(ssl_key_file):
+                        ssl_key_file = os.path.join(pkg_root, ssl_key_file)
+
+        if writable_root and not os.path.isabs(writable_root):
+                writable_root = os.path.join(pkg_root, writable_root)
+
+        # Setup SSL if requested.
         key_data = None
+        ssl_dialog = dconf.get_property("pkg", "ssl_dialog")
         if not reindex and ssl_cert_file and ssl_key_file and \
             ssl_dialog != "builtin":
                 cmdline = None
@@ -601,20 +626,29 @@ if __name__ == "__main__":
                         return p.stdout.read().strip("\n")
 
                 if ssl_dialog.startswith("exec:"):
-                        cmdline = "%s %s %d" % (ssl_dialog.split("exec:")[1],
-                            "''", port)
-                elif ssl_dialog.startswith("smf:"):
+                        exec_path = ssl_dialog.split("exec:")[1]
+                        if not os.path.isabs(exec_path):
+                                exec_path = os.path.join(pkg_root, exec_path)
+                        cmdline = "%s %s %d" % (exec_path, "''", port)
+                elif ssl_dialog == "smf" or ssl_dialog.startswith("svc:"):
+                        if ssl_dialog == "smf":
+                                # Assume the configuration target was an SMF
+                                # FMRI and let svcprop fail with an error if
+                                # it wasn't.
+                                svc_fmri = dconf.target
+                        else:
+                                svc_fmri = ssl_dialog
                         cmdline = "/usr/bin/svcprop -p " \
-                            "pkg_secure/ssl_key_passphrase %s" % (
-                            ssl_dialog.split("smf:")[1])
+                            "pkg_secure/ssl_key_passphrase %s" % svc_fmri
 
                 # The key file requires decryption, but the user has requested
                 # exec-based authentication, so it will have to be decoded first
                 # to an un-named temporary file.
                 try:
-                        key_file = file(ssl_key_file, "rb")
-                        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM,
-                            key_file.read(), get_ssl_passphrase)
+                        with file(ssl_key_file, "rb") as key_file:
+                                pkey = crypto.load_privatekey(
+                                    crypto.FILETYPE_PEM, key_file.read(),
+                                    get_ssl_passphrase)
 
                         key_data = tempfile.TemporaryFile()
                         key_data.write(crypto.dump_privatekey(
@@ -632,6 +666,7 @@ if __name__ == "__main__":
                 else:
                         # Redirect the server to the decrypted key file.
                         ssl_key_file = "/dev/fd/%d" % key_data.fileno()
+                        key_data.close()
 
         # Setup our global configuration.
         gconf = {
@@ -651,7 +686,7 @@ if __name__ == "__main__":
             "tools.encode.on": True
         }
 
-        if debug_features["headers"]:
+        if "headers" in dconf.get_property("pkg", "debug"):
                 # Despite its name, this only logs headers when there is an
                 # error; it's redundant with the debug feature enabled.
                 gconf["tools.log_headers.on"] = False
@@ -675,7 +710,7 @@ if __name__ == "__main__":
         }
 
         for log_type in log_type_map:
-                dest = log_routes[log_type]
+                dest = dconf.get_property("pkg", "log_%s" % log_type)
                 if dest in ("stdout", "stderr", "none"):
                         if dest == "none":
                                 h = logging.StreamHandler(LogSink())
@@ -691,6 +726,9 @@ if __name__ == "__main__":
                         # Since we've replaced cherrypy's log handler with our
                         # own, we don't want the output directed to a file.
                         dest = ""
+                elif dest:
+                        if not os.path.isabs(dest):
+                                dest = os.path.join(pkg_root, dest)
                 gconf[log_type_map[log_type]["param"]] = dest
 
         cherrypy.config.update(gconf)
@@ -701,29 +739,23 @@ if __name__ == "__main__":
         # Initialize repository state.
         fork_allowed = not reindex and not exit_ready  
         try:
+                sort_file_max_size = dconf.get_property("pkg",
+                    "sort_file_max_size")
+
                 repo = sr.Repository(auto_create=not readonly,
-                    cfgpathname=repo_config_file,  file_root=file_root,
+                    cfgpathname=repo_config_file, file_root=file_root,
                     fork_allowed=fork_allowed, log_obj=cherrypy,
                     mirror=mirror, properties=repo_props, read_only=readonly,
-                    refresh_index=not add_content, repo_root=repo_path,
+                    refresh_index=not add_content, repo_root=inst_root,
                     sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except (RuntimeError, sr.RepositoryError), _e:
                 emsg("pkg.depotd: %s" % _e)
                 sys.exit(1)
-        except rc.RequiredPropertyValueError, _e:
-                emsg("pkg.depotd: repository configuration error: %s" % _e)
-                emsg("Please use the --set-property option to provide a value, "
-                    "or update the cfg_cache file for the repository to "
-                    "correct this.")
-                sys.exit(1)
-        except rc.PropertyError, _e:
-                emsg("pkg.depotd: repository configuration error: %s" % _e)
-                sys.exit(1)
         except search_errors.IndexingException, _e:
                 emsg("pkg.depotd: %s" % str(_e), "INDEX")
                 sys.exit(1)
-        except (api_errors.UnknownErrors, api_errors.PermissionsException), _e:
+        except api_errors.ApiException, _e:
                 emsg("pkg.depotd: %s" % str(_e))
                 sys.exit(1)
 
@@ -731,9 +763,6 @@ if __name__ == "__main__":
                 # Initializing the repository above updated search indices
                 # as needed; nothing left to do, so exit.
                 sys.exit(0)
-
-        if nasty:
-                repo.cfg.set_nasty(nasty_value)
 
         if rebuild:
                 try:
@@ -765,11 +794,10 @@ if __name__ == "__main__":
 
         # Next, initialize depot.
         if nasty:
-                depot = ds.NastyDepotHTTP(repo, content_root,
-                    disable_ops=disable_ops)
+                depot = ds.NastyDepotHTTP(repo, dconf)
+                depot.set_nasty(nasty_value)
         else:
-                depot = ds.DepotHTTP(repo, content_root,
-                    disable_ops=disable_ops)
+                depot = ds.DepotHTTP(repo, dconf)
 
         # Now build our site configuration.
         conf = {
@@ -786,6 +814,7 @@ if __name__ == "__main__":
             },
         }
 
+        proxy_base = dconf.get_property("pkg", "proxy_base")
         if proxy_base:
                 # This changes the base URL for our server, and is primarily
                 # intended to allow our depot process to operate behind Apache

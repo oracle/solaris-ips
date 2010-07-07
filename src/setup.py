@@ -182,6 +182,7 @@ scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
                 ['pkgdep.py', 'pkgdepend'],
+                ['pkgrepo.py', 'pkgrepo'],
                 ['util/publish/pkgdiff.py', 'pkgdiff'],
                 ['util/publish/pkgfmt.py', 'pkgfmt'],
                 ['util/publish/pkgmogrify.py', 'pkgmogrify'],
@@ -205,6 +206,7 @@ scripts_sunos = {
 scripts_windows = {
         scripts_dir: [
                 ['client.py', 'client.py'],
+                ['pkgrepo.py', 'pkgrepo.py'],
                 ['publish.py', 'publish.py'],
                 ['pull.py', 'pull.py'],
                 ['scripts/pkg.bat', 'pkg.bat'],

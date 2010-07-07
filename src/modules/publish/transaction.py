@@ -37,9 +37,9 @@ import urlparse
 
 from pkg.misc import versioned_urlopen, EmptyDict
 import pkg.actions as actions
+import pkg.config as cfg
 import pkg.portable.util as os_util
 import pkg.server.repository as sr
-import pkg.server.repositoryconfig as rc
 
 class TransactionError(Exception):
         """Base exception class for all Transaction exceptions."""
@@ -157,7 +157,7 @@ class FileTransaction(object):
                                     "An error occurred while trying to "
                                     "initialize the repository directory "
                                     "structures:\n%s") % e)
-                        except rc.PropertyError, e:
+                        except cfg.ConfigError, e:
                                 raise TransactionRepositoryConfigError(str(e))
                         except sr.RepositoryInvalidError, e:
                                 raise TransactionRepositoryInvalidError(str(e))

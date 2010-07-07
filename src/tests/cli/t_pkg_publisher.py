@@ -31,6 +31,7 @@ import pkg5unittest
 
 import os
 import pkg.client.image as image
+import shutil
 import tempfile
 import unittest
 
@@ -561,14 +562,29 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.__test_mirror_origin("origin", "--add-origin",
                     "--remove-origin")
 
-                # Finally, verify that if multiple origins are present that -O
-                # will discard all others.
+                # Verify that if multiple origins are present that -O will
+                # discard all others.
                 durl4 = self.dcs[4].get_depot_url()
                 durl5 = self.dcs[5].get_depot_url()
                 self.pkg("set-publisher -g %s -g %s test1" % (durl4, durl5))
                 self.pkg("set-publisher -O %s test1" % durl4)
                 self.pkg("publisher | grep origin.*%s" % durl1, exit=1)
                 self.pkg("publisher | grep origin.*%s" % durl5, exit=1)
+
+                # Verify that if a publisher is set to use a file repository
+                # that removing that repository will not prevent the pkg(1)
+                # command from operating or the set-publisher commands
+                # from working.
+                repo_path = os.path.join(self.test_root, "badrepo")
+                repo_uri = "file:%s" % repo_path
+                self.create_repo(repo_path, properties={ "publisher": {
+                    "prefix": "test1" } })
+                self.pkg("set-publisher -O %s test1" % repo_uri)
+                shutil.rmtree(repo_path)
+
+                self.pkg("publisher")
+                self.pkg("set-publisher -O %s test1" %
+                    self.dcs[1].get_repo_url())
 
         def test_enable_disable(self):
                 """Test enable and disable."""

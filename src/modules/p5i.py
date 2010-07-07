@@ -62,7 +62,8 @@ def parse(data=None, fileobj=None, location=None):
                 raise api_errors.InvalidResourceLocation(location)
 
         if location:
-                if location.find("://") == -1:
+                if location.find("://") == -1 and \
+                    not location.startswith("file:/"):
                         # Convert the file path to a URI.
                         location = os.path.abspath(location)
                         location = urlparse.urlunparse(("file", "",

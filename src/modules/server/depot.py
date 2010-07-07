@@ -62,7 +62,9 @@ import pkg
 import pkg.actions as actions
 import pkg.catalog as catalog
 import pkg.client.publisher as publisher
+import pkg.config as cfg
 import pkg.fmri as fmri
+import pkg.indexer as indexer
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.p5i as p5i
@@ -77,8 +79,59 @@ class Dummy(object):
         """Dummy object used for dispatch method mapping."""
         pass
 
+class _Depot(object):
+        """Private, abstract, base class for all Depot classes."""
 
-class DepotHTTP(object):
+        nasty = 0
+
+        def set_nasty(self, level):
+                """Set the nasty level using an integer."""
+
+                self.nasty = level
+
+        def is_nasty(self):
+                """Returns true if nasty has been enabled."""
+
+                if self.nasty > 0:
+                        return True
+                return False
+
+        def need_nasty(self):
+                """Randomly returns true when the server should misbehave."""
+
+                if random.randint(1, 100) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_bonus(self, bonus=0):
+                """Used to temporarily apply extra nastiness to an operation."""
+
+                if self.nasty + bonus > 95:
+                        nasty = 95
+                else:
+                        nasty = self.nasty + bonus
+
+                if random.randint(1, 100) <= nasty:
+                        return True
+                return False
+
+        def need_nasty_occasionally(self):
+                if random.randint(1, 500) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_infrequently(self):
+                if random.randint(1, 2000) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_rarely(self):
+                if random.randint(1, 20000) <= self.nasty:
+                        return True
+                return False
+
+
+class DepotHTTP(_Depot):
         """The DepotHTTP object is intended to be used as a cherrypy
         application object and represents the set of operations that a
         pkg.depotd server provides to HTTP-based clients."""
@@ -122,21 +175,28 @@ class DepotHTTP(object):
         content_root = None
         web_root = None
 
-        def __init__(self, repo, content_root, disable_ops=misc.EmptyI):
+        def __init__(self, repo, dconf):
                 """Initialize and map the valid operations for the depot.  While
                 doing so, ensure that the operations have been explicitly
                 "exposed" for external usage."""
 
-                self._repo = repo
+                self.cfg = dconf
+                self.repo = repo
+
+                content_root = dconf.get_property("pkg", "content_root")
+                pkg_root = dconf.get_property("pkg", "pkg_root")
                 if content_root:
-                        self.content_root = os.path.abspath(content_root)
+                        if not os.path.isabs(content_root):
+                                content_root = os.path.join(pkg_root,
+                                    content_root)
+                        self.content_root = content_root
                         self.web_root = os.path.join(self.content_root, "web")
                 else:
                         self.content_root = None
                         self.web_root = None
 
                 # Handles the BUI (Browser User Interface).
-                face.init(repo, self.web_root)
+                face.init(self)
 
                 # Store any possible configuration changes.
                 repo.write_config()
@@ -150,6 +210,19 @@ class DepotHTTP(object):
                 else:
                         self.ops_list = self.REPO_OPS_DEFAULT
 
+                # Transform the property value into a form convenient
+                # for use.
+                disable_ops = {}
+                for entry in dconf.get_property("pkg", "disable_ops"):
+                        if "/" in entry:
+                                op, ver = entry.rsplit("/", 1)
+                        else:
+                                op = entry
+                                ver = "*"
+                        disable_ops.setdefault(op, [])
+                        disable_ops[op].append(ver)
+
+                # Determine available operations and disable as requested.
                 self.vops = {}
                 for name, func in inspect.getmembers(self, inspect.ismethod):
                         m = re.match("(.*)_(\d+)", name)
@@ -205,7 +278,7 @@ class DepotHTTP(object):
                 parameter is equal to the repository's refresh_seconds
                 property."""
 
-                rs = self._repo.cfg.get_property("repository",
+                rs = self.repo.cfg.get_property("repository",
                     "refresh_seconds")
                 if max_age is None:
                         max_age = min((rs, expires))
@@ -226,7 +299,14 @@ class DepotHTTP(object):
 
         def refresh(self):
                 """Catch SIGUSR1 and reload the depot information."""
-                self._repo.reload()
+                self.repo.reload()
+                if type(self.cfg) == cfg.SMFConfig:
+                        # For all other cases, reloading depot configuration
+                        # isn't desirable (because of command-line overrides).
+                        self.cfg.reset()
+
+                # Handles the BUI (Browser User Interface).
+                face.init(self)
 
         @cherrypy.expose
         def default(self, *tokens, **params):
@@ -244,8 +324,7 @@ class DepotHTTP(object):
                 elif op not in self.vops:
                         request = cherrypy.request
                         response = cherrypy.response
-                        return face.respond(self._repo, self.content_root,
-                            self.web_root, request, response)
+                        return face.respond(self, request, response)
 
                 # If we get here, we know that 'operation' is supported.
                 # Ensure that we have a integer protocol version.
@@ -294,7 +373,7 @@ class DepotHTTP(object):
                     start_point=None))]
 
                 try:
-                        res_list = self._repo.search(query_args_lst)
+                        res_list = self.repo.search(query_args_lst)
                 except repo.RepositorySearchUnavailableError, e:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             str(e))
@@ -347,12 +426,12 @@ class DepotHTTP(object):
                 if not query_str_lst:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST)
 
-                if not self._repo.search_available:
+                if not self.repo.search_available:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             "Search temporarily unavailable")
 
                 try:
-                        res_list = self._repo.search(query_str_lst)
+                        res_list = self.repo.search(query_str_lst)
                 except (ParseError, BooleanQueryException), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositorySearchUnavailableError, e:
@@ -414,7 +493,7 @@ class DepotHTTP(object):
 
                 # Response headers have to be setup *outside* of the function
                 # that yields the catalog content.
-                c = self._repo.catalog
+                c = self.repo.catalog
                 response = cherrypy.response
                 response.headers["Content-type"] = "text/plain; charset=utf-8"
                 response.headers["Last-Modified"] = c.last_modified.isoformat()
@@ -423,7 +502,7 @@ class DepotHTTP(object):
 
                 def output():
                         try:
-                                for l in self._repo.catalog_0():
+                                for l in self.repo.catalog_0():
                                         yield l
                         except repo.RepositoryError, e:
                                 # Can't do anything in a streaming generator
@@ -446,7 +525,7 @@ class DepotHTTP(object):
                             _("Directory listing not allowed."))
 
                 try:
-                        fpath = self._repo.catalog_1(name)
+                        fpath = self.repo.catalog_1(name)
                 except repo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
@@ -466,7 +545,7 @@ class DepotHTTP(object):
                 of the catalog and its image policies."""
 
                 try:
-                        cat = self._repo.catalog
+                        cat = self.repo.catalog
                         pubs = cat.publishers()
                 except Exception, e:
                         cherrypy.log("Request Failed: %s" % e)
@@ -490,7 +569,7 @@ class DepotHTTP(object):
                         # of the fmri and have been split out because of bad
                         # proxy behaviour.
                         pfmri = "/".join(comps)
-                        fpath = self._repo.manifest(pfmri)
+                        fpath = self.repo.manifest(pfmri)
                 except (IndexError, repo.RepositoryInvalidFMRIError), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
@@ -538,7 +617,7 @@ class DepotHTTP(object):
                 is output directly to the client. """
 
                 try:
-                        self._repo.inc_flist()
+                        self.repo.inc_flist()
 
                         # Create a dummy file object that hooks to the write()
                         # callable which is all tarfile needs to output the
@@ -564,14 +643,14 @@ class DepotHTTP(object):
                             self._tar_stream_close, failsafe = True)
 
                         for v in params.values():
-                                filepath = self._repo.cache_store.lookup(v)
+                                filepath = self.repo.cache_store.lookup(v)
 
                                 # If file isn't here, skip it
                                 if not filepath:
                                         continue
 
                                 tar_stream.add(filepath, v, False)
-                                self._repo.inc_flist_files()
+                                self.repo.inc_flist_files()
 
                         # Flush the remaining bytes to the client.
                         tar_stream.close()
@@ -613,7 +692,7 @@ class DepotHTTP(object):
                         fhash = None
 
                 try:
-                        fpath = self._repo.file(fhash)
+                        fpath = self.repo.file(fhash)
                 except repo.RepositoryFileNotFoundError, e:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 except repo.RepositoryError, e:
@@ -648,7 +727,7 @@ class DepotHTTP(object):
                 # signed certificate (or a more elaborate system).
 
                 try:
-                        trans_id = self._repo.open(client_release, pfmri)
+                        trans_id = self.repo.open(client_release, pfmri)
                         response.headers["Content-type"] = "text/plain; charset=utf-8"
                         response.headers["Transaction-ID"] = trans_id
                 except repo.RepositoryError, e:
@@ -692,7 +771,7 @@ class DepotHTTP(object):
                             "X-IPkg-Refresh-Index: %s" % e)
 
                 try:
-                        pfmri, pstate = self._repo.close(trans_id,
+                        pfmri, pstate = self.repo.close(trans_id,
                             refresh_index=refresh_index)
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
@@ -719,7 +798,7 @@ class DepotHTTP(object):
                         trans_id = None
 
                 try:
-                        self._repo.abandon(trans_id)
+                        self.repo.abandon(trans_id)
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
@@ -782,7 +861,7 @@ class DepotHTTP(object):
                 #         self.critical = True
 
                 try:
-                        self._repo.add(trans_id, action)
+                        self.repo.add(trans_id, action)
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
@@ -810,7 +889,7 @@ class DepotHTTP(object):
 
                 if cmd == "refresh":
                         try:
-                                self._repo.refresh_index()
+                                self.repo.refresh_index()
                         except repo.RepositoryError, e:
                                 # Assume a bad request was made.  A 404 can't be
                                 # returned here as misc.versioned_urlopen will interpret
@@ -832,7 +911,7 @@ class DepotHTTP(object):
                     policies. """
 
                 try:
-                        cat = self._repo.catalog
+                        cat = self.repo.catalog
                         pubs = cat.publishers()
                 except Exception, e:
                         cherrypy.log("Request Failed: %s" % e)
@@ -866,7 +945,7 @@ class DepotHTTP(object):
                 m.set_fmri(None, pfmri)
 
                 try:
-                        mpath = os.path.join(self._repo.pkg_root,
+                        mpath = os.path.join(self.repo.manifest_root,
                             f.get_dir_path())
                 except fmri.FmriError, e:
                         # If the FMRI operation couldn't be performed, assume
@@ -880,7 +959,7 @@ class DepotHTTP(object):
 
                 publisher, name, ver = f.tuple()
                 if not publisher:
-                        publisher = self._repo.cfg.get_property("publisher",
+                        publisher = self.repo.cfg.get_property("publisher",
                             "prefix")
                         if not publisher:
                                 publisher = ""
@@ -891,7 +970,7 @@ class DepotHTTP(object):
                 for i, entry in enumerate(m.gen_actions_by_type("license")):
                         if i > 0:
                                 lsummary.write("\n")
-                        lpath = self._repo.cache_store.lookup(entry.hash)
+                        lpath = self.repo.cache_store.lookup(entry.hash)
 
                         lfile = file(lpath, "rb")
                         misc.gunzip_from_stream(lfile, lsummary)
@@ -920,12 +999,12 @@ License:
                 for prop in ("collection_type", "description", "legal_uris",
                     "mirrors", "name", "origins", "refresh_seconds",
                     "registration_uri", "related_uris"):
-                        rargs[prop] = self._repo.cfg.get_property(
+                        rargs[prop] = self.repo.cfg.get_property(
                             "repository", prop)
 
                 repo = publisher.Repository(**rargs)
-                alias = self._repo.cfg.get_property("publisher", "alias")
-                pfx = self._repo.cfg.get_property("publisher", "prefix")
+                alias = self.repo.cfg.get_property("publisher", "alias")
+                pfx = self.repo.cfg.get_property("publisher", "prefix")
                 return publisher.Publisher(pfx, alias=alias,
                     repositories=[repo])
 
@@ -966,7 +1045,7 @@ License:
                 datastream as provided."""
 
                 try:
-                        cat = self._repo.catalog
+                        cat = self.repo.catalog
                         pubs = cat.publishers()
                 except Exception, e:
                         cherrypy.log("Request Failed: %s" % e)
@@ -1061,16 +1140,16 @@ class NastyDepotHTTP(DepotHTTP):
         """A class that creates a depot that misbehaves.  Naughty
         depots are useful for testing."""
 
-        def __init__(self, repo, content_root, disable_ops=misc.EmptyI):
+        def __init__(self, repo, dconf):
                 """Initialize."""
 
-                DepotHTTP.__init__(self, repo, content_root, disable_ops)
+                DepotHTTP.__init__(self, repo, dconf)
 
                 # Handles the BUI (Browser User Interface).
-                face.init(self._repo, self.web_root)
+                face.init(self)
 
                 # Store any possible configuration changes.
-                self._repo.write_config()
+                self.repo.write_config()
 
                 self.requested_files = []
                 self.requested_catalogs = []
@@ -1090,7 +1169,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # emit error code that client should know how to retry
-                if cherrypy.request.app.root._repo.cfg.need_nasty_bonus(bonus):
+                if self.need_nasty_bonus(bonus):
                         code = retryable_errors[random.randint(0,
                             len(retryable_errors) - 1)]
                         raise cherrypy.HTTPError(code)
@@ -1105,7 +1184,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # Response headers have to be setup *outside* of the function
                 # that yields the catalog content.
-                c = self._repo.catalog
+                c = self.repo.catalog
                 response = cherrypy.response
                 response.headers["Content-type"] = "text/plain; charset=utf-8"
                 response.headers["Last-Modified"] = c.last_modified.isoformat()
@@ -1113,7 +1192,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 def output():
                         try:
-                                for l in self._repo.catalog_0():
+                                for l in self.repo.catalog_0():
                                         yield l
                         except repo.RepositoryError, e:
                                 # Can't do anything in a streaming generator
@@ -1136,7 +1215,7 @@ class NastyDepotHTTP(DepotHTTP):
                 of the catalog and its image policies."""
 
                 try:
-                        cat = self._repo.catalog
+                        cat = self.repo.catalog
                         pubs = cat.publishers()
                 except Exception, e:
                         cherrypy.log("Request Failed: %s" % e)
@@ -1156,7 +1235,7 @@ class NastyDepotHTTP(DepotHTTP):
                         # of the fmri and have been split out because of bad
                         # proxy behaviour.
                         pfmri = "/".join(comps)
-                        fpath = self._repo.manifest(pfmri)
+                        fpath = self.repo.manifest(pfmri)
                 except (IndexError, repo.RepositoryInvalidFMRIError), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
@@ -1176,18 +1255,18 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send an error before serving the manifest, perhaps
-                if self._repo.cfg.need_nasty():
+                if self.need_nasty():
                         self.nasty_retryable_error()
-                elif self._repo.cfg.need_nasty_infrequently():
+                elif self.need_nasty_infrequently():
                         # Fall asleep before finishing the request
                         time.sleep(35)
-                elif self._repo.cfg.need_nasty_rarely():
+                elif self.need_nasty_rarely():
                         # Forget that the manifest is here
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # NASTY
                 # Send the wrong manifest
-                if self._repo.cfg.need_nasty_rarely():
+                if self.need_nasty_rarely():
                         pick = random.randint(0,
                             len(self.requested_manifests) - 1)
                         badpath = self.requested_manifests[pick]
@@ -1206,10 +1285,10 @@ class NastyDepotHTTP(DepotHTTP):
                 is output directly to the client. """
 
                 try:
-                        self._repo.inc_flist()
+                        self.repo.inc_flist()
 
                         # NASTY
-                        if self._repo.cfg.need_nasty_occasionally():
+                        if self.need_nasty_occasionally():
                                 return
 
                         # Create a dummy file object that hooks to the write()
@@ -1236,7 +1315,7 @@ class NastyDepotHTTP(DepotHTTP):
                             self._tar_stream_close, failsafe = True)
 
                         # NASTY
-                        if self._repo.cfg.need_nasty_infrequently():
+                        if self.need_nasty_infrequently():
                                 time.sleep(35)
 
                         for v in params.values():
@@ -1251,17 +1330,17 @@ class NastyDepotHTTP(DepotHTTP):
                                         self.requested_files.append(v)
 
                                 # NASTY
-                                if self._repo.cfg.need_nasty_infrequently():
+                                if self.need_nasty_infrequently():
                                         # Give up early
                                         break
-                                elif self._repo.cfg.need_nasty_infrequently():
+                                elif self.need_nasty_infrequently():
                                         # Skip this file
                                         continue
-                                elif self._repo.cfg.need_nasty_rarely():
+                                elif self.need_nasty_rarely():
                                         # Take a nap
                                         time.sleep(35)
 
-                                filepath = self._repo.cache_store.lookup(v)
+                                filepath = self.repo.cache_store.lookup(v)
 
                                 # If file isn't here, skip it
                                 if not os.path.exists(filepath):
@@ -1269,7 +1348,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                                 # NASTY
                                 # Send a file with the wrong content
-                                if self._repo.cfg.need_nasty_rarely():
+                                if self.need_nasty_rarely():
                                         pick = random.randint(0,
                                             len(self.requested_files) - 1)
                                         badfn = self.requested_files[pick]
@@ -1279,20 +1358,20 @@ class NastyDepotHTTP(DepotHTTP):
                                 else:
                                         tar_stream.add(filepath, v, False)
 
-                                self._repo.inc_flist_files()
+                                self.repo.inc_flist_files()
 
                         # NASTY
                         # Write garbage into the stream
-                        if self._repo.cfg.need_nasty_infrequently():
+                        if self.need_nasty_infrequently():
                                 f.write("NASTY!")
 
                         # NASTY
                         # Send an extraneous file
-                        if self._repo.cfg.need_nasty_infrequently():
+                        if self.need_nasty_infrequently():
                                 pick = random.randint(0,
                                     len(self.requested_files) - 1)
                                 extrafn = self.requested_files[pick]
-                                extrapath = self._repo.cache_store.lookup(
+                                extrapath = self.repo.cache_store.lookup(
                                     extrafn)
 
                                 tar_stream.add(extrapath, extrafn, False)
@@ -1329,8 +1408,8 @@ class NastyDepotHTTP(DepotHTTP):
         }
 
         def __get_bad_path(self, v):
-                return os.path.join(self._repo.cache_store.root,
-                    self._repo.cache_store.layouts[0].lookup(v))
+                return os.path.join(self.repo.cache_store.root,
+                    self.repo.cache_store.layouts[0].lookup(v))
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash
@@ -1342,7 +1421,7 @@ class NastyDepotHTTP(DepotHTTP):
                         fhash = None
 
                 try:
-                        fpath = self._repo.file(fhash)
+                        fpath = self.repo.file(fhash)
                 except repo.RepositoryFileNotFoundError, e:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 except repo.RepositoryError, e:
@@ -1362,18 +1441,18 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send an error before serving the file, perhaps
-                if self._repo.cfg.need_nasty():
+                if self.need_nasty():
                         self.nasty_retryable_error()
-                elif self._repo.cfg.need_nasty_rarely():
+                elif self.need_nasty_rarely():
                         # Fall asleep before finishing the request
                         time.sleep(35)
-                elif self._repo.cfg.need_nasty_rarely():
+                elif self.need_nasty_rarely():
                         # Forget that the file is here
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # NASTY
                 # Send the wrong file
-                if self._repo.cfg.need_nasty_rarely():
+                if self.need_nasty_rarely():
                         pick = random.randint(0, len(self.requested_files) - 1)
                         badfn = self.requested_files[pick]
                         badpath = self.__get_bad_path(badfn)
@@ -1397,7 +1476,7 @@ class NastyDepotHTTP(DepotHTTP):
                             _("Directory listing not allowed."))
 
                 try:
-                        fpath = self._repo.catalog_1(name)
+                        fpath = self.repo.catalog_1(name)
                 except repo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
@@ -1415,18 +1494,18 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send an error before serving the catalog, perhaps
-                if self._repo.cfg.need_nasty():
+                if self.need_nasty():
                         self.nasty_retryable_error()
-                elif self._repo.cfg.need_nasty_rarely():
+                elif self.need_nasty_rarely():
                         # Fall asleep before finishing the request
                         time.sleep(35)
-                elif self._repo.cfg.need_nasty_rarely():
+                elif self.need_nasty_rarely():
                         # Forget that the catalog is here
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # NASTY
                 # Send the wrong catalog
-                if self._repo.cfg.need_nasty_rarely():
+                if self.need_nasty_rarely():
                         pick = random.randint(0,
                             len(self.requested_catalogs) - 1)
                         badpath = self.requested_catalogs[pick]
@@ -1457,7 +1536,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send incorrect content length
-                if self._repo.cfg.need_nasty_rarely():
+                if self.need_nasty_rarely():
                         response.headers["Content-Length"] = str(filesz +
                                 random.randint(1, 1024))
                         already_nasty = True
@@ -1466,7 +1545,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 # NASTY
                 # Send truncated file
-                if self._repo.cfg.need_nasty_rarely() and not already_nasty:
+                if self.need_nasty_rarely() and not already_nasty:
                         response.body = nfile.read(filesz - random.randint(1,
                             filesz - 1))
                         # If we're sending data, lie about the length and
@@ -1474,7 +1553,7 @@ class NastyDepotHTTP(DepotHTTP):
                         if content_type == "application/data":
                                 response.headers["Content-Length"] = str(
                                     len(response.body))
-                elif self._repo.cfg.need_nasty_rarely() and not already_nasty:
+                elif self.need_nasty_rarely() and not already_nasty:
                         # Write garbage into the response
                         response.body = nfile.read(filesz)
                         response.body += "NASTY!"
@@ -1488,12 +1567,14 @@ class NastyDepotHTTP(DepotHTTP):
 
                 return response.body
 
+
 class DNSSD_Plugin(SimplePlugin):
         """Allow a depot to configure DNS-SD through mDNS."""
 
-        def __init__(self, bus, scfg, gconf):
-                """Bus is cherrypy engine, scfg is SvrConfig, and gconf
-                is dictionary containing the CherryPy configuration."""
+        def __init__(self, bus, gconf):
+                """Bus is the cherrypy engine and gconf is a dictionary
+                containing the CherryPy configuration.
+                """
 
                 SimplePlugin.__init__(self, bus)
 
@@ -1521,7 +1602,8 @@ class DNSSD_Plugin(SimplePlugin):
         def reg_cb(self, sd_hdl, flags, error_code, name, regtype, domain):
                 """Callback invoked by service register function.  Arguments
                 are determined by the pybonjour framework, and must not
-                be changed."""
+                be changed.
+                """
 
                 if error_code != pybonjour.kDNSServiceErr_NoError:
                         self.bus.log("Error in DNS-SD registration: %s" %
@@ -1578,3 +1660,89 @@ class DNSSD_Plugin(SimplePlugin):
                         self.sd_hdl.close()
                 self.sd_hdl = None
                 self.bus.log("Service unregistration for DNS-SD complete.")
+
+
+class DepotConfig(object):
+        """Returns an object representing a configuration interface for a
+        a pkg(5) depot server.
+
+        The class of the object returned will depend upon the specified
+        configuration target (which is used as to retrieve and store
+        configuration data).
+
+        'target' is the optional location to retrieve existing configuration
+        data or store the configuration data when requested.  The location
+        can be None, the pathname of a file, or an SMF FMRI.  If a pathname is
+        provided, and does not exist, it will be created if needed.
+
+        'overrides' is a dictionary of property values indexed by section name
+        and property name.  If provided, it will override any values read from
+        an existing file or any defaults initially assigned.
+
+        'version' is an integer value specifying the set of configuration data
+        to use for the operation.  If not provided, the version will be based
+        on the target if supported.  If a version cannot be determined, the
+        newest version will be assumed.
+        """
+
+        # This dictionary defines the set of default properties and property
+        # groups for a depot configuration indexed by version.
+        __defs = {
+            4: [
+                cfg.PropertySection("pkg", [
+                    cfg.PropDefined("cfg_file", allowed=["", "<pathname>"]),
+                    cfg.Property("content_root"),
+                    cfg.PropList("debug", allowed=["", "headers"]),
+                    cfg.PropPublisher("default_publisher"),
+                    cfg.PropList("disable_ops"),
+                    cfg.PropDefined("file_root", allowed=["", "<pathname>"]),
+                    cfg.PropDefined("inst_root", allowed=["", "<pathname>"]),
+                    cfg.PropBool("ll_mirror"),
+                    cfg.PropDefined("log_access", allowed=["", "stderr",
+                        "stdout", "none", "<pathname>"]),
+                    cfg.PropDefined("log_errors", allowed=["", "stderr",
+                        "stdout", "none", "<pathname>"], default="stderr"),
+                    cfg.PropBool("mirror"),
+                    cfg.PropDefined("pkg_root", allowed=["/", "<abspathname>"],
+                        default="/"),
+                    cfg.PropInt("port"),
+                    cfg.PropPubURI("proxy_base"),
+                    cfg.PropBool("readonly"),
+                    cfg.PropInt("socket_timeout"),
+                    cfg.PropInt("sort_file_max_size",
+                        default=indexer.SORT_FILE_MAX_SIZE),
+                    cfg.PropDefined("ssl_cert_file",
+                        allowed=["", "<pathname>", "none"]),
+                    cfg.PropDefined("ssl_dialog", allowed=["<exec:pathname>",
+                        "builtin", "smf", "<smf:fmri>"], default="builtin"),
+                    cfg.PropDefined("ssl_key_file",
+                        allowed=["", "<pathname>", "none"]),
+                    cfg.PropInt("threads"),
+                    cfg.PropDefined("writable_root",
+                        allowed=["", "<pathname>"]),
+                ]),
+                cfg.PropertySection("pkg_bui", [
+                    cfg.PropDefined("feed_description"),
+                    cfg.PropDefined("feed_icon",
+                        default="web/_themes/pkg-block-icon.png"),
+                    cfg.PropDefined("feed_logo",
+                        default="web/_themes/pkg-block-logo.png"),
+                    cfg.PropDefined("feed_name",
+                        default="package repository feed"),
+                    cfg.PropInt("feed_window", default=24)
+                ]),
+                cfg.PropertySection("pkg_secure", [
+                    cfg.PropDefined("ssl_key_passphrase"),
+                ]),
+            ],
+        }
+
+        def __new__(cls, target=None, overrides=misc.EmptyDict, version=None):
+                if not target:
+                        return cfg.Config(definitions=cls.__defs,
+                            overrides=overrides, version=version)
+                elif target.startswith("svc:"):
+                        return cfg.SMFConfig(target, definitions=cls.__defs,
+                            overrides=overrides, version=version)
+                return cfg.FileConfig(target, definitions=cls.__defs,
+                    overrides=overrides, version=version)

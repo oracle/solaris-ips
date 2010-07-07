@@ -30,10 +30,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.config as cfg
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repository as repo
-import pkg.server.repositoryconfig as rc
 import tempfile
 import time
 import urllib
@@ -144,7 +144,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 try:
                         return repo.Repository(auto_create=False,
                             fork_allowed=False, repo_root=path)
-                except rc.PropertyError, e:
+                except cfg.ConfigError, e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
                             "valid:\n%s") % e)

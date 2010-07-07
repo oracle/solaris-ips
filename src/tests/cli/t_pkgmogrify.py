@@ -207,7 +207,7 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 if path is not None:
                         output = file(path).read()
                 else:
-                        output = self.output
+                        output = self.output + self.errout
 
                 c = sum((
                     int(bool(re.search(regex, line)))

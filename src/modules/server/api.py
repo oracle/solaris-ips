@@ -20,8 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -41,7 +40,7 @@ import pkg.version as version
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 
-CURRENT_API_VERSION = 8
+CURRENT_API_VERSION = 9
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -51,16 +50,13 @@ class BaseInterface(object):
         needed by interfaces to provide functionality to clients.
         """
 
-        def __init__(self, request, repo, content_root=None, web_root=None):
-                # A protected reference to a pkg.server.repository object.
-                self._repo = repo
+        def __init__(self, request, depot):
+                # A protected reference to a pkg.server.depot object.
+                self._depot = depot
 
                 # A protected reference to a cherrypy request object.
                 self._request = request
 
-                # BUI-specific paths.
-                self._content_root = content_root
-                self._web_root = web_root
 
 class _Interface(object):
         """Private base class used for api interface objects.
@@ -71,10 +67,8 @@ class _Interface(object):
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
 
-                self._repo = base._repo
+                self._depot = base._depot
                 self._request = base._request
-                self._content_root = base._content_root
-                self._web_root = base._web_root
 
 class CatalogInterface(_Interface):
         """This class presents an interface to server catalog objects that
@@ -91,10 +85,10 @@ class CatalogInterface(_Interface):
                 """A generator function that produces FMRIs as it iterates
                 over the contents of the server's catalog."""
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return iter(())
-                return self._repo.catalog.fmris()
+                return self._depot.repo.catalog.fmris()
 
         def get_entry_all_variants(self, pfmri):
                 """A generator function that yields tuples of the format
@@ -102,10 +96,10 @@ class CatalogInterface(_Interface):
                 variant and variants is a list of the variants for that
                 name."""
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return iter(((), {}))
-                return self._repo.catalog.get_entry_all_variants(pfmri)
+                return self._depot.repo.catalog.get_entry_all_variants(pfmri)
 
         def get_matching_pattern_fmris(self, patterns):
                 """Returns a tuple of a sorted list of PkgFmri objects, newest
@@ -114,7 +108,7 @@ class CatalogInterface(_Interface):
                 match criteria.
                 """
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return tuple(), {}
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
@@ -135,7 +129,7 @@ class CatalogInterface(_Interface):
                 a single character).
                 """
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return tuple(), {}
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
@@ -172,7 +166,7 @@ class CatalogInterface(_Interface):
                                         multiple_matches.append((pattern,
                                             pfmri[0]))
 
-                repo_cat = self._repo.catalog
+                repo_cat = self._depot.repo.catalog
                 
                 # Set of options that can use catalog data.
                 cat_opts = frozenset([PackageInfo.SUMMARY,
@@ -221,7 +215,8 @@ class CatalogInterface(_Interface):
                                 mfst = manifest.Manifest()
                                 mfst.set_fmri(None, f)
                                 try:
-                                        mpath = os.path.join(self._repo.pkg_root,
+                                        mpath = os.path.join(
+                                            self._depot.repo.manifest_root,
                                             f.get_dir_path())
                                 except pkg.fmri.FmriError, e:
                                         notfound.append(f)
@@ -280,7 +275,7 @@ class CatalogInterface(_Interface):
                 available.
                 """
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.last_modified
@@ -291,7 +286,7 @@ class CatalogInterface(_Interface):
                 if the catalog is not available.
                 """
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.package_count
@@ -302,7 +297,7 @@ class CatalogInterface(_Interface):
                 None if the catalog is not available.
                 """
                 try:
-                        c = self._repo.catalog
+                        c = self._depot.repo.catalog
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.package_version_count
@@ -420,7 +415,7 @@ class CatalogInterface(_Interface):
                         # can be immediately raised.
                         query = qp.Query(" ".join(tokens), case_sensitive,
                             return_type, None, None)
-                        res_list = self._repo.search([str(query)])
+                        res_list = self._depot.repo.search([str(query)])
                         if not res_list:
                                 return
 
@@ -428,7 +423,7 @@ class CatalogInterface(_Interface):
 
                 query = qp.Query(" ".join(tokens), case_sensitive,
                     return_type, num_to_return, start_point)
-                res_list = self._repo.search([str(query)])
+                res_list = self._depot.repo.search([str(query)])
                 if not res_list:
                         return
                 return res_list[0]
@@ -438,7 +433,7 @@ class CatalogInterface(_Interface):
                 """Returns a Boolean value indicating whether search
                 functionality is available for the catalog.
                 """
-                return self._repo.search_available
+                return self._depot.repo.search_available
         
         def __licenses(self, mfst):
                 """Private function. Returns the license info from the
@@ -446,7 +441,7 @@ class CatalogInterface(_Interface):
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
                         s = StringIO.StringIO()
-                        lpath = self._repo.cache_store.lookup(lic.hash)
+                        lpath = self._depot.repo.cache_store.lookup(lic.hash)
                         lfile = file(lpath, "rb")
                         misc.gunzip_from_stream(lfile, s)
                         text = s.getvalue()
@@ -465,76 +460,93 @@ class ConfigInterface(_Interface):
                 """The number of /catalog operation requests that have occurred
                 during the current server session.
                 """
-                return self._repo.catalog_requests
+                return self._depot.repo.catalog_requests
 
         @property
         def content_root(self):
                 """The file system path where the server's content and web
                 directories are located.
                 """
-                return self._content_root
+                return self._depot.content_root
 
         @property
         def file_requests(self):
                 """The number of /file operation requests that have occurred
                 during the current server session.
                 """
-                return self._repo.file_requests
+                return self._depot.repo.file_requests
 
         @property
         def filelist_requests(self):
                 """The number of /filelist operation requests that have occurred
                 during the current server session.
                 """
-                return self._repo.flist_requests
+                return self._depot.repo.flist_requests
 
         @property
         def filelist_file_requests(self):
                 """The number of files served by /filelist operations requested
                 during the current server session.
                 """
-                return self._repo.flist_files
+                return self._depot.repo.flist_files
 
         @property
         def in_flight_transactions(self):
                 """The number of package transactions awaiting completion.
                 """
-                return self._repo.in_flight_transactions
+                return self._depot.repo.in_flight_transactions
 
         @property
         def manifest_requests(self):
                 """The number of /manifest operation requests that have occurred
                 during the current server session.
                 """
-                return self._repo.manifest_requests
+                return self._depot.repo.manifest_requests
 
         @property
         def mirror(self):
                 """A Boolean value indicating whether the server is currently
                 operating in mirror mode.
                 """
-                return self._repo.mirror
+                return self._depot.repo.mirror
 
         @property
         def readonly(self):
                 """A Boolean value indicating whether the server is currently
                 operating in readonly mode.
                 """
-                return self._repo.read_only
+                return self._depot.repo.read_only
 
         @property
         def rename_requests(self):
                 """The number of /rename operation requests that have occurred
                 during the current server session.
                 """
-                return self._repo.pkgs_renamed
+                return self._depot.repo.pkgs_renamed
 
         @property
         def web_root(self):
                 """The file system path where the server's web content is
                 located.
                 """
-                return self._web_root
+                return self._depot.web_root
+
+        def get_depot_properties(self):
+                """Returns a dictionary of depot configuration properties
+                organized by section, with each section's keys as a list.
+
+                See pkg.depotd(1M) for the list of properties.
+                """
+                rval = {}
+                for sname, props in self._depot.cfg.get_index().iteritems():
+                        rval[sname] = [p for p in props]
+                return rval
+
+        def get_depot_property_value(self, section, prop):
+                """Returns the current value of a depot configuration
+                property for the specified section.
+                """
+                return self._depot.cfg.get_property(section, prop)
 
         def get_repo_properties(self):
                 """Returns a dictionary of repository configuration
@@ -606,41 +618,17 @@ class ConfigInterface(_Interface):
                             related_uris        A comma-separated list of URIs
                                                 of related repositories that a
                                                 client may be interested in.
-
-                feed        id                  A Universally Unique Identifier
-                                                (UUID) used to permanently,
-                                                uniquely identify the feed.
-
-                            name                A short, descriptive name for
-                                                RSS/Atom feeds generated by the
-                                                depot serving the repository.
-
-                            description         A descriptive paragraph for the
-                                                feed.
-
-                            icon                A filename of a small image that
-                                                is used to visually represent
-                                                the feed.
-
-                            logo                A filename of a large image that
-                                                is used by user agents to
-                                                visually brand or identify the
-                                                feed.
-
-                            window              A numeric value representing the
-                                                number of hours, before the feed
-                                                for the repository was last
-                                                generated, to include when
-                                                creating the feed for the
-                                                repository updatelog.
                 """
-                return self._repo.cfg.get_properties()
+                rval = {}
+                for sname, props in self._depot.repo.cfg.get_index().iteritems():
+                        rval[sname] = [p for p in props]
+                return rval
 
         def get_repo_property_value(self, section, prop):
                 """Returns the current value of a repository configuration
                 property for the specified section.
                 """
-                return self._repo.cfg.get_property(section, prop)
+                return self._depot.repo.cfg.get_property(section, prop)
 
 
 class RequestInterface(_Interface):

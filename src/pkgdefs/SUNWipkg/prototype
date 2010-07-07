@@ -19,6 +19,7 @@ f none usr/bin/pkgdiff 755 root bin
 f none usr/bin/pkgfmt 755 root bin
 f none usr/bin/pkgmogrify 755 root bin
 f none usr/bin/pkgrecv 755 root bin
+f none usr/bin/pkgrepo 755 root bin
 f none usr/bin/pkgsend 755 root bin
 d none usr/lib 755 root bin
 f none usr/lib/pkg.depotd 755 root bin
@@ -132,6 +133,8 @@ f none usr/lib/python2.6/vendor-packages/pkg/client/transport/stats.py 444 root 
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/stats.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/transport.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/client/transport/transport.pyc 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/config.py 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/config.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/cpiofile.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/cpiofile.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/dependency.py 444 root bin
@@ -237,8 +240,6 @@ f none usr/lib/python2.6/vendor-packages/pkg/server/query_parser.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/query_parser.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/repository.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/repository.pyc 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/server/repositoryconfig.py 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/server/repositoryconfig.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/transaction.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/server/transaction.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/solver.so 755 root bin

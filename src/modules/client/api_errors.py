@@ -37,7 +37,7 @@ class ApiException(Exception):
                 # To workaround python issues 6108 and 2517, this provides a
                 # a standard wrapper for this class' exceptions so that they
                 # have a chance of being stringified correctly.
-                return str(self)
+                return unicode(str(self))
 
 
 class ImageLockedError(ApiException):
@@ -290,7 +290,7 @@ class ReadOnlyFileSystemException(PermissionsException):
         def __str__(self):
                 if self.path:
                         return _("Could not complete the operation on %s: "
-                            "read-only filesystem\n") % self.path
+                            "read-only filesystem.") % self.path
                 return _("Could not complete the operation: read-only "
                         "filesystem.")
 

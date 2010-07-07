@@ -186,6 +186,53 @@ class Pkg5TestCase(unittest.TestCase):
         #
         test_root = property(fget=lambda self: self.__test_root)
 
+        def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
+            handle=False, out=False, prefix="", raise_error=True, su_wrap=None):
+                wrapper = ""
+                if coverage:
+                        wrapper = self.coverage_cmd
+                su_wrap, su_end = self.get_su_wrapper(su_wrap=su_wrap)
+
+                cmdline = "%s%s%s %s%s" % (prefix, su_wrap, wrapper,
+                    cmdline, su_end)
+                self.debugcmd(cmdline)
+
+                newenv = os.environ.copy()
+                if coverage:
+                        newenv.update(self.coverage_env)
+
+                p = subprocess.Popen(cmdline,
+                    env=newenv,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+
+                if handle:
+                        # Do nothing more.
+                        return p
+
+                self.output, self.errout = p.communicate()
+                retcode = p.returncode
+                self.debugresult(retcode, exit, self.output)
+                if self.errout != "":
+                        self.debug(self.errout)
+
+                if raise_error and retcode == 99:
+                        raise TracebackException(cmdline, self.output +
+                            self.errout, comment)
+
+                if not isinstance(exit, list):
+                        exit = [exit]
+
+                if raise_error and retcode not in exit:
+                        raise UnexpectedExitCodeException(cmdline,
+                            exit, retcode, self.output + self.errout,
+                            comment)
+
+                if out:
+                        return retcode, self.output
+                return retcode
+
         def debug(self, s):
                 s = str(s)
                 for x in s.splitlines():
@@ -215,17 +262,29 @@ class Pkg5TestCase(unittest.TestCase):
         def debugresult(self, retcode, expected, output):
                 if output.strip() != "":
                         self.debug(output.strip())
-                if isinstance(expected, list):
-                        if retcode != 0 or retcode not in expected:
-                                self.debug("[exited %d, expected %s]" %
-                                    (retcode, expected))
-                else:
-                        if retcode != 0 or retcode != expected:
-                                self.debug("[exited %d, expected %d]" %
-                                    (retcode, expected))
+                if not isinstance(expected, list):
+                        expected = [expected]
+                if retcode is None or retcode != 0 or \
+                    retcode not in expected:
+                        self.debug("[exited %s, expected %s]" %
+                            (retcode, ", ".join(str(e) for e in expected)))
 
         def get_debugbuf(self):
                 return self.__debug_buf
+
+        def get_su_wrapper(self, su_wrap=None):
+                if su_wrap:
+                        if su_wrap == True:
+                                su_wrap = get_su_wrap_user()
+                        cov_env = " ".join(
+                            ("%s=%s" % e for e in self.coverage_env.items()))
+                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s %s " % \
+                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""), cov_env)
+                        su_end = "'"
+                else:
+                        su_wrap = ""
+                        su_end = ""
+                return su_wrap, su_end
 
         def getTeardownFunc(self):
                 return (self, self.tearDown)
@@ -468,6 +527,8 @@ class Pkg5TestCase(unittest.TestCase):
                                 os.makedirs(os.path.dirname(path))
                         self.debugfilecreate(content, path)
                         file_handle = open(path, 'wb')
+                        if isinstance(content, unicode):
+                                content = content.encode("utf-8")
                         file_handle.write(content)
                         file_handle.close()
                         os.chmod(path, mode)
@@ -1262,108 +1323,23 @@ class CliTestCase(Pkg5TestCase):
                         os.chdir(self.test_root)
                         shutil.rmtree(self.img_path)
 
-        def get_su_wrapper(self, su_wrap=None):
-                if su_wrap:
-                        if su_wrap == True:
-                                su_wrap = get_su_wrap_user()
-                        cov_env = " ".join(
-                            ("%s=%s" % e for e in self.coverage_env.items()))
-                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s %s " % \
-                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""), cov_env)
-                        su_end = "'"
-                else:
-                        su_wrap = ""
-                        su_end = ""
-                return su_wrap, su_end
-
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
-                wrapper = self.coverage_cmd
-
-                su_wrap, su_end = self.get_su_wrapper(su_wrap=su_wrap)
-
-                if prefix:
-                        cmdline = "%s;%s%s %s/usr/bin/pkg %s%s" % (prefix,
-                            su_wrap, wrapper, g_proto_area, command, su_end)
-                else:
-                        cmdline = "%s%s %s/usr/bin/pkg %s%s" % (su_wrap, wrapper,
-                            g_proto_area, command, su_end)
-                self.debugcmd(cmdline)
-
-                newenv = os.environ.copy()
-                newenv.update(self.coverage_env)
-                p = subprocess.Popen(cmdline, shell=True, env=newenv,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                self.output = p.stdout.read()
-                retcode = p.wait()
-                self.debugresult(retcode, exit, self.output)
-
-                if retcode == 99:
-                        raise TracebackException(cmdline, self.output, comment)
-
-                if not isinstance(exit, list):
-                        exit = [exit]
-
-                if retcode not in exit:
-                        raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, self.output, comment)
-
-                return retcode
+                cmdline = "%s/usr/bin/pkg %s" % (g_proto_area, command)
+                return self.cmdline_run(cmdline, exit=exit, comment=comment,
+                    prefix=prefix, su_wrap=su_wrap)
 
         def pkgdepend_resolve(self, args, exit=0, comment=""):
-                wrapper = self.coverage_cmd
-
-                cmdline = "%s %s/usr/bin/pkgdepend resolve %s" % (wrapper,
-                    g_proto_area, args)
-                self.debugcmd(cmdline)
-
-                newenv = os.environ.copy()
-                newenv.update(self.coverage_env)
-                p = subprocess.Popen(cmdline, shell=True, env=newenv,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-                self.output, self.errout = p.communicate()
-                retcode = p.returncode
-                self.debugresult(retcode, exit, self.output)
-                if self.errout != "":
-                        self.debug(self.errout)
-
-                if retcode == 99:
-                        raise TracebackException(cmdline, self.output, comment)
-                elif retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, self.output, comment)
-                return retcode
+                cmdline = "%s/usr/bin/pkgdepend resolve %s" % (g_proto_area,
+                    args)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit)
 
         def pkgdepend_generate(self, args, exit=0, comment=""):
-                wrapper = self.coverage_cmd
-
-                cmdline = "%s %s/usr/bin/pkgdepend generate %s" % \
-                    (wrapper, g_proto_area, args)
-                self.debugcmd(cmdline)
-
-                newenv = os.environ.copy()
-                newenv.update(self.coverage_env)
-                p = subprocess.Popen(cmdline, shell=True, env=newenv,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-                self.output, self.errout = p.communicate()
-                retcode = p.returncode
-                self.debugresult(retcode, exit, self.output)
-                if self.errout != "":
-                        self.debug(self.errout)
-
-                if retcode == 99:
-                        raise TracebackException(cmdline, self.output, comment)
-                elif retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, self.output, comment)
-                return retcode
+                cmdline = "%s/usr/bin/pkgdepend generate %s" % (g_proto_area,
+                    args)
+                return self.cmdline_run(cmdline, exit=exit, comment=comment)
 
         def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
             comment=""):
-                wrapper = self.coverage_cmd
-
                 args = []
                 if server_url:
                         args.append("-s %s" % server_url)
@@ -1371,33 +1347,18 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = "%s %s/usr/bin/pkgrecv %s" % (wrapper,
-                    g_proto_area, " ".join(args))
-                self.debugcmd(cmdline)
+                cmdline = "%s/usr/bin/pkgrecv %s" % (g_proto_area,
+                    " ".join(args))
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    out=out)
 
-                newenv = os.environ.copy()
-                newenv.update(self.coverage_env)
-                p = subprocess.Popen(cmdline, shell=True, env=newenv,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        def pkgrepo(self, command, comment="", exit=0, su_wrap=False):
+                cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap)
 
-                self.output = p.stdout.read()
-                retcode = p.wait()
-                self.debugresult(retcode, exit, self.output)
-
-                if retcode == 99:
-                        raise TracebackException(cmdline, self.output, comment)
-                elif retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, self.output, comment)
-
-                if out:
-                        return retcode, self.output
-
-                return retcode
-
-        def pkgsend(self, depot_url="", command="", exit=0, comment="", retry400=True):
-                wrapper = self.coverage_cmd
-
+        def pkgsend(self, depot_url="", command="", exit=0, comment="",
+            retry400=True):
                 args = []
                 if depot_url:
                         args.append("-s " + depot_url)
@@ -1405,22 +1366,13 @@ class CliTestCase(Pkg5TestCase):
                 if command:
                         args.append(command)
 
-                cmdline = "cd %s; %s %s/usr/bin/pkgsend %s" % \
-                    (self.test_root, wrapper,
-                    g_proto_area, " ".join(args))
-                self.debugcmd(cmdline)
+                prefix = "cd %s;" % self.test_root
+                cmdline = "%s/usr/bin/pkgsend %s" % (g_proto_area, 
+                    " ".join(args))
 
-                # XXX may need to be smarter.
-                published = None
-                newenv = os.environ.copy()
-                newenv.update(self.coverage_env)
-
-                p = subprocess.Popen(cmdline, shell=True, env=newenv,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                out, err = p.communicate()
-                retcode = p.returncode
-                self.debugresult(retcode, exit, out)
+                retcode, out = self.cmdline_run(cmdline, comment=comment,
+                    exit=exit, out=True, prefix=prefix, raise_error=False)
+                errout = self.errout
 
                 cmdop = command.split(' ')[0]
                 if cmdop == "open" and retcode == 0:
@@ -1433,6 +1385,7 @@ class CliTestCase(Pkg5TestCase):
                         self.debug("$ export PKG_TRANS_ID=%s" % out)
                         # retcode != 0 will be handled below
 
+                published = None
                 if (cmdop == "close" and retcode == 0) or cmdop == "publish":
                         os.environ["PKG_TRANS_ID"] = ""
                         self.debug("$ export PKG_TRANS_ID=")
@@ -1451,9 +1404,9 @@ class CliTestCase(Pkg5TestCase):
                 # pkgsend can give us better error granularity.
                 #
                 if cmdop in ["publish", "open"] and retry400 and \
-                    ("status '400'" in out or
-                    "'open' failed for transaction ID" in out) and \
-                    "already exists" in out:
+                    ("status '400'" in errout or
+                    "'open' failed for transaction ID" in errout) and \
+                    "already exists" in errout:
                         time.sleep(1)
                         return self.pkgsend(depot_url, command, exit,
                             comment, retry400=False)
@@ -1467,8 +1420,9 @@ class CliTestCase(Pkg5TestCase):
 
                 return retcode, published
 
-        def pkgsend_bulk(self, depot_url, commands, exit=0, comment=""):
-                """ Send a series of packaging commands; useful for quickly
+        def pkgsend_bulk(self, depot_url, commands, exit=0, comment="",
+            no_catalog=False, no_index=False):
+                """ Send a series of packaging commands; useful  for quickly
                     doing a bulk-load of stuff into the repo.  All commands are
                     expected to work; if not, the transaction is abandoned.  If
                     'exit' is set, then if none of the actions triggers that
@@ -1480,6 +1434,13 @@ class CliTestCase(Pkg5TestCase):
 
                 if isinstance(commands, (list, tuple)):
                         commands = "".join(commands)
+
+                extra_opts = []
+                if no_catalog:
+                        extra_opts.append("--no-catalog")
+                if no_index:
+                        extra_opts.append("--no-index")
+                extra_opts = " ".join(extra_opts)
 
                 plist = []
                 try:
@@ -1510,9 +1471,10 @@ class CliTestCase(Pkg5TestCase):
                                                 os.write(fd, "%s\n" % l)
                                         os.close(fd)
                                         try:
-                                                cmd = "publish -d %s %s %s" % \
-                                                    (self.test_root,
-                                                     current_fmri, f_path)
+                                                cmd = "publish %s -d %s %s " \
+                                                    "%s" % (extra_opts,
+                                                    self.test_root,
+                                                    current_fmri, f_path)
                                                 current_fmri = None
                                                 accumulate = []
                                                 retcode, published = self.pkgsend(depot_url, cmd)
@@ -1534,29 +1496,6 @@ class CliTestCase(Pkg5TestCase):
                         raise UnexpectedExitCodeException(line, exit, retcode)
 
                 return plist
-
-
-        def cmdline_run(self, cmdline, exit=0):
-                """Run the command specified in 'cmdline'.  If the exit code of
-                the command is not the value specified in 'exit', raise an
-                UnexpectedExitCodeException."""
-
-                self.debugcmd(cmdline)
-
-                p = subprocess.Popen(cmdline,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-
-                self.output = p.stdout.read()
-                retcode = p.wait()
-                self.debugresult(retcode, exit, self.output)
-                if retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline, exit,
-                            retcode, self.output)
-
-                return retcode
-
 
         def copy_repository(self, src, src_pub, dest, dest_pub):
                 """Copies the packages from the src repository to a new
@@ -1684,24 +1623,7 @@ class CliTestCase(Pkg5TestCase):
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
                 cmdline = "tidy %s %s" % (options, fname)
-                self.debugcmd(cmdline)
-
-                output = ""
-                p = subprocess.Popen(cmdline, shell=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                output = p.stdout.read()
-                retcode = p.wait()
-                self.debugresult(retcode, exit, output)
-
-                if retcode == 99:
-                        raise TracebackException(cmdline, output, comment)
-
-                if retcode != exit:
-                        raise UnexpectedExitCodeException(cmdline, exit,
-                            retcode, output, comment)
-
-                return retcode
+                return self.cmdline_run(cmdline, comment=comment, exit=exit)
 
         def create_repo(self, repodir, properties=EmptyI):
                 """ Convenience routine to help subclasses create a package
@@ -1715,6 +1637,17 @@ class CliTestCase(Pkg5TestCase):
                     repo_root=repodir)
                 self.debug("created repository %s" % repodir)
                 return repo
+
+        def get_repo(self, repodir, read_only=False):
+                """ Convenience routine to help subclasses retrieve a
+                    pkg.server.repository.Repository object for a given
+                    path. """
+
+                # Note that this must be deferred until after PYTHONPATH
+                # is set up.
+                import pkg.server.repository as sr
+                return sr.Repository(auto_create=False, read_only=read_only,
+                    repo_root=repodir)
 
         def prep_depot(self, port, repodir, logpath, refresh_index=False,
             debug_features=EmptyI, properties=EmptyI, start=False):

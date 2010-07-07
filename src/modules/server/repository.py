@@ -36,6 +36,7 @@ import urllib
 import pkg.actions as actions
 import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
+import pkg.config as cfg
 import pkg.file_layout.file_manager as file_manager
 import pkg.fmri as fmri
 import pkg.indexer as indexer
@@ -46,7 +47,6 @@ import pkg.pkgsubprocess as subprocess
 import pkg.search_errors as se
 import pkg.query_parser as qp
 import pkg.server.query_parser as sqp
-import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
 import pkg.version as version
 
@@ -68,6 +68,16 @@ class RepositoryError(Exception):
 
         def __str__(self):
                 return str(self.data)
+
+
+class RepositoryExistsError(RepositoryError):
+        """Used to indicate that a repository already exists at the specified
+        location.
+        """
+
+        def __str__(self):
+                return _("A package repository already exists at '%s'.") % \
+                    self.data
 
 
 class RepositoryFileNotFoundError(RepositoryError):
@@ -172,9 +182,10 @@ class Repository(object):
         __lock = None
 
         def __init__(self, auto_create=False, catalog_root=None,
-            cfgpathname=None, fork_allowed=False, index_root=None, log_obj=None,
-            mirror=False, pkg_root=None, properties=EmptyDict, read_only=False,
-            repo_root=None, trans_root=None, file_root=None, refresh_index=True,
+            cfgpathname=None, file_root=None, fork_allowed=False,
+            index_root=None, log_obj=None, manifest_root=None, mirror=False,
+            properties=EmptyDict, read_only=False, repo_root=None,
+            trans_root=None, refresh_index=True,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
@@ -211,8 +222,8 @@ class Repository(object):
                         self.catalog_root = catalog_root
                 if index_root:
                         self.index_root = index_root
-                if pkg_root:
-                        self.pkg_root = pkg_root
+                if manifest_root:
+                        self.manifest_root = manifest_root
                 if trans_root:
                         self.trans_root = trans_root
 
@@ -220,7 +231,7 @@ class Repository(object):
                 if self.mirror:
                         self.__required_dirs = [self.file_root]
                 else:
-                        self.__required_dirs = [self.trans_root, self.pkg_root,
+                        self.__required_dirs = [self.trans_root, self.manifest_root,
                             self.catalog_root, self.file_root]
 
                 # Ideally, callers would just specify overrides for the feed
@@ -548,37 +559,15 @@ class Repository(object):
                 # validation messages can be re-raised to caller.
                 for section in properties:
                         for prop, value in properties[section].iteritems():
-                                # List values require special handling.
-                                if self.cfg.get_property_type(section,
-                                    prop) == rc.PROP_TYPE_URI_LIST and \
-                                    type(value) != list:
-                                        if value == "":
-                                                value = []
-                                        else:
-                                                value = value.split(",")
                                 self.cfg.set_property(section, prop, value)
 
-                # Verify that all required configuration information is set.
-                try:
-                        self.cfg.validate()
-                except rc.RequiredPropertyValueError, ex:
-                        # In mirror mode, the repository may be configured
-                        # with a file store that contains content from multiple
-                        # publishers.  In this case, eschew the requirement that
-                        # the publisher prefix must be set.
-                        if self.mirror and ex.section == "publisher" and \
-                            ex.prop == "prefix":
-                                pass
-                        else:
-                                raise
-
-        def __init_dirs(self):
+        def __init_dirs(self, create=False):
                 """Verify and instantiate repository directory structure."""
                 if not self.repo_root:
                         return
                 emsg = _("repository directories incomplete")
                 for d in self.__required_dirs + self.__optional_dirs:
-                        if self.auto_create or (self.writable_root and
+                        if create or self.auto_create or (self.writable_root and
                             d.startswith(self.writable_root)):
                                 try:
                                         os.makedirs(d)
@@ -594,7 +583,7 @@ class Repository(object):
 
                 for d in self.__required_dirs:
                         if not os.path.exists(d):
-                                if self.auto_create:
+                                if create or self.auto_create:
                                         raise RepositoryError(emsg)
                                 raise RepositoryInvalidError(self.repo_root)
 
@@ -611,28 +600,21 @@ class Repository(object):
                 appropriately."""
 
                 if not self.repo_root:
-                        self.cfg = rc.RepositoryConfig(pathname=None)
+                        self.cfg = RepositoryConfig(target=cfgpathname,
+                            overrides=properties)
                         return
 
                 default_cfg_path = False
 
                 # Now load our repository configuration / metadata.
-                if cfgpathname is None:
+                if not cfgpathname:
                         cfgpathname = os.path.join(self.repo_root,
                             "cfg_cache")
                         default_cfg_path = True
 
                 # Create or load the repository configuration.
-                try:
-                        self.cfg = rc.RepositoryConfig(pathname=cfgpathname,
-                            properties=properties)
-                except RuntimeError:
-                        if not default_cfg_path:
-                                raise
-
-                        # If it doesn't exist, just create a new object, it will
-                        # automatically be populated with sane defaults.
-                        self.cfg = rc.RepositoryConfig(pathname=cfgpathname)
+                self.cfg = RepositoryConfig(target=cfgpathname,
+                    overrides=properties)
 
                 self.cfgpathname = cfgpathname
 
@@ -670,7 +652,7 @@ class Repository(object):
                 """Private version; caller responsible for repository
                 locking."""
 
-                if not self.pkg_root:
+                if not self.manifest_root:
                         return
 
                 default_pub = self.cfg.get_property("publisher", "prefix")
@@ -697,8 +679,8 @@ class Repository(object):
                         self.__log(str(f))
 
                 # XXX eschew os.walk in favor of another os.listdir here?
-                for pkg in os.walk(self.pkg_root):
-                        if pkg[0] == self.pkg_root:
+                for pkg in os.walk(self.manifest_root):
+                        if pkg[0] == self.manifest_root:
                                 continue
 
                         for e in os.listdir(pkg[0]):
@@ -726,12 +708,31 @@ class Repository(object):
                 self.catalog.finalize()
                 self.__save_catalog(lm=lm)
 
+                if not incremental and self.index_root and \
+                    os.path.exists(self.index_root):
+                        # Search data is no longer valid and search can't handle
+                        # package removal, so discard existing search data.
+                        try:
+                                shutil.rmtree(self.index_root)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
+                                if e.errno != errno.ENOENT:
+                                        raise
+                self.__init_dirs(create=True)
+
         def __refresh_index(self, synchronous=False):
                 """Private version; caller responsible for repository
                 locking."""
 
                 if not self.index_root:
                         return
+                if self.read_only and not self.writable_root:
+                        raise RepositoryReadOnlyError()
 
                 self.__searchdb_update_handle_lock.acquire()
 
@@ -950,7 +951,7 @@ class Repository(object):
                         self.catalog_root = os.path.join(root, "catalog")
                         self.feed_cache_root = root
                         self.index_root = os.path.join(root, "index")
-                        self.pkg_root = os.path.join(root, "pkg")
+                        self.manifest_root = os.path.join(root, "pkg")
                         self.trans_root = os.path.join(root, "trans")
                         if not self.file_root:
                                 self.file_root = os.path.join(root, "file")
@@ -959,7 +960,7 @@ class Repository(object):
                         self.catalog_root = None
                         self.feed_cache_root = None
                         self.index_root = None
-                        self.pkg_root = None
+                        self.manifest_root = None
                         self.trans_root = None
  
         def __get_file_root(self):
@@ -979,10 +980,13 @@ class Repository(object):
                                         # assume the repository is possibly
                                         # valid but that there is a permissions
                                         # issue.
-                                        if e.errno == EACCES:
+                                        if e.errno == errno.EACCES:
                                                 raise api_errors.\
                                                     PermissionsException(
                                                     e.filename)
+                                        if e.errno == errno.ENOENT:
+                                                raise RepositoryInvalidError(
+                                                    self.repo_root)
                                         raise
                                 # If the stat succeeded, then regardless of
                                 # whether repo_root is really a directory, the
@@ -993,7 +997,7 @@ class Repository(object):
                         raise RepositoryInvalidError(root)
 
         def __set_writable_root(self, root):
-                if root is not None:
+                if root:
                         root = os.path.abspath(root)
                         self.__tmp_root = os.path.join(root, "tmp")
                         self.feed_cache_root = root
@@ -1262,7 +1266,7 @@ class Repository(object):
                 except fmri.FmriError, e:
                         raise RepositoryInvalidFMRIError(e)
 
-                return os.path.join(self.pkg_root, fpath)
+                return os.path.join(self.manifest_root, fpath)
 
         def open(self, client_release, pfmri):
                 """Starts a transaction for the specified client release and
@@ -1303,9 +1307,10 @@ class Repository(object):
                 finally:
                         self.__unlock_repository()
 
-        def add_content(self):
-                """Looks for packages added to the repository that are not
-                in the catalog and adds them in"""
+        def add_content(self, refresh_index=True):
+                """Looks for packages added to the repository that are not in
+                the catalog, adds them, and then updates search data by default.
+                """
                 if self.mirror:
                         raise RepositoryMirrorError()
                 if not self.repo_root:
@@ -1315,26 +1320,35 @@ class Repository(object):
                 try:
                         self.__check_search()
                         self.__rebuild(incremental=True)
-                        self.__refresh_index(synchronous=True)
+                        if refresh_index:
+                                self.__refresh_index(synchronous=True)
                 finally:
                         self.__unlock_repository()
 
-        def rebuild(self):
-                """Rebuilds the repository catalog and search indices using the
-                package manifests currently in the repository."""
+        def rebuild(self, build_index=True):
+                """Rebuilds the repository catalog and search indexes using the
+                package manifests currently in the repository.
+
+                'build_index' is an optional boolean value indicating whether
+                search indexes should be built.  Regardless of this value, any
+                existing search data will be discarded.
+                """
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
                 if not self.repo_root:
                         raise RepositoryUnsupportedOperationError()
 
                 self.__lock_repository()
                 try:
                         self.__destroy_catalog()
-                        self.__init_dirs()
+                        self.__init_dirs(create=True)
                         self.__check_search()
                         self.__rebuild()
-                        self.__refresh_index()
+                        if build_index:
+                                self.__refresh_index()
                 finally:
                         self.__unlock_repository()
 
@@ -1366,7 +1380,7 @@ class Repository(object):
                     self.index_root, c)
 
                 if fmris_to_index:
-                        self.__index_log("Updating search indices")
+                        self.__index_log("Updating search indexes")
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
@@ -1448,3 +1462,96 @@ class Repository(object):
         repo_root = property(__get_repo_root, __set_repo_root)
         writable_root = property(__get_writable_root, __set_writable_root)
 
+
+class RepositoryConfig(object):
+        """Returns an object representing a configuration interface for a
+        a pkg(5) repository.
+
+        The class of the object returned will depend upon the specified
+        configuration target (which is used as to retrieve and store
+        configuration data).
+
+        'target' is the optional location to retrieve existing configuration
+        data or store the configuration data when requested.  The location
+        can be the pathname of a file or an SMF FMRI.  If a pathname is
+        provided, and does not exist, it will be created.
+
+        'overrides' is a dictionary of property values indexed by section name
+        and property name.  If provided, it will override any values read from
+        an existing file or any defaults initially assigned.
+
+        'version' is an integer value specifying the set of configuration data
+        to use for the operation.  If not provided, the version will be based
+        on the target if supported.  If a version cannot be determined, the
+        newest version will be assumed.
+        """
+
+        # This dictionary defines the set of default properties and property
+        # groups for a repository configuration indexed by version.
+        __defs = {
+            3: [
+                cfg.PropertySection("publisher", [
+                    cfg.PropPublisher("alias"),
+                    cfg.PropPublisher("prefix"),
+                ]),
+                cfg.PropertySection("repository", [
+                    cfg.PropDefined("collection_type", ["core",
+                        "supplemental"], default="core"),
+                    cfg.PropDefined("description"),
+                    cfg.PropPubURI("detailed_url"),
+                    cfg.PropPubURIList("legal_uris"),
+                    cfg.PropDefined("maintainer"),
+                    cfg.PropPubURI("maintainer_url"),
+                    cfg.PropPubURIList("mirrors"),
+                    cfg.PropDefined("name",
+                        default="package repository"),
+                    cfg.PropPubURIList("origins"),
+                    cfg.PropInt("refresh_seconds", default=14400),
+                    cfg.PropPubURI("registration_uri"),
+                    cfg.PropPubURIList("related_uris"),
+                ]),
+                cfg.PropertySection("feed", [
+                    cfg.PropUUID("id"),
+                    cfg.PropDefined("name",
+                        default="package repository feed"),
+                    cfg.PropDefined("description"),
+                    cfg.PropDefined("icon", allowed=["", "<pathname>"],
+                        default="web/_themes/pkg-block-icon.png"),
+                    cfg.PropDefined("logo", allowed=["", "<pathname>"],
+                        default="web/_themes/pkg-block-logo.png"),
+                    cfg.PropInt("window", default=24),
+                ]),
+            ],
+        }
+
+        def __new__(cls, target=None, overrides=misc.EmptyDict, version=None):
+                if not target:
+                        return cfg.Config(definitions=cls.__defs,
+                            overrides=overrides, version=version)
+                elif target.startswith("svc:"):
+                        return cfg.SMFConfig(target, definitions=cls.__defs,
+                            overrides=overrides, version=version)
+                return cfg.FileConfig(target, definitions=cls.__defs,
+                    overrides=overrides, version=version)
+
+def repository_create(repo_uri):
+        """Create a repository at given location and return the Repository
+        object for the new repository.  If the repository already exists,
+        a RepositoryExistsError will be raised.  Other errors can raise
+        exceptions of class ApiException.
+        """
+
+        path = repo_uri.get_pathname()
+        if not path:
+                # Bad URI?
+                raise RepositoryInvalidError(str(repo_uri))
+
+        try:
+                Repository(auto_create=False, read_only=True, repo_root=path)
+        except RepositoryInvalidError:
+                # No valid repository found; so create one.
+                repo = Repository(auto_create=True, repo_root=path)
+                assert os.path.exists(repo.repo_root)
+                return repo
+        # A repository isn't supposed to exist at this location.
+        raise RepositoryExistsError(path)

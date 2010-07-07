@@ -509,7 +509,8 @@ class Transaction(object):
                 repo = self.repo
 
                 pkg_name = self.fmri.pkg_name
-                pkgdir = os.path.join(repo.pkg_root, urllib.quote(pkg_name, ""))
+                pkgdir = os.path.join(repo.manifest_root,
+                    urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
                 if not os.path.exists(pkgdir):

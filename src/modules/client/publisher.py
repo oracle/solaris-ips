@@ -41,6 +41,7 @@ import os
 import shutil
 import tempfile
 import time
+import urllib
 import urlparse
 import uuid
 
@@ -202,6 +203,9 @@ class RepositoryURI(object):
                     not misc.valid_pub_url(uri):
                         raise api_errors.BadRepositoryURI(uri)
 
+                if scheme.lower() == "file" and netloc:
+                        raise api_errors.BadRepositoryURI(uri)
+
                 # Normalize URI scheme.
                 uri = uri.replace(scheme, scheme.lower(), 1)
 
@@ -216,6 +220,16 @@ class RepositoryURI(object):
 
         def __str__(self):
                 return self.__uri
+
+        def get_pathname(self):
+                """Returns the URI path as a pathname if the URI is a file
+                URI or '' otherwise."""
+
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(self.__uri, allow_fragments=0)
+                if scheme == "file":
+                        return urllib.url2pathname(path)
+                return ""
 
         ssl_cert = property(lambda self: self.__ssl_cert, __set_ssl_cert, None,
             "The absolute pathname of a PEM-encoded SSL certificate file.")

@@ -23,7 +23,8 @@
 # Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-"""face - provides the BUI (Browser User Interface) for the image packaging server"""
+"""face - provides the BUI (Browser User Interface) for the image packaging
+server"""
 
 import cherrypy
 import cherrypy.lib.static
@@ -45,25 +46,24 @@ except ImportError:
         sys.exit(2)
 
 tlookup = None
-def init(repo, web_root):
+def init(depot):
         """Ensure that the BUI is properly initialized."""
         global tlookup
-        pkg.server.feed.init(repo)
-        tlookup = mako.lookup.TemplateLookup(directories=[web_root])
+        pkg.server.feed.init(depot)
+        tlookup = mako.lookup.TemplateLookup(directories=[depot.web_root])
 
-def feed(repo, request, response):
-        if repo.mirror:
+def feed(depot, request, response):
+        if depot.repo.mirror:
                 raise cherrypy.HTTPError(httplib.NOT_FOUND,
                     "Operation not supported in current server mode.")
-        if not repo.catalog.updates:
+        if not depot.repo.catalog.updates:
                 raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
-        return pkg.server.feed.handle(repo, request, response)
+        return pkg.server.feed.handle(depot, request, response)
 
-def __render_template(repo, content_root, web_root, request, path):
+def __render_template(depot, request, path):
         template = tlookup.get_template(path)
-        base = api.BaseInterface(request, repo, content_root=content_root,
-            web_root=web_root)
+        base = api.BaseInterface(request, depot)
         return template.render_unicode(g_vars={ "base": base })
 
 def __handle_error(path, error):
@@ -76,31 +76,32 @@ def __handle_error(path, error):
 
         raise cherrypy.NotFound()
 
-def respond(repo, content_root, web_root, request, response):
+def respond(depot, request, response):
         path = request.path_info.strip("/")
         if path == "":
                 path = "index.shtml"
         elif path.split("/")[0] == "feed":
                 response.headers.update({ "Expires": 0, "Pragma": "no-cache",
-                    "Cache-Control": "no-cache, no-transform, must-revalidate" })
-                return feed(repo, request, response)
+                    "Cache-Control": "no-cache, no-transform, must-revalidate"
+                    })
+                return feed(depot, request, response)
 
         if not path.endswith(".shtml"):
                 spath = urllib.unquote(path)
-                fname = os.path.join(web_root, spath)
+                fname = os.path.join(depot.web_root, spath)
                 if not os.path.normpath(fname).startswith(
-                    os.path.normpath(web_root)):
+                    os.path.normpath(depot.web_root)):
                         # Ignore requests for files outside of the web root.
                         return __handle_error(path, httplib.NOT_FOUND)
                 else:
                         return cherrypy.lib.static.serve_file(os.path.join(
-                            web_root, spath))
+                            depot.web_root, spath))
 
         try:
                 response.headers.update({ "Expires": 0, "Pragma": "no-cache",
-                    "Cache-Control": "no-cache, no-transform, must-revalidate" })
-                return __render_template(repo, content_root, web_root, request,
-                    path)
+                    "Cache-Control": "no-cache, no-transform, must-revalidate"
+                    })
+                return __render_template(depot, request, path)
         except sae.VersionException, e:
                 # The user shouldn't see why we can't render a template, but
                 # the reason should be logged (cleanly).

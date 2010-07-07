@@ -38,6 +38,7 @@ import warnings
 
 import pkg.catalog as catalog
 import pkg.client.progress as progress
+import pkg.config as cfg
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as api_errors
@@ -48,7 +49,6 @@ import pkg.publish.transaction as trans
 import pkg.search_errors as search_errors
 import pkg.server.catalog as sc
 import pkg.server.repository as sr
-import pkg.server.repositoryconfig as rc
 import pkg.version as version
 
 from pkg.client import global_settings
@@ -206,7 +206,7 @@ def get_repo(uri):
         except sr.RepositoryError, _e:
                 error(_e)
                 sys.exit(1)
-        except rc.PropertyError, _e:
+        except cfg.ConfigError, _e:
                 error("repository configuration error: %s" % _e)
                 sys.exit(1)
         except (search_errors.IndexingException,

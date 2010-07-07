@@ -1,3 +1,13 @@
+Version 9:
+    Incompatible with clients using version 0-8.
+
+    pkg.server.api changed as follows:
+        * All feed related properties retrieved or set using the
+          (get|set)_repo_* methods are no longer valid.  Instead,
+          all feed-related configuration information must be
+          retrieved using the new depot configuration methods
+          found in the ConfigInterface class.
+
 Version 8:
     Incompatible with clients using version 0-7.
 

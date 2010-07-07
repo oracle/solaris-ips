@@ -184,16 +184,16 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                     "specified using the -o"
 
                 self.pkg("contents nopathA")
-                self.assert_(nopath in self.output)
+                self.assert_(nopath in self.errout)
 
                 self.pkg("contents nopathA nopathB")
-                self.assert_(nopath_plural in self.output)
+                self.assert_(nopath_plural in self.errout)
 
                 self.pkg("contents -o noodles nopathA")
-                self.assert_(nofield in self.output)
+                self.assert_(nofield in self.errout)
 
                 self.pkg("contents -o noodles -o mice nopathA nopathB")
-                self.assert_(nofield_plural in self.output)
+                self.assert_(nofield_plural in self.errout)
 
 
 if __name__ == "__main__":

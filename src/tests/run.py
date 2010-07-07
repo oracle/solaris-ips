@@ -37,6 +37,16 @@ if os.path.dirname(__file__) != "" and \
         cmd.extend(sys.argv[1:]) # Skip argv[0]
         sys.exit(subprocess.call(cmd))
 
+# Set up coverage directory and start code coverage early so that imports
+# of modules can be processed.
+import coverage
+import tempfile
+covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
+os.chmod(covdir, 01777)
+cov_file = "%s/pkg5" % covdir
+cov = coverage.coverage(data_file=cov_file, data_suffix=True)
+cov.start()
+
 #
 # Some modules we use are located in our own proto area.  So before doing
 # any more imports, setup the environment we need.
@@ -56,14 +66,12 @@ import platform
 import re
 import shutil
 import subprocess
-import tempfile
 import types
 import unittest
 import warnings
 
 import pkg5unittest
 from pkg5unittest import OUTPUT_DOTS, OUTPUT_VERBOSE, OUTPUT_PARSEABLE
-import coverage
 
 osname = platform.uname()[0].lower()
 arch = 'unknown' 
@@ -261,13 +269,11 @@ if __name__ == "__main__":
         if not onlyval:
                 onlyval = [ "" ]
 
-        # Set up coverage directory and start code coverage for the API tests.
-        if do_coverage:
-                covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
-                os.chmod(covdir, 01777)
-                cov_file = "%s/pkg5" % covdir
-                cov = coverage.coverage(data_file=cov_file, data_suffix=True)
-                cov.start()
+        # If coverage wasn't requested, stop it and delete the temporary data.
+        if not do_coverage:
+                cov.stop()
+                shutil.rmtree(covdir)
+                cov = None
 
         # Allow relative archive dir, but first convert it to abs. paths.
         if archive_dir is not None:

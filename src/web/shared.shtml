@@ -19,14 +19,16 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import operator
 %>
 ## Returns the value of the named respository configuration property in the
 ## given section.
+<%def name="dcval(g_vars, section, name)"><%
+        return g_vars["config"].get_depot_property_value(section, name)
+%></%def>\
 <%def name="rcval(g_vars, section, name)"><%
         return g_vars["config"].get_repo_property_value(section, name)
 %></%def>\

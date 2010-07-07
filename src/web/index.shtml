@@ -19,15 +19,14 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import os.path
         import pkg.server.api as api
         import pkg.server.api_errors as api_errors
 
-        CLIENT_API_VERSION = 8
+        CLIENT_API_VERSION = 9
 %>\
 <%page args="g_vars"/>\
 <%

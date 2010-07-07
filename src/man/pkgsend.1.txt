@@ -7,8 +7,6 @@ NAME
 SYNOPSIS
      /usr/bin/pkgsend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgsend create-repository
-         --set-property <section.property>=<value> ...
      /usr/bin/pkgsend refresh-index
 
      /usr/bin/pkgsend open [-en] pkg_fmri
@@ -26,7 +24,8 @@ DESCRIPTION
      versions to an image packaging repository.  Each publication is
      structured as a transaction; multiple invocations of pkgsend
      through a transaction allow the addition of resources and the
-     transaction submission.
+     transaction submission.  To create or manage repositories, see
+     pkgrepo(1).
 
 OPTIONS
      The following options are supported:
@@ -49,16 +48,6 @@ OPTIONS
 
 SUBCOMMANDS
      The following subcommands are supported:
-
-     create-repository
-          Creates a new repository at the provided location if it does
-          not already exist.  Only supported for 'file://' repository
-          locations at this time.
-
-          Initial repository configuration values can be provided
-          using the --set-property option.  It may also be specified
-          multiple times.  See pkg.depotd(1M) for a full list of
-          repository properties.
 
      open [-en] pkg_fmri
           Begin a transaction on the package and version specified by
@@ -266,19 +255,13 @@ EXAMPLES
          path=/usr/bin/example
      $ pkgsend close
 
-     Example 2:  Create a new repository suitable for use with pkgsend
-         or with a pkg(5) depot server.
-
-     $ pkgsend -s file:///tmp/example_repo create-repository \
-         --set-property publisher.prefix=opensolaris.org
-
-     Example 3:  Publish a package using filesystem-based publication
+     Example 2:  Publish a package using filesystem-based publication
          and a pre-existing manifest:
 
      $ pkgsend -s file:///tmp/example_repo -d /tmp/pkg_files \
          /tmp/pkg_manifest
 
-     Example 4:  Create a package that delivers two groups and a user.
+     Example 3:  Create a package that delivers two groups and a user.
 
      $ eval `pkgsend open groups-and-user@1.0-1`
      $ pkgsend add group groupname=maingrp
@@ -305,8 +288,8 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     eval(1), pkg.depotd(1M), ftpusers(4), group(4), passwd(4),
-     shadow(4), attributes(5), pkg(5)
+     eval(1), pkgrepo(1), pkg.depotd(1M), ftpusers(4), group(4),
+     passwd(4), shadow(4), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.

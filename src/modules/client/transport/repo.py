@@ -36,8 +36,8 @@ import pkg.p5i as p5i
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
 import pkg.client.transport.exception as tx
+import pkg.config as cfg
 import pkg.server.repository as svr_repo
-import pkg.server.repositoryconfig as svr_rcfg
 import pkg.server.query_parser as sqp
 
 from email.Utils import formatdate
@@ -580,7 +580,7 @@ class FileRepo(TransportRepo):
                         path = urllib.url2pathname(path)
                         self._frepo = svr_repo.Repository(read_only=True,
                             repo_root=path)
-                except svr_rcfg.PropertyError, e:
+                except cfg.ConfigError, e:
                         reason = _("The configuration file for the repository "
                             "is invalid or incomplete:\n%s") % e
                         ex = tx.TransportProtoError("file", errno.EINVAL,

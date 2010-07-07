@@ -240,8 +240,6 @@ def valid_pub_url(url):
                 path = urllib.url2pathname(path)
                 if not os.path.abspath(path):
                         return False
-                if not os.path.exists(path):
-                        return False
                 # No further validation to be done.
                 return True
 

@@ -19,8 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-## Use is subject to license terms.
+## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -117,7 +116,7 @@ the packages available for it.</p>
                         <th colspan="2" class="last">
                                 <a id="catalog-feed"
                                     href="../feed"
-                                    title="${self.shared.rcval(g_vars, 'feed', 'name')}"></a>
+                                    title="${self.shared.dcval(g_vars, 'pkg_bui', 'feed_name')}"></a>
                                     Catalog
                         </th>
                 </tr>

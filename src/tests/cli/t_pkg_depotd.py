@@ -39,11 +39,12 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.config as cfg
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.server.repository as sr
 import pkg.p5i as p5i
-import pkg.server.repositoryconfig as rcfg
 
 class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -459,7 +460,8 @@ class TestDepotController(pkg5unittest.CliTestCase):
                                 try:
                                         urllib2.urlopen("%s/feed" % durl)
                                         got = True
-                                except urllib2.HTTPError:
+                                except urllib2.HTTPError, e:
+                                        self.debug(str(e))
                                         time.sleep(1)
                         self.assert_(got)
 
@@ -474,6 +476,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 get_feed(durl)
                 check_state(True)
 
+                self.__dc.wait_search()
                 self.image_create(durl)
                 self.pkg("search -r cat")
                 self.__dc.stop()
@@ -727,14 +730,14 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 rpath = self.dc.get_repodir()
                 rcpath = os.path.join(rpath, "cfg_cache")
 
-                rc = rcfg.RepositoryConfig(pathname=rcpath)
+                rc = sr.RepositoryConfig(target=rcpath)
 
                 # Update the configuration with our sample data.
-                cfg = self.repo_cfg
-                for section in cfg:
-                        for prop in cfg[section]:
+                cfgdata = self.repo_cfg
+                for section in cfgdata:
+                        for prop in cfgdata[section]:
                                 rc.set_property(section, prop,
-                                    cfg[section][prop])
+                                    cfgdata[section][prop])
 
                 # Save it.
                 rc.write()
@@ -754,15 +757,15 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 pub, pkglist = p5i.parse(location=purl)[0]
 
                 # Now verify that the parsed response has the expected data.
-                cfg = self.repo_cfg
-                for prop in cfg["publisher"]:
+                cfgdata = self.repo_cfg
+                for prop in cfgdata["publisher"]:
                         self.assertEqual(getattr(pub, prop),
-                            cfg["publisher"][prop])
+                            cfgdata["publisher"][prop])
 
                 repo = pub.selected_repository
-                for prop in cfg["repository"]:
+                for prop in cfgdata["repository"]:
                         returned = getattr(repo, prop)
-                        expected = cfg["repository"][prop]
+                        expected = cfgdata["repository"][prop]
                         if prop.endswith("uris") or prop == "origins":
                                 uris = []
                                 for u in returned:
@@ -884,7 +887,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(durl, self.quux10)
 
-                time.sleep(1)
+                self.dc.wait_search()
                 surl = urlparse.urljoin(durl,
                     "en/search.shtml?action=Search&token=*")
                 urllib2.urlopen(surl).read()

@@ -470,6 +470,32 @@ class DepotController(object):
 
                 return self.kill()
 
+        def wait_search(self):
+                if self.__writable_root:
+                        idx_tmp_dir = os.path.join(self.__writable_root,
+                            "index", "TMP")
+                else:
+                        idx_tmp_dir = os.path.join(self.__dir, "index", "TMP")
+
+                if not os.path.exists(idx_tmp_dir):
+                        return
+
+                begintime = time.time()
+
+                sleeptime = 0.0
+                check_interval = 0.20
+                ready = False
+                while (time.time() - begintime) <= 10.0:
+                        if not os.path.exists(idx_tmp_dir):
+                                ready = True
+                                break
+                        time.sleep(check_interval)
+
+                if not ready:
+                        raise DepotStateException("Depot search "
+                            "readiness timeout exceeded.")
+
+
 def test_func(testdir):
         dc = DepotController()
         dc.set_port(22222)

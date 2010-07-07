@@ -657,6 +657,24 @@ class CatalogPart(CatalogPartBase):
                                     len(self.__data[pub][stem])
                 return (package_count, package_version_count)
 
+        def get_package_counts_by_pub(self):
+                """Returns a generator of tuples of the form (pub,
+                package_count, package_version_count).  'pub' is the publisher
+                prefix, 'package_count' is the number of unique packages for the
+                publisher, and 'package_version_count' is the number of unique
+                package versions for the publisher.
+                """
+
+                self.load()
+                for pub in self.publishers():
+                        package_count = 0
+                        package_version_count = 0
+                        for stem in self.__data[pub]:
+                                package_count += 1
+                                package_version_count += \
+                                    len(self.__data[pub][stem])
+                        yield pub, package_count, package_version_count
+
         def load(self):
                 """Load and transform the catalog part's data, preparing it
                 for use."""
@@ -2689,6 +2707,24 @@ class Catalog(object):
                                 # for a single variant name, so return it.
                                 return values
                 return None
+
+        def get_package_counts_by_pub(self):
+                """Returns a generator of tuples of the form (pub,
+                package_count, package_version_count).  'pub' is the publisher
+                prefix, 'package_count' is the number of unique packages for the
+                publisher, and 'package_version_count' is the number of unique
+                package versions for the publisher.
+                """
+
+                base = self.get_part(self.__BASE_PART, must_exist=True)
+                if base is None:
+                        # Catalog contains nothing.
+
+                        # This construction is necessary to get python to
+                        # return no results properly to callers expecting
+                        # a generator function.
+                        return iter(())
+                return base.get_package_counts_by_pub()
 
         def get_part(self, name, must_exist=False):
                 """Returns the CatalogPart object for the named catalog part.

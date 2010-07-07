@@ -85,7 +85,6 @@ Usage:
         pkgsend [options] command [cmd_options] [operands]
 
 Packager subcommands:
-        pkgsend create-repository --set-property <section.property>=<value>
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
         pkgsend import [-T pattern] [--target file] bundlefile ...

@@ -1,0 +1,156 @@
+User Commands                                            pkgrepo(1)
+
+
+NAME
+     pkgrepo - image packaging system repository management utility
+
+SYNOPSIS
+     /usr/bin/pkgrepo [options] command [cmd_options] [operands]
+
+     /usr/bin/pkgrepo create uri_or_path
+
+     /usr/bin/pkg property [-F format] [-H] [<section/property> ...]
+     /usr/bin/pkg set-property <section/property>=<value> or 
+         <section/property>=(["<value>", ...])
+
+     /usr/bin/pkgrepo publisher [publisher ...]
+
+     /usr/bin/pkgrepo rebuild [-v] [--no-index]
+     /usr/bin/pkgrepo refresh [--no-catalog] [--no-index]
+
+DESCRIPTION
+     pkgrepo provides the ability to create, manage, and manage pkg(5)
+     package repositories.  Package repositories are a pre-defined set
+     of directories and files that permit the storage and retrieval of
+     package data by pkg(1) and publication clients such as pkgsend(1)
+     or pkgrecv(1).  In addition, when network-based access to a
+     package repository is needed, pkg.depotd(1m) can provide clients
+     access to store and/or retrieve package data.
+
+OPTIONS
+     The following options are supported:
+
+     -s repo_uri_or_path
+          A URI or filesystem path representing the location of a
+          package repository. Currently, only filesystem-based
+          repositories are supported.
+
+     --help or -?
+          Displays a usage message.
+
+SUBCOMMANDS
+     The following subcommands are supported:
+
+     create <uri_or_path>
+          Creates a pkg(5) repository at the specified location.  This
+          command can only be used to create filesystem-based
+          repositories.
+
+     property [-F format] [-H] [<section/property> ...]
+          Display repository property information.  With no arguments,
+          display the section, name, and values of all properties.  If
+          a specific list of property names is requested, only the
+          matching ones are displayed.
+
+          With -F, specify an alternative output format.  Currently,
+          only 'tsv' (Tab Separated Values) is valid.
+
+          With -H, omit the headers from the listing.
+
+     set-property propname propvalue
+          Update the value of an existing repository property or add
+          a new one.
+
+     publisher [-F format] [-H] [<pub_prefix> ...]
+          Lists the publishers of packages in the specified repository
+          with a summary of the number of packages for each publisher
+          and when the publisher's package data was last updated.
+
+          With -F, specify an alternative output format.  Currently,
+          only 'tsv' (Tab Separated Values) is valid.
+
+          With -H, omit the headers from the listing.
+
+     rebuild [-v] [--no-index]
+          Discards all catalog, search, and other cached information
+          found in the repository and then re-creates it based on the
+          current contents of the repository.  This command can only
+          be used with filesystem-based repositories.
+
+          With -v, display the progress of the rebuild during the
+          operation and a summary of publisher and package data
+          upon successful completion.
+
+          With --no-index, don't update search indexes.
+
+     refresh [--no-catalog] [--no-index]
+          Catalogs any new packages found in the repository and
+          updates all search indexes.  This is intended for use with
+          deferred publication (--no-catalog or --no-index options of
+          pkgsend).  This command can only be used with filesystem-
+          based repositories.
+
+          With --no-catalog, don't add any new packages.
+
+          With --no-index, don't update search indexes.
+
+EXAMPLES
+     Example 1:  Create a package repository.
+
+     $ pkgrepo create /my/repository
+
+     Example 2:  Display a summary of publishers and the number of
+         packages in a repository:
+
+     $ pkgrepo -s /my/repository publisher
+     PUBLISHER   PACKAGES VERSIONS UPDATED
+     example.com 5        8        May 22, 2010 12:06:03 PM
+
+     $ pkgrepo -s http://example.com/repository
+     PUBLISHER   PACKAGES VERSIONS UPDATED
+     example.com 5        8        May 22, 2010 12:06:03 PM
+
+     Example 3:  Rebuild the repository's catalogs and search data.
+
+     $ pkgrepo -s /my/repository rebuild
+
+     Example 4:  Refresh the repository's catalogs and search data.
+
+     $ pkgrepo -s /my/repository refresh
+
+     $ pkgrepo -s http://example.com/repository refresh
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0    Command succeeded.
+
+     1    An error occurred.
+
+     2    Invalid command line options were specified.
+
+     3    Multiple operations were requested, but only some of them
+          succeeded.
+
+     4    No changes were made - nothing to do.
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the following attributes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg(1), pkgrecv(1), pkgsend(1), pkg.depotd(1M), pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all
+     subject to change.  Development is hosted in the OpenSolaris
+     community at:
+
+     http://hub.opensolaris.org/bin/view/Project+pkg/

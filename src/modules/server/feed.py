@@ -19,8 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 """feed - routines for generating RFC 4287 Atom feeds for packaging server
 
@@ -38,6 +40,7 @@ import os
 import rfc822
 import time
 import urllib
+import urlparse
 import uuid
 import xml.dom.minidom as xmini
 
@@ -68,26 +71,18 @@ def fmri_to_taguri(f):
             f.get_timestamp().strftime("%Y-%m-%d"),
             urllib.unquote(f.get_url_path()))
 
-def init(repo):
+def init(depot):
         """This function performs general initialization work that is needed
         for feeds to work correctly.
         """
 
+        repo = depot.repo
         if repo.feed_cache_root and not \
             (repo.read_only and not repo.writable_root):
-                # RSS/Atom feeds require a unique identifier, so
-                # generate one if isn't defined already.  This
-                # needs to be a persistent value, so we only
-                # generate this if we can save the configuration.
-                fid = repo.cfg.get_property("feed", "id")
-                if not fid:
-                        # Create a random UUID (type 4).
-                        repo.cfg._set_property("feed", "id", uuid.uuid4())
-
                 # Ensure any configuration changes are reflected in the feed.
                 __clear_cache(repo)
 
-def set_title(repo, doc, feed, update_ts):
+def set_title(depot, doc, feed, update_ts):
         """This function attaches the necessary RSS/Atom feed elements needed
         to provide title, author and contact information to the provided
         xmini document object using the provided feed object and update
@@ -96,7 +91,7 @@ def set_title(repo, doc, feed, update_ts):
 
         t = doc.createElement("title")
         ti = xmini.Text()
-        ti.replaceWholeText(repo.cfg.get_property("feed", "name"))
+        ti.replaceWholeText(depot.cfg.get_property("pkg_bui", "feed_name"))
         t.appendChild(ti)
         feed.appendChild(t)
 
@@ -109,8 +104,10 @@ def set_title(repo, doc, feed, update_ts):
         # identifier.
         i = doc.createElement("id")
         it = xmini.Text()
-        it.replaceWholeText("urn:uuid:%s" % repo.cfg.get_property("feed",
-            "id"))
+        netloc, path = urlparse.urlparse(cherrypy.url())[1:3]
+        netloc = netloc.split(":", 1)[0]
+        tag = "tag:%s,%s:%s" % (netloc, update_ts.strftime("%Y-%m-%d"), path) 
+        it.replaceWholeText(tag)
         i.appendChild(it)
         feed.appendChild(i)
 
@@ -124,18 +121,18 @@ def set_title(repo, doc, feed, update_ts):
         # Add our icon.
         i = doc.createElement("icon")
         it = xmini.Text()
-        it.replaceWholeText(repo.cfg.get_property("feed", "icon"))
+        it.replaceWholeText(depot.cfg.get_property("pkg_bui", "feed_icon"))
         i.appendChild(it)
         feed.appendChild(i)
 
         # Add our logo.
         l = doc.createElement("logo")
         lt = xmini.Text()
-        lt.replaceWholeText(repo.cfg.get_property("feed", "logo"))
+        lt.replaceWholeText(depot.cfg.get_property("pkg_bui", "feed_logo"))
         l.appendChild(lt)
         feed.appendChild(l)
 
-        maintainer = repo.cfg.get_property("repository", "maintainer")
+        maintainer = depot.repo.cfg.get_property("repository", "maintainer")
         # The author information isn't required, but can be useful.
         if maintainer:
                 name, email = rfc822.AddressList(maintainer).addresslist[0]
@@ -253,7 +250,7 @@ def get_updates_needed(repo, ts):
         c = repo.catalog
         if c.last_modified <= ts:
                 # No updates needed.
-                return set()
+                return []
 
         updates = set()
         for name, mdata in c.updates.iteritems():
@@ -275,18 +272,18 @@ def get_updates_needed(repo, ts):
 
         if not updates: 
                 # No updates needed.
-                return set()
+                return []
 
         # Ensure updates are in chronological ascending order.
         return sorted(updates)
 
-def update(request, repo, last, cf):
+def update(request, depot, last, cf):
         """Generate new Atom document for current updates.  The cached feed
         file is written to repo.feed_cache_root/CACHE_FILENAME.
         """
 
         # Our configuration is stored in hours, convert it to days and seconds.
-        hours = repo.cfg.get_property("feed", "window")
+        hours = depot.cfg.get_property("pkg_bui", "feed_window")
         days, hours = divmod(hours, 24)
         seconds = hours * 60 * 60
         feed_ts = last - datetime.timedelta(days=days, seconds=seconds)
@@ -296,7 +293,7 @@ def update(request, repo, last, cf):
         feed = d.createElementNS("http://www.w3.org/2005/Atom", "feed")
         feed.setAttribute("xmlns", "http://www.w3.org/2005/Atom")
 
-        set_title(repo, d, feed, repo.catalog.last_modified)
+        set_title(depot, d, feed, depot.repo.catalog.last_modified)
 
         d.appendChild(feed)
 
@@ -304,7 +301,7 @@ def update(request, repo, last, cf):
         # in the list of updates so that it can be used to quickly determine if
         # the fmri in the update is a 'new' package or an update to an existing
         # package.
-        c = repo.catalog
+        c = depot.repo.catalog
 
         first = {}
         def get_first(f):
@@ -329,7 +326,7 @@ def update(request, repo, last, cf):
                 return first[stem]
 
         # Updates should be presented in reverse chronological order.
-        for name in reversed(get_updates_needed(repo, feed_ts)):
+        for name in reversed(get_updates_needed(depot.repo, feed_ts)):
                 ulog = catalog.CatalogUpdate(name, meta_root=c.meta_root)
                 for entry in ulog.updates():
                         pfmri = entry[0]
@@ -393,29 +390,29 @@ def __cache_needs_update(repo):
                                         break
 
                         if utn:
-                                last = rfc3339_str_to_dt(utn.nodeValue)
+                                last = rfc3339_str_to_dt(utn.nodeValue.strip())
 
                                 # Since our feed cache and updatelog might have
                                 # been created within the same second, we need
                                 # to ignore small variances when determining
                                 # whether to update the feed cache.
                                 up_ts = copy.copy(repo.catalog.last_modified)
-                                up_ts.replace(microsecond=0)
+                                up_ts = up_ts.replace(microsecond=0)
                                 if last >= up_ts:
                                         need_update = False
                         else:
                                 __clear_cache(repo)
                 else:
                         __clear_cache(repo)
-
         return need_update, last
 
-def handle(repo, request, response):
+def handle(depot, request, response):
         """If there have been package updates since we last generated the feed,
         update the feed and send it to the client.  Otherwise, send them the
         cached copy if it is available.
         """
 
+        repo = depot.repo
         cfpath = __get_cache_pathname(repo)
 
         # First check to see if we already have a valid cache of the feed.
@@ -432,7 +429,7 @@ def handle(repo, request, response):
                         # If the server is operating in readonly mode, the
                         # feed will have to be generated every time.
                         cf = cStringIO.StringIO()
-                        update(request, repo, last, cf)
+                        update(request, depot, last, cf)
                         cf.seek(0)
                         buf = cf.read()
                         cf.close()
@@ -450,7 +447,7 @@ def handle(repo, request, response):
                         # If the server isn't operating in readonly mode, the
                         # feed can be generated and cached in inst_dir.
                         cf = file(cfpath, "w")
-                        update(request, repo, last, cf)
+                        update(request, depot, last, cf)
                         cf.close()
 
         return serve_file(cfpath, MIME_TYPE)

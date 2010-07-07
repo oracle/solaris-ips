@@ -742,6 +742,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                     % ( fpath, "mode=0755 owner=root group=bin" ))
                 self.pkgsend(dhurl, "close --no-index")
 
+                self.dc.wait_search()
                 self.pkg("search http:::", exit=1)
 
                 self.pkgsend(dhurl, "refresh-index")

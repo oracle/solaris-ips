@@ -20,9 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 __all__ = ["catalog", "config", "depot", "face", "feed", "repository",
-     "repositoryconfig", "transaction"]
+    "transaction"]
