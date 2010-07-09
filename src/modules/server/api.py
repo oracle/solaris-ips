@@ -40,7 +40,7 @@ import pkg.version as version
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 
-CURRENT_API_VERSION = 9
+CURRENT_API_VERSION = 10
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -78,7 +78,6 @@ class CatalogInterface(_Interface):
         # Constants used to reference specific values that info can return.
         INFO_FOUND = 0
         INFO_MISSING = 1
-        INFO_MULTI_MATCH = 2
         INFO_ILLEGALS = 3
 
         def fmris(self):
@@ -148,7 +147,6 @@ class CatalogInterface(_Interface):
 
                 fmris = []
                 notfound = []
-                multiple_matches = []
                 illegals = []
 
                 for pattern in fmri_strings:
@@ -161,10 +159,7 @@ class CatalogInterface(_Interface):
                         else:
                                 fmris.extend(pfmri[0])
                                 if not pfmri:
-                                        notfound.append(pattern);
-                                elif len(pfmri[0]) > 1 :
-                                        multiple_matches.append((pattern,
-                                            pfmri[0]))
+                                        notfound.append(pattern)
 
                 repo_cat = self._depot.repo.catalog
                 
@@ -189,10 +184,6 @@ class CatalogInterface(_Interface):
                                 branch = version.branch
                                 packaging_date = \
                                     version.get_timestamp().strftime("%c")
-
-                        pref_pub = None
-                        if PackageInfo.PREF_PUBLISHER in info_needed:
-                                pref_pub = f.get_publisher()
 
                         states = None
 
@@ -254,17 +245,15 @@ class CatalogInterface(_Interface):
 
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
                             category_info_list=cat_info, states=states,
-                            publisher=pub, preferred_publisher=pref_pub,
-                            version=release, build_release=build_release,
-                            branch=branch, packaging_date=packaging_date,
-                            size=size, pfmri=str(f), licenses=licenses,
-                            links=links, hardlinks=hardlinks, files=files,
-                            dirs=dirs, dependencies=dependencies,
-                            description=description))
+                            publisher=pub, version=release,
+                            build_release=build_release, branch=branch,
+                            packaging_date=packaging_date, size=size,
+                            pfmri=str(f), licenses=licenses, links=links,
+                            hardlinks=hardlinks, files=files, dirs=dirs,
+                            dependencies=dependencies, description=description))
                 return {
                     self.INFO_FOUND: pis,
                     self.INFO_MISSING: notfound,
-                    self.INFO_MULTI_MATCH: multiple_matches,
                     self.INFO_ILLEGALS: illegals
                 }
 

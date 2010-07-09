@@ -47,6 +47,7 @@ import errno
 
 import pkg.actions
 import pkg.bundle
+import pkg.client.api_errors as apx
 import pkg.fmri
 import pkg.manifest
 import pkg.publish.transaction as trans
@@ -267,7 +268,8 @@ def trans_publish(repo_uri, fargs):
         m = pkg.manifest.Manifest()
         try:
                 m.set_content(lines)
-        except pkg.actions.ActionError, e:
+        except apx.InvalidPackageErrors, err:
+                e = err.errors[0]
                 lineno = e.lineno
                 for i, tup in enumerate(linecnts):
                         if lineno > tup[0] and lineno <= tup[1]:
@@ -362,7 +364,8 @@ def trans_include(repo_uri, fargs, transaction=None):
         m = pkg.manifest.Manifest()
         try:
                 m.set_content("\n".join(lines))
-        except pkg.actions.ActionError, e:
+        except apx.InvalidPackageErrors, err:
+                e = err.errors[0]
                 lineno = e.lineno
                 for i, tup in enumerate(linecnts):
                         if lineno > tup[0] and lineno <= tup[1]:
@@ -577,8 +580,8 @@ if __name__ == "__main__":
 
         try:
                 __ret = main_func()
-        except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError, pkg.fmri.IllegalFmri), _e:
+        except (pkg.actions.ActionError, apx.InvalidPackageErrors,
+            trans.TransactionError, RuntimeError, pkg.fmri.IllegalFmri), _e:
                 print >> sys.stderr, "pkgsend: %s" % _e
                 __ret = 1
         except (PipeError, KeyboardInterrupt):

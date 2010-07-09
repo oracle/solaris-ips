@@ -293,6 +293,7 @@ class Manifest(object):
         def __content_to_actions(self, content):
                 accumulate = ""
                 lineno = 0
+                errors = []
                 for l in content.splitlines():
                         lineno += 1
                         l = l.lstrip()
@@ -309,10 +310,15 @@ class Manifest(object):
                         try:
                                 yield actions.fromstr(l)
                         except actions.ActionError, e:
-                                # Add the FMRI to the exception and re-raise
+                                # Accumulate errors and continue so that as
+                                # much of the action data as possible can be
+                                # parsed.
                                 e.fmri = self.fmri
                                 e.lineno = lineno
-                                raise
+                                errors.append(e)
+
+                if errors:
+                        raise api_errors.InvalidPackageErrors(errors)
 
         def set_content(self, content, excludes=EmptyI, signatures=False):
                 """Populate the manifest with actions.
@@ -353,7 +359,6 @@ class Manifest(object):
 
                 for action in content:
                         self.__add_action(action, excludes)
-                return
 
         def __add_action(self, action, excludes):
                 """Performs any needed transformations on the action then adds
@@ -399,7 +404,6 @@ class Manifest(object):
                                         d[v] = set([action.attrs[v]])
                                 else:
                                         d[v].add(action.attrs[v])
-                return
 
         def fill_attributes(self, action):
                 """Fill attribute array w/ set action contents."""

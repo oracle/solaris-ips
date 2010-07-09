@@ -609,7 +609,8 @@ class UnrecognizedCatalogPart(CatalogError):
 
 class InventoryException(ApiException):
         """Used to indicate that some of the specified patterns to a catalog
-        matching function did not match any catalog entries."""
+        matching function did not match any catalog entries, or were invalid
+        patterns."""
 
         def __init__(self, illegal=EmptyI, matcher=EmptyI, notfound=EmptyI,
             publisher=EmptyI, version=EmptyI):

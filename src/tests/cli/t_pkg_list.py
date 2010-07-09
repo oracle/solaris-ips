@@ -30,6 +30,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.fmri as fmri
+import pkg.manifest as manifest
 import unittest
 
 
@@ -505,12 +507,96 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Last, test all at once.
                 self.pkg("list %s" % " ".join(pats), exit=1)
 
-        # Put this one last since it screws the other tests up
-        def test_z_empty_image(self):
+
+class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
+        # Destroy test space every time.
+        persistent_setup = False
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        unsupp10 = """
+            open unsupported@1.0
+            add depend type=require fmri=foo@1.0
+            close """
+
+        def test_01_empty_image(self):
                 """ pkg list should fail in an empty image """
 
-                self.image_create(self.rurl1, prefix="test1")
+                self.image_create(self.rurl)
                 self.pkg("list", exit=1)
+
+        def __populate_repo(self, unsupp_content):
+                # Publish a package and then add some unsupported action data
+                # to the repository's copy of the manifest and catalog.
+                sfmri = self.pkgsend_bulk(self.rurl, self.unsupp10)[0]
+                pfmri = fmri.PkgFmri(sfmri)
+                repo = self.get_repo(self.dcs[1].get_repodir())
+                mpath = repo.manifest(pfmri)
+
+                with open(mpath, "ab+") as mfile:
+                        mfile.write(unsupp_content + "\n")
+
+                mcontent = None
+                with open(mpath, "rb") as mfile:
+                        mcontent = mfile.read()
+
+                cat = repo.catalog
+                cat.log_updates = False
+
+                # Update the catalog signature.
+                entry = cat.get_entry(pfmri)
+                entry["signature-sha-1"] = manifest.Manifest.hash_create(
+                    mcontent)
+
+                # Update the catalog actions.
+                self.debug(str(cat.parts))
+                dpart = cat.get_part("catalog.dependency.C", must_exist=True)
+                entry = dpart.get_entry(pfmri)
+                entry["actions"].append(unsupp_content)
+
+                # Write out the new catalog.
+                cat.save()
+
+        def test_02_unsupported(self):
+                """Verify that packages with invalid or unsupported actions are
+                handled gracefully.
+                """
+
+                # Base package needed for testing.
+                self.pkgsend_bulk(self.rurl, self.foo10)
+
+                # Verify that a package with unsupported content doesn't cause
+                # a problem.
+                newact = "depend type=new-type fmri=foo@1.1"
+
+                # Now create a new image and verify that pkg list will
+                # list both packages even though one of them has an
+                # unparseable manifest.
+                self.__populate_repo(newact)
+                self.image_create(self.rurl)
+                self.pkg("list -aH foo unsupported")
+                expected = \
+                    "foo         1.0-0 known -----\n" \
+                    "unsupported 1.0 unsupported -----\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+                # Verify that a package with invalid content doesn't cause
+                # a problem.
+                newact = "depend notvalid"
+                self.__populate_repo(newact)
+                self.pkg("refresh --full")
+                self.pkg("list -afH foo unsupported")
+                expected = \
+                    "foo         1.0-0 known -----\n" \
+                    "unsupported 1.0 unsupported -----\n" \
+                    "unsupported 1.0 unsupported u----\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
 
 
 if __name__ == "__main__":

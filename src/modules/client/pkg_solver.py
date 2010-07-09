@@ -31,7 +31,7 @@ import pkg.solver
 import pkg.version           as version
 import time
 
-from pkg.misc import EmptyI
+from pkg.misc import EmptyDict, EmptyI
 
 
 SOLVER_INIT    = "Initialized"
@@ -78,9 +78,11 @@ class PkgSolver(object):
                 self.__variants = variants      # variants supported by image
 
                 self.__cache = {}
-                self.__trimdone = False         # indicate we're finished trimming
-                self.__fmri_state = {}          # cache of obsolete, renamed bits
-                # so we can print something reasonable
+                self.__trimdone = False         # indicate we're finished
+                                                # trimming
+                self.__fmri_state = {}          # cache of obsolete, renamed
+                                                # bits so we can print something
+                                                # reasonable
                 self.__state = SOLVER_INIT
                 self.__iterations = 0
                 self.__clauses     = 0
@@ -251,7 +253,7 @@ class PkgSolver(object):
                 self.__timeit("phase 6")
 
                 possible_set = set()
-                # ensure exisiting pkgs stay installed; explicitly add in installed fmris
+                # ensure existing pkgs stay installed; explicitly add in installed fmris
                 # in case publisher change has occurred and some pkgs aren't part of new
                 # publisher
                 for f in self.__installed_fmris.values():
@@ -717,7 +719,7 @@ class PkgSolver(object):
         def __comb_common(self, fmri, dotrim, constraint, obsolete_ok):
                 """Underlying impl. of other comb routines"""
                 tp = (fmri, dotrim, constraint, obsolete_ok) # cache index
-                # determine if the data is cachable or cached:
+                # determine if the data is cacheable or cached:
                 if (not self.__trimdone and dotrim) or tp not in self.__cache:
                         all_fmris = set(self.__get_catalog_fmris(fmri.pkg_name, dotrim))
                         matching = set([
@@ -750,13 +752,23 @@ class PkgSolver(object):
         def __fmri_loadstate(self, fmri, excludes):
                 """load fmri state (obsolete == True, renamed == True)"""
 
-                relevant = dict([
-                        (a.attrs["name"], a.attrs["value"])
-                        for a in self.__catalog.get_entry_actions(fmri,
-                        [catalog.Catalog.DEPENDENCY], excludes=excludes)
-                        if a.name == "set" and \
-                            a.attrs["name"] in ["pkg.renamed", "pkg.obsolete"]
-                        ])
+                supported = True
+                try:
+                        relevant = dict([
+                                (a.attrs["name"], a.attrs["value"])
+                                for a in self.__catalog.get_entry_actions(fmri,
+                                [catalog.Catalog.DEPENDENCY], excludes=excludes)
+                                if a.name == "set" and \
+                                    a.attrs["name"] in ["pkg.renamed",
+                                    "pkg.obsolete"]
+                                ])
+                except api_errors.InvalidPackageErrors:
+                        # Trim package entries that have unparseable action data
+                        # so that they can be filtered out later.
+                        self.__fmri_state[fmri] = ("false", "false")
+                        self.__trim(fmri, _("Package contains invalid or unsupported actions"))
+                        return
+
                 self.__fmri_state[fmri] = (
                     relevant.get("pkg.obsolete", "false").lower() == "true",
                     relevant.get("pkg.renamed", "false").lower() == "true")
@@ -785,10 +797,15 @@ class PkgSolver(object):
 
         def __get_variant_dict(self, fmri, excludes=EmptyI):
                 """Return dictionary of variants suppported by fmri"""
-                if fmri not in self.__variant_dict:
-                        self.__variant_dict[fmri] = dict(
-                            self.__catalog.get_entry_all_variants(fmri))
-
+                try:
+                        if fmri not in self.__variant_dict:
+                                self.__variant_dict[fmri] = dict(
+                                    self.__catalog.get_entry_all_variants(fmri))
+                except api_errors.InvalidPackageErrors:
+                        # Trim package entries that have unparseable action data
+                        # so that they can be filtered out later.
+                        self.__variant_dict[fmri] = {}
+                        self.__trim(fmri, _("Package contains invalid or unsupported actions"))
                 return self.__variant_dict[fmri]
 
         def __generate_dependency_closure(self, fmri_set, excludes=EmptyI, dotrim=True):
@@ -815,6 +832,11 @@ class PkgSolver(object):
                              if da.attrs["type"] == "require"
                              ])
 
+                except api_errors.InvalidPackageErrors:
+                        # Trim package entries that have unparseable action data
+                        # so that they can be filtered out later.
+                        self.__trim(fmri, _("Package contains invalid or unsupported actions"))
+                        return set([])
                 except RuntimeError, e:
                         self.__trim(fmri, str(e))
                         return set([])

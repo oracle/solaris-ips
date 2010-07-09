@@ -46,7 +46,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-API_VERSION = 37
+API_VERSION = 40
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
@@ -1439,11 +1439,16 @@ add set name=pkg.description value="%(desc)s"
                 # Finally, verify that specifying an illegal pattern will
                 # raise an InventoryException.
                 patterns = ["baz@1.*.a", "baz@*-1"]
+                expected = [
+                    version.IllegalVersion(
+                        "Bad Version: %s" % p.split("@", 1)[-1])
+                    for p in patterns
+                ]
                 try:
                         returned = self.__get_returned(api_obj.LIST_ALL,
                             api_obj=api_obj, patterns=patterns, variants=True)
                 except api_errors.InventoryException, e:
-                        self.assertEqual(e.illegal, patterns)
+                        self.assertEqualDiff(e.illegal, expected)
                 else:
                         raise RuntimeError("InventoryException not raised!")
 

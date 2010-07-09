@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -47,6 +46,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.version
+import sys
 
 from operator import itemgetter
 from pkg.misc import EmptyI
@@ -1334,7 +1334,7 @@ class Catalog(object):
                     locales=locales, last_version=last_version,
                     ordered=ordered, pubs=pubs):
                         if "actions" in entry:
-                                yield f, self.__gen_actions(entry["actions"],
+                                yield f, self.__gen_actions(f, entry["actions"],
                                     excludes)
                         elif self.__manifest_cb:
                                 yield f, self.__gen_lazy_actions(f, info_needed,
@@ -1537,9 +1537,28 @@ class Catalog(object):
                     package_version_count
 
         @staticmethod
-        def __gen_actions(actions, excludes=EmptyI):
+        def __gen_actions(pfmri, actions, excludes=EmptyI):
+                errors = None
                 for astr in actions:
-                        a = pkg.actions.fromstr(astr)
+                        try:
+                                a = pkg.actions.fromstr(astr)
+                        except pkg.actions.ActionError, e:
+                                # Accumulate errors and continue so that as
+                                # much of the action data as possible can be
+                                # parsed.
+                                if errors is None:
+                                        # Allocate this here to avoid overhead
+                                        # of list allocation/deallocation.
+                                        errors = []
+                                if not isinstance(pfmri, fmri.PkgFmri):
+                                        # pfmri is assumed to be a FMRI tuple.
+                                        pub, stem, ver = pfmri
+                                        pfmri = fmri.PkgFmri("%s@%s" % (stem,
+                                            ver), publisher=pub)
+                                e.fmri = pfmri
+                                errors.append(e)
+                                continue
+
                         if a.name == "set" and \
                             (a.attrs["name"].startswith("facet") or
                             a.attrs["name"].startswith("variant")):
@@ -1548,6 +1567,9 @@ class Catalog(object):
                                 yield a
                         elif a.include_this(excludes):
                                 yield a
+
+                if errors is not None:
+                        raise api_errors.InvalidPackageErrors(errors)
 
         def __gen_lazy_actions(self, f, info_needed, locales=EmptyI,
             excludes=EmptyI):
@@ -2427,7 +2449,7 @@ class Catalog(object):
                     pubs=pubs, tuples=True):
                         if "actions" in entry:
                                 yield (r, entry,
-                                    self.__gen_actions(entry["actions"],
+                                    self.__gen_actions(r, entry["actions"],
                                     excludes))
                         elif self.__manifest_cb:
                                 pub, stem, ver = r
@@ -2645,7 +2667,8 @@ class Catalog(object):
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 if "actions" in entry:
-                        return self.__gen_actions(entry["actions"], excludes)
+                        return self.__gen_actions(pfmri, entry["actions"],
+                            excludes)
                 elif self.__manifest_cb:
                         return self.__gen_lazy_actions(pfmri, info_needed,
                             locales, excludes)
@@ -2664,7 +2687,7 @@ class Catalog(object):
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 if "actions" in entry:
-                        actions = self.__gen_actions(entry["actions"])
+                        actions = self.__gen_actions(pfmri, entry["actions"])
                 elif self.__manifest_cb:
                         actions = self.__gen_lazy_actions(pfmri,
                             info_needed)

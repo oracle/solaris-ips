@@ -336,17 +336,19 @@ dir mode=0755 owner=bin group=sys path=usr
                 self.assertEqual(acount, 3)
 
         def test_errors(self):
-                """ test that a variety of bogus manifests yield ActionErrors """
-                self.assertRaises(actions.ActionError,
+                """Test that a variety of bogus manifests raise
+                InvalidPackageErrors.
+                """
+                self.assertRaises(api_errors.InvalidPackageErrors,
                     self.m1.set_content, "foobar 1234 owner=root")
 
-                self.assertRaises(actions.ActionError,
+                self.assertRaises(api_errors.InvalidPackageErrors,
                     self.m1.set_content, "file 1234 path=foo bar")
 
-                self.assertRaises(actions.ActionError,
+                self.assertRaises(api_errors.InvalidPackageErrors,
                     self.m1.set_content, "file 1234 path=\"foo bar")
 
-                self.assertRaises(actions.ActionError,
+                self.assertRaises(api_errors.InvalidPackageErrors,
                     self.m1.set_content, "file 1234 =")
 
         def test_validate(self):

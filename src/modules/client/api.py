@@ -40,7 +40,7 @@ import threading
 import urllib
 
 import pkg.client.actuator as actuator
-import pkg.client.api_errors as api_errors
+import pkg.client.api_errors as apx
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 39
+CURRENT_API_VERSION = 40
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -86,7 +86,6 @@ class ImageInterface(object):
         # Constants used to reference specific values that info can return.
         INFO_FOUND = 0
         INFO_MISSING = 1
-        INFO_MULTI_MATCH = 2
         INFO_ILLEGALS = 3
 
         LIST_ALL = 0
@@ -126,10 +125,10 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([36, 37, 38, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
-                        raise api_errors.VersionException(CURRENT_API_VERSION,
+                        raise apx.VersionException(CURRENT_API_VERSION,
                             version_id)
 
                 # The image's History object will use client_name from
@@ -182,6 +181,11 @@ class ImageInterface(object):
             "input or provide a way for users to cancel operations.")
 
         @property
+        def excludes(self):
+                """The list of excludes for the image."""
+                return self.__img.list_excludes()
+
+        @property
         def img(self):
                 """Private; public access to this property will be removed at
                 a later date.  Do not use."""
@@ -213,24 +217,25 @@ class ImageInterface(object):
                 return True
 
         def __cert_verify(self, log_op_end=None):
-                """Verify validity of certificates.  Any
-                api_errors.ExpiringCertificate exceptions are caught
-                here, a message is displayed, and execution continues.
-                All other exceptions will be passed to the calling
-                context.  The caller can also set log_op_end to a list
-                of exceptions that should result in a call to
-                self.log_operation_end() before the exception is passed
-                on."""
+                """Verify validity of certificates.  Any apx.ExpiringCertificate
+                exceptions are caught here, a message is displayed, and
+                execution continues.
+
+                All other exceptions will be passed to the calling context.
+                The caller can also set log_op_end to a list of exceptions
+                that should result in a call to self.log_operation_end()
+                before the exception is passed on.
+                """
 
                 if log_op_end == None:
                         log_op_end = []
 
-                # we always explicitly handle api_errors.ExpiringCertificate
-                assert api_errors.ExpiringCertificate not in log_op_end
+                # we always explicitly handle apx.ExpiringCertificate
+                assert apx.ExpiringCertificate not in log_op_end
 
                 try:
                         self.__img.check_cert_validity()
-                except api_errors.ExpiringCertificate, e:
+                except apx.ExpiringCertificate, e:
                         logger.error(e)
                 except:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -255,7 +260,7 @@ class ImageInterface(object):
                 rc = self.__activity_lock.acquire(
                     blocking=self.__blocking_locks)
                 if not rc:
-                        raise api_errors.ImageLockedError()
+                        raise apx.ImageLockedError()
 
         def __plan_common_start(self, operation, noexecute):
                 """Start planning an operation.  Acquire locks and log
@@ -265,7 +270,7 @@ class ImageInterface(object):
                 try:
                         self.__enable_cancel()
                         if self.__plan_type is not None:
-                                raise api_errors.PlanExistsException(
+                                raise apx.PlanExistsException(
                                     self.__plan_type)
                         self.__img.lock(allow_unprivileged=noexecute)
                 except:
@@ -305,19 +310,19 @@ class ImageInterface(object):
                 if log_op_end == None:
                         log_op_end = []
 
-                # we always explicity handle api_errors.PlanCreationException
-                assert api_errors.PlanCreationException not in log_op_end
+                # we always explicity handle apx.PlanCreationException
+                assert apx.PlanCreationException not in log_op_end
 
                 exc_type, exc_value, exc_traceback = sys.exc_info()
 
-                if exc_type == api_errors.PlanCreationException:
+                if exc_type == apx.PlanCreationException:
                         self.__set_history_PlanCreationException(exc_value)
-                elif exc_type == api_errors.CanceledException:
+                elif exc_type == apx.CanceledException:
                         self.__cancel_done()
                 elif not log_op_end or exc_type in log_op_end:
                         self.log_operation_end(error=exc_value)
 
-                if exc_type != api_errors.ImageLockedError:
+                if exc_type != apx.ImageLockedError:
                         # Must be called before reset_unlock, and only if
                         # the exception was not a locked error.
                         self.__img.unlock()
@@ -374,7 +379,7 @@ class ImageInterface(object):
                         self.__img.imageplan.update_index = update_index
                 except:
                         self.__plan_common_exception(log_op_end=[
-                            api_errors.CanceledException, fmri.IllegalFmri,
+                            apx.CanceledException, fmri.IllegalFmri,
                             Exception])
                         # NOTREACHED
 
@@ -429,22 +434,22 @@ class ImageInterface(object):
 
                 # First check to see if the special package "release/name"
                 # exists and contains metadata saying this is Solaris.
-                fmris, notfound, illegals = \
-                    self.__img.installed_fmris_from_args(["release/name"])
-                assert(not illegals)
-                if fmris:
-                        mfst = self.__img.get_manifest(fmris[0][0])
+                results = self.get_pkg_list(self.LIST_INSTALLED,
+                    patterns=["release/name"], return_fmris=True)
+                results = [e for e in results]
+                if results:
+                        pfmri, summary, categories, states = \
+                            results[0]
+                        mfst = self.__img.get_manifest(pfmri)
                         osname = mfst.get("pkg.release.osname", None)
                         if osname == "sunos":
                                 return True
 
                 # Otherwise, see if we can find package/pkg (or SUNWipkg) and
                 # SUNWcs.
-                fmris, notfound, illegals = \
-                    self.__img.installed_fmris_from_args(
-                        ["pkg:/package/pkg", "SUNWipkg", "SUNWcs"])
-                assert(not illegals)
-                installed = set((f[0].pkg_name for f in fmris))
+                results = self.get_pkg_list(self.LIST_INSTALLED,
+                    patterns=["pkg:/package/pkg", "SUNWipkg", "SUNWcs"])
+                installed = set(e[0][1] for e in results)
                 if "SUNWcs" in installed and ("SUNWipkg" in installed or
                     "package/pkg" in installed):
                         return True
@@ -489,8 +494,8 @@ class ImageInterface(object):
                                             noexecute,
                                             refresh_allowed=refresh_catalogs,
                                             progtrack=self.__progresstracker):
-                                                raise api_errors.IpkgOutOfDateException()
-                                except api_errors.ImageNotFoundException:
+                                                raise apx.IpkgOutOfDateException()
+                                except apx.ImageNotFoundException:
                                         # Can't do anything in this
                                         # case; so proceed.
                                         pass
@@ -515,7 +520,7 @@ class ImageInterface(object):
 
                 except:
                         self.__plan_common_exception(
-                            log_op_end=[api_errors.IpkgOutOfDateException])
+                            log_op_end=[apx.IpkgOutOfDateException])
                         # NOTREACHED
 
                 self.__plan_common_finish()
@@ -600,10 +605,10 @@ class ImageInterface(object):
 
                 try:
                         if not self.__img.imageplan:
-                                raise api_errors.PlanMissingException()
+                                raise apx.PlanMissingException()
 
                         if self.__prepared:
-                                raise api_errors.AlreadyPreparedException()
+                                raise apx.AlreadyPreparedException()
                         assert self.__plan_type == self.__INSTALL or \
                             self.__plan_type == self.__UNINSTALL or \
                             self.__plan_type == self.__IMAGE_UPDATE
@@ -613,13 +618,13 @@ class ImageInterface(object):
                         try:
                                 self.__img.imageplan.preexecute()
                         except search_errors.ProblematicPermissionsIndexException, e:
-                                raise api_errors.ProblematicPermissionsIndexException(e)
+                                raise apx.ProblematicPermissionsIndexException(e)
                         except:
                                 raise
 
                         self.__disable_cancel()
                         self.__prepared = True
-                except api_errors.CanceledException, e:
+                except apx.CanceledException, e:
                         self.__cancel_done()
                         if self.__img.history.operation_name:
                                 # If an operation is in progress, log
@@ -674,13 +679,13 @@ class ImageInterface(object):
 
                 try:
                         if not self.__img.imageplan:
-                                raise api_errors.PlanMissingException()
+                                raise apx.PlanMissingException()
 
                         if not self.__prepared:
-                                raise api_errors.PrematureExecutionException()
+                                raise apx.PrematureExecutionException()
 
                         if self.__executed:
-                                raise api_errors.AlreadyExecutedException()
+                                raise apx.AlreadyExecutedException()
 
                         assert self.__plan_type == self.__INSTALL or \
                             self.__plan_type == self.__UNINSTALL or \
@@ -708,13 +713,13 @@ class ImageInterface(object):
                                         raise
 
                                 if self.__img.is_liveroot():
-                                        e = api_errors.ImageUpdateOnLiveImageException()
+                                        e = apx.ImageUpdateOnLiveImageException()
                                         self.log_operation_end(error=e)
                                         raise e
                         else:
                                 if self.__img.imageplan.reboot_needed() and \
                                     self.__img.is_liveroot():
-                                        e = api_errors.RebootNeededOnLiveImageException()
+                                        e = apx.RebootNeededOnLiveImageException()
                                         self.log_operation_end(error=e)
                                         raise e
 
@@ -729,25 +734,25 @@ class ImageInterface(object):
                                 self.log_operation_end(error=e)
                                 raise
                         except search_errors.ProblematicPermissionsIndexException, e:
-                                error = api_errors.ProblematicPermissionsIndexException(e)
+                                error = apx.ProblematicPermissionsIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
                         except (search_errors.InconsistentIndexException,
                             search_errors.PartialIndexingException), e:
-                                error = api_errors.CorruptedIndexException(e)
+                                error = apx.CorruptedIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
                         except search_errors.MainDictParsingException, e:
-                                error = api_errors.MainDictParsingException(e)
+                                error = apx.MainDictParsingException(e)
                                 self.log_operation_end(error=error)
                                 raise error
                         except actuator.NonzeroExitException, e:
                                 # Won't happen during image-update
                                 be.restore_install_uninstall()
-                                error = api_errors.ActuatorException(e)
+                                error = apx.ActuatorException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except api_errors.WrapIndexingException, e:
+                        except apx.WrapIndexingException, e:
                                 self.__finished_execution(be)
                                 raise
                         except Exception, e:
@@ -785,7 +790,7 @@ class ImageInterface(object):
                         else:
                                 be.restore_install_uninstall()
 
-                        error = api_errors.ImageplanStateException(
+                        error = apx.ImageplanStateException(
                             self.__img.imageplan.state)
                         # Must be done after bootenv restore.
                         self.log_operation_end(error=error)
@@ -823,12 +828,12 @@ class ImageInterface(object):
                 try:
                         try:
                                 self.__disable_cancel()
-                        except api_errors.CanceledException:
+                        except apx.CanceledException:
                                 self.__cancel_done()
                                 raise
 
                         if not self.__img.imageplan:
-                                raise api_errors.PlanMissingException()
+                                raise apx.PlanMissingException()
 
                         for pp in self.__img.imageplan.pkg_plans:
                                 if pp.destination_fmri == pfmri:
@@ -872,7 +877,7 @@ class ImageInterface(object):
                         finally:
                                 self.__img.unlock()
                                 self.__img.cleanup_downloads()
-                except api_errors.CanceledException:
+                except apx.CanceledException:
                         self.__cancel_done()
                         raise
                 finally:
@@ -927,16 +932,191 @@ class ImageInterface(object):
                         excludes = self.__img.list_excludes()
                 return sorted(img_cat.categories(excludes=excludes, pubs=pubs))
 
+        def __map_installed_newest(self, brelease, pubs):
+                """Private function.  Maps incorporations and publisher
+                relationships for installed packages and returns them
+                as a tuple of (pub_ranks, inc_stems, inc_vers, inst_stems,
+                ren_stems, ren_inst_stems).
+                """
+
+                img_cat = self.__img.get_catalog(
+                    self.__img.IMG_CATALOG_INSTALLED)
+                cat_info = frozenset([img_cat.DEPENDENCY])
+
+                inst_stems = {}
+                ren_inst_stems = {}
+                ren_stems = {}
+
+                inc_stems = {}
+                inc_vers = {}
+
+                pub_ranks = self.__img.get_publisher_ranks()
+
+                # The incorporation list should include all installed, 
+                # incorporated packages from all publishers.
+                for t in img_cat.entry_actions(cat_info):
+                        (pub, stem, ver), entry, actions = t
+
+                        inst_stems[stem] = ver
+                        pkgr = False
+                        targets = set()
+                        try:
+                                for a in actions:
+                                        if a.name == "set" and \
+                                            a.attrs["name"] == "pkg.renamed":
+                                                pkgr = True
+                                                continue
+                                        elif a.name != "depend":
+                                                continue
+
+                                        if a.attrs["type"] == "require":
+                                                # Because the actions are not
+                                                # returned in a guaranteed
+                                                # order, the dependencies will
+                                                # have to be recorded for
+                                                # evaluation later.
+                                                targets.add(a.attrs["fmri"])
+                                        elif a.attrs["type"] == "incorporate":
+                                                # Record incorporated packages.
+                                                tgt = fmri.PkgFmri(
+                                                    a.attrs["fmri"], brelease)
+                                                tver = tgt.version
+                                                over = inc_vers.get(
+                                                    tgt.pkg_name, None)
+
+                                                # In case this package has been
+                                                # incorporated more than once,
+                                                # use the newest version.
+                                                if over is not None and \
+                                                    over > tver:
+                                                        continue
+                                                inc_vers[tgt.pkg_name] = tver
+                        except apx.InvalidPackageErrors:
+                                # For mapping purposes, ignore unsupported
+                                # (and invalid) actions.  This is necessary so
+                                # that API consumers can discover new package
+                                # data that may be needed to perform an upgrade
+                                # so that the API can understand them.
+                                pass
+
+                        if pkgr:
+                                for f in targets:
+                                        tgt = fmri.PkgFmri(f, brelease)
+                                        ren_stems[tgt.pkg_name] = stem
+                                        ren_inst_stems.setdefault(stem,
+                                            set())
+                                        ren_inst_stems[stem].add(
+                                            tgt.pkg_name)
+
+                def check_stem(t, entry):
+                        pub, stem, ver = t
+                        if stem in inst_stems:
+                                iver = inst_stems[stem]
+                                if stem in ren_inst_stems or \
+                                    ver == iver:
+                                        # The package has been renamed
+                                        # or the entry is for the same
+                                        # version as that which is
+                                        # installed, so doesn't need
+                                        # to be checked.
+                                        return False
+                                # The package may have been renamed in
+                                # a newer version, so must be checked.
+                                return True
+                        elif stem in inc_vers:
+                                # Package is incorporated, but not
+                                # installed, so should be checked.
+                                return True
+
+                        tgt = ren_stems.get(stem, None)
+                        while tgt is not None:
+                                # This seems counter-intuitive, but
+                                # for performance and other reasons,
+                                # this stem should only be checked
+                                # for a rename if it is incorporated
+                                # or installed using a previous name.
+                                if tgt in inst_stems or \
+                                    tgt in inc_vers:
+                                        return True
+                                tgt = ren_stems.get(tgt, None)
+
+                        # Package should not be checked.
+                        return False
+
+                img_cat = self.__img.get_catalog(self.__img.IMG_CATALOG_KNOWN)
+
+                # Find terminal rename entry for all known packages not
+                # rejected by check_stem().
+                for t, entry, actions in img_cat.entry_actions(cat_info,
+                    cb=check_stem, last=True):
+                        pkgr = False
+                        targets = set()
+                        try:
+                                for a in actions:
+                                        if a.name == "set" and \
+                                            a.attrs["name"] == "pkg.renamed":
+                                                pkgr = True
+                                                continue
+
+                                        if a.name != "depend":
+                                                continue
+
+                                        if a.attrs["type"] != "require":
+                                                continue
+
+                                        # Because the actions are not
+                                        # returned in a guaranteed
+                                        # order, the dependencies will
+                                        # have to be recorded for
+                                        # evaluation later.
+                                        targets.add(a.attrs["fmri"])
+                        except apx.InvalidPackageErrors:
+                                # For mapping purposes, ignore unsupported
+                                # (and invalid) actions.  This is necessary so
+                                # that API consumers can discover new package
+                                # data that may be needed to perform an upgrade
+                                # so that the API can understand them.
+                                pass
+
+                        if pkgr:
+                                pub, stem, ver = t
+                                for f in targets:
+                                        tgt = fmri.PkgFmri(f, brelease)
+                                        ren_stems[tgt.pkg_name] = stem
+
+                # Determine highest ranked publisher for package stems
+                # listed in installed incorporations.
+                def pub_order(a, b):
+                        return cmp(pub_ranks[a][0], pub_ranks[b][0])
+
+                for p in sorted(pub_ranks, cmp=pub_order):
+                        if pubs and p not in pubs:
+                                continue
+                        for stem in img_cat.names(pubs=[p]):
+                                if stem in inc_vers:
+                                        inc_stems.setdefault(stem, p)
+
+                return (pub_ranks, inc_stems, inc_vers, inst_stems, ren_stems,
+                    ren_inst_stems)
+
         def get_pkg_list(self, pkg_list, cats=None, patterns=misc.EmptyI,
-            pubs=misc.EmptyI, variants=False):
-                """A generator function that produces tuples of the form ((pub,
-                stem, version), summary, categories, states).  Where 'pub' is
-                the publisher of the package, 'stem' is the name of the package,
-                'version' is a string for the package version, 'summary' is the
-                package summary, 'categories' is a list of tuples of the form
-                (scheme, category), and 'states' is a list of PackageInfo states
-                for the package.  Results are always sorted by stem, publisher,
-                and then in descending version order.
+            pubs=misc.EmptyI, raise_unmatched=False, return_fmris=False,
+            variants=False):
+                """A generator function that produces tuples of the form:
+
+                    (
+                        (
+                            pub,    - (string) the publisher of the package
+                            stem,   - (string) the name of the package
+                            version - (string) the version of the package
+                        ),
+                        summary,    - (string) the package summary
+                        categories, - (list) string tuples of (scheme, category)
+                        states      - (list) PackageInfo states
+                    )
+
+                Results are always sorted by stem, publisher, and then in
+                descending version order.
 
                 'pkg_list' is one of the following constant values indicating
                 what base set of package data should be used for results:
@@ -973,6 +1153,15 @@ class ImageInterface(object):
                 'pubs' is an optional list of publisher prefixes to restrict
                 the results to.
 
+                'raise_unmatched' is an optional boolean value that indicates
+                whether an InventoryException should be raised if any patterns
+                (after applying all other filtering and returning all results)
+                didn't match any packages.
+
+                'return_fmris' is an optional boolean value that indicates that
+                an FMRI object should be returned in place of the (pub, stem,
+                ver) tuple that is normally returned.
+
                 'variants' is an optional boolean value that indicates that
                 packages that are for arch or zone variants not applicable to
                 this image should be returned.
@@ -980,10 +1169,8 @@ class ImageInterface(object):
                 Please note that this function may invoke network operations
                 to retrieve the requested package information."""
 
-                all = installed = inst_newest = newest = upgradable = False
-                if pkg_list == self.LIST_ALL:
-                        all = True
-                elif pkg_list == self.LIST_INSTALLED:
+                installed = inst_newest = newest = upgradable = False
+                if pkg_list == self.LIST_INSTALLED:
                         installed = True
                 elif pkg_list == self.LIST_INSTALLED_NEWEST:
                         inst_newest = True
@@ -992,7 +1179,6 @@ class ImageInterface(object):
                 elif pkg_list == self.LIST_UPGRADABLE:
                         upgradable = True
 
-                inc_vers = {}
                 brelease = self.__img.attrs["Build-Release"]
 
                 # Each pattern in patterns can be a partial or full FMRI, so
@@ -1027,156 +1213,23 @@ class ImageInterface(object):
                                         npat = pkg.fmri.PkgFmri(pat,
                                             brelease)
                                 pat_tuples[pat] = (npat.tuple(), matcher)
-                        except (pkg.fmri.FmriError, pkg.version.VersionError):
-                                illegals.append(pat)
+                        except (pkg.fmri.FmriError,
+                            pkg.version.VersionError), e:
+                                illegals.append(e)
 
                 if illegals:
-                        raise api_errors.InventoryException(illegal=illegals)
+                        raise apx.InventoryException(illegal=illegals)
 
                 # For LIST_INSTALLED_NEWEST, installed packages need to be
                 # determined and incorporation and publisher relationships
                 # mapped.
-                inst_stems = {}
-                ren_inst_stems = {}
-                ren_stems = {}
-
-                pub_ranks = {}
-                inc_stems = {}
                 if inst_newest:
-                        img_cat = self.__img.get_catalog(
-                            self.__img.IMG_CATALOG_INSTALLED)
-                        cat_info = frozenset([img_cat.DEPENDENCY])
-
-                        pub_ranks = self.__img.get_publisher_ranks()
-
-                        # The incorporation list should include all installed,
-                        # incorporated packages from all publishers.
-                        for t in img_cat.entry_actions(cat_info):
-                                (pub, stem, ver), entry, actions = t
-
-                                inst_stems[stem] = ver
-                                pkgr = False
-                                targets = set()
-                                for a in actions:
-                                        if a.name == "set" and \
-                                            a.attrs["name"] == "pkg.renamed":
-                                                pkgr = True
-                                                continue
-                                        elif a.name != "depend":
-                                                continue
-
-                                        if a.attrs["type"] == "require":
-                                                # Because the actions are not
-                                                # returned in a guaranteed
-                                                # order, the dependencies will
-                                                # have to be recorded for
-                                                # evaluation later.
-                                                targets.add(a.attrs["fmri"])
-                                        elif a.attrs["type"] == "incorporate":
-                                                # Record incorporated packages.
-                                                tgt = fmri.PkgFmri(
-                                                    a.attrs["fmri"], brelease)
-                                                tver = tgt.version
-                                                over = inc_vers.get(
-                                                    tgt.pkg_name, None)
-
-                                                # In case this package has been
-                                                # incorporated more than once,
-                                                # use the newest version.
-                                                if over is not None and \
-                                                    over > tver:
-                                                        continue
-                                                inc_vers[tgt.pkg_name] = tver
-
-                                if pkgr:
-                                        for f in targets:
-                                                tgt = fmri.PkgFmri(f, brelease)
-                                                ren_stems[tgt.pkg_name] = stem
-                                                ren_inst_stems.setdefault(stem,
-                                                    set())
-                                                ren_inst_stems[stem].add(
-                                                    tgt.pkg_name)
-
-                        def check_stem(t, entry):
-                                pub, stem, ver = t
-                                if stem in inst_stems:
-                                        iver = inst_stems[stem]
-                                        if stem in ren_inst_stems or \
-                                            ver == iver:
-                                                # The package has been renamed
-                                                # or the entry is for the same
-                                                # version as that which is
-                                                # installed, so doesn't need
-                                                # to be checked.
-                                                return False
-                                        # The package may have been renamed in
-                                        # a newer version, so must be checked.
-                                        return True
-                                elif stem in inc_vers:
-                                        # Package is incorporated, but not
-                                        # installed, so should be checked.
-                                        return True
-
-                                tgt = ren_stems.get(stem, None)
-                                while tgt is not None:
-                                        # This seems counter-intuitive, but
-                                        # for performance and other reasons,
-                                        # this stem should only be checked
-                                        # for a rename if it is incorporated
-                                        # or installed using a previous name.
-                                        if tgt in inst_stems or \
-                                            tgt in inc_vers:
-                                                return True
-                                        tgt = ren_stems.get(tgt, None)
-
-                                # Package should not be checked.
-                                return False
-
-                        img_cat = self.__img.get_catalog(
-                            self.__img.IMG_CATALOG_KNOWN)
-
-                        # Find terminal rename entry for all known packages not
-                        # rejected by check_stem().
-                        for t, entry, actions in img_cat.entry_actions(cat_info,
-                            cb=check_stem, last=True):
-                                pkgr = False
-                                targets = set()
-                                for a in actions:
-                                        if a.name == "set" and \
-                                            a.attrs["name"] == "pkg.renamed":
-                                                pkgr = True
-                                                continue
-
-                                        if a.name != "depend":
-                                                continue
-
-                                        if a.attrs["type"] != "require":
-                                                continue
-
-                                        # Because the actions are not
-                                        # returned in a guaranteed
-                                        # order, the dependencies will
-                                        # have to be recorded for
-                                        # evaluation later.
-                                        targets.add(a.attrs["fmri"])
-
-                                if pkgr:
-                                        pub, stem, ver = t
-                                        for f in targets:
-                                                tgt = fmri.PkgFmri(f, brelease)
-                                                ren_stems[tgt.pkg_name] = stem
-
-                        # Determine highest ranked publisher for package stems
-                        # listed in installed incorporations.
-                        def pub_order(a, b):
-                                return cmp(pub_ranks[a][0], pub_ranks[b][0])
-
-                        for p in sorted(pub_ranks, cmp=pub_order):
-                                if pubs and p not in pubs:
-                                        continue
-                                for stem in img_cat.names(pubs=[p]):
-                                        if stem in inc_vers:
-                                                inc_stems.setdefault(stem, p)
+                        pub_ranks, inc_stems, inc_vers, inst_stems, ren_stems, \
+                            ren_inst_stems = self.__map_installed_newest(
+                            brelease, pubs)
+                else:
+                        pub_ranks = inc_stems = inc_vers = inst_stems = \
+                            ren_stems = ren_inst_stems = misc.EmptyDict
 
                 if installed or upgradable:
                         img_cat = self.__img.get_catalog(
@@ -1190,8 +1243,6 @@ class ImageInterface(object):
                             self.__img.IMG_CATALOG_KNOWN)
 
                 cat_info = frozenset([img_cat.DEPENDENCY, img_cat.SUMMARY])
-                api_info = frozenset([PackageInfo.SUMMARY,
-                    PackageInfo.CATEGORIES])
 
                 # Keep track of when the newest version has been found for
                 # each incorporated stem.
@@ -1282,10 +1333,100 @@ class ImageInterface(object):
                 excludes = self.__img.list_excludes()
                 is_zone = self.__img.is_zone()
 
+                matched_pats = set()
+                pkg_matching_pats = None
                 for t, entry, actions in img_cat.entry_actions(cat_info,
                     cb=filter_cb, excludes=excludes, last=newest,
                     ordered=True, pubs=pubs):
                         pub, stem, ver = t
+
+                        pkg_stem = "!".join((pub, stem))
+                        nlist[pkg_stem] += 1
+
+                        omit_ver = False
+                        omit_package = None
+                        if raise_unmatched:
+                                pkg_matching_pats = set()
+                        if not omit_package:
+                                ever = None
+                                for pat in patterns:
+                                        (pat_pub, pat_stem, pat_ver), matcher = \
+                                            pat_tuples[pat]
+
+                                        if pat_pub is not None and \
+                                            pub != pat_pub:
+                                                # Publisher doesn't match.
+                                                if omit_package is None:
+                                                        omit_package = True
+                                                continue
+
+                                        if matcher == self.MATCH_EXACT:
+                                                if pat_stem != stem:
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+                                        elif matcher == self.MATCH_FMRI:
+                                                if not ("/" + stem).endswith(
+                                                    "/" + pat_stem):
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+                                        elif matcher == self.MATCH_GLOB:
+                                                if not fnmatch.fnmatchcase(stem,
+                                                    pat_stem):
+                                                        # Stem doesn't match.
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        continue
+
+                                        if pat_ver is not None:
+                                                if ever is None:
+                                                        # Avoid constructing a
+                                                        # version object more
+                                                        # than once for each
+                                                        # entry.
+                                                        ever = pkg.version.Version(ver,
+                                                            brelease)
+                                                if not ever.is_successor(pat_ver,
+                                                    pkg.version.CONSTRAINT_AUTO):
+                                                        if omit_package is None:
+                                                                omit_package = \
+                                                                    True
+                                                        omit_ver = True
+                                                        continue
+
+                                        # If this entry matched at least one
+                                        # pattern, then ensure it is returned.
+                                        omit_package = False
+                                        if not raise_unmatched:
+                                                # It's faster to stop as soon
+                                                # as a match is found.
+                                                break
+
+                                        # If caller has requested other match
+                                        # cases be raised as an exception, then
+                                        # all patterns must be tested for every
+                                        # entry.  This is slower, so only done
+                                        # if necessary.
+                                        pkg_matching_pats.add(pat)
+
+                        if omit_package:
+                                # Package didn't match critera; skip it.
+                                if filter_cb is not None and omit_ver and \
+                                    nlist[pkg_stem] == 1:
+                                        # If omitting because of version, and
+                                        # no other versions have been returned
+                                        # yet for this stem, then discard
+                                        # tracking entry so that other
+                                        # versions will be listed.
+                                        del nlist[pkg_stem]
+                                        slist.discard(stem)
+                                continue
 
                         # Perform image arch and zone variant filtering so
                         # that only packages appropriate for this image are
@@ -1293,70 +1434,83 @@ class ImageInterface(object):
                         # not installed.
                         pcats = []
                         pkgr = False
-                        omit_package = False
+                        unsupported = False
                         summ = None
                         targets = set()
 
                         states = entry["metadata"]["states"]
                         pkgi = self.__img.PKG_STATE_INSTALLED in states
-                        for a in actions:
-                                if a.name == "depend" and \
-                                    a.attrs["type"] == "require":
-                                        targets.add(a.attrs["fmri"])
-                                        continue
-                                if a.name != "set":
-                                        continue
-
-                                atname = a.attrs["name"]
-                                atvalue = a.attrs["value"]
-                                if atname == "pkg.summary":
-                                        summ = atvalue
-                                        continue
-
-                                if atname == "description":
-                                        if summ is None:
-                                                # Historical summary field.
-                                                summ = atvalue
-                                        continue
-
-                                if atname == "info.classification":
-                                        pcats.extend(
-                                            a.parse_category_info())
-
-                                if pkgi:
-                                        # No filtering for installed packages.
-                                        continue
-
-                                # Rename filtering should only be performed for
-                                # incorporated packages at this point.
-                                if atname == "pkg.renamed":
-                                        if stem in inc_vers:
-                                                pkgr = True
-                                        continue
-
-                                if variants:
-                                        # No variant filtering.
-                                        continue
-
-                                is_list = type(atvalue) == list
-                                if atname == "variant.arch":
-                                        if (is_list and arch not in atvalue) or \
-                                           (not is_list and arch != atvalue):
-                                                # Package is not for the
-                                                # image's architecture.
-                                                omit_package = True
+                        try:
+                                for a in actions:
+                                        if a.name == "depend" and \
+                                            a.attrs["type"] == "require":
+                                                targets.add(a.attrs["fmri"])
+                                                continue
+                                        if a.name != "set":
                                                 continue
 
-                                if atname == "variant.opensolaris.zone":
-                                        if (is_zone and is_list and
-                                            "nonglobal" not in atvalue) or \
-                                           (is_zone and not is_list and
-                                            atvalue != "nonglobal"):
-                                                # Package is for zones only.
-                                                omit_package = True
+                                        atname = a.attrs["name"]
+                                        atvalue = a.attrs["value"]
+                                        if atname == "pkg.summary":
+                                                summ = atvalue
+                                                continue
 
-                        pkg_stem = "!".join((pub, stem))
-                        nlist[pkg_stem] += 1
+                                        if atname == "description":
+                                                if summ is None:
+                                                        # Historical summary
+                                                        # field.
+                                                        summ = atvalue
+                                                continue
+
+                                        if atname == "info.classification":
+                                                pcats.extend(
+                                                    a.parse_category_info())
+
+                                        if pkgi:
+                                                # No filtering for installed
+                                                # packages.
+                                                continue
+
+                                        # Rename filtering should only be
+                                        # performed for incorporated packages
+                                        # at this point.
+                                        if atname == "pkg.renamed":
+                                                if stem in inc_vers:
+                                                        pkgr = True
+                                                continue
+
+                                        if variants:
+                                                # No variant filtering.
+                                                continue
+
+                                        is_list = type(atvalue) == list
+                                        if atname == "variant.arch":
+                                                if (is_list and
+                                                    arch not in atvalue) or \
+                                                   (not is_list and
+                                                   arch != atvalue):
+                                                        # Package is not for the
+                                                        # image's architecture.
+                                                        omit_package = True
+                                                        continue
+
+                                        if atname == "variant.opensolaris.zone":
+                                                if (is_zone and is_list and
+                                                    "nonglobal" not in atvalue) or \
+                                                   (is_zone and not is_list and
+                                                    atvalue != "nonglobal"):
+                                                        # Package is for zones
+                                                        # only.
+                                                        omit_package = True
+                        except apx.InvalidPackageErrors:
+                                # Ignore errors for packages that have invalid
+                                # or unsupported metadata.  This is necessary so
+                                # that API consumers can discover new package
+                                # data that may be needed to perform an upgrade
+                                # so that the API can understand them.
+                                states = set(states)
+                                states.add(PackageInfo.UNSUPPORTED)
+                                unsupported = True
 
                         if not pkgi and pkgr and stem in inc_vers:
                                 # If the package is not installed, but this is
@@ -1373,63 +1527,8 @@ class ImageInterface(object):
                                                         break
                                                 tgt = ren_stems.get(tgt, None)
 
-                        # Pattern filtering has to be applied last so that
-                        # renames, incorporations, and everything else is
-                        # handled correctly.
-                        omit_ver = False
-                        if not omit_package:
-                                for pat in patterns:
-                                        (pat_pub, pat_stem, pat_ver), matcher = \
-                                            pat_tuples[pat]
-
-                                        if pat_pub is not None and \
-                                            pub != pat_pub:
-                                                # Publisher doesn't match.
-                                                omit_package = True
-                                                continue
-
-                                        if matcher == self.MATCH_EXACT:
-                                                if pat_stem != stem:
-                                                        # Stem doesn't match.
-                                                        omit_package = True
-                                                        continue
-                                        elif matcher == self.MATCH_FMRI:
-                                                if not ("/" + stem).endswith(
-                                                    "/" + pat_stem):
-                                                        # Stem doesn't match.
-                                                        omit_package = True
-                                                        continue
-                                        elif matcher == self.MATCH_GLOB:
-                                                if not fnmatch.fnmatchcase(stem,
-                                                    pat_stem):
-                                                        # Stem doesn't match.
-                                                        omit_package = True
-                                                        continue
-
-                                        if pat_ver is not None:
-                                                ever = pkg.version.Version(ver,
-                                                    brelease)
-                                                if not ever.is_successor(pat_ver,
-                                                    pkg.version.CONSTRAINT_AUTO):
-                                                        omit_package = True
-                                                        omit_ver = True
-                                                        continue
-
-                                        # If this entry matched at least one
-                                        # pattern, then ensure it is returned.
-                                        omit_package = False
-                                        break
-
                         if omit_package:
-                                if filter_cb is not None and omit_ver and \
-                                    nlist[pkg_stem] == 1:
-                                        # If omitting because of version, and
-                                        # no other versions have been returned
-                                        # yet for this stem, then discard
-                                        # tracking entry so that other
-                                        # versions will be listed.
-                                        del nlist[pkg_stem]
-                                        slist.discard(stem)
+                                # Package didn't match critera; skip it.
                                 continue
 
                         if cats is not None:
@@ -1444,8 +1543,30 @@ class ImageInterface(object):
                                         continue
 
                         # Return the requested package data.
-                        yield (t, summ, pcats,
-                            frozenset(entry["metadata"]["states"]))
+                        if not unsupported:
+                                # Prevent modification of state data.
+                                states = frozenset(states)
+
+                        if raise_unmatched:
+                                # Only after all other filtering has been
+                                # applied are the patterns that the package
+                                # matched considered "matching".
+                                matched_pats.update(pkg_matching_pats)
+
+                        if return_fmris:
+                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    build_release=brelease, publisher=pub)
+                                yield (pfmri, summ, pcats, states)
+                        else:
+                                yield (t, summ, pcats, states)
+
+                if raise_unmatched:
+                        # Caller has requested that non-matching patterns or
+                        # patterns that match multiple packages cause an
+                        # exception to be raised.
+                        notfound = set(pat_tuples.keys()) - matched_pats
+                        if raise_unmatched and notfound:
+                                raise apx.InventoryException(notfound=notfound)
 
         def info(self, fmri_strings, local, info_needed):
                 """Gathers information about fmris.  fmri_strings is a list
@@ -1472,87 +1593,32 @@ class ImageInterface(object):
 
                 bad_opts = info_needed - PackageInfo.ALL_OPTIONS
                 if bad_opts:
-                        raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
+                        raise apx.UnrecognizedOptionsToInfo(bad_opts)
 
                 self.log_operation_start("info")
 
-                fmris = []
-                notfound = []
-                multiple_matches = []
-                illegals = []
-
-                ppub = self.__img.get_preferred_publisher()
-                if local:
-                        fmris, notfound, illegals = \
-                            self.__img.installed_fmris_from_args(fmri_strings)
-                        if not fmris and not notfound and not illegals:
+                if local is True:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_INSTALLED)
+                        if not fmri_strings and img_cat.package_count == 0:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
-                                raise api_errors.NoPackagesInstalledException()
+                                raise apx.NoPackagesInstalledException()
+                        ilist = self.LIST_INSTALLED
                 else:
                         # Verify validity of certificates before attempting
                         # network operations.
                         self.__cert_verify(
-                            log_op_end=[api_errors.CertificateError])
+                            log_op_end=[apx.CertificateError])
 
-                        # XXX This loop really needs not to be copied from
-                        # Image.make_install_plan()!
-                        for p in fmri_strings:
-                                try:
-                                        matches = list(self.__img.inventory([p],
-                                            all_known=True, ordered=False))
-                                except api_errors.InventoryException, e:
-                                        assert(len(e.notfound) == 1 or \
-                                            len(e.illegal) == 1)
-                                        if e.notfound:
-                                                notfound.append(e.notfound[0])
-                                        else:
-                                                illegals.append(e.illegal[0])
-                                        err = 1
-                                        continue
-
-                                pnames = {}
-                                pmatch = []
-                                npnames = {}
-                                npmatch = []
-                                for m, state in matches:
-                                        if m.get_publisher() == ppub:
-                                                pnames[m.get_pkg_stem()] = 1
-                                                pmatch.append((m, state))
-                                        else:
-                                                npnames[m.get_pkg_stem()] = 1
-                                                npmatch.append((m, state))
-
-                                if len(pnames.keys()) > 1:
-                                        multiple_matches.append(
-                                            (p, pnames.keys()))
-                                        error = 1
-                                        continue
-                                elif len(pnames.keys()) < 1 and \
-                                    len(npnames.keys()) > 1:
-                                        multiple_matches.append(
-                                            (p, pnames.keys()))
-                                        error = 1
-                                        continue
-
-                                # matches is a list reverse sorted by version,
-                                # so take the first; i.e., the latest.
-                                if len(pmatch) > 0:
-                                        fmris.append(pmatch[0])
-                                else:
-                                        fmris.append(npmatch[0])
-
-                if local:
-                        img_cat = self.__img.get_catalog(
-                            self.__img.IMG_CATALOG_INSTALLED)
-                else:
                         img_cat = self.__img.get_catalog(
                             self.__img.IMG_CATALOG_KNOWN)
+                        ilist = self.LIST_NEWEST
+
                 excludes = self.__img.list_excludes()
 
                 # Set of options that can use catalog data.
-                cat_opts = frozenset([PackageInfo.SUMMARY,
-                    PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION,
+                cat_opts = frozenset([PackageInfo.DESCRIPTION,
                     PackageInfo.DEPENDENCIES])
 
                 # Set of options that require manifest retrieval.
@@ -1560,103 +1626,147 @@ class ImageInterface(object):
                     frozenset([PackageInfo.DEPENDENCIES])
 
                 pis = []
-                for f, fstate in fmris:
-                        pub = name = version = release = None
-                        build_release = branch = packaging_date = None
-                        if PackageInfo.IDENTITY in info_needed:
-                                pub, name, version = f.tuple()
-                                pub = fmri.strip_pub_pfx(pub)
-                                release = version.release
-                                build_release = version.build_release
-                                branch = version.branch
-                                packaging_date = \
-                                    version.get_timestamp().strftime("%c")
+                rval = {
+                    self.INFO_FOUND: pis,
+                    self.INFO_MISSING: misc.EmptyI,
+                    self.INFO_ILLEGALS: misc.EmptyI,
+                }
 
-                        pref_pub = None
-                        if PackageInfo.PREF_PUBLISHER in info_needed:
-                                pref_pub = (f.get_publisher() == ppub)
+                try:
+                        for pfmri, summary, cats, states in self.get_pkg_list(
+                            ilist, patterns=fmri_strings, raise_unmatched=True,
+                            return_fmris=True, variants=True):
+                                pub = name = version = release = \
+                                    build_release = branch = \
+                                    packaging_date = None
+                                if PackageInfo.IDENTITY in info_needed:
+                                        pub, name, version = pfmri.tuple()
+                                        release = version.release
+                                        build_release = version.build_release
+                                        branch = version.branch
+                                        packaging_date = \
+                                            version.get_timestamp().strftime(
+                                            "%c")
 
-                        # XXX gross; info needs to switch to using get_pkg_list
-                        # routines at a later date once matching is figured
-                        # out.
-                        states = set()
-                        if PackageInfo.STATE in info_needed:
-                                if fstate["state"] == \
-                                    self.__img.PKG_STATE_INSTALLED:
-                                        states.add(PackageInfo.INSTALLED)
-                                if fstate["in_catalog"]:
-                                        states.add(PackageInfo.KNOWN)
-                                if fstate["upgradable"]:
-                                        states.add(PackageInfo.UPGRADABLE)
-                                if fstate["obsolete"]:
-                                        states.add(PackageInfo.OBSOLETE)
-                                if fstate["renamed"]:
-                                        states.add(PackageInfo.RENAMED)
+                                links = hardlinks = files = dirs = \
+                                    size = licenses = cat_info = \
+                                    description = None
 
-                        links = hardlinks = files = dirs = dependencies = None
-                        summary = size = licenses = cat_info = description = \
-                            None
-
-                        if cat_opts & info_needed:
-                                summary, description, cat_info, dependencies = \
-                                    _get_pkg_cat_data(img_cat, info_needed,
-                                        excludes=excludes, pfmri=f)
-                                if cat_info is not None:
+                                if PackageInfo.CATEGORIES in info_needed:
                                         cat_info = [
                                             PackageCategory(scheme, cat)
-                                            for scheme, cat in cat_info
+                                            for scheme, cat in cats
                                         ]
 
-                        if (frozenset([PackageInfo.SIZE,
-                            PackageInfo.LICENSES]) | act_opts) & info_needed:
-                                mfst = self.__img.get_manifest(f)
-                                if PackageInfo.LICENSES in info_needed:
-                                        licenses = self.__licenses(f, mfst)
+                                ret_cat_data = cat_opts & info_needed
+                                dependencies = None
+                                unsupported = False
+                                if ret_cat_data:
+                                        try:
+                                                ignored, description, ignored, \
+                                                    dependencies = \
+                                                    _get_pkg_cat_data(img_cat,
+                                                        ret_cat_data,
+                                                        excludes=excludes,
+                                                        pfmri=pfmri)
+                                        except apx.InvalidPackageErrors:
+                                                # If the information can't be
+                                                # retrieved because the manifest
+                                                # can't be parsed, mark it and
+                                                # continue.
+                                                unsupported = True
 
-                                if PackageInfo.SIZE in info_needed:
-                                        size = mfst.get_size(excludes=excludes)
+                                if dependencies is None:
+                                        dependencies = misc.EmptyI
 
-                                if act_opts & info_needed:
-                                        if PackageInfo.LINKS in info_needed:
-                                                links = list(
-                                                    mfst.gen_key_attribute_value_by_type(
-                                                    "link", excludes))
-                                        if PackageInfo.HARDLINKS in info_needed:
-                                                hardlinks = list(
-                                                    mfst.gen_key_attribute_value_by_type(
-                                                    "hardlink", excludes))
-                                        if PackageInfo.FILES in info_needed:
-                                                files = list(
-                                                    mfst.gen_key_attribute_value_by_type(
-                                                    "file", excludes))
-                                        if PackageInfo.DIRS in info_needed:
-                                                dirs = list(
-                                                    mfst.gen_key_attribute_value_by_type(
-                                                    "dir", excludes))
+                                mfst = None
+                                if not unsupported and \
+                                    (frozenset([PackageInfo.SIZE, 
+                                    PackageInfo.LICENSES]) | act_opts) & \
+                                    info_needed:
+                                        try:
+                                                mfst = self.__img.get_manifest(
+                                                    pfmri)
+                                        except apx.InvalidPackageErrors:
+                                                # If the information can't be
+                                                # retrieved because the manifest
+                                                # can't be parsed, mark it and
+                                                # continue.
+                                                unsupported = True
 
-                        pis.append(PackageInfo(pkg_stem=name, summary=summary,
-                            category_info_list=cat_info, states=states,
-                            publisher=pub, preferred_publisher=pref_pub,
-                            version=release, build_release=build_release,
-                            branch=branch, packaging_date=packaging_date,
-                            size=size, pfmri=str(f), licenses=licenses,
-                            links=links, hardlinks=hardlinks, files=files,
-                            dirs=dirs, dependencies=dependencies,
-                            description=description))
-                if pis:
-                        self.log_operation_end()
-                elif illegals or multiple_matches:
-                        self.log_operation_end(
-                            result=history.RESULT_FAILED_BAD_REQUEST)
+                                if mfst is not None:
+                                        if PackageInfo.LICENSES in info_needed:
+                                                licenses = self.__licenses(pfmri,
+                                                    mfst)
+
+                                        if PackageInfo.SIZE in info_needed:
+                                                size = mfst.get_size(
+                                                    excludes=excludes)
+
+                                        if act_opts & info_needed:
+                                                if PackageInfo.LINKS in info_needed:
+                                                        links = list(
+                                                            mfst.gen_key_attribute_value_by_type(
+                                                            "link", excludes))
+                                                if PackageInfo.HARDLINKS in info_needed:
+                                                        hardlinks = list(
+                                                            mfst.gen_key_attribute_value_by_type(
+                                                            "hardlink", excludes))
+                                                if PackageInfo.FILES in info_needed:
+                                                        files = list(
+                                                            mfst.gen_key_attribute_value_by_type(
+                                                            "file", excludes))
+                                                if PackageInfo.DIRS in info_needed:
+                                                        dirs = list(
+                                                            mfst.gen_key_attribute_value_by_type(
+                                                            "dir", excludes))
+                                elif PackageInfo.SIZE in info_needed:
+                                        size = 0
+
+                                # Trim response set.
+                                if PackageInfo.STATE in info_needed:
+                                        if unsupported is True and \
+                                            PackageInfo.UNSUPPORTED not in states:
+                                                # Mark package as
+                                                # unsupported so that
+                                                # caller can decide
+                                                # what to do.
+                                                states = set(states)
+                                                states.add(
+                                                    PackageInfo.UNSUPPORTED)
+                                else:
+                                        states = misc.EmptyI
+
+                                if PackageInfo.CATEGORIES not in info_needed:
+                                        cats = None
+                                if PackageInfo.SUMMARY in info_needed:
+                                        if summary is None:
+                                                summary = ""
+                                else:
+                                        summary = None
+
+                                pis.append(PackageInfo(pkg_stem=name,
+                                    summary=summary, category_info_list=cat_info,
+                                    states=states, publisher=pub, version=release,
+                                    build_release=build_release, branch=branch,
+                                    packaging_date=packaging_date, size=size,
+                                    pfmri=str(pfmri), licenses=licenses, 
+                                    links=links, hardlinks=hardlinks, files=files,
+                                    dirs=dirs, dependencies=dependencies,
+                                    description=description))
+                except apx.InventoryException, e:
+                        if e.illegal:
+                                self.log_operation_end(
+                                    result=history.RESULT_FAILED_BAD_REQUEST)
+                        rval[self.INFO_MISSING] = e.notfound
+                        rval[self.INFO_ILLEGALS] = e.illegal
                 else:
-                        self.log_operation_end(
-                            result=history.RESULT_NOTHING_TO_DO)
-                return {
-                    self.INFO_FOUND: pis,
-                    self.INFO_MISSING: notfound,
-                    self.INFO_MULTI_MATCH: multiple_matches,
-                    self.INFO_ILLEGALS: illegals
-                }
+                        if pis:
+                                self.log_operation_end()
+                        else:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+                return rval
 
         def can_be_canceled(self):
                 """Returns true if the API is in a cancelable state."""
@@ -1671,7 +1781,7 @@ class ImageInterface(object):
                 if self.__canceling:
                         self.__cancel_lock.release()
                         self.__img.transport.reset()
-                        raise api_errors.CanceledException()
+                        raise apx.CanceledException()
                 else:
                         self.__set_can_be_canceled(False)
                 self.__cancel_lock.release()
@@ -1829,9 +1939,9 @@ class ImageInterface(object):
                                     query_p.Query.RETURN_PACKAGES:
                                         query.propagate_pkg_return()
                         except query_p.BooleanQueryException, e:
-                                raise api_errors.BooleanQueryException(e)
+                                raise apx.BooleanQueryException(e)
                         except query_p.ParseError, e:
-                                raise api_errors.ParseError(e)
+                                raise apx.ParseError(e)
                         self.__img.update_index_dir()
                         assert self.__img.index_dir
                         try:
@@ -1848,14 +1958,14 @@ class ImageInterface(object):
                                     self.__img.get_manifest_path,
                                     self.__img.list_excludes())
                         except search_errors.InconsistentIndexException, e:
-                                raise api_errors.InconsistentIndexException(e)
+                                raise apx.InconsistentIndexException(e)
                         # i is being inserted to track which query the results
                         # are for.  None is being inserted since there is no
                         # publisher being searched against.
                         try:
                                 for r in res:
                                         yield i, None, r
-                        except api_errors.SlowSearchUsed, e:
+                        except apx.SlowSearchUsed, e:
                                 ssu = e
                 if ssu:
                         raise ssu
@@ -1884,12 +1994,12 @@ class ImageInterface(object):
 
                 fields = line.split(None, 2)
                 if len(fields) != 3:
-                        raise api_errors.ServerReturnError(line)
+                        raise apx.ServerReturnError(line)
                 try:
                         return_type = int(fields[1])
                         query_num = int(fields[0])
                 except ValueError:
-                        raise api_errors.ServerReturnError(line)
+                        raise apx.ServerReturnError(line)
                 if return_type == Query.RETURN_ACTIONS:
                         subfields = fields[2].split(None, 2)
                         pfmri = fmri.PkgFmri(subfields[0])
@@ -1900,7 +2010,7 @@ class ImageInterface(object):
                         pfmri = fmri.PkgFmri(fields[2])
                         return pfmri, (query_num, pub, (v, return_type, pfmri))
                 else:
-                        raise api_errors.ServerReturnError(line)
+                        raise apx.ServerReturnError(line)
 
         def remote_search(self, query_str_and_args_lst, servers=None,
             prune_versions=True):
@@ -1931,7 +2041,7 @@ class ImageInterface(object):
                                 yield r
                 except GeneratorExit:
                         return
-                except api_errors.CanceledException:
+                except apx.CanceledException:
                         canceled = True
                         raise
                 except Exception:
@@ -1943,7 +2053,7 @@ class ImageInterface(object):
                         elif clean_exit:
                                 try:
                                         self.__disable_cancel()
-                                except api_errors.CanceledException:
+                                except apx.CanceledException:
                                         self.__cancel_done()
                                         self.__activity_lock.release()
                                         raise
@@ -1981,9 +2091,9 @@ class ImageInterface(object):
                                     q.case_sensitive, q.return_type,
                                     q.num_to_return, q.start_point))
                         except query_p.BooleanQueryException, e:
-                                raise api_errors.BooleanQueryException(e)
+                                raise apx.BooleanQueryException(e)
                         except query_p.ParseError, e:
-                                raise api_errors.ParseError(e)
+                                raise apx.ParseError(e)
 
                 query_str_and_args_lst = new_qs
 
@@ -1993,14 +2103,14 @@ class ImageInterface(object):
                         descriptive_name = None
 
                         if self.__canceling:
-                                raise api_errors.CanceledException()
+                                raise apx.CanceledException()
 
                         if isinstance(pub, dict):
                                 origin = pub["origin"]
                                 try:
                                         pub = self.__img.get_publisher(
                                             origin=origin)
-                                except api_errors.UnknownPublisher:
+                                except apx.UnknownPublisher:
                                         pub = publisher.RepositoryURI(origin)
                                         descriptive_name = origin
 
@@ -2011,17 +2121,17 @@ class ImageInterface(object):
                                 res = self.__img.transport.do_search(pub,
                                     query_str_and_args_lst,
                                     ccancel=self.__check_cancelation)
-                        except api_errors.CanceledException:
+                        except apx.CanceledException:
                                 raise
-                        except api_errors.NegativeSearchResult:
+                        except apx.NegativeSearchResult:
                                 continue
-                        except api_errors.TransportError, e:
+                        except apx.TransportError, e:
                                 failed.append((descriptive_name, e))
                                 continue
-                        except api_errors.UnsupportedSearchError, e:
+                        except apx.UnsupportedSearchError, e:
                                 unsupported.append((descriptive_name, e))
                                 continue
-                        except api_errors.MalformedSearchRequest, e:
+                        except apx.MalformedSearchRequest, e:
                                 ex = self._validate_search(
                                     query_str_and_args_lst)
                                 if ex:
@@ -2056,16 +2166,15 @@ class ImageInterface(object):
                                                 pkg.version.CONSTRAINT_AUTO):
                                                 yield ret
 
-                        except api_errors.CanceledException:
+                        except apx.CanceledException:
                                 raise
-                        except api_errors.TransportError, e:
+                        except apx.TransportError, e:
                                 failed.append((descriptive_name, e))
                                 continue
 
                 if failed or invalid or unsupported:
-                        raise api_errors.ProblematicSearchServers(failed,
+                        raise apx.ProblematicSearchServers(failed,
                             invalid, unsupported)
-
 
         def get_incorp_info(self):
                 """This function returns a mapping of package stems to the
@@ -2121,9 +2230,9 @@ class ImageInterface(object):
                         try:
                                 query = qp.parse(q.text)
                         except query_p.BooleanQueryException, e:
-                                return api_errors.BooleanQueryException(e)
+                                return apx.BooleanQueryException(e)
                         except query_p.ParseError, e:
-                                return api_errors.ParseError(e)
+                                return apx.ParseError(e)
 
                 return None
 
@@ -2144,19 +2253,25 @@ class ImageInterface(object):
                         ind.rebuild_index_from_scratch(
                             self.__img.gen_installed_pkgs())
                 except search_errors.ProblematicPermissionsIndexException, e:
-                        error = api_errors.ProblematicPermissionsIndexException(e)
+                        error = apx.ProblematicPermissionsIndexException(e)
                         self.log_operation_end(error=error)
                         raise error
                 except search_errors.MainDictParsingException, e:
-                        error = api_errors.MainDictParsingException(e)
+                        error = apx.MainDictParsingException(e)
                         self.log_operation_end(error=error)
                         self.__img.cleanup_downloads()
                         raise error
                 else:
                         self.log_operation_end()
 
-        def get_manifest(self, pfmri, all_variants=True, intent=None):
-                return self.__img.get_manifest(pfmri)
+        def get_manifest(self, pfmri, all_variants=True):
+                """Returns the Manifest object for the given package FMRI.
+
+                'all_variants' is an optional boolean value indicating whther
+                the manifest should include metadata for all variants.
+                """
+
+                return self.__img.get_manifest(pfmri, all_variants=all_variants)
 
         @staticmethod
         def validate_response(res, v):
@@ -2245,7 +2360,7 @@ class ImageInterface(object):
                             ccancel=self.__check_cancelation)
                         self.__disable_cancel()
                         return data
-                except api_errors.CanceledException:
+                except apx.CanceledException:
                         self.__cancel_done()
                         raise
                 except:
@@ -2298,7 +2413,7 @@ class ImageInterface(object):
                                 raise
                         try:
                                 self.__disable_cancel()
-                        except api_errors.CanceledException:
+                        except apx.CanceledException:
                                 self.__cancel_done()
                                 raise
                 finally:
@@ -2336,7 +2451,7 @@ class ImageInterface(object):
                         with self.__img.locked_op("update-publisher"):
                                 return self.__update_publisher(pub,
                                     refresh_allowed=refresh_allowed)
-                except api_errors.CanceledException, e:
+                except apx.CanceledException, e:
                         self.__cancel_done()
                         raise
                 finally:
@@ -2349,7 +2464,7 @@ class ImageInterface(object):
 
                 if pub.disabled and \
                     pub.prefix == self.__img.get_preferred_publisher():
-                        raise api_errors.SetPreferredPublisherDisabled(
+                        raise apx.SetPreferredPublisherDisabled(
                             pub.prefix)
 
                 def origins_changed(oldr, newr):
@@ -2408,7 +2523,7 @@ class ImageInterface(object):
                         # If a matching publisher couldn't be found and
                         # replaced, something is wrong (client api usage
                         # error).
-                        raise api_errors.UnknownPublisher(pub)
+                        raise apx.UnknownPublisher(pub)
 
                 # Next, be certain that the publisher's prefix and alias
                 # are not already in use by another publisher.
@@ -2421,7 +2536,7 @@ class ImageInterface(object):
                             pub.prefix == old.alias or \
                             pub.alias and (pub.alias == old.alias or
                             pub.alias == old.prefix):
-                                raise api_errors.DuplicatePublisher(pub)
+                                raise apx.DuplicatePublisher(pub)
 
                 # Next, determine what needs updating and add the updated
                 # publisher.
@@ -2458,7 +2573,7 @@ class ImageInterface(object):
 
                 repo = pub.selected_repository
                 if not repo.origins:
-                        raise api_errors.PublisherOriginRequired(pub.prefix)
+                        raise apx.PublisherOriginRequired(pub.prefix)
 
                 validate = origins_changed(orig_pub[-1].selected_repository,
                     pub.selected_repository)
@@ -2859,7 +2974,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 destroy_root = not os.path.exists(root)
         except EnvironmentError, e:
                 if e.errno == errno.EACCES:
-                        raise api_errors.PermissionsException(
+                        raise apx.PermissionsException(
                             e.filename)
                 raise
 
@@ -2885,9 +3000,9 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                         pubs = None
                         try:
                                 pubs = api_inst.get_publisherdata(repo=repo)
-                        except api_errors.UnsupportedRepositoryOperation:
+                        except apx.UnsupportedRepositoryOperation:
                                 if not prefix:
-                                        raise api_errors.RepoPubConfigUnavailable(
+                                        raise apx.RepoPubConfigUnavailable(
                                             location=repo_uri)
                                 # For a v0 repo where a prefix was specified,
                                 # fallback to manual configuration.
@@ -2897,7 +3012,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                         if not prefix and not pubs:
                                 # Empty repository configuration.
-                                raise api_errors.RepoPubConfigUnavailable(
+                                raise apx.RepoPubConfigUnavailable(
                                     location=repo_uri)
 
                         if repo_uri:
@@ -2945,7 +3060,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                         # of publishers at this point, then configuration isn't
                         # possible.
                         known = [p.prefix for p in pubs]
-                        raise api_errors.UnknownRepositoryPublishers(
+                        raise apx.UnknownRepositoryPublishers(
                             known=known, unknown=[prefix], location=repo_uri)
                 elif prefix:
                         # Filter out any publishers that weren't requested.
@@ -2980,10 +3095,10 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                     variants=variants)
         except EnvironmentError, e:
                 if e.errno == errno.EACCES:
-                        raise api_errors.PermissionsException(
+                        raise apx.PermissionsException(
                             e.filename)
                 if e.errno == errno.EROFS:
-                        raise api_errors.ReadOnlyFileSystemException(
+                        raise apx.ReadOnlyFileSystemException(
                             e.filename)
                 raise
         except:

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
@@ -108,9 +107,9 @@ class PackageInfo(object):
         could need. The fmri is guaranteed to be set. All other values may
         be None, depending on how the PackageInfo instance was created."""
 
-        # Possible package installation states; these constants should match
-        # the values used by the Image class.  Constants with negative values
-        # are not currently available.
+        # Possible package states; these constants should match the values used
+        # by the Image class.  Constants with negative values are not currently
+        # available.
         FROZEN = -1
         INCORPORATED = -2
         EXCLUDES = -3
@@ -119,10 +118,11 @@ class PackageInfo(object):
         UPGRADABLE = image.Image.PKG_STATE_UPGRADABLE
         OBSOLETE = image.Image.PKG_STATE_OBSOLETE
         RENAMED = image.Image.PKG_STATE_RENAMED
+        UNSUPPORTED = image.Image.PKG_STATE_UNSUPPORTED
 
-        __NUM_PROPS = 13
-        IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_PUBLISHER, SIZE, LICENSES, \
-            LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES, DESCRIPTION = \
+        __NUM_PROPS = 12
+        IDENTITY, SUMMARY, CATEGORIES, STATE, SIZE, LICENSES, LINKS, \
+            HARDLINKS, FILES, DIRS, DEPENDENCIES, DESCRIPTION = \
             range(__NUM_PROPS)
         ALL_OPTIONS = frozenset(range(__NUM_PROPS))
         ACTION_OPTIONS = frozenset([LINKS, HARDLINKS, FILES, DIRS,
@@ -130,18 +130,17 @@ class PackageInfo(object):
 
         def __init__(self, pfmri, pkg_stem=None, summary=None,
             category_info_list=None, states=None, publisher=None,
-            preferred_publisher=None, version=None, build_release=None,
-            branch=None, packaging_date=None, size=None, licenses=None,
-            links=None, hardlinks=None, files=None, dirs=None,
-            dependencies=None, description=None):
+            version=None, build_release=None, branch=None, packaging_date=None,
+            size=None, licenses=None, links=None, hardlinks=None, files=None,
+            dirs=None, dependencies=None, description=None):
                 self.pkg_stem = pkg_stem
+
                 self.summary = summary
                 if category_info_list is None:
                         category_info_list = []
                 self.category_info_list = category_info_list
                 self.states = states
                 self.publisher = publisher
-                self.preferred_publisher = preferred_publisher
                 self.version = version
                 self.build_release = build_release
                 self.branch = branch

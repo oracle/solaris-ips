@@ -1,5 +1,15 @@
+Version 10:
+    Incompatible with clients using versions 0-9.
+
+    pkg.server.api changed as follows:
+        * The PackageInfo.PREF_PUBLISHER property and data was removed.
+    
+        * The CatalogInterface.INFO_MULTI_MATCH property was removed and
+          the info() method no longer detects and considers multiple
+          matches for a single pattern an error.
+
 Version 9:
-    Incompatible with clients using version 0-8.
+    Incompatible with clients using versions 0-8.
 
     pkg.server.api changed as follows:
         * All feed related properties retrieved or set using the
@@ -9,7 +19,7 @@ Version 9:
           found in the ConfigInterface class.
 
 Version 8:
-    Incompatible with clients using version 0-7.
+    Incompatible with clients using versions 0-7.
 
     pkg.server.api changed as follows:
         * The return type of CatalogInterface.search changed so that instead

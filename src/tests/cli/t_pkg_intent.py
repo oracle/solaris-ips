@@ -154,7 +154,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.image_create(self.durl)
 
                 api_obj.info(plist, False, frozenset([api.PackageInfo.IDENTITY,
-                    api.PackageInfo.STATE, api.PackageInfo.PREF_PUBLISHER]))
+                    api.PackageInfo.STATE]))
 
                 entries = self.get_intent_entries()
                 self.assert_(entries == [])

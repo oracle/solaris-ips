@@ -1,3 +1,21 @@
+Version 40:
+Incompatible with clients using versions 0-39.
+
+    The pkg.client.api ImageInterface has changed as follows:
+
+        * The info() method no longer detects and returns multiple
+          matches for patterns and instead will return all matches
+          for a given pattern.
+
+        * The ImageInterface.INFO_MULTI_MATCH property has been
+          removed.
+
+        * The PackageInfo.PREF_PUBLISHER attribute and data has been
+          removed.
+
+        * Illegal patterns will cause info() to raise an exception
+          immediately.
+
 Version 39:
 Compatible with clients using versions 36-38.
 

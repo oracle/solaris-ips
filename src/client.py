@@ -57,7 +57,6 @@ import sys
 import textwrap
 import time
 import traceback
-import urlparse
 import warnings
 
 import pkg
@@ -81,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 37
+CLIENT_API_VERSION = 40
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -316,14 +315,6 @@ def list_inventory(img, args):
         if not rval:
                 return EXIT_OOPS
 
-        pats = set()
-        unmatched_pats = {}
-        for pat, err, pfmri, matcher in res:
-                # get_fmri_args() already filtered out all the err
-                # case entries, so no need to check for those.
-                pats.add(pat)
-                unmatched_pats[pat] = (pfmri.tuple(), matcher)
-
         api_inst.log_operation_start("list")
         if pkg_list != api_inst.LIST_INSTALLED and refresh_catalogs:
                 # If the user requested packages other than those
@@ -362,17 +353,12 @@ def list_inventory(img, args):
             [(api.PackageInfo.INCORPORATED, "i")],
         ]
 
-        if len(pats) == 1:
-                # For the single pattern case, there's no need to check for
-                # pattern match failure.
-                unmatched_pats = {}
-
         # Now get the matching list of packages and display it.
         found = False
         ppub = api_inst.get_preferred_publisher().prefix
         try:
-                res = api_inst.get_pkg_list(pkg_list, patterns=pats,
-                    variants=variants)
+                res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
+                    raise_unmatched=True, variants=variants)
                 for pt, summ, cats, states in res:
                         found = True
                         if display_headers:
@@ -409,51 +395,10 @@ def list_inventory(img, args):
                         st_str = ""
                         if api.PackageInfo.INSTALLED in states:
                                 st_str = _("installed")
+                        elif api.PackageInfo.UNSUPPORTED in states:
+                                st_str = _("unsupported")
                         else:
                                 st_str = _("known")
-
-                        # This bit of logic allows detection of partial match
-                        # failure in the case that more than one pattern is
-                        # specified.
-                        for pat in unmatched_pats.keys():
-                                (pat_pub, pat_stem, pat_ver), matcher = \
-                                    unmatched_pats[pat]
-
-                                if pat_pub is not None and pub != pat_pub:
-                                        # Publisher doesn't match.
-                                        continue
-
-                                # The matching logic here is in-lined from the
-                                # pkg.fmri module's match routines to reduce
-                                # list operation time for the multiple match
-                                # case by about 2-8%.
-                                if matcher == api_inst.MATCH_EXACT:
-                                        if pat_stem != stem:
-                                                # Stem doesn't match.
-                                                continue
-                                elif matcher == api_inst.MATCH_FMRI:
-                                        if not ("/" + stem).endswith(
-                                            "/" + pat_stem):
-                                                # Stem doesn't match.
-                                                continue
-                                elif matcher == api_inst.MATCH_GLOB:
-                                        if not fnmatch.fnmatchcase(stem,
-                                            pat_stem):
-                                                # Stem doesn't match.
-                                                continue
-
-                                if pat_ver is not None:
-                                        ever = version.Version(ver,
-                                            pat_ver.build_release)
-                                        if not ever.is_successor(pat_ver,
-                                            version.CONSTRAINT_AUTO):
-                                                # Version doesn't match.
-                                                continue
-
-                                # If at least one match is found for the
-                                # pattern, it doesn't need to be checked
-                                # against other entries.
-                                del unmatched_pats[pat]
 
                         # Display full FMRI for verbose case.
                         if verbose:
@@ -464,6 +409,8 @@ def list_inventory(img, args):
                         # Display short FMRI + summary.
                         pf = stem + spub
                         if summary:
+                                if summ is None:
+                                        summ = ""
                                 msg(fmt_str % (pf, summ))
                                 continue
 
@@ -471,35 +418,29 @@ def list_inventory(img, args):
                         sver = version.Version.split(ver)[-1]
                         msg(fmt_str % (pf, sver, st_str, ufoxi))
 
-                if not found:
-                        # No packages matched criteria or found at all.
-                        if pargs:
-                                raise api_errors.InventoryException(
-                                    notfound=pargs)
+                if not found and not pargs:
                         if pkg_list == api_inst.LIST_INSTALLED:
-                                logger.error(_("no packages installed"))
+                                error(_("no packages installed"))
                                 api_inst.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
-                        if pkg_list == api_inst.LIST_UPGRADABLE:
-                                if pargs:
-                                        logger.error(_("No specified packages "
-                                            "have newer versions available."))
-                                else:
-                                        logger.error(_("No installed packages "
-                                            "have newer versions available."))
+                        elif pkg_list == api_inst.LIST_INSTALLED_NEWEST:
+                                error(_("no packages installed or available "
+                                    "for installation"))
                                 api_inst.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
-
-                        api_inst.log_operation_end(
-                            result=history.RESULT_NOTHING_TO_DO)
-                        return EXIT_OOPS
-                elif unmatched_pats:
-                        # Multiple pattern case; packages were found, but some
-                        # of the patterns didn't match.
-                        raise api_errors.InventoryException(
-                            notfound=unmatched_pats.keys())
+                        elif pkg_list == api_inst.LIST_UPGRADABLE:
+                                error(_("no packages are installed or are "
+                                    "installed and have newer versions "
+                                    "available"))
+                                api_inst.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+                                return EXIT_OOPS
+                        else:
+                                api_inst.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+                                return EXIT_OOPS
 
                 api_inst.log_operation_end()
                 return EXIT_OK
@@ -509,11 +450,6 @@ def list_inventory(img, args):
                 error(e, cmd="list")
                 return EXIT_OOPS
         except api_errors.InventoryException, e:
-                if found:
-                        # Ensure a blank line is inserted after list for
-                        # partial failure case.
-                        logger.error(" ")
-
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
@@ -521,7 +457,13 @@ def list_inventory(img, args):
                             result=history.RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
 
-                if pkg_list == api.ImageInterface.LIST_ALL:
+                if found:
+                        # Ensure a blank line is inserted after list for
+                        # partial failure case.
+                        logger.error(" ")
+
+                if pkg_list == api.ImageInterface.LIST_ALL or \
+                    pkg_list == api.ImageInterface.LIST_NEWEST:
                         error(_("no packages matching '%s' known") % \
                             ", ".join(e.notfound), cmd="list")
                 elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
@@ -530,6 +472,10 @@ def list_inventory(img, args):
                             "are known or installed") % \
                             ", ".join(e.notfound), cmd="list")
                         logger.error("Use -af to allow all versions.")
+                elif pkg_list == api.ImageInterface.LIST_UPGRADABLE:
+                        error(_("no packages matching '%s' are installed "
+                            "and have newer versions available") % \
+                            ", ".join(e.notfound), cmd="list")
                 else:
                         error(_("no packages matching '%s' installed") % \
                             ", ".join(e.notfound), cmd="list")
@@ -564,45 +510,73 @@ def fix_image(img, args):
                 elif opt == "--licenses":
                         show_licenses = True
 
-        fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
+        api_inst = __api_alloc(img)
+        if api_inst == None:
+                return EXIT_OOPS
 
-        repairs = []
-        for f, fstate in fmris:
-                entries = []
+        found = False
+        try:
+                res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
+                    patterns=pargs, raise_unmatched=True, return_fmris=True)
 
-                # Since every entry returned by verify might not be
-                # something needing repair, the relevant information
-                # for each package must be accumulated first to find
-                # an overall success/failure result and then the
-                # related messages output for it.
-                for act, errors, warnings, pinfo in img.verify(f,
-                    progresstracker, verbose=True, forever=True):
-                        if not errors:
-                                # Fix will silently skip packages that
-                                # don't have errors, but will display
-                                # the additional messages if there
-                                # is at least one error.
+                repairs = []
+                for entry in res:
+                        pfmri = entry[0]
+                        found = True
+                        entries = []
+
+                        # Since every entry returned by verify might not be
+                        # something needing repair, the relevant information
+                        # for each package must be accumulated first to find
+                        # an overall success/failure result and then the
+                        # related messages output for it.
+                        for act, errors, warnings, pinfo in img.verify(pfmri,
+                            progresstracker, verbose=True, forever=True):
+                                if not errors:
+                                        # Fix will silently skip packages that
+                                        # don't have errors, but will display
+                                        # the additional messages if there
+                                        # is at least one error.
+                                        continue
+
+                                # Informational messages are ignored by fix.
+                                entries.append((act, errors, warnings ))
+
+                        if not entries:
+                                # Nothing to fix for this package.
                                 continue
 
-                        # Informational messages are ignored by fix.
-                        entries.append((act, errors, warnings ))
+                        msg(_("Verifying: %(pkg_name)-50s %(result)7s") % {
+                            "pkg_name": pfmri.get_pkg_stem(),
+                            "result": _("ERROR") })
 
-                if not entries:
-                        # Nothing to fix for this package.
-                        continue
+                        failed = []
+                        for act, errors, warnings in entries:
+                                failed.append(act)
+                                msg("\t%s" % act.distinguished_name())
+                                for x in errors:
+                                        msg("\t\t%s" % x)
+                                for x in warnings:
+                                        msg("\t\t%s" % x)
+                        repairs.append((pfmri, failed))
+        except api_errors.InventoryException, e:
+                if e.illegal:
+                        for i in e.illegal:
+                                error(i)
+                        return EXIT_OOPS
 
-                msg(_("Verifying: %(pkg_name)-50s %(result)7s") % {
-                    "pkg_name": f.get_pkg_stem(), "result": _("ERROR") })
+                if found:
+                        # Ensure a blank line is inserted after list for
+                        # partial failure case.
+                        logger.error(" ")
 
-                failed = []
-                for act, errors, warnings in entries:
-                        failed.append(act)
-                        msg("\t%s" % act.distinguished_name())
-                        for x in errors:
-                                msg("\t\t%s" % x)
-                        for x in warnings:
-                                msg("\t\t%s" % x)
-                repairs.append((f, failed))
+                error(_("no packages matching '%s' installed") % \
+                    ", ".join(e.notfound), cmd="fix")
+
+                if found and e.notfound:
+                        # Only some patterns matched.
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
 
         # Repair anything we failed to verify
         if repairs:
@@ -678,80 +652,87 @@ def verify_image(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd="verify")
-        if not rval:
-                return EXIT_OOPS
-
-        fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
-
-        if illegals:
-                for i in illegals:
-                        logger.error(str(i))
-                return EXIT_OOPS
-
         any_errors = False
+        processed = False
+        notfound = EmptyI
         progresstracker = get_tracker(quiet)
-        for f, fstate in fmris:
-                entries = []
-                result = _("OK")
-                failed = False
+        try:
+                res = api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED,
+                    patterns=pargs, raise_unmatched=True, return_fmris=True)
 
-                # Since every entry returned by verify might not be
-                # something needing repair, the relevant information
-                # for each package must be accumulated first to find
-                # an overall success/failure result and then the
-                # related messages output for it.
-                for act, errors, warnings, pinfo in img.verify(f,
-                    progresstracker, verbose=verbose, forever=forever):
-                        if errors:
-                                failed = True
-                                if quiet:
-                                        # Nothing more to do.
-                                        break
-                                result = _("ERROR")
-                        elif not failed and warnings:
-                                result = _("WARNING")
+                for entry in res:
+                        pfmri = entry[0]
+                        entries = []
+                        result = _("OK")
+                        failed = False
+                        processed = True
 
-                        entries.append((act, errors, warnings, pinfo))
+                        # Since every entry returned by verify might not be
+                        # something needing repair, the relevant information
+                        # for each package must be accumulated first to find
+                        # an overall success/failure result and then the
+                        # related messages output for it.
+                        for act, errors, pwarnings, pinfo in img.verify(pfmri,
+                            progresstracker, verbose=verbose, forever=forever):
+                                if errors:
+                                        failed = True
+                                        if quiet:
+                                                # Nothing more to do.
+                                                break
+                                        result = _("ERROR")
+                                elif not failed and pwarnings:
+                                        result = _("WARNING")
 
-                any_errors = any_errors or failed
-                if (not failed and not verbose) or quiet:
-                        # Nothing more to do.
-                        continue
+                                entries.append((act, errors, pwarnings, pinfo))
 
-                # Could this be moved into the progresstracker?
-                if display_headers:
-                        display_headers = False
-                        msg(_("Verifying: %(pkg_name)-50s %(result)7s") % {
-                            "pkg_name": _("PACKAGE"), "result": _("STATUS") })
+                        any_errors = any_errors or failed
+                        if (not failed and not verbose) or quiet:
+                                # Nothing more to do.
+                                continue
 
-                msg(_("%(pkg_name)-50s %(result)7s") % {
-                    "pkg_name": f.get_pkg_stem(), "result": result })
+                        # Could this be moved into the progresstracker?
+                        if display_headers:
+                                display_headers = False
+                                msg(_("Verifying: %(pkg_name)-50s "
+                                    "%(result)7s") % { "pkg_name": _("PACKAGE"),
+                                    "result": _("STATUS") })
 
-                for act, errors, warnings, pinfo in entries:
-                        msg("\t%s" % act.distinguished_name())
-                        for x in errors:
-                                msg("\t\t%s" % x)
-                        for x in warnings:
-                                msg("\t\t%s" % x)
-                        if verbose:
-                                # Only display informational messages if
-                                # verbose is True.
-                                for x in pinfo:
+                        msg(_("%(pkg_name)-50s %(result)7s") % {
+                            "pkg_name": pfmri.get_pkg_stem(),
+                            "result": result })
+
+                        for act, errors, warnings, pinfo in entries:
+                                msg("\t%s" % act.distinguished_name())
+                                for x in errors:
                                         msg("\t\t%s" % x)
+                                for x in warnings:
+                                        msg("\t\t%s" % x)
+                                if verbose:
+                                        # Only display informational messages if
+                                        # verbose is True.
+                                        for x in pinfo:
+                                                msg("\t\t%s" % x)
+        except api_errors.InventoryException, e:
+                if e.illegal:
+                        for i in e.illegal:
+                                error(i)
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_BAD_REQUEST)
+                        return EXIT_OOPS
+                notfound = e.notfound
 
-        if fmris:
+        if processed:
                 progresstracker.verify_done()
 
         if notfound:
-                if fmris:
-                        logger.error("")
-                logger.error(_("""\
-pkg: no packages matching the following patterns you specified are
-installed on the system.\n"""))
-                for p in notfound:
-                        logger.error("        %s" % p)
-                if fmris:
+                if processed:
+                        # Ensure a blank line is inserted after verify output.
+                        logger.error(" ")
+
+                error(_("no packages matching '%s' installed") % \
+                    ", ".join(notfound), cmd="fix")
+
+                if processed:
                         if any_errors:
                                 msg2 = "See above for\nverification failures."
                         else:
@@ -775,18 +756,18 @@ def accept_plan_licenses(api_inst):
                 api_inst.set_plan_license_status(pfmri, dest.license,
                     accepted=True)
 
-def display_plan_licenses(api_inst, all=False):
+def display_plan_licenses(api_inst, show_all=False):
         """Helper function to display licenses for the current plan.
 
-        'all' is an optional boolean value indicating whether all licenses
+        'show_all' is an optional boolean value indicating whether all licenses
         should be displayed or only those that have must-display=true."""
 
         plan = api_inst.describe()
 
         for pfmri, src, dest, accepted, displayed in plan.get_licenses():
-                if not all and not dest.must_display:
+                if not show_all and not dest.must_display:
                         continue
-                elif not all and dest.must_display and displayed:
+                elif not show_all and dest.must_display and displayed:
                         # License already displayed, so doesn't need to be
                         # displayed again.
                         continue
@@ -806,7 +787,7 @@ def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
         try:
-                display_plan_licenses(api_inst, all=show_licenses)
+                display_plan_licenses(api_inst, show_all=show_licenses)
                 if accept:
                         accept_plan_licenses(api_inst)
                 api_inst.prepare()
@@ -1028,7 +1009,7 @@ def change_variant(img, args):
 
         if noexecute:
                 if show_licenses:
-                        display_plan_licenses(api_inst, all=True)
+                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
@@ -1121,7 +1102,7 @@ def change_facet(img, args):
 
         if noexecute:
                 if show_licenses:
-                        display_plan_licenses(api_inst, all=True)
+                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
@@ -1196,7 +1177,7 @@ def image_update(img, args):
 
         if noexecute:
                 if show_licenses:
-                        display_plan_licenses(api_inst, all=True)
+                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         ret_code = __api_prepare(op, api_inst, accept=accept,
@@ -1271,7 +1252,7 @@ def install(img, args):
 
         if noexecute:
                 if show_licenses:
-                        display_plan_licenses(api_inst, all=True)
+                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
@@ -1423,8 +1404,8 @@ def v1_extract_info(tup, return_type, pub):
                 try:
                         action = actions.fromstr(action.rstrip())
                 except actions.ActionError, e:
-                        error(_("The repository returned an invalid "
-                            "action.\n%s") % e)
+                        error(_("The repository returned an invalid or "
+                            "unsupported action.\n%s") % e)
                         return False
                 match_type = produce_matching_type(action, match)
                 match = produce_matching_token(action, match)
@@ -1691,34 +1672,35 @@ def info(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd="info")
-        if not rval:
-                return EXIT_OOPS
+        info_needed = api.PackageInfo.ALL_OPTIONS
+        if not display_license:
+                info_needed = api.PackageInfo.ALL_OPTIONS - \
+                    frozenset([api.PackageInfo.LICENSES])
+        info_needed -= api.PackageInfo.ACTION_OPTIONS
+        info_needed |= frozenset([api.PackageInfo.DEPENDENCIES])
 
         try:
-                info_needed = api.PackageInfo.ALL_OPTIONS
-                if not display_license:
-                        info_needed = api.PackageInfo.ALL_OPTIONS - \
-                            frozenset([api.PackageInfo.LICENSES])
-                info_needed -= api.PackageInfo.ACTION_OPTIONS
-                info_needed |= frozenset([api.PackageInfo.DEPENDENCIES])
-
-                try:
-                        ret = api_inst.info(pargs, info_local, info_needed)
-                except (api_errors.InvalidPackageErrors,
-                    api_errors.ActionExecutionError,
-                    api_errors.UnrecognizedOptionsToInfo), e:
-                        error(e)
-                        return EXIT_OOPS
-                pis = ret[api.ImageInterface.INFO_FOUND]
-                notfound = ret[api.ImageInterface.INFO_MISSING]
-                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
-        except (api_errors.UnknownErrors, api_errors.PermissionsException), e:
+                ret = api_inst.info(pargs, info_local, info_needed)
+        except (api_errors.InvalidPackageErrors,
+            api_errors.ActionExecutionError,
+            api_errors.UnrecognizedOptionsToInfo,
+            api_errors.UnknownErrors,
+            api_errors.PermissionsException), e:
                 error(e)
                 return EXIT_OOPS
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
+                return EXIT_OOPS
+
+        pis = ret[api.ImageInterface.INFO_FOUND]
+        notfound = ret[api.ImageInterface.INFO_MISSING]
+        illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+
+        if illegals:
+                # No other results will be returned if illegal patterns were
+                # specified.
+                for i in illegals:
+                        logger.error(str(i))
                 return EXIT_OOPS
 
         no_licenses = []
@@ -1747,6 +1729,8 @@ def info(img, args):
 
                 if api.PackageInfo.INSTALLED in pi.states:
                         state = fmt % _("Installed")
+                elif api.PackageInfo.UNSUPPORTED in pi.states:
+                        state = fmt % _("Unsupported")
                 else:
                         state = fmt % _("Not installed")
 
@@ -1795,9 +1779,12 @@ def info(img, args):
                 # XXX add license/copyright info here?
 
         if notfound:
-                err = EXIT_OOPS
                 if pis:
+                        err = EXIT_PARTIAL
                         logger.error("")
+                else:
+                        err = EXIT_OOPS
+
                 if info_local:
                         logger.error(_("""\
 pkg: info: no packages matching the following patterns you specified are
@@ -1811,25 +1798,15 @@ examining the catalogs:"""))
                 for p in notfound:
                         logger.error("        %s" % p)
 
-        if illegals:
-                err = EXIT_OOPS
-                for i in illegals:
-                        logger.error(str(i))
-
-        if multi_match:
-                err = EXIT_OOPS
-                for pfmri, matches in multi_match:
-                        error(_("'%s' matches multiple packages") % pfmri)
-                        for k in matches:
-                                logger.error("\t%s" % k)
-
         if no_licenses:
-                err = EXIT_OOPS
+                if len(no_licenses) == len(pis):
+                        err = EXIT_OOPS
+                else:
+                        err = EXIT_PARTIAL
                 error(_("no license information could be found for the "
                     "following packages:"))
                 for pfmri in no_licenses:
                         logger.error("\t%s" % pfmri)
-
         return err
 
 def calc_widths(lines, attrs, widths=None):
@@ -2078,6 +2055,7 @@ def list_contents(img, args):
 
         opts, pargs = getopt.getopt(args, "Ha:o:s:t:mfr")
 
+        subcommand = "contents"
         display_headers = True
         display_raw = False
         output_fields = False
@@ -2095,7 +2073,7 @@ def list_contents(img, args):
                                 attr, match = arg.split("=", 1)
                         except ValueError:
                                 usage(_("-a takes an argument of the form "
-                                    "<attribute>=<pattern>"), cmd="contents")
+                                    "<attribute>=<pattern>"), cmd=subcommand)
                         attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
                         output_fields = True
@@ -2112,109 +2090,34 @@ def list_contents(img, args):
         if not remote and not local:
                 local = True
         elif local and remote:
-                usage(_("-l and -r may not be combined"), cmd="contents")
+                usage(_("-l and -r may not be combined"), cmd=subcommand)
 
         if remote and not pargs:
                 usage(_("contents: must request remote contents for specific "
-                   "packages"), cmd="contents")
+                   "packages"), cmd=subcommand)
 
         api_inst = __api_alloc(img)
         if api_inst == None:
                 return EXIT_OOPS
 
-        rval, res = get_fmri_args(api_inst, pargs, cmd="contents")
-        if not rval:
-                return EXIT_OOPS
-
         if display_raw:
                 display_headers = False
-                attrs = [ "action.raw" ]
+                attrs = ["action.raw"]
 
                 invalid = set(("-H", "-o", "-t")). \
                     intersection(set([x[0] for x in opts]))
 
                 if len(invalid) > 0:
                         usage(_("-m and %s may not be specified at the same "
-                            "time") % invalid.pop(), cmd="contents")
+                            "time") % invalid.pop(), cmd=subcommand)
 
-        check_attrs(attrs, "contents")
+        check_attrs(attrs, subcommand)
 
-        img.history.operation_name = "contents"
-
-        err = EXIT_OK
-
+        api_inst.log_operation_start(subcommand)
         if local:
-                fmris, notfound, illegals = \
-                    img.installed_fmris_from_args(pargs)
-
-                if illegals:
-                        for i in illegals:
-                                logger.error(i)
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
-                        return EXIT_OOPS
-
-                if not fmris and not notfound:
-                        error(_("no packages installed"))
-                        img.history.operation_result = \
-                            history.RESULT_NOTHING_TO_DO
-                        return EXIT_OOPS
+                pkg_list = api.ImageInterface.LIST_INSTALLED
         elif remote:
-                # Verify validity of certificates before attempting network
-                # operations
-                try:
-                        img.check_cert_validity()
-                except (api_errors.CertificateError, api_errors.UnknownErrors,
-                    api_errors.PermissionsException), e:
-                        img.history.log_operation_end(error=e)
-                        return EXIT_OOPS
-
-                fmris = []
-                notfound = []
-
-                # XXX This loop really needs not to be copied from
-                # Image.make_install_plan()!
-                ppub = img.get_preferred_publisher()
-                for p in pargs:
-                        try:
-                                matches = list(img.inventory([ p ],
-                                    all_known = True))
-                        except api_errors.InventoryException, e:
-                                assert(len(e.notfound) == 1)
-                                notfound.append(e.notfound[0])
-                                continue
-
-                        pnames = {}
-                        pmatch = []
-                        npnames = {}
-                        npmatch = []
-                        for m, state in matches:
-                                if m.get_publisher() == ppub:
-                                        pnames[m.get_pkg_stem()] = 1
-                                        pmatch.append(m)
-                                else:
-                                        npnames[m.get_pkg_stem()] = 1
-                                        npmatch.append(m)
-
-                        if len(pnames.keys()) > 1:
-                                msg(_("pkg: contents: '%s' matches multiple "
-                                    "packages") % p)
-                                for k in pnames.keys():
-                                        msg("\t%s" % k)
-                                continue
-                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                msg(_("pkg: contents: '%s' matches multiple "
-                                    "packages") % p)
-                                for k in npnames.keys():
-                                        msg("\t%s" % k)
-                                continue
-
-                        # matches is a list reverse sorted by version, so take
-                        # the first; i.e., the latest.
-                        if len(pmatch) > 0:
-                                fmris.append((pmatch[0], None))
-                        else:
-                                fmris.append((npmatch[0], None))
+                pkg_list = api.ImageInterface.LIST_NEWEST
 
         #
         # If the user specifies no specific attrs, and no specific
@@ -2225,24 +2128,23 @@ def list_contents(img, args):
                 # If listing dependencies and files, you could have a path/fmri
                 # column which would list paths for files and fmris for
                 # dependencies.
-                attrs = [ "path" ]
+                attrs = ["path"]
 
         if not sort_attrs:
                 # XXX reverse sorting
                 # Most likely want to sort by path, so don't force people to
                 # make it explicit
                 if "path" in attrs:
-                        sort_attrs = [ "path" ]
+                        sort_attrs = ["path"]
                 else:
                         sort_attrs = attrs[:1]
 
         # if we want a raw display (contents -m), disable the automatic
         # variant filtering that normally limits working set.
-
         if display_raw:
                 excludes = EmptyI
         else:
-                excludes = img.list_excludes()
+                excludes = api_inst.excludes
 
         def mmatches(action):
                 """Given an action, return True if any of its attributes' values
@@ -2269,10 +2171,36 @@ def list_contents(img, args):
                                                 return True
                 return False
 
-        manifests = (
-            img.get_manifest(f, all_variants=display_raw)
-            for f, state in fmris
-        )
+        # Now get the matching list of packages and display it.
+        processed = False
+        notfound = EmptyI
+        try:
+                res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
+                    raise_unmatched=True, return_fmris=True, variants=True)
+                manifests = []
+
+                for pfmri, summ, cats, states in res:
+                        manifests.append(api_inst.get_manifest(pfmri,
+                            all_variants=display_raw))
+        except api_errors.InvalidPackageErrors, e:
+                error(str(e), cmd=subcommand)
+                api_inst.log_operation_end(
+                    result=history.RESULT_FAILED_UNKNOWN)
+                return EXIT_OOPS
+        except api_errors.InventoryException, e:
+                if e.illegal:
+                        for i in e.illegal:
+                                error(i)
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_BAD_REQUEST)
+                        return EXIT_OOPS
+                notfound = e.notfound
+        else:
+                if local and not manifests and not pargs:
+                        error(_("no packages installed"), cmd=subcommand)
+                        api_inst.log_operation_end(
+                            result=history.RESULT_NOTHING_TO_DO)
+                        return EXIT_OOPS
 
         actionlist = [
             (m.fmri, a, None, None, None)
@@ -2281,12 +2209,13 @@ def list_contents(img, args):
             if mmatches(a)
         ]
 
-        if attr_match and fmris and not actionlist:
-                err = EXIT_OOPS
+        rval = EXIT_OK
+        if attr_match and manifests and not actionlist:
+                rval = EXIT_OOPS
                 logger.error(_("""\
 pkg: contents: no matching actions found in the listed packages"""))
 
-        if fmris and not err:
+        if manifests and rval == EXIT_OK:
                 displayed_results = display_contents_results(actionlist, attrs,
                     sort_attrs, action_types, display_headers)
 
@@ -2309,8 +2238,8 @@ the -o option to specify fields other than 'path', or use the -m option to show
 the raw package manifests.""", len(pargs)))
 
         if notfound:
-                err = EXIT_OOPS
-                if fmris:
+                rval = EXIT_OOPS
+                if manifests:
                         logger.error("")
                 if local:
                         logger.error(_("""\
@@ -2324,11 +2253,12 @@ examining the catalogs:"""))
                 logger.error("")
                 for p in notfound:
                         logger.error("        %s" % p)
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
+                api_inst.log_operation_end(
+                    result=history.RESULT_NOTHING_TO_DO)
         else:
-                img.history.operation_result = history.RESULT_SUCCEEDED
-        img.cleanup_downloads()
-        return err
+                api_inst.log_operation_end(result=history.RESULT_SUCCEEDED)
+        return rval
+
 
 def display_catalog_failures(cre, ignore_perms_failure=False):
         total = cre.total

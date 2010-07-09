@@ -200,7 +200,9 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
         def test_bug_2274(self):
                 """Verify that a failure to retrieve license information, for
                 one or more packages specified, will result in an exit code of
-                1 and a printed message."""
+                1 (complete failure) or 3 (partial failure) and a printed
+                message.
+                """
 
                 pkg1 = """
                     open silver@1.0,5.11-0
@@ -211,7 +213,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
                 self.pkg("info --license -r bronze")
                 self.pkg("info --license -r silver", exit=1)
-                self.pkg("info --license -r bronze silver", exit=1)
+                self.pkg("info --license -r bronze silver", exit=3)
                 self.pkg("info --license -r silver 2>&1 | grep 'no license information'")
 
                 self.pkg("install bronze")
@@ -219,7 +221,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("info --license bronze")
                 self.pkg("info --license silver", exit=1)
-                self.pkg("info --license bronze silver", exit=1)
+                self.pkg("info --license bronze silver", exit=3)
                 self.pkg("info --license silver 2>&1 | grep 'no license information'")
 
         def test_info_bad_packages(self):
@@ -253,7 +255,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_act)
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.pkg("info -r %s" % pfmri.pkg_name, exit=1)
+                                self.pkg("info -r %s" % pfmri.pkg_name, exit=0)
 
         def test_renamed_packages(self):
                 """Verify that info returns the expected output for renamed

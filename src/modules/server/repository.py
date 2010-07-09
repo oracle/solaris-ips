@@ -687,7 +687,8 @@ class Repository(object):
                                 f = self.__fmri_from_path(pkg[0], e)
                                 try:
                                         add_package(f)
-                                except actions.ActionError, e:
+                                except (api_errors.InvalidPackageErrors,
+                                    actions.ActionError), e:
                                         # Don't add packages with corrupt
                                         # manifests to the catalog.
                                         self.__log(_("Skipping %(fmri)s; "

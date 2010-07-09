@@ -4780,14 +4780,14 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info licensed@1.3")
 
 
-class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
+class TestActionErrors(pkg5unittest.SingleDepotTestCase):
         """This set of tests is intended to verify that the client will handle
-        image state errors gracefully during install or uninstall operations.
-        Unlike the client API version of these tests, the CLI only needs to be
-        tested for failure cases since it uses the client API."""
+        image state and action errors gracefully during install or uninstall
+        operations.  Unlike the client API version of these tests, the CLI only
+        needs to be tested for failure cases since it uses the client API."""
 
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
+        # Teardown the test root every time.
+        persistent_setup = False
 
         dir10 = """
             open dir@1.0,5.11-0
@@ -4804,6 +4804,16 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         hardlink10 = """
             open hardlink@1.0,5.11-0
             add hardlink path=hardlink target=file
+            close """
+
+        # Empty packages suitable for corruption testing.
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        unsupp10 = """
+            open unsupported@1.0
+            add depend type=require fmri=foo@1.0
             close """
 
         misc_files = ["tmp/file"]
@@ -4868,6 +4878,78 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
 
                 # Hard link target is missing (failure expected).
                 self.pkg("install hardlink", exit=1)
+
+        def __populate_repo(self, unsupp_content=None):
+                # Publish a package and then add some unsupported action data
+                # to the repository's copy of the manifest and catalog.
+                sfmri = self.pkgsend_bulk(self.rurl, self.unsupp10)[0]
+
+                if unsupp_content is None:
+                        # No manipulation required.
+                        return
+
+                pfmri = fmri.PkgFmri(sfmri)
+                repo = self.get_repo(self.dcs[1].get_repodir())
+                mpath = repo.manifest(pfmri)
+                with open(mpath, "ab+") as mfile:
+                        mfile.write(unsupp_content + "\n")
+
+                mcontent = None
+                with open(mpath, "rb") as mfile:
+                        mcontent = mfile.read()
+
+                cat = repo.catalog
+                cat.log_updates = False
+
+                # Update the catalog signature.
+                entry = cat.get_entry(pfmri)
+                entry["signature-sha-1"] = manifest.Manifest.hash_create(
+                    mcontent)
+
+                # Update the catalog actions.
+                dpart = cat.get_part("catalog.dependency.C", must_exist=True)
+                entry = dpart.get_entry(pfmri)
+                entry["actions"].append(unsupp_content)
+
+                # Write out the new catalog.
+                cat.save()
+
+        def test_03_unsupported(self):
+                """Verify that packages with invalid or unsupported actions are
+                handled gracefully.
+                """
+
+                # Base package needed for tests.
+                self.pkgsend_bulk(self.rurl, self.foo10)
+
+                # Verify that a package with unsupported content doesn't cause
+                # a problem.
+                newact = "depend type=new-type fmri=foo@1.1"
+
+                # Now create a new image and verify that pkg install will fail
+                # for the unsupported package, but succeed for the supported
+                # one.
+                self.__populate_repo(newact)
+                self.image_create(self.rurl)
+                self.pkg("install foo@1.0")
+                self.pkg("install unsupported@1.0", exit=1)
+                self.pkg("uninstall foo")
+                self.pkg("install foo@1.0 unsupported@1.0", exit=1)
+
+                # Verify that a package with invalid content behaves the same.
+                newact = "depend notvalid"
+                self.__populate_repo(newact)
+                self.pkg("refresh --full")
+                self.pkg("install foo@1.0")
+                self.pkg("install unsupported@1.0", exit=1)
+                self.pkg("uninstall foo")
+
+                # Now verify that if a newer version of the unsupported package
+                # is found that is supported, it can be installed.
+                self.__populate_repo()
+                self.pkg("refresh --full")
+                self.pkg("install foo@1.0 unsupported@1.0")
+                self.pkg("uninstall foo unsupported")
 
 
 if __name__ == "__main__":

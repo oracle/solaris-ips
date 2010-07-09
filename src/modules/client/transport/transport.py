@@ -887,19 +887,20 @@ class Transport(object):
                 for d in self.__gen_origins(pub, retry_count):
 
                         repostats = self.stats[d.get_url()]
-
+                        verified = False
                         try:
                                 resp = d.get_manifest(fmri, header,
                                     ccancel=ccancel)
                                 mcontent = resp.read()
 
-                                self._verify_manifest(fmri, content=mcontent)
+                                verified = self._verify_manifest(fmri,
+                                    content=mcontent)
 
                                 m = manifest.CachedManifest(fmri,
                                     self.__img.pkgdir,
                                     self.__img.cfg_cache.preferred_publisher,
-                                    excludes, mcontent)
-
+                                    excludes,
+                                    mcontent)
                                 return m
 
                         except tx.ExcessiveTransientFailure, ex:
@@ -916,7 +917,9 @@ class Transport(object):
                                 else:
                                         raise
  
-                        except ActionError, e:
+                        except (apx.InvalidPackageErrors, ActionError), e:
+                                if verified:
+                                        raise
                                 repostats.record_error(content=True)
                                 te = tx.TransferContentException(
                                     d.get_url(), reason=str(e))
@@ -1093,7 +1096,8 @@ class Transport(object):
                                 try:
                                         # Verify manifest content.
                                         fmri = mxfr[s][1]
-                                        self._verify_manifest(fmri, dl_path)
+                                        verified = self._verify_manifest(fmri,
+                                            dl_path)
                                 except tx.InvalidContentException, e:
                                         e.request = s
                                         repostats.record_error(content=True)
@@ -1107,10 +1111,20 @@ class Transport(object):
                                         mf = file(dl_path)
                                         mcontent = mf.read()
                                         mf.close()
-                                        m = manifest.CachedManifest(fmri,
+                                        manifest.CachedManifest(fmri,
                                             self.__img.pkgdir, pref_pub,
                                             excludes, mcontent)
-                                except ActionError, e:
+                                except (apx.InvalidPackageErrors,
+                                    ActionError), e:
+                                        if verified:
+                                                # If the manifest was physically
+                                                # valid, but can't be logically
+                                                # parsed, drive on.
+                                                os.remove(dl_path)
+                                                progtrack.evaluate_progress(
+                                                    fmri)
+                                                mxfr.del_hash(s)
+                                                continue
                                         repostats.record_error(content=True)
                                         failedreqs.append(s)
                                         os.remove(dl_path)

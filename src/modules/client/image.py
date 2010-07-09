@@ -169,6 +169,11 @@ class Image(object):
         PKG_STATE_OBSOLETE = 8
         PKG_STATE_RENAMED = 9
 
+        # These states are used to indicate why a package was rejected and
+        # is not available for packaging operations.
+        PKG_STATE_UNSUPPORTED = 10      # Package contains invalid or
+                                        # unsupported metadata.
+
         # Class properties
         required_subdirs = [ "file", "pkg" ]
         image_subdirs = required_subdirs + [ "index", IMG_PUB_DIR,
@@ -1571,9 +1576,11 @@ class Image(object):
                         nipart = icat.get_part(name)
                         base = name.startswith("catalog.base.")
 
-                        # Avoid accessor overhead since this will be
+                        # Avoid accessor overhead since these will be
                         # used for every entry.
                         cat_ver = cat.version
+                        dp = cat.get_part("catalog.dependency.C",
+                            must_exist=True)
 
                         for t, sentry in spart.tuple_entries(pubs=[pfx]):
                                 pub, stem, ver = t
@@ -1619,9 +1626,6 @@ class Image(object):
 
                                 # Determine if package is obsolete or has been
                                 # renamed and mark with appropriate state.
-                                dp = cat.get_part("catalog.dependency.C",
-                                    must_exist=True)
-
                                 dpent = None
                                 if dp is not None:
                                         dpent = dp.get_entry(pub=pub, stem=stem,
@@ -1640,7 +1644,14 @@ class Image(object):
                                                     "pkg.renamed" in a):
                                                         continue
 
-                                                act = pkg.actions.fromstr(a)
+                                                try:
+                                                        act = pkg.actions.fromstr(a)
+                                                except pkg.actions.ActionError:
+                                                        # If the action can't be
+                                                        # parsed or is not yet
+                                                        # supported, continue.
+                                                        continue
+
                                                 if act.attrs["value"].lower() != "true":
                                                         continue
 
@@ -2179,243 +2190,6 @@ class Image(object):
                         else:
                                 raise
 
-        @staticmethod
-        def __multimatch(name, patterns):
-                """Applies a matcher to a name across a list of patterns.
-                Returns all tuples of patterns which match the name.  Each tuple
-                contains the index into the original list, the pattern itself,
-                the package version, the publisher, and the raw publisher
-                string."""
-                return [
-                    (i, pat, pat.tuple()[2],
-                        pat.publisher, pat.publisher)
-                    for i, (pat, m) in enumerate(patterns)
-                    if m(name, pat.tuple()[1])
-                ]
-
-        def __inventory(self, patterns=None, all_known=False, matcher=None,
-            constraint=pkg.version.CONSTRAINT_AUTO, ordered=True):
-                """Private method providing the back-end for inventory()."""
-
-                if not matcher:
-                        matcher = pkg.fmri.fmri_match
-
-                if not patterns:
-                        patterns = []
-
-                # Store the original patterns before we possibly turn them into
-                # PkgFmri objects, so we can give them back to the user in error
-                # messages.
-                opatterns = patterns[:]
-
-                # Match the matching function with the pattern so that we can
-                # change it per-pattern, depending on whether it has glob
-                # characters or nails down the pattern with a leading pkg:/.
-                patterns = [ (i, matcher) for i in patterns ]
-
-                illegals = []
-                for i, (pat, m) in enumerate(patterns):
-                        if not isinstance(pat, pkg.fmri.PkgFmri):
-                                try:
-                                        if "*" in pat or "?" in pat:
-                                                patterns[i] = (
-                                                    pkg.fmri.MatchingPkgFmri(
-                                                        pat, "5.11"),
-                                                    pkg.fmri.glob_match)
-                                        elif pat.startswith("pkg:/"):
-                                                patterns[i] = (
-                                                    pkg.fmri.PkgFmri(pat,
-                                                        "5.11"),
-                                                    pkg.fmri.exact_name_match)
-                                        else:
-                                                patterns[i] = (
-                                                    pkg.fmri.PkgFmri(pat,
-                                                        "5.11"),
-                                                    pkg.fmri.fmri_match)
-                                except pkg.fmri.IllegalFmri, e:
-                                        illegals.append(e)
-
-                if illegals:
-                        raise api_errors.InventoryException(illegal=illegals)
-
-                # matchingpats is the set of all the patterns which matched a
-                # package in the catalog.  This allows us to return partial
-                # failure if some patterns match and some don't.
-                # XXX It would be nice to keep track of why some patterns failed
-                # to match -- based on name, version, or publisher.
-                matchingpats = set()
-
-                if all_known:
-                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                else:
-                        cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-
-                if ordered:
-                        names = sorted(cat.names())
-                else:
-                        names = cat.names()
-
-                for name in names:
-                        # Eliminate all patterns not matching "name".  If there
-                        # are no patterns left, go on to the next name, but only
-                        # if there were any to start with.
-                        matches = self.__multimatch(name, patterns)
-                        if patterns and not matches:
-                                continue
-
-                        rversions = reversed(list(cat.entries_by_version(name)))
-                        for ver, entries in rversions:
-                                # If a pattern specified a version and that
-                                # version isn't succeeded by "ver", then record
-                                # the pattern for removal from consideration.
-                                nomatch = []
-                                for i, match in enumerate(matches):
-                                        if match[2] and \
-                                            not ver.is_successor(match[2],
-                                                constraint):
-                                                nomatch.append(i)
-
-                                # Eliminate the name matches that didn't match
-                                # on versions.  We need to create a new list
-                                # because we need to reuse the original
-                                # "matches" for each new version.
-                                vmatches = [
-                                    matches[i]
-                                    for i, match in enumerate(matches)
-                                    if i not in nomatch
-                                ]
-
-                                # If we deleted all contenders (if we had any to
-                                # begin with), go on to the next version.
-                                if matches and not vmatches:
-                                        continue
-
-                                # Like the version skipping above, do the same
-                                # for publishers.
-                                publist = set([f[0].publisher for f in entries])
-
-                                nomatch = []
-                                for i, match in enumerate(vmatches):
-                                        if match[3] and \
-                                            match[3] not in publist:
-                                                nomatch.append(i)
-
-                                pmatches = [
-                                    vmatches[i]
-                                    for i, match in enumerate(vmatches)
-                                    if i not in nomatch
-                                ]
-
-                                if vmatches and not pmatches:
-                                        continue
-
-                                # If no patterns were specified or any still-
-                                # matching pattern specified no publisher, we
-                                # use the entire list of publishers for this
-                                # version.  Otherwise, we use the intersection
-                                # of the list of publishers in pubstate, and
-                                # the publishers in the patterns.
-                                aset = set(i[3] for i in pmatches)
-                                if aset and None not in aset:
-                                        publist = set(
-                                            m[3]
-                                            for m in pmatches
-                                            if m[3] in publist
-                                        )
-
-                                matchingpats |= set(i[:2] for i in vmatches)
-
-                                for f, entry in entries:
-                                        if f.publisher not in publist:
-                                                continue
-
-                                        states = entry["metadata"]["states"]
-
-                                        known = self.PKG_STATE_KNOWN in states
-                                        st = {
-                                            "frozen": False,
-                                            "in_catalog": known,
-                                            "incorporated": False,
-                                            "excludes": False,
-                                            "upgradable": self.PKG_STATE_UPGRADABLE in states,
-                                            "obsolete": self.PKG_STATE_OBSOLETE in states,
-                                            "renamed": self.PKG_STATE_RENAMED in states
-                                        }
-
-                                        if self.PKG_STATE_INSTALLED in states:
-                                                st["state"] = \
-                                                    self.PKG_STATE_INSTALLED
-                                        elif known:
-                                                # XXX long-term, a package could
-                                                # be 'frozen' or something else
-                                                # and no longer available (in a
-                                                # catalog).
-                                                st["state"] = \
-                                                    self.PKG_STATE_KNOWN
-                                        else:
-                                                # Must be in some other state;
-                                                # see comment above.
-                                                st["state"] = None
-
-                                        yield f, st
-
-                nonmatchingpats = [
-                    opatterns[i]
-                    for i, f in set(enumerate((p[0] for p in patterns))) - matchingpats
-                ]
-
-                if nonmatchingpats:
-                        raise api_errors.InventoryException(
-                            notfound=nonmatchingpats)
-
-        def inventory(self, *args, **kwargs):
-                """Enumerate the package FMRIs in the image's catalog, yielding
-                a list of tuples of the format (fmri, pkg state dict).
-
-                If "patterns" is None (the default) or an empty sequence, all
-                package names will match.  Otherwise, it is a list of patterns
-                to match against FMRIs in the catalog.
-
-                If "all_known" is False (the default), only installed packages
-                will be enumerated.  If True, all known packages will be
-                enumerated.
-
-                The "matcher" parameter should specify a function taking two
-                string arguments: a name and a pattern, returning True if the
-                pattern matches the name, and False otherwise.  By default, the
-                matcher will be pkg.fmri.fmri_match().
-
-                The "constraint" parameter defines how a version specified in a
-                pattern matches a version in the catalog.  By default, a natural
-                "subsetting" constraint is used.
-
-                The "ordered" parameter is a boolean value that indicates
-                whether the returned list should first be sorted by name before
-                being sorted by version (descending).  By default, this is True.
-                """
-
-                # "preferred" is a private argument that is currently only used
-                # in evaluate_fmri(), but could be made more generally useful.
-                # "preferred" ensures that all potential matches from the
-                # preferred publisher are generated before those from
-                # non-preferred publishers.  In the current implementation, this
-                # consumes more memory.
-                preferred = kwargs.pop("preferred", False)
-                if not preferred:
-                        for f in self.__inventory(*args, **kwargs):
-                                yield f
-                else:
-                        ppub = self.get_preferred_publisher()
-                        nplist = []
-                        for f in self.__inventory(*args, **kwargs):
-                                if f[0].publisher == ppub:
-                                        yield f
-                                else:
-                                        nplist.append(f)
-
-                        for f in nplist:
-                                yield f
-
         def update_index_dir(self, postfix="index"):
                 """Since the index directory will not reliably be updated when
                 the image root is, this should be called prior to using the
@@ -2755,19 +2529,3 @@ class Image(object):
                     check_cancelation, noexecute)
 
                 return img.imageplan.nothingtodo()
-
-        def installed_fmris_from_args(self, args):
-                """Helper function to translate client command line arguments
-                into a list of installed fmris.  Used by info, contents,
-                verify.
-                """
-                found = []
-                notfound = []
-                illegals = []
-                try:
-                        for m in self.inventory(args, ordered=False):
-                                found.append(m)
-                except api_errors.InventoryException, e:
-                        illegals = e.illegal
-                        notfound = e.notfound
-                return found, notfound, illegals

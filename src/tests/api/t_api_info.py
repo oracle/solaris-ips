@@ -207,7 +207,6 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 self.assert_(res.pkg_stem is not None)
                 self.assert_(res.summary is not None)
                 self.assert_(res.publisher is not None)
-                self.assert_(res.preferred_publisher is not None)
                 self.assert_(res.version is not None)
                 self.assert_(res.build_release is not None)
                 self.assert_(res.branch is not None)
@@ -259,9 +258,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 self.assert_(res.pkg_stem is None)
                 self.assert_(res.summary is None)
                 self.assertEqual(res.category_info_list, [])
-                self.assertEqual(res.states, set())
+                self.assertEqual(res.states, tuple())
                 self.assert_(res.publisher is None)
-                self.assert_(res.preferred_publisher is None)
                 self.assert_(res.version is None)
                 self.assert_(res.build_release is None)
                 self.assert_(res.branch is None)
@@ -272,7 +270,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 self.assert_(res.hardlinks is None)
                 self.assert_(res.files is None)
                 self.assert_(res.dirs is None)
-                self.assert_(res.dependencies is None)
+                self.assertEqual(res.dependencies, ())
                 
                 local = False
 
@@ -370,8 +368,9 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                                     "'%s'." % bad_act)
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
-                                self.assertRaises(api_errors.InvalidPackageErrors,
-                                    api_obj.info, [pfmri.pkg_name], False,
+
+                                # Info shouldn't raise an exception.
+                                api_obj.info([pfmri.pkg_name], False,
                                     info_needed)
 
         def test_2_renamed_packages(self):
