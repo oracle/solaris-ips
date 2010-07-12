@@ -37,16 +37,6 @@ if os.path.dirname(__file__) != "" and \
         cmd.extend(sys.argv[1:]) # Skip argv[0]
         sys.exit(subprocess.call(cmd))
 
-# Set up coverage directory and start code coverage early so that imports
-# of modules can be processed.
-import coverage
-import tempfile
-covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
-os.chmod(covdir, 01777)
-cov_file = "%s/pkg5" % covdir
-cov = coverage.coverage(data_file=cov_file, data_suffix=True)
-cov.start()
-
 #
 # Some modules we use are located in our own proto area.  So before doing
 # any more imports, setup the environment we need.
@@ -55,11 +45,20 @@ cov.start()
 # Make sure current directory is in the path
 sys.path.insert(0, ".")
 
+# Create a temporary directory for storing coverage data.
+import tempfile
+covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
+
 import pkg5testenv
+cov = None
 if __name__ == "__main__":
-        pkg5testenv.setup_environment("../../proto")
+        # By specifying a directory for storing coverage data, this will
+        # start coverage immediately after initial environment setup and
+        # before any other pkg(5) modules are imported.
+        cov = pkg5testenv.setup_environment("../../proto", covdir=covdir)
 
 import baseline
+import coverage
 import fcntl
 import getopt
 import platform

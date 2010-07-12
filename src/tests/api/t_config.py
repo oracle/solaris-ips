@@ -1533,7 +1533,7 @@ class TestSMFConfig(_TestConfigBase):
                 hndl = self.cmdline_run(
                     "SVCCFG_REPOSITORY=%(sc_repo_filename)s "
                     "%(SVCCFG_PATH)s import %(manifest)s" % locals(),
-                    handle=True)
+                    coverage=False, handle=True)
                 assert hndl is not None
                 hndl.wait()
 
@@ -1560,8 +1560,11 @@ class TestSMFConfig(_TestConfigBase):
                         if contact == False:
                                 raise RuntimeError("Process did not launch "
                                     "successfully.")
-                except (KeyboardInterrupt, RuntimeError):
-                        hndl.kill()
+                except (KeyboardInterrupt, RuntimeError), e:
+                        try:
+                                hndl.kill()
+                        finally:
+                                self.debug(str(e))
                         raise
 
         def __start_configd(self, sc_repo_filename):
@@ -1577,7 +1580,7 @@ class TestSMFConfig(_TestConfigBase):
 
                 hndl = self.cmdline_run("%(SC_REPO_SERVER)s "
                     "-d %(sc_repo_doorpath)s -r %(sc_repo_filename)s" %
-                    locals(), handle=True)
+                    locals(), coverage=False, handle=True)
                 assert hndl is not None
                 self.__configd = hndl
                 self.__poll_process(hndl, sc_repo_doorpath)

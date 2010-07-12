@@ -20,15 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 
 import os
 import sys
 import platform
 import tempfile
 
-def setup_environment(path_to_proto, debug=False):
+def setup_environment(path_to_proto, covdir=None, debug=False):
         """ Set up environment for doing testing.
 
             We set PYTHONPATH and PATH so that they reference the proto
@@ -45,6 +44,8 @@ def setup_environment(path_to_proto, debug=False):
             invoke test cases like normal commands; i.e.:
             "python cli/t_my_test_case.py" will just work.
 
+            If 'covdir' is provided, coverage will be started and the
+            related coverage object returned.
         """
 
         osname = platform.uname()[0].lower()
@@ -100,6 +101,18 @@ def setup_environment(path_to_proto, debug=False):
                         del os.environ[k]
 
         #
+        # Start coverage before proceeding so that reports are accurate.
+        #
+        cov = None
+        if covdir:
+                # This must be imported here just after PYTHONPATH setup above.
+                import coverage
+                os.chmod(covdir, 01777)
+                cov_file = "%s/pkg5" % covdir
+                cov = coverage.coverage(data_file=cov_file, data_suffix=True)
+                cov.start()
+
+        #
         # Tell package manager where its application data files live.
         #
         os.environ["PACKAGE_MANAGER_ROOT"] = proto_area
@@ -113,3 +126,5 @@ def setup_environment(path_to_proto, debug=False):
         # Save off the value for tempdir when we were invoked, since the
         # suite will subsequently modify tempdir to sandbox test cases.
         pkg5unittest.g_tempdir = tempfile.gettempdir()
+
+        return cov
