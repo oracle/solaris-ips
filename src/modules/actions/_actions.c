@@ -63,7 +63,7 @@ add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
 	return (0);
 }
 
-static void *
+static void
 set_malformederr(const char *str, int pos, const char *msg)
 {
 	PyObject *val;
@@ -72,10 +72,9 @@ set_malformederr(const char *str, int pos, const char *msg)
 		PyErr_SetObject(MalformedActionError, val);
 		Py_DECREF(val);
 	}
-	return (NULL);
 }
 
-static void *
+static void
 set_invaliderr(const char *str, const char *msg)
 {
 	PyObject *val;
@@ -84,7 +83,6 @@ set_invaliderr(const char *str, const char *msg)
 		PyErr_SetObject(InvalidActionError, val);
 		Py_DECREF(val);
 	}
-	return (NULL);
 }
 
 /*ARGSUSED*/
@@ -111,6 +109,12 @@ _fromstr(PyObject *self, PyObject *args)
 		WS      /* whitespace     */
 	} state;
 
+	/*
+	 * If malformed() or invalid() are used, CLEANUP_REFS can only be used
+	 * after.  Likewise, PyMem_Free(str) should not be called before using
+	 * malformed() or invalid().  Failure to order this properly will cause
+	 * corruption of the exception messages.
+	 */
 #define malformed(msg) set_malformederr(str, i, (msg))
 #define invalid(msg) set_invaliderr(str, (msg))
 #define CLEANUP_REFS \
@@ -136,8 +140,9 @@ _fromstr(PyObject *self, PyObject *args)
 
 	i = strl;
 	if (s == NULL) {
+		malformed("no attributes");
 		PyMem_Free(str);
-		return (malformed("no attributes"));
+		return (NULL);
 	}
 
 	if ((type = PyString_FromStringAndSize(str, s - str)) == NULL) {
@@ -159,8 +164,9 @@ _fromstr(PyObject *self, PyObject *args)
 
 			if (str[i] == ' ' || str[i] == '\t') {
 				if (PyDict_Size(attrs) > 0 || hash != NULL) {
+					malformed("whitespace in key");
 					CLEANUP_REFS;
-					return (malformed("whitespace in key"));
+					return (NULL);
 				}
 				else {
 					if ((hash = PyString_FromStringAndSize(
@@ -177,9 +183,11 @@ _fromstr(PyObject *self, PyObject *args)
 					return (NULL);
 				}
 
-				if (keysize == 4 && strncmp(keystr, "data", keysize) == 0) {
+				if (keysize == 4 && strncmp(keystr, "data",
+					keysize) == 0) {
+					invalid("invalid key: 'data'");
 					CLEANUP_REFS;
-					return (invalid("invalid key: 'data'"));
+					return (NULL);
 				}
 
 				/*
@@ -189,28 +197,32 @@ _fromstr(PyObject *self, PyObject *args)
 				PyString_InternInPlace(&key);
 
 				if (i == ks) {
+					malformed("impossible: missing key");
 					CLEANUP_REFS;
-					return (malformed("impossible: missing key"));
+					return (NULL);
 				}
 				else if (++i == strl) {
+					malformed("missing value");
 					CLEANUP_REFS;
-					return (malformed("missing value"));
+					return (NULL);
 				}
 				if (str[i] == '\'' || str[i] == '\"') {
 					state = QVAL;
 					quote = str[i];
 					vs = i + 1;
 				} else if (str[i] == ' ' || str[i] == '\t') {
+					malformed("missing value");
 					CLEANUP_REFS;
-					return (malformed("missing value"));
+					return (NULL);
 				}
 				else {
 					state = UQVAL;
 					vs = i;
 				}
 			} else if (str[i] == '\'' || str[i] == '\"') {
+				malformed("quote in key");
 				CLEANUP_REFS;
-				return (malformed("quote in key"));
+				return (NULL);
 			}
 		} else if (state == QVAL) {
 			if (str[i] == '\\') {
@@ -300,8 +312,9 @@ _fromstr(PyObject *self, PyObject *args)
 				state = KEY;
 				ks = i;
 				if (str[i] == '=') {
+					malformed("missing key");
 					CLEANUP_REFS;
-					return (malformed("missing key"));
+					return (NULL);
 				}
 			}
 		}
@@ -311,12 +324,14 @@ _fromstr(PyObject *self, PyObject *args)
 		if (slashmap != NULL)
 			free(slashmap);
 
+		malformed("unfinished quoted value");
 		CLEANUP_REFS;
-		return (malformed("unfinished quoted value"));
+		return (NULL);
 	}
 	if (state == KEY) {
+		malformed("missing value");
 		CLEANUP_REFS;
-		return (malformed("missing value"));
+		return (NULL);
 	}
 
 	if (state == UQVAL) {

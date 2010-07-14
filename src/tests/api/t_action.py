@@ -20,8 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -254,7 +253,8 @@ Incorrect attribute list.
 
                 try:
                         action.fromstr(text)
-                except action.MalformedActionError:
+                except action.MalformedActionError, e:
+                        assert e.actionstr == text
                         malformed = True
 
                 # If the action isn't malformed, something is wrong.
@@ -322,6 +322,11 @@ Incorrect attribute list.
                 # Missing required attribute 'name'.
                 self.assertRaises(action.InvalidActionError, action.fromstr,
                     "driver alias=pci1234,56 alias=pci4567,89 class=scsi")
+
+                # Verify malformed actions > 255 characters don't cause corrupt
+                # exception action strings.
+                self.assertMalformed("""legacy arch=i386 category=GNOME2,application,JDSosol desc="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." hotline="Please contact your local service provider" name="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." pkg=SUNWxscreensaver vendor="XScreenSaver Community" version=5.11,REV=110.0.4.2010.07.08.22.18""")
+                self.assertMalformed("""legacy arch=i386 category=GNOME2,application,JDSosol desc="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." hotline="Please contact your local service provider" name="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." pkg=SUNWxscreensaver-l10n vendor="XScreenSaver Community" version=5.11,REV=110.0.4.2010.07.08.22.18""")
 
         def test_validate(self):
                 """Verify that action validate() works as expected; currently
