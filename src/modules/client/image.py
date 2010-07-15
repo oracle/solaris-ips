@@ -49,7 +49,7 @@ import pkg.client.imageplan             as imageplan
 import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
-import pkg.client.transport.transport   as transport
+import pkg.client.transport             as transport
 import pkg.fmri
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
@@ -211,7 +211,8 @@ class Image(object):
                 self.__lockf = None
 
                 # Transport operations for this image
-                self.transport = transport.Transport(self)
+                self.transport = transport.Transport(
+                    transport.ImageTransportCfg(self))
 
                 if should_exist:
                         self.find_root(self.root, user_provided_dir,
@@ -1158,7 +1159,6 @@ class Image(object):
 
                 try:
                         ret = manifest.CachedManifest(fmri, self.pkgdir,
-                            self.cfg_cache.preferred_publisher,
                             excludes)
                         # if we have a intent string, let depot
                         # know for what we're using the cached manifest

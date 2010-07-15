@@ -42,23 +42,26 @@ import pkg.config as cfg
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as api_errors
+import pkg.client.publisher as publisher
+import pkg.client.transport as transport
 import pkg.misc as misc
-import pkg.pkgtarfile as ptf
-import pkg.portable as portable
 import pkg.publish.transaction as trans
 import pkg.search_errors as search_errors
-import pkg.server.catalog as sc
 import pkg.server.repository as sr
 import pkg.version as version
 
 from pkg.client import global_settings
-from pkg.misc import (emsg, get_pkg_otw_size, gunzip_from_stream, msg,
-    versioned_urlopen, PipeError)
+from pkg.misc import (emsg, get_pkg_otw_size, msg, PipeError)
 
 # Globals
+cache_dir = None
 complete_catalog = None
+download_start = False
 repo_cache = {}
 tmpdirs = []
+temp_root = None
+xport = None
+xport_cfg = None
 
 def error(text):
         """Emit an error message prefixed by the command name """
@@ -90,6 +93,13 @@ Usage:
         pkgrecv [-s src_repo_uri] -n
 
 Options:
+        -c cache_dir    The path to a directory that will be used to cache
+                        downloaded content.  If one is not supplied, the
+                        client will automatically pick a cache directory.
+                        In the case where a download is interrupted, and a
+                        cache directory was automatically chosen, use this
+                        option to resume the download.
+
         -d path_or_uri  The path of a directory to save the retrieved package
                         to, or the URI of a repository to republish it to.  If
                         not provided, the default value is the current working
@@ -122,9 +132,18 @@ Environment:
         PKG_SRC         Source repository URI"""))
         sys.exit(retcode)
 
-def cleanup():
+def cleanup(caller_error=False):
         """To be called at program finish."""
+
         for d in tmpdirs:
+                # If the cache_dir is in the list of directories that should
+                # be cleaned up, but we're exiting with an error, then preserve
+                # the directory so downloads may be resumed.
+                if d == cache_dir and caller_error and download_start:
+                        error(_("\n\nCached files were preserved in the "
+                            "following directory:\n\t%s\nUse pkgrecv -c "
+                            "to resume the interrupted download.") % cache_dir)
+                        continue
                 shutil.rmtree(d, True)
 
 def abort(err=None, retcode=1):
@@ -149,44 +168,24 @@ def get_tracker(quiet=False):
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
-def get_manifest(src_uri, pfmri, basedir, contents=False):
+def get_manifest(pfmri, basedir, contents=False):
 
         m = None
         pkgdir = os.path.join(basedir, pfmri.get_dir_path())
         mpath = os.path.join(pkgdir, "manifest")
 
-        raw = None
-        overwrite = False
         if not os.path.exists(mpath):
-                raw = fetch_manifest(src_uri, pfmri)
-                overwrite = True
+                m = xport.get_manifest(pfmri)
         else:
                 try:
-                        raw = file(mpath, "rb").read()
+                        m = manifest.CachedManifest(pfmri, basedir)
                 except:
-                        abort(err=_("Unable to load manifest '%(mpath)s' for "
-                            "package '%(pfmri)s'.") % locals())
+                        abort(err=_("Unable to parse manifest '%(mpath)s' for "
+                            "package '%(pfmri)s'") % locals())
 
         if contents:
-                return raw
+                return m.tostr_unsorted()
 
-        try:
-                m = manifest.CachedManifest(pfmri, basedir, None,
-                    contents=raw)
-        except:
-                abort(err=_("Unable to parse manifest '%(mpath)s' for package "
-                    "'%(pfmri)s'") % locals())
-
-        if overwrite:
-                # Overwrite the manifest file so that the on-disk version will
-                # be consistent with the server (due to fmri addition).
-                try:
-                        f = open(mpath, "wb")
-                        f.write(raw)
-                        f.close()
-                except:
-                        abort(err=_("Unable to write manifest '%(mpath)s' for "
-                            "package '%(pfmri)s'.") % locals())
         return m
 
 def get_repo(uri):
@@ -215,38 +214,6 @@ def get_repo(uri):
                 sys.exit(1)
         repo_cache[uri] = repo
         return repo
-
-def fetch_manifest(src_uri, pfmri):
-        """Return the manifest data for package-fmri 'fmri' from the repository
-        at 'src_uri'."""
-
-        if src_uri.startswith("file://"):
-                try:
-                        r = get_repo(src_uri)
-                        m = file(r.manifest(pfmri), "rb")
-                except (EnvironmentError, sr.RepositoryError), e:
-                        abort(err=e)
-        else:
-                # Request manifest from repository.
-                try:
-                        m = versioned_urlopen(src_uri, "manifest", [0],
-                            pfmri.get_url_path())[0]
-                except Exception, e:
-                        abort(err=_("Unable to retrieve manifest %s from "
-                            "%s: %s") % (pfmri.get_url_path(), src_uri, e))
-                except:
-                        abort()
-
-        # Read from repository, return to caller.
-        try:
-                mfst_str = m.read()
-        except:
-                abort(err=_("Error occurred while reading from: %s") % src_uri)
-
-        if hasattr(m, "close"):
-                m.close()
-
-        return mfst_str
 
 def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
         """Find matching fmri using CONSTRAINT_AUTO cache for performance.
@@ -318,7 +285,7 @@ def _get_dependencies(src_uri, s, pfmri, basedir, tracker):
         tracker.evaluate_progress(fmri=pfmri)
         s.add(pfmri)
 
-        m = get_manifest(src_uri, pfmri, basedir)
+        m = get_manifest(pfmri, basedir)
         for a in m.gen_actions_by_type("depend"):
                 new_fmri = expand_fmri(a.attrs["fmri"])
                 if new_fmri and new_fmri not in s:
@@ -326,26 +293,20 @@ def _get_dependencies(src_uri, s, pfmri, basedir, tracker):
                             tracker)
         return s
 
-def get_hashes_and_sizes(m):
-        """Returns a dict of hashes and transfer sizes of actions with content
-        in a manifest."""
+def add_hashes_to_multi(mfst, multi):
+        """Takes a manifest and a multi object. Adds the hashes to the
+        multi object, returns (nfiles, nbytes) tuple."""
 
-        seen_hashes = set()
-        def repeated(a):
-                if a in seen_hashes:
-                        return True
-                seen_hashes.add(a)
-                return False
+        nf = 0
+        nb = 0
 
-        cshashes = {}
         for atype in ("file", "license"):
-                for a in m.gen_actions_by_type(atype):
-                        if hasattr(a, "hash") and not repeated(a.hash):
-                                sz = int(a.attrs.get("pkg.size", 0))
-                                csize = int(a.attrs.get("pkg.csize", 0))
-                                otw_sz = get_pkg_otw_size(a)
-                                cshashes[a.hash] = (sz, csize, otw_sz)
-        return cshashes
+                for a in mfst.gen_actions_by_type(atype):
+                        if a.needsdata(None, None):
+                                multi.add_action(a)
+                                nf += 1
+                                nb += get_pkg_otw_size(a)
+        return nf, nb
 
 def prune(fmri_list, all_versions, all_timestamps):
         """Returns a filtered version of fmri_list based on the provided
@@ -364,125 +325,6 @@ def prune(fmri_list, all_versions, all_timestamps):
                         dedup.setdefault(f.pkg_name, []).append(f)
                 fmri_list = [sorted(dedup[f], reverse=True)[0] for f in dedup]
         return fmri_list
-
-def fetch_files_byhash(src_uri, cshashes, destdir, keep_compressed, tracker):
-        """Given a list of tuples containing content hash, and size and download
-        the content from src_uri into destdir."""
-
-        def valid_file(h):
-                # XXX this should check data digest
-                fname = os.path.join(destdir, h)
-                if os.path.exists(fname):
-                        if keep_compressed:
-                                sz = cshashes[h][1]
-                        else:
-                                sz = cshashes[h][0]
-
-                        if sz == 0:
-                                return True
-
-                        try:
-                                fs = os.stat(fname)
-                        except:
-                                pass
-                        else:
-                                if fs.st_size == sz:
-                                        return True
-                return False
-
-        if src_uri.startswith("file://"):
-                try:
-                        r = get_repo(src_uri)
-                except sr.RepositoryError, e:
-                        abort(err=e)
-
-                for h in cshashes.keys():
-                        dest = os.path.join(destdir, h)
-
-                        # Check to see if the file already exists first, so the
-                        # user can continue interrupted pkgrecv operations.
-                        retrieve = not valid_file(h)
-
-                        try:
-                                if retrieve and keep_compressed:
-                                        src = r.file(h)
-                                        shutil.copy(src, dest)
-                                elif retrieve:
-                                        src = file(r.file(h), "rb")
-                                        outfile = open(dest, "wb")
-                                        gunzip_from_stream(src, outfile)
-                                        outfile.close()
-                        except (EnvironmentError, sr.RepositoryError), e:
-                                try:
-                                        portable.remove(dest)
-                                except:
-                                        pass
-                                abort(err=e)
-
-                        tracker.download_add_progress(1, cshashes[h][2])
-                return
-
-        req_dict = {}
-        for i, k in enumerate(cshashes.keys()):
-                # Check to see if the file already exists first, so the user can
-                # continue interrupted pkgrecv operations.
-                if valid_file(k):
-                        tracker.download_add_progress(1, cshashes[k][2])
-                        continue
-
-                entry = "File-Name-%s" % i
-                req_dict[entry] = k
-
-        req_str = urllib.urlencode(req_dict)
-        if not req_str:
-                # Nothing to retrieve.
-                return
-
-        tmpdir = tempfile.mkdtemp()
-        tmpdirs.append(tmpdir)
-
-        try:
-                f = versioned_urlopen(src_uri, "filelist", [0],
-                    data=req_str)[0]
-        except:
-                abort(err=_("Unable to retrieve content from: %s") % src_uri)
-
-        tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
-
-        for info in tar_stream:
-                gzfobj = None
-                try:
-                        if not keep_compressed:
-                                # Uncompress as we retrieve the files
-                                gzfobj = tar_stream.extractfile(info)
-                                fpath = os.path.join(tmpdir,
-                                    info.name)
-                                outfile = open(fpath, "wb")
-                                gunzip_from_stream(gzfobj, outfile)
-                                outfile.close()
-                                gzfobj.close()
-                        else:
-                                # We want to keep the files compressed
-                                # on disk.
-                                tar_stream.extract_to(info, tmpdir,
-                                    info.name)
-
-                        # Copy the file into place (rename can cause a cross-
-                        # link device failure) and then remove the original.
-                        src = os.path.join(tmpdir, info.name)
-                        shutil.copy(src, os.path.join(destdir, info.name))
-                        portable.remove(src)
-
-                        tracker.download_add_progress(1, cshashes[info.name][2])
-                except KeyboardInterrupt:
-                        raise
-                except:
-                        abort(err=_("Unable to extract file: %s") % info.name)
-
-        shutil.rmtree(tmpdirs.pop(), True)
-
-        tar_stream.close()
-        f.close()
 
 def list_newest_fmris(fmri_list):
         """List the provided fmris."""
@@ -504,43 +346,25 @@ def list_newest_fmris(fmri_list):
                 fm_list.append(l[0])
 
         for e in fm_list:
-                msg(e)
+                msg(e.get_fmri(anarchy=True))
 
-def fetch_catalog(src_uri, tracker):
+def fetch_catalog(src_pub, tracker):
         """Fetch the catalog from src_uri."""
         global complete_catalog
 
+        src_uri = src_pub.selected_repository.origins[0].uri
         tracker.catalog_start(src_uri)
 
-        if src_uri.startswith("file://"):
-                try:
-                        r = get_repo(src_uri)
-                        c = r.catalog_0()
-                except sr.RepositoryError, e:
-                        error(e)
-                        abort()
-        else:
-                # open connection for catalog
-                try:
-                        c = versioned_urlopen(src_uri, "catalog", [0])[0]
-                except:
-                        abort(err=_("Unable to download catalog from: %s") % \
-                            src_uri)
+        if not src_pub.meta_root:
+                # Create a temporary directory for catalog.
+                cat_dir = tempfile.mkdtemp(dir=temp_root)
+                tmpdirs.append(cat_dir)
+                src_pub.meta_root = cat_dir
 
-        # Create a temporary directory for catalog.
-        cat_dir = tempfile.mkdtemp()
-        tmpdirs.append(cat_dir)
+        src_pub.transport = xport
+        src_pub.refresh(True, True)
 
-        # Call catalog.recv to retrieve catalog.
-        try:
-                sc.ServerCatalog.recv(c, cat_dir)
-        except Exception, e:
-                abort(err=_("Error: %s while reading from: %s") % (e, src_uri))
-
-        if hasattr(c, "close"):
-                c.close()
-
-        cat = sc.ServerCatalog(cat_dir, read_only=True)
+        cat = src_pub.catalog
 
         d = {}
         fmri_list = []
@@ -554,7 +378,28 @@ def fetch_catalog(src_uri, tracker):
         tracker.catalog_done()
         return fmri_list
 
+def config_temp_root():
+        """Examine the environment.  If the environment has set TMPDIR, TEMP,
+        or TMP, return None.  This tells tempfile to use the environment
+        settings when creating temporary files/directories.  Otherwise,
+        return a path that the caller should pass to tempfile instead."""
+
+        default_root = "/var/tmp"
+
+        # In Python's tempfile module, the default temp directory
+        # includes some paths that are suboptimal for holding large numbers
+        # of files.  If the user hasn't set TMPDIR, TEMP, or TMP in the
+        # environment, override the default directory for creating a tempfile.
+        tmp_envs = [ "TMPDIR", "TEMP", "TMP" ]
+        for ev in tmp_envs:
+                env_val = os.getenv(ev)
+                if env_val:
+                        return None
+
+        return default_root
+
 def main_func():
+        global cache_dir, download_start, xport, xport_cfg
         all_timestamps = False
         all_versions = False
         keep_compressed = False
@@ -562,6 +407,11 @@ def main_func():
         recursive = False
         src_uri = None
         target = None
+        incoming_dir = None
+        src_pub = None
+        targ_pub = None
+
+        temp_root = config_temp_root()
 
         gettext.install("pkg", "/usr/share/locale")
 
@@ -570,12 +420,14 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:hkm:nrs:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:")
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
         for opt, arg in opts:
-                if opt == "-d":
+                if opt == "-c":
+                        cache_dir = arg
+                elif opt == "-d":
                         target = arg
                 elif opt == "-h":
                         usage(retcode=0)
@@ -598,12 +450,30 @@ def main_func():
         if not src_uri:
                 usage(_("a source repository must be provided"))
 
+        if not cache_dir:
+                cache_dir = tempfile.mkdtemp(dir=temp_root)
+                # Only clean-up cache dir if implicitly created by pkgrecv.
+                # User's cache-dirs should be preserved
+                tmpdirs.append(cache_dir)
+
+        incoming_dir = tempfile.mkdtemp(dir=temp_root)
+        tmpdirs.append(incoming_dir)
+
+        # Create transport and transport config
+        xport, xport_cfg = transport.setup_transport()
+        xport_cfg.cached_download_dir = cache_dir
+        xport_cfg.incoming_download_dir = incoming_dir
+
+        # Configure src publisher
+        src_pub = transport.setup_publisher(src_uri, "source", xport, xport_cfg,
+            remote_publishers=True)
+
         tracker = get_tracker()
         if list_newest:
                 if pargs or len(pargs) > 0:
                         usage(_("-n takes no options"))
 
-                fmri_list = fetch_catalog(src_uri, tracker)
+                fmri_list = fetch_catalog(src_pub, tracker)
                 list_newest_fmris(fmri_list)
                 return 0
 
@@ -616,9 +486,12 @@ def main_func():
         if not target:
                 target = basedir = os.getcwd()
         elif target.find("://") != -1:
-                basedir = tempfile.mkdtemp()
+                basedir = tempfile.mkdtemp(dir=temp_root)
                 tmpdirs.append(basedir)
                 republish = True
+
+                targ_pub = transport.setup_publisher(target, "target",
+                    xport, xport_cfg)
 
                 # Files have to be decompressed for republishing.
                 keep_compressed = False
@@ -629,12 +502,13 @@ def main_func():
 
                         # Check to see if the repository exists first.
                         try:
-                                t = trans.Transaction(target)
+                                t = trans.Transaction(target, xport=xport,
+                                    pub=targ_pub)
                         except trans.TransactionRepositoryInvalidError, e:
                                 txt = str(e) + "\n\n"
                                 txt += _("To create a repository, use the "
                                     "pkgsend command.")
-                                abort(err=msg)
+                                abort(err=txt)
                         except trans.TransactionRepositoryConfigError, e:
                                 txt = str(e) + "\n\n"
                                 txt += _("The repository configuration for "
@@ -656,7 +530,9 @@ def main_func():
                                     basedir)
                                 return 1
 
-        all_fmris = fetch_catalog(src_uri, tracker)
+        xport_cfg.pkgdir = basedir
+
+        all_fmris = fetch_catalog(src_pub, tracker)
         fmri_arguments = pargs
         fmri_list = prune(list(set(expand_matching_fmris(all_fmris,
             fmri_arguments))), all_versions, all_timestamps)
@@ -686,18 +562,19 @@ def main_func():
         retrieve_list = []
         while fmri_list:
                 f = fmri_list.pop()
-                m = get_manifest(src_uri, f, basedir)
-                cshashes = get_hashes_and_sizes(m)
+                m = get_manifest(f, basedir)
+                pkgdir = os.path.join(basedir, f.get_dir_path())
+                mfile = xport.multi_file_ni(src_pub, pkgdir,
+                    not keep_compressed, tracker)
+ 
+                nf, nb = add_hashes_to_multi(m, mfile)
+                nfiles += nf
+                nbytes += nb
 
-                for entry in cshashes.itervalues():
-                        nfiles += 1
-                        nbytes += entry[2]
-
-                retrieve_list.append((f, cshashes))
+                retrieve_list.append((f, mfile))
 
                 tracker.evaluate_progress(fmri=f)
         tracker.evaluate_done()
-        tracker.reset()
 
         # Next, retrieve and store the content for each package.
         msg(_("Retrieving package content ..."))
@@ -705,13 +582,13 @@ def main_func():
 
         publish_list = []
         while retrieve_list:
-                f, cshashes = retrieve_list.pop()
+                f, mfile = retrieve_list.pop()
                 tracker.download_start_pkg(f.get_fmri(include_scheme=False))
 
-                if len(cshashes) > 0:
-                        pkgdir = os.path.join(basedir, f.get_dir_path())
-                        fetch_files_byhash(src_uri, cshashes, pkgdir,
-                            keep_compressed, tracker)
+                if mfile:
+                        mfile.wait_files()
+                        if not download_start:
+                                download_start = True
 
                 if republish:
                         publish_list.append(f)
@@ -724,12 +601,12 @@ def main_func():
                 f = publish_list.pop()
                 msg(_("Republishing %s ...") % f)
 
-                m = get_manifest(src_uri, f, basedir)
+                m = get_manifest(f, basedir)
 
                 # Get first line of original manifest so that inclusion of the
                 # scheme can be determined.
                 use_scheme = True
-                contents = get_manifest(src_uri, f, basedir, contents=True)
+                contents = get_manifest(f, basedir, contents=True)
                 if contents.splitlines()[0].find("pkg:/") == -1:
                         use_scheme = False
 
@@ -740,9 +617,14 @@ def main_func():
                 # can be aborted.
                 trans_id = get_basename(f)
 
+                if not targ_pub:
+                        targ_pub = transport.setup_publisher(target, "target",
+                            xport, xport_cfg)
+
                 try:
                         t = trans.Transaction(target, pkg_name=pkg_name,
-                            trans_id=trans_id)
+                            trans_id=trans_id, refresh_index=not defer_refresh,
+                            xport=xport, pub=targ_pub)
 
                         # Remove any previous failed attempt to
                         # to republish this package.
@@ -780,7 +662,8 @@ def main_func():
                 if defer_refresh:
                         msg(_("Refreshing repository search indices ..."))
                         try:
-                                t = trans.Transaction(target)
+                                t = trans.Transaction(target, xport=xport,
+                                    pub=targ_pub)
                                 t.refresh_index()
                         except trans.TransactionError, e:
                                 error(e)
@@ -795,20 +678,25 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError), _e:
+            RuntimeError, api_errors.TransportError,
+            api_errors.BadRepositoryURI,
+            api_errors.UnsupportedRepositoryURI), _e:
                 error(_e)
-                cleanup()
+                cleanup(True)
                 __ret = 1
-        except (PipeError, KeyboardInterrupt):
+        except PipeError:
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                cleanup()
+                cleanup(False)
+                __ret = 1
+        except (KeyboardInterrupt, api_errors.CanceledException):
+                cleanup(True)
                 __ret = 1
         except SystemExit, _e:
-                cleanup()
+                cleanup(False)
                 raise _e
         except:
-                cleanup()
+                cleanup(True)
                 traceback.print_exc()
                 error(
                     _("\n\nThis is an internal error.  Please let the "

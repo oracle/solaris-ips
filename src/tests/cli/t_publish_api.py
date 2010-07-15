@@ -30,6 +30,8 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.client.publisher as publisher
+import pkg.client.transport as transport
 import pkg.fmri as fmri
 import pkg.publish.transaction as trans
 import urlparse
@@ -50,12 +52,19 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 publication can handle it."""
 
                 durl = self.dc.get_depot_url()
+                repouriobj = publisher.RepositoryURI(durl)
+                repo = publisher.Repository(origins=[repouriobj])
+                pub = publisher.Publisher(prefix="repo1", repositories=[repo])
+                xport_cfg = transport.GenericTransportCfg()
+                xport_cfg.add_publisher(pub)
+                xport = transport.Transport(xport_cfg)
 
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
                         pf = fmri.PkgFmri("foo@%d.0" % i, "5.11")
-                        t = trans.Transaction(durl, pkg_name=str(pf))
+                        t = trans.Transaction(durl, pkg_name=str(pf),
+                            xport=xport, pub=pub)
                         t.open()
                         pkg_fmri, pkg_state = t.close(refresh_index=True)
                         self.debug("%s: %s" % (pkg_fmri, pkg_state))
@@ -69,11 +78,19 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 location = urlparse.urlunparse(("file", "",
                     urllib.pathname2url(location), "", "", ""))
 
+                repouriobj = publisher.RepositoryURI(location)
+                repo = publisher.Repository(origins=[repouriobj])
+                pub = publisher.Publisher(prefix="repo1", repositories=[repo])
+                xport_cfg = transport.GenericTransportCfg()
+                xport_cfg.add_publisher(pub)
+                xport = transport.Transport(xport_cfg)
+
                 # Each version number must be unique since multiple packages
                 # will be published within the same second.
                 for i in range(100):
                         pf = fmri.PkgFmri("foo@%d.0" % i, "5.11")
-                        t = trans.Transaction(location, pkg_name=str(pf))
+                        t = trans.Transaction(location, pkg_name=str(pf),
+                            xport=xport, pub=pub)
                         t.open()
                         pkg_fmri, pkg_state = t.close(refresh_index=True)
                         self.debug("%s: %s" % (pkg_fmri, pkg_state))

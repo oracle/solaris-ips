@@ -5,8 +5,8 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-kr] [-m match]
-         (fmri|pattern) ...
+     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
+         [-kr] [-m match] (fmri|pattern) ...
      /usr/bin/pkgrecv [-s src_uri] -n
 
 DESCRIPTION
@@ -20,6 +20,13 @@ DESCRIPTION
 
 OPTIONS
      The following options are supported:
+
+     -c cache_dir    The path to a directory that will be used to cache
+		     downloaded content.  If one is not supplied, the
+		     client will automatically pick a cache directory.
+		     In the case where a download is interrupted, and a
+		     cache directory was automatically chosen, use this
+		     option to resume the download.
 
      -d path_or_uri  The path of a directory to save the retrieved package
                      to, or the URI of a repository to republish it to.  If

@@ -771,8 +771,23 @@ class DepotHTTP(_Depot):
                             "X-IPkg-Refresh-Index: %s" % e)
 
                 try:
+                        # Assume "True" for backwards compatibility.
+                        add_to_catalog = int(request.headers.get(
+                            "X-IPkg-Add-To-Catalog", 1))
+
+                        # Force a boolean value.
+                        if add_to_catalog:
+                                add_to_catalog = True
+                        else:
+                                add_to_catalog = False
+                except ValueError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "X-IPkg-Add-To-Catalog" % e)
+
+                try:
                         pfmri, pstate = self.repo.close(trans_id,
-                            refresh_index=refresh_index)
+                            refresh_index=refresh_index,
+                            add_to_catalog=add_to_catalog)
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret

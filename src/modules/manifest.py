@@ -667,8 +667,7 @@ class CachedManifest(Manifest):
                 return os.path.join(self.__pkgdir,
                     self.fmri.get_dir_path())
 
-        def __init__(self, fmri, pkgdir, preferred_pub, excludes=EmptyI,
-            contents=None):
+        def __init__(self, fmri, pkgdir, excludes=EmptyI, contents=None):
                 """Raises KeyError exception if cached manifest
                 is not present and contents are None; delays
                 reading of manifest until required if cache file
@@ -676,7 +675,6 @@ class CachedManifest(Manifest):
 
                 Manifest.__init__(self)
                 self.__pkgdir = pkgdir
-                self.__pub    = preferred_pub
                 self.loaded   = False
                 self.set_fmri(None, fmri)
                 self.excludes = excludes

@@ -51,7 +51,10 @@ import pkg.client.api_errors as apx
 import pkg.fmri
 import pkg.manifest
 import pkg.publish.transaction as trans
+import pkg.client.transport as transport
+import pkg.client.publisher as publisher
 from pkg.misc import msg, emsg, PipeError
+from pkg.client import global_settings
 
 nopub_actions = [ "unknown" ]
 
@@ -121,9 +124,11 @@ def trans_create_repository(repo_uri, args):
                         repo_props.setdefault(p_sec, {})
                         repo_props[p_sec][p_name] = p_value
 
+        xport, pub = setup_transport_and_pubs(repo_uri)
+
         try:
                 trans.Transaction(repo_uri, create_repo=True,
-                    repo_props=repo_props)
+                    repo_props=repo_props, xport=xport, pub=pub)
         except trans.TransactionRepositoryConfigError, e:
                 error(e, cmd="create-repository")
                 emsg(_("Invalid repository configuration values were "
@@ -154,7 +159,9 @@ def trans_open(repo_uri, args):
         if len(pargs) != 1:
                 usage(_("open requires one package name"), cmd="open")
 
-        t = trans.Transaction(repo_uri, pkg_name=pargs[0])
+        xport, pub = setup_transport_and_pubs(repo_uri)
+
+        t = trans.Transaction(repo_uri, pkg_name=pargs[0], xport=xport, pub=pub)
         if eval_form:
                 msg("export PKG_TRANS_ID=%s" % t.open())
         else:
@@ -186,8 +193,9 @@ def trans_close(repo_uri, args):
                         usage(_("No transaction ID specified using -t or in "
                             "$PKG_TRANS_ID."), cmd="close")
 
+        xport, pub = setup_transport_and_pubs(repo_uri)
         t = trans.Transaction(repo_uri, trans_id=trans_id,
-            add_to_catalog=add_to_catalog)
+            add_to_catalog=add_to_catalog, xport=xport, pub=pub)
         pkg_state, pkg_fmri = t.close(abandon, refresh_index)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
@@ -210,7 +218,9 @@ def trans_add(repo_uri, args):
                 error(_("invalid action for publication: %s") % action, cmd="add")
                 return 1
 
-        t = trans.Transaction(repo_uri, trans_id=trans_id)
+        xport, pub = setup_transport_and_pubs(repo_uri)
+        t = trans.Transaction(repo_uri, trans_id=trans_id, xport=xport,
+            pub=pub)
         t.add(action)
         return 0
 
@@ -275,7 +285,7 @@ def trans_publish(repo_uri, fargs):
                         if lineno > tup[0] and lineno <= tup[1]:
                                 filename = filelist[i][0]
                                 lineno -= tup[0]
-                                break;
+                                break
                 else:
                         filename = "???"
                         lineno = "???"
@@ -291,7 +301,9 @@ def trans_publish(repo_uri, fargs):
                         return 1
                 pkg_name = pkg.fmri.PkgFmri(m["pkg.fmri"]).get_short_fmri()
 
-        t = trans.Transaction(repo_uri, pkg_name=pkg_name, refresh_index=refresh_index)
+        xport, pub = setup_transport_and_pubs(repo_uri)
+        t = trans.Transaction(repo_uri, pkg_name=pkg_name,
+            refresh_index=refresh_index, xport=xport, pub=pub)
         t.open()
 
         for a in m.gen_actions():
@@ -333,7 +345,9 @@ def trans_include(repo_uri, fargs, transaction=None):
                 except KeyError:
                         usage(_("No transaction ID specified in $PKG_TRANS_ID"),
                             cmd="include")
-                t = trans.Transaction(repo_uri, trans_id=trans_id)
+                xport, pub = setup_transport_and_pubs(repo_uri)
+                t = trans.Transaction(repo_uri, trans_id=trans_id, xport=xport,
+                    pub=pub)
         else:
                 t = transaction
 
@@ -371,7 +385,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                         if lineno > tup[0] and lineno <= tup[1]:
                                 filename = filelist[i][0]
                                 lineno -= tup[0]
-                                break;
+                                break
                 else:
                         filename = "???"
                         lineno = "???"
@@ -437,7 +451,9 @@ def trans_import(repo_uri, args):
         if not args:
                 usage(_("No arguments specified for subcommand."),
                     cmd="import")
-        t = trans.Transaction(repo_uri, trans_id=trans_id)
+
+        xport, pub = setup_transport_and_pubs(repo_uri)
+        t = trans.Transaction(repo_uri, trans_id=trans_id, xport=xport, pub=pub)
 
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
@@ -479,8 +495,8 @@ def trans_generate(args):
                     cmd="generate")
 
         try:
-                 for action, err in gen_actions(pargs, timestamp_files,
-                     target_files):
+                for action, err in gen_actions(pargs, timestamp_files,
+                    target_files):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]
@@ -505,12 +521,27 @@ def trans_refresh_index(repo_uri, args):
                 usage(_("command does not take operands"),
                     cmd="refresh-index")
 
+        xport, pub = setup_transport_and_pubs(repo_uri)
         try:
-                t = trans.Transaction(repo_uri).refresh_index()
+                t = trans.Transaction(repo_uri, xport=xport, pub=pub).refresh_index()
         except trans.TransactionError, e:
                 error(e, cmd="refresh-index")
                 return 1
         return 0
+
+def setup_transport_and_pubs(repo_uri):
+
+        try:
+                repo = publisher.Repository(origins=[repo_uri])
+                pub = publisher.Publisher(prefix="default", repositories=[repo])
+                xport = transport.Transport(transport.GenericTransportCfg(
+                    publishers=[pub]))
+        except apx.UnsupportedRepositoryURI:
+                if repo_uri.startswith("null:"):
+                        return None, None
+                raise
+
+        return xport, pub
 
 def main_func():
         gettext.install("pkg", "/usr/share/locale")
@@ -521,6 +552,7 @@ def main_func():
                 repo_uri = "http://localhost:10000"
 
         show_usage = False
+        global_settings.client_name = "pkgsend"
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:?", ["help"])
                 for opt, arg in opts:
@@ -580,8 +612,9 @@ if __name__ == "__main__":
 
         try:
                 __ret = main_func()
-        except (pkg.actions.ActionError, apx.InvalidPackageErrors,
-            trans.TransactionError, RuntimeError, pkg.fmri.IllegalFmri), _e:
+        except (pkg.actions.ActionError, trans.TransactionError,
+            RuntimeError, pkg.fmri.IllegalFmri, apx.BadRepositoryURI,
+            apx.UnsupportedRepositoryURI, apx.InvalidPackageErrors), _e:
                 print >> sys.stderr, "pkgsend: %s" % _e
                 __ret = 1
         except (PipeError, KeyboardInterrupt):

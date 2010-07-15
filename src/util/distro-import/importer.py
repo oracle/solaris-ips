@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -29,7 +29,9 @@ import gettext
 import os
 import pkg
 import pkg.client
-import pkg.client.publisher
+import pkg.client.publisher    as publisher
+import pkg.client.transport    as transport
+import pkg.client.api_errors   as apx
 import pkg.client.api
 import pkg.client.progress
 import pkg.flavor.smf_manifest as smf_manifest
@@ -38,8 +40,6 @@ import pkg.manifest            as manifest
 import pkg.misc
 import pkg.pkgsubprocess       as subprocess
 import pkg.publish.transaction as trans
-import pkg.server.catalog      as catalog
-import pkg.server.repository   as repository
 import pkg.variant             as variant
 import pkg.version             as version
 import platform
@@ -50,12 +50,11 @@ import sys
 import tempfile
 import time
 import urllib
-import urlparse
 
 from datetime import datetime
 from pkg      import actions, elf
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
-from pkg.misc import versioned_urlopen, emsg, gunzip_from_stream
+from pkg.misc import emsg
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
 CLIENT_API_VERSION = 40
@@ -78,6 +77,7 @@ cons_dict = {}       # consolidation incorporation dictionaries
 file_repo = False    #
 curpkg = None        # which IPS package we're currently importing
 def_branch = ""      # default branch
+def_pub = None
 def_repo = "http://localhost:10000"
 def_vers = "0.5.11"  # default package version
 # default search path
@@ -104,6 +104,7 @@ summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)", " (/usr)", \
     " - / filesystem", ",root(/)"] # remove from summaries
 svr4pkgsseen = {}    #svr4 pkgs seen - pkgs indexed by name
 timestamp_files = [] # patterns of files that retain timestamps from svr4 pkgs
+tmpdirs = []
 wos_path = []        # list of search pathes for svr4 packages
 
 local_smf_manifests = tempfile.mkdtemp(prefix="pkg_smf.") # where we store our SMF manifests
@@ -573,8 +574,9 @@ def publish_pkg(pkg, proto_dir):
         # won't happen unless same pkg imported more than once into same ips pkg
         assert len(svr4_traversal_dict) == len(svr4_traversal_list)
 
-        t = trans.Transaction(def_repo, create_repo=file_repo, refresh_index=False,
-            pkg_name=pkg.fmristr(), noexecute=nopublish)
+        t = trans.Transaction(def_repo, create_repo=file_repo,
+            refresh_index=False, pkg_name=pkg.fmristr(), noexecute=nopublish,
+            xport=xport, pub=def_pub)
         transaction_id = t.open()
 
         # publish easy actions
@@ -756,8 +758,9 @@ def get_smf_fmris(file, action_path):
                 if instance_mf:
                         return instance_mf.keys()
 
-def fetch_file(action, proto_dir, server_url=None):
+def fetch_file(action, proto_dir, server_pub=None):
         """ Save the file action contents to proto_dir """
+
         basename = os.path.basename(action.attrs["path"])
         dirname = os.path.dirname(action.attrs["path"])
         tmppath = os.path.join(proto_dir, dirname)
@@ -768,7 +771,20 @@ def fetch_file(action, proto_dir, server_url=None):
                         raise
         f = os.path.join(tmppath, basename)
 
-        if not server_url and action.data() is not None:
+        if server_pub:
+                try:
+                        file_content = xport.get_content(server_pub,
+                            action.hash)
+                except apx.TransportError, e:
+                        print >> sys.stderr, e
+                        cleanup()
+                        sys.exit(1)
+
+                ofile = file(f, "w")
+                ofile.write(file_content)
+                ofile.close()
+                file_content = None
+        elif action.data() is not None:
                 ao = action.data()
                 bufsz = 256 * 1024
                 sz = int(action.attrs["pkg.size"])
@@ -778,33 +794,9 @@ def fetch_file(action, proto_dir, server_url=None):
                         os.write(fd, d)
                         sz -= len(d)
                 d = None
-        elif server_url.startswith("http://"):
-                ofile = file(f, "w")
-                ifile, version = versioned_urlopen(server_url, "file", [0], action.hash)
-                gunzip_from_stream(ifile, ofile)
-
-        elif server_url.startswith("file://"):
-                try:
-                        repo = get_repo(server_url)
-                        ifile = file(repo.file(action.hash), "rb")
-                        ofile = open(f, "wb")
-                        gunzip_from_stream(ifile, ofile)
-                        ifile.close()
-                        ofile.close()
-                except repository.RepositoryError, e:
-                        print "Unable to download %s from %s" % (action.attrs["path"],
-                            server_url)
-                        raise
         else:
                 raise RuntimeError("Unable to save file %s - no URL provided."
                     % action.attrs["path"])
-
-def get_repo(server_url):
-        """Return a Repository object from a given file URL"""
-        parts = urlparse.urlparse(server_url, "file", allow_fragments=0)
-        path = urllib.url2pathname(parts[2])
-
-        return repository.Repository(read_only=True, repo_root=path)
 
 def gen_hardlink_depend_actions(action):
         """ generate dependency action for hardlinks; action is the
@@ -985,40 +977,25 @@ def error(text, cmd=None):
         # program name on all platforms.
         emsg(ws + pkg_cmd + text_nows)
 
-def get_manifest(server_url, fmri):
+def get_manifest(server_pub, fmri):
         if not fmri: # no matching fmri
                 return null_manifest
 
-        return manifest_cache.setdefault((server_url, fmri), 
-            fetch_manifest(server_url, fmri))
+        return manifest_cache.setdefault((server_pub, fmri), 
+            fetch_manifest(server_pub, fmri))
 
-def fetch_manifest(server_url, fmri):
+def fetch_manifest(server_pub, fmri):
         """Fetch the manifest for package-fmri 'fmri' from the server
         in 'server_url'... return as Manifest object.... needs
         exact fmri"""
+
         # Request manifest from server
-
         try:
-                if server_url.startswith("http://"):
-                        m, v = versioned_urlopen(server_url, "manifest", [0],
-                        fmri.get_url_path())
-
-                elif server_url.startswith("file://"):
-                        repo = get_repo(server_url)
-                        m = file(repo.manifest(fmri), "rb")
-                else:
-                        raise RuntimeError("Repo url %s has an unknown scheme." %
-                            server_url)
-        except:
-                error(_("Unable to download manifest %s from %s") %
-                    (fmri.get_url_path(), server_url))
-                sys.exit(1)
-
-        # Read from server, write to file
-        try:
-                mfst_str = m.read()
-        except:
-                error(_("Error occurred while reading from: %s") % server_url)
+                mfst_str = xport.get_manifest(fmri, pub=server_pub,
+                    content_only=True)
+        except apx.TransportError, e:
+                print >> sys.stderr, e
+                cleanup()
                 sys.exit(1)
 
         m = manifest.Manifest()
@@ -1028,46 +1005,28 @@ def fetch_manifest(server_url, fmri):
 
 catalog_cache = {}
 
-def get_catalog(server_url):
-        return catalog_cache.get(server_url, fetch_catalog(server_url))[0] 
+def get_catalog(server_pub):
+        return catalog_cache.get(server_pub, fetch_catalog(server_pub))
 
-def cleanup_catalogs():
-        for c, d in catalog_cache.values():
-                shutil.rmtree(d)
-        catalog_cache.clear()
-
-def fetch_catalog(server_url):
+def fetch_catalog(server_pub):
         """Fetch the catalog from the server_url."""
 
-        # open connection for catalog
-        try:
-                c, v = versioned_urlopen(server_url, "catalog", [0])
-        except:
-                error(_("Unable to download catalog from: %s") % server_url)
-                sys.exit(1)
+        if not server_pub.meta_root:
+                # Create a temporary directory for catalog.
+                cat_dir = tempfile.mkdtemp()
+                tmpdirs.append(cat_dir)
+                server_pub.meta_root = cat_dir
 
-        # make a tempdir for catalog
-        dl_dir = tempfile.mkdtemp()
+        server_pub.transport = xport
+        server_pub.refresh(True, True)
 
-        # call catalog.recv to pull down catalog
-        try:
-                catalog.ServerCatalog.recv(c, dl_dir)
-        except: 
-                error(_("Error while reading from: %s") % server_url)
-                sys.exit(1)
+        cat = server_pub.catalog
 
-        # close connection to server
-        c.close()
-
-        # instantiate catalog object
-        cat = catalog.ServerCatalog(dl_dir, read_only=True)
-        
-        # return (catalog, tmpdir path)
-        return cat, dl_dir
+        return cat
 
 catalog_dict = {}
-def load_catalog(server_url):
-        c = get_catalog(server_url)
+def load_catalog(server_pub):
+        c = get_catalog(server_pub)
         d = {}
         for f in c.fmris():
                 d.setdefault(f.pkg_name, []).append(f)
@@ -1075,37 +1034,37 @@ def load_catalog(server_url):
         for k in d:
                 d[k].sort(reverse=True)
 
-        catalog_dict[server_url] = d        
+        catalog_dict[server_pub] = d        
 
-def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
+def expand_fmri(server_pub, fmri_string, constraint=version.CONSTRAINT_AUTO):
         """ from specified server, find matching fmri using CONSTRAINT_AUTO
         cache for performance.  Returns None if no matching fmri is found """
-        if server_url not in catalog_dict:
-                load_catalog(server_url)
+        if server_pub not in catalog_dict:
+                load_catalog(server_pub)
 
         fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")        
 
-        for f in catalog_dict[server_url].get(fmri.pkg_name, []):
+        for f in catalog_dict[server_pub].get(fmri.pkg_name, []):
                 if not fmri.version or f.version.is_successor(fmri.version, constraint):
                         return f
         return None
 
 
-def get_dependencies(server_url, fmri_list):
+def get_dependencies(server_pub, fmri_list):
         s = set()
         for f in fmri_list:
-                fmri = expand_fmri(server_url, f)
-                _get_dependencies(s, server_url, fmri)
+                fmri = expand_fmri(server_pub, f)
+                _get_dependencies(s, server_pub, fmri)
         return s
 
-def _get_dependencies(s, server_url, fmri):
+def _get_dependencies(s, server_pub, fmri):
         """ recursive incorp expansion"""
         s.add(fmri)
-        for a in get_manifest(server_url, fmri).gen_actions_by_type("depend"):
+        for a in get_manifest(server_pub, fmri).gen_actions_by_type("depend"):
                 if a.attrs["type"] == "incorporate":
-                        new_fmri = expand_fmri(server_url, a.attrs["fmri"]) 
+                        new_fmri = expand_fmri(server_pub, a.attrs["fmri"]) 
                         if new_fmri and new_fmri not in s: # ignore missing, already planned
-                                _get_dependencies(s, server_url, new_fmri)
+                                _get_dependencies(s, server_pub, new_fmri)
 
 def get_smf_packages(server_url, manifest_locations, filter):
         """ Performs a search against server_url looking for packages which contain
@@ -1433,21 +1392,17 @@ def SolarisParse(mf):
                             "(%s:%s)" % (token, lexer.infile, lexer.lineno))
 def repo_add_content(path_to_repo, path_to_proto):
         """Fire up depo to add content and rebuild search index"""
-        pythonpath = os.environ.get("PYTHONPATH", "")
 
-        args = (os.path.join(path_to_proto, "usr/lib/pkg.depotd"), 
-                "--add-content",
-                "--exit-ready", 
-                "-d", path_to_repo
-                )
+        cmdname = os.path.join(path_to_proto, "usr/bin/pkgrepo") 
+        argstr = "%s -s %s refresh" % (cmdname, path_to_repo)
 
         print "Adding content & rebuilding search indicies synchronously...."
-        print "%s" % str(args)
+        print "%s" % str(argstr)
         try:
-                proc = subprocess.Popen(args, env=os.environ)
+                proc = subprocess.Popen(argstr, shell=True)
                 ret = proc.wait()
         except OSError, e:
-                print "cannot execute %s: %s" % (args, e)
+                print "cannot execute %s: %s" % (argstr, e)
                 return 1
         if ret:
                 print "exited w/ status %d" % ret
@@ -1455,10 +1410,15 @@ def repo_add_content(path_to_repo, path_to_proto):
         print "done"
         return 0
 
+def cleanup():
+        """To be called at program finish."""
+        for d in tmpdirs:
+                shutil.rmtree(d, True)
 
 def main_func():
         global file_repo
         global def_branch
+        global def_pub
         global def_repo
         global def_vers
         global extra_entire_contents
@@ -1472,6 +1432,8 @@ def main_func():
         global wos_path
         global not_these_consolidations
         global curpkg
+        global xport
+        global xport_cfg
 
         
         try:
@@ -1568,6 +1530,16 @@ def main_func():
                 sys.exit(0)
 
         start_time = time.clock()
+        incoming_dir = tempfile.mkdtemp()
+
+        tmpdirs.append(incoming_dir)
+        tmpdirs.append(local_smf_manifests)
+
+        xport, xport_cfg = transport.setup_transport()
+        xport_cfg.incoming_download_dir = incoming_dir
+
+        def_pub = transport.setup_publisher(def_repo, "default", xport,
+            xport_cfg)
 
         print "Seeding local SMF manifest database from %s" % def_repo
 
@@ -1580,14 +1552,14 @@ def main_func():
                 pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
                 manifest = None
                 try:
-                        manifest = get_manifest(def_repo, pfmri)
+                        manifest = get_manifest(def_pub, pfmri)
                 except:
                         print "No manifest found for %s" % str(pfmri)
                         raise
                 for action in manifest.gen_actions_by_type("file"):
                         if smf_manifest.has_smf_manifest_dir(action.attrs["path"]):
                                 fetch_file(action, local_smf_manifests,
-                                    server_url=def_repo)
+                                    server_pub=def_pub)
 
         print "First pass: initial import", datetime.now()
 
@@ -1684,6 +1656,7 @@ def main_func():
         if errors:
                 for e in errors:
                         print "Fail: %s" % e
+                cleanup()
                 sys.exit(1)
         # check for require dependencies on obsolete or renamed pkgs
 
@@ -1712,6 +1685,7 @@ def main_func():
         if errors:
                 for e in errors:
                         print "Fail: %s" % e
+                cleanup()
                 sys.exit(1)
 
 
@@ -1721,14 +1695,16 @@ def main_func():
                 excludes = [variant.Variants({"variant.arch": get_arch()}).allow_action]
                 for uri in reference_uris:
                         server, fmri_string = uri.split("@", 1)
-                        for pfmri in get_dependencies(server, [fmri_string]):
+                        server_pub = transport.setup_publisher(server,
+                            "reference", xport, xport_cfg, remote_prefix=True)
+                        for pfmri in get_dependencies(server_pub, [fmri_string]):
                                 if pfmri is None:
                                         continue
                                 if pfmri.get_name() in pkgdict:
                                         continue # ignore pkgs already seen
                                 pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
                                 fmridict[pfmri.get_name()] = pfmri_str
-                                for action in get_manifest(server, pfmri).gen_actions(excludes):
+                                for action in get_manifest(server_pub, pfmri).gen_actions(excludes):
                                         if "path" not in action.attrs:
                                                 continue
                                         if action.name == "unknown":
@@ -1752,6 +1728,7 @@ def main_func():
                 if errors:
                         for e in errors:
                                 print "Fail: %s" % e
+                        cleanup()
                         sys.exit(1)
                 print "external packages checked for conflicts"
 
@@ -1896,6 +1873,7 @@ def main_func():
         if error_count:
                 print "%d/%d packages has errors; %.2f%% FAILED" % (error_count, total,
                     error_count * 100.0 / total)
+                cleanup()
                 sys.exit(1)
 
         print "%d/%d packages processed; %.2f%% complete" % (processed, total,
@@ -1904,12 +1882,13 @@ def main_func():
         if file_repo:
                 code = repo_add_content(def_repo[7:], g_proto_area)
                 if code:
+                        cleanup()
                         sys.exit(code)
 
-        shutil.rmtree(local_smf_manifests, True)
         print "Done:", datetime.now()
         elapsed = time.clock() - start_time 
         print "publication took %d:%.2d" % (elapsed/60, elapsed % 60)
+        cleanup()
         sys.exit(0)
         
 if __name__ == "__main__":

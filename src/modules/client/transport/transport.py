@@ -29,6 +29,7 @@ import errno
 import httplib
 import os
 import statvfs
+import tempfile
 import urllib
 import urlparse
 import zlib
@@ -55,18 +56,141 @@ from pkg.actions import ActionError
 from pkg.client import global_settings
 logger = global_settings.logger
 
+class TransportCfg(object):
+        """Contains configuration needed by the transport for proper
+        operations.  Clients must create one of these objects, and then pass
+        it to a transport instance when it is initialized.  This is the base
+        class."""
+
+        def gen_publishers(self):
+                raise NotImplementedError
+
+        def get_policy(self, policy_name):
+                raise NotImplementedError
+
+        def get_publisher(self, publisher_name):
+                raise NotImplementedError
+
+        cached_download_dir = property(None, None, None, 
+            "Absolute pathname to directory of cached, completed downloads.")
+
+        incoming_download_dir = property(None, None, None,
+            "Absolute pathname to directory of in-progress downloads.")
+
+        pkgdir = property(None, None, None,
+            "Absolute pathname to pkgdir, where the manifest files live.")
+
+        user_agent = property(None, None, None,
+            "A string that identifies the user agent for the transport.")
+
+
+class ImageTransportCfg(TransportCfg):
+        """A subclass of TransportCfg that gets its configuration information
+        from an Image object."""
+
+        def __init__(self, image):
+                self.__img = image
+        
+        def gen_publishers(self):
+                return self.__img.gen_publishers()
+
+        def get_policy(self, policy_name):
+                if not self.__img.cfg_cache:
+                        return False
+                return self.__img.cfg_cache.get_policy(policy_name)
+
+        def get_publisher(self, publisher_name):
+                return self.__img.get_publisher(publisher_name)
+
+        def __get_user_agent(self):
+                return misc.user_agent_str(self.__img,
+                    global_settings.client_name)
+
+        cached_download_dir = property(
+            lambda self: self.__img.cached_download_dir(),
+            None, None, "Absolute pathname to directory of cached, "
+            "completed downloads.")
+
+        incoming_download_dir = property(
+            lambda self: self.__img.incoming_download_dir(),
+            None, None, "Absolute pathname to directory of in-progress "
+            "downloads.")
+
+        pkgdir = property(lambda self: self.__img.pkgdir, None, None,
+            "Absolute pathname to pkgdir, where the manifest files live.")
+
+        user_agent = property(__get_user_agent, None, None,
+            "A string that identifies the user agent for the transport.")
+
+
+class GenericTransportCfg(TransportCfg):
+        """A subclass of TransportCfg for use by transport clients that
+        do not have an image."""
+
+        def __init__(self, publishers=misc.EmptyI, c_download=None,
+            i_download=None, pkgdir=None, policy_map=misc.EmptyDict):
+
+                self.__publishers = {}
+                self.__cached_download_dir = c_download
+                self.__incoming_download_dir = i_download
+                self.__pkgdir = pkgdir
+                self.__policy_map = policy_map
+
+                for p in publishers:
+                        self.__publishers[p.prefix] = p
+
+        def add_publisher(self, pub):
+                self.__publishers[pub.prefix] = pub
+
+        def gen_publishers(self):
+                return (p for p in self.__publishers.values())
+
+        def get_policy(self, policy_name):
+                return self.__policy_map.get(policy_name, False)
+
+        def get_publisher(self, publisher_name):
+                return self.__publishers.get(publisher_name)
+
+        def remove_publisher(self, publisher_name):
+                return self.__publishers.pop(publisher_name, None)
+
+        def __get_user_agent(self):
+                return misc.user_agent_str(None, global_settings.client_name)
+
+        def __set_c_dl_dir(self, dl_dir):
+                self.__cached_download_dir = dl_dir
+
+        def __set_i_dl_dir(self, dl_dir):
+                self.__incoming_download_dir = dl_dir
+
+        def __set_pkgdir(self, pkgdir):
+                self.__pkgdir = pkgdir
+
+        cached_download_dir = property(
+            lambda self: self.__cached_download_dir, __set_c_dl_dir, None,
+            "Absolute pathname to directory of cached, completed downloads.")
+
+        incoming_download_dir = property(
+            lambda self: self.__incoming_download_dir, __set_i_dl_dir, None,
+            "Absolute pathname to directory of in-progress downloads.")
+
+        pkgdir = property(lambda self: self.__pkgdir, __set_pkgdir, None,
+            "Absolute pathname to pkgdir, where the manifest files live.")
+
+        user_agent = property(__get_user_agent, None, None,
+            "A string that identifies the user agent for the transport.")
+
 
 class Transport(object):
         """The generic transport wrapper object.  Its public methods should
         be used by all client code that wishes to perform file/network
         packaging operations."""
 
-        def __init__(self, img):
-                """Initialize the Transport object.  If an Image object
-                is provided in img, use that to determine some of the
-                destination locations for transport operations."""
+        def __init__(self, tcfg):
+                """Initialize the Transport object. Caller must supply
+                a TransportCfg object."""
 
-                self.__img = img
+                self.__tcfg = tcfg
                 self.__engine = None
                 self.__cadir = None
                 self.__portal_test_executed = False
@@ -79,15 +203,16 @@ class Transport(object):
         def __setup(self):
                 self.__engine = engine.CurlTransportEngine(self)
 
-                # Configure engine's user agent based upon img configuration
-                ua = misc.user_agent_str(self.__img,
-                    global_settings.client_name)
-                self.__engine.set_user_agent(ua)
+                # Configure engine's user agent
+                self.__engine.set_user_agent(self.__tcfg.user_agent)
 
                 self.__repo_cache = trepo.RepoCache(self.__engine)
 
-                cc = self.__img.cfg_cache
-                if cc and cc.get_policy(imageconfig.MIRROR_DISCOVERY):
+                if not self._caches and self.__tcfg.cached_download_dir:
+                        self.add_cache(self.__tcfg.cached_download_dir,
+                            readonly=False)
+
+                if self.__tcfg.get_policy(imageconfig.MIRROR_DISCOVERY):
                         self.__dynamic_mirrors = mdetect.MirrorDetector()
                         try:
                                 self.__dynamic_mirrors.locate()
@@ -100,12 +225,13 @@ class Transport(object):
                 # For now, transport write caches all publisher data in one
                 # place regardless of publisher source.
                 self._caches = {}
-                self.add_cache(self.__img.cached_download_dir(),
-                    readonly=False)
+                if self.__tcfg.cached_download_dir:
+                        self.add_cache(self.__tcfg.cached_download_dir,
+                            readonly=False)
 
                 # Automatically add any publisher repository origins
                 # or mirrors that are filesystem-based as read-only caches.
-                for pub in self.__img.gen_publishers():
+                for pub in self.__tcfg.gen_publishers():
                         repo = pub.selected_repository
                         if not repo:
                                 continue
@@ -194,6 +320,9 @@ class Transport(object):
                 if not pub:
                         pub = '__all'
 
+                if self._caches is None:
+                        self._caches = {}
+
                 pub_caches = self._caches.setdefault(pub, [])
 
                 write_caches = [
@@ -248,6 +377,9 @@ class Transport(object):
                         pub = pub.prefix
                 elif not pub or not isinstance(pub, basestring):
                         pub = None
+
+                if self._caches is None:
+                        self._caches = {}
 
                 caches = [
                     cache
@@ -524,7 +656,7 @@ class Transport(object):
                         completed_dir = path
                 else:
                         completed_dir = pub.catalog_root
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -725,7 +857,7 @@ class Transport(object):
                             "publisher/0")
                 raise failures
 
-        def get_content(self, fmri, fhash, ccancel=None):
+        def get_content(self, pub, fhash, ccancel=None):
                 """Given a fmri and fhash, return the uncompressed content
                 from the remote object.  This is similar to get_datstream,
                 except that the transport handles retrieving and decompressing
@@ -733,22 +865,20 @@ class Transport(object):
                
                 self.__lock.acquire()
                 try:
-                        content = self._get_content(fmri, fhash,
+                        content = self._get_content(pub, fhash,
                             ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
                 return content
 
-        def _get_content(self, fmri, fhash, ccancel=None):
+        def _get_content(self, pub, fhash, ccancel=None):
                 """This is the function that implements get_content.
                 The other function is a wrapper for this one, which handles
                 the transport locking correctly."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
-                pub_prefix = fmri.get_publisher()
-                pub = self.__img.get_publisher(pub_prefix)
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # Call setup if the transport isn't configured or was shutdown.
@@ -811,7 +941,7 @@ class Transport(object):
 
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
-                pub = self.__img.get_publisher(pub_prefix)
+                pub = self.__tcfg.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(intent=intent,
@@ -845,32 +975,37 @@ class Transport(object):
                 raise failures
 
         def get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
-            ccancel=None):
+            ccancel=None, pub=None, content_only=False):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
 
                 self.__lock.acquire()
                 try:
                         m = self._get_manifest(fmri, excludes, intent,
-                            ccancel=ccancel)
+                            ccancel=ccancel, pub=pub, content_only=content_only)
                 finally:
                         self.__lock.release()
 
                 return m
 
         def _get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
-            ccancel=None):
+            ccancel=None, pub=None, content_only=False):
                 """This is the implementation of get_manifest.  The
                 get_manifest function wraps this."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
-                pub = self.__img.get_publisher(pub_prefix)
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
                 mcontent = None
-                header = self.__build_header(intent=intent,
-                    uuid=self.__get_uuid(pub))
+                header = None
+
+                if not pub:
+                        pub = self.__tcfg.get_publisher(pub_prefix)
+
+                if isinstance(pub, publisher.Publisher):
+                        header = self.__build_header(intent=intent,
+                            uuid=self.__get_uuid(pub))
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -896,11 +1031,12 @@ class Transport(object):
                                 verified = self._verify_manifest(fmri,
                                     content=mcontent)
 
+                                if content_only:
+                                        return mcontent
+
                                 m = manifest.CachedManifest(fmri,
-                                    self.__img.pkgdir,
-                                    self.__img.cfg_cache.preferred_publisher,
-                                    excludes,
-                                    mcontent)
+                                    self.__tcfg.pkgdir, excludes, mcontent)
+
                                 return m
 
                         except tx.ExcessiveTransientFailure, ex:
@@ -959,7 +1095,7 @@ class Transport(object):
                 """This is the implementation of prefetch_manifests.
                 The other function is a wrapper for this one."""
 
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -996,7 +1132,7 @@ class Transport(object):
                 mx_pub = {}
                 for fmri, intent in fetchlist:
                         pub_prefix = fmri.get_publisher()
-                        pub = self.__img.get_publisher(pub_prefix)
+                        pub = self.__tcfg.get_publisher(pub_prefix)
                         header = self.__build_header(intent=intent,
                             uuid=self.__get_uuid(pub))
                         if pub_prefix not in mx_pub:
@@ -1036,7 +1172,7 @@ class Transport(object):
                 progtrack = mxfr.get_progtrack()
 
                 # download_dir is temporary download path.
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -1104,15 +1240,12 @@ class Transport(object):
                                         failedreqs.append(s)
                                         continue
 
-                                pref_pub = \
-                                    self.__img.cfg_cache.preferred_publisher
-
                                 try:
                                         mf = file(dl_path)
                                         mcontent = mf.read()
                                         mf.close()
                                         manifest.CachedManifest(fmri,
-                                            self.__img.pkgdir, pref_pub,
+                                            self.__tcfg.pkgdir,
                                             excludes, mcontent)
                                 except (apx.InvalidPackageErrors,
                                     ActionError), e:
@@ -1162,7 +1295,11 @@ class Transport(object):
                 must be used."""
 
                 # Get publisher information from FMRI.
-                pub = self.__img.get_publisher(fmri.get_publisher())
+                pub = self.__tcfg.get_publisher(fmri.get_publisher())
+
+                if not pub:
+                        return False
+
                 # Use the publisher to get the catalog and its signature info.
                 try:
                         sigs = dict(pub.catalog.get_entry_signatures(fmri))
@@ -1219,7 +1356,7 @@ class Transport(object):
                 return header
 
         def __get_uuid(self, pub):
-                if not self.__img.cfg_cache.get_policy(imageconfig.SEND_UUID):
+                if not self.__tcfg.get_policy(imageconfig.SEND_UUID):
                         return None
 
                 try:
@@ -1257,12 +1394,20 @@ class Transport(object):
                 filelist = flist
                 pub = mfile.get_publisher()
                 progtrack = mfile.get_progtrack()
-                header = self.__build_header(uuid=self.__get_uuid(pub))
+                header = None
+
+                if isinstance(pub, publisher.Publisher):
+                        header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # download_dir is temporary download path.
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
 
-                cache = self._get_caches(pub, readonly=False)[0]
+                cache = self._get_caches(pub, readonly=False)
+                if cache:
+                        # For now, pick first cache in list, if any are
+                        # present.
+                        cache = cache[0]
+
                 for d in self.__gen_repos(pub, retry_count):
 
                         failedreqs = []
@@ -1334,9 +1479,11 @@ class Transport(object):
                                                 filelist = failedreqs
                                         continue
 
-                                cpath = cache.insert(s, dl_path)
-                                mfile.make_openers(s, cpath)
-                                mfile.del_hash(s)
+                                if cache:
+                                        cpath = cache.insert(s, dl_path)
+                                        mfile.file_done(s, cpath)
+                                else:
+                                        mfile.file_done(s, dl_path)
 
                         # Return if everything was successful
                         if not filelist and not errlist:
@@ -1357,7 +1504,7 @@ class Transport(object):
                 function is a wrapper around this function, mainly for
                 locking purposes."""
 
-                download_dir = self.__img.incoming_download_dir()
+                download_dir = self.__tcfg.incoming_download_dir
                 pub = mfile.get_publisher()
 
                 # Call setup if the transport isn't configured or was shutdown.
@@ -1554,6 +1701,34 @@ class Transport(object):
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
+        def __gen_publication_origin(self, pub, count):
+                """The pub argument may either be a Publisher or a
+                RepositoryURI object.  This function is specific to
+                publication operations because it ensures that clients
+                are using properly configured Publisher objects."""
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                # This is specifically to retry against a single origin
+                # in the case that network failures have occurred.  If
+                # the caller supplied a Publisher argument, make sure it
+                # has only one origin.
+                if isinstance(pub, publisher.Publisher):
+                        origins = pub.selected_repository.origins
+                        assert len(origins) == 1 
+                else:
+                        # If search was invoked with -s option, we'll have a
+                        # RepoURI instead of a publisher.  Convert this to a
+                        # repo uri
+                        origins = [pub]
+
+                for i in xrange(count):
+                        rslist = self.stats.get_repostats(origins, origins)
+                        for rs, ruri in rslist:
+                                yield self.__repo_cache.new_repo(rs, ruri)
+
         def __gen_origins_byversion(self, pub, count, operation, version,
             ccancel=None):
                 """Return origin repos for publisher pub, that support
@@ -1597,13 +1772,20 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for i in xrange(count):
+                if isinstance(pub, publisher.Publisher):
                         repo = pub.selected_repository
                         repolist = repo.mirrors[:]
                         repolist.extend(repo.origins)
                         repolist.extend(self.__dynamic_mirrors)
-                        rslist = self.stats.get_repostats(repolist,
-                            repo.origins)
+                        origins = repo.origins
+                else:
+                        # If caller passed RepositoryURI object in as
+                        # pub argument, repolist is the RepoURI
+                        repolist = [pub]
+                        origins = repolist
+
+                for i in xrange(count):
+                        rslist = self.stats.get_repostats(repolist, origins)
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
@@ -1620,12 +1802,15 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                repo = pub.selected_repository
-                if origin_only:
+                if isinstance(pub, publisher.Publisher):
+                        repo = pub.selected_repository
                         repolist = repo.origins[:]
+                        if not origin_only:
+                                repolist.extend(repo.mirrors)
                 else:
-                        repolist = repo.mirrors[:]
-                        repolist.extend(repo.origins)
+                        # If caller passed RepositoryURI object in as
+                        # pub argument, repolist is the RepoURI
+                        repolist = [pub]
 
                 n = len(repolist)
                 m = self.stats.get_num_visited(repolist)
@@ -1691,7 +1876,7 @@ class Transport(object):
                 self.__portal_test_executed = True
                 vd = None
 
-                for pub in self.__img.gen_publishers():
+                for pub in self.__tcfg.gen_publishers():
                         try:
                                 vd = self._get_versions(pub, ccancel=ccancel)
                         except tx.TransportException, ex:
@@ -1776,8 +1961,26 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
                 
-                publisher = self.__img.get_publisher(fmri.get_publisher())
+                publisher = self.__tcfg.get_publisher(fmri.get_publisher())
                 mfile = MultiFile(publisher, self, progtrack, ccancel)
+
+                return mfile
+
+        def multi_file_ni(self, publisher, final_dir, decompress=False,
+            progtrack=None, ccancel=None):
+                """Creates a MultiFileNI object for this transport.
+                The caller may add actions to the multifile object
+                and wait for the download to complete.
+
+                This is used by callers who want to download files,
+                but not install them through actions."""
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+                
+                mfile = MultiFileNI(publisher, self, final_dir,
+                    decompress=decompress, progtrack=progtrack, ccancel=ccancel)
 
                 return mfile
 
@@ -1846,6 +2049,261 @@ class Transport(object):
                         raise tx.InvalidContentException(path,
                             "chash failure: expected: %s computed: %s" % \
                             (chash, newhash), size=s.st_size)
+
+        def publish_add(self, pub, action=None, trans_id=None):
+                """Perform the 'add' publication operation to the publisher
+                supplied in pub.  The caller should include the action in the
+                action argument. The transaction-id is passed in trans_id."""
+
+                self.__lock.acquire()
+                try:
+                        self._publish_add(pub, action=action, trans_id=trans_id)
+                finally:
+                        self.__lock.release()
+
+        def _publish_add(self, pub, action=None, trans_id=None):
+                """Implementation of publish_add.  The current publish_add
+                function is a locking wrapper for the transport."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_publication_origin(pub, retry_count):
+                        try:
+                                d.publish_add(action, header=header,
+                                    trans_id=trans_id)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        def publish_abandon(self, pub, trans_id=None):
+                """Perform an 'abandon' publication operation to the
+                publisher supplied in the pub argument.  The caller should
+                also include the transaction id in trans_id."""
+
+                self.__lock.acquire()
+                try:
+                        state, fmri = self._publish_abandon(pub,
+                            trans_id=trans_id)
+                finally:
+                        self.__lock.release()
+
+                return state, fmri
+
+        def _publish_abandon(self, pub, trans_id=None):
+                """Implementation of publish_abandon.  The current
+                publish_abandon function is a locking wrapper for the
+                transport."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if transport isn't configured, or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_publication_origin(pub, retry_count):
+                        try:
+                                state, fmri = d.publish_abandon(header=header,
+                                    trans_id=trans_id)
+                                return state, fmri
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        def publish_close(self, pub, trans_id=None, refresh_index=False,
+            add_to_catalog=False):
+                """Perform a 'close' publication operation to the
+                publisher supplied in the pub argument.  The caller should
+                also include the transaction id in trans_id.  If
+                the refresh_index argument is true, the repository
+                will be told to refresh its index.  If add_to_catalog
+                is true, the pkg will be added to the catalog once
+                the transactions close.  Not all transport methods
+                recognize this parameter."""
+
+                self.__lock.acquire()
+                try:
+                        state, fmri = self._publish_close(pub,
+                            trans_id=trans_id, refresh_index=refresh_index,
+                            add_to_catalog=add_to_catalog)
+                finally:
+                        self.__lock.release()
+
+                return state, fmri
+
+        def _publish_close(self, pub, trans_id=None, refresh_index=False,
+            add_to_catalog=False):
+                """Implementation of publish_close.  The current
+                publish_close function is a locking wrapper for the
+                transport."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if transport isn't configured, or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_publication_origin(pub, retry_count):
+                        try:
+                                state, fmri = d.publish_close(header=header,
+                                    trans_id=trans_id,
+                                    refresh_index=refresh_index,
+                                    add_to_catalog=add_to_catalog)
+                                return state, fmri
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        def publish_open(self, pub, client_release=None, pkg_name=None):
+                """Perform an 'open' transaction to start a publication
+                transaction to the publisher named in pub.  The caller should
+                supply the client's OS release in client_release, and the
+                package's name in pkg_name."""
+
+                self.__lock.acquire()
+                try:
+                        trans_id = self._publish_open(pub,
+                            client_release=client_release, pkg_name=pkg_name)
+                finally:
+                        self.__lock.release()
+
+                return trans_id
+
+        def _publish_open(self, pub, client_release=None, pkg_name=None):
+                """Implementation of publish_open.  The current publish_open
+                function is a locking wrapper for the transport."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if transport isn't configured, or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_publication_origin(pub, retry_count):
+                        try:
+                                trans_id = d.publish_open(header=header,
+                                    client_release=client_release,
+                                    pkg_name=pkg_name)
+                                return trans_id
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        def publish_refresh_index(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to refresh their index."""
+
+                self.__lock.acquire()
+                try:
+                        self._publish_refresh_index(pub)
+                finally:
+                        self.__lock.release()
+
+        def _publish_refresh_index(self, pub):
+                """Implmentation of publish_refresh_index.  The current
+                publish_refresh_index function is a locking wrapper for
+                the transport."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if transport isn't configured, or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_publication_origin(pub, retry_count):
+                        try:
+                                d.publish_refresh_index(header=header)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        def publish_cache_repository(self, pub, repo):
+                """If the caller needs to override the underlying Repository
+                object kept by the transport, it should use this method
+                to replace the cached Repository object."""
+
+                assert(isinstance(pub, publisher.Publisher))
+
+                if not self.__engine:
+                        self.__setup()
+
+                origins = [pub.selected_repository.origins[0]]
+                rslist = self.stats.get_repostats(origins, origins)
+                rs, ruri = rslist[0]
+
+                self.__repo_cache.update_repo(rs, ruri, repo)
+
+        def publish_cache_contains(self, pub):
+                """Returns true if the publisher's origin is cached
+                in the repo cache."""
+
+                if not self.__engine:
+                        self.__setup()
+
+                originuri = pub.selected_repository.origins[0].uri
+                return originuri in self.__repo_cache
+
+
 
 class MultiXfr(object):
         """A transport object for performing multiple simultaneous
@@ -1930,16 +2388,17 @@ class MultiFile(MultiXfr):
 
         def add_action(self, action):
                 """The multiple file retrieval operation is asynchronous.
-                Add files to retrieve with this function.  Supply the
-                publisher in pub and the list of files in filelist.
-                Wait for the operation by calling waitFiles."""
+                Add files to retrieve with this function.  The caller
+                should pass the action, which causes its file to
+                be added to an internal retrieval list."""
 
                 cpath = self._transport._action_cached(action,
                     self.get_publisher())
                 if cpath:
                         action.data = self._make_opener(cpath)
-                        filesz = int(misc.get_pkg_otw_size(action))
-                        self._progtrack.download_add_progress(1, filesz)
+                        if self._progtrack:
+                                filesz = int(misc.get_pkg_otw_size(action))
+                                self._progtrack.download_add_progress(1, filesz)
                         return
 
                 hashval = action.hash
@@ -1959,7 +2418,13 @@ class MultiFile(MultiXfr):
                         return f
                 return opener
 
-        def make_openers(self, hashval, cache_path):
+        def file_done(self, hashval, current_path):
+                """Tell MFile that the transfer completed successfully."""
+
+                self._make_openers(hashval, current_path)
+                self.del_hash(hashval)
+
+        def _make_openers(self, hashval, cache_path):
                 """Find each action associated with the hash value hashval.
                 Create an opener that points to the cache file for the
                 action's data method."""
@@ -1984,7 +2449,9 @@ class MultiFile(MultiXfr):
                 # by the difference between what we have and the total we should
                 # have received.
                 nbytes = int(totalsz - filesz)
-                self._progtrack.download_add_progress((nactions - 1), nbytes)
+                if self._progtrack:
+                        self._progtrack.download_add_progress((nactions - 1),
+                            nbytes)
 
         def subtract_progress(self, size):
                 """Subtract the progress accumulated by the download of
@@ -1992,6 +2459,9 @@ class MultiFile(MultiXfr):
                 hashes with multiple actions.  If this has been invoked,
                 it has happened before make_openers, so it's only necessary
                 to adjust the progress for a single file."""
+
+                if not self._progtrack:
+                        return
 
                 self._progtrack.download_add_progress(-1, int(-size))
 
@@ -2001,4 +2471,127 @@ class MultiFile(MultiXfr):
 
                 if self._hash:
                         self._transport._get_files(self)
+
+class MultiFileNI(MultiFile):
+        """A transport object for performing multi-file requests
+        using pkg actions.  This takes care of matching the publisher
+        with the actions, and performs the download and content
+        verification necessary to assure correct content installation.
+
+        This subclass is used when the actions won't be installed, but
+        are used to identify and verify the content.  Additional parameters
+        define what happens when download finishes successfully."""
+
+        def __init__(self, pub, xport, final_dir, decompress=False,
+            progtrack=None, ccancel=None):
+                """Supply the destination publisher in the pub argument.
+                The transport object should be passed in xport."""
+
+                MultiFile.__init__(self, pub, xport, progtrack=progtrack,
+                    ccancel=ccancel)
+
+                self._final_dir = final_dir
+                self._decompress = decompress
+
+        def add_action(self, action):
+                """The multiple file retrieval operation is asynchronous.
+                Add files to retrieve with this function.   The caller
+                should pass the action, which causes its file to
+                be added to an internal retrieval list."""
+
+                cpath = self._transport._action_cached(action,
+                    self.get_publisher())
+                hashval = action.hash
+
+                if cpath:
+                        self._final_copy(hashval, cpath)
+                        if self._progtrack:
+                                filesz = int(misc.get_pkg_otw_size(action))
+                                self._progtrack.download_add_progress(1, filesz)
+                        return
+
+                self.add_hash(hashval, action)
+
+        def file_done(self, hashval, current_path):
+                """Tell MFile that the transfer completed successfully."""
+
+                totalsz = 0
+                nactions = 0
+
+                filesz = os.stat(current_path).st_size
+                for action in self._hash[hashval]:
+                        nactions += 1
+                        totalsz += misc.get_pkg_otw_size(action)
+
+                # The progress tracker accounts for the sizes of all actions
+                # even if we only have to perform one download to satisfy
+                # multiple actions with the same hashval.  Since we know
+                # the size of the file we downloaded, but not necessarily
+                # the size of the action responsible for the download,
+                # generate the total size and subtract the size that was
+                # downloaded.  The downloaded size was already accounted for in
+                # the engine's progress tracking.  Adjust the progress tracker
+                # by the difference between what we have and the total we should
+                # have received.
+                nbytes = int(totalsz - filesz)
+                if self._progtrack:
+                        self._progtrack.download_add_progress((nactions - 1),
+                            nbytes)
+
+                self._final_copy(hashval, current_path)
+                self.del_hash(hashval)
+
+        def _final_copy(self, hashval, current_path):
+                """Copy the file named by hashval from current_path
+                to the final destination, decompressing, if necessary."""
+
+                dest = os.path.join(self._final_dir, hashval)
+                tmp_prefix = "%s." % hashval
+
+                try:
+                        os.makedirs(self._final_dir, mode=misc.PKG_DIR_MODE)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        if e.errno != errno.EEXIST:
+                                raise
+
+                try:
+                        fd, fn = tempfile.mkstemp(dir=self._final_dir,
+                            prefix=tmp_prefix)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+                src = file(current_path, "rb")
+                outfile = os.fdopen(fd, "wb")
+                if self._decompress:
+                        misc.gunzip_from_stream(src, outfile)
+                else:
+                        while True:
+                                buf = src.read(64 * 1024)
+                                if buf == "":
+                                        break
+                                outfile.write(buf)
+                outfile.close()
+                src.close()
+
+                try:
+                        os.chmod(fn, misc.PKG_FILE_MODE)
+                        portable.rename(fn, dest)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
 

@@ -168,7 +168,8 @@ class LicenseAction(generic.Action):
                         return opener().read()
 
                 try:
-                        return img.transport.get_content(fmri, self.hash)
+                        pub = img.get_publisher(fmri.get_publisher())
+                        return img.transport.get_content(pub, self.hash)
                 finally:
                         img.cleanup_downloads()
 

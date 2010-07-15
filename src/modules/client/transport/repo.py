@@ -118,6 +118,45 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
+        def publish_add(self, action, header=None, trans_id=None):
+                """The publish operation that adds content to a repository.
+                The action must be populated with a data property.
+                Callers may supply a header, and should supply a transaction
+                id in trans_id."""
+
+                raise NotImplementedError
+
+        def publish_abandon(self, header=None, trans_id=None):
+                """The 'abandon' publication operation, that tells a
+                Repository to abort the current transaction.  The caller
+                must specify the transaction id in trans_id. Returns
+                a (publish-state, fmri) tuple."""
+
+                raise NotImplementedError
+
+        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+            add_to_catalog=False):
+                """The close operation tells the Repository to commit
+                the transaction identified by trans_id.  The caller may
+                specify refresh_index and add_to_catalog, if needed.
+                This method returns a (publish-state, fmri) tuple."""
+
+                raise NotImplementedError
+
+        def publish_open(self, header=None, client_release=None, pkg_name=None):
+                """Begin a publication operation by calling 'open'.
+                The caller must specify the client's OS release in
+                client_release, and the package's name in pkg_name.
+                Returns a transaction-ID."""
+
+                raise NotImplementedError
+
+        def publish_refresh_index(self, header=None):
+                """If the Repo points to a Repository that has a refresh-able
+                index, refresh the index."""
+
+                raise NotImplementedError
+
         def touch_manifest(self, fmri, header=None, ccancel=None):
                 """Send data about operation intent without actually
                 downloading a manifest."""
@@ -210,10 +249,11 @@ class HTTPRepo(TransportRepo):
                     repourl=self._url, ccancel=ccancel,
                     sock_path=self._sock_path)
 
-        def _post_url(self, url, data, header=None, ccancel=None):
-                return self._engine.send_data(url, data, header,
+        def _post_url(self, url, data=None, header=None, ccancel=None,
+            data_fobj=None):
+                return self._engine.send_data(url, data=data, header=header,
                     repourl=self._url, ccancel=ccancel,
-                    sock_path=self._sock_path)
+                    sock_path=self._sock_path, data_fobj=data_fobj)
 
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
@@ -491,6 +531,122 @@ class HTTPRepo(TransportRepo):
 
                 return self._verdata is not None
 
+        def publish_add(self, action, header=None, trans_id=None):
+                """The publish operation that adds content to a repository.
+                The action must be populated with a data property.
+                Callers may supply a header, and should supply a transaction
+                id in trans_id."""
+
+                attrs = action.attrs
+                data_fobj = None
+                data = None
+                methodstr = "add/0/"
+
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                request_str = "%s/%s" % (trans_id, action.name)
+                requesturl = urlparse.urljoin(baseurl, request_str)
+
+                if action.data:
+                        data_fobj = action.data()
+                else:
+                        data = ""
+
+                headers = dict(
+                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
+                    for i, k in enumerate(attrs)
+                )
+
+                if header:
+                        headers.update(header)
+
+                fobj = self._post_url(requesturl, header=headers,
+                    data_fobj=data_fobj, data=data)
+
+                # Discard response body
+                fobj.read()
+
+        def publish_abandon(self, header=None, trans_id=None):
+                """The 'abandon' publication operation, that tells a
+                Repository to abort the current transaction.  The caller
+                must specify the transaction id in trans_id. Returns
+                a (publish-state, fmri) tuple."""
+
+                methodstr = "abandon/0/"
+
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                request_str = trans_id
+                requesturl = urlparse.urljoin(baseurl, request_str)
+
+                fobj = self._fetch_url(requesturl, header=header)
+
+                # Discard response body
+                fobj.read()
+
+                return fobj.getheader("State", None), \
+                     fobj.getheader("Package-FMRI", None)
+
+        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+            add_to_catalog=False):
+                """The close operation tells the Repository to commit
+                the transaction identified by trans_id.  The caller may
+                specify refresh_index and add_to_catalog, if needed.
+                This method returns a (publish-state, fmri) tuple."""
+
+                methodstr = "close/0/"
+                headers = {}
+                if not refresh_index:
+                        headers["X-IPkg-Refresh-Index"] = 0
+                if not add_to_catalog:
+                        headers["X-IPkg-Add-To-Catalog"] = 0
+                if header:
+                        headers.update(header)
+
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                request_str = trans_id
+                requesturl = urlparse.urljoin(baseurl, request_str)
+
+                fobj = self._fetch_url(requesturl, header=headers)
+
+                # Discard response body
+                fobj.read()
+
+                return fobj.getheader("State", None), \
+                     fobj.getheader("Package-FMRI", None)
+
+        def publish_open(self, header=None, client_release=None, pkg_name=None):
+                """Begin a publication operation by calling 'open'.
+                The caller must specify the client's OS release in
+                client_release, and the package's name in pkg_name.
+                Returns a transaction-ID."""
+
+                methodstr = "open/0/"
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                request_str = urllib.quote(pkg_name, "")
+                requesturl = urlparse.urljoin(baseurl, request_str)
+
+                headers = {"Client-Release": client_release}
+                if header:
+                        headers.update(header)
+
+                fobj = self._fetch_url(requesturl, header=headers)
+
+                # Discard response body
+                fobj.read()
+
+                return fobj.getheader("Transaction-ID", None)
+
+        def publish_refresh_index(self, header=None):
+                """If the Repo points to a Repository that has a refresh-able
+                index, refresh the index."""
+
+                methodstr = "index/0/refresh/"
+                requesturl = urlparse.urljoin(self._repouri.uri, methodstr)
+
+                fobj = self._fetch_url(requesturl, header=header)
+
+                # Discard response body
+                fobj.read()
+
         def supports_version(self, op, ver):
                 """Returns true if operation named in string 'op'
                 supports integer version in 'ver' argument."""
@@ -549,29 +705,37 @@ class HTTPSRepo(HTTPRepo):
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel, sock_path=self._sock_path)
 
-        def _post_url(self, url, data, header=None, ccancel=None):
-                return self._engine.send_data(url, data, header=header,
+        def _post_url(self, url, data=None, header=None, ccancel=None,
+            data_fobj=None):
+                return self._engine.send_data(url, data=data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel, sock_path=self._sock_path)
+                    ccancel=ccancel, sock_path=self._sock_path,
+                    data_fobj=data_fobj)
 
 
 class FileRepo(TransportRepo):
 
-        def __init__(self, repostats, repouri, engine):
+        def __init__(self, repostats, repouri, engine, frepo=None):
                 """Create a file repo.  Repostats is a RepoStats object.
                 Repouri is a RepositoryURI object.  Engine is a transport
-                engine object.
+                engine object.  If the caller wants to pass a Repository
+                object instead of having FileRepo create one, it should
+                pass the object in the frepo argument.
 
                 The convenience function new_repo() can be used to create
                 the correct repo."""
 
-                self._frepo = None
+                self._frepo = frepo
                 self._url = repostats.url
                 self._repouri = repouri
                 self._engine = engine
                 self._verdata = None
                 self.__stats = repostats
+
+                # If caller supplied a Repository object, we're done. Return.
+                if self._frepo:
+                        return
 
                 try:
                         scheme, netloc, path, params, query, fragment = \
@@ -989,6 +1153,69 @@ class FileRepo(TransportRepo):
 
                 return self._verdata is not None
 
+        def publish_add(self, action, header=None, trans_id=None):
+                """The publish operation that adds an action and its
+                payload (if applicable) to an existing transaction in a
+                repository.  The action must be populated with a data property.
+                Callers may supply a header, and should supply a transaction
+                id in trans_id."""
+
+                try:
+                        self._frepo.add(trans_id, action)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_abandon(self, header=None, trans_id=None):
+                """The abandon operation, that tells a Repository to abort
+                the current transaction.  The caller must specify the
+                transaction id in trans_id. Returns a (publish-state, fmri)
+                tuple."""
+
+                try:
+                        pkg_state = self._frepo.abandon(trans_id)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+                return None, pkg_state
+
+        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+            add_to_catalog=False):
+                """The close operation tells the Repository to commit
+                the transaction identified by trans_id.  The caller may
+                specify refresh_index and add_to_catalog, if needed.
+                This method returns a (publish-state, fmri) tuple."""
+
+                try:
+                        pkg_fmri, pkg_state = self._frepo.close(trans_id,
+                            refresh_index=refresh_index,
+                            add_to_catalog=add_to_catalog)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+                return pkg_fmri, pkg_state
+
+        def publish_open(self, header=None, client_release=None, pkg_name=None):
+                """Begin a publication operation by calling 'open'.
+                The caller must specify the client's OS release in
+                client_release, and the package's name in pkg_name.
+                Returns a transaction-ID string."""
+
+                try:
+                        trans_id = self._frepo.open(client_release, pkg_name)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+                return trans_id
+
+        def publish_refresh_index(self, header=None):
+                """If the Repo points to a Repository that has a refresh-able
+                index, refresh the index."""
+
+                try:
+                        self._frepo.refresh_index()
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
         def supports_version(self, op, ver):
                 """Returns true if operation named in string 'op'
                 supports integer version in 'ver' argument."""
@@ -1110,11 +1337,18 @@ class RepoCache(object):
             "https": HTTPSRepo,
         }
 
+        update_schemes = {
+            "file": FileRepo
+        }
+
         def __init__(self, engine):
                 """Caller must include a TransportEngine."""
 
                 self.__engine = engine
                 self.__cache = {}
+
+        def __contains__(self, url):
+                return url in self.__cache
 
         def clear_cache(self):
                 """Flush the contents of the cache."""
@@ -1141,6 +1375,28 @@ class RepoCache(object):
                 self.__cache[origin_url] = repo
 
                 return repo
+
+        def update_repo(self, repostats, repouri, repository):
+                """For the FileRepo, some callers need to update its
+                Repository object.  They should use this method to do so.
+                If the Repo isn't in the cache, it's created and added."""
+
+                origin_url = repostats.url
+                urltuple = urlparse.urlparse(origin_url)
+                scheme = urltuple[0]
+
+                if scheme not in RepoCache.update_schemes:
+                        return
+
+                if origin_url in self.__cache:
+                        repo = self.__cache[origin_url]
+                        repo._frepo = repository
+                        return
+
+                repo = RepoCache.update_schemes[scheme](repostats, repouri,
+                    self.__engine, frepo=repository)
+
+                self.__cache[origin_url] = repo
 
         def remove_repo(self, repo=None, url=None):
                 """Remove a repo from the cache.  Caller must supply

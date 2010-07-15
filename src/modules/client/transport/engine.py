@@ -92,6 +92,7 @@ class CurlTransportEngine(TransportEngine):
                         eh.url = None
                         eh.repourl = None
                         eh.fobj = None
+                        eh.r_fobj = None
                         eh.filepath = None
                         eh.success = False
                         eh.fileprog = None
@@ -672,8 +673,9 @@ class CurlTransportEngine(TransportEngine):
                 self.__success = []
                 self.__orphans = set()
 
-        def send_data(self, url, data, header=None, sslcert=None, sslkey=None,
-            repourl=None, ccancel=None, sock_path=None):
+        def send_data(self, url, data=None, header=None, sslcert=None,
+            sslkey=None, repourl=None, ccancel=None, sock_path=None,
+            data_fobj=None):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -694,7 +696,7 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header, data=data,
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
-                    sock_path=None)
+                    sock_path=None, read_fobj=data_fobj)
 
                 self.__req_q.appendleft(t)
 
@@ -840,20 +842,62 @@ class CurlTransportEngine(TransportEngine):
                 if not proto in ("http", "https"):
                         return
 
+                if treq.read_filepath:
+                        try:
+                                hdl.r_fobj = open(treq.read_filepath, "rb",
+                                    self.__file_bufsz)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                # Raise OperationError if it's not EACCES
+                                # or EROFS.
+                                raise tx.TransportOperationError(
+                                    "Unable to open file: %s" % e)
+
                 if treq.compressible:
                         hdl.setopt(pycurl.ENCODING, "")
 
                 if treq.hdrfunc:
                         hdl.setopt(pycurl.HEADERFUNCTION, treq.hdrfunc)
 
-                if treq.httpmethod == "HEAD":
+                if treq.httpmethod == "GET":
+                        hdl.setopt(pycurl.HTTPGET, True)
+                elif treq.httpmethod == "HEAD":
                         hdl.setopt(pycurl.NOBODY, True)
                 elif treq.httpmethod == "POST":
                         hdl.setopt(pycurl.POST, True)
-                        hdl.setopt(pycurl.POSTFIELDS, treq.data)
+                        if treq.data is not None:
+                                hdl.setopt(pycurl.POSTFIELDS, treq.data)
+                        elif hdl.r_fobj or treq.read_fobj:
+                                if not hdl.r_fobj:
+                                        hdl.r_fobj = treq.read_fobj
+                                hdl.setopt(pycurl.READDATA, hdl.r_fobj)
+                                hdl.setopt(pycurl.POSTFIELDSIZE,
+                                    os.fstat(hdl.r_fobj.fileno()).st_size)
+                        else:
+                                raise tx.TransportOperationError("Transport "
+                                    "operation for POST URL %s did not "
+                                    "supply data or read_fobj.  At least one "
+                                    "is required." % treq.url)
+                elif treq.httpmethod == "PUT":
+                        hdl.setopt(pycurl.UPLOAD, True)
+                        if hdl.r_fobj or treq.read_fobj:
+                                if not hdl.r_fobj:
+                                        hdl.r_fobj = treq.read_fobj
+                                hdl.setopt(pycurl.READDATA, hdl.r_fobj)
+                                hdl.setopt(pycurl.INFILESIZE,
+                                    os.fstat(hdl.r_fobj.fileno()).st_size)
+                        else:
+                                raise tx.TransportOperationError("Transport "
+                                    "operation for PUT URL %s did not "
+                                    "supply a read_fobj.  One is required."
+                                     % treq.url)
+                elif treq.httpmethod == "DELETE":
+                        hdl.setopt(pycurl.CUSTOMREQUEST, "DELETE")
                 else:
-                        # Default to GET
-                        hdl.setopt(pycurl.HTTPGET, True)
+                        raise tx.TransportOperationError("Invalid http method "
+                            "'%s' specified." % treq.httpmethod)
 
                 # Set up SSL options
                 if treq.sslcert:
@@ -924,6 +968,9 @@ class CurlTransportEngine(TransportEngine):
                                         ft = hdl.filetime
                                         os.utime(hdl.filepath, (ft, ft))
 
+                if hdl.r_fobj:
+                        hdl.r_fobj.close()
+                        hdl.r_fobj = None
 
                 hdl.url = None
                 hdl.repourl = None
@@ -944,7 +991,7 @@ class TransportRequest(object):
             hdrfunc=None, header=None, data=None, httpmethod="GET",
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, progfunc=None, uuid=None,
-            sock_path=None):
+            sock_path=None, read_fobj=None, read_filepath=None):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -988,6 +1035,14 @@ class TransportRequest(object):
                 light-weight implementations may use progfunc instead,
                 especially if they don't need per-file updates.
 
+                read_filepath - If the request is sending a file, include
+                the path here, as this is the most efficient way to send
+                the data.
+
+                read_fobj - If the request is sending a large payload,
+                this points to a fileobject from which the data may be
+                read.
+
                 repouri - This is the URL stem that identifies the repo.
                 It's a subset of url.  It's also used by the stats system.
 
@@ -1019,3 +1074,5 @@ class TransportRequest(object):
                 self.compressible = compressible
                 self.uuid = uuid
                 self.socket_path = sock_path
+                self.read_fobj = read_fobj
+                self.read_filepath = read_filepath

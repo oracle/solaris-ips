@@ -28,18 +28,15 @@
 repository.  Note that only the Transaction class should be used directly,
 though the other classes can be referred to for documentation purposes."""
 
-import httplib
-import os
-import StringIO
 import urllib
-import urllib2
 import urlparse
 
-from pkg.misc import versioned_urlopen, EmptyDict
+from pkg.misc import EmptyDict
 import pkg.actions as actions
 import pkg.config as cfg
 import pkg.portable.util as os_util
 import pkg.server.repository as sr
+import pkg.client.api_errors as apx
 
 class TransactionError(Exception):
         """Base exception class for all Transaction exceptions."""
@@ -128,352 +125,13 @@ class UnsupportedRepoTypeOperationError(TransactionError):
                     "type": self._args.get("type", "") }
 
 
-class FileTransaction(object):
-        """Provides a publishing interface for file-based repositories."""
-
-        # Used to avoid the overhead of initializing the repository for
-        # successive transactions.
-        __repo_cache = {}
-
-        def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, refresh_index=True):
-                scheme, netloc, path, params, query, fragment = \
-                    urlparse.urlparse(origin_url, "file", allow_fragments=0)
-                path = urllib.url2pathname(path)
-
-                repo_cache = self.__class__.__repo_cache
-
-                if not os.path.isabs(path):
-                        raise TransactionRepositoryURLError(origin_url,
-                            msg=_("Not an absolute path."))
-
-                if origin_url not in repo_cache:
-                        try:
-                                repo = sr.Repository(auto_create=create_repo,
-                                    properties=repo_props, repo_root=path, 
-                                    refresh_index=refresh_index)
-                        except EnvironmentError, e:
-                                raise TransactionOperationError(None, msg=_(
-                                    "An error occurred while trying to "
-                                    "initialize the repository directory "
-                                    "structures:\n%s") % e)
-                        except cfg.ConfigError, e:
-                                raise TransactionRepositoryConfigError(str(e))
-                        except sr.RepositoryInvalidError, e:
-                                raise TransactionRepositoryInvalidError(str(e))
-                        except sr.RepositoryError, e:
-                                raise TransactionOperationError(None,
-                                    msg=str(e))
-                        repo_cache[origin_url] = repo
-
-                self.__repo = repo_cache[origin_url]
-                self.origin_url = origin_url
-                self.pkg_name = pkg_name
-                self.trans_id = trans_id
-
-        def add(self, action):
-                """Adds an action and its related content to an in-flight
-                transaction.  Returns nothing."""
-
-                try:
-                        # Perform additional publication-time validation of
-                        # actions before further processing is done.
-                        action.validate()
-
-                        # Now add to the repository.
-                        self.__repo.add(self.trans_id, action)
-                except (actions.ActionError, sr.RepositoryError), e:
-                        raise TransactionOperationError("add",
-                            trans_id=self.trans_id, msg=str(e))
-
-        def close(self, abandon=False, refresh_index=True, add_to_catalog=True):
-                """Ends an in-flight transaction.  Returns a tuple containing
-                a package fmri (if applicable) and the final state of the
-                related package.
-
-                If 'abandon' is omitted or False, the package will be published;
-                otherwise the server will discard the current transaction and
-                its related data.
-
-                If 'refresh_index' is True, the repository will be instructed
-                to update its search indices after publishing.  Has no effect
-                if 'abandon' is True."""
-
-                if abandon:
-                        try:
-                                pkg_fmri = None
-                                pkg_state = self.__repo.abandon(self.trans_id)
-                        except sr.RepositoryError, e:
-                                raise TransactionOperationError("abandon",
-                                    trans_id=self.trans_id, msg=str(e))
-                else:
-                        try:
-                                pkg_fmri, pkg_state = self.__repo.close(
-                                    self.trans_id, 
-                                    refresh_index=refresh_index,
-                                    add_to_catalog=add_to_catalog)
-                        except sr.RepositoryError, e:
-                                raise TransactionOperationError("close",
-                                    trans_id=self.trans_id, msg=str(e))
-                return pkg_fmri, pkg_state
-
-        def open(self):
-                """Starts an in-flight transaction. Returns a URL-encoded
-                transaction ID on success."""
-
-                try:
-                        self.trans_id = self.__repo.open(
-                            os_util.get_os_release(), self.pkg_name)
-                except sr.RepositoryError, e:
-                        raise TransactionOperationError("open",
-                            trans_id=self.trans_id, msg=str(e))
-                return self.trans_id
-
-        def refresh_index(self):
-                """Instructs the repository to refresh its search indices.
-                Returns nothing."""
-
-                try:
-                        self.__repo.refresh_index()
-                except sr.RepositoryError, e:
-                        raise TransactionOperationError("refresh_index",
-                            msg=str(e))
-
-
-class HTTPTransaction(object):
-        """Provides a publishing interface for HTTP(S)-based repositories."""
-
-        def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, refresh_index=True):
-
-                if create_repo:
-                        scheme, netloc, path, params, query, fragment = \
-                            urlparse.urlparse(origin_url, "http",
-                            allow_fragments=0)
-                        raise UnsupportedRepoTypeOperationError("create_repo",
-                            type=scheme)
-
-                self.origin_url = origin_url
-                self.pkg_name = pkg_name
-                self.trans_id = trans_id
-
-        @staticmethod
-        def __get_urllib_error(e):
-                """Analyzes the server error response and returns a tuple of
-                status (server response code), message (the textual response
-                from the server if available)."""
-
-                status = httplib.INTERNAL_SERVER_ERROR
-                msg = None
-
-
-                if not e:
-                        return status, msg
-
-                if hasattr(e, "code"):
-                        status = e.code
-
-                if hasattr(e, "read") and callable(e.read):
-                        # Extract the message from the server output.
-                        msg = ""
-                        from xml.dom.minidom import Document, parse
-                        output = e.read()
-                        dom = parse(StringIO.StringIO(output))
-
-                        paragraphs = []
-                        if not isinstance(dom, Document):
-                                # Assume the output was the message.
-                                msg = output
-                        else:
-                                paragraphs = dom.getElementsByTagName("p")
-
-                        # XXX this is specific to the depot server's current
-                        # error output style.
-                        for p in paragraphs:
-                                for c in p.childNodes:
-                                        if c.nodeType == c.TEXT_NODE:
-                                                value = c.nodeValue
-                                                if value is not None:
-                                                        msg += ("\n%s" % value)
-
-                if not msg and status == httplib.NOT_FOUND:
-                        msg = _("Unsupported or temporarily unavailable "
-                            "operation requested.")
-                elif not msg:
-                        msg = str(e)
-
-                return status, msg
-
-        def add(self, action):
-                """Adds an action and its related content to an in-flight
-                transaction.  Returns nothing."""
-
-                try:
-                        # Perform additional publication-time validation of
-                        # actions before further processing is done.
-                        action.validate()
-                except actions.ActionError, e:
-                        raise TransactionOperationError("add",
-                            trans_id=self.trans_id, msg=str(e))
-
-                attrs = action.attrs
-                if action.data != None:
-                        datastream = action.data()
-                        # XXX Need to handle large files better;
-                        # versioned_urlopen requires the whole file to be in
-                        # memory because of the underlying request library.
-                        data = datastream.read()
-                        sz = int(attrs["pkg.size"])
-                else:
-                        data = ""
-                        sz = 0
-
-                headers = dict(
-                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
-                    for i, k in enumerate(attrs)
-                )
-                headers["Content-Length"] = sz
-
-                try:
-                        c, v = versioned_urlopen(self.origin_url, "add",
-                            [0], "%s/%s" % (self.trans_id, action.name),
-                            data=data, headers=headers)
-                except (httplib.BadStatusLine, RuntimeError), e:
-                        status = httplib.INTERNAL_SERVER_ERROR
-                        msg = str(e)
-                except (urllib2.HTTPError, urllib2.URLError), e:
-                        status, msg = self.__get_urllib_error(e)
-                else:
-                        msg = None
-                        status = c.code
-
-                if status / 100 == 4 or status / 100 == 5:
-                        raise TransactionOperationError("add",
-                            trans_id=self.trans_id, status=status, msg=msg)
-
-        def close(self, abandon=False, refresh_index=True, add_to_catalog=False):
-                """Ends an in-flight transaction.  Returns a tuple containing
-                a package fmri (if applicable) and the final state of the
-                related package.
-
-                If 'abandon' is omitted or False, the package will be published;
-                otherwise the server will discard the current transaction and
-                its related data.
-
-                If 'refresh_index' is True, the repository will be instructed
-                to update its search indices after publishing.  Has no effect
-                if 'abandon' is True.
-                
-                'add_to_catalog' isn't supported w/ http transport, but ignoring
-                it will affect performance only.                
-                """
-
-                
-                op = "close"
-                if abandon:
-                        op = "abandon"
-
-                headers = {}
-                if not refresh_index:
-                        # The default is to do so, so only send this if false.
-                        headers["X-IPkg-Refresh-Index"] = 0
-
-                try:
-                        c, v = versioned_urlopen(self.origin_url, op, [0],
-                            self.trans_id, headers=headers)
-                except (httplib.BadStatusLine, RuntimeError), e:
-                        status = httplib.INTERNAL_SERVER_ERROR
-                        msg = str(e)
-                except (urllib2.HTTPError, urllib2.URLError), e:
-                        status, msg = self.__get_urllib_error(e)
-                except RuntimeError, e:
-                        # Assume the server didn't find the transaction or
-                        # can't perform the operation.
-                        status = httplib.NOT_FOUND
-                        msg = str(e)
-                else:
-                        msg = None
-                        status = c.code
-
-                if status / 100 == 4 or status / 100 == 5:
-                        raise TransactionOperationError(op,
-                            trans_id=self.trans_id, status=status, msg=msg)
-
-                # Return only the headers the client should care about.
-                hdrs = c.info()
-                return hdrs.get("State", None), hdrs.get("Package-FMRI", None)
-
-        def open(self):
-                """Starts an in-flight transaction. Returns a URL-encoded
-                transaction ID on success."""
-
-                # XXX This opens a Transaction, but who manages the server
-                # connection?  If we want a pipelined HTTP session (multiple
-                # operations -- even if it's only one Transaction -- over a
-                # single connection), then we can't call HTTPConnection.close()
-                # here, and we shouldn't reopen the connection in add(),
-                # close(), etc.
-                try:
-                        headers = {"Client-Release": os_util.get_os_release()}
-                        c, v = versioned_urlopen(self.origin_url, "open",
-                            [0], urllib.quote(self.pkg_name, ""),
-                            headers=headers)
-                        self.trans_id = c.headers.get("Transaction-ID", None)
-                except (httplib.BadStatusLine, RuntimeError), e:
-                        status = httplib.INTERNAL_SERVER_ERROR
-                        msg = str(e)
-                except (urllib2.HTTPError, urllib2.URLError), e:
-                        status, msg = self.__get_urllib_error(e)
-                else:
-                        msg = None
-                        status = c.code
-
-                if status / 100 == 4 or status / 100 == 5:
-                        raise TransactionOperationError("open",
-                            trans_id=self.trans_id, status=status, msg=msg)
-                elif self.trans_id is None:
-                        raise TransactionOperationError("open",
-                            status=status, msg=_("Unknown failure; no "
-                            "transaction ID provided in response: %s") % msg)
-
-                return self.trans_id
-
-        def refresh_index(self):
-                """Instructs the repository to refresh its search indices.
-                Returns nothing."""
-
-                op = "index"
-                subop = "refresh"
-
-                headers = {}
-
-                try:
-                        c, v = versioned_urlopen(self.origin_url, op, [0],
-                            subop, headers=headers)
-                except (httplib.BadStatusLine, RuntimeError), e:
-                        status = httplib.INTERNAL_SERVER_ERROR
-                        msg = str(e)
-                except (urllib2.HTTPError, urllib2.URLError), e:
-                        status, msg = self.__get_urllib_error(e)
-                except RuntimeError, e:
-                        # Assume the server can't perform the operation.
-                        status = httplib.NOT_FOUND
-                        msg = str(e)
-                else:
-                        msg = None
-                        status = c.code
-
-                if status / 100 == 4 or status / 100 == 5:
-                        raise TransactionOperationError(op,
-                            trans_id=self.trans_id, status=status, msg=msg)
-
-
 class NullTransaction(object):
         """Provides a simulated publishing interface suitable for testing
         purposes."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, refresh_index=True):
+            repo_props=EmptyDict, trans_id=None, refresh_index=True,
+            xport=None, pub=None):
                 self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
@@ -516,6 +174,162 @@ class NullTransaction(object):
                 Returns nothing."""
                 pass
 
+class TransportTransaction(object):
+        """Provides a publishing interface that uses client transport."""
+
+        def __init__(self, origin_url, create_repo=False, pkg_name=None,
+            repo_props=EmptyDict, trans_id=None, refresh_index=True,
+            xport=None, pub=None):
+
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(origin_url, "http", allow_fragments=0)
+
+                self.pkg_name = pkg_name
+                self.trans_id = trans_id
+                self.scheme = scheme
+                self.path = path
+                self.transport = xport
+                self.publisher = pub
+
+                if scheme == "file":
+                        self.create_file_repo(origin_url, repo_props=repo_props,
+                            create_repo=create_repo,
+                            refresh_index=refresh_index)
+                elif scheme != "file" and create_repo:
+                        raise UnsupportedRepoTypeOperationError("create_repo",
+                            type=scheme)
+
+
+        def create_file_repo(self, origin_url, repo_props=EmptyDict,
+            create_repo=False, refresh_index=True):
+
+                if self.transport.publish_cache_contains(self.publisher):
+                        return
+        
+                try:
+                        repo = sr.Repository(auto_create=create_repo,
+                            properties=repo_props, repo_root=self.path, 
+                            refresh_index=refresh_index)
+                except EnvironmentError, e:
+                        raise TransactionOperationError(None, msg=_(
+                            "An error occurred while trying to "
+                            "initialize the repository directory "
+                            "structures:\n%s") % e)
+                except cfg.ConfigError, e:
+                        raise TransactionRepositoryConfigError(str(e))
+                except sr.RepositoryInvalidError, e:
+                        raise TransactionRepositoryInvalidError(str(e))
+                except sr.RepositoryError, e:
+                        raise TransactionOperationError(None,
+                            msg=str(e))
+
+                self.transport.publish_cache_repository(self.publisher, repo)
+
+
+        def add(self, action):
+                """Adds an action and its related content to an in-flight
+                transaction.  Returns nothing."""
+
+                try:
+                        # Perform additional publication-time validation of
+                        # actions before further processing is done.
+                        action.validate()
+                except actions.ActionError, e:
+                        raise TransactionOperationError("add",
+                            trans_id=self.trans_id, msg=str(e))
+
+                try:
+                        self.transport.publish_add(self.publisher,
+                            action=action, trans_id=self.trans_id)
+                except apx.TransportError, e:
+                        msg = str(e)
+                        raise TransactionOperationError("add",
+                            trans_id=self.trans_id, msg=msg)
+
+        def close(self, abandon=False, refresh_index=True, add_to_catalog=True):
+                """Ends an in-flight transaction.  Returns a tuple containing
+                a package fmri (if applicable) and the final state of the
+                related package.
+
+                If 'abandon' is omitted or False, the package will be published;
+                otherwise the server will discard the current transaction and
+                its related data.
+
+                If 'refresh_index' is True, the repository will be instructed
+                to update its search indices after publishing.  Has no effect
+                if 'abandon' is True.
+                
+                'add_to_catalog' tells the depot to add a package to the
+                catalog, if True.
+                """
+
+                if abandon:
+                        try:
+                                state, fmri = self.transport.publish_abandon(
+                                    self.publisher, trans_id=self.trans_id)
+                        except apx.TransportError, e:
+                                msg = str(e)
+                                raise TransactionOperationError("abandon",
+                                    trans_id=self.trans_id, msg=msg)
+                else:
+
+                        # If caller hasn't supplied add_to_catalog, pick an
+                        # appropriate default, based upon the transport.
+                        if add_to_catalog is None:
+                                if self.scheme == "file":
+                                        add_to_catalog = True
+                                else:
+                                        add_to_catalog = False
+                        
+                        try:
+                                state, fmri = self.transport.publish_close(
+                                    self.publisher, trans_id=self.trans_id,
+                                    refresh_index=refresh_index,
+                                    add_to_catalog=add_to_catalog)
+                        except apx.TransportError, e:
+                                msg = str(e)
+                                raise TransactionOperationError("close",
+                                    trans_id=self.trans_id, msg=msg)
+
+                return state, fmri
+
+        def open(self):
+                """Starts an in-flight transaction. Returns a URL-encoded
+                transaction ID on success."""
+
+                trans_id = None
+
+                try:
+                        trans_id = self.transport.publish_open(self.publisher,
+                            client_release=os_util.get_os_release(),
+                            pkg_name=self.pkg_name)
+                except apx.TransportError, e:
+                        msg = str(e)
+                        raise TransactionOperationError("open",
+                            trans_id=self.trans_id, msg=msg)
+
+                self.trans_id = trans_id
+
+                if self.trans_id is None:
+                        raise TransactionOperationError("open",
+                            msg=_("Unknown failure; no transaction ID provided"
+                            " in response."))
+
+                return self.trans_id
+
+        def refresh_index(self):
+                """Instructs the repository to refresh its search indices.
+                Returns nothing."""
+
+                op = "index"
+
+                try:
+                        self.transport.publish_refresh_index(self.publisher)
+                except apx.TransportError, e:
+                        msg = str(e)
+                        raise TransactionOperationError(op,
+                            trans_id=self.trans_id, msg=msg)
+
 
 class Transaction(object):
         """Returns an object representing a publishing "transaction" interface
@@ -543,20 +357,25 @@ class Transaction(object):
         """
 
         __schemes = {
-            "file": FileTransaction,
-            "http": HTTPTransaction,
-            "https": HTTPTransaction,
+            "file": TransportTransaction,
+            "http": TransportTransaction,
+            "https": TransportTransaction,
             "null": NullTransaction,
         }
 
-        def __new__(cls, origin_url, add_to_catalog=True, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, noexecute=False, refresh_index=True):
+        def __new__(cls, origin_url, add_to_catalog=True, create_repo=False,
+            pkg_name=None, repo_props=EmptyDict, trans_id=None,
+            noexecute=False, refresh_index=True, xport=None, pub=None):
+
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
                 scheme = scheme.lower()
 
                 if noexecute:
                         scheme = "null"
+                if scheme != "null" and (not xport or not pub):
+                        raise TransactionError("Caller must supply transport "
+                            "and publisher.")
                 if scheme not in cls.__schemes:
                         raise TransactionRepositoryURLError(origin_url,
                             scheme=scheme)
@@ -566,10 +385,12 @@ class Transaction(object):
                 if scheme.startswith("file"):
                         if netloc:
                                 raise TransactionRepositoryURLError(origin_url,
-                                    msg="'%s' contains host information, which is not "
-                                        "supported for filesystem operations." % netloc)
-                        # as we're urlunparsing below, we need to ensure that the path
-                        # starts with only one '/' character, if any are present
+                                    msg="'%s' contains host information, which "
+                                    "is not supported for filesystem "
+                                    "operations." % netloc)
+                        # as we're urlunparsing below, we need to ensure that
+                        # the path starts with only one '/' character, if any
+                        # are present
                         if path.startswith("/"):
                                 path = "/" + path.lstrip("/")
 
@@ -578,5 +399,6 @@ class Transaction(object):
                     query, fragment))
 
                 return cls.__schemes[scheme](origin_url,
-                    create_repo=create_repo, pkg_name=pkg_name, refresh_index=refresh_index,
-                    repo_props=repo_props, trans_id=trans_id)
+                    create_repo=create_repo, pkg_name=pkg_name,
+                    refresh_index=refresh_index, repo_props=repo_props,
+                    trans_id=trans_id, xport=xport, pub=pub)

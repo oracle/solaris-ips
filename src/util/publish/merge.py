@@ -35,14 +35,20 @@ import shutil
 import warnings
 
 import pkg.fmri
-import pkg.pkgtarfile as ptf
+import pkg.client.api_errors as apx
+import pkg.client.publisher as publisher
+import pkg.client.transport as transport
 import pkg.actions as actions
 import pkg.manifest as manifest
-import pkg.server.catalog as catalog
 import pkg.version as version
 
-from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, PipeError
+from pkg.misc import PipeError
 from pkg.client import global_settings
+
+pub = None
+tmpdirs = []
+xport = None
+xport_cfg = None
 
 def pname():
         return os.path.basename(sys.argv[0])
@@ -68,133 +74,60 @@ def error(error):
 
         print >> sys.stderr, pname() + ": " + error
 
-def fetch_files_byhash(server_url, hashes, pkgdir):
+def fetch_files_byaction(repouri, actions, pkgdir):
         """Given a list of files named by content hash, download from
-        server_url into pkgdir."""
+        repouri into pkgdir."""
 
-        req_dict = { }
+        mfile = xport.multi_file_ni(repouri, pkgdir, decompress=True)
 
-        for i, k in enumerate(hashes):
-                str = "File-Name-%s" % i
-                req_dict[str] = k
+        for a in actions:
+                mfile.add_action(a) 
 
-        req_str = urllib.urlencode(req_dict)
+        mfile.wait_files()
 
-        try:
-                f, v = versioned_urlopen(server_url, "filelist", [0],
-                    data = req_str)
-        except:
-                error(_("Unable to download files from: %s") % server_url)
-                sys.exit(1)
-
-        tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
-
-        if not os.path.exists(pkgdir):
-                try:
-                        os.makedirs(pkgdir)
-                except:
-                        error(_("Unable to create directory: %s") % pkgdir)
-                        sys.exit(1)
-
-        for info in tar_stream:
-                gzfobj = None
-                try:
-                        # Uncompress as we retrieve the files
-                        gzfobj = tar_stream.extractfile(info)
-                        fpath = os.path.join(pkgdir, info.name)
-                        outfile = open(fpath, "wb")
-                        gunzip_from_stream(gzfobj, outfile)
-                        outfile.close()
-                        gzfobj.close()
-                except:
-                        error(_("Unable to extract file: %s") % info.name)
-                        sys.exit(1)
-
-        tar_stream.close()
-        f.close()
-
-manifest_cache={}
+manifest_cache = {}
 null_manifest = manifest.Manifest()
 
-def get_manifest(server_url, fmri):
+def get_manifest(repouri, fmri):
         if not fmri: # no matching fmri
                 return null_manifest
 
-        key = "%s->%s" % (server_url, fmri)
+        key = "%s->%s" % (repouri.uri, fmri)
         if key not in manifest_cache:
-                manifest_cache[key] = fetch_manifest(server_url, fmri)
+                manifest_cache[key] = fetch_manifest(repouri, fmri)
         return manifest_cache[key]
 
-def fetch_manifest(server_url, fmri):
+def fetch_manifest(repouri, fmri):
         """Fetch the manifest for package-fmri 'fmri' from the server
         in 'server_url'... return as Manifest object."""
-        # Request manifest from server
 
-        try:
-                m, v = versioned_urlopen(server_url, "manifest", [0],
-                    fmri.get_url_path())
-        except:
-                error(_("Unable to download manifest %s from %s") %
-                    (fmri.get_url_path(), server_url))
-                sys.exit(1)
-
-        # Read from server, write to file
-        try:
-                mfst_str = m.read()
-        except:
-                error(_("Error occurred while reading from: %s") % server_url)
-                sys.exit(1)
-
+        mfst_str = xport.get_manifest(fmri, pub=repouri, content_only=True)
         m = manifest.Manifest()
         m.set_content(mfst_str)
 
         return m
 
-catalog_cache = {}
-
-def get_catalog(server_url):
-        if server_url not in catalog_cache:
-                catalog_cache[server_url] = fetch_catalog(server_url)
-        return catalog_cache[server_url][0]
-
-def cleanup_catalogs():
-        global catalog_cache
-        for c, d in catalog_cache.values():
-                shutil.rmtree(d)
-        catalog_cache = {}
-
-def fetch_catalog(server_url):
+def fetch_catalog(repouri):
         """Fetch the catalog from the server_url."""
 
-        # open connection for catalog
-        try:
-                c, v = versioned_urlopen(server_url, "catalog", [0])
-        except:
-                error(_("Unable to download catalog from: %s") % server_url)
-                sys.exit(1)
+        if not pub.meta_root:
+                # Create a temporary directory for catalog.
+                cat_dir = tempfile.mkdtemp()
+                tmpdirs.append(cat_dir)
+                pub.meta_root = cat_dir
 
-        # make a tempdir for catalog
-        dl_dir = tempfile.mkdtemp()
+        pub.transport = xport
+        # Pull catalog only from this host
+        pub.selected_repository.origins = [repouri]
+        pub.refresh(True, True)
 
-        # call catalog.recv to pull down catalog
-        try:
-                catalog.ServerCatalog.recv(c, dl_dir)
-        except:
-                error(_("Error while reading from: %s") % server_url)
-                sys.exit(1)
+        cat = pub.catalog
 
-        # close connection to server
-        c.close()
-
-        # instantiate catalog object
-        cat = catalog.ServerCatalog(dl_dir, read_only=True)
-
-        # return (catalog, tmpdir path)
-        return cat, dl_dir
+        return cat
 
 catalog_dict = {}
-def load_catalog(server_url):
-        c = get_catalog(server_url)
+def load_catalog(repouri):
+        c = fetch_catalog(repouri)
         d = {}
         for f in c.fmris():
                 if f.pkg_name in d:
@@ -203,56 +136,63 @@ def load_catalog(server_url):
                         d[f.pkg_name] = [f]
                 for k in d.keys():
                         d[k].sort(reverse = True)
-        catalog_dict[server_url] = d
+        catalog_dict[repouri.uri] = d
 
-def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
+def expand_fmri(repouri, fmri_string, constraint=version.CONSTRAINT_AUTO):
         """ from specified server, find matching fmri using CONSTRAINT_AUTO
         cache for performance.  Returns None if no matching fmri is found """
-        if server_url not in catalog_dict:
-                load_catalog(server_url)
+        if repouri.uri not in catalog_dict:
+                load_catalog(repouri)
 
         fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")
 
-        for f in catalog_dict[server_url].get(fmri.pkg_name, []):
+        for f in catalog_dict[repouri.uri].get(fmri.pkg_name, []):
                 if not fmri.version or f.version.is_successor(fmri.version, constraint):
                         return f
         return None
 
-def get_all_pkg_names(server_url):
+def get_all_pkg_names(repouri):
         """ return all the pkg_names in this catalog """
-        if server_url not in catalog_dict:
-                load_catalog(server_url)
-        return catalog_dict[server_url].keys()
+        if repouri.uri not in catalog_dict:
+                load_catalog(repouri)
+        return catalog_dict[repouri.uri].keys()
 
-def get_dependencies(server_url, fmri_list):
+def get_dependencies(repouri, fmri_list):
         s = set()
         for f in fmri_list:
-                fmri = expand_fmri(server_url, f)
-                _get_dependencies(s, server_url, fmri)
+                fmri = expand_fmri(repouri, f)
+                _get_dependencies(s, repouri, fmri)
         return s
 
-def _get_dependencies(s, server_url, fmri):
+def _get_dependencies(s, repouri, fmri):
         """ recursive incorp expansion"""
         s.add(fmri)
-        for a in get_manifest(server_url, fmri).gen_actions_by_type("depend"):
+        for a in get_manifest(repouri, fmri).gen_actions_by_type("depend"):
                 if a.attrs["type"] == "incorporate":
-                        new_fmri = expand_fmri(server_url, a.attrs["fmri"])
+                        new_fmri = expand_fmri(repouri, a.attrs["fmri"])
                         if new_fmri and new_fmri not in s:
-                                _get_dependencies(s, server_url, new_fmri)
+                                _get_dependencies(s, repouri, new_fmri)
         return s
 
+def cleanup():
+        """To be called at program finish."""
+
+        for d in tmpdirs:
+                shutil.rmtree(d, True)
 
 def main_func():
 
+        global pub, xport, xport_cfg
         basedir = None
         newfmri = False
+        incomingdir = None
 
         gettext.install("pkg", "/usr/share/locale")
 
         global_settings.client_name = "pkgmerge"
 
         try:
-               opts, pargs = getopt.getopt(sys.argv[1:], "d:nrv:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:nrv:")
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
@@ -276,11 +216,21 @@ def main_func():
 
         if not basedir:
                 basedir = os.getcwd()
+        
+        incomingdir = os.path.normpath(os.path.join(basedir,
+            "incoming-%d" % os.getpid()))
+        os.makedirs(incomingdir)
+        tmpdirs.append(incomingdir)
 
         server_list = [
-            v.split(",", 1)[1]
+            publisher.RepositoryURI(v.split(",", 1)[1])
             for v in varlist
         ]
+
+        xport, xport_cfg = transport.setup_transport()
+        xport_cfg.incoming_download_dir = incomingdir
+        pub = transport.setup_publisher(server_list, "merge", xport, xport_cfg,
+            remote_prefix=True)
 
         if len(pargs) == 1:
                 recursive = False
@@ -346,7 +296,7 @@ def main_func():
                         continue
 
                 merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename, get_files)
-        cleanup_catalogs()
+        cleanup()
 
         return 0
 
@@ -396,7 +346,7 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir,
                         a.attrs[variant] = v
 
         # combine actions into single list
-        allactions = reduce(lambda a,b:a + b, action_lists)
+        allactions = reduce(lambda a, b: a + b, action_lists)
 
         # figure out which variants are actually there for this pkg
         actual_variant_list = [
@@ -444,10 +394,10 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir,
                         d[a] = 1
                         return False
 
-                hash_sets = [
+                action_sets = [
                         set(
                                 [
-                                 a.hash
+                                 a
                                  for a in action_list
                                  if hasattr(a, "hash") and not \
                                  repeated(a.hash, already_seen)
@@ -457,9 +407,11 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir,
                         ]
                 # remove duplicate files (save time)
 
-                for server, hash_set in zip(server_list + [server_list[0]], hash_sets):
-                        if len(hash_set) > 0:
-                                fetch_files_byhash(server, hash_set, basedir)
+                for server, action_set in zip(server_list + [server_list[0]],
+                    action_sets):
+                        if len(action_set) > 0:
+                                fetch_files_byaction(server, action_set,
+                                    basedir)
 
         return 0
 
@@ -471,14 +423,22 @@ if __name__ == "__main__":
 
         try:
                 ret = main_func()
+        except (apx.InvalidDepotResponseException, apx.TransportError,
+            apx.BadRepositoryURI, apx.UnsupportedRepositoryURI), e:
+                cleanup()
+                print >> sys.stderr, e
+                sys.exit(1)
         except SystemExit, e:
+                cleanup()
                 raise e
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
+                cleanup()
                 sys.exit(1)
         except:
                 traceback.print_exc()
+                cleanup()
                 sys.exit(99)
         sys.exit(ret)
 

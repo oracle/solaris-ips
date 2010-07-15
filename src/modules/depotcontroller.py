@@ -34,8 +34,6 @@ import urllib
 import urllib2
 import urlparse
 
-from pkg.misc import versioned_urlopen
-
 class DepotStateException(Exception):
 
         def __init__(self, reason):
@@ -241,8 +239,9 @@ class DepotController(object):
                         return self.__ping_unix_socket()
 
                 try:
-                        versioned_urlopen(self.get_depot_url(),
-                            "versions", [0])
+                        repourl = urlparse.urljoin(self.get_depot_url(),
+                            "versions/0")
+                        urllib2.urlopen(repourl)
                 except urllib2.HTTPError, e:
                         # Server returns NOT_MODIFIED if catalog is up
                         # to date

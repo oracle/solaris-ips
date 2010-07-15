@@ -182,7 +182,8 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 operation doesn't fail."""
                 depot_url = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(depot_url, self.info10)
-                misc.versioned_urlopen(depot_url, "info", [0], plist[0])
+                repourl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                urllib2.urlopen(repourl)
 
         def test_bug_3739(self):
                 """Verify that a depot will return a 400 (Bad Request) error
@@ -207,13 +208,18 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 depot_url = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(depot_url, self.system10)
                 # First, try it un-encoded.
-                misc.versioned_urlopen(depot_url, "info", [0], plist[0])
-                misc.versioned_urlopen(depot_url, "manifest", [0], plist[0])
+                repourl = urlparse.urljoin(depot_url, "info/0/%s" % plist[0])
+                urllib2.urlopen(repourl)
+                repourl = urlparse.urljoin(depot_url, "manifest/0/%s" %
+                    plist[0])
+                urllib2.urlopen(repourl)
                 # Second, try it encoded.
-                misc.versioned_urlopen(depot_url, "info", [0],
+                repourl = urlparse.urljoin(depot_url, "info/0/%s" %
                     urllib.quote(plist[0]))
-                misc.versioned_urlopen(depot_url, "manifest", [0],
+                urllib2.urlopen(repourl)
+                repourl = urlparse.urljoin(depot_url, "manifest/0/%s" %
                     urllib.quote(plist[0]))
+                urllib2.urlopen(repourl)
 
         def test_bug_5707(self):
                 """Testing depotcontroller.refresh()."""

@@ -247,7 +247,7 @@ class StreamingFileObj(object):
                 if not self.__headers_arrived:
                         self.__fill_headers()
 
-                return self.__headers.get(hdr, default)
+                return self.__headers.get(hdr.lower(), default)
 
         def _prime(self):
                 """Used by the underlying transport before handing this
@@ -374,7 +374,7 @@ class StreamingFileObj(object):
                 elif data.find(":") > -1:
                         k, v = data.split(":", 1)
                         if v:
-                                self.__headers[k] = v.strip()
+                                self.__headers[k.lower()] = v.strip()
 
 class DummyLock(object):
         """This has the same external interface as threading.Lock,

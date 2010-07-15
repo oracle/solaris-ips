@@ -248,8 +248,6 @@ f none usr/lib/python2.6/vendor-packages/pkg/sysvpkg.pyc 444 root bin
 d none usr/lib/python2.6/vendor-packages/pkg/um 755 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/updatelog.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/updatelog.pyc 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/urlhelpers.py 444 root bin
-f none usr/lib/python2.6/vendor-packages/pkg/urlhelpers.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/variant.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/variant.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/version.py 444 root bin

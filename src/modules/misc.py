@@ -27,29 +27,24 @@ import cStringIO
 import datetime
 import errno
 import hashlib
-import httplib
 import locale
 import OpenSSL.crypto as osc
 import operator
 import os
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable
-import pkg.urlhelpers as urlhelpers
 import platform
 import re
 import shutil
-import socket
 import stat
 import struct
 import sys
 import time
 import urllib
-import urllib2
 import urlparse
 import zlib
 
 from pkg.client.imagetypes import img_type_names, IMG_NONE
-from pkg.client import global_settings
 from pkg import VERSION
 
 # Minimum number of days to issue warning before a certificate expires
@@ -116,90 +111,6 @@ def user_agent_str(img, client_name):
         useragent = _client_version % (img_type_names[imgtype], client_name)
 
         return useragent
-
-def versioned_urlopen(base_uri, operation, versions = None, tail = None,
-    data = None, headers = None, ssl_creds = None, imgtype = IMG_NONE,
-    method = "GET", uuid = None):
-        """Open the best URI for an operation given a set of versions.
-
-        Both the client and the server may support multiple versions of
-        the protocol of a particular operation.  The client will pass
-        this method an ordered array of versions it understands, along
-        with the base URI and the operation it wants.  This method will
-        open the URL corresponding to the best version both the client
-        and the server understand, returning a tuple of the open URL and
-        the version used on success, and throwing an exception if no
-        matching version can be found.
-        """
-        # Ignore http_proxy for localhost case, by overriding
-        # default proxy behaviour of urlopen().
-        netloc = urlparse.urlparse(base_uri)[1]
-
-        if not netloc:
-                raise ValueError, "Malformed URL: %s" % base_uri
-
-        if urllib.splitport(netloc)[0] == "localhost":
-                # XXX cache this opener?
-                proxy_handler = urllib2.ProxyHandler({})
-                opener_dir = urllib2.build_opener(proxy_handler)
-                url_opener = opener_dir.open
-        elif ssl_creds and ssl_creds != (None, None):
-                cert_handler = urlhelpers.HTTPSCertHandler(
-                    key_file = ssl_creds[0], cert_file = ssl_creds[1])
-                opener_dir = urllib2.build_opener(
-                    urlhelpers.HTTPSProxyHandler, cert_handler)
-                url_opener = opener_dir.open
-        else:
-                url_opener = urllib2.urlopen
-
-        if not versions:
-                versions = []
-
-        if not headers:
-                headers = {}
-
-        for i, version in enumerate(versions):
-                if base_uri[-1] != '/':
-                        base_uri += '/'
-
-                if tail:
-                        tail_str = tail
-                        if isinstance(tail, list):
-                                tail_str = tail[i]
-                        uri = urlparse.urljoin(base_uri, "%s/%s/%s" % \
-                            (operation, version, tail_str))
-                else:
-                        uri = urlparse.urljoin(base_uri, "%s/%s" % \
-                            (operation, version))
-
-                headers["User-Agent"] = \
-                    _client_version % (img_type_names[imgtype],
-                        global_settings.client_name)
-                if uuid:
-                        headers["X-IPkg-UUID"] = uuid
-                req = urllib2.Request(url = uri, headers = headers)
-                if method == "HEAD":
-                        # Must override urllib2's get_method since it doesn't
-                        # natively support this operation.
-                        req.get_method = lambda: "HEAD"
-                elif data is not None:
-                        req.add_data(data)
-
-                try:
-                        c = url_opener(req)
-                except urllib2.HTTPError, e:
-                        if e.code != httplib.NOT_FOUND:
-                                raise
-                        continue
-                # XXX catch BadStatusLine and convert to INTERNAL_SERVER_ERROR?
-
-                return c, version
-        else:
-                # Couldn't find a version that we liked.
-                raise RuntimeError, \
-                    "%s doesn't speak a known version of %s operation" % \
-                    (base_uri, operation)
-
 
 _hostname_re = re.compile("^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9]+\.?)*$")
 _invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.]+")
@@ -432,8 +343,10 @@ def get_data_digest(data, length=None, return_content=False):
         if the content should be discarded during processing."""
 
         bufsz = 128 * 1024
+        closefobj = False
         if isinstance(data, basestring):
                 f = file(data, "rb", bufsz)
+                closefobj = True
         else:
                 f = data
 
@@ -455,7 +368,8 @@ def get_data_digest(data, length=None, return_content=False):
                         break
                 length -= l
         content.reset()
-        f.close()
+        if closefobj:
+                f.close()
 
         return fhash.hexdigest(), content.read()
 
