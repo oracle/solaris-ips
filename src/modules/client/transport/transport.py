@@ -2595,3 +2595,70 @@ class MultiFileNI(MultiFile):
                                     e.filename)
                         raise
 
+# The following two methods are to be used by clients without an Image that 
+# need to configure a transport and or publishers.
+
+def setup_publisher(repo_uri, prefix, xport, xport_cfg,
+    remote_prefix=False, remote_publishers=False):
+        """Given transport 'xport' and publisher configuration 'xport_cfg'
+        take the string that identifies a repository by uri in 'repo_uri'
+        and create a publisher object.  The caller must specify the prefix.
+
+        If remote_prefix is True, the caller will contact the remote host
+        and use its publisher info to determine the publisher's actual prefix.
+
+        If remote_publishers is True, the caller will obtain the prefix and
+        repository information from the repo's publisher info."""
+        
+
+        if isinstance(repo_uri, list):
+                repo = publisher.Repository(origins=repo_uri)
+                repouri_list = repo_uri
+        else:
+                repouri_list = [publisher.RepositoryURI(repo_uri)]
+                repo = publisher.Repository(origins=repouri_list)
+
+        pub = publisher.Publisher(prefix=prefix, repositories=[repo])
+
+        if not remote_prefix and not remote_publishers:
+                xport_cfg.add_publisher(pub)
+                return pub
+
+        try:
+                newpubs = xport.get_publisherdata(pub) 
+        except apx.UnsupportedRepositoryOperation:
+                newpubs = None
+
+        if not newpubs:
+                xport_cfg.add_publisher(pub)
+                return pub
+
+        for p in newpubs:
+                psr = p.selected_repository
+
+                if not psr:
+                        p.add_repository(repo)
+                elif remote_publishers:
+                        if not psr.origins:
+                                for r in repouri_list:
+                                        psr.add_origin(r)
+                        elif repo not in psr.origins:
+                                for i, r in enumerate(repouri_list):
+                                        psr.origins.insert(i, r)
+                else:
+                        psr.origins = repouri_list
+
+                xport_cfg.add_publisher(p)
+
+        # Return first publisher in list
+        return newpubs[0]
+
+def setup_transport():
+        """Initialize the transport and transport configuration. The caller
+        must manipulate the transport configuration and add publishers
+        once it receives control of the objects."""
+
+        xport_cfg = GenericTransportCfg()
+        xport = Transport(xport_cfg)
+
+        return xport, xport_cfg

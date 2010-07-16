@@ -51,7 +51,7 @@ import pkg.client.api_errors as apx
 import pkg.fmri
 import pkg.manifest
 import pkg.publish.transaction as trans
-import pkg.client.transport as transport
+import pkg.client.transport.transport as transport
 import pkg.client.publisher as publisher
 from pkg.misc import msg, emsg, PipeError
 from pkg.client import global_settings

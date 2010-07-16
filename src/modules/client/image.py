@@ -49,7 +49,7 @@ import pkg.client.imageplan             as imageplan
 import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
-import pkg.client.transport             as transport
+import pkg.client.transport.transport   as transport
 import pkg.fmri
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc

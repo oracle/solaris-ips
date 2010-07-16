@@ -31,7 +31,7 @@ import pkg5unittest
 
 import os
 import pkg.client.publisher as publisher
-import pkg.client.transport as transport
+import pkg.client.transport.transport as transport
 import pkg.fmri as fmri
 import pkg.publish.transaction as trans
 import urlparse

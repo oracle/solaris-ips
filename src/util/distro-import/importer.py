@@ -29,19 +29,19 @@ import gettext
 import os
 import pkg
 import pkg.client
-import pkg.client.publisher    as publisher
-import pkg.client.transport    as transport
-import pkg.client.api_errors   as apx
+import pkg.client.publisher             as publisher
+import pkg.client.transport.transport   as transport
+import pkg.client.api_errors            as apx
 import pkg.client.api
 import pkg.client.progress
-import pkg.flavor.smf_manifest as smf_manifest
+import pkg.flavor.smf_manifest          as smf_manifest
 import pkg.fmri
-import pkg.manifest            as manifest
+import pkg.manifest                     as manifest
 import pkg.misc
-import pkg.pkgsubprocess       as subprocess
-import pkg.publish.transaction as trans
-import pkg.variant             as variant
-import pkg.version             as version
+import pkg.pkgsubprocess                as subprocess
+import pkg.publish.transaction          as trans
+import pkg.variant                      as variant
+import pkg.version                      as version
 import platform
 import re
 import shlex

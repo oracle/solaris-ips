@@ -43,7 +43,7 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
-import pkg.client.transport as transport
+import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.publish.transaction as trans
 import pkg.search_errors as search_errors

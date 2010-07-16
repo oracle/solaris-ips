@@ -37,7 +37,7 @@ import warnings
 import pkg.fmri
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
-import pkg.client.transport as transport
+import pkg.client.transport.transport as transport
 import pkg.actions as actions
 import pkg.manifest as manifest
 import pkg.version as version
