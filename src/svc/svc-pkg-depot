@@ -34,20 +34,6 @@ case "$1" in
 'start')
 	# Handles depot startup
 
-        # Define list of options that will be analyzed to determine the set of
-        # privileges to drop for the depot process.  These values will not be
-        # passed to the depot server (which will read the configuration directly
-        # from SMF instead).
-	boolean_props="mirror readonly"
-	set -A boolean_cmd_line "mirror" "readonly"
-
-	long_option_props="ssl_cert_file ssl_dialog ssl_key_file"
-
-	set -A long_option_cmd_line "ssl-cert-file" "ssl-dialog" "ssl-key-file"
-
-	bool_ops=""
-	option_props=""
-
 	# retrieve the pkg_root property. If the variable is left empty
 	# pkg_root is /
 	pkg_root=$(svcprop -p pkg/pkg_root $SMF_FMRI)
@@ -78,90 +64,6 @@ case "$1" in
 
 	export PYTHONPATH
 
-	# Go through each property in boolean_props and, if its value is set
-	# to true in SMF, add the appropriate command line flag to the string.
-	cnt=0
-	for b in $boolean_props; do
-		val=$(svcprop -p pkg/$b $SMF_FMRI)
-		if [[ $? -ne 0 ]]; then
-			echo "service property pkg/$b not defined for" \
-			    "service: $SMF_FMRI"
-			exit $SMF_EXIT_ERR_CONFIG
-		fi
-		# If the property is set to true, add the flag.
-		if [[ $val == 'true' ]]; then
-			bool_ops="$bool_ops --${boolean_cmd_line[$cnt]}"
-		fi
-		cnt=$(($cnt + 1))
-	done
-
-	# Go through each property in short_option_props and, if its value is
-	# set to something other than "", add the appropriate command line
-	# flag and argument to the string.
-	cnt=0
-	for o in $short_option_props; do
-		val=$(svcprop -p pkg/$o $SMF_FMRI)
-		if [[ $? -ne 0 ]]; then
-			echo "service property pkg/$o not defined for" \
-		       	    "service: $SMF_FMRI"
-			exit $SMF_EXIT_ERR_CONFIG
-		fi
-		# If the SMF property is set to something other than 'none', add
-		# the flag and its argument to the command.
-		if [[ $val != '""' ]]; then
-			option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
-		fi
-		cnt=$(($cnt + 1))
-	done
-
-	# Go through each property in long_option_props and, if its value is
-	# set to something other than "", add the appropriate command line
-	# flag and argument to the string.
-	cnt=0
-	for o in $long_option_props; do
-		val=$(svcprop -p pkg/$o $SMF_FMRI)
-		if [[ $? -ne 0 ]]; then
-			echo "service property pkg/$o not defined for" \
-		       	    "service: $SMF_FMRI"
-			exit $SMF_EXIT_ERR_CONFIG
-		fi
-		# If the SMF property is set to something other than 'none', add
-		# the flag and its argument to the command.
-		if [[ $o == 'ssl_dialog' && $val == 'smf' ]]; then
-			option_ops="$option_ops --${long_option_cmd_line[$cnt]}=smf:$SMF_FMRI"
-		elif [[ $val != '""' ]]; then
-			option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
-		fi
-		cnt=$(($cnt + 1))
-	done
-
-	#
-	# Determine if fork and exec are needed.
-	#
-	need_forkexec="true"
-	if [[ $bool_ops == *'--readonly'* ]]; then
-		need_forkexec="false"
-		echo "option_ops: [$option_ops]"
-		if [[ "$option_ops" == *--ssl-dialog=@(smf|exec):* && \
-		    "$option_ops" == *'--ssl-key-file='* && \
-		    "$option_ops" != *'--ssl-key-file=none'* ]]; then
-			need_forkexec="true"
-		fi
-		if [[ "$option_ops" == *'--writable-root='* ]]; then
-			need_forkexec="true"
-		fi
-
-	fi
-
-	#
-	# If we don't need them, drop fork and exec.
-	#
-	forkexec=""
-	if [[ $need_forkexec == 'false' ]]; then
-		echo "Dropping fork(2) and exec(2) privileges."
-		forkexec=",-proc_fork,-proc_exec"
-	fi
-
 	#
 	# If this process has net_privaddr, then we pass it along.
 	# If not, we ensure that we don't specify it, since that will
@@ -173,15 +75,17 @@ case "$1" in
 		echo "Dropping net_privaddr privilege."
 		privaddr=",net_privaddr"
 	fi
-	#
-	# We build up the privileges available starting with "basic".
-	# This provides some protection even when the depot runs as root.
-	#
-	wrapper="ppriv -s A=basic,-file_link_any,-proc_info,-proc_session$privaddr$forkexec -e"
 
-	# Build the command to start pkg.depotd with the specified options.
-	cmd="$wrapper ${pkg_root}usr/lib/pkg.depotd $bool_ops $option_ops " \
-            "--cfg $SMF_FMRI"
+	#
+	# Build up the privileges available starting with "basic".  This
+	# provides some protection even when the depot runs as root.
+	#
+	wrapper="ppriv -s \
+            A=basic,-file_link_any,-proc_info,-proc_session$privaddr -e"
+
+	# Build the command to start pkg.depotd.
+	cmd="$wrapper ${pkg_root}usr/lib/pkg.depotd --cfg $SMF_FMRI"
+
 	# Echo the command so that the log contains the command used to start
 	# the depot.
 	echo $cmd
@@ -217,8 +121,8 @@ case "$1" in
 		ret=$?
 		# '2' indicates timeout with non-empty contract.
 		if [[ $ret -eq 2 ]]; then
-			echo "Gentle contract kill timed out after"
-		       	    "$POLITE seconds, trying SIGKILL." >&2
+			echo "Gentle contract kill timed out after" \
+			    "$POLITE seconds, trying SIGKILL." >&2
 			#
 			# Again, despite the specified timeout, this will
 			# take a minimum of 5 seconds to complete.
