@@ -1,0 +1,13 @@
+package image/nvidia/cg-toolkit
+consolidation "nvidia"
+classification "Applications/Graphics and Imaging"
+import NVDAcg
+version 2.2
+end package
+
+package NVDAcg
+consolidation "nvidia"
+renamed 144
+depend image/nvidia/cg-toolkit
+version 2.2
+end package

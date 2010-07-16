@@ -6,9 +6,3 @@
 <transform file depend -> delete pkg.debug.depend.type .*>
 <transform file depend -> delete pkg.debug.depend.path .*>
 <transform file depend -> delete pkg.debug.depend.severity .*>
-
-# These are needed until 16440 is fixed.
-<transform depend fmri=pkg:/SUNWslim-utils@.+ type=require -> drop>
-<transform depend fmri=developer/dtrace/toolkit@.+ type=incorporate -> drop>
-<transform depend fmri=library/python-2/lxml-24@.+ type=incorporate -> drop>
-<transform depend fmri=library/python-2/lxml-26@.+ type=incorporate -> drop>

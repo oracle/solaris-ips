@@ -1,0 +1,13 @@
+package library/python-2/lxml-24
+consolidation "admin"
+classification "Development/Python"
+import SUNWpython-lxml
+version 2.1.2
+end package
+
+package SUNWpython-lxml
+consolidation "admin"
+renamed 144
+depend library/python-2/lxml-24
+version 2.1.2
+end package

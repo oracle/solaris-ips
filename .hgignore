@@ -1,20 +1,18 @@
 # Ignore compiled byte code, lint output, object files, shared objects,
 # VIM swap files, emacs backups and the entire proto area.
-\.pyc
+\.intltool-merge-cache
 \.ln
+\.make\.
 \.mo
 \.o
+\.pyc
 \.so
 \.sw.
-\.make\.
-\.intltool-merge-cache
-~$
 ^nbproject
-^proto
 ^packages
-^nbproject
+^proto
+~$
 # Specific build products
-^doc/html-out
 ^doc/guide-main.aux
 ^doc/guide-main.cb
 ^doc/guide-main.cb2
@@ -22,14 +20,15 @@
 ^doc/guide-main.pdf
 ^doc/guide-main.tex
 ^doc/guide-main.toc
-^src/extern/.*
+^doc/html-out
 ^src/brand/fmri_compare$
 ^src/brand/support$
+^src/extern/.*
 ^src/gui/data/addmoresoftware.desktop$
+^src/gui/data/packagemanager-info.xml$
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
 ^src/gui/help/.*/package-manager.xml$
-^src/gui/data/packagemanager-info.xml$
 ^src/man/.*\.1$
 ^src/man/.*\.1m$
 ^src/man/.*\.5$
@@ -39,11 +38,14 @@
 ^src/pkgdefs/protoproto$
 ^src/pkgrecv$
 ^src/pkgsend$
+^src/tests/.figleaf$
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$
 ^src/um/data/updatemanager.png$
 ^src/um/data/updatemanagernotifier.desktop$
 ^src/util/distro-import/.*/entire.incorporation$
+^src/util/distro-import/.*/services.desktop
+^src/util/distro-import/.*/shares.desktop
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
 ^src/util/distro-import/ksh-wrapper$
@@ -51,5 +53,4 @@
 ^src/util/distro-import/redist_cluster$
 ^src/util/distro-import/slim_cluster$
 ^src/util/misc/extract_hostid$
-^src/tests/.figleaf$
 ^webrev

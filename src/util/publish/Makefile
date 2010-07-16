@@ -25,6 +25,7 @@ ARCH:sh=	uname -p
 REPO=http://localhost:10000
 ON_REPO=http://localhost:20000
 INSTALL_REPO=http://localhost:20001
+X_REPO=http://localhost:20002
 MERGEDIR=../../../proto/merge
 SETPUBLISHERDIR=../../../proto/set-publisher
 PROTO=../../../proto/root_$(ARCH)
@@ -56,7 +57,10 @@ publish: $(MERGEDIR)
 
 publish_setpublisher: $(SETPUBLISHERDIR)
 	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh -b $(BUILDID) \
-		-d $(SETPUBLISHERDIR) -p $(REPO) $(ON_REPO) $(INSTALL_REPO)
+		-d $(SETPUBLISHERDIR) -p $(REPO) \
+		$(ON_REPO) \
+		$(INSTALL_REPO) \
+		$(X_REPO)
 
 clean:
 
