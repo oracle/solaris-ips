@@ -312,6 +312,7 @@ f none usr/share/man/cat1/pkgdiff.1 444 root bin
 f none usr/share/man/cat1/pkgfmt.1 444 root bin
 f none usr/share/man/cat1/pkgmogrify.1 444 root bin
 f none usr/share/man/cat1/pkgrecv.1 444 root bin
+f none usr/share/man/cat1/pkgrepo.1 444 root bin
 f none usr/share/man/cat1/pkgsend.1 444 root bin
 d none usr/share/man/cat1m 755 root bin
 f none usr/share/man/cat1m/pkg.depotd.1m 444 root bin

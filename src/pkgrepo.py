@@ -97,20 +97,31 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         msg(_("""\
 Usage:
-        pkgrepo [options] subcommand [subcmd_options] [operands]
+        pkgrepo [options] command [cmd_options] [operands]
 
 Subcommands:
-        pkgrepo create [repo_uri_or_path]
-        pkgrepo publisher [pub_prefix ...]
+        pkgrepo create uri_or_path
+
+        pkgrepo property [-F format] [-H] [<section/property> ...]
+        pkgrepo set-property <section/property>=<value> or 
+            <section/property>=(["<value>", ...])
+
+        pkgrepo publisher [-F format] [-H] [publisher ...]
+
         pkgrepo rebuild [--no-index]
         pkgrepo refresh [--no-catalog] [--no-index]
+
         pkgrepo version
+        pkgrepo help
 
 Options:
-        -s repo_uri_or_path     The location of the repository to use for
-                                operations.  Network repositories are not
-                                currently supported.
-        --help or -?"""))
+        -s repo_uri_or_path
+            A URI or filesystem path representing the location of a package
+            repository. Currently, only filesystem-based repositories are
+            supported.
+
+        --help or -?
+            Displays a usage message."""))
 
         sys.exit(retcode)
 

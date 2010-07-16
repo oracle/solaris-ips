@@ -36,6 +36,7 @@ link:
 	ln -sf $(PWD)/pkgdep.1.txt /usr/share/man/cat1/pkgdep.1
 	ln -sf $(PWD)/pkgmogrify.1.txt /usr/share/man/cat1/pkgmogrify.1
 	ln -sf $(PWD)/pkgrecv.1.txt /usr/share/man/cat1/pkgrecv.1
+	ln -sf $(PWD)/pkgrepo.1.txt /usr/share/man/cat1/pkgrepo.1
 	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
 	ln -sf $(PWD)/pm-updatemanager.1.txt /usr/share/man/cat1/pm-updatemanager.1
 	ln -sf $(PWD)/pkg.depotd.1m.txt /usr/share/man/cat1m/pkg.depotd.1m
@@ -45,6 +46,7 @@ link-clean:
 	rm -f /usr/share/man/cat1/packagemanager.1
 	rm -f /usr/share/man/cat1/pkg.1
 	rm -f /usr/share/man/cat1/pkgrecv.1
+	rm -f /usr/share/man/cat1/pkgrepo.1
 	rm -f /usr/share/man/cat1/pkgsend.1
 	rm -f /usr/share/man/cat1/pm-updatemanager.1
 	rm -f /usr/share/man/cat1m/pkg.depotd.1m

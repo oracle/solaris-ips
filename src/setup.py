@@ -257,6 +257,7 @@ man1_files = [
         'man/pkgmogrify.1',
         'man/pkgsend.1',
         'man/pkgrecv.1',
+        'man/pkgrepo.1',
         'man/pm-updatemanager.1',
         ]
 man1m_files = [

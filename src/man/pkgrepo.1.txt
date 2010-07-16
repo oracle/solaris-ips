@@ -9,14 +9,18 @@ SYNOPSIS
 
      /usr/bin/pkgrepo create uri_or_path
 
-     /usr/bin/pkg property [-F format] [-H] [<section/property> ...]
-     /usr/bin/pkg set-property <section/property>=<value> or 
+     /usr/bin/pkgrepo property [-F format] [-H]
+         [<section/property> ...]
+     /usr/bin/pkgrepo set-property <section/property>=<value> or 
          <section/property>=(["<value>", ...])
 
-     /usr/bin/pkgrepo publisher [publisher ...]
+     /usr/bin/pkgrepo publisher [-F format] [-H] [publisher ...]
 
-     /usr/bin/pkgrepo rebuild [-v] [--no-index]
+     /usr/bin/pkgrepo rebuild [--no-index]
      /usr/bin/pkgrepo refresh [--no-catalog] [--no-index]
+
+     /usr/bin/pkgrepo version
+     /usr/bin/pkgrepo help
 
 DESCRIPTION
      pkgrepo provides the ability to create, manage, and manage pkg(5)
@@ -57,11 +61,13 @@ SUBCOMMANDS
 
           With -H, omit the headers from the listing.
 
-     set-property propname propvalue
+     set-property <section/property>=<value> or
+         <section/property>=(["<value>", ...])
+
           Update the value of an existing repository property or add
           a new one.
 
-     publisher [-F format] [-H] [<pub_prefix> ...]
+     publisher [-F format] [-H] [<publisher> ...]
           Lists the publishers of packages in the specified repository
           with a summary of the number of packages for each publisher
           and when the publisher's package data was last updated.
@@ -71,15 +77,11 @@ SUBCOMMANDS
 
           With -H, omit the headers from the listing.
 
-     rebuild [-v] [--no-index]
+     rebuild [--no-index]
           Discards all catalog, search, and other cached information
           found in the repository and then re-creates it based on the
           current contents of the repository.  This command can only
           be used with filesystem-based repositories.
-
-          With -v, display the progress of the rebuild during the
-          operation and a summary of publisher and package data
-          upon successful completion.
 
           With --no-index, don't update search indexes.
 
@@ -93,6 +95,12 @@ SUBCOMMANDS
           With --no-catalog, don't add any new packages.
 
           With --no-index, don't update search indexes.
+
+     version
+          Display a unique string identifying the version of the
+          pkg(5) system.  The values produced by the version
+          operation are not sortable, or safe for comparison
+          beyond equality.
 
 EXAMPLES
      Example 1:  Create a package repository.
