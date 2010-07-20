@@ -18,24 +18,17 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
 
-# client.py -> /usr/bin/pkg
-# pkgdep.py -> /usr/bin/pkgdep
-# pull.py -> /usr/bin/pkgrecv
-# publish.py -> /usr/bin/pkgsend
-# depot.py -> /usr/lib/pkg.depotd
 #
-# pkg/*.py -> /usr/lib/python2.6/vendor-packages/pkg/
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 PYTHON = /usr/bin/python2.6
 
 all := TARGET = all
 link := TARGET = link
 install := TARGET = install
-packages := TARGET = packages
+packages := TARGET = install
 link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
@@ -51,11 +44,11 @@ all: $(SUBDIRS)
 
 clean: $(SUBDIRS)
 	$(PYTHON) setup.py clean
-	@cd pkgdefs; pwd; make clean
+	@cd pkg; pwd; make clean
 
 clobber: $(SUBDIRS)
 	$(PYTHON) setup.py clobber
-	@cd pkgdefs; pwd; make clobber
+	@cd pkg; pwd; make clobber
 
 install: $(SUBDIRS)
 	$(PYTHON) setup.py install
@@ -68,7 +61,7 @@ $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 packages: install
-	@cd pkgdefs; pwd; $(MAKE) $(TARGET) check
+	@cd pkg; pwd; $(MAKE) $(TARGET) check
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands, modules, and supporting

@@ -1,0 +1,329 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg/package-manager@$(PKGVERS)
+set name=pkg.summary value="GUI for Image Packaging System"
+set name=pkg.description value="GUI for Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+
+dir path=etc
+dir path=etc/gconf
+dir path=etc/gconf/schemas
+file path=etc/gconf/schemas/packagemanager-preferences.schemas
+dir path=usr
+dir path=usr/bin
+file path=usr/bin/packagemanager
+dir path=usr/lib
+file path=usr/lib/pm-checkforupdates mode=0755
+file path=usr/lib/pm-launch mode=0755
+dir path=$(PYDIR)
+dir path=$(PYDIRVP)
+dir path=$(PYDIRVP)/pkg
+dir path=$(PYDIRVP)/pkg/gui
+file path=$(PYDIRVP)/pkg/gui/__init__.py
+file path=$(PYDIRVP)/pkg/gui/beadmin.py
+file path=$(PYDIRVP)/pkg/gui/cache.py
+file path=$(PYDIRVP)/pkg/gui/detailspanel.py
+file path=$(PYDIRVP)/pkg/gui/entrystyle.py
+file path=$(PYDIRVP)/pkg/gui/enumerations.py
+file path=$(PYDIRVP)/pkg/gui/exportconfirm.py
+file path=$(PYDIRVP)/pkg/gui/globalexceptionhandler.py
+file path=$(PYDIRVP)/pkg/gui/imageinfo.py
+file path=$(PYDIRVP)/pkg/gui/installupdate.py
+file path=$(PYDIRVP)/pkg/gui/misc.py
+file path=$(PYDIRVP)/pkg/gui/misc_non_gui.py
+file path=$(PYDIRVP)/pkg/gui/parseqs.py
+file path=$(PYDIRVP)/pkg/gui/pmgconf.py
+file path=$(PYDIRVP)/pkg/gui/pmlogging.py
+file path=$(PYDIRVP)/pkg/gui/preferences.py
+file path=$(PYDIRVP)/pkg/gui/progress.py
+file path=$(PYDIRVP)/pkg/gui/repository.py
+file path=$(PYDIRVP)/pkg/gui/searcherror.py
+file path=$(PYDIRVP)/pkg/gui/startpage.py
+file path=$(PYDIRVP)/pkg/gui/uarenamebe.py
+file path=$(PYDIRVP)/pkg/gui/versioninfo.py
+file path=$(PYDIRVP)/pkg/gui/webinstall.py
+dir path=usr/share
+dir path=usr/share/applications
+file path=usr/share/applications/addmoresoftware.desktop
+file path=usr/share/applications/packagemanager.desktop
+dir path=usr/share/gnome
+dir path=usr/share/gnome/help
+dir path=usr/share/gnome/help/package-manager
+dir path=usr/share/gnome/help/package-manager/C
+dir path=usr/share/gnome/help/package-manager/C/figures
+file path=usr/share/gnome/help/package-manager/C/figures/pkgmgr-main.png
+file path=usr/share/gnome/help/package-manager/C/figures/startpage_new.png
+file path=usr/share/gnome/help/package-manager/C/figures/update_all_new.png
+file path=usr/share/gnome/help/package-manager/C/figures/webinstall.png
+file path=usr/share/gnome/help/package-manager/C/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/ar
+file path=usr/share/gnome/help/package-manager/ar/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/ca
+file path=usr/share/gnome/help/package-manager/ca/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/cs
+file path=usr/share/gnome/help/package-manager/cs/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/de
+file path=usr/share/gnome/help/package-manager/de/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/es
+file path=usr/share/gnome/help/package-manager/es/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/fr
+file path=usr/share/gnome/help/package-manager/fr/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/hu
+file path=usr/share/gnome/help/package-manager/hu/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/id
+file path=usr/share/gnome/help/package-manager/id/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/it
+file path=usr/share/gnome/help/package-manager/it/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/ja
+file path=usr/share/gnome/help/package-manager/ja/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/ko
+file path=usr/share/gnome/help/package-manager/ko/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/pl
+file path=usr/share/gnome/help/package-manager/pl/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/pt_BR
+file path=usr/share/gnome/help/package-manager/pt_BR/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/sv
+file path=usr/share/gnome/help/package-manager/sv/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/ru
+file path=usr/share/gnome/help/package-manager/ru/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/zh_CN
+file path=usr/share/gnome/help/package-manager/zh_CN/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/zh_HK
+file path=usr/share/gnome/help/package-manager/zh_HK/package-manager.xml
+dir path=usr/share/gnome/help/package-manager/zh_TW
+file path=usr/share/gnome/help/package-manager/zh_TW/package-manager.xml
+dir path=usr/share/locale
+dir path=usr/share/locale/ar
+dir path=usr/share/locale/ar/LC_MESSAGES
+file path=usr/share/locale/ar/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/ca
+dir path=usr/share/locale/ca/LC_MESSAGES
+file path=usr/share/locale/ca/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/cs
+dir path=usr/share/locale/cs/LC_MESSAGES
+file path=usr/share/locale/cs/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/de
+dir path=usr/share/locale/de/LC_MESSAGES
+file path=usr/share/locale/de/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/es
+dir path=usr/share/locale/es/LC_MESSAGES
+file path=usr/share/locale/es/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/fr
+dir path=usr/share/locale/fr/LC_MESSAGES
+file path=usr/share/locale/fr/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/he
+dir path=usr/share/locale/he/LC_MESSAGES
+file path=usr/share/locale/he/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/hu
+dir path=usr/share/locale/hu/LC_MESSAGES
+file path=usr/share/locale/hu/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/id
+dir path=usr/share/locale/id/LC_MESSAGES
+file path=usr/share/locale/id/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/it
+dir path=usr/share/locale/it/LC_MESSAGES
+file path=usr/share/locale/it/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/ja
+dir path=usr/share/locale/ja/LC_MESSAGES
+file path=usr/share/locale/ja/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/ko
+dir path=usr/share/locale/ko/LC_MESSAGES
+file path=usr/share/locale/ko/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/nl
+dir path=usr/share/locale/nl/LC_MESSAGES
+file path=usr/share/locale/nl/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/pl
+dir path=usr/share/locale/pl/LC_MESSAGES
+file path=usr/share/locale/pl/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/pt_BR
+dir path=usr/share/locale/pt_BR/LC_MESSAGES
+file path=usr/share/locale/pt_BR/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/ru
+dir path=usr/share/locale/ru/LC_MESSAGES
+file path=usr/share/locale/ru/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/sk
+dir path=usr/share/locale/sk/LC_MESSAGES
+file path=usr/share/locale/sk/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/sv
+dir path=usr/share/locale/sv/LC_MESSAGES
+file path=usr/share/locale/sv/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/zh_CN
+dir path=usr/share/locale/zh_CN/LC_MESSAGES
+file path=usr/share/locale/zh_CN/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/zh_HK
+dir path=usr/share/locale/zh_HK/LC_MESSAGES
+file path=usr/share/locale/zh_HK/LC_MESSAGES/pkg.mo
+dir path=usr/share/locale/zh_TW
+dir path=usr/share/locale/zh_TW/LC_MESSAGES
+file path=usr/share/locale/zh_TW/LC_MESSAGES/pkg.mo
+dir path=usr/share/icons
+dir path=usr/share/icons/HighContrast
+dir path=usr/share/icons/HighContrast/48x48
+dir path=usr/share/icons/HighContrast/48x48/apps
+file path=usr/share/icons/HighContrast/48x48/apps/packagemanager.png
+dir path=usr/share/icons/HighContrastInverse
+dir path=usr/share/icons/HighContrastInverse/48x48
+dir path=usr/share/icons/HighContrastInverse/48x48/apps
+file path=usr/share/icons/HighContrastInverse/48x48/apps/packagemanager.png
+dir path=usr/share/icons/hicolor
+dir path=usr/share/icons/hicolor/48x48
+dir path=usr/share/icons/hicolor/48x48/apps
+file path=usr/share/icons/hicolor/48x48/apps/packagemanager.png
+dir path=usr/share/icons/hicolor/48x48/mimetypes
+file path=usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.pkg5.info.png
+dir path=usr/share/man
+dir path=usr/share/man/cat1
+file path=usr/share/man/cat1/packagemanager.1
+dir path=usr/share/mime
+dir path=usr/share/mime/packages
+file path=usr/share/mime/packages/packagemanager-info.xml
+dir path=usr/share/package-manager
+dir path=usr/share/package-manager/data
+file path=usr/share/package-manager/data/opensolaris.org.sections
+dir path=usr/share/package-manager/data/startpagebase
+dir path=usr/share/package-manager/data/startpagebase/C
+file path=usr/share/package-manager/data/startpagebase/C/dialog-information.png
+file path=usr/share/package-manager/data/startpagebase/C/dialog-warning.png
+file path=usr/share/package-manager/data/startpagebase/C/install.png
+file path=usr/share/package-manager/data/startpagebase/C/opensolaris.png
+file path=usr/share/package-manager/data/startpagebase/C/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/ar
+file path=usr/share/package-manager/data/startpagebase/ar/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/ca
+file path=usr/share/package-manager/data/startpagebase/ca/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/cs
+file path=usr/share/package-manager/data/startpagebase/cs/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/de
+file path=usr/share/package-manager/data/startpagebase/de/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/es
+file path=usr/share/package-manager/data/startpagebase/es/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/fr
+file path=usr/share/package-manager/data/startpagebase/fr/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/hu
+file path=usr/share/package-manager/data/startpagebase/hu/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/id
+file path=usr/share/package-manager/data/startpagebase/id/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/it
+file path=usr/share/package-manager/data/startpagebase/it/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/ja
+file path=usr/share/package-manager/data/startpagebase/ja/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/ko
+file path=usr/share/package-manager/data/startpagebase/ko/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/nl
+file path=usr/share/package-manager/data/startpagebase/nl/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/pt_BR
+file path=usr/share/package-manager/data/startpagebase/pt_BR/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/ru
+file path=usr/share/package-manager/data/startpagebase/ru/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/sv
+file path=usr/share/package-manager/data/startpagebase/sv/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/zh_CN
+file path=usr/share/package-manager/data/startpagebase/zh_CN/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/zh_HK
+file path=usr/share/package-manager/data/startpagebase/zh_HK/startpage.html
+dir path=usr/share/package-manager/data/startpagebase/zh_TW
+file path=usr/share/package-manager/data/startpagebase/zh_TW/startpage.html
+dir path=usr/share/package-manager/icons
+dir path=usr/share/package-manager/icons/HighContrast
+dir path=usr/share/package-manager/icons/HighContrast/16x16
+dir path=usr/share/package-manager/icons/HighContrast/16x16/actions
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/filter_all.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/filter_selected.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/progress_checkmark.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/selection.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/status_checkmark.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/status_installed.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/status_newupdate.png
+file path=usr/share/package-manager/icons/HighContrast/16x16/actions/status_notinstalled.png
+dir path=usr/share/package-manager/icons/HighContrast/24x24
+dir path=usr/share/package-manager/icons/HighContrast/24x24/actions
+file path=usr/share/package-manager/icons/HighContrast/24x24/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/HighContrast/24x24/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/HighContrast/24x24/actions/pm-remove.png
+file path=usr/share/package-manager/icons/HighContrast/24x24/actions/pm-update_all.png
+dir path=usr/share/package-manager/icons/HighContrast/48x48
+dir path=usr/share/package-manager/icons/HighContrast/48x48/actions
+file path=usr/share/package-manager/icons/HighContrast/48x48/actions/packagemanager.png
+file path=usr/share/package-manager/icons/HighContrast/48x48/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/HighContrast/48x48/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/HighContrast/48x48/actions/pm-remove.png
+file path=usr/share/package-manager/icons/HighContrast/48x48/actions/pm-update_all.png
+dir path=usr/share/package-manager/icons/HighContrastInverse
+dir path=usr/share/package-manager/icons/HighContrastInverse/16x16
+dir path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/filter_all.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/filter_selected.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/progress_checkmark.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/selection.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/status_checkmark.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/status_installed.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/status_newupdate.png
+file path=usr/share/package-manager/icons/HighContrastInverse/16x16/actions/status_notinstalled.png
+dir path=usr/share/package-manager/icons/HighContrastInverse/24x24
+dir path=usr/share/package-manager/icons/HighContrastInverse/24x24/actions
+file path=usr/share/package-manager/icons/HighContrastInverse/24x24/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/HighContrastInverse/24x24/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/HighContrastInverse/24x24/actions/pm-remove.png
+file path=usr/share/package-manager/icons/HighContrastInverse/24x24/actions/pm-update_all.png
+dir path=usr/share/package-manager/icons/HighContrastInverse/48x48
+dir path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions
+file path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions/packagemanager.png
+file path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions/pm-remove.png
+file path=usr/share/package-manager/icons/HighContrastInverse/48x48/actions/pm-update_all.png
+dir path=usr/share/package-manager/icons/hicolor
+dir path=usr/share/package-manager/icons/hicolor/16x16
+dir path=usr/share/package-manager/icons/hicolor/16x16/actions
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/filter_all.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/filter_selected.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/progress_blank.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/progress_checkmark.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/selection.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/status_checkmark.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/status_installed.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/status_newupdate.png
+file path=usr/share/package-manager/icons/hicolor/16x16/actions/status_notinstalled.png
+dir path=usr/share/package-manager/icons/hicolor/24x24
+dir path=usr/share/package-manager/icons/hicolor/24x24/actions
+file path=usr/share/package-manager/icons/hicolor/24x24/actions/pm-check.png
+file path=usr/share/package-manager/icons/hicolor/24x24/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/hicolor/24x24/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/hicolor/24x24/actions/pm-remove.png
+file path=usr/share/package-manager/icons/hicolor/24x24/actions/pm-update_all.png
+dir path=usr/share/package-manager/icons/hicolor/48x48
+dir path=usr/share/package-manager/icons/hicolor/48x48/actions
+file path=usr/share/package-manager/icons/hicolor/48x48/actions/packagemanager.png
+file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-install_update.png
+file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-refresh.png
+file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-remove.png
+file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-update_all.png
+file path=usr/share/package-manager/packagemanager.glade
+license cr_Oracle license=cr_Oracle
+license lic_CDDL license=lic_CDDL
+legacy pkg=SUNWipkg-gui version=0.1.1
+
+depend type=require fmri=library/python-2/python-gnome-libs-26@$(PKGVERS_COMPONENT)
+depend type=require fmri=package/pkg
+depend type=require fmri=runtime/python-26@2.6.4

@@ -26,6 +26,7 @@ REPO=http://localhost:10000
 ON_REPO=http://localhost:20000
 INSTALL_REPO=http://localhost:20001
 X_REPO=http://localhost:20002
+IPS_REPO=http://localhost:20003
 MERGEDIR=../../../proto/merge
 SETPUBLISHERDIR=../../../proto/set-publisher
 PROTO=../../../proto/root_$(ARCH)
@@ -60,7 +61,8 @@ publish_setpublisher: $(SETPUBLISHERDIR)
 		-d $(SETPUBLISHERDIR) -p $(REPO) \
 		$(ON_REPO) \
 		$(INSTALL_REPO) \
-		$(X_REPO)
+		$(X_REPO) \
+		$(IPS_REPO)
 
 clean:
 

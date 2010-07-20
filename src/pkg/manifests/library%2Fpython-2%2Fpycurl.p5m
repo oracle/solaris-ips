@@ -1,0 +1,104 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/library/python-2/pycurl@7.19.0.1,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.summary value="Python bindings for libcurl"
+set name=pkg.description value="PycURL provides a thin layer of Python bindings on top of libcurl."
+set name=info.classification value=org.opensolaris.category.2008:Development/Python
+
+# PycURL installs one of its subtrees in an odd place, so we want to move
+# it.  However, because the files are actually found in their original
+# location, we need to change the action's hash value to the original path
+# so that pkgsend can find the data.
+<transform file path=$(PYDIRVP)/share.* -> set action.hash %(path)>
+<transform dir file path=$(PYDIRVP)/share.* -> edit path $(PYDIRVP) usr>
+<transform file path=usr/share/doc/pycurl/.*\.py -> set pkg.tmp.autopyc false>
+
+dir path=usr
+dir path=usr/lib
+dir path=$(PYDIR)
+dir path=$(PYDIRVP)
+file path=$(PYDIRVP)/pycurl-7.19.0-py2.6.egg-info
+dir path=$(PYDIRVP)/curl
+file path=$(PYDIRVP)/curl/__init__.py
+file path=$(PYDIRVP)/pycurl.so
+dir path=$(PYDIRVP)/share
+dir path=$(PYDIRVP)/share/doc
+dir path=$(PYDIRVP)/share/doc/pycurl
+file path=$(PYDIRVP)/share/doc/pycurl/COPYING
+file path=$(PYDIRVP)/share/doc/pycurl/COPYING2
+file path=$(PYDIRVP)/share/doc/pycurl/ChangeLog
+file path=$(PYDIRVP)/share/doc/pycurl/INSTALL
+file path=$(PYDIRVP)/share/doc/pycurl/README
+file path=$(PYDIRVP)/share/doc/pycurl/TODO
+dir path=$(PYDIRVP)/share/doc/pycurl/examples
+file path=$(PYDIRVP)/share/doc/pycurl/examples/basicfirst.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/file_upload.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/linksys.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/retriever-multi.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/retriever.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/sfquery.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/examples/xmlrpc_curl.py mode=0755
+dir path=$(PYDIRVP)/share/doc/pycurl/html
+file path=$(PYDIRVP)/share/doc/pycurl/html/callbacks.html
+file path=$(PYDIRVP)/share/doc/pycurl/html/curlmultiobject.html
+file path=$(PYDIRVP)/share/doc/pycurl/html/curlobject.html
+file path=$(PYDIRVP)/share/doc/pycurl/html/curlshareobject.html
+file path=$(PYDIRVP)/share/doc/pycurl/html/pycurl.html
+dir path=$(PYDIRVP)/share/doc/pycurl/tests
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_cb.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_debug.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_ftp.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_getinfo.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_gtk.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_internals.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_memleak.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi2.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi3.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi4.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi5.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi6.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi_socket.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi_socket_select.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi_timer.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_multi_vs_thread.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_post.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_post2.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_post3.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_share.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_socketopen.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_stringio.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/test_xmlrpc.py mode=0755
+file path=$(PYDIRVP)/share/doc/pycurl/tests/util.py mode=0755
+license lic_pycurl license=lic_pycurl
+legacy pkg=SUNWpython-pycurl version=7.19.0.1
+
+depend type=require fmri=library/libidn@1.9
+depend type=require fmri=library/security/openssl@0.9.8.14
+depend type=require fmri=library/zlib@1.2.3
+depend type=require fmri=runtime/python-26@2.6.4
+depend type=require fmri=system/library/security/gss
+depend type=require fmri=system/library
+depend type=require fmri=web/curl@7.20.0

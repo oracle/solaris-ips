@@ -1,0 +1,79 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+# Set some specific permissions
+<transform dir path=(etc|usr|var)$ -> set group sys>
+<transform dir path=etc/(brand|gconf|zones)$ -> set group sys>
+<transform dir file path=etc/gconf/schemas -> set group sys>
+<transform dir file path=etc/(security|xdg) -> set group sys>
+<transform dir path=usr/share$ -> set group sys>
+<transform dir path=usr/share/(doc|gnome)$ -> set group other>
+<transform file dir path=usr/share/(applications|icons|locale) -> default group other>
+<transform dir path=usr/share/lib -> set group sys>
+<transform file dir path=usr/share/mime -> default group root>
+<transform file path=usr/share/(package|update)-manager/icons -> default group other>
+<transform dir file path=var/svc -> default group sys>
+<transform file path=(usr/bin|lib/svc/method) -> default mode 0755>
+<transform file path=$(PYDIR)/.*\.so -> default mode 0755>
+
+# For what's left, go with root:bin 0444, u+wx for directories
+<transform file dir -> default owner root>
+<transform file dir -> default group bin>
+<transform file -> default mode 0444>
+<transform dir -> default mode 0755>
+
+# For non-obsolete packages, add a dependency on the consolidation
+# incorporation
+<transform pkg -> default pkg.obsolete false>
+<transform pkg pkg.obsolete=false -> emit depend fmri=consolidation/ips/ips-incorporation type=require>
+
+# This package attribute is just for internal bookkeeping and shouldn't be
+# propagated
+<transform set name=nopublish.after -> drop>
+
+set name=org.opensolaris.consolidation value=ips
+set name=variant.opensolaris.zone value=global value=nonglobal
+
+# Don't bother specifying each .py file.  Allow individual actions to
+# override this by setting pkg.tmp.autopyc to false.
+<transform file path=.*\.py$ -> default pkg.tmp.autopyc true>
+<transform file pkg.tmp.autopyc=true -> emit file path=%(path)c>
+<transform file pkg.tmp.autopyc=.* -> delete pkg.tmp.autopyc .*>
+<transform hardlink path=.*\.py$ -> emit hardlink path=%(path)c target=%(target)c>
+
+# Add actuators
+<transform file path=(var|lib)/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
+<transform file path=etc/gconf/schemas/.*\.(entries|schemas) -> add restart_fmri svc:/application/desktop-cache/gconf-cache:default>
+<transform file path=usr/share/applications/.*\.desktop -> add restart_fmri svc:/application/desktop-cache/desktop-mime-cache:default>
+<transform file path=usr/share/icons/.* -> add restart_fmri svc:/application/desktop-cache/icon-cache:default>
+<transform file path=usr/share/mime/packages/.*\.xml -> add restart_fmri svc:/application/desktop-cache/mime-types-cache:default>
+
+# Default values for legacy actions
+<transform legacy -> default name %{pkg.summary}>
+<transform legacy -> default desc %{pkg.description}>
+<transform legacy -> default vendor "Sun Microsystems, Inc.">
+<transform legacy -> default hotline "Please contact your local service provider">
+<transform legacy -> default category system>
+<transform legacy -> default arch $(ARCH)>
+
+# vim: ft=pkg5manifest

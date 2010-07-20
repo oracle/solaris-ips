@@ -1,13 +1,13 @@
 # Ignore compiled byte code, lint output, object files, shared objects,
 # VIM swap files, emacs backups and the entire proto area.
 \.intltool-merge-cache
-\.ln
+\.ln$
 \.make\.
-\.mo
-\.o
-\.pyc
-\.so
-\.sw.
+\.mo$
+\.o$
+\.pyc$
+\.so$
+\.sw.$
 ^nbproject
 ^packages
 ^proto
@@ -29,15 +29,9 @@
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
 ^src/gui/help/.*/package-manager.xml$
-^src/man/.*\.1$
-^src/man/.*\.1m$
-^src/man/.*\.5$
-^src/pkg$
-^src/pkg.depotd$
-^src/pkgdefs/pkgproto$
-^src/pkgdefs/protoproto$
-^src/pkgrecv$
-^src/pkgsend$
+^src/man/.*\.(1m?|5)$
+^src/pkg/Makefile.link
+^src/pkg/pkgtmp/
 ^src/tests/.figleaf$
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$

@@ -1,0 +1,87 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/system/trusted/trusted-nonglobal@$(PKGVERS)
+set name=info.classification value=org.opensolaris.category.2008:System/Trusted
+set name=pkg.summary value="Trusted Extensions labeled zone"
+depend fmri=pkg:/communication/im/pidgin type=require
+depend fmri=pkg:/desktop/administration/gnome-system-tools type=require
+depend fmri=pkg:/desktop/archive-manager/file-roller type=require
+depend fmri=pkg:/desktop/calculator/gcalctool type=require
+depend fmri=pkg:/desktop/pdf-viewer/evince type=require
+depend fmri=pkg:/desktop/system-monitor/gnome-system-monitor type=require
+depend fmri=pkg:/desktop/xdg/menu-editor/alacarte type=require
+depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
+depend fmri=pkg:/documentation/gnome/gnome-user-docs type=require
+depend fmri=pkg:/editor/gedit type=require
+depend fmri=pkg:/games/gnome-games type=require
+depend fmri=pkg:/gnome/config/gconf type=require
+depend fmri=pkg:/gnome/file-manager/nautilus type=require
+depend fmri=pkg:/gnome/ggv type=require
+depend fmri=pkg:/gnome/gnome-audio type=require
+depend fmri=pkg:/gnome/gnome-dictionary type=require
+depend fmri=pkg:/gnome/gnome-search-tool type=require
+depend fmri=pkg:/gnome/help-viewer/yelp type=require
+depend fmri=pkg:/gnome/media/gnome-media type=require
+depend fmri=pkg:/gnome/media/gnome-media-player type=require
+depend fmri=pkg:/gnome/theme/background/opensolaris-backgrounds type=require
+depend fmri=pkg:/gnome/theme/background/opensolaris-backgrounds-extra type=require
+depend fmri=pkg:/gnome/theme/blueprint type=require
+depend fmri=pkg:/gnome/theme/cursor/dmz-cursor type=require
+depend fmri=pkg:/gnome/theme/cursor/dmz-cursor-aa type=require
+depend fmri=pkg:/gnome/theme/cursor/neutral_plus_inv type=require
+depend fmri=pkg:/gnome/theme/gnome-icon-theme type=require
+depend fmri=pkg:/gnome/theme/gnome-themes type=require
+depend fmri=pkg:/gnome/theme/gnome-themes-extra type=require
+depend fmri=pkg:/gnome/theme/gtk2-engines type=require
+depend fmri=pkg:/gnome/theme/gtk2-engines-extra type=require
+depend fmri=pkg:/gnome/theme/hicolor-icon-theme type=require
+depend fmri=pkg:/gnome/theme/nimbus type=require
+depend fmri=pkg:/gnome/theme/nimbus-hires type=require
+depend fmri=pkg:/gnome/theme/tango-icon-theme type=require
+depend fmri=pkg:/gnome/trusted/trusted-stripe type=require
+depend fmri=pkg:/gnome/trusted/xagent type=require
+depend fmri=pkg:/gnome/zenity type=require
+depend fmri=pkg:/image/gnome-backgrounds type=require
+depend fmri=pkg:/image/viewer/eog type=require
+depend fmri=pkg:/image/viewer/gthumb type=require
+depend fmri=pkg:/library/gnome/gnome-component type=require
+depend fmri=pkg:/library/gnome/print/gnome-print type=require
+depend fmri=pkg:/library/spell-checking/enchant type=require
+depend fmri=pkg:/mail/thunderbird type=require
+depend fmri=pkg:/mail/thunderbird/plugin/thunderbird-lightning type=require
+depend fmri=pkg:/package/pkg/package-manager type=require
+depend fmri=pkg:/package/svr4 type=require
+depend fmri=pkg:/system/display-manager/opensolaris-gdm-themes type=require
+depend fmri=pkg:/system/font/isas-misc type=require
+depend fmri=pkg:/system/font/truetype/bh-luxi type=require
+depend fmri=pkg:/system/font/truetype/dejavu type=require
+depend fmri=pkg:/system/font/truetype/liberation type=require
+depend fmri=pkg:/system/font/xorg/iso8859-1 type=require
+depend fmri=pkg:/system/font/xorg/iso8859-15 type=require
+depend fmri=pkg:/system/font/xorg/xorg-core type=require
+depend fmri=pkg:/system/library/dbus type=require
+depend fmri=pkg:/system/locale/en_us type=require
+depend fmri=pkg:/system/trusted type=require
+depend fmri=pkg:/terminal/gnome-terminal type=require
+depend fmri=pkg:/x11/trusted/libxtsol type=require

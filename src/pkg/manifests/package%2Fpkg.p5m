@@ -1,0 +1,268 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
+set name=pkg.summary value="Image Packaging System"
+set name=pkg.description value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server."
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=opensolaris.smf.fmri value=svc:/application/pkg/server:default
+set name=opensolaris.smf.fmri value=svc:/application/pkg/dynamic-mirror:default
+
+dir path=etc
+dir path=etc/security
+dir path=etc/security/auth_attr.d
+file path=etc/security/auth_attr.d/SUNWipkg
+dir path=etc/security/exec_attr.d
+file path=etc/security/exec_attr.d/SUNWipkg
+dir path=lib
+dir path=lib/svc
+dir path=lib/svc/method
+file path=lib/svc/method/svc-pkg-depot
+file path=lib/svc/method/svc-pkg-mdns
+dir path=usr
+dir path=usr/bin
+file path=usr/bin/pkg
+file path=usr/bin/pkgdepend
+file path=usr/bin/pkgdiff
+file path=usr/bin/pkgfmt
+file path=usr/bin/pkgmogrify
+file path=usr/bin/pkgrecv
+file path=usr/bin/pkgrepo
+file path=usr/bin/pkgsend
+dir path=usr/lib
+file path=usr/lib/pkg.depotd mode=0755
+dir path=$(PYDIR)
+dir path=$(PYDIRVP)
+file path=$(PYDIRVP)/pkg-0.1-py2.6.egg-info
+dir path=$(PYDIRVP)/pkg
+file path=$(PYDIRVP)/pkg/__init__.py
+dir path=$(PYDIRVP)/pkg/actions
+file path=$(PYDIRVP)/pkg/actions/__init__.py
+file path=$(PYDIRVP)/pkg/actions/_actions.so
+file path=$(PYDIRVP)/pkg/actions/attribute.py
+file path=$(PYDIRVP)/pkg/actions/depend.py
+file path=$(PYDIRVP)/pkg/actions/directory.py
+file path=$(PYDIRVP)/pkg/actions/driver.py
+file path=$(PYDIRVP)/pkg/actions/file.py
+file path=$(PYDIRVP)/pkg/actions/generic.py
+file path=$(PYDIRVP)/pkg/actions/group.py
+file path=$(PYDIRVP)/pkg/actions/hardlink.py
+file path=$(PYDIRVP)/pkg/actions/legacy.py
+file path=$(PYDIRVP)/pkg/actions/license.py
+file path=$(PYDIRVP)/pkg/actions/link.py
+file path=$(PYDIRVP)/pkg/actions/signature.py
+file path=$(PYDIRVP)/pkg/actions/unknown.py
+file path=$(PYDIRVP)/pkg/actions/user.py
+file path=$(PYDIRVP)/pkg/api_common.py
+file path=$(PYDIRVP)/pkg/arch.so
+dir path=$(PYDIRVP)/pkg/bundle
+file path=$(PYDIRVP)/pkg/bundle/DirectoryBundle.py
+file path=$(PYDIRVP)/pkg/bundle/SolarisPackageDatastreamBundle.py
+file path=$(PYDIRVP)/pkg/bundle/SolarisPackageDirBundle.py
+file path=$(PYDIRVP)/pkg/bundle/TarBundle.py
+file path=$(PYDIRVP)/pkg/bundle/__init__.py
+file path=$(PYDIRVP)/pkg/catalog.py
+file path=$(PYDIRVP)/pkg/cfgfiles.py
+file path=$(PYDIRVP)/pkg/choose.py
+dir path=$(PYDIRVP)/pkg/client
+file path=$(PYDIRVP)/pkg/client/__init__.py
+file path=$(PYDIRVP)/pkg/client/actuator.py
+file path=$(PYDIRVP)/pkg/client/api.py
+file path=$(PYDIRVP)/pkg/client/api_errors.py
+file path=$(PYDIRVP)/pkg/client/bootenv.py
+file path=$(PYDIRVP)/pkg/client/debugvalues.py
+file path=$(PYDIRVP)/pkg/client/history.py
+file path=$(PYDIRVP)/pkg/client/image.py
+file path=$(PYDIRVP)/pkg/client/imageconfig.py
+file path=$(PYDIRVP)/pkg/client/imageplan.py
+file path=$(PYDIRVP)/pkg/client/imagetypes.py
+file path=$(PYDIRVP)/pkg/client/indexer.py
+file path=$(PYDIRVP)/pkg/client/pkg_solver.py
+file path=$(PYDIRVP)/pkg/client/pkgplan.py
+file path=$(PYDIRVP)/pkg/client/progress.py
+file path=$(PYDIRVP)/pkg/client/publisher.py
+file path=$(PYDIRVP)/pkg/client/query_parser.py
+dir path=$(PYDIRVP)/pkg/client/transport
+file path=$(PYDIRVP)/pkg/client/transport/__init__.py
+file path=$(PYDIRVP)/pkg/client/transport/engine.py
+file path=$(PYDIRVP)/pkg/client/transport/exception.py
+file path=$(PYDIRVP)/pkg/client/transport/fileobj.py
+file path=$(PYDIRVP)/pkg/client/transport/mdetect.py
+file path=$(PYDIRVP)/pkg/client/transport/repo.py
+file path=$(PYDIRVP)/pkg/client/transport/stats.py
+file path=$(PYDIRVP)/pkg/client/transport/transport.py
+file path=$(PYDIRVP)/pkg/config.py
+file path=$(PYDIRVP)/pkg/cpiofile.py
+file path=$(PYDIRVP)/pkg/dependency.py
+file path=$(PYDIRVP)/pkg/depotcontroller.py
+file path=$(PYDIRVP)/pkg/elf.so
+dir path=$(PYDIRVP)/pkg/file_layout
+file path=$(PYDIRVP)/pkg/file_layout/__init__.py
+file path=$(PYDIRVP)/pkg/file_layout/layout.py
+file path=$(PYDIRVP)/pkg/file_layout/file_manager.py
+file path=$(PYDIRVP)/pkg/facet.py
+dir path=$(PYDIRVP)/pkg/flavor
+file path=$(PYDIRVP)/pkg/flavor/__init__.py
+file path=$(PYDIRVP)/pkg/flavor/base.py
+file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf.py
+file path=$(PYDIRVP)/pkg/flavor/depthlimitedmf24.py
+hardlink path=$(PYDIRVP)/pkg/flavor/depthlimitedmf25.py target=depthlimitedmf24.py
+file path=$(PYDIRVP)/pkg/flavor/elf.py
+file path=$(PYDIRVP)/pkg/flavor/hardlink.py
+file path=$(PYDIRVP)/pkg/flavor/python.py
+file path=$(PYDIRVP)/pkg/flavor/script.py
+file path=$(PYDIRVP)/pkg/flavor/smf_manifest.py
+file path=$(PYDIRVP)/pkg/fmri.py
+file path=$(PYDIRVP)/pkg/indexer.py
+file path=$(PYDIRVP)/pkg/manifest.py
+file path=$(PYDIRVP)/pkg/misc.py
+file path=$(PYDIRVP)/pkg/nrlock.py
+file path=$(PYDIRVP)/pkg/p5i.py
+file path=$(PYDIRVP)/pkg/pkggzip.py
+file path=$(PYDIRVP)/pkg/pkgsubprocess.py
+file path=$(PYDIRVP)/pkg/pkgtarfile.py
+dir path=$(PYDIRVP)/pkg/portable
+file path=$(PYDIRVP)/pkg/portable/__init__.py
+file path=$(PYDIRVP)/pkg/portable/os_aix.py
+file path=$(PYDIRVP)/pkg/portable/os_darwin.py
+file path=$(PYDIRVP)/pkg/portable/os_sunos.py
+file path=$(PYDIRVP)/pkg/portable/os_unix.py
+file path=$(PYDIRVP)/pkg/portable/os_windows.py
+file path=$(PYDIRVP)/pkg/portable/util.py
+file path=$(PYDIRVP)/pkg/pspawn.so
+dir path=$(PYDIRVP)/pkg/publish
+file path=$(PYDIRVP)/pkg/publish/__init__.py
+file path=$(PYDIRVP)/pkg/publish/dependencies.py
+file path=$(PYDIRVP)/pkg/publish/transaction.py
+file path=$(PYDIRVP)/pkg/query_parser.py
+file path=$(PYDIRVP)/pkg/search_errors.py
+file path=$(PYDIRVP)/pkg/search_storage.py
+dir path=$(PYDIRVP)/pkg/server
+file path=$(PYDIRVP)/pkg/server/__init__.py
+file path=$(PYDIRVP)/pkg/server/api.py
+file path=$(PYDIRVP)/pkg/server/api_errors.py
+file path=$(PYDIRVP)/pkg/server/catalog.py
+file path=$(PYDIRVP)/pkg/server/depot.py
+file path=$(PYDIRVP)/pkg/server/depotresponse.py
+file path=$(PYDIRVP)/pkg/server/face.py
+file path=$(PYDIRVP)/pkg/server/feed.py
+file path=$(PYDIRVP)/pkg/server/query_parser.py
+file path=$(PYDIRVP)/pkg/server/repository.py
+file path=$(PYDIRVP)/pkg/server/transaction.py
+file path=$(PYDIRVP)/pkg/solver.so
+file path=$(PYDIRVP)/pkg/sysvpkg.py
+file path=$(PYDIRVP)/pkg/updatelog.py
+file path=$(PYDIRVP)/pkg/variant.py
+file path=$(PYDIRVP)/pkg/version.py
+dir path=usr/share
+dir path=usr/share/lib
+dir path=usr/share/lib/pkg
+dir path=usr/share/lib/pkg/web
+dir path=usr/share/lib/pkg/web/_themes
+dir path=usr/share/lib/pkg/web/_themes/default
+dir path=usr/share/lib/pkg/web/_themes/default/en
+file path=usr/share/lib/pkg/web/_themes/default/en/base.css
+file path=usr/share/lib/pkg/web/_themes/default/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/default/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/default/feed-icon-14x14.png
+dir path=usr/share/lib/pkg/web/_themes/opensolaris.com
+dir path=usr/share/lib/pkg/web/_themes/opensolaris.com/en
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/base.css
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.com/en/header.shtml
+dir path=usr/share/lib/pkg/web/_themes/opensolaris.org
+dir path=usr/share/lib/pkg/web/_themes/opensolaris.org/en
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/base.css
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/opensolaris.org/feed-icon-14x14.png
+file path=usr/share/lib/pkg/web/_themes/p5i-link.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-icon.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-logo.png
+file path=usr/share/lib/pkg/web/_themes/pkg-block-logo.svg
+dir path=usr/share/lib/pkg/web/_themes/sun.com
+dir path=usr/share/lib/pkg/web/_themes/sun.com/en
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/base.css
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/body_end.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/footer.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/head_end.shtml
+file path=usr/share/lib/pkg/web/_themes/sun.com/en/header.shtml
+file path=usr/share/lib/pkg/web/_themes/yui-reset-font-grids_base-min.css
+file path=usr/share/lib/pkg/web/config.shtml
+dir path=usr/share/lib/pkg/web/en
+file path=usr/share/lib/pkg/web/en/advanced_search.shtml
+file path=usr/share/lib/pkg/web/en/base.shtml
+file path=usr/share/lib/pkg/web/en/catalog.shtml
+file path=usr/share/lib/pkg/web/en/index.shtml
+file path=usr/share/lib/pkg/web/en/layout.shtml
+file path=usr/share/lib/pkg/web/en/search.shtml
+file path=usr/share/lib/pkg/web/en/stats.shtml
+file path=usr/share/lib/pkg/web/index.shtml
+file path=usr/share/lib/pkg/web/robots.txt
+file path=usr/share/lib/pkg/web/shared.shtml
+dir path=usr/share/man
+dir path=usr/share/man/cat1
+file path=usr/share/man/cat1/pkg.1
+file path=usr/share/man/cat1/pkgdepend.1
+file path=usr/share/man/cat1/pkgdiff.1
+file path=usr/share/man/cat1/pkgfmt.1
+file path=usr/share/man/cat1/pkgmogrify.1
+file path=usr/share/man/cat1/pkgrecv.1
+file path=usr/share/man/cat1/pkgrepo.1
+file path=usr/share/man/cat1/pkgsend.1
+dir path=usr/share/man/cat1m
+file path=usr/share/man/cat1m/pkg.depotd.1m
+dir path=usr/share/man/cat5
+file path=usr/share/man/cat5/pkg.5
+dir path=usr/share/pkg
+dir path=usr/share/pkg/cacert
+link path=usr/share/pkg/cacert/72fa7371.0 target=Verisign_Class_3_Public_Primary_Certification_Authority-G2.pem
+file path=usr/share/pkg/cacert/Verisign_Class_3_Public_Primary_Certification_Authority-G2.pem
+dir path=var
+dir path=var/svc
+dir path=var/svc/manifest
+dir path=var/svc/manifest/application
+file path=var/svc/manifest/application/pkg-server.xml
+file path=var/svc/manifest/application/pkg-mdns.xml
+license cr_Oracle license=cr_Oracle
+license lic_CDDL license=lic_CDDL
+license lic_minisat license=lic_minisat
+license lic_gustaebel license=lic_gustaebel
+legacy pkg=SUNWipkg version=0.0.0
+
+depend type=require fmri=SUNWcs
+depend type=require fmri=library/python-2/cherrypy@3.1.1
+depend type=require fmri=library/python-2/mako@0.2.2
+depend type=require fmri=library/python-2/ply@3.1
+depend type=require fmri=library/python-2/pycurl@7.19.0.1
+depend type=require fmri=library/python-2/pyopenssl-26@0.8
+depend type=require fmri=library/python-2/simplejson-26
+depend type=require fmri=runtime/python-26@2.6.4
+depend type=require fmri=system/library/math
+depend type=require fmri=system/library

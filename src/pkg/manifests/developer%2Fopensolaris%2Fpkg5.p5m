@@ -1,0 +1,37 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
+set name=pkg.summary value="Dependencies required to build the pkg(5) project"
+set name=info.classification value="org.opensolaris.category.2008:Development/Distribution Tools"
+depend fmri=pkg:/developer/build/make type=require
+depend fmri=pkg:/developer/build/onbld type=require
+depend fmri=pkg:/developer/gnome/gettext type=require
+depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
+depend fmri=pkg:/developer/versioning/mercurial type=require
+depend fmri=pkg:/library/python-2/setuptools-26 type=require
+depend fmri=pkg:/package/svr4 type=require
+depend fmri=pkg:/runtime/perl-584/extra type=require
+depend fmri=pkg:/system/zones/internal type=require
+depend fmri=pkg:/text/tidy type=require
+depend fmri=pkg:/x11/header type=require

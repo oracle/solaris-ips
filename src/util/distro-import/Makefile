@@ -47,6 +47,7 @@ REPO=http://localhost:10000
 ON_REPO=http://localhost:20000
 INSTALL_REPO=http://localhost:20001
 X_REPO=http://localhost:20002
+IPS_REPO=http://localhost:20003
 
 BUILDID_NORESPIN=/usr/bin/echo $(BUILDID) | sed -e 's/\([0-9]\)[a-z]*$$/\1/g'
 
@@ -84,22 +85,24 @@ EXTRA_OPTIONS=
 
 OSNET_CONSOLIDATION_OPTIONS = \
 	-C osnet \
-	-R \
-	$(ON_REPO)@consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
+	-R $(ON_REPO)@consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
 	-E consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
 	-J developer/build/onbld -J developer/opensolaris/osnet
 
 INSTALL_CONSOLIDATION_OPTIONS = \
 	-C install \
-	-R \
-	$(INSTALL_REPO)@consolidation/install/install-incorporation@0.5.11-0.$(BUILDID) \
+	-R $(INSTALL_REPO)@consolidation/install/install-incorporation@0.5.11-0.$(BUILDID) \
 	-E consolidation/install/install-incorporation@0.5.11-0.$(BUILDID)
 
 X_CONSOLIDATION_OPTIONS = \
 	-C X \
-	-R \
-	$(X_REPO)@consolidation/X/X-incorporation@0.5.11-0.$(BUILDID) \
+	-R $(X_REPO)@consolidation/X/X-incorporation@0.5.11-0.$(BUILDID) \
 	-E consolidation/X/X-incorporation@0.5.11-0.$(BUILDID)
+
+IPS_CONSOLIDATION_OPTIONS = \
+	-C ips \
+	-R $(IPS_REPO)@consolidation/ips/ips-incorporation@0.5.11-0.$(BUILDID) \
+	-E consolidation/ips/ips-incorporation@0.5.11-0.$(BUILDID)
 
 CONSOLIDATION_OPTIONS_136 = \
 	$(OSNET_CONSOLIDATION_OPTIONS)
@@ -113,6 +116,8 @@ CONSOLIDATION_OPTIONS_143 = $(CONSOLIDATION_OPTIONS_136) \
 	$(INSTALL_CONSOLIDATION_OPTIONS)
 CONSOLIDATION_OPTIONS_144 = $(CONSOLIDATION_OPTIONS_143) \
 	$(X_CONSOLIDATION_OPTIONS)
+CONSOLIDATION_OPTIONS_145 = $(CONSOLIDATION_OPTIONS_144) \
+	$(IPS_CONSOLIDATION_OPTIONS)
 CONSOLIDATION_OPTIONS = $(CONSOLIDATION_OPTIONS_$(BUILDID))
 
 GLOBAL_CHATTRS_BASE=	\
