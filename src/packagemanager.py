@@ -65,6 +65,7 @@ import signal
 import re
 from xml.sax import saxutils
 from threading import Thread
+from gettext import ngettext
 
 try:
         import gobject
@@ -1784,12 +1785,13 @@ class PackageManager:
 
                 try:
                         try:
-                                res = self.api_o.info(pargs, 
-                                          local_info, frozenset(
-                                          [api.PackageInfo.IDENTITY, 
-                                          api.PackageInfo.STATE, 
-                                          api.PackageInfo.SUMMARY]))
-                                results = res.get(0)
+                                if len(pargs) > 0:
+                                        res = self.api_o.info(pargs, 
+                                                  local_info, frozenset(
+                                                  [api.PackageInfo.IDENTITY, 
+                                                  api.PackageInfo.STATE, 
+                                                  api.PackageInfo.SUMMARY]))
+                                        results = res.get(0)
                         except api_errors.TransportError, tpex:
                                 err = str(tpex)
                                 logger.error(err)
@@ -4381,9 +4383,11 @@ class PackageManager:
                                         "...") % \
                                         {"s1": s1, "search_text": search_text, "e1": e1}
                 else:
-                        status_str = \
-                                _("%(number)d packages found matching %(s1)s"
-                                "%(search_text)s%(e1)s") % \
+                        status_str = ngettext(
+                                "%(number)d package found matching %(s1)s"
+                                "%(search_text)s%(e1)s",
+                                "%(number)d packages found matching %(s1)s"
+                                "%(search_text)s%(e1)s", len(self.application_list)) % \
                                 {"number": len(self.application_list),
                                     "s1": s1, "search_text": search_text, "e1": e1, }
                 self.update_statusbar_message(status_str)
