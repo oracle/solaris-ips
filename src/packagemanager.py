@@ -24,16 +24,18 @@
 
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
+INFO_NOTEBOOK_DEPENDENCIES_PAGE = 2       # Dependencies Tab index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
-INFO_NOTEBOOK_VERSIONS_PAGE = 4            # Versions Tab index
+INFO_NOTEBOOK_VERSIONS_PAGE = 4           # Versions Tab index
 PM_LAUNCH_OPEN_CMD = "pm-launch: OPEN:"   # Command to tell pm-launch to open link.
 PUBLISHER_ALL = 0                         # Index for "All Publishers" string
 PUBLISHER_INSTALLED = 1                   # Index for "All Installed Packages" string
 PUBLISHER_ALL_SEARCH = 2                  # Index for "All Publishers (Search)" string
 PUBLISHER_ADD = 3                         # Index for "Add..." string
-SHOW_INFO_DELAY = 600       # Delay before showing selected package information
-SHOW_LICENSE_DELAY = 600    # Delay before showing license information
-SHOW_VERSIONS_DELAY = 600    # Delay before showing versions information
+SHOW_INFO_DELAY = 100       # Delay before showing selected package information
+SHOW_DEPENDENCIES_DELAY = 100 # Delay before showing selected package dependencies
+SHOW_LICENSE_DELAY = 100    # Delay before showing license information
+SHOW_VERSIONS_DELAY = 100    # Delay before showing versions information
 RESIZE_DELAY = 600          # Delay before handling resize for startpage
 INC_RESULTS_DELAY = 800    # Delay before updating incremental search results
 SEARCH_STR_FORMAT = "<%s>"
@@ -171,6 +173,8 @@ class PackageManager:
                 self.current_repos_with_search_errors = []
                 self.exiting = False
                 self.first_run = True
+                self.info_pkgstem = None
+                self.dependencies_pkgstem = None
                 self.license_pkgstem = None
                 self.versions_pkgstem = None
                 self.selected_pkg_name = None
@@ -464,6 +468,8 @@ class PackageManager:
                 self.last_status_id = 0
                 self.last_show_info_id = 0
                 self.show_info_id = 0
+                self.last_show_dependencies_id = 0
+                self.show_dependencies_id = 0
                 self.last_show_licenses_id = 0
                 self.show_licenses_id = 0
                 self.last_show_versions_id = 0
@@ -1901,11 +1907,58 @@ class PackageManager:
                 self.startpage.load_startpage()
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
-        def __on_notebook_change(self, widget, event, pagenum):
-                self.__do_notebook_change(pagenum, True)
+        def __process_package_selection(self, pagenum = None, immediate = False):
+                if pagenum == None:
+                        pagenum = self.w_info_notebook.get_current_page()
+                model, itr = self.package_selection.get_selected()
+                if itr:
+                        self.selected_pkgstem = \
+                               model.get_value(itr, enumerations.STEM_COLUMN)
+                        self.selected_pkg_name = \
+                               model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
+                        self.selected_pkg_pub = \
+                               model.get_value(itr, enumerations.PUBLISHER_PREFIX_COLUMN)
+                        self.__do_notebook_change(pagenum, model, model.get_path(itr),
+                            immediate)
+                        self.w_version_info_menuitem.set_sensitive(True)
+                else:
+                        self.selected_model = None
+                        self.selected_path = None
+                        self.selected_pkgstem = None
+                        self.selected_pkg_name = None
+                        self.selected_pkg_pub = None
+                        self.w_version_info_menuitem.set_sensitive(False)
+                        self.__do_notebook_change(pagenum, None, None, immediate)
 
-        def __do_notebook_change(self, pagenum, immediate = False):
-                if (pagenum == INFO_NOTEBOOK_LICENSE_PAGE):
+        def __on_package_selection_changed(self, selection, widget):
+                '''This function is for handling package selection changes'''
+                if self.in_setup:
+                        return
+                self.__process_package_selection()
+
+        def __on_notebook_change(self, widget, event, pagenum):
+                self.__process_package_selection(pagenum, True)
+
+        def __do_notebook_change(self, pagenum, model = None, path = None,
+            immediate = False):
+                self.detailspanel.clear_details(self.info_pkgstem,
+                    self.dependencies_pkgstem, self.license_pkgstem,
+                    self.versions_pkgstem, self.selected_pkgstem)
+                if (pagenum == INFO_NOTEBOOK_DEPENDENCIES_PAGE):
+                        if self.selected_pkgstem == self.dependencies_pkgstem:
+                                return
+                        self.detailspanel.set_fetching_dependencies()
+                        if self.show_dependencies_id != 0:
+                                gobject.source_remove(self.show_dependencies_id)
+                                self.show_dependencies_id = 0
+                        if immediate:
+                                source_id = gobject.idle_add(self.__show_dependencies)
+                        else:
+                                source_id = gobject.timeout_add(SHOW_DEPENDENCIES_DELAY,
+                                    self.__show_dependencies)
+                        self.last_show_dependencies_id = self.show_dependencies_id = \
+                                source_id
+                elif (pagenum == INFO_NOTEBOOK_LICENSE_PAGE):
                         if self.selected_pkgstem == self.license_pkgstem:
                                 return
                         self.detailspanel.set_fetching_license()
@@ -1931,6 +1984,20 @@ class PackageManager:
                                 source_id = gobject.timeout_add(SHOW_VERSIONS_DELAY,
                                     self.__show_versions)
                         self.last_show_versions_id = self.show_versions_id = source_id
+                else:
+                        if self.selected_pkgstem == self.info_pkgstem:
+                                return
+                        self.detailspanel.set_fetching_info()
+                        if self.show_info_id != 0:
+                                gobject.source_remove(self.show_info_id)
+                                self.show_info_id = 0
+                        if immediate:
+                                source_id = gobject.idle_add(self.__show_info,
+                                    model, path)
+                        else:
+                                source_id = gobject.timeout_add(SHOW_INFO_DELAY,
+                                    self.__show_info, model, path)
+                        self.last_show_info_id = self.show_info_id = source_id
 
         def __toggle_select_all(self, select_all=True):
                 focus_widget = self.w_main_window.get_focus()
@@ -2384,42 +2451,6 @@ class PackageManager:
 
                 #Offset x by 10 and y by 15 so underlying name is visible
                 return (x+10, y+15, True)
-
-        def __process_package_selection(self):
-                model, itr = self.package_selection.get_selected()
-                if self.show_info_id != 0:
-                        gobject.source_remove(self.show_info_id)
-                        self.show_info_id = 0
-                if itr:
-                        self.selected_pkgstem = \
-                               model.get_value(itr, enumerations.STEM_COLUMN)
-                        self.selected_pkg_name = \
-                               model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
-                        self.selected_pkg_pub = \
-                               model.get_value(itr, enumerations.PUBLISHER_PREFIX_COLUMN)
-                        self.detailspanel.process_selected_package(self.selected_pkgstem)
-                        self.last_show_info_id = self.show_info_id = \
-                            gobject.timeout_add(SHOW_INFO_DELAY,
-                                self.__show_info, model, model.get_path(itr))
-                        current_page = self.w_info_notebook.get_current_page()
-                        if (current_page == INFO_NOTEBOOK_LICENSE_PAGE or
-                            current_page == INFO_NOTEBOOK_VERSIONS_PAGE):
-                                self.__do_notebook_change(current_page)
-                         
-                        self.w_version_info_menuitem.set_sensitive(True)
-                else:
-                        self.selected_model = None
-                        self.selected_path = None
-                        self.selected_pkgstem = None
-                        self.selected_pkg_name = None
-                        self.selected_pkg_pub = None
-                        self.w_version_info_menuitem.set_sensitive(False)
-
-        def __on_package_selection_changed(self, selection, widget):
-                '''This function is for handling package selection changes'''
-                if self.in_setup:
-                        return
-                self.__process_package_selection()
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
@@ -3152,35 +3183,26 @@ class PackageManager:
                 if self.show_info_id != 0:
                         gobject.source_remove(self.show_info_id)
                         self.show_info_id = 0
+                if self.show_dependencies_id != 0:
+                        gobject.source_remove(self.show_dependencies_id)
+                        self.show_dependencies_id = 0
                 if self.show_licenses_id != 0:
                         gobject.source_remove(self.show_licenses_id)
                         self.show_licenses_id = 0
                 if self.show_versions_id != 0:
                         gobject.source_remove(self.show_versions_id)
                         self.show_versions_id = 0
+                self.info_pkgstem = None
+                self.dependencies_pkgstem = None
                 self.license_pkgstem = None
                 self.versions_pkgstem = None
                 self.detailspanel.set_empty_details()
 
-        def __update_package_info(self, pkg_name, local_info, remote_info, dep_info,
-            installed_dep_info, info_id, renamed_info=None):
-                if self.detailspanel.showing_empty_details or (info_id != 
-                    self.last_show_info_id):
-                        return
-                self.detailspanel.update_package_info(pkg_name, local_info,
-                    remote_info, dep_info, installed_dep_info, self.api_o.root,
-                    self.installed_icon, self.not_installed_icon,
-                    self.update_available_icon,
-                    self.is_all_publishers_installed, self.pubs_info,
-                    renamed_info)
-                self.unset_busy_cursor()
-
         def __update_package_versions(self, versions, versions_id, pkgstem):
-                self.versions_pkgstem = pkgstem
                 if (versions_id != self.last_show_versions_id):
                         return
+                self.versions_pkgstem = pkgstem
                 self.detailspanel.update_package_versions(versions)
-                self.unset_busy_cursor()
 
         def __show_versions(self):
                 self.show_versions_id = 0
@@ -3201,45 +3223,47 @@ class PackageManager:
 
         def __show_package_versions_without_lock(self, selected_pkg_name,
             selected_pkg_pub, selected_pkgstem, versions_id):
-                if selected_pkg_name == None:
-                        return
                 if debug:
                         a = time.time()
                 # Get versions for package
                 try:
-                        versions_list = self.api_o.get_pkg_list(
-                            pkg_list = api.ImageInterface.LIST_ALL,
-                            pubs =  [selected_pkg_pub],
-                            patterns = [selected_pkg_name]) 
-                except api_errors.ApiException, apiex:
-                        err = str(apiex)
-                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
+                        if selected_pkg_name == None:
+                                return
+                        try:
+                                versions_list = self.api_o.get_pkg_list(
+                                    pkg_list = api.ImageInterface.LIST_ALL,
+                                    pubs =  [selected_pkg_pub],
+                                    patterns = [selected_pkg_name])
+                        except api_errors.ApiException, apiex:
+                                err = str(apiex)
+                                gobject.idle_add(self.error_occurred, err,
+                                    _('Unexpected Error'))
+                                return
+                        try:
+                                versions = []
+                                for entry in versions_list:
+                                        states = entry[3]
+                                        ver = entry[0][2]
+                                        versions.append((ver, states))
+                                if debug:
+                                        print "Time to get versions:", time.time() - a
+                        except api_errors.TransportError, tpex:
+                                err = str(tpex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except api_errors.ApiException, apiex:
+                                err = str(apiex)
+                                gobject.idle_add(self.error_occurred, err,
+                                    _('Unexpected Error'))
+                        gobject.idle_add(self.__update_package_versions, versions,
+                            versions_id, selected_pkgstem)
+                finally:
                         gobject.idle_add(self.unset_busy_cursor)
-                        return
-                try:
-                        versions = []
-                        for entry in versions_list:
-                                states = entry[3] 
-                                ver = entry[0][2] 
-                                versions.append((ver, states))
-                        if debug:
-                                print "Time to get versions:", time.time() - a
-                except api_errors.TransportError, tpex:
-                        err = str(tpex)
-                        logger.error(err)
-                        gui_misc.notify_log_error(self)
-                        gobject.idle_add(self.unset_busy_cursor)
-                except api_errors.ApiException, apiex:
-                        err = str(apiex)
-                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
-                        gobject.idle_add(self.unset_busy_cursor)
-                gobject.idle_add(self.__update_package_versions, versions,
-                    versions_id, selected_pkgstem)
 
         def __update_package_license(self, licenses, license_id, pkgstem):
-                self.license_pkgstem = pkgstem
                 if (license_id != self.last_show_licenses_id):
                         return
+                self.license_pkgstem = pkgstem
                 self.detailspanel.update_package_license(licenses)
 
         def __show_licenses(self):
@@ -3248,44 +3272,24 @@ class PackageManager:
                         gobject.idle_add(self.__update_package_license, None,
                             self.last_show_licenses_id, self.selected_pkgstem)
                         return
+                gobject.idle_add(self.set_busy_cursor)
                 Thread(target = self.__show_package_licenses,
                     args = (self.selected_pkgstem, self.last_show_licenses_id,)).start()
 
         def __show_package_licenses(self, selected_pkgstem, license_id):
                 self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
                 self.__show_package_licenses_without_lock(selected_pkgstem, license_id)
                 gui_misc.release_lock(self.api_lock)
 
         def __show_package_licenses_without_lock(self, selected_pkgstem, license_id):
-                if selected_pkgstem == None:
-                        return
-                info = None
                 try:
-                        info = self.api_o.info([selected_pkgstem],
-                            True, frozenset([api.PackageInfo.LICENSES]))
-                except api_errors.TransportError, tpex:
-                        err = str(tpex)
-                        logger.error(err)
-                        gui_misc.notify_log_error(self)
-                except api_errors.InvalidDepotResponseException, idex:
-                        err = str(idex)
-                        logger.error(err)
-                        gui_misc.notify_log_error(self)
-                except api_errors.ImageLockedError, ex:
-                        err = str(ex)
-                        logger.error(err)
-                        gui_misc.notify_log_error(self)
-                except Exception, ex:
-                        err = str(ex)
-                        gobject.idle_add(self.error_occurred, err)
-                if self.detailspanel.showing_empty_details or (license_id != 
-                    self.last_show_licenses_id):
-                        return
-                if not info or (info and len(info.get(0)) == 0):
+                        if selected_pkgstem == None:
+                                return
+                        info = None
                         try:
-                        # Get license from remote
                                 info = self.api_o.info([selected_pkgstem],
-                                    False, frozenset([api.PackageInfo.LICENSES]))
+                                    True, frozenset([api.PackageInfo.LICENSES]))
                         except api_errors.TransportError, tpex:
                                 err = str(tpex)
                                 logger.error(err)
@@ -3301,28 +3305,184 @@ class PackageManager:
                         except Exception, ex:
                                 err = str(ex)
                                 gobject.idle_add(self.error_occurred, err)
-                if self.detailspanel.showing_empty_details or (license_id != 
-                    self.last_show_licenses_id):
+                        if self.detailspanel.showing_empty_details or (license_id !=
+                            self.last_show_licenses_id):
+                                return
+                        if not info or (info and len(info.get(0)) == 0):
+                                try:
+                                # Get license from remote
+                                        info = self.api_o.info([selected_pkgstem],
+                                            False, frozenset([api.PackageInfo.LICENSES]))
+                                except api_errors.TransportError, tpex:
+                                        err = str(tpex)
+                                        logger.error(err)
+                                        gui_misc.notify_log_error(self)
+                                except api_errors.InvalidDepotResponseException, idex:
+                                        err = str(idex)
+                                        logger.error(err)
+                                        gui_misc.notify_log_error(self)
+                                except api_errors.ImageLockedError, ex:
+                                        err = str(ex)
+                                        logger.error(err)
+                                        gui_misc.notify_log_error(self)
+                                except Exception, ex:
+                                        err = str(ex)
+                                        gobject.idle_add(self.error_occurred, err)
+                        if self.detailspanel.showing_empty_details or (license_id !=
+                            self.last_show_licenses_id):
+                                return
+                        pkgs_info = None
+                        package_info = None
+                        no_licenses = 0
+                        if info:
+                                pkgs_info = info[0]
+                        if pkgs_info:
+                                package_info = pkgs_info[0]
+                        if package_info:
+                                no_licenses = len(package_info.licenses)
+                        if no_licenses == 0:
+                                gobject.idle_add(self.__update_package_license, None,
+                                    license_id, selected_pkgstem)
+                                return
+                        else:
+                                gobject.idle_add(self.__update_package_license,
+                                    package_info.licenses, license_id, selected_pkgstem)
+                finally:
+                        gobject.idle_add(self.unset_busy_cursor)
+
+        def __update_package_dependencies(self, info, dep_info,
+            installed_dep_info, dependencies_id, pkg_stem):
+                if self.detailspanel.showing_empty_details or (dependencies_id !=
+                    self.last_show_dependencies_id):
                         return
-                pkgs_info = None
-                package_info = None
-                no_licenses = 0
-                if info:
-                        pkgs_info = info[0]
-                if pkgs_info:
-                        package_info = pkgs_info[0]
-                if package_info:
-                        no_licenses = len(package_info.licenses)
-                if no_licenses == 0:
-                        gobject.idle_add(self.__update_package_license, None, 
-                            license_id, selected_pkgstem)
+                self.dependencies_pkgstem = pkg_stem
+                self.detailspanel.update_package_dependencies(info, dep_info,
+                    installed_dep_info, self.installed_icon, self.not_installed_icon)
+
+        def __show_dependencies(self):
+                self.show_dependencies_id = 0
+                self.dependencies_pkgstem = None
+                model, itr = self.package_selection.get_selected()
+                if model == None or itr == None:
                         return
+                if self.selected_model != None:
+                        if (self.selected_model != model or
+                            self.selected_path != model.get_path(itr)):
+                                self.selected_model = None
+                                self.selected_path = None
+
+                pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
+                pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                self.set_busy_cursor()
+                Thread(target = self.__show_package_dependencies,
+                    args = (pkg_stem, pkg_status, self.last_show_dependencies_id)).start()
+
+        def __show_package_dependencies(self, pkg_stem, pkg_status, dependencies_id):
+                self.api_lock.acquire()
+                gobject.idle_add(self.set_busy_cursor)
+                self.__show_package_dependencies_without_lock(pkg_stem, pkg_status,
+                    dependencies_id)
+                gui_misc.release_lock(self.api_lock)
+
+        def __show_package_dependencies_without_lock(self, pkg_stem, pkg_status,
+            dependencies_id):
+                if self.detailspanel.showing_empty_details or (dependencies_id !=
+                    self.last_show_dependencies_id):
+                        return
+                local_info, remote_info = self.__fetch_info(dependencies_id,
+                    self.last_show_dependencies_id, pkg_stem, pkg_status)
+                if not local_info and not remote_info:
+                        gobject.idle_add(self.detailspanel.no_dependencies_available)
+                        gobject.idle_add(self.unset_busy_cursor)
+                        return
+
+                if local_info:
+                        info = local_info
                 else:
-                        gobject.idle_add(self.__update_package_license,
-                            package_info.licenses, license_id, selected_pkgstem)
+                        info = remote_info
+                if info == None or info.dependencies == None:
+                        gobject.idle_add(self.detailspanel.no_dependencies_available)
+                        gobject.idle_add(self.unset_busy_cursor)
+                        return
+
+                dep_info = None
+                installed_dep_info = None
+                try:
+                        try:
+                                dep_info = self.api_o.info(
+                                    info.dependencies,
+                                    False,
+                                    frozenset([api.PackageInfo.STATE,
+                                    api.PackageInfo.IDENTITY]))
+                                temp_info = []
+                                for depend in info.dependencies:
+                                        name = fmri.extract_pkg_name(
+                                            depend)
+                                        temp_info.append(name)
+                                installed_dep_info = self.api_o.info(
+                                    temp_info,
+                                    True,
+                                    frozenset([api.PackageInfo.STATE,
+                                    api.PackageInfo.IDENTITY]))
+                        except api_errors.TransportError, tpex:
+                                err = str(tpex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except api_errors.InvalidDepotResponseException, \
+                                idex:
+                                err = str(idex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except api_errors.ImageLockedError, ex:
+                                err = str(ex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except Exception, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err)
+
+                        gobject.idle_add(self.__update_package_dependencies,
+                            info, dep_info, installed_dep_info, dependencies_id, pkg_stem)
+                finally:
+                        gobject.idle_add(self.unset_busy_cursor)
+
+                return
+
+        def __fetch_info(self, info_id, last_show_info_id, pkg_stem, pkg_status):
+                local_info = None
+                remote_info = None
+                if not self.detailspanel.showing_empty_details and (info_id ==
+                    last_show_info_id) and (pkg_status ==
+                    api.PackageInfo.INSTALLED or pkg_status ==
+                    api.PackageInfo.UPGRADABLE):
+                        local_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
+                            True)
+                if not self.detailspanel.showing_empty_details and (info_id ==
+                    last_show_info_id) and (pkg_status ==
+                    api.PackageInfo.KNOWN or pkg_status ==
+                    api.PackageInfo.UPGRADABLE):
+                        remote_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
+                            False)
+                return (local_info, remote_info)
+
+        def __update_package_info(self, pkg_name, pkg_stem, local_info, remote_info,
+            info_id, renamed_info = None):
+                if self.detailspanel.showing_empty_details or (info_id !=
+                    self.last_show_info_id):
+                        return
+                self.info_pkgstem = pkg_stem
+                self.detailspanel.update_package_info(pkg_name, local_info,
+                    remote_info, self.api_o.root,
+                    self.installed_icon, self.not_installed_icon,
+                    self.update_available_icon,
+                    self.is_all_publishers_installed, self.pubs_info,
+                    renamed_info)
+                self.unset_busy_cursor()
 
         def __show_info(self, model, path):
                 self.show_info_id = 0
+                self.info_pkgstem = None
+
                 if not (model and path):
                         return
                 if self.selected_model != None:
@@ -3356,77 +3516,23 @@ class PackageManager:
 
         def __show_package_info_without_lock(self, pkg_name, pkg_stem, pkg_status,
             info_id, pkg_renamed):
-                local_info = None
-                remote_info = None
-                if not self.detailspanel.showing_empty_details and (info_id ==
-                    self.last_show_info_id) and (pkg_status ==
-                    api.PackageInfo.INSTALLED or pkg_status ==
-                    api.PackageInfo.UPGRADABLE):
-                        local_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
-                            True)
-                if not self.detailspanel.showing_empty_details and (info_id ==
-                    self.last_show_info_id) and (pkg_status ==
-                    api.PackageInfo.KNOWN or pkg_status ==
-                    api.PackageInfo.UPGRADABLE):
-                        remote_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
-                            False)
-                if not self.detailspanel.showing_empty_details and (info_id ==
-                    self.last_show_info_id):
-                        if local_info:
-                                info = local_info
-                        else:
-                                info = remote_info
-                        dep_info = None
-                        installed_dep_info = None
-                        if info and info.dependencies:
-                                gobject.idle_add(self.set_busy_cursor)
-                                try:
-                                        try:
-                                                dep_info = self.api_o.info(
-                                                    info.dependencies,
-                                                    False,
-                                                    frozenset([api.PackageInfo.STATE,
-                                                    api.PackageInfo.IDENTITY]))
-                                                temp_info = []
-                                                for depend in info.dependencies:
-                                                        name = fmri.extract_pkg_name(
-                                                            depend)
-                                                        temp_info.append(name)
-                                                installed_dep_info = self.api_o.info(
-                                                    temp_info,
-                                                    True,
-                                                    frozenset([api.PackageInfo.STATE,
-                                                    api.PackageInfo.IDENTITY]))
-                                        except api_errors.TransportError, tpex:
-                                                err = str(tpex)
-                                                logger.error(err)
-                                                gui_misc.notify_log_error(self)
-                                        except api_errors.InvalidDepotResponseException, \
-                                                idex:
-                                                err = str(idex)
-                                                logger.error(err)
-                                                gui_misc.notify_log_error(self)
-                                        except api_errors.ImageLockedError, ex:
-                                                err = str(ex)
-                                                logger.error(err)
-                                                gui_misc.notify_log_error(self)
-                                        except Exception, ex:
-                                                err = str(ex)
-                                                gobject.idle_add(self.error_occurred, err)
-                                finally:
-                                        gobject.idle_add(self.unset_busy_cursor)
-                        
-                        renamed_info = None
-                        if pkg_renamed:
-                                if local_info != None and \
-                                        len(local_info.dependencies) > 0:
-                                        renamed_info = local_info
-                                elif remote_info != None and \
-                                        len(remote_info.dependencies) > 0:
-                                        renamed_info = remote_info
-                        gobject.idle_add(self.__update_package_info, pkg_name,
-                            local_info, remote_info, dep_info,
-                            installed_dep_info, info_id, renamed_info)
+                if self.detailspanel.showing_empty_details or \
+                        info_id != self.last_show_info_id:
+                        return
+                local_info, remote_info = self.__fetch_info(info_id,
+                    self.last_show_info_id, pkg_stem, pkg_status)
+
+                renamed_info = None
+                if pkg_renamed:
+                        if local_info != None and \
+                                len(local_info.dependencies) > 0:
+                                renamed_info = local_info
+                        elif remote_info != None and \
+                                len(remote_info.dependencies) > 0:
+                                renamed_info = remote_info
+                gobject.idle_add(self.__update_package_info, pkg_name, pkg_stem,
+                    local_info, remote_info, info_id, renamed_info)
+
                 return
 
         def __get_active_section_and_category(self):

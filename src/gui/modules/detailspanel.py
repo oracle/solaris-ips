@@ -114,18 +114,34 @@ class DetailsPanel:
                 self.w_license_textview.connect(
                     "focus-out-event", focus_out_cb)
 
-        def process_selected_package(self, selected_pkgstem):
-                gobject.idle_add(self.__show_fetching_package_info)
+        def set_fetching_info(self):
+                if self.parent.selected_pkg_name == None:
+                        return
                 self.showing_empty_details = False
+                self.__show_fetching_package_info()
 
         def __show_fetching_package_info(self):
                 instbuffer = self.w_installedfiles_textview.get_buffer()
-                depbuffer = self.w_dependencies_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
                 fetching_text = _("Fetching information...")
                 instbuffer.set_text(fetching_text)
-                depbuffer.set_text(fetching_text)
                 infobuffer.set_text(fetching_text)
+
+        def clear_details(self, info_pkgstem, dependencies_pkgstem, license_pkgstem,
+                    versions_pkgstem, selected_pkgstem):
+                if not info_pkgstem and info_pkgstem != selected_pkgstem:
+                        self.w_generalinfo_textview.get_buffer().set_text("")
+                        self.w_installedfiles_textview.get_buffer().set_text("")
+                if not dependencies_pkgstem and dependencies_pkgstem != selected_pkgstem:
+                        self.w_dependencies_textview.get_buffer().set_text("")
+                if not license_pkgstem and license_pkgstem != selected_pkgstem:
+                        self.w_license_textview.get_buffer().set_text("")
+                if not versions_pkgstem and versions_pkgstem != selected_pkgstem:
+                        self.versions_list = None
+                        self.w_versions_name_label.set_text("")
+                        self.w_versions_label.set_text("")
+                        self.w_versions_install_button.set_sensitive(False)
+                        self.__set_empty_versions_combo()
 
         def set_empty_details(self):
                 self.showing_empty_details = True
@@ -146,27 +162,50 @@ class DetailsPanel:
                 self.w_versions_combobox.set_model(empty_versions_list)
                 self.w_versions_combobox.set_active(0)
 
+        def set_fetching_dependencies(self):
+                if self.parent.selected_pkg_name == None:
+                        return
+                self.showing_empty_details = False
+                dep_buffer = self.w_dependencies_textview.get_buffer()
+                fetching_txt = _("Fetching dependencies information...")
+                dep_buffer.set_text(fetching_txt)
+
         def set_fetching_license(self):
-                if not self.showing_empty_details:
-                        licbuffer = self.w_license_textview.get_buffer()
-                        leg_txt = _("Fetching legal information...")
-                        licbuffer.set_text(leg_txt)
+                if self.parent.selected_pkg_name == None:
+                        return
+                self.showing_empty_details = False
+                licbuffer = self.w_license_textview.get_buffer()
+                leg_txt = _("Fetching legal information...")
+                licbuffer.set_text(leg_txt)
 
         def set_fetching_versions(self):
-                if self.showing_empty_details or self.parent.selected_pkg_name == None:
+                if self.parent.selected_pkg_name == None:
                         return
+                self.showing_empty_details = False
                 self.w_versions_name_label.set_text(self.parent.selected_pkg_name)
                 fetching_text = _("Fetching information...")
                 self.w_versions_label.set_text(fetching_text)
                 self.w_versions_install_button.set_sensitive(False)
                 self.__set_empty_versions_combo()
 
-        def update_package_info(self, pkg_name, local_info, remote_info,
-            dep_info, installed_dep_info, root, installed_icon,
-            not_installed_icon, update_available_icon, is_all_publishers_installed,
-            pubs_info, renamed_info=None):
-                instbuffer = self.w_installedfiles_textview.get_buffer()
+        def update_package_dependencies(self, info, dep_info, installed_dep_info,
+            installed_icon, not_installed_icon):
+                self.__set_dependencies_text(info, dep_info,
+                    installed_dep_info, installed_icon, not_installed_icon)
+
+        def no_dependencies_available(self):
                 depbuffer = self.w_dependencies_textview.get_buffer()
+                network_str = \
+                    _("\nThis might be caused by network problem "
+                    "while accessing the repository.")
+                depbuffer.set_text(_(
+                    "Dependencies info not available for this package...") +
+                    network_str)
+
+        def update_package_info(self, pkg_name, local_info, remote_info,
+            root, installed_icon, not_installed_icon, update_available_icon,
+            is_all_publishers_installed, pubs_info, renamed_info=None):
+                instbuffer = self.w_installedfiles_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
 
                 if not local_info and not remote_info:
@@ -175,9 +214,6 @@ class DetailsPanel:
                             "while accessing the repository.")
                         instbuffer.set_text( \
                             _("Files Details not available for this package...") +
-                            network_str)
-                        depbuffer.set_text(_(
-                            "Dependencies info not available for this package...") +
                             network_str)
                         infobuffer.set_text(
                             _("Information not available for this package...") +
@@ -214,8 +250,6 @@ class DetailsPanel:
                                 inst_str += ''.join("%s%s\n" % (
                                     root, x))
                 self.__set_installedfiles_text(inst_str)
-                self.__set_dependencies_text(local_info, dep_info,
-                    installed_dep_info, installed_icon, not_installed_icon)
 
         def __set_installedfiles_text(self, text):
                 instbuffer = self.w_installedfiles_textview.get_buffer()

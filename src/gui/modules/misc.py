@@ -427,6 +427,12 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
 
         textview.set_tabs(tab_array)
 
+        if len(names) == 0:
+                depbuffer.set_text("")
+                itr = depbuffer.get_iter_at_line(0)
+                depbuffer.insert_with_tags_by_name(itr, _("No dependencies"), "bold")
+                return
+
         itr = depbuffer.get_iter_at_line(0)
         header_text = "%s\t%s\t%s\n" % (header[0], header[1], header[2])
         depbuffer.insert_with_tags_by_name(itr, header_text, "bold")
@@ -919,9 +925,12 @@ def setup_package_license(licenses):
         if licenses == None:
                 lic_u = _("Not available")
         else:
-                for licens in licenses:
-                        lic += licens.get_text()
-                        lic += "\n"
+                try:
+                        for licens in licenses:
+                                lic += licens.get_text()
+                                lic += "\n"
+                except api_errors.ApiException:
+                        pass
                 try:
                         lic_u = unicode(lic, "utf-8")
                 except UnicodeDecodeError:
