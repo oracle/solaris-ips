@@ -406,6 +406,16 @@ class Repository(progress.GuiProgressTracker):
                 column.set_cell_data_func(toggle_renderer, 
                     self.__toggle_data_function, None)
                 self.w_publishers_treeview.append_column(column)
+                # Sticky column
+                toggle_renderer = gtk.CellRendererToggle()
+                column = gtk.TreeViewColumn(_("Sticky"),
+                    toggle_renderer, active = enumerations.PUBLISHER_STICKY)
+                toggle_renderer.set_property("activatable", True)
+                column.set_expand(False)
+                toggle_renderer.connect('toggled', self.__sticky_unsticky)
+                column.set_cell_data_func(toggle_renderer, 
+                    self.__toggle_data_function, None)
+                self.w_publishers_treeview.append_column(column)
                 publishers_list_filter.set_visible_func(self.__publishers_filter)
                 self.w_publishers_treeview.set_model(publishers_list_sort)
 
@@ -450,8 +460,8 @@ class Repository(progress.GuiProgressTracker):
                                 # in the list it's "None", but when adding pub it's None
                                 if not alias or len(alias) == 0 or alias == "None":
                                         alias = name
-                                publisher_row = [j, j, name, alias, not pub.disabled, 
-                                    pub, False, False]
+                                publisher_row = [j, j, name, alias, not pub.disabled,
+                                    pub.sticky, pub, False, False, False]
                                 model.insert(j, publisher_row)
                                 j += 1
                 else:
@@ -754,6 +764,20 @@ class Repository(progress.GuiProgressTracker):
                         self.__show_errors([(pub, e)])
                 self.__update_modify_repository_dialog(update_origins=True)
 
+        def __sticky_unsticky(self, cell, sorted_path):
+                sorted_model = self.w_publishers_treeview.get_model()
+                filtered_path = sorted_model.convert_path_to_child_path(sorted_path)
+                filtered_model = sorted_model.get_model()
+                path = filtered_model.convert_path_to_child_path(filtered_path)
+                model = filtered_model.get_model()
+                itr = model.get_iter(path)
+                if itr == None:
+                        return
+                is_sticky = model.get_value(itr, enumerations.PUBLISHER_STICKY)
+                changed = model.get_value(itr, enumerations.PUBLISHER_STICKY_CHANGED)
+                model.set_value(itr, enumerations.PUBLISHER_STICKY, not is_sticky)
+                model.set_value(itr, enumerations.PUBLISHER_STICKY_CHANGED, not changed)
+
         def __enable_disable(self, cell, sorted_path):
                 sorted_model = self.w_publishers_treeview.get_model()
                 filtered_path = sorted_model.convert_path_to_child_path(sorted_path)
@@ -941,10 +965,14 @@ class Repository(progress.GuiProgressTracker):
         def __prepare_confirmation_dialog(self):
                 disable = ""
                 enable = ""
+                sticky = ""
+                unsticky = ""
                 delete = ""
                 priority_change = ""
                 disable_no = 0
                 enable_no = 0
+                sticky_no = 0
+                unsticky_no = 0
                 delete_no = 0
                 not_removed = []
                 removed_priorities = []
@@ -965,6 +993,14 @@ class Repository(progress.GuiProgressTracker):
                                         else:
                                                 enable += "\t" + pub_name + "\n"
                                                 enable_no += 1
+                                if row[enumerations.PUBLISHER_STICKY_CHANGED]:
+                                        to_sticky = row[enumerations.PUBLISHER_STICKY]
+                                        if not to_sticky:
+                                                unsticky += "\t" + pub_name + "\n"
+                                                unsticky_no += 1
+                                        else:
+                                                sticky += "\t" + pub_name + "\n"
+                                                sticky_no += 1
                                 not_removed.append(row)
 
                 for pub in not_removed:
@@ -974,6 +1010,7 @@ class Repository(progress.GuiProgressTracker):
                                 priority_changed.append([pri, pub_name])
 
                 if disable_no == 0 and enable_no == 0 and delete_no == 0 and \
+                    sticky_no == 0 and unsticky_no == 0 and \
                     len(priority_changed) == 0:
                         self.__on_manage_cancel_clicked(None)
                         return
@@ -993,9 +1030,14 @@ class Repository(progress.GuiProgressTracker):
 		    "Enable Publishers:\n", enable_no)
                 delete_text = ngettext("Remove Publisher:\n",
 		    "Remove Publishers:\n", delete_no)
+                sticky_text = ngettext("Set sticky Publisher:\n",
+		    "Set sticky Publishers:\n", delete_no)
+                unsticky_text = ngettext("Unset sticky Publisher:\n",
+		    "Unset sticky Publishers:\n", delete_no)
                 priority_text = _("Change Priorities:\n")
 
-                confirm_no = delete_no + enable_no + disable_no
+                confirm_no = delete_no + enable_no + disable_no + sticky_no + \
+                    unsticky_no
                 confirm_text = ngettext("Apply the following change:",
 		    "Apply the following changes:", confirm_no)
 
@@ -1022,6 +1064,23 @@ class Repository(progress.GuiProgressTracker):
                             enable_text, "bold")
                         textbuf.insert_with_tags_by_name(textiter,
                             enable)
+                if len(sticky) > 0:
+                        if len(delete) > 0 or len(disable) > 0 or len(enable) > 0:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    "\n")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            sticky_text, "bold")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            sticky)
+                if len(unsticky) > 0:
+                        if len(delete) > 0 or len(disable) > 0 or \
+                            len(enable) > 0 or len(sticky) > 0:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    "\n")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            unsticky_text, "bold")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            unsticky)
                 if len(priority_change) > 0:
                         if len(delete) > 0 or len(disable) or len(enable) > 0:
                                 textbuf.insert_with_tags_by_name(textiter,
@@ -1100,21 +1159,9 @@ class Repository(progress.GuiProgressTracker):
                                         self.__g_update_details_text(
                                             _("Publisher %s succesfully removed\n")
                                             % name)
-                                elif row[enumerations.PUBLISHER_ENABLE_CHANGED]:
-                                        to_enable = row[enumerations.PUBLISHER_ENABLED]
-                                        pub = self.api_o.get_publisher(name, 
-                                            duplicate = True)
-                                        pub.disabled = not to_enable
-                                        self.no_changes += 1
-                                        enable_text = _("Disabling")
-                                        if to_enable:
-                                                enable_text = _("Enabling")
-
-                                        details_text = \
-                                                _("%(enable)s publisher %(name)s\n")
-                                        self.__g_update_details_text(details_text % 
-                                            {"enable" : enable_text, "name" : name})
-                                        self.api_o.update_publisher(pub)
+                                elif row[enumerations.PUBLISHER_ENABLE_CHANGED] or \
+                                    row[enumerations.PUBLISHER_STICKY_CHANGED]:
+                                        self.__do_changes_for_row(row, name)
                         except api_errors.ImageLockedError, e:
                                 self.no_changes = 0
                                 if not image_lock_err:
@@ -1128,6 +1175,21 @@ class Repository(progress.GuiProgressTracker):
                         gobject.idle_add(self.__show_errors, errors)
                 else:
                         gobject.idle_add(self.__after_confirmation)
+
+        def __do_changes_for_row(self, row, name):
+                pub = self.api_o.get_publisher(name, duplicate = True)
+                if row[enumerations.PUBLISHER_ENABLE_CHANGED]:
+                        to_enable = row[enumerations.PUBLISHER_ENABLED]
+                        pub.disabled = not to_enable
+                if row[enumerations.PUBLISHER_STICKY_CHANGED]:
+                        sticky = row[enumerations.PUBLISHER_STICKY]
+                        pub.sticky = sticky
+                self.no_changes += 1
+                update_text = _("Updating")
+                details_text = _("%(update)s publisher %(name)s\n")
+                self.__g_update_details_text(details_text % 
+                    {"update" : update_text, "name" : name})
+                self.api_o.update_publisher(pub)
 
         def __after_confirmation(self):
                 self.__on_manage_publishers_delete_event(
@@ -1774,8 +1836,10 @@ class Repository(progress.GuiProgressTracker):
                         gobject.TYPE_STRING,   # enumerations.PUBLISHER_NAME
                         gobject.TYPE_STRING,   # enumerations.PUBLISHER_ALIAS
                         gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_ENABLED
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_STICKY
                         gobject.TYPE_PYOBJECT, # enumerations.PUBLISHER_OBJECT
                         gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_ENABLE_CHANGED
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_STICKY_CHANGED
                         gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_REMOVED
                         )
 

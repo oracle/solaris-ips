@@ -3714,7 +3714,7 @@ Specify the location of these files.</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="manage_publishers">
-    <property name="width_request">500</property>
+    <property name="width_request">520</property>
     <property name="height_request">422</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Manage Publishers</property>
