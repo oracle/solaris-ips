@@ -36,6 +36,9 @@ import pkg.gui.enumerations as enumerations
 import pkg.misc as misc
 from pkg.client import global_settings
 from cPickle import UnpicklingError
+from pkg.client import global_settings
+
+logger = global_settings.logger
 
 PKG_CLIENT_NAME = "check_for_updates"
 CACHE_VERSION =  3
@@ -71,13 +74,22 @@ def __check_for_updates(image_directory, nice, silent):
                 print "Updates undetermined in check_last_refresh"
 
         try:
+                nongui_misc.setup_logging("updatemanager")
                 stuff_to_do, opensolaris_image = \
                     api_obj.plan_update_all(sys.argv[0],
                     refresh_catalogs = True,
                     noexecute = True, force = True, verbose = False) 
+        except api_errors.CatalogRefreshException, cre:
+                crerr = nongui_misc.get_catalogrefresh_exception_msg(cre)
+                if debug:
+                        print "Exception occurred: ", crerr
+                logger.error(crerr)
+                return enumerations.UPDATES_UNDETERMINED
         except api_errors.ApiException, e:
                 if debug:
-                        print "Exception occurred: ", str(e)
+                        print "Exception occurred: ", e
+                err = str(e)
+                logger.error(err)
                 return enumerations.UPDATES_UNDETERMINED
         if debug:
                 print "stuff_to_do: ", stuff_to_do

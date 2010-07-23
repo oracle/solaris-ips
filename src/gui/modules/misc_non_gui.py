@@ -24,6 +24,9 @@
 #
 
 import os
+import socket
+import urlparse
+import urllib2
 import cPickle
 import logging
 import logging.handlers
@@ -31,6 +34,7 @@ import sys
 
 import pkg
 import pkg.client.api as api
+import pkg.client.api_errors as api_errors
 from pkg.client import global_settings
 
 # The current version of the Client API the PM, UM and
@@ -131,3 +135,38 @@ def dump_cache_file(file_path, data):
                 fh.close()
         except:
                 pass
+
+def get_catalogrefresh_exception_msg(cre):
+        if not isinstance(cre, api_errors.CatalogRefreshException):
+                return ""
+        msg = _("Catalog refresh error:\n")
+        if cre.succeeded < cre.total:
+                msg += _(
+                    "Only %(suc)s out of %(tot)s catalogs successfully updated.\n") % \
+                    {"suc": cre.succeeded, "tot": cre.total}
+
+        for pub, err in cre.failed:
+                if isinstance(err, urllib2.HTTPError):
+                        msg += "%s: %s - %s" % \
+                            (err.filename, err.code, err.msg)
+                elif isinstance(err, urllib2.URLError):
+                        if err.args[0][0] == 8:
+                                msg += "%s: %s" % \
+                                    (urlparse.urlsplit(
+                                        pub["origin"])[1].split(":")[0],
+                                    err.args[0][1])
+                        else:
+                                if isinstance(err.args[0], socket.timeout):
+                                        msg += "%s: %s" % \
+                                            (pub["origin"], "timeout")
+                                else:
+                                        msg += "%s: %s" % \
+                                            (pub["origin"], err.args[0][1])
+                else:
+                        msg += str(err)
+
+        if cre.errmessage:
+                msg += cre.errmessage
+
+        return msg
+

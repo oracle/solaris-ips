@@ -32,9 +32,6 @@ RELEASE_URL = "http://www.opensolaris.org" # Fallback url for release notes if a
 
 import os
 import sys
-import urllib2
-import urlparse
-import socket
 import traceback
 import tempfile
 import re
@@ -59,6 +56,7 @@ from pkg.gui.misc_non_gui import get_version as g_version
 from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
 from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
 from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
+from pkg.gui.misc_non_gui import get_catalogrefresh_exception_msg as get_msg
 
 from pkg.client import global_settings
 
@@ -716,38 +714,7 @@ def set_modal_and_transient(top_window, parent_window = None):
         top_window.set_modal(True)
 
 def get_catalogrefresh_exception_msg(cre):
-        if not isinstance(cre, api_errors.CatalogRefreshException):
-                return ""
-        msg = _("Catalog refresh error:\n")
-        if cre.succeeded < cre.total:
-                msg += _(
-                    "Only %(suc)s out of %(tot)s catalogs successfully updated.\n") % \
-                    {"suc": cre.succeeded, "tot": cre.total}
-
-        for pub, err in cre.failed:
-                if isinstance(err, urllib2.HTTPError):
-                        msg += "%s: %s - %s" % \
-                            (err.filename, err.code, err.msg)
-                elif isinstance(err, urllib2.URLError):
-                        if err.args[0][0] == 8:
-                                msg += "%s: %s" % \
-                                    (urlparse.urlsplit(
-                                        pub["origin"])[1].split(":")[0],
-                                    err.args[0][1])
-                        else:
-                                if isinstance(err.args[0], socket.timeout):
-                                        msg += "%s: %s" % \
-                                            (pub["origin"], "timeout")
-                                else:
-                                        msg += "%s: %s" % \
-                                            (pub["origin"], err.args[0][1])
-                else:
-                        msg += str(err)
-
-        if cre.errmessage:
-                msg += cre.errmessage
-
-        return msg
+        return get_msg(cre)
 
 def __get_stockbutton_label(button):
         # Gtk.Button->Gtk.Alignment->Gtk.HBox->[Gtk.Image, Gtk.Label]
