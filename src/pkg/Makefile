@@ -53,6 +53,7 @@ PKGS.cmd          = print $(MANIFESTS:%.p5m=%) | sed -e s/%2F/\\//g
 PKGS              = $(PKGS.cmd:sh)
 PKGMOGRIFY        = pkgmogrify
 PKGSEND           = pkgsend
+PKGREPO           = pkgrepo
 MOGRIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.mog)
 PUBLIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.pub)
 INCORP            = consolidation%2Fips%2Fips-incorporation
@@ -73,8 +74,11 @@ PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)
 all: $(MOGRIFESTS)
 install: repository-metadata
 
-clobber:
-	rm -rf $(PDIR) $(PKGDEST) Makefile.link
+clean:
+	rm -rf $(PDIR)
+
+clobber: clean
+	rm -rf $(PKGDEST) Makefile.link
 
 # Pass SVr4 package production off to its own makefile
 svr4:
@@ -85,14 +89,14 @@ $(PDIR):
 
 # Finalize the repository
 repository-metadata: publish-pkgs
-	/usr/lib/pkg.depotd -d $(PKGDEST)/repo --add-content --exit-ready
+	$(PKGREPO) -s $(PKGDEST)/repo refresh
 
 publish-pkgs: $(PKGDEST)/repo .WAIT $(PUBLIFESTS)
 
 # Initialize the repository
 $(PKGDEST)/repo:
-	mkdir -p $@
-	$(PKGSEND) -s file://$@ create-repository --set-property publisher.prefix=$(PKGPUBLISHER)
+	$(PKGREPO) create $@
+	$(PKGREPO) -s $@ set-property publisher/prefix=$(PKGPUBLISHER)
 
 # Special rule for creating the incorporation.  Note that the incorporation
 # looks at all manifests, not just the ones listed in $(MANIFESTS).  This is

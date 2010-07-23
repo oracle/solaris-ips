@@ -60,8 +60,11 @@ install: $(SUBDIRS)
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
+# Use the bits we just built to create the packages.
 packages: install
-	@cd pkg; pwd; $(MAKE) $(TARGET) check
+	@cd pkg; pwd; $(MAKE) $(TARGET) check \
+		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
+		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands, modules, and supporting
