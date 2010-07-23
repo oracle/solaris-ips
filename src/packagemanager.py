@@ -481,7 +481,7 @@ class PackageManager:
                 self.w_main_window.show_all()
                 self.__setup_busy_cursor()
                 if self.gconf.show_startpage:
-                        self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                        self.__setup_notebook_page_view()
                 else:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
@@ -492,7 +492,12 @@ class PackageManager:
 
                 self.__setup_text_signals()
                 gui_misc.setup_logging()
-                
+
+        def __setup_notebook_page_view(self):
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.w_selectall_menuitem.set_sensitive(False)
+                self.w_deselect_menuitem.set_sensitive(False)
+
         def __set_initial_sizes(self):
                 if self.gconf.initial_app_width >= MIN_APP_WIDTH and \
                         self.gconf.initial_app_height >= MIN_APP_HEIGHT:
@@ -1334,30 +1339,30 @@ class PackageManager:
                                 publisher_list.append((prefix, pub_alias))
                 self.startpage.setup_search_all_page(publisher_list,
                     self.publisher_options[PUBLISHER_ALL])
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
 
         def __setup_search_installed_page(self, text):
                 self.startpage.setup_search_installed_page(text)
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
                 self.__set_focus_on_searchentry()
 
         def __setup_recent_search_page(self):
                 self.startpage.setup_recent_search_page(self.recent_searches_list)
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
                     
         def __setup_zero_filtered_results_page(self):
                 active_filter = self.w_filter_combobox.get_active()
                 filter_desc = self.__get_filter_combobox_description(active_filter)
                 self.startpage.setup_zero_filtered_results_page(self.length_visible_list,
                     filter_desc)
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
 
         def __setup_search_zero_filtered_results_page(self, text, num):
                 active_filter = self.w_filter_combobox.get_active()
                 filter_desc = self.__get_filter_combobox_description(active_filter)
                 self.startpage.setup_search_zero_filtered_results_page(text,
                     num, filter_desc)
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
                 self.__set_focus_on_searchentry()
 
         def __get_filter_combobox_description(self, index):
@@ -1373,7 +1378,7 @@ class PackageManager:
                 name =  self.get_publisher_name_from_prefix(pub)
                 self.startpage.setup_search_zero_results_page(name, text,
                     search_all)
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
                 self.__set_focus_on_searchentry()
 
         def __set_focus_on_searchentry(self):
@@ -1385,7 +1390,7 @@ class PackageManager:
                 
         def __setup_search_wildcard_page(self):
                 self.startpage.setup_search_wildcard_page()
-                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__setup_notebook_page_view()
                 self.__set_focus_on_searchentry()
 
         def __clear_before_search(self, show_list=True, in_setup=True, unselect_cat=True):
@@ -2224,6 +2229,7 @@ class PackageManager:
                 else:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_START_PAGE)
+                self.__enable_disable_select_all()
 
         def __on_categoriestreeview_row_collapsed(self, treeview, itr, path, data):
                 self.w_categories_treeview.set_cursor(path)
@@ -2563,6 +2569,7 @@ class PackageManager:
                         self.w_repository_combobox.get_active()
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
+                gobject.idle_add(self.__enable_disable_select_all)
 
         def __unset_saved(self):
                 self.__save_application_list(None)
@@ -3633,6 +3640,11 @@ class PackageManager:
         def __enable_disable_select_all(self):
                 if self.in_setup:
                         return
+                if self.w_main_view_notebook.get_current_page() == NOTEBOOK_START_PAGE:
+                        self.w_selectall_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(False)
+                        return
+
                 model =  self.w_application_treeview.get_model()
                 if model != None and len(model) > 0:
                         for row in model:
@@ -4170,6 +4182,7 @@ class PackageManager:
                 self.__set_main_view_package_list()
                 self.__init_tree_views(application_list, None, None, None, None,
                     enumerations.NAME_COLUMN)
+                self.__enable_disable_select_all()
 
         def __setup_category_state(self):
                 self.cache_o.load_categories_active_dict(self.category_active_paths)
