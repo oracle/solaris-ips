@@ -861,6 +861,8 @@ class Repository(progress.GuiProgressTracker):
                         if len(e.known) > 0:
                                 pub, repo, new_pub = self.__get_or_create_pub_with_url(
                                     self.api_o, e.known[0], origin_url)
+                                errors_ssl = self.__update_ssl_creds(pub, repo,
+                                    ssl_cert, ssl_key)
                                 pub.alias = name
                                 errors_update = self.__update_publisher(pub,
                                     new_publisher=new_pub, raise_unknownpubex=False)

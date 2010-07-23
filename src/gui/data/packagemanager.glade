@@ -3214,7 +3214,7 @@ system will boot into the new BE on restart.</property>
             </child>
             <child>
               <widget class="GtkButton" id="ua_restart_later_button">
-                <property name="label">_Restart Later</property>
+                <property name="label" translatable="yes">_Restart Later</property>
                 <property name="response_id">-2</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
