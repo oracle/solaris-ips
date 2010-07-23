@@ -897,12 +897,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 return
 
                         if self.action == enumerations.INSTALL_UPDATE:
-                                msg = _("Selected package(s) cannot be updated on "
-                                "their own.\nClick Updates to update all packages.")
-                                self.__g_error_stage(msg)
+                                done_text = _("No updates necessary")
                         elif self.action == enumerations.IMAGE_UPDATE:
                                 done_text = _("No updates available")
-                                gobject.idle_add(self.__operations_done, done_text)
+                        gobject.idle_add(self.__operations_done, done_text)
 
         def __show_image_update_confirmation(self):
                 dic_to_update = {}

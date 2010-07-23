@@ -215,14 +215,12 @@ class VersionInfo:
                     _("%(version)s (Build %(build)s-%(branch)s)")
                 if to_be_installed:
                         expander_fmt = _(
-                            "The latest version of %s cannot be installed. "
-                            "It may be possible to do so after updating your system. "
-                            "Run \"Updates\" to get your system up-to-date.")
+                            "The latest version of %s cannot be installed."
+                            )
                 else:
                         expander_fmt = _(
-                            "Cannot upgrade to the latest version of %s. "
-                            "It may be possible to do so after updating your system. "
-                            "Run \"Updates\" to get your system up-to-date.")
+                            "Cannot upgrade to the latest version of %s."
+                            )
                 installable_exp = installable_fmt % \
                     {"version": version,
                     "build": build_release,

@@ -491,6 +491,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         if local_info.description:
                 description = local_info.description
 
+        obsolete_str = ""
         text = {}
         text["name"] = pkg_name
         text["summ"] = summary
@@ -503,11 +504,14 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                         renamed_to += "\t" + dep + "\n"
         text["renamed_to"] = renamed_to
         if installed:
+                if api.PackageInfo.OBSOLETE in local_info.states:
+                        obsolete_str = _(" (Obsolete)")
                 ver_text = _("%(version)s (Build %(build)s-%(branch)s)")
                 text["ins"] = ver_text % \
                     {"version": local_info.version,
                     "build": local_info.build_release,
                     "branch": local_info.branch}
+                text["ins"] += obsolete_str
                 labs["available"] =  _("Latest Version:")
                 if not same_pkg_versions(local_info, remote_info):
                         text["available"] = ver_text % \
@@ -517,7 +521,10 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                 else:
                         text["available"] = _("No")
         else:
+                if api.PackageInfo.OBSOLETE in remote_info.states:
+                        obsolete_str = _(" (Obsolete)")
                 text["ins"] = _("No")
+                text["ins"] += obsolete_str
                 labs["available"] =  _("Latest Version:")
                 text["available"] = _(
                     "%(version)s (Build %(build)s-%(branch)s)") % \
@@ -612,7 +619,7 @@ def set_package_details_text(labs, text, textview, installed_icon,
         __add_line_to_generalinfo(infobuffer, i, labs["summ"], text["summ"])
         i += 1
         installed = False
-        if text["ins"] == _("No"):
+        if text["ins"].startswith(_("No")):
                 icon = not_installed_icon
         else:
                 icon = installed_icon
