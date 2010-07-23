@@ -43,8 +43,8 @@ POUND_SIGN:sh     = echo \\043
 PUBLISHALL        = $(POUND_SIGN)
 MANIFESTS.cmd     = \
 	cd manifests; \
-	$(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish | \
-	while read name build; do \
+	m=$$($(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish); \
+	echo "$$m" | while read name build; do \
 		[[ $$build -gt $(BUILDNUM) ]] && echo $$name; \
 	done
 MANIFESTS         = $(MANIFESTS.cmd:sh)

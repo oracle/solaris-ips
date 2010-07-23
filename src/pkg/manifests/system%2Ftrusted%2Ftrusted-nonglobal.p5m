@@ -49,7 +49,6 @@ depend fmri=pkg:/gnome/theme/background/opensolaris-backgrounds-extra type=requi
 depend fmri=pkg:/gnome/theme/blueprint type=require
 depend fmri=pkg:/gnome/theme/cursor/dmz-cursor type=require
 depend fmri=pkg:/gnome/theme/cursor/dmz-cursor-aa type=require
-depend fmri=pkg:/gnome/theme/cursor/neutral_plus_inv type=require
 depend fmri=pkg:/gnome/theme/gnome-icon-theme type=require
 depend fmri=pkg:/gnome/theme/gnome-themes type=require
 depend fmri=pkg:/gnome/theme/gnome-themes-extra type=require
