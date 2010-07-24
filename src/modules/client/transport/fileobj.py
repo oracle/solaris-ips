@@ -47,6 +47,10 @@ class StreamingFileObj(object):
                 self.__check_cancelation = ccancel
                 self.__lock = DummyLock()
                 self.__uuid = uuidm.uuid4().int
+                # Free buffer on exception.  Set to False if caller may
+                # read buffer after exception.  Caller should call close()
+                # to cleanup afterwards.
+                self.free_buffer = True
 
         def __del__(self):
                 release = False
@@ -269,7 +273,7 @@ class StreamingFileObj(object):
                 return line
 
         # Private methods
-
+        
         def __fill_buffer(self, size=-1):
                 """Call engine.run() to fill the file object's buffer.
                 Read until we might block.  If size is specified, stop
@@ -293,7 +297,8 @@ class StreamingFileObj(object):
                                 if s:
                                         # Cleanup prior to raising exception
                                         self.__lock.release()
-                                        self.close()
+                                        if self.free_buffer:
+                                                self.close()
                                         raise s[0]
 
                                 self.__lock.release()
@@ -305,13 +310,15 @@ class StreamingFileObj(object):
                                 s = engine.check_status([self.__url])
                                 ex.failures = s
                                 self.__lock.release()
-                                self.close()
+                                if self.free_buffer:
+                                        self.close()
                                 raise
                         except:
                                 # Cleanup and close, if exception
                                 # raised by run.
                                 self.__lock.release()
-                                self.close()
+                                if self.free_buffer:
+                                        self.close()
                                 raise
 
                         if size > 0 and len(self.__buf) < size:

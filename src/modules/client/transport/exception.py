@@ -139,7 +139,7 @@ class TransportProtoError(TransportException):
         """Raised when errors occur in the transport protocol."""
 
         def __init__(self, proto, code=None, url=None, reason=None,
-            repourl=None, request=None, uuid=None):
+            repourl=None, request=None, uuid=None, details=None):
                 TransportException.__init__(self)
                 self.proto = proto
                 self.code = code
@@ -150,6 +150,7 @@ class TransportProtoError(TransportException):
                 self.decayable = self.code in decayable_proto_errors[self.proto]
                 self.retryable = self.code in retryable_proto_errors[self.proto]
                 self.uuid = uuid
+                self.details = details
 
         def __str__(self):
                 s = "%s protocol error" % self.proto
@@ -165,6 +166,8 @@ class TransportProtoError(TransportException):
                         # the location, then at least knowing where it was
                         # looking will be helpful.
                         s += "\nRepository URL: '%s'." % self.urlstem
+                if self.details:
+                        s +="\nAdditional Details:\n%s" % self.details
                 return s
 
         def __cmp__(self, other):
@@ -177,6 +180,9 @@ class TransportProtoError(TransportException):
                 if r != 0:
                         return r
                 r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                r = cmp(self.details, other.details)
                 if r != 0:
                         return r
                 return cmp(self.reason, other.reason)

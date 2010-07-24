@@ -26,8 +26,10 @@
 
 import cStringIO
 import errno
+import httplib
 import itertools
 import os
+import sys
 import urlparse
 import urllib
 
@@ -192,6 +194,37 @@ class TransportRepo(object):
                 return errors
 
         @staticmethod
+        def _parse_html_error(content):
+                """Parse a html document that contains error information.
+                Return the html as a plain text string."""
+
+                msg = None
+                if not content:
+                        return msg
+        
+                from xml.dom.minidom import Document, parse
+                dom = parse(cStringIO.StringIO(content))
+                msg = ""
+
+                paragraphs = []
+                if not isinstance(dom, Document):
+                        # Assume the output was the message.
+                        msg = content
+                else:
+                        paragraphs = dom.getElementsByTagName("p")
+
+                # XXX this is specific to the depot server's current
+                # error output style.
+                for p in paragraphs:
+                        for c in p.childNodes:
+                                if c.nodeType == c.TEXT_NODE:
+                                        value = c.nodeValue
+                                        if value is not None:
+                                                msg += ("\n%s" % value)
+
+                return msg
+
+        @staticmethod
         def _url_to_request(urllist, mapping=None):
                 """Take a list of urls and remove the protocol information,
                 leaving just the information about the request."""
@@ -239,21 +272,24 @@ class HTTPRepo(TransportRepo):
                     header=header, compressible=compress,
                     sock_path=self._sock_path)
 
-        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url(url, header, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    sock_path=self._sock_path)
+                    sock_path=self._sock_path, failonerror=failonerror)
 
-        def _fetch_url_header(self, url, header=None, ccancel=None):
+        def _fetch_url_header(self, url, header=None, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url_header(url, header,
                     repourl=self._url, ccancel=ccancel,
-                    sock_path=self._sock_path)
+                    sock_path=self._sock_path, failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None):
+            data_fobj=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     repourl=self._url, ccancel=ccancel,
-                    sock_path=self._sock_path, data_fobj=data_fobj)
+                    sock_path=self._sock_path, data_fobj=data_fobj,
+                    failonerror=failonerror)
 
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
@@ -560,10 +596,24 @@ class HTTPRepo(TransportRepo):
                         headers.update(header)
 
                 fobj = self._post_url(requesturl, header=headers,
-                    data_fobj=data_fobj, data=data)
+                    data_fobj=data_fobj, data=data, failonerror=False)
 
-                # Discard response body
-                fobj.read()
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+                        raise
+                finally:
+                        fobj.close()
 
         def publish_abandon(self, header=None, trans_id=None):
                 """The 'abandon' publication operation, that tells a
@@ -577,13 +627,29 @@ class HTTPRepo(TransportRepo):
                 request_str = trans_id
                 requesturl = urlparse.urljoin(baseurl, request_str)
 
-                fobj = self._fetch_url(requesturl, header=header)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
 
-                # Discard response body
-                fobj.read()
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                        state = fobj.getheader("State", None)
+                        pkgfmri = fobj.getheader("Package-FMRI", None)
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+                        raise
+                finally:
+                        fobj.close()
 
-                return fobj.getheader("State", None), \
-                     fobj.getheader("Package-FMRI", None)
+                return state, pkgfmri
 
         def publish_close(self, header=None, trans_id=None, refresh_index=False,
             add_to_catalog=False):
@@ -605,13 +671,30 @@ class HTTPRepo(TransportRepo):
                 request_str = trans_id
                 requesturl = urlparse.urljoin(baseurl, request_str)
 
-                fobj = self._fetch_url(requesturl, header=headers)
+                fobj = self._fetch_url(requesturl, header=headers,
+                    failonerror=False)
 
-                # Discard response body
-                fobj.read()
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                        state = fobj.getheader("State", None)
+                        pkgfmri = fobj.getheader("Package-FMRI", None)
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
 
-                return fobj.getheader("State", None), \
-                     fobj.getheader("Package-FMRI", None)
+                        raise
+                finally:
+                        fobj.close()
+
+                return state, pkgfmri
 
         def publish_open(self, header=None, client_release=None, pkg_name=None):
                 """Begin a publication operation by calling 'open'.
@@ -628,12 +711,28 @@ class HTTPRepo(TransportRepo):
                 if header:
                         headers.update(header)
 
-                fobj = self._fetch_url(requesturl, header=headers)
+                fobj = self._fetch_url(requesturl, header=headers,
+                    failonerror=False)
 
-                # Discard response body
-                fobj.read()
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                        trans_id = fobj.getheader("Transaction-ID", None)
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+                        raise
+                finally:
+                        fobj.close()
 
-                return fobj.getheader("Transaction-ID", None)
+                return trans_id
 
         def publish_refresh_index(self, header=None):
                 """If the Repo points to a Repository that has a refresh-able
@@ -642,10 +741,26 @@ class HTTPRepo(TransportRepo):
                 methodstr = "index/0/refresh/"
                 requesturl = urlparse.urljoin(self._repouri.uri, methodstr)
 
-                fobj = self._fetch_url(requesturl, header=header)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
 
-                # Discard response body
-                fobj.read()
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+
+                        raise
+                finally:
+                        fobj.close()
 
         def supports_version(self, op, ver):
                 """Returns true if operation named in string 'op'
@@ -692,26 +807,29 @@ class HTTPSRepo(HTTPRepo):
                     header=header, compressible=compress,
                     sock_path=self._sock_path)
 
-        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    sock_path=self._sock_path)
+                    sock_path=self._sock_path, failonerror=failonerror)
 
-        def _fetch_url_header(self, url, header=None, ccancel=None):
+        def _fetch_url_header(self, url, header=None, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url_header(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel, sock_path=self._sock_path)
+                    ccancel=ccancel, sock_path=self._sock_path,
+                    failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None):
+            data_fobj=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel, sock_path=self._sock_path,
-                    data_fobj=data_fobj)
+                    data_fobj=data_fobj, failonerror=failonerror)
 
 
 class FileRepo(TransportRepo):
@@ -774,13 +892,16 @@ class FileRepo(TransportRepo):
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
                     header=header, compressible=False)
 
-        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url(url, header, repourl=self._url,
-                    compressible=False, ccancel=ccancel)
+                    compressible=False, ccancel=ccancel,
+                    failonerror=failonerror)
 
-        def _fetch_url_header(self, url, header=None, ccancel=None):
+        def _fetch_url_header(self, url, header=None, ccancel=None,
+            failonerror=True):
                 return self._engine.get_url_header(url, header,
-                    repourl=self._url, ccancel=ccancel)
+                    repourl=self._url, ccancel=ccancel, failonerror=failonerror)
 
         def __record_proto_error(self, ex):
                 """Private helper function that records a protocol error that

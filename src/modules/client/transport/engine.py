@@ -118,7 +118,7 @@ class CurlTransportEngine(TransportEngine):
 
         def add_url(self, url, filepath=None, writefunc=None, header=None,
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False, sock_path=None):
+            repourl=None, compressible=False, sock_path=None, failonerror=True):
                 """Add a URL to the transport engine.  Caller must supply
                 either a filepath where the file should be downloaded,
                 or a callback to a function that will peform the write.
@@ -131,7 +131,7 @@ class CurlTransportEngine(TransportEngine):
                     writefunc=writefunc, header=header, progclass=progclass,
                     progtrack=progtrack, sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, compressible=compressible,
-                    sock_path=sock_path)
+                    sock_path=sock_path, failonerror=failonerror)
 
                 self.__req_q.appendleft(t)
 
@@ -500,7 +500,8 @@ class CurlTransportEngine(TransportEngine):
                 return rf, rs
 
         def get_url(self, url, header=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False, ccancel=None, sock_path=None):
+            repourl=None, compressible=False, ccancel=None, sock_path=None,
+            failonerror=True):
                 """Invoke the engine to retrieve a single URL.  Callers
                 wishing to obtain multiple URLs at once should use
                 addUrl() and run().
@@ -518,14 +519,15 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header,
                     sslcert=sslcert, sslkey=sslkey, repourl=repourl,
                     compressible=compressible, progfunc=progfunc,
-                    uuid=fobj.uuid, sock_path=sock_path)
+                    uuid=fobj.uuid, sock_path=sock_path,
+                    failonerror=failonerror)
 
                 self.__req_q.appendleft(t)
 
                 return fobj
 
         def get_url_header(self, url, header=None, sslcert=None, sslkey=None,
-            repourl=None, ccancel=None, sock_path=None):
+            repourl=None, ccancel=None, sock_path=None, failonerror=True):
                 """Invoke the engine to retrieve a single URL's headers.
 
                 getUrlHeader will return a read-only file object that
@@ -541,7 +543,7 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header,
                     httpmethod="HEAD", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
-                    sock_path=sock_path)
+                    sock_path=sock_path, failonerror=failonerror)
 
                 self.__req_q.appendleft(t)
 
@@ -675,7 +677,7 @@ class CurlTransportEngine(TransportEngine):
 
         def send_data(self, url, data=None, header=None, sslcert=None,
             sslkey=None, repourl=None, ccancel=None, sock_path=None,
-            data_fobj=None):
+            data_fobj=None, failonerror=True):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -696,7 +698,8 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header, data=data,
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
-                    sock_path=None, read_fobj=data_fobj)
+                    sock_path=None, read_fobj=data_fobj,
+                    failonerror=failonerror)
 
                 self.__req_q.appendleft(t)
 
@@ -817,13 +820,15 @@ class CurlTransportEngine(TransportEngine):
                         hdl.filepath = treq.filepath
                 elif treq.writefunc:
                         hdl.setopt(pycurl.WRITEFUNCTION, treq.writefunc)
-                        hdl.setopt(pycurl.FAILONERROR, True)
                         hdl.filepath = None
                         hdl.fobj = None
                 else:
                         raise tx.TransportOperationError("Transport invocation"
                             " for URL %s did not specify filepath or write"
                             " function." % treq.url)
+
+                if treq.failonerror:
+                        hdl.setopt(pycurl.FAILONERROR, True)
 
                 if treq.progtrack and treq.progclass:
                         hdl.setopt(pycurl.NOPROGRESS, 0)
@@ -991,7 +996,8 @@ class TransportRequest(object):
             hdrfunc=None, header=None, data=None, httpmethod="GET",
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, progfunc=None, uuid=None,
-            sock_path=None, read_fobj=None, read_filepath=None):
+            sock_path=None, read_fobj=None, read_filepath=None,
+            failonerror=False):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -1016,6 +1022,10 @@ class TransportRequest(object):
 
                 data - If the request is sending a data payload, include
                 the data in this argument.
+
+                failonerror - If the request returns a HTTP code >= 400,
+                terminate the request early, instead of running it to
+                completion.
 
                 httpmethod - If the request is a HTTP/HTTPS request,
                 this can override the default HTTP method of GET.
@@ -1076,3 +1086,4 @@ class TransportRequest(object):
                 self.socket_path = sock_path
                 self.read_fobj = read_fobj
                 self.read_filepath = read_filepath
+                self.failonerror = failonerror
