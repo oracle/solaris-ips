@@ -20,10 +20,48 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
-                
+import os
+import pkg.pkgsubprocess as subprocess
+from pkg.client import global_settings
+from pkg.client.debugvalues import DebugValues
+
+
+# range of possible SMF service states
+SMF_SVC_UNKNOWN      = 0
+SMF_SVC_DISABLED     = 1
+SMF_SVC_MAINTENANCE  = 2
+SMF_SVC_TMP_DISABLED = 3
+SMF_SVC_TMP_ENABLED  = 4
+SMF_SVC_ENABLED      = 5
+
+logger = global_settings.logger
+
+svcprop_path = "/usr/bin/svcprop"
+svcadm_path  = "/usr/sbin/svcadm"
+svcs_path = "/usr/bin/svcs"
+
+
+class NonzeroExitException(Exception):
+        def __init__(self, cmd, return_code, output):
+                self.cmd = cmd
+                self.return_code = return_code
+                self.output = output
+
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
+        def __str__(self):
+                return "Cmd %s exited with status %d, and output '%s'" %\
+                    (self.cmd, self.return_code, self.output)
+
+
 class GenericActuator(object):
         """Actuators are action attributes that cause side effects
         on live images when those actions are updated, installed
@@ -40,7 +78,7 @@ class GenericActuator(object):
                 self.update =  {}
 
         def __nonzero__(self):
-                return bool(self.install) or bool(self.removal) or bool(self.update)
+                return bool(self.install or self.removal or self.update)
 
         def scan_install(self, attrs):
                 self.__scan(self.install, attrs)
@@ -53,7 +91,12 @@ class GenericActuator(object):
 
         def __scan(self, dictionary, attrs):
                 for a in set(attrs.keys()) & self.actuator_attrs:
-                        dictionary.setdefault(a, set()).add(attrs[a])
+                        values = attrs[a]
+
+                        if not isinstance(values, list):
+                                values = [values]
+
+                        dictionary.setdefault(a, set()).update(values)
 
         def reboot_needed(self):
                 return False
@@ -74,39 +117,6 @@ class GenericActuator(object):
                 return "Removals: %s\nInstalls: %s\nUpdates: %s\n" % \
                     (self.removal, self.install, self.update)
 
-# range of possible SMF service states
-SMF_SVC_UNKNOWN      = 0
-SMF_SVC_DISABLED     = 1
-SMF_SVC_MAINTENANCE  = 2
-SMF_SVC_TMP_DISABLED = 3
-SMF_SVC_TMP_ENABLED  = 4
-SMF_SVC_ENABLED      = 5
-
-import os
-import pkg.pkgsubprocess as subprocess
-from pkg.client.debugvalues import DebugValues
-from pkg.client import global_settings
-logger = global_settings.logger
-
-svcprop_path = "/usr/bin/svcprop"
-svcadm_path  = "/usr/sbin/svcadm"
-svcs_path = "/usr/bin/svcs"
-
-class NonzeroExitException(Exception):
-        def __init__(self, cmd, return_code, output):
-                self.cmd = cmd
-                self.return_code = return_code
-                self.output = output
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
-        def __str__(self):
-                return "Cmd %s exited with status %d, and output '%s'" %\
-                    (self.cmd, self.return_code, self.output)
 
 class Actuator(GenericActuator):
         """Solaris specific Actuator implementation..."""
@@ -117,7 +127,7 @@ class Actuator(GenericActuator):
             "restart_fmri",     # restart this service on any change
             "suspend_fmri",     # suspend this service during update
             "disable_fmri"      # disable this service prior to removal
-            ])
+        ])
 
         def __init__(self):
                 GenericActuator.__init__(self)
@@ -214,7 +224,7 @@ class Actuator(GenericActuator):
                         return
 
                 args = (svcadm_path, "mark", "maintenance")
-                params = tuple(self.suspend_fmris | 
+                params = tuple(self.suspend_fmris |
                     self.tmp_suspend_fmris)
 
                 if params:
@@ -374,5 +384,3 @@ class Actuator(GenericActuator):
                 if ret != 0:
                         raise NonzeroExitException(args, ret, buf)
                 return buf
-
-

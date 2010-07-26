@@ -25,13 +25,10 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
-import pkg5unittest
 
 import os
+import pkg5unittest
 import unittest
-import shutil
-
-from pkg import misc
 
 class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -189,6 +186,9 @@ case $4 in
         svc:/system/test_refresh_svc:default)
                 FMRI=$4
                 ;;
+        svc:/system/test_multi_svc?:default)
+                FMRI=$4
+                ;;
         # the following are too relaxed, eg. "svcs sys/foo/tZst_suspend_svc:defXX"
         # would match, but is sufficient for this test case as we only
         # ever resolve services that truely exist here.
@@ -261,6 +261,16 @@ exit $RETURN
                 self.pkg_list+= ["""
                     open basics@1.7,5.11-0
                     add file testdata/empty mode=0677 owner=root group=sys path=/test_restart refresh_fmri=svc:/system/test_refresh_svc:default restart_fmri=svc:/system/test_restart_svc* suspend_fmri=svc:/sy*t?st_suspend_svc:def* disable_fmri=*test_disable_svc*
+                    close """]
+
+                self.pkg_list += ["""
+                    open basics@1.8,5.11-0
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart restart_fmri=svc:/system/test_multi_svc1:default restart_fmri=svc:/system/test_multi_svc2:default
+                    close """]
+
+                self.pkg_list += ["""
+                    open basics@1.9,5.11-0
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart disable_fmri=svc:/system/test_multi_svc1:default disable_fmri=svc:/system/test_multi_svc2:default
                     close """]
 
                 self.make_misc_files(self.misc_files, prefix="testdata",
@@ -372,7 +382,7 @@ exit $RETURN
                 self.file_does_not_exist(svcadm_output)
                 self.pkg(cmdstr + " uninstall basics")
                 self.file_does_not_exist(svcadm_output)
-                
+
                 # test that we do the right thing for multiple FMRIs with globbing chars
                 self.pkg(cmdstr + " install basics@1.6")
                 self.pkg(cmdstr + " install basics@1.7")
@@ -384,12 +394,31 @@ exit $RETURN
                    "svcadm disable -st svc:/system/test_suspend_svc:default",
                    "svcadm enable svc:/system/test_suspend_svc:default" ]:
                            self.file_contains(svcadm_output, text)
-                os.unlink(svcadm_output)
 
+                # Next test will get muddled if prior actuators get
+                # run too, so we test removal here.
                 self.pkg(cmdstr + " uninstall basics")
                 self.file_contains(svcadm_output,
                     "svcadm disable -s svc:/system/test_disable_svc:default")
+                os.unlink(svcadm_output)
 
+                # Test with multi-valued actuators
+                self.pkg(cmdstr + " install basics@1.8")
+                self.pkg("verify")
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_multi_svc1:default "
+                    "svc:/system/test_multi_svc2:default")
+
+                # make it look like our test service is enabled
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
+
+                self.pkg(cmdstr + " install basics@1.9")
+                self.pkg("verify")
+                self.pkg(cmdstr + " uninstall basics")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_multi_svc1:default "
+                    "svc:/system/test_multi_svc2:default")
+                os.unlink(svcadm_output)
 
         def file_does_not_exist(self, path):
                 file_path = os.path.join(self.get_img_path(), path)
@@ -401,7 +430,9 @@ exit $RETURN
                 try:
                         f = file(file_path)
                 except:
-                        self.assert_(False, "File %s does not exist or contain %s" % (path, string))
+                        self.assert_(False,
+                            "File %s does not exist or contain %s" %
+                            (path, string))
 
                 for line in f:
                         if string in line:
@@ -409,7 +440,8 @@ exit $RETURN
                                 break
                 else:
                         f.close()
-                        self.assert_(False, "File %s does not contain %s" % (path, string))
+                        self.assert_(False, "File %s does not contain %s" %
+                            (path, string))
 
 if __name__ == "__main__":
         unittest.main()
