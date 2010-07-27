@@ -180,6 +180,26 @@ class GenericTransportCfg(TransportCfg):
         user_agent = property(__get_user_agent, None, None,
             "A string that identifies the user agent for the transport.")
 
+class LockedTransport(object):
+        """A decorator class that wraps transport functions, calling
+        their lock and unlock methods.  Due to implementation differences
+        in the decorator protocol, the decorator must be used with
+        parenthesis in order for this to function correctly.  Always
+        decorate functions @LockedTransport()."""
+
+        def __init__(self, *d_args, **d_kwargs):
+                object.__init__(self)
+
+        def __call__(self, f):
+                def wrapper(*fargs, **f_kwargs):
+                        instance, fargs = fargs[0], fargs[1:]
+                        lock = instance._lock
+                        lock.acquire()
+                        try:
+                                return f(instance, *fargs, **f_kwargs)
+                        finally:
+                                lock.release()
+                return wrapper
 
 class Transport(object):
         """The generic transport wrapper object.  Its public methods should
@@ -196,7 +216,7 @@ class Transport(object):
                 self.__portal_test_executed = False
                 self.__repo_cache = None
                 self.__dynamic_mirrors = []
-                self.__lock = nrlock.NRLock()
+                self._lock = nrlock.NRLock()
                 self._caches = None
                 self.stats = tstats.RepoChooser()
 
@@ -268,7 +288,7 @@ class Transport(object):
                         # Don't reset if not configured
                         return
 
-                self.__lock.acquire()
+                self._lock.acquire()
                 try:
                         self.__engine.reset()
                         self.__repo_cache.clear_cache()
@@ -280,7 +300,7 @@ class Transport(object):
                                         # Not fatal. Suppress.
                                         pass
                 finally:
-                        self.__lock.release()
+                        self._lock.release()
 
         def shutdown(self):
                 """Shuts down any portions of the transport that can
@@ -290,7 +310,7 @@ class Transport(object):
                         # Already shut down
                         return
 
-                self.__lock.acquire()
+                self._lock.acquire()
                 try:
                         self.__engine.shutdown()
                         self.__engine = None
@@ -300,7 +320,7 @@ class Transport(object):
                         self._caches = None
                         self.__dynamic_mirrors = []
                 finally:
-                        self.__lock.release()
+                        self._lock.release()
 
         def add_cache(self, path, pub=None, readonly=True):
                 """Adds the directory specified by 'path' as a location to read
@@ -402,28 +422,11 @@ class Transport(object):
                     if readonly or not cache.readonly
                 ]
 
+        @LockedTransport()
         def do_search(self, pub, data, ccancel=None):
                 """Perform a search request.  Returns a file-like object or an
                 iterable that contains the search results.  Callers need to
                 catch transport exceptions that this object may generate."""
-
-                self.__lock.acquire()
-                try:
-                        fobj = self._do_search(pub, data, ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-                if hasattr(fobj, "set_lock"):
-                        # Since we're returning a file object that's using the
-                        # same engine as the rest of this transport, assign
-                        # our lock to the fobj.  It must synchronize with us
-                        # too.
-                        fobj.set_lock(self.__lock)
-                return fobj
-
-        def _do_search(self, pub, data, ccancel=None):
-                """Implementation of do_search, which is wrapper for this
-                method."""
 
                 failures = tx.TransportFailures()
                 fobj = None
@@ -454,6 +457,15 @@ class Transport(object):
                                     ccancel=ccancel)
                                 if hasattr(fobj, "_prime"):
                                         fobj._prime()
+
+                                if hasattr(fobj, "set_lock"):
+                                        # Since we're returning a file object
+                                        # that's using the same engine as the
+                                        # rest of this transport, assign our
+                                        # lock to the fobj.  It must synchronize
+                                        # with us too.
+                                        fobj.set_lock(self._lock)
+
                                 return fobj
 
                         except tx.ExcessiveTransientFailure, ex:
@@ -502,20 +514,11 @@ class Transport(object):
 
                 return self.__cadir
 
+        @LockedTransport()
         def get_catalog(self, pub, ts=None, ccancel=None):
                 """Get the catalog for the specified publisher.  If
                 ts is defined, request only changes newer than timestamp
                 ts."""
-
-                self.__lock.acquire()
-                try:
-                        self._get_catalog(pub, ts, ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-        def _get_catalog(self, pub, ts=None, ccancel=None):
-                """Get catalog.  This is the implementation of get_catalog,
-                a wrapper for this function."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -597,6 +600,7 @@ class Transport(object):
                         raise te
                 return
 
+        @LockedTransport()
         def get_catalog1(self, pub, flist, ts=None, path=None,
             progtrack=None, ccancel=None):
                 """Get the catalog1 files from publisher 'pub' that
@@ -623,18 +627,6 @@ class Transport(object):
                 If the caller wants the completed download to be placed
                 in an alternate directory (pub.catalog_root is standard),
                 set a directory path in 'path'."""
-
-                self.__lock.acquire()
-                try:
-                        self._get_catalog1(pub, flist, ts=ts, path=path,
-                            progtrack=progtrack, ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-        def _get_catalog1(self, pub, flist, ts=None, path=None,
-            progtrack=None, ccancel=None):
-                """This is the implementation of get_catalog1.  The
-                other function is a wrapper for this one."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
@@ -787,23 +779,12 @@ class Transport(object):
                                 tfailurex.append(f)
                         raise tfailurex
 
+        @LockedTransport()
         def get_publisherdata(self, pub, ccancel=None):
                 """Given a publisher pub, return the publisher/0
                 information as a list of publisher objects.  If
                 no publisher information was contained in the
                 response, the list will be empty."""
-
-                self.__lock.acquire()
-                try:
-                        return self._get_publisherdata(pub,
-                            ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-        def _get_publisherdata(self, pub, ccancel=None):
-                """Implementation of get_publisherdata.  This routine
-                implements the method, the other is an external interface
-                and lock wrapper."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
@@ -857,26 +838,13 @@ class Transport(object):
                             "publisher/0")
                 raise failures
 
+        @LockedTransport()
         def get_content(self, pub, fhash, ccancel=None):
                 """Given a fmri and fhash, return the uncompressed content
                 from the remote object.  This is similar to get_datstream,
                 except that the transport handles retrieving and decompressing
                 the content."""
                
-                self.__lock.acquire()
-                try:
-                        content = self._get_content(pub, fhash,
-                            ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-                return content
-
-        def _get_content(self, pub, fhash, ccancel=None):
-                """This is the function that implements get_content.
-                The other function is a wrapper for this one, which handles
-                the transport locking correctly."""
-
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
@@ -923,21 +891,12 @@ class Transport(object):
                                         raise
                 raise failures
 
+        @LockedTransport()
         def touch_manifest(self, fmri, intent=None, ccancel=None):
                 """Touch a manifest.  This operation does not
                 return the manifest's content.  The FMRI is given
                 as fmri.  An optional intent string may be supplied
                 as intent."""
-
-                self.__lock.acquire()
-                try:
-                        self._touch_manifest(fmri, intent, ccancel=ccancel)
-                finally:
-                        self.__lock.release()
-
-        def _touch_manifest(self, fmri, intent=None, ccancel=None):
-                """Implementation of touch_manifest, which is a wrapper
-                around this function."""
 
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
@@ -974,24 +933,11 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
             ccancel=None, pub=None, content_only=False):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
-
-                self.__lock.acquire()
-                try:
-                        m = self._get_manifest(fmri, excludes, intent,
-                            ccancel=ccancel, pub=pub, content_only=content_only)
-                finally:
-                        self.__lock.release()
-
-                return m
-
-        def _get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
-            ccancel=None, pub=None, content_only=False):
-                """This is the implementation of get_manifest.  The
-                get_manifest function wraps this."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
@@ -1063,6 +1009,7 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
             progtrack=None, ccancel=None):
                 """Given a list of tuples [(fmri, intent), ...], prefetch
@@ -1075,27 +1022,10 @@ class Transport(object):
                 but it should raise any that would cause an immediate
                 failure."""
 
+                download_dir = self.__tcfg.incoming_download_dir
+
                 if not fetchlist:
                         return
-
-                self.__lock.acquire()
-                try:
-                        try:
-                                self._prefetch_manifests(fetchlist, excludes,
-                                    progtrack, ccancel=ccancel)
-                        except (apx.PermissionsException, 
-                            apx.InvalidDepotResponseException):
-                                pass             
-                finally:
-                        self.__lock.release()
-
-
-        def _prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
-            progtrack=None, ccancel=None):
-                """This is the implementation of prefetch_manifests.
-                The other function is a wrapper for this one."""
-
-                download_dir = self.__tcfg.incoming_download_dir
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -1103,7 +1033,10 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self._captive_portal_test(ccancel=ccancel)
+                try:
+                        self._captive_portal_test(ccancel=ccancel)
+                except apx.InvalidDepotResponseException:
+                        return
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -1118,7 +1051,7 @@ class Transport(object):
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise apx.PermissionsException(e.filename)
+                                return
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: %s" % e)
@@ -1155,8 +1088,11 @@ class Transport(object):
                                 ]
                                 del namelist[:chunksz]
 
-                                self._prefetch_manifests_list(mxfr, mfstlist,
-                                    excludes)
+                                try:
+                                        self._prefetch_manifests_list(mxfr,
+                                            mfstlist, excludes)
+                                except apx.PermissionsException:
+                                        return
 
         def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI):
                 """Perform bulk manifest prefetch.  This is the routine
@@ -1499,10 +1435,11 @@ class Transport(object):
                                 tfailurex.append(f)
                         raise tfailurex
 
-        def _get_files_impl(self, mfile):
-                """The implementation of _get_files.  The _get_files
-                function is a wrapper around this function, mainly for
-                locking purposes."""
+        @LockedTransport()
+        def _get_files(self, mfile):
+                """Perform an operation that gets multiple files at once.
+                A mfile object contains information about the multiple-file
+                request that will be performed."""
 
                 download_dir = self.__tcfg.incoming_download_dir
                 pub = mfile.get_publisher()
@@ -1548,26 +1485,15 @@ class Transport(object):
 
                         self._get_files_list(mfile, filelist)
 
-        def _get_files(self, mfile):
-                """Perform an operation that gets multiple files at once.
-                A mfile object contains information about the multiple-file
-                request that will be performed."""
-
-                self.__lock.acquire()
-                try:
-                        self._get_files_impl(mfile)
-                finally:
-                        self.__lock.release()
-
         def get_versions(self, pub, ccancel=None):
                 """Query the publisher's origin servers for versions
                 information.  Return a dictionary of "name":"versions" """
 
-                self.__lock.acquire()
+                self._lock.acquire()
                 try:
                         v = self._get_versions(pub, ccancel=ccancel)
                 finally:
-                        self.__lock.release()
+                        self._lock.release()
 
                 return v
 
@@ -1818,20 +1744,10 @@ class Transport(object):
                         return CHUNK_SMALL
                 return CHUNK_LARGE
 
+        @LockedTransport()
         def valid_publisher_test(self, pub, ccancel=None):
                 """Test that the publisher supplied in pub actually
                 points to a valid packaging server."""
-
-                self.__lock.acquire()
-                try:
-                        val = self._valid_publisher_test(pub)
-                finally:
-                        self.__lock.release()
-
-                return val
-
-        def _valid_publisher_test(self, pub, ccancel=None):
-                """Implementation of valid_publisher_test."""
 
                 try:
                         vd = self._get_versions(pub, ccancel=ccancel)
@@ -1859,11 +1775,11 @@ class Transport(object):
                 to see a special web page, usually for authentication
                 purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
 
-                self.__lock.acquire()
+                self._lock.acquire()
                 try:
                         self._captive_portal_test(ccancel=ccancel)
                 finally:
-                        self.__lock.release()
+                        self._lock.release()
 
         def _captive_portal_test(self, ccancel=None):
                 """Implementation of captive_portal_test."""
@@ -2050,20 +1966,11 @@ class Transport(object):
                             "chash failure: expected: %s computed: %s" % \
                             (chash, newhash), size=s.st_size)
 
+        @LockedTransport()
         def publish_add(self, pub, action=None, trans_id=None):
                 """Perform the 'add' publication operation to the publisher
                 supplied in pub.  The caller should include the action in the
                 action argument. The transaction-id is passed in trans_id."""
-
-                self.__lock.acquire()
-                try:
-                        self._publish_add(pub, action=action, trans_id=trans_id)
-                finally:
-                        self.__lock.release()
-
-        def _publish_add(self, pub, action=None, trans_id=None):
-                """Implementation of publish_add.  The current publish_add
-                function is a locking wrapper for the transport."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -2091,24 +1998,11 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def publish_abandon(self, pub, trans_id=None):
                 """Perform an 'abandon' publication operation to the
                 publisher supplied in the pub argument.  The caller should
                 also include the transaction id in trans_id."""
-
-                self.__lock.acquire()
-                try:
-                        state, fmri = self._publish_abandon(pub,
-                            trans_id=trans_id)
-                finally:
-                        self.__lock.release()
-
-                return state, fmri
-
-        def _publish_abandon(self, pub, trans_id=None):
-                """Implementation of publish_abandon.  The current
-                publish_abandon function is a locking wrapper for the
-                transport."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -2136,6 +2030,7 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def publish_close(self, pub, trans_id=None, refresh_index=False,
             add_to_catalog=False):
                 """Perform a 'close' publication operation to the
@@ -2146,22 +2041,6 @@ class Transport(object):
                 is true, the pkg will be added to the catalog once
                 the transactions close.  Not all transport methods
                 recognize this parameter."""
-
-                self.__lock.acquire()
-                try:
-                        state, fmri = self._publish_close(pub,
-                            trans_id=trans_id, refresh_index=refresh_index,
-                            add_to_catalog=add_to_catalog)
-                finally:
-                        self.__lock.release()
-
-                return state, fmri
-
-        def _publish_close(self, pub, trans_id=None, refresh_index=False,
-            add_to_catalog=False):
-                """Implementation of publish_close.  The current
-                publish_close function is a locking wrapper for the
-                transport."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -2191,24 +2070,12 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def publish_open(self, pub, client_release=None, pkg_name=None):
                 """Perform an 'open' transaction to start a publication
                 transaction to the publisher named in pub.  The caller should
                 supply the client's OS release in client_release, and the
                 package's name in pkg_name."""
-
-                self.__lock.acquire()
-                try:
-                        trans_id = self._publish_open(pub,
-                            client_release=client_release, pkg_name=pkg_name)
-                finally:
-                        self.__lock.release()
-
-                return trans_id
-
-        def _publish_open(self, pub, client_release=None, pkg_name=None):
-                """Implementation of publish_open.  The current publish_open
-                function is a locking wrapper for the transport."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -2237,20 +2104,10 @@ class Transport(object):
 
                 raise failures
 
+        @LockedTransport()
         def publish_refresh_index(self, pub):
                 """Instructs the repositories named by Publisher pub
                 to refresh their index."""
-
-                self.__lock.acquire()
-                try:
-                        self._publish_refresh_index(pub)
-                finally:
-                        self.__lock.release()
-
-        def _publish_refresh_index(self, pub):
-                """Implmentation of publish_refresh_index.  The current
-                publish_refresh_index function is a locking wrapper for
-                the transport."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
