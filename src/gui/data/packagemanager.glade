@@ -550,7 +550,7 @@
                     <property name="bottom_padding">10</property>
                     <property name="right_padding">4</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox5">
+                      <widget class="GtkHBox" id="searchentry_hbox">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <child>
@@ -558,7 +558,7 @@
                         </child>
                         <child>
                           <widget class="GtkEntry" id="searchentry">
-                            <property name="width_request">172</property>
+                            <property name="width_request">187</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -640,7 +640,7 @@
             <property name="border_width">6</property>
             <property name="spacing">50</property>
             <child>
-              <widget class="GtkHBox" id="hbox16">
+              <widget class="GtkHBox" id="publisher_combobox_hbox">
                 <property name="visible">True</property>
                 <property name="spacing">6</property>
                 <child>
@@ -661,7 +661,6 @@
                 </child>
                 <child>
                   <widget class="GtkComboBox" id="repositorycombobox">
-                    <property name="width_request">200</property>
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <signal name="changed" handler="on_repositorycombobox_changed"/>
@@ -678,7 +677,7 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkHBox" id="hbox4">
+              <widget class="GtkHBox" id="view_combobox_hbox">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="spacing">6</property>
@@ -696,7 +695,6 @@
                 </child>
                 <child>
                   <widget class="GtkComboBox" id="filtercombobox">
-                    <property name="width_request">200</property>
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <signal name="changed" handler="on_filtercombobox_changed"/>
@@ -952,105 +950,73 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkAlignment" id="alignment4">
+                                  <widget class="GtkScrolledWindow" id="scrolledwindow3">
                                     <property name="visible">True</property>
-                                    <property name="top_padding">5</property>
-                                    <property name="left_padding">5</property>
-                                    <property name="right_padding">5</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="hscrollbar_policy">automatic</property>
+                                    <property name="vscrollbar_policy">automatic</property>
                                     <child>
-                                      <widget class="GtkVBox" id="vbox5">
+                                      <widget class="GtkViewport" id="viewport1">
                                         <property name="visible">True</property>
-                                        <property name="orientation">vertical</property>
-                                        <property name="spacing">2</property>
+                                        <property name="resize_mode">queue</property>
                                         <child>
-                                          <widget class="GtkHBox" id="hbox1">
+                                          <widget class="GtkAlignment" id="alignment4">
                                             <property name="visible">True</property>
-                                            <property name="spacing">4</property>
+                                            <property name="top_padding">5</property>
+                                            <property name="left_padding">5</property>
+                                            <property name="right_padding">5</property>
                                             <child>
-                                              <widget class="GtkVBox" id="vbox6">
+                                              <widget class="GtkVBox" id="vbox5">
                                                 <property name="visible">True</property>
                                                 <property name="orientation">vertical</property>
+                                                <property name="spacing">2</property>
                                                 <child>
-                                                  <widget class="GtkLabel" id="Name">
+                                                  <widget class="GtkHBox" id="installable_versions_hbox">
                                                     <property name="visible">True</property>
-                                                    <property name="xalign">0</property>
-                                                    <property name="yalign">0</property>
-                                                    <property name="ypad">4</property>
-                                                    <property name="label" translatable="yes">&lt;b&gt;Name:&lt;/b&gt;</property>
-                                                    <property name="use_markup">True</property>
-                                                  </widget>
-                                                  <packing>
-                                                    <property name="position">0</property>
-                                                  </packing>
-                                                </child>
-                                                <child>
-                                                  <widget class="GtkLabel" id="label3">
-                                                    <property name="visible">True</property>
-                                                    <property name="xalign">0</property>
-                                                    <property name="yalign">0</property>
-                                                    <property name="ypad">4</property>
-                                                    <property name="label" translatable="yes">&lt;b&gt;Installed Version:&lt;/b&gt;</property>
-                                                    <property name="use_markup">True</property>
-                                                  </widget>
-                                                  <packing>
-                                                    <property name="position">1</property>
-                                                  </packing>
-                                                </child>
-                                                <child>
-                                                  <widget class="GtkLabel" id="label4">
-                                                    <property name="visible">True</property>
-                                                    <property name="xalign">0</property>
-                                                    <property name="yalign">0</property>
-                                                    <property name="ypad">4</property>
-                                                    <property name="label" translatable="yes">&lt;b&gt;Version to Install:&lt;/b&gt;</property>
-                                                    <property name="use_markup">True</property>
-                                                  </widget>
-                                                  <packing>
-                                                    <property name="position">2</property>
-                                                  </packing>
-                                                </child>
-                                              </widget>
-                                              <packing>
-                                                <property name="expand">False</property>
-                                                <property name="fill">False</property>
-                                                <property name="position">0</property>
-                                              </packing>
-                                            </child>
-                                            <child>
-                                              <widget class="GtkVBox" id="vbox7">
-                                                <property name="visible">True</property>
-                                                <property name="orientation">vertical</property>
-                                                <child>
-                                                  <widget class="GtkLabel" id="versions_name_label">
-                                                    <property name="visible">True</property>
-                                                    <property name="xalign">0</property>
-                                                    <property name="yalign">0</property>
-                                                    <property name="ypad">4</property>
-                                                    <property name="label" translatable="yes">label</property>
-                                                  </widget>
-                                                  <packing>
-                                                    <property name="position">0</property>
-                                                  </packing>
-                                                </child>
-                                                <child>
-                                                  <widget class="GtkLabel" id="versions_label">
-                                                    <property name="visible">True</property>
-                                                    <property name="xalign">0</property>
-                                                    <property name="yalign">0</property>
-                                                    <property name="ypad">4</property>
-                                                    <property name="label" translatable="yes">label</property>
-                                                  </widget>
-                                                  <packing>
-                                                    <property name="position">1</property>
-                                                  </packing>
-                                                </child>
-                                                <child>
-                                                  <widget class="GtkHBox" id="hbox3">
-                                                    <property name="visible">True</property>
+                                                    <property name="spacing">4</property>
                                                     <child>
-                                                      <widget class="GtkComboBox" id="versions_combo">
-                                                        <property name="width_request">200</property>
+                                                      <widget class="GtkVBox" id="vbox6">
                                                         <property name="visible">True</property>
+                                                        <property name="orientation">vertical</property>
+                                                        <child>
+                                                          <widget class="GtkLabel" id="Name">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="yalign">0</property>
+                                                            <property name="ypad">4</property>
+                                                            <property name="label" translatable="yes">&lt;b&gt;Name:&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                          </widget>
+                                                          <packing>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <widget class="GtkLabel" id="label3">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="yalign">0</property>
+                                                            <property name="ypad">4</property>
+                                                            <property name="label" translatable="yes">&lt;b&gt;Installed Version:&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                          </widget>
+                                                          <packing>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <widget class="GtkLabel" id="label4">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="yalign">0</property>
+                                                            <property name="ypad">4</property>
+                                                            <property name="label" translatable="yes">&lt;b&gt;Version to Install:&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                          </widget>
+                                                          <packing>
+                                                            <property name="position">2</property>
+                                                          </packing>
+                                                        </child>
                                                       </widget>
                                                       <packing>
                                                         <property name="expand">False</property>
@@ -1059,12 +1025,52 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <widget class="GtkAlignment" id="alignment6">
+                                                      <widget class="GtkVBox" id="vbox7">
                                                         <property name="visible">True</property>
-                                                        <property name="xalign">0</property>
-                                                        <property name="left_padding">10</property>
+                                                        <property name="orientation">vertical</property>
                                                         <child>
-                                                          <widget class="GtkHButtonBox" id="hbuttonbox2">
+                                                          <widget class="GtkLabel" id="versions_name_label">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="yalign">0</property>
+                                                            <property name="ypad">4</property>
+                                                            <property name="label" translatable="yes">label</property>
+                                                          </widget>
+                                                          <packing>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <widget class="GtkLabel" id="versions_label">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="yalign">0</property>
+                                                            <property name="ypad">4</property>
+                                                            <property name="label" translatable="yes">label</property>
+                                                          </widget>
+                                                          <packing>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <widget class="GtkHBox" id="hbox3">
+                                                            <property name="visible">True</property>
+                                                            <child>
+                                                            <widget class="GtkComboBox" id="versions_combo">
+                                                            <property name="visible">True</property>
+                                                            <property name="button_sensitivity">off</property>
+                                                            </widget>
+                                                            <packing>
+                                                            <property name="position">0</property>
+                                                            </packing>
+                                                            </child>
+                                                            <child>
+                                                            <widget class="GtkAlignment" id="alignment6">
+                                                            <property name="visible">True</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="left_padding">10</property>
+                                                            <child>
+                                                            <widget class="GtkHButtonBox" id="hbuttonbox2">
                                                             <property name="visible">True</property>
                                                             <child>
                                                             <widget class="GtkButton" id="versions_install_button">
@@ -1081,32 +1087,36 @@
                                                             <property name="position">0</property>
                                                             </packing>
                                                             </child>
+                                                            </widget>
+                                                            </child>
+                                                            </widget>
+                                                            <packing>
+                                                            <property name="position">1</property>
+                                                            </packing>
+                                                            </child>
                                                           </widget>
+                                                          <packing>
+                                                            <property name="position">2</property>
+                                                          </packing>
                                                         </child>
                                                       </widget>
                                                       <packing>
+                                                        <property name="expand">False</property>
+                                                        <property name="fill">False</property>
+                                                        <property name="padding">4</property>
                                                         <property name="position">1</property>
                                                       </packing>
                                                     </child>
                                                   </widget>
                                                   <packing>
-                                                    <property name="position">2</property>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">False</property>
+                                                    <property name="position">0</property>
                                                   </packing>
                                                 </child>
                                               </widget>
-                                              <packing>
-                                                <property name="expand">False</property>
-                                                <property name="fill">False</property>
-                                                <property name="padding">4</property>
-                                                <property name="position">1</property>
-                                              </packing>
                                             </child>
                                           </widget>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">False</property>
-                                            <property name="position">0</property>
-                                          </packing>
                                         </child>
                                       </widget>
                                     </child>

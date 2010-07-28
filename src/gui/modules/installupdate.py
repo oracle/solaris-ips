@@ -298,24 +298,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_action()
                 self.__setup_createplan_dlg_sizes()
 
-        @staticmethod
-        def __get_scale(textview):
-                style = textview.get_style()
-                font_size_in_pango_unit = style.font_desc.get_size()
-                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
-                s = gtk.settings_get_default()
-                dpi = s.get_property("gtk-xft-dpi") / 1024
-
-                # AppFontSize*DPI/72 = Cairo Units
-                # DefaultFont=10, Default DPI=96: 10*96/72 = 13.3 Default FontInCairoUnits
-                def_font_cunits = 13.3
-                app_cunits = round(font_size_in_pixel*dpi/72.0, 1)
-                scale = 1
-                if app_cunits >= def_font_cunits:
-                        scale = round(
-                            ((app_cunits - def_font_cunits)/def_font_cunits) + 1, 2)
-                return scale
-
         def __setup_createplan_dlg_sizes(self):
                 #Get effective screen space available (net of panels and docks)
                 #instead of using gtk.gdk.screen_width() and gtk.gdk.screen_height()
@@ -324,7 +306,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 sw, sh = root_win.property_get(net_workarea_prop)[2][2:4]
                 sw -= 28 # Default width of Panel accounts for bottom or side System Panel
                 sh -= 28
-                scale = self.__get_scale(self.w_details_textview)
+                scale = gui_misc.get_scale(self.w_details_textview)
 
                 if DIALOG_EXPANDED_DETAILS_HEIGHT * scale <= sh:
                         self.dlg_expanded_details_h = \

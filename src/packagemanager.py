@@ -51,6 +51,11 @@ STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
 
+VIEW_COMBOBOX_WIDTH_PADDING = 72   # Padding for View combobox, icon, spacing and dropdown
+VIEW_COMBOBOX_MIN_WIDTH = 143      # Min width for View combobox, 10pt default font
+VIEW_COMBOBOX_MAX_WIDTH = 312      # Max width for View combobox, 20pt default font
+PUBLISHER_VIEW_MIN_PADDING = 25    # Min space between Publisher and View comboboxes
+
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
 
@@ -192,38 +197,20 @@ class PackageManager:
                 self.visible_status_id = 0
                 self.same_publisher_on_setup = False
                 self.force_reload_packages = True
-                self.icon_theme = gtk.icon_theme_get_default()
-                icon_location = os.path.join(self.application_dir, ICON_LOCATION)
-                self.icon_theme.append_search_path(icon_location)
-                self.installed_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_installed')
-                self.not_installed_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_notinstalled')
-                self.update_available_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_newupdate')
-                self.window_icon = gui_misc.get_icon(self.icon_theme,
-                    'packagemanager', 48)
-                self.filter_options = [
-                    (enumerations.FILTER_ALL,
-                    gui_misc.get_icon(self.icon_theme, 'filter_all'),
-                    _('All Packages')),
-                    (enumerations.FILTER_INSTALLED, self.installed_icon,
-                    _('Installed Packages')),
-                    (enumerations.FILTER_UPDATES, self.update_available_icon,
-                    _('Updates')),
-                    (enumerations.FILTER_NOT_INSTALLED, self.not_installed_icon,
-                    _('Not Installed Packages')),
-                    (-1, None, ""),
-                    (enumerations.FILTER_SELECTED,
-                    gui_misc.get_icon(self.icon_theme, 'filter_selected'),
-                    _('Selected Packages'))
-                    ]
+                self.icon_theme = None
+                self.installed_icon = None
+                self.not_installed_icon = None
+                self.update_available_icon = None
+                self.window_icon = None
+                self.filter_options = []
+                self.__setup_theme_icons()
                 self.publisher_options = { 
                     PUBLISHER_ALL : _("All Publishers"),
                     PUBLISHER_INSTALLED : _("All Installed Packages"),
                     PUBLISHER_ALL_SEARCH : _("All Publishers (Search)"),
                     PUBLISHER_ADD : _("Add...")
                     }
+                self.max_filter_length = 0
                 self.pubs_info = {}
                 self.pubs_display_name = {}
                 self.last_visible_publisher = None
@@ -238,6 +225,7 @@ class PackageManager:
                 self.a11y_application_treeview = None
                 self.application_treeview_range = None
                 self.application_treeview_initialized = False
+                self.application_select_column = None
                 self.category_list = None
                 self.repositories_list = None
                 self.repo_combobox_all_pubs_index = 0
@@ -261,6 +249,11 @@ class PackageManager:
                     w_tree_main.get_widget("main_hpaned")
                 self.w_main_vpaned = \
                     w_tree_main.get_widget("main_vpaned")
+
+                self.w_publisher_combobox_hbox = \
+                    w_tree_main.get_widget("publisher_combobox_hbox")
+                self.w_view_combobox_hbox = \
+                    w_tree_main.get_widget("view_combobox_hbox")
 
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
@@ -493,6 +486,25 @@ class PackageManager:
                 self.__setup_text_signals()
                 gui_misc.setup_logging()
 
+                # Theme: prevent cell background being set for Inverse themes
+                self.is_inverse_theme = False
+                self.theme_name = None
+                self.__setup_theme_properties()
+
+        def __setup_theme_properties(self):
+                s = gtk.settings_get_default()
+                self.theme_name = s.get_property("gtk-theme-name")
+
+                # Theme: set correct Text fg colour for theme in the Search Entry Field
+                style = self.w_application_treeview.get_style().copy()
+                self.entrystyle.set_theme_colour(style.fg[gtk.STATE_NORMAL])
+
+                if self.theme_name == "HighContrastInverse" or \
+                        self.theme_name == "HighContrastLargePrintInverse":
+                        self.is_inverse_theme = True
+                else:
+                        self.is_inverse_theme = False
+
         def __setup_notebook_page_view(self):
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 self.w_selectall_menuitem.set_sensitive(False)
@@ -519,13 +531,116 @@ class PackageManager:
         def __on_file_export_selections(self, menuitem):
                 self.exportconfirm.activate(self.selected_pkgs)
 
-        @staticmethod
-        def __on_mainwindow_style_set(widget, previous_style):
-                ''' This is called when theme is changed.
-                We need to change the status icons in the Package List,
-                the search icon and the icons in the filter list'''
-                return
-                
+        def __on_mainwindow_style_set(self, widget, previous_style):
+                if self.first_run:
+                        return
+                self.last_resize = -1
+                # Theme: setup Theme properties
+                self.__setup_theme_properties()
+
+                # Theme: setup icons for Theme
+                self.__setup_theme_icons()
+                self.__reset_view_icons()
+
+                # Theme: setup Dialog Icons for Theme
+                self.w_main_window.set_icon(self.window_icon)
+                self.exportconfirm.set_window_icon(self.window_icon)
+                self.logging.set_window_icon(self.window_icon)
+                self.preferences.set_window_icon(self.window_icon)
+
+                # Theme: setup Main list Selection icon for Theme
+                if self.application_select_column:
+                        self.application_select_column.set_widget(
+                            self.__get_theme_selection_coloumn_image())
+
+                # Theme: setup Main list status icons
+                self.__reset_application_list_status_icons(self.application_list)
+                # Theme: saved application list is cached with old theme icons
+                self.__reset_application_list_status_icons(self.saved_application_list)
+
+                #Theme: refresh Details icons if package selected
+                if self.selected_pkgstem != None:
+                        self.__process_package_selection()
+
+        def __get_theme_selection_coloumn_image(self):
+                select_image = gtk.Image()
+                select_image.set_from_pixbuf(gui_misc.get_icon(
+                    self.icon_theme, 'selection'))
+                select_image.set_tooltip_text(_("Click to toggle selections"))
+                select_image.show()
+                return select_image
+
+        def __setup_theme_icons(self):
+                self.icon_theme = gtk.icon_theme_get_default()
+                icon_location = os.path.join(self.application_dir, ICON_LOCATION)
+                self.icon_theme.append_search_path(icon_location)
+                self.installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_installed')
+                self.not_installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_notinstalled')
+                self.update_available_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_newupdate')
+                self.window_icon = gui_misc.get_icon(self.icon_theme,
+                    'packagemanager', 48)
+                self.filter_options = [
+                    (enumerations.FILTER_ALL,
+                    gui_misc.get_icon(self.icon_theme, 'filter_all'),
+                    _('All Packages')),
+                    (enumerations.FILTER_INSTALLED, self.installed_icon,
+                    _('Installed Packages')),
+                    (enumerations.FILTER_UPDATES, self.update_available_icon,
+                    _('Updates')),
+                    (enumerations.FILTER_NOT_INSTALLED, self.not_installed_icon,
+                    _('Not Installed Packages')),
+                    (-1, None, ""),
+                    (enumerations.FILTER_SELECTED,
+                    gui_misc.get_icon(self.icon_theme, 'filter_selected'),
+                    _('Selected Packages'))
+                    ]
+
+        def __reset_application_list_status_icons(self, app_list):
+                if app_list == None or len(app_list) == 0:
+                        return                
+                app_itr = app_list.get_iter_first()
+
+                while app_itr:
+                        status = app_list.get_value(app_itr, enumerations.STATUS_COLUMN)
+                        if status == api.PackageInfo.INSTALLED:
+                                app_list.set(app_itr, enumerations.STATUS_ICON_COLUMN,
+                                    self.installed_icon)
+                        elif status == api.PackageInfo.KNOWN:
+                                app_list.set(app_itr, enumerations.STATUS_ICON_COLUMN,
+                                    self.not_installed_icon)
+                        elif status == api.PackageInfo.UPGRADABLE:
+                                app_list.set(app_itr, enumerations.STATUS_ICON_COLUMN,
+                                    self.update_available_icon)
+                        app_itr = app_list.iter_next(app_itr)
+
+        def __reset_view_icons(self):
+                filter_itr = self.filter_list.get_iter_first()                
+                if filter_itr == None or \
+                        len(self.filter_list) != len(self.filter_options):
+                        return
+                max_length = 0
+                for filter_id, pixbuf, label in self.filter_options:
+                        self.filter_list.set(filter_itr, enumerations.FILTER_ICON, pixbuf)
+                        filter_itr = self.filter_list.iter_next(filter_itr)
+                        if filter_id == -1:
+                                continue
+                        max_length = gui_misc.get_max_text_length(
+                            max_length, label, self.w_filter_combobox)
+                self.__setup_max_filter_length(max_length)
+
+        def __setup_max_filter_length(self, max_length):
+                if max_length < VIEW_COMBOBOX_MIN_WIDTH:
+                        self.max_filter_length = VIEW_COMBOBOX_MIN_WIDTH
+                elif max_length > VIEW_COMBOBOX_MAX_WIDTH:
+                        self.max_filter_length = VIEW_COMBOBOX_MAX_WIDTH
+                else:
+                        self.max_filter_length = max_length
+                self.w_filter_combobox.set_size_request(
+                    self.max_filter_length + VIEW_COMBOBOX_WIDTH_PADDING, -1)
+
         def __set_search_text_mode(self, style):
                 self.entrystyle.set_search_text_mode(style)
         
@@ -712,7 +827,12 @@ class PackageManager:
 
         def invoke_webinstall(self, link):
                 self.set_busy_cursor()
-                gobject.spawn_async([self.application_path, "-i", link])
+                try:
+                        gobject.spawn_async([self.application_path, "-i", link])
+                except gobject.GError:
+                        self.startpage.link_load_error(link)
+                        self.unset_busy_cursor()
+                        return
                 gobject.timeout_add(1500, self.unset_busy_cursor)
 
         def open_link(self, link):
@@ -840,16 +960,13 @@ class PackageManager:
 
                 column = gtk.TreeViewColumn("", toggle_renderer,
                     active = enumerations.MARK_COLUMN)
-                column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
+                column.set_cell_data_func(toggle_renderer, self.cell_data_function, self)
                 column.set_clickable(True)
                 column.connect('clicked', self.__select_column_clicked)
-                self.w_application_treeview.append_column(column)
-                select_image = gtk.Image()
-                select_image.set_from_pixbuf(gui_misc.get_icon(
-                    self.icon_theme, 'selection'))
-                select_image.set_tooltip_text(_("Click to toggle selections"))
-                select_image.show()
+                select_image = self.__get_theme_selection_coloumn_image()
                 column.set_widget(select_image)
+                self.w_application_treeview.append_column(column)
+                self.application_select_column = column
 
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
@@ -858,7 +975,7 @@ class PackageManager:
                 column.set_min_width(150)
                 column.set_sort_column_id(enumerations.NAME_COLUMN)
                 column.set_sort_indicator(True)
-                column.set_cell_data_func(name_renderer, self.cell_data_function, None)
+                column.set_cell_data_func(name_renderer, self.cell_data_function, self)
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
@@ -879,7 +996,7 @@ class PackageManager:
                         column.set_resizable(True)
                         column.set_sort_indicator(True)
                         column.set_cell_data_func(repository_renderer,
-                            self.cell_data_function, None)
+                            self.cell_data_function, self)
                         column.connect_after('clicked',
                             self.__application_treeview_column_sorted, None)
                         self.w_application_treeview.append_column(column)
@@ -895,7 +1012,7 @@ class PackageManager:
                 column.set_resizable(True)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer,
-                    self.cell_data_function, None)
+                    self.cell_data_function, self)
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
@@ -1013,14 +1130,16 @@ class PackageManager:
                 self.w_filter_combobox.add_attribute(render_pixbuf, "pixbuf", 
                     enumerations.FILTER_ICON)
                 self.w_filter_combobox.set_cell_data_func(render_pixbuf,
-                    self.filter_cell_data_function, enumerations.FILTER_ICON)
+                    self.filter_cell_data_function,
+                    (self, enumerations.FILTER_ICON))
 
                 cell = gtk.CellRendererText()
                 self.w_filter_combobox.pack_start(cell, True)
                 self.w_filter_combobox.add_attribute(cell, 'text',
                     enumerations.FILTER_NAME)
                 self.w_filter_combobox.set_cell_data_func(cell,
-                    self.filter_cell_data_function, enumerations.FILTER_NAME)
+                    self.filter_cell_data_function,
+                    (self, enumerations.FILTER_NAME))
                 self.w_filter_combobox.set_row_separator_func(
                     self.combobox_filter_id_separator)
                 self.w_filter_combobox.set_model(self.filter_list)
@@ -1140,7 +1259,7 @@ class PackageManager:
                 column.set_fixed_width(32)
                 if set_data_func:
                         column.set_cell_data_func(render_pixbuf,
-                            self.cell_data_function, None)
+                            self.cell_data_function, self)
                 return column
 
         def __disconnect_models(self):
@@ -1198,6 +1317,7 @@ class PackageManager:
                                 continue
                         max_length = gui_misc.get_max_text_length(
                             max_length, label, self.w_filter_combobox)
+                self.__setup_max_filter_length(max_length)
                 
                 if self.gconf.initial_show_filter >= enumerations.FILTER_ALL and \
                     self.gconf.initial_show_filter < len(self.filter_list):
@@ -1207,7 +1327,6 @@ class PackageManager:
                                 self.gconf.initial_show_filter = enumerations.FILTER_ALL
                 else:
                         self.gconf.initial_show_filter = enumerations.FILTER_ALL
-                return max_length
 
         def __on_mainwindow_key_press_event(self, widget, event):
                 if self.is_busy_cursor_set():
@@ -1233,12 +1352,26 @@ class PackageManager:
         def __handle_resize(self, widget):
                 if self.last_resize == widget.get_size():
                         return
+                last_resize = self.last_resize
                 self.last_resize = widget.get_size()
+
+                pub_rect = self.w_publisher_combobox_hbox.get_allocation()
+                view_rect = self.w_view_combobox_hbox.get_allocation()
+                min_width = pub_rect[2] + view_rect[2] + PUBLISHER_VIEW_MIN_PADDING
+                main_win_width = self.w_main_window.get_size()[0]
+                if main_win_width < min_width:
+                        self.w_main_window.set_size_request(min_width, -1)
+                        if self.w_main_view_notebook.get_current_page() == \
+                                NOTEBOOK_START_PAGE  and not self.first_run:
+                                self.startpage.handle_resize()
+                        return
+                elif last_resize == -1 and min_width < MIN_APP_WIDTH:
+                        self.w_main_window.set_size_request(MIN_APP_WIDTH, MIN_APP_HEIGHT)
 
                 if self.w_main_view_notebook.get_current_page() == \
                         NOTEBOOK_START_PAGE  and not self.first_run:
                         self.startpage.handle_resize()
-                
+
         def __on_mainwindow_check_resize(self, widget):
                 if not widget or not self.gdk_window:
                         return
@@ -1319,7 +1452,7 @@ class PackageManager:
                     and not self.gconf.show_startpage) or (first_run
                     and self.gconf.start_insearch)
                 if show_search_all_page: 
-                        gobject.idle_add(self.__setup_search_all_page)
+                        gobject.idle_add(self.pm_setup_search_all_page)
                 elif self.gconf.show_startpage:
                         gobject.idle_add(self.w_main_view_notebook.set_current_page,
                             NOTEBOOK_START_PAGE)
@@ -1329,7 +1462,7 @@ class PackageManager:
                 if not self.first_run:
                         self.entrystyle.set_entry_to_prompt()
   
-        def __setup_search_all_page(self):
+        def pm_setup_search_all_page(self):
                 publisher_list = []
                 model = self.w_repository_combobox.get_model()
                 for pub in model:
@@ -1900,7 +2033,7 @@ class PackageManager:
                 if self.is_all_publishers_search:
                         if self.w_main_view_notebook.get_current_page() \
                                 != NOTEBOOK_START_PAGE:
-                                gobject.idle_add(self.__setup_search_all_page)
+                                gobject.idle_add(self.pm_setup_search_all_page)
                 else:
                         self.__unset_search(self.in_search_mode)
                 return
@@ -4173,6 +4306,8 @@ class PackageManager:
                 if self.after_install_remove:
                         application_list = self.__update_recent_search_states(
                             application_list)
+                # Theme: saved search application list is cached with old theme icons
+                self.__reset_application_list_status_icons(application_list)
                 self.__clear_before_search(show_list=True, in_setup=False,
                     unselect_cat=False)
                 self.in_search_mode = True
@@ -4305,10 +4440,11 @@ class PackageManager:
         @staticmethod
         def filter_cell_data_function(column, renderer, model, itr, data):
                 '''Function which sets icon size'''
-                if data == enumerations.FILTER_NAME:
+                pm, entry = data
+                if entry == enumerations.FILTER_NAME:
                         renderer.set_property("xalign", 0)
-                        renderer.set_property("width", max_filter_length + 10)
-                elif data == enumerations.FILTER_ICON:
+                        renderer.set_property("width", pm.max_filter_length + 10)
+                elif entry == enumerations.FILTER_ICON:
                         renderer.set_property("xalign", 0)
                         renderer.set_property("width", 24)
                 return
@@ -4318,7 +4454,10 @@ class PackageManager:
                 '''Function which sets the background colour if package is
                 selected'''
                 if itr:
-                        if model.get_value(itr, enumerations.MARK_COLUMN):
+                        # Theme: do not set background for Inverse Themes
+                        if data and data.is_inverse_theme:
+                                renderer.set_property("cell-background-set", False)
+                        elif model.get_value(itr, enumerations.MARK_COLUMN):
                                 renderer.set_property("cell-background", "#ffe5cc")
                                 renderer.set_property("cell-background-set", True)
                         else:
@@ -4364,9 +4503,8 @@ class PackageManager:
 # Public Methods
 #-----------------------------------------------------------------------------#
         def init_show_filter(self):
-                """ Sets up the Filter Combobox and returns the maximum length of text
-                    labels it is displaying."""
-                return self.__init_show_filter()                #Initiates filter
+                """ Sets up the Filter Combobox size."""
+                self.__init_show_filter()
 
         def reload_packages(self):
                 self.api_o = gui_misc.get_api_object(self.image_directory, 
@@ -4706,7 +4844,6 @@ if __name__ == '__main__':
         allow_links = False
         debug = False
         debug_perf = False
-        max_filter_length = 0
         update_all_proceed = False
         app_path = None
         image_dir = None
@@ -4774,7 +4911,7 @@ Use -U (--update-all) to proceed with Updates"""
         while gtk.events_pending():
                 gtk.main_iteration(False)
 
-        max_filter_length = packagemanager.init_show_filter()
+        packagemanager.init_show_filter()
 
         gobject.idle_add(packagemanager.start)
 

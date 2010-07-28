@@ -51,6 +51,9 @@ class PMLogging:
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)          
                 self.w_log_close_button = self.w_log.get_widget("log_close_button")
 
+        def set_window_icon(self, window_icon):
+                self.w_view_log_dialog.set_icon(window_icon)
+
         def setup_signals(self):
                 dic_log = \
                     {

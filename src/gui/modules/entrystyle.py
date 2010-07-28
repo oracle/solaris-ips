@@ -35,6 +35,7 @@ SEARCH_TXT_BLACK_STYLE = "#000000"
 
 class EntryStyle:
         def __init__(self, entry):
+                self.search_txt_fg_style = gtk.gdk.color_parse(SEARCH_TXT_BLACK_STYLE)
                 self.entry = entry
                 self.entry_embedded_icons_supported = True
                 try:
@@ -44,10 +45,16 @@ class EntryStyle:
                 self.search_text_style = -1
                 self.set_search_text_mode(enumerations.SEARCH_STYLE_PROMPT)
 
+        def set_theme_colour(self, page_fg):
+                self.search_txt_fg_style = page_fg
+                if self.get_text() != None:
+                        self.set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
+                else:
+                        self.set_entry_to_prompt()
+
         def set_search_text_mode(self, style):
                 if style == enumerations.SEARCH_STYLE_NORMAL:
-                        self.entry.modify_text(gtk.STATE_NORMAL,
-                                gtk.gdk.color_parse(SEARCH_TXT_BLACK_STYLE))
+                        self.entry.modify_text(gtk.STATE_NORMAL, self.search_txt_fg_style)
                         if self.search_text_style == enumerations.SEARCH_STYLE_PROMPT or\
                                 self.entry.get_text() == _("Search (Ctrl-F)"):
                                 self.entry.set_text("")

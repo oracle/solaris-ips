@@ -48,6 +48,9 @@ class Preferences:
                 self.w_confirm_remove_checkbutton = \
                     self.w_tree_preferences.get_widget("confirm_remove_checkbutton")
 
+        def set_window_icon(self, window_icon):
+                self.w_preferencesdialog.set_icon(window_icon)
+
         def setup_signals(self):
                 dic_preferences = \
                     {

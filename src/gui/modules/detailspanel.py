@@ -57,6 +57,9 @@ class DetailsPanel:
                     w_tree_main.get_widget("versions_combo")
                 self.w_versions_install_button = \
                     w_tree_main.get_widget("versions_install_button")
+                self.w_installable_versions_hbox = \
+                    w_tree_main.get_widget("installable_versions_hbox")
+
                 self.w_dependencies_textview.get_buffer().create_tag(
                     "bold", weight=pango.WEIGHT_BOLD)
                 self.showing_empty_details = False
@@ -158,9 +161,10 @@ class DetailsPanel:
 
         def __set_empty_versions_combo(self):
                 empty_versions_list = self.__get_new_versions_liststore()
-                empty_versions_list.append([0, "", "", 0])
+                empty_versions_list.append([0, _("Installable versions... "), "", 0])
                 self.w_versions_combobox.set_model(empty_versions_list)
                 self.w_versions_combobox.set_active(0)
+                self.w_installable_versions_hbox.set_property('visible', False)
 
         def set_fetching_dependencies(self):
                 if self.parent.selected_pkg_name == None:

@@ -571,6 +571,25 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                 not_installed_icon, update_available_icon)
         return (labs, text)
 
+def get_scale(textview):
+        scale = 1.0
+        if not textview:
+                return scale
+        style = textview.get_style()
+        font_size_in_pango_unit = style.font_desc.get_size()
+        font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+        s = gtk.settings_get_default()
+        dpi = s.get_property("gtk-xft-dpi") / 1024
+
+        # AppFontSize*DPI/72 = Cairo Units
+        # DefaultFont=10, Default DPI=96: 10*96/72 = 13.3 Default FontInCairoUnits
+        def_font_cunits = 13.3
+        app_cunits = round(font_size_in_pixel*dpi/72.0, 1)
+        if app_cunits >= def_font_cunits:
+                scale = round(
+                    ((app_cunits - def_font_cunits)/def_font_cunits) + 1, 2)
+        return scale
+
 def get_textview_width(textview):
         infobuffer = textview.get_buffer()
         bounds = infobuffer.get_bounds()

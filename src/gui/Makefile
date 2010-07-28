@@ -43,9 +43,11 @@ ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
 ROOTHIGHICON16SHARE = $(ROOTSHARE)/icons/HighContrast/16x16/actions
 ROOTHIGHICON24SHARE = $(ROOTSHARE)/icons/HighContrast/24x24/actions
 ROOTHIGHICON48SHARE = $(ROOTSHARE)/icons/HighContrast/48x48/actions
+ROOTHIGHINV = $(ROOTSHARE)/icons/HighContrastInverse
 ROOTHIGHINVICON16SHARE = $(ROOTSHARE)/icons/HighContrastInverse/16x16/actions
 ROOTHIGHINVICON24SHARE = $(ROOTSHARE)/icons/HighContrastInverse/24x24/actions
 ROOTHIGHINVICON48SHARE = $(ROOTSHARE)/icons/HighContrastInverse/48x48/actions
+ROOTHIGHPRINTINV = $(ROOTSHARE)/icons/HighContrastLargePrintInverse
 ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
@@ -231,6 +233,14 @@ STATICSPFILES = \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/dialog-information.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/dialog-warning.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hc_dialog-information.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hc_dialog-warning.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hc_install.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hc_opensolaris.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hci_dialog-information.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hci_dialog-warning.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hci_install.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/hci_opensolaris.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/install.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
 
@@ -299,6 +309,7 @@ ROOTCOMPONENTS = \
    $(ROOTHIGHINVICONS16) \
    $(ROOTHIGHINVICONS24) \
    $(ROOTHIGHINVICONS48) \
+   $(ROOTHIGHPRINTINV) \
    $(ROOTICONS16) \
    $(ROOTICONS24) \
    $(ROOTICONS48) \
@@ -444,8 +455,13 @@ $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 $(ROOTICON48SHARE)/%: $(ROOTDIRS) data/icons/48x48/%
 	$(INSTALL) -f $(ROOTICON48SHARE) -m 0644 $<
 
+$(ROOTHIGHPRINTINV):
+	rm -f $(ROOTHIGHPRINTINV)
+	ln -s HighContrastInverse $(ROOTHIGHPRINTINV)
+
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
 
 $(ROOTSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTSHARE) -m 0644 $<
+

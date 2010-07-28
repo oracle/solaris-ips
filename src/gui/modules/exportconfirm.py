@@ -55,6 +55,9 @@ class ExportConfirm:
                 self.__setup_export_selection_dialog()
                 self.selected_pkgs = None
 
+        def set_window_icon(self, window_icon):
+                self.w_exportconfirm_dialog.set_icon(window_icon)
+
         def __setup_export_selection_dialog(self):
                 infobuffer = self.w_confirm_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
