@@ -26,6 +26,8 @@ DEFAULT_CONFIRMATION_WIDTH = 550        # Width & height of single confirmation
 DEFAULT_CONFIRMATION_HEIGHT = 200       # frame. The confirmation dialog may
                                         # consist of frames for packages to be 
                                         # installed, removed or updated.
+DISPLAY_DELAY = 200                     # Delay before updating GUI when 
+                                        # displaying download or phase info
 RESET_PACKAGE_DELAY = 2000              # Delay before label text is reset
                                         # Also used to reset window text during install
 DIALOG_DEFAULT_WIDTH = 450              # Default Width of Progress Dialog
@@ -115,11 +117,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.label_text = None
                 self.prev_pkg = None
                 self.prev_prog = -1
+                self.prog = 0
                 self.progress_stop_timer_running = False
                 self.pylint_stub = None
                 self.original_title = None
                 self.reset_id = 0
                 self.reset_window_id = 0
+                self.display_download_id = 0
+                self.update_progress_id = 0
                 if self.w_main_window:
                         self.original_title = self.w_main_window.get_title()
                 self.stages = {
@@ -1236,16 +1241,25 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __update_window_title(self, display_string):
                 self.w_main_window.set_title(display_string)
 
-        def display_download_info(self, cur_n_bytes, goal_n_bytes):
-                prog = self.update_progress(self.dl_cur_nbytes, self.dl_goal_nbytes)
+        def display_download_info(self):
+                self.update_progress(self.dl_cur_nbytes, self.dl_goal_nbytes)
                 if self.w_main_window:
-                        progtimes100 = int(prog * 100)
+                        progtimes100 = int(self.prog * 100)
                         if progtimes100 != self.prev_prog:
                                 self.prev_prog = progtimes100
                                 display_string = "%d%% - %s" % (progtimes100,
                                     self.stages[2][0])
                                 gobject.idle_add(self.__update_window_title,
                                     display_string)
+                self.__display_download()
+
+        def __display_download(self):
+                if self.display_download_id == 0:
+                        self.display_download_id = gobject.timeout_add(DISPLAY_DELAY,
+                            self.__display_download_text)
+
+        def __display_download_text(self):
+                self.display_download_id = 0
                 size_a_str = ""
                 size_b_str = ""
                 if self.dl_cur_nbytes >= 0:
@@ -1255,15 +1269,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                 c = _("Downloaded %(current)s of %(total)s") % \
                     {"current" : size_a_str,
                     "total" : size_b_str}
-                self.update_label_text(c)
+                self.__stages_label_set_markup(c)
 
         def display_phase_info(self, phase_name, cur_n, goal_n):
-                prog = self.update_progress(cur_n, goal_n)
+                self.update_progress(cur_n, goal_n)
                 if self.reset_window_id != 0:
                         gobject.source_remove(self.reset_window_id)
                         self.reset_window_id = 0
                 if self.w_main_window:
-                        progtimes100 = int(prog * 100)
+                        progtimes100 = int(self.prog * 100)
                         if progtimes100 != self.prev_prog:
                                 self.prev_prog = progtimes100
                                 display_string = _("%(cur)d of %(goal)d - %(name)s") % \
@@ -1290,10 +1304,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.label_text:
                         self.__stages_label_set_markup(self.label_text)
 
+        def __update_progress(self):
+                self.update_progress_id = 0
+                self.w_progressbar.set_fraction(self.prog)
+
         def update_progress(self, current, total):
-                prog = float(current)/total
-                gobject.idle_add(self.w_progressbar.set_fraction, prog)
-                return prog
+                self.prog = float(current)/total
+                if self.update_progress_id == 0:
+                        self.update_progress_id = gobject.timeout_add(DISPLAY_DELAY,
+                            self.__update_progress)
 
         def __plan_stage(self):
                 '''Function which plans the image'''

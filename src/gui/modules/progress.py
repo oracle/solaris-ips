@@ -99,7 +99,7 @@ class GuiProgressTracker(NullProgressTracker):
                 return
 
         def dl_output(self):
-                self.display_download_info(self.dl_cur_nbytes, self.dl_goal_nbytes)
+                self.display_download_info()
                 if self.prev_pkg != self.dl_cur_pkg:
                         self.prev_pkg = self.dl_cur_pkg
                         self.update_details_text(
@@ -157,7 +157,7 @@ class GuiProgressTracker(NullProgressTracker):
                 raise NotImplementedError("abstract method stop_bouncing_progress() "
                     "not implemented in superclass")
 
-        def display_download_info(self, cur_n_bytes, goal_n_bytes):
+        def display_download_info(self):
                 raise NotImplementedError("abstract method display_download_info() "
                     "not implemented in superclass")
 
