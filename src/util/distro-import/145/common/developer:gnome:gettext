@@ -1,0 +1,13 @@
+package developer/gnome/gettext
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgnome-common-devel exclude usr/share/info/gettext.info
+depend_path /usr/bin/openjade
+depend_path /usr/bin/xsltproc
+end package
+
+package SUNWgnome-common-devel
+consolidation "gnome"
+renamed 133
+depend developer/gnome/gettext
+end package
