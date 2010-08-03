@@ -74,7 +74,6 @@ class Webinstall:
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
                 self.param = None
-                self.preferred = None
                 self.disabled_pubs = {}
                 self.repo_gui = None
                 self.first_run = True
@@ -425,20 +424,6 @@ class Webinstall:
                 if len(self.pkg_install_tasks) == 0:
                         return
                 # Handle all packages from all pubs as single install action
-                try:
-                        pref_pub = self.api_o.get_preferred_publisher()
-                except api_errors.PublisherError, ex:
-                        gobject.idle_add(gui_misc.error_occurred,
-                            self.w_webinstall_dialog,
-                            str(ex),
-                            _("Publisher Error"))
-                        return
-                except api_errors.ApiException, ex:
-                        gobject.idle_add(gui_misc.error_occurred,
-                            self.w_webinstall_dialog,
-                            str(ex), _("Web Installer Error"))
-                        return
-                self.preferred = pref_pub.prefix
                 all_package_stems = []        
                 for pkg_installs in self.pkg_install_tasks:
                         pub_info = pkg_installs[0]
@@ -458,10 +443,7 @@ class Webinstall:
         def process_pkg_stems(self, pub_info, packages):
                 if not self.__is_publisher_registered(pub_info.prefix):
                         return []
-                if pub_info.prefix == self.preferred:
-                        pkg_stem = "pkg:/"
-                else:
-                        pkg_stem = "pkg://" + pub_info.prefix + "/"
+                pkg_stem = "pkg://" + pub_info.prefix + "/"
                 packages_with_stem = []
                 for pkg in packages:
                         if pkg.startswith(pkg_stem):
