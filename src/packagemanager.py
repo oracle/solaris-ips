@@ -1696,6 +1696,7 @@ class PackageManager:
                 self.search_results = []
                 self.__clear_inc_search_results_task()
                 text = self.w_searchentry.get_text()
+                pub_prefix = None
                 # Here we call the search API to get the results
                 searches = []
                 servers = []
@@ -1705,15 +1706,6 @@ class PackageManager:
                 if search_all:
                         self.publisher_being_searched = _("All Publishers")
                         servers = None
-                        try:
-                                pref_pub = self.api_o.get_preferred_publisher()
-                                pub_prefix = pref_pub.prefix
-                        except api_errors.ApiException, ex:
-                                err = str(ex)
-                                gobject.idle_add(self.error_occurred, err,
-                                    None, gtk.MESSAGE_INFO)
-                                gobject.idle_add(self.unset_busy_cursor)
-                                return
                 else:
                         pub_prefix = self.__get_selected_publisher()
                         try:
@@ -3505,11 +3497,6 @@ class PackageManager:
                 model, itr = self.package_selection.get_selected()
                 if model == None or itr == None:
                         return
-                if self.selected_model != None:
-                        if (self.selected_model != model or
-                            self.selected_path != model.get_path(itr)):
-                                self.selected_model = None
-                                self.selected_path = None
 
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
@@ -3625,16 +3612,6 @@ class PackageManager:
 
                 if not (model and path):
                         return
-                if self.selected_model != None:
-                        if (self.selected_model != model or
-                            self.selected_path != path):
-                        # This can happen after catalogs are loaded in
-                        # enable_disable_update_all and a different
-                        # package is selected before enable_disable_update_all
-                        # calls __show_info. We set these variable to None
-                        # so that when __show_info is called it does nothing.
-                                self.selected_model = None
-                                self.selected_path = None
 
                 itr = model.get_iter(path)
                 pkg_name = model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
