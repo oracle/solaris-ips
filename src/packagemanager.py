@@ -2037,6 +2037,13 @@ class PackageManager:
                 self.startpage.load_startpage()
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
+        def __reset_info_tabs(self, pagenum = None, immediate = False):
+                self.info_pkgstem = None
+                self.dependencies_pkgstem = None
+                self.license_pkgstem = None
+                self.versions_pkgstem = None
+                self.__process_package_selection(pagenum, immediate)
+
         def __process_package_selection(self, pagenum = None, immediate = False):
                 if pagenum == None:
                         pagenum = self.w_info_notebook.get_current_page()
@@ -4727,7 +4734,7 @@ class PackageManager:
                         return
                 # We need to reset status descriptions if a11y is enabled
                 self.__set_visible_status(False)
-                self.__process_package_selection()
+                self.__reset_info_tabs()
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
