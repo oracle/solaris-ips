@@ -210,6 +210,14 @@ class Image(object):
                 self.__locked = False
                 self.__lockf = None
 
+                # When users and groups are added before their database files
+                # have been installed, the actions store them temporarily in the
+                # image, in these members.
+                self._users = set()
+                self._groups = set()
+                self._usersbyname = {}
+                self._groupsbyname = {}
+
                 # Transport operations for this image
                 self.transport = transport.Transport(
                     transport.ImageTransportCfg(self))
@@ -2162,6 +2170,9 @@ class Image(object):
                     self.attrs["Build-Release"])
 
         def get_user_by_name(self, name):
+                uid = self._usersbyname.get(name, None)
+                if uid is not None:
+                        return uid
                 return portable.get_user_by_name(name, self.root,
                     self.type != IMG_USER)
 
@@ -2177,6 +2188,9 @@ class Image(object):
                                 raise
 
         def get_group_by_name(self, name):
+                gid = self._groupsbyname.get(name, None)
+                if gid is not None:
+                        return gid
                 return portable.get_group_by_name(name, self.root,
                     self.type != IMG_USER)
 

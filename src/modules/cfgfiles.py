@@ -21,14 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
 # that use this module to not use it on other operating systems.
 
 import datetime
+import errno
 import fcntl
 import os
 import re
@@ -117,8 +117,6 @@ class CfgFile(object):
                 lineno += linecnt
             file.close()
             self.needswriting = False
-        else:
-            print "no such file %s" % self.filename
 
     def getvalue(self, template):
         val = self.index.get(tuple(template[k] for k in self.keys), None)
@@ -162,8 +160,10 @@ class CfgFile(object):
         if orig:
             lineno = orig[2]
             del self.index[tuple(orig[1][k] for k in self.keys)]
-        else:
+        elif self.index:
             lineno = max((self.index[k][2] for k in self.index)) + 1
+        else:
+            lineno = 0
         line = self.valuetostr(template)
         self.index[tuple(template[k] for k in self.keys)] = \
             (line, template, lineno)
@@ -301,19 +301,27 @@ class PasswordFile(CfgFile):
 
     def lockfile(self):
         fn = os.path.join(self.path_prefix, "etc/.pwd.lock")
-        self.lockfd = file(fn, 'w')
+        try:
+            self.lockfd = file(fn, 'w')
+        except IOError, e:
+            if e.errno == errno.ENOENT:
+                self.lockfd = None
+                return
+            raise
         os.chmod(fn, stat.S_IRUSR|stat.S_IWUSR)
         fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
 
     def unlockfile(self):
-        fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
-        self.lockfd.close()
-        self.lockfd = None
+        if self.lockfd is not None:
+            fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
+            self.lockfd.close()
+            self.lockfd = None
 
 class GroupFile(CfgFile):
     """ manage the group file"""
-    def __init__(self, path_prefix):
-        CfgFile.__init__(self, os.path.join(path_prefix, "etc/group"),
+    def __init__(self, image):
+        self.__image = image
+        CfgFile.__init__(self, os.path.join(image.get_root(), "etc/group"),
                          ":",
                          {"groupname"  : (1, None),
                           "password"   : (2, ""),
@@ -338,9 +346,16 @@ class GroupFile(CfgFile):
 
     def adduser(self, groupname, username):
         """"add named user to group; does not check if user exists"""
-        group = self.getvalue({"groupname":groupname})
+        group = self.getvalue({"groupname": groupname})
+        # If the group isn't in the database, we'll add the user to the group,
+        # but unless the group is being added in the same transaction, the group
+        # won't have a gid, and essentially be inert on the system.
         if not group:
-            raise RuntimeError, "No such group %s" % groupname
+            group = {
+                "groupname": groupname,
+                "gid": self.__image._groupsbyname.get(groupname, ""),
+                "user-list": ""
+            }
         users = set(group["user-list"].replace(","," ").split())
         users.add(username)
         group["user-list"] = ",".join(users)
@@ -348,9 +363,9 @@ class GroupFile(CfgFile):
 
     def subuser(self, groupname, username):
         """ remove named user from group """
-        group = self.getvalue({"groupname":groupname})
+        group = self.getvalue({"groupname": groupname})
         if not group:
-            raise RuntimeError, "No such group %s" % groupname
+            raise RuntimeError, "subuser: No such group %s" % groupname
         users = set(group["user-list"].replace(","," ").split())
         if username not in users:
             raise RuntimeError, "User %s not in group %s" % (

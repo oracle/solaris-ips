@@ -1917,6 +1917,27 @@ adm:NP:6445::::::
                     add license cat license=copyright
                     close """
 
+                self.baseuser = """
+                    open system/action/user@0,5.11
+                    add dir path=etc mode=0755 owner=root group=sys
+                    add dir path=etc/ftpd mode=0755 owner=root group=sys
+                    add user username=root password=9EIfTNBp9elws uid=0 group=root home-dir=/root gcos-field=Super-User login-shell=/usr/bin/bash ftpuser=false lastchg=13817 group-list=other group-list=bin group-list=sys group-list=adm
+                    add group gid=0 groupname=root
+                    add group gid=3 groupname=sys
+                    add file empty path=etc/group mode=0644 owner=root group=sys preserve=true
+                    add file empty path=etc/passwd mode=0644 owner=root group=sys preserve=true
+                    add file empty path=etc/shadow mode=0400 owner=root group=sys preserve=true
+                    add file empty path=etc/ftpd/ftpusers mode=0644 owner=root group=sys preserve=true
+                    add file empty path=etc/user_attr mode=0644 owner=root group=sys preserve=true
+                    close """
+
+                self.singleuser = """
+                    open singleuser@0,5.11
+                    add user group=fozzie uid=16 username=fozzie
+                    add group groupname=fozzie gid=16
+                    close
+                """
+
                 self.basics0 = """
                     open basics@1.0,5.11-0
                     add file passwd mode=0644 owner=root group=sys path=etc/passwd preserve=true
@@ -2089,6 +2110,20 @@ adm:NP:6445::::::
 
                 self.pkg("uninstall usertest")
                 self.pkg("verify")
+
+        def test_primordial_usergroup(self):
+                """Ensure that we can install user and group actions in the same
+                transaction as /etc/passwd, /etc/group, etc."""
+
+                self.pkgsend_bulk(self.rurl, [self.baseuser, self.singleuser])
+
+                self.image_create(self.rurl)
+                self.pkg("install system/action/user")
+                self.pkg("verify")
+
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("install singleuser", exit=1)
 
         def test_ftpuser(self):
                 """Make sure we correctly handle /etc/ftpd/ftpusers."""

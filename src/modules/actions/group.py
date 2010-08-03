@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -37,6 +36,8 @@ try:
         have_cfgfiles = True
 except ImportError:
         have_cfgfiles = False
+
+import pkg.client.api_errors as apx
 
 class GroupAction(generic.Action):
         """Class representing a group packaging object.
@@ -60,7 +61,7 @@ class GroupAction(generic.Action):
                              for a in self.attrs
                              if a in attrlist)
 
-        def install(self, pkgplan, orig):
+        def install(self, pkgplan, orig, retry=False):
                 """client-side method that adds the group
                    use gid from disk if different"""
                 if not have_cfgfiles:
@@ -69,14 +70,36 @@ class GroupAction(generic.Action):
 
                 template = self.extract(["groupname", "gid"])
 
-                gr = GroupFile(pkgplan.image.get_root())
+                gr = GroupFile(pkgplan.image)
 
                 cur_attrs = gr.getvalue(template)
 
                 # XXX needs modification if more attrs are used
                 if not cur_attrs:
                         gr.setvalue(template)
-                        gr.writefile()
+                        try:
+                                gr.writefile()
+                        except EnvironmentError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+                                # If we're in the postinstall phase and the
+                                # files *still* aren't there, bail gracefully.
+                                if retry:
+                                        txt = _("Group cannot be installed "
+                                            "without group database files "
+                                            "present.")
+                                        raise apx.ActionExecutionError(self, error=e,
+                                            details=txt, fmri=pkgplan.destination_fmri)
+                                img = pkgplan.image
+                                img._groups.add(self)
+                                img._groupsbyname[self.attrs["groupname"]] = \
+                                    int(self.attrs["gid"])
+
+        def postinstall(self, pkgplan, orig):
+                groups = pkgplan.image._groups
+                if groups:
+                        assert self in groups
+                        self.install(pkgplan, orig, retry=True)
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
@@ -91,7 +114,7 @@ class GroupAction(generic.Action):
                         # available.
                         return errors, warnings, info
 
-                gr = GroupFile(img.get_root())
+                gr = GroupFile(img)
 
                 cur_attrs = gr.getvalue(self.attrs)
 
@@ -133,7 +156,7 @@ class GroupAction(generic.Action):
                         # The user action is ignored if cfgfiles is not
                         # available.
                         return
-                gr = GroupFile(pkgplan.image.get_root())
+                gr = GroupFile(pkgplan.image)
                 cur_attrs = gr.getvalue(self.attrs)
                 # groups need to be first added, last removed
                 if not cur_attrs["user-list"]:

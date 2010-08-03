@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -38,6 +37,8 @@ try:
         have_cfgfiles = True
 except ImportError:
         have_cfgfiles = False
+
+import pkg.client.api_errors as apx
 
 class UserAction(generic.Action):
         """Class representing a user packaging object."""
@@ -86,7 +87,7 @@ class UserAction(generic.Action):
         def readstate(self, image, username, lock=False):
                 root = image.get_root()
                 pw = PasswordFile(root, lock)
-                gr = GroupFile(root)
+                gr = GroupFile(image)
                 ftp = FtpusersFile(root)
 
                 username = self.attrs["username"]
@@ -105,7 +106,7 @@ class UserAction(generic.Action):
                 return (pw, gr, ftp, cur_attrs)
 
 
-        def install(self, pkgplan, orig):
+        def install(self, pkgplan, orig, retry=False):
                 """client-side method that adds the user...
                    update any attrs that changed from orig
                    unless the on-disk stuff was changed"""
@@ -121,8 +122,8 @@ class UserAction(generic.Action):
                         pw, gr, ftp, cur_attrs = \
                             self.readstate(pkgplan.image, username, lock=True)
 
-                        self.attrs["gid"] = pkgplan.image.get_group_by_name(
-                            self.attrs["group"])
+                        self.attrs["gid"] = str(pkgplan.image.get_group_by_name(
+                            self.attrs["group"]))
 
                         orig_attrs = {}
                         default_attrs = pw.getdefaultvalues()
@@ -148,6 +149,7 @@ class UserAction(generic.Action):
                                 if attr not in self.attrs:
                                         self.attrs[attr] = default_attrs[attr]
 
+                        self.attrs["group-list"] = self.attrlist("group-list")
                         final_attrs = self.merge(orig_attrs, cur_attrs)
 
                         pw.setvalue(final_attrs)
@@ -162,11 +164,29 @@ class UserAction(generic.Action):
                         pw.writefile()
                         gr.writefile()
                         ftp.writefile()
-                except:
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        # If we're in the postinstall phase and the files
+                        # *still* aren't there, bail gracefully.
+                        if retry:
+                                txt = _("User cannot be installed without user "
+                                    "database files present.")
+                                raise apx.ActionExecutionError(self, error=e,
+                                    details=txt, fmri=pkgplan.destination_fmri)
+                        img = pkgplan.image
+                        img._users.add(self)
+                        img._usersbyname[self.attrs["username"]] = \
+                            int(self.attrs["uid"])
+                finally:
                         if "pw" in locals():
                                 pw.unlockfile()
-                        raise
-                pw.unlockfile()
+
+        def postinstall(self, pkgplan, orig):
+                users = pkgplan.image._users
+                if users:
+                        assert self in users
+                        self.install(pkgplan, orig, retry=True)
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
@@ -195,7 +215,7 @@ class UserAction(generic.Action):
 
                 if "group-list" in self.attrs:
                         self.attrs["group-list"] = \
-                            sorted(self.attrs["group-list"])
+                            sorted(self.attrlist("group-list"))
 
                 # Get the default values if they're non-empty
                 pwdefval = dict((
@@ -243,7 +263,7 @@ class UserAction(generic.Action):
                 root = pkgplan.image.get_root()
                 pw = PasswordFile(root, lock=True)
                 try:
-                        gr = GroupFile(root)
+                        gr = GroupFile(pkgplan.image)
                         ftp = FtpusersFile(root)
 
                         pw.removevalue(self.attrs)

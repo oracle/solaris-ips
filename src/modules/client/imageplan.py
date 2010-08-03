@@ -1237,6 +1237,12 @@ class ImagePlan(object):
                 self.__symlinks = None
                 self.__hardlinks = None
 
+                # Clear out the primordial user and group caches.
+                self.image._users = set()
+                self.image._groups = set()
+                self.image._usersbyname = {}
+                self.image._groupsbyname = {}
+
                 # Perform the incremental update to the search indexes
                 # for all changed packages
                 if self.update_index:
