@@ -878,7 +878,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 self.__continue_with_stages_thread()
                 else:
                         if self.web_install:
-                                gobject.idle_add(self.w_expander.hide)
                                 gobject.idle_add(self.__operations_done,
                                     _("All packages already installed."))
                                 return
