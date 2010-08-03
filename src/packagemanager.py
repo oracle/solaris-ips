@@ -2112,7 +2112,7 @@ class PackageManager:
                 elif (pagenum == INFO_NOTEBOOK_VERSIONS_PAGE):
                         if self.selected_pkgstem == self.versions_pkgstem:
                                 return
-                        self.detailspanel.set_fetching_versions()
+                        gobject.idle_add(self.detailspanel.set_fetching_versions)
                         if self.show_versions_id != 0:
                                 gobject.source_remove(self.show_versions_id)
                                 self.show_versions_id = 0

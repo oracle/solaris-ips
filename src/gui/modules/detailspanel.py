@@ -159,12 +159,12 @@ class DetailsPanel:
                 self.w_versions_install_button.set_sensitive(False)
                 self.__set_empty_versions_combo()
 
-        def __set_empty_versions_combo(self):
+        def __set_empty_versions_combo(self, is_visible=False):
                 empty_versions_list = self.__get_new_versions_liststore()
                 empty_versions_list.append([0, _("Installable versions... "), "", 0])
                 self.w_versions_combobox.set_model(empty_versions_list)
                 self.w_versions_combobox.set_active(0)
-                self.w_installable_versions_hbox.set_property('visible', False)
+                self.w_installable_versions_hbox.set_property('visible', is_visible)
 
         def set_fetching_dependencies(self):
                 if self.parent.selected_pkg_name == None:
@@ -190,7 +190,7 @@ class DetailsPanel:
                 fetching_text = _("Fetching information...")
                 self.w_versions_label.set_text(fetching_text)
                 self.w_versions_install_button.set_sensitive(False)
-                self.__set_empty_versions_combo()
+                self.__set_empty_versions_combo(is_visible=True)
 
         def update_package_dependencies(self, info, dep_info, installed_dep_info,
             installed_icon, not_installed_icon):
