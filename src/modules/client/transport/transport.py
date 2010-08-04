@@ -149,7 +149,10 @@ class GenericTransportCfg(TransportCfg):
                 return self.__policy_map.get(policy_name, False)
 
         def get_publisher(self, publisher_name):
-                return self.__publishers.get(publisher_name)
+                pub = self.__publishers.get(publisher_name)
+                if not pub:
+                        raise apx.UnknownPublisher(publisher_name)
+                return pub
 
         def remove_publisher(self, publisher_name):
                 return self.__publishers.pop(publisher_name, None)
@@ -449,7 +452,7 @@ class Transport(object):
                 # of origins for a publisher without incurring the significant
                 # overhead of performing file-based search unless the network-
                 # based resource is unavailable.
-                for d in self.__gen_origins(pub, retry_count,
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     prefer_remote=True):
 
                         try:
@@ -533,7 +536,7 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test(ccancel=ccancel)
 
-                for d in self.__gen_origins(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True):
 
                         repostats = self.stats[d.get_url()]
 
@@ -680,8 +683,8 @@ class Transport(object):
                         # os.statvfs is not available on Windows
                         pass
 
-                for d in self.__gen_origins_byversion(pub, retry_count,
-                    "catalog", 1, ccancel=ccancel):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    operation="catalog", versions=[1], ccancel=ccancel):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -798,8 +801,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_origins_byversion(pub, retry_count,
-                    "publisher", 0, ccancel=ccancel):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    operation="publisher", versions=[0], ccancel=ccancel):
                         repo_found = True
                         try:
                                 resp = d.get_publisherinfo(header,
@@ -853,7 +856,7 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_repos(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count):
 
                         url = d.get_url()
 
@@ -910,7 +913,7 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_origins(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True):
 
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
@@ -965,7 +968,7 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
 
-                for d in self.__gen_origins(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True):
 
                         repostats = self.stats[d.get_url()]
                         verified = False
@@ -1110,7 +1113,7 @@ class Transport(object):
                 # download_dir is temporary download path.
                 download_dir = self.__tcfg.incoming_download_dir
 
-                for d in self.__gen_origins(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -1344,7 +1347,7 @@ class Transport(object):
                         # present.
                         cache = cache[0]
 
-                for d in self.__gen_repos(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -1512,7 +1515,7 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test(ccancel=ccancel)
 
-                for d in self.__gen_origins(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True):
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
@@ -1520,7 +1523,7 @@ class Transport(object):
                                 vers = self.__get_version(d, header,
                                     ccancel=ccancel)
                                 # Save this information for later use, too.
-                                self.__populate_repo_versions(d, vers)
+                                self.__fill_repo_vers(d, vers)
                                 return vers 
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
@@ -1554,7 +1557,7 @@ class Transport(object):
                     for s in (l.strip() for l in verlines)
                 )
 
-        def __populate_repo_versions(self, repo, vers=None, ccancel=None):
+        def __fill_repo_vers(self, repo, vers=None, ccancel=None):
                 """Download versions information for the transport
                 repository object and store that information inside
                 of it."""
@@ -1586,30 +1589,88 @@ class Transport(object):
                                     "Unable to parse version ids.")
 
                         # Insert the list back into the dictionary.
+                        versids.sort(reverse=True)
                         vers[key] = versids
 
                 repo.add_version_data(vers)
 
-        def __gen_origins(self, pub, count, prefer_remote=False):
-                """The pub argument may either be a Publisher or a RepositoryURI
-                object.
+        def __gen_repo(self, pub, count, prefer_remote=False, origin_only=False,
+            single_repository=False, operation=None, versions=None,
+            ccancel=None, alt_repository=None):
+                """An internal method tha returns the list of Repo objects
+                for a given Publisher.  Callers use this method to generate
+                lists of endpoints for transport operations, and to retry
+                operations to a single endpoint.
+
+                The 'pub' argument is a Publisher object or RepositoryURI
+                object.  This is used to lookup a transport.Repo object.
+
+                The 'count' argument determines how many times the routine
+                will iterate through a list of endpoints.
 
                 'prefer_remote' is an optional boolean value indicating whether
                 network-based sources are preferred over local sources.  If
                 True, network-based origins will be returned first after the
-                default order criteria has been applied."""
+                default order criteria has been applied.  This is a very
+                special case operation, and should not be used liberally.
 
-                # Call setup if the transport isn't configured or was shutdown.
+                'origin_only' returns only endpoints that are Origins.
+                This allows the caller to exclude mirrors from the list,
+                for operations that are meta-data only.
+
+                If callers are performing a publication operation and want
+                to ensure that only one Repository is used as an endpoint,
+                'single_repository' should be set to True.
+
+                If callers wish to only obtain repositories that support
+                a particular version of an operation, they should supply
+                the operation's name as a string to the 'operation' argument.
+                The 'versions' argument should contain the desired available
+                versions for the operation.  This must be given as integers
+                in a list.
+
+                If a versioned operation is requested, this routine may have
+                to perform network operations to complete the request.  If
+                cancellation is desired, a cancellation object should be
+                passed in the 'ccancel' argument.
+
+                By default, this routine looks at a Publisher's
+                selected_repository.  If the caller would like to use a
+                different Repository object, it should pass one in
+                'alt_repository.'
+
+                This function returns a Repo object by default.  If
+                versions and operation are specified, it returns a tuple
+                of (Repo, highest supported version)."""
+
+                repo = None
+                
                 if not self.__engine:
                         self.__setup()
 
-                if isinstance(pub, publisher.Publisher):
-                        origins = pub.selected_repository.origins
+                # If alt_repository supplied, use that as the Repository.
+                # Otherwise, check that a Publisher was passed, and use
+                # its selected_repository.
+                if alt_repository:
+                        repo = alt_repository
+                elif isinstance(pub, publisher.Publisher):
+                        repo = pub.selected_repository
+
+                if repo and origin_only:
+                        repolist = repo.origins
+                        origins = repo.origins
+                        if single_repository:
+                                assert len(repolist) == 1
+                elif repo:
+                        repolist = repo.mirrors[:]
+                        repolist.extend(repo.origins)
+                        repolist.extend(self.__dynamic_mirrors)
+                        origins = repo.origins
                 else:
-                        # If search was invoked with -s option, we'll have
-                        # a RepoURI instead of a publisher.  Convert
-                        # this to a repo uri
-                        origins = [pub]
+                        # Caller passed RepositoryURI object in as
+                        # pub argument, repolist is the RepoURI
+                        repolist = [pub]
+                        origins = repolist
 
                 def remote_first(a, b):
                         # For now, any URI using the file scheme is considered
@@ -1620,100 +1681,33 @@ class Transport(object):
                         bremote = b[0].scheme != "file"
                         return cmp(aremote, bremote) * -1
 
-                for i in xrange(count):
-                        rslist = self.stats.get_repostats(origins, origins)
-                        if prefer_remote:
-                                rslist.sort(cmp=remote_first)
-                        for rs, ruri in rslist:
-                                yield self.__repo_cache.new_repo(rs, ruri)
-
-        def __gen_publication_origin(self, pub, count):
-                """The pub argument may either be a Publisher or a
-                RepositoryURI object.  This function is specific to
-                publication operations because it ensures that clients
-                are using properly configured Publisher objects."""
-
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                # This is specifically to retry against a single origin
-                # in the case that network failures have occurred.  If
-                # the caller supplied a Publisher argument, make sure it
-                # has only one origin.
-                if isinstance(pub, publisher.Publisher):
-                        origins = pub.selected_repository.origins
-                        assert len(origins) == 1 
-                else:
-                        # If search was invoked with -s option, we'll have a
-                        # RepoURI instead of a publisher.  Convert this to a
-                        # repo uri
-                        origins = [pub]
-
-                for i in xrange(count):
-                        rslist = self.stats.get_repostats(origins, origins)
-                        for rs, ruri in rslist:
-                                yield self.__repo_cache.new_repo(rs, ruri)
-
-        def __gen_origins_byversion(self, pub, count, operation, version,
-            ccancel=None):
-                """Return origin repos for publisher pub, that support
-                the operation specified as a string in the 'operation'
-                argument.  The operation must support the version
-                given in as an integer to the 'version' argument."""
-
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                if isinstance(pub, publisher.Publisher):
-                        origins = pub.selected_repository.origins
-                else:
-                        # If search was invoked with -s option, we'll have
-                        # a RepoURI instead of a publisher.  Convert
-                        # this to a repo uri
-                        origins = [pub]
-
-                for i in xrange(count):
-                        rslist = self.stats.get_repostats(origins)
-                        for rs, ruri in rslist:
-                                repo = self.__repo_cache.new_repo(rs, ruri)
-                                if not repo.has_version_data():
-                                        try:
-                                                self.__populate_repo_versions(
-                                                    repo, ccancel=ccancel)
-                                        except tx.TransportException:
-                                                continue
-
-                                if repo.supports_version(operation, version):
-                                        yield repo
-
-        def __gen_repos(self, pub, count):
-                """Generate a list of all repositories for a given publisher.
-                This is used for content operations, whereas __gen_origins
-                or __gen_origins_byversion should be used for metadata
-                operations."""
-
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                if isinstance(pub, publisher.Publisher):
-                        repo = pub.selected_repository
-                        repolist = repo.mirrors[:]
-                        repolist.extend(repo.origins)
-                        repolist.extend(self.__dynamic_mirrors)
-                        origins = repo.origins
-                else:
-                        # If caller passed RepositoryURI object in as
-                        # pub argument, repolist is the RepoURI
-                        repolist = [pub]
-                        origins = repolist
+                if versions:
+                        versions = sorted(versions, reverse=True)
 
                 for i in xrange(count):
                         rslist = self.stats.get_repostats(repolist, origins)
+                        if prefer_remote:
+                                rslist.sort(cmp=remote_first)
+
                         for rs, ruri in rslist:
-                                yield self.__repo_cache.new_repo(rs, ruri)
+                                if operation and versions:
+                                        repo = self.__repo_cache.new_repo(rs,
+                                            ruri)
+                                        if not repo.has_version_data():
+                                                try:
+                                                        self.__fill_repo_vers(
+                                                            repo,
+                                                            ccancel=ccancel)
+                                                except tx.TransportException:
+                                                        continue
+
+                                        verid = repo.supports_version(operation,
+                                            versions)
+                                        if verid >= 0:
+                                                yield repo, verid
+                                else:
+                                        yield self.__repo_cache.new_repo(rs,
+                                            ruri)
 
         def __chunk_size(self, pub, origin_only=False):
                 """Determine the chunk size based upon how many of the known
@@ -1980,7 +1974,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_publication_origin(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True):
                         try:
                                 d.publish_add(action, header=header,
                                     trans_id=trans_id)
@@ -2012,7 +2007,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_publication_origin(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True):
                         try:
                                 state, fmri = d.publish_abandon(header=header,
                                     trans_id=trans_id)
@@ -2050,7 +2046,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_publication_origin(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True):
                         try:
                                 state, fmri = d.publish_close(header=header,
                                     trans_id=trans_id,
@@ -2085,7 +2082,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_publication_origin(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True):
                         try:
                                 trans_id = d.publish_open(header=header,
                                     client_release=client_release,
@@ -2117,7 +2115,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                for d in self.__gen_publication_origin(pub, retry_count):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True):
                         try:
                                 d.publish_refresh_index(header=header)
                                 return

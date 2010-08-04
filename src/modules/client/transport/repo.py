@@ -762,12 +762,22 @@ class HTTPRepo(TransportRepo):
                 finally:
                         fobj.close()
 
-        def supports_version(self, op, ver):
-                """Returns true if operation named in string 'op'
-                supports integer version in 'ver' argument."""
+        def supports_version(self, op, verlist):
+                """Returns version-id of highest supported version.
+                If the version is not supported, or no data is available,
+                -1 is returned instead."""
 
-                return self.has_version_data() and \
-                    (op in self._verdata and ver in self._verdata[op])
+                if not self.has_version_data() or op not in self._verdata:
+                        return -1
+
+                # This code assumes that both the verlist and verdata
+                # are sorted in reverse order.  This behavior is currently
+                # implemented in the transport code.
+
+                for v in verlist:
+                        if v in self._verdata[op]:
+                                return v
+                return -1
 
         def touch_manifest(self, mfst, header=None, ccancel=None):
                 """Invoke HTTP HEAD to send manifest intent data."""
@@ -1337,12 +1347,22 @@ class FileRepo(TransportRepo):
                 except svr_repo.RepositoryError, e:
                         raise tx.TransportOperationError(str(e))
 
-        def supports_version(self, op, ver):
-                """Returns true if operation named in string 'op'
-                supports integer version in 'ver' argument."""
+        def supports_version(self, op, verlist):
+                """Returns version-id of highest supported version.
+                If the version is not supported, or no data is available,
+                -1 is returned instead."""
 
-                return self.has_version_data() and \
-                    (op in self._verdata and ver in self._verdata[op])
+                if not self.has_version_data() or op not in self._verdata:
+                        return -1
+
+                # This code assumes that both the verlist and verdata
+                # are sorted in reverse order.  This behavior is currently
+                # implemented in the transport code.
+
+                for v in verlist:
+                        if v in self._verdata[op]:
+                                return v
+                return -1
 
         def touch_manifest(self, mfst, header=None, ccancel=None):
                 """No-op for file://."""
