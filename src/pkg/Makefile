@@ -114,7 +114,7 @@ $(PDIR)/%.mog: manifests/%.p5m $(PM_TRANSFORMS:%=transforms/%) $(PDIR) $(PM_TRAN
 # The main publication rule
 $(PDIR)/%.pub: $(PDIR)/%.mog $(PKGDEST)/repo
 	$(PKGSEND) -s file://$(PKGDEST)/repo publish -d $(PKGROOT) -d license_files \
-		--fmri-in-manifest --no-index --no-catalog $<
+		-T \*.py --fmri-in-manifest --no-index --no-catalog $<
 	touch $@
 
 # Compare the proto area with the package manifests; if they've got different

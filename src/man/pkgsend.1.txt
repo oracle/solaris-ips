@@ -11,8 +11,8 @@ SYNOPSIS
 
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
-     /usr/bin/pkgsend include [-d basedir] ... [manifest] ...
-     /usr/bin/pkgsend publish [ -d basedir] ... [--no-index]
+     /usr/bin/pkgsend include [-d basedir] ... [-T pattern] [manifest] ...
+     /usr/bin/pkgsend publish [-d basedir] ... [-T pattern] [--no-index]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
      /usr/bin/pkgsend close [-A | --no-index] [--no-catalog]
 
@@ -96,7 +96,7 @@ SUBCOMMANDS
           types, as they are capable of expressing which pathnames are
           files and which are hardlinks.
 
-     include [-d basedir] ... [manifest] ...
+     include [-d basedir] ... [-T pattern] [manifest] ...
           Add resources associated with the multiple actions present in
           each manifest file to the current transaction.  If no files
           are specified, the standard input is read.  Each line in the
@@ -113,6 +113,8 @@ SUBCOMMANDS
           -d options have their directories searched in the order they
           appear on the command line.
 
+	  The -T option works as in the import command.
+
      close [-A] [--no-index]
           Close current transaction.  With -A, abandon the current
           transaction.  With --no-index, do not update the
@@ -123,8 +125,8 @@ SUBCOMMANDS
           started with a --add-content flag (see pkg.depotd(1M) man
           page) to catalog and index the new content.
 
-     publish [ -d basedir] ... [--no-index] [--fmri-in-manifest | fmri]
-          [--no-catalog] [manifest] ...
+     publish [ -d basedir] ... [-T pattern] [--no-index]
+          [--fmri-in-manifest | fmri] [--no-catalog] [manifest] ...
 
           Combines open, include and close in a single operation.  -d
           and --no-index options behave as described for include and
@@ -137,6 +139,8 @@ SUBCOMMANDS
           many packages at once; the repository will need to be started
           with a --add-content flag (see pkg.depotd(1M) man page) to
           catalog and index the new content.
+
+	  The -T option works as in the import command.
 
      generate [-T pattern] [--target file] bundlefile ...
           Read each given bundlefile (such as an SVR4 package, directory,

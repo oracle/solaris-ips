@@ -92,9 +92,9 @@ Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
         pkgsend import [-T pattern] [--target file] bundlefile ...
-        pkgsend include [-d basedir] ... [manifest] ...
+        pkgsend include [-d basedir] ... [-T pattern] [manifest] ...
         pkgsend close [-A | [--no-index] [--no-catalog]]
-        pkgsend publish [ -d basedir] ... [--no-index]
+        pkgsend publish [-d basedir] ... [-T pattern] [--no-index]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
         pkgsend generate [-T pattern] [--target file] bundlefile ...
         pkgsend refresh-index
@@ -225,9 +225,10 @@ def trans_add(repo_uri, args):
         return 0
 
 def trans_publish(repo_uri, fargs):
-        opts, pargs = getopt.getopt(fargs, "d:", ["no-index",
+        opts, pargs = getopt.getopt(fargs, "d:T:", ["no-index",
             "no-catalog", "fmri-in-manifest"])
         basedirs = []
+        timestamp_files = []
 
         refresh_index = True
         add_to_catalog = True
@@ -236,6 +237,8 @@ def trans_publish(repo_uri, fargs):
         for opt, arg in opts:
                 if opt == "-d":
                         basedirs.append(arg)
+                elif opt == "-T":
+                        timestamp_files.append(arg)
                 elif opt == "--no-index":
                         refresh_index = False
                 elif opt == "--no-catalog":
@@ -310,7 +313,17 @@ def trans_publish(repo_uri, fargs):
                 # don't publish this action
                 if a.name == "set" and a.attrs["name"] in ["pkg.fmri", "fmri"]:
                         continue
-                elif a.name in ["file", "license"]:
+                elif a.name == "file":
+                        path, bd = pkg.actions.set_action_data(
+                            a.hash, a, basedirs)
+                        basename = os.path.basename(a.attrs["path"])
+                        for pattern in timestamp_files:
+                                if fnmatch.fnmatch(basename, pattern):
+                                        ts = pkg.misc.time_to_timestamp(
+                                            os.stat(path).st_mtime)
+                                        a.attrs["timestamp"] = ts
+                                        break
+                elif a.name == "license":
                         pkg.actions.set_action_data(a.hash, a, basedirs)
                 elif a.name in nopub_actions:
                         error(_("invalid action for publication: %s") % action,
@@ -332,12 +345,15 @@ def trans_publish(repo_uri, fargs):
 
 def trans_include(repo_uri, fargs, transaction=None):
         basedirs = []
+        timestamp_files = []
         error_occurred = False
 
-        opts, pargs = getopt.getopt(fargs, "d:")
+        opts, pargs = getopt.getopt(fargs, "d:T:")
         for opt, arg in opts:
                 if opt == "-d":
                         basedirs.append(arg)
+                elif opt == "-T":
+                        timestamp_files.append(arg)
 
         if transaction == None:
                 try:
@@ -400,10 +416,19 @@ def trans_include(repo_uri, fargs, transaction=None):
                 # don't publish this action
                 if a.name == "set" and a.attrs["name"] in  ["pkg.fmri", "fmri"]:
                         continue
-                elif a.name in ["file", "license"]:
+                elif a.name == "file":
+                        path, bd = pkg.actions.set_action_data(
+                            a.hash, a, basedirs)
+                        basename = os.path.basename(a.attrs["path"])
+                        for pattern in timestamp_files:
+                                if fnmatch.fnmatch(basename, pattern):
+                                        ts = pkg.misc.time_to_timestamp(
+                                            os.stat(path).st_mtime)
+                                        a.attrs["timestamp"] = ts
+                                        break
+                elif a.name == "license":
                         pkg.actions.set_action_data(a.hash, a, basedirs)
-
-                if a.name in nopub_actions:
+                elif a.name in nopub_actions:
                         error(_("invalid action for publication: %s") % str(a),
                             cmd="include")
                         invalid_action = True
