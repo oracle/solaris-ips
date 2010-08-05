@@ -208,7 +208,8 @@ class DetailsPanel:
 
         def update_package_info(self, pkg_name, local_info, remote_info,
             root, installed_icon, not_installed_icon, update_available_icon,
-            is_all_publishers_installed, pubs_info, renamed_info=None):
+            is_all_publishers_installed, pubs_info, renamed_info=None,
+            pkg_renamed = False):
                 instbuffer = self.w_installedfiles_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
 
@@ -228,7 +229,7 @@ class DetailsPanel:
                     remote_info, self.w_generalinfo_textview,
                     installed_icon, not_installed_icon,
                     update_available_icon,
-                    is_all_publishers_installed, pubs_info, renamed_info)
+                    is_all_publishers_installed, pubs_info, renamed_info, pkg_renamed)
                 if not local_info:
                         # Package is not installed
                         local_info = remote_info

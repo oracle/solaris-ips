@@ -3600,7 +3600,7 @@ class PackageManager:
                 return (local_info, remote_info)
 
         def __update_package_info(self, pkg_name, pkg_stem, local_info, remote_info,
-            info_id, renamed_info = None):
+            info_id, renamed_info = None, pkg_renamed = False):
                 if self.detailspanel.showing_empty_details or (info_id !=
                     self.last_show_info_id):
                         return
@@ -3610,7 +3610,7 @@ class PackageManager:
                     self.installed_icon, self.not_installed_icon,
                     self.update_available_icon,
                     self.is_all_publishers_installed, self.pubs_info,
-                    renamed_info)
+                    renamed_info, pkg_renamed)
                 self.unset_busy_cursor()
 
         def __show_info(self, model, path):
@@ -3654,8 +3654,13 @@ class PackageManager:
                         elif remote_info != None and \
                                 len(remote_info.dependencies) > 0:
                                 renamed_info = remote_info
+                else:
+                        if remote_info != None and \
+                                len(remote_info.dependencies) > 0:
+                                if api.PackageInfo.RENAMED in remote_info.states:
+                                        renamed_info = remote_info
                 gobject.idle_add(self.__update_package_info, pkg_name, pkg_stem,
-                    local_info, remote_info, info_id, renamed_info)
+                    local_info, remote_info, info_id, renamed_info, pkg_renamed)
 
                 return
 

@@ -458,7 +458,8 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
 
 def set_package_details(pkg_name, local_info, remote_info, textview,
     installed_icon, not_installed_icon, update_available_icon, 
-    is_all_publishers_installed=None, pubs_info=None, renamed_info=None):
+    is_all_publishers_installed=None, pubs_info=None, renamed_info=None,
+    pkg_renamed = False):
         installed = True
 
         if not local_info:
@@ -497,8 +498,14 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         renamed_to = ""
         if renamed_info != None and \
                 len(renamed_info.dependencies) > 0:
-                renamed_to += renamed_info.dependencies[0] + "\n"
-                for dep in renamed_info.dependencies[1:]:
+                renamed_pkgs = []
+                for dep in renamed_info.dependencies:
+                        if dep.startswith('pkg:/'):
+                                dep_strs = dep.split('/', 1)
+                                dep = dep_strs[1]
+                        renamed_pkgs.append(dep)
+                renamed_to += renamed_pkgs[0] + "\n"
+                for dep in renamed_pkgs[1:]:
                         renamed_to += "\t" + dep + "\n"
         text["renamed_to"] = renamed_to
         if installed:
@@ -566,7 +573,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                 else:
                         text["repository"] = pub_name + _(" (removed)")
         set_package_details_text(labs, text, textview, installed_icon,
-                not_installed_icon, update_available_icon)
+                not_installed_icon, update_available_icon, pkg_renamed)
         return (labs, text)
 
 def get_scale(textview):
@@ -596,7 +603,7 @@ def get_textview_width(textview):
         return end[0] - start[0]
 
 def set_package_details_text(labs, text, textview, installed_icon,
-    not_installed_icon, update_available_icon):
+    not_installed_icon, update_available_icon, pkg_renamed):
         style = textview.get_style()
         font_size_in_pango_unit = style.font_desc.get_size()
         font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
@@ -617,22 +624,8 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i = 0
         __add_line_to_generalinfo(infobuffer, i, labs["name"], text["name"])
         i += 1
-        if text["renamed_to"] != "":
-                rename_list = text["renamed_to"].split("\n", 1)
-                start = ""
-                remainder = ""
-                if rename_list != None:
-                        if len(rename_list) > 0:
-                                start = rename_list[0]
-                        if len(rename_list) > 1:
-                                remainder = rename_list[1]
-                __add_line_to_generalinfo(infobuffer, i, labs["renamed_to"],
-                    start)
-                i += 1
-                if len(remainder) > 0:
-                        itr = infobuffer.get_iter_at_line(i)
-                        infobuffer.insert(itr, remainder)
-                        i += remainder.count("\n")
+        if pkg_renamed:
+                i =  __add_renamed_line_to_generalinfo(infobuffer, i, labs, text)
         __add_line_to_generalinfo(infobuffer, i, labs["summ"], text["summ"])
         i += 1
         installed = False
@@ -649,10 +642,14 @@ def set_package_details_text(labs, text, textview, installed_icon,
                         __add_line_to_generalinfo(infobuffer, i,
                             labs["available"], text["available"],
                             update_available_icon, font_size_in_pixel)
+                i += 1
+                if not pkg_renamed:
+                        i =  __add_renamed_line_to_generalinfo(infobuffer, i,
+                                 labs, text)
         else:
                 __add_line_to_generalinfo(infobuffer, i,
                     labs["available"], text["available"])
-        i += 1
+                i += 1
         if text["size"] != "0":
                 __add_line_to_generalinfo(infobuffer, i, labs["size"], text["size"])
                 i += 1
@@ -666,6 +663,25 @@ def set_package_details_text(labs, text, textview, installed_icon,
                 i += 1
                 itr = infobuffer.get_iter_at_line(i)
                 infobuffer.insert(itr, text["desc"])
+
+def __add_renamed_line_to_generalinfo(text_buffer, index, labs, text):
+        if text["renamed_to"] != "":
+                rename_list = text["renamed_to"].split("\n", 1)
+                start = ""
+                remainder = ""
+                if rename_list != None:
+                        if len(rename_list) > 0:
+                                start = rename_list[0]
+                        if len(rename_list) > 1:
+                                remainder = rename_list[1]
+                __add_line_to_generalinfo(text_buffer, index, labs["renamed_to"],
+                    start)
+                index += 1
+                if len(remainder) > 0:
+                        itr = text_buffer.get_iter_at_line(index)
+                        text_buffer.insert(itr, remainder)
+                        index += remainder.count("\n")
+        return index
 
 def __add_label_to_generalinfo(text_buffer, index, label):
         itr = text_buffer.get_iter_at_line(index)
