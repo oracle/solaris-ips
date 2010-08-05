@@ -428,7 +428,8 @@ def trans_include(repo_uri, fargs, transaction=None):
                                         break
                 elif a.name == "license":
                         pkg.actions.set_action_data(a.hash, a, basedirs)
-                elif a.name in nopub_actions:
+
+                if a.name in nopub_actions:
                         error(_("invalid action for publication: %s") % str(a),
                             cmd="include")
                         invalid_action = True
