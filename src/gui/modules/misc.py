@@ -33,8 +33,6 @@ RELEASE_URL = "http://www.opensolaris.org" # Fallback url for release notes if a
 import os
 import sys
 import traceback
-import tempfile
-import re
 import threading
 try:
         import gobject
@@ -776,56 +774,6 @@ def change_stockbutton_label(button, text):
         button_label = __get_stockbutton_label(button)
         if button_label != None:
                 button_label.set_label(text)
-
-def get_export_p5i_filename(last_export_selection_path, main_window):
-        filename = None
-        chooser = gtk.FileChooserDialog(_("Export Selections"),
-            main_window,
-            gtk.FILE_CHOOSER_ACTION_SAVE,
-            (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-            gtk.STOCK_SAVE, gtk.RESPONSE_OK))
-
-        file_filter = gtk.FileFilter()
-        file_filter.set_name(_("p5i Files"))
-        file_filter.add_pattern("*.p5i")
-        chooser.add_filter(file_filter)
-        file_filter = gtk.FileFilter()
-        file_filter.set_name(_("All Files"))
-        file_filter.add_pattern("*")
-        chooser.add_filter(file_filter)
-
-        path = tempfile.gettempdir()
-        name = _("my_packages")
-        if last_export_selection_path and last_export_selection_path != "":
-                path, name_plus_ext = os.path.split(last_export_selection_path)
-                result = os.path.splitext(name_plus_ext)
-                name = result[0]
-
-        #Check name
-        base_name = None
-        m = re.match("(.*)(-\d+)$", name)
-        if m == None and os.path.exists(path + os.sep + name + '.p5i'):
-                base_name = name
-        if m and len(m.groups()) == 2:
-                base_name = m.group(1)
-        name = name + '.p5i'
-        if base_name:
-                for i in range(1, 99):
-                        full_path = path + os.sep + base_name + '-' + \
-                            str(i) + '.p5i'
-                        if not os.path.exists(full_path):
-                                name = base_name + '-' + str(i) + '.p5i'
-                                break
-        chooser.set_current_folder(path)
-        chooser.set_current_name(name)
-        chooser.set_do_overwrite_confirmation(True)
-
-        response = chooser.run()
-        if response == gtk.RESPONSE_OK:
-                filename = chooser.get_filename()
-        chooser.destroy()
-
-        return filename
 
 def set_icon_for_button_and_menuitem(icon_name, button=None, menuitem=None):
         icon_source = gtk.IconSource()

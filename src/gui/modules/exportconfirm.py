@@ -26,6 +26,8 @@
 import sys
 import os
 import stat
+import tempfile
+import re
 try:
         import gtk
         import pango
@@ -40,6 +42,7 @@ class ExportConfirm:
                 self.gconf = gconf
                 self.parent = parent
                 self.parent_window = None
+                self.window_icon = window_icon
                 self.w_tree_confirm = gtk.glade.XML(gladefile,
                     "confirmationdialog")
                 self.w_exportconfirm_dialog = \
@@ -54,9 +57,13 @@ class ExportConfirm:
                     gtk.ICON_SIZE_DND)
                 self.__setup_export_selection_dialog()
                 self.selected_pkgs = None
+                self.chooser_dialog = None
 
         def set_window_icon(self, window_icon):
+                self.window_icon = window_icon
                 self.w_exportconfirm_dialog.set_icon(window_icon)
+                if self.chooser_dialog:
+                        self.chooser_dialog.set_icon(window_icon)
 
         def __setup_export_selection_dialog(self):
                 infobuffer = self.w_confirm_textview.get_buffer()
@@ -125,9 +132,8 @@ class ExportConfirm:
                 self.w_exportconfirm_dialog.show()
 
         def __export_selections(self):
-                filename = gui_misc.get_export_p5i_filename(
-                    self.gconf.last_export_selection_path,
-                    self.parent_window)
+                filename = self.__get_export_p5i_filename(
+                    self.gconf.last_export_selection_path)
                 if not filename:
                         return
                 self.gconf.last_export_selection_path = filename
@@ -148,3 +154,56 @@ class ExportConfirm:
                 fobj.close()
                 os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP |
                     stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH )
+
+        def __get_export_p5i_filename(self, last_export_selection_path):
+                filename = None
+                chooser = gtk.FileChooserDialog(_("Export Selections"),
+                    self.parent_window,
+                    gtk.FILE_CHOOSER_ACTION_SAVE,
+                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+                chooser.set_icon(self.window_icon)
+                self.chooser_dialog = chooser
+
+                file_filter = gtk.FileFilter()
+                file_filter.set_name(_("p5i Files"))
+                file_filter.add_pattern("*.p5i")
+                chooser.add_filter(file_filter)
+                file_filter = gtk.FileFilter()
+                file_filter.set_name(_("All Files"))
+                file_filter.add_pattern("*")
+                chooser.add_filter(file_filter)
+
+                path = tempfile.gettempdir()
+                name = _("my_packages")
+                if last_export_selection_path and last_export_selection_path != "":
+                        path, name_plus_ext = os.path.split(last_export_selection_path)
+                        result = os.path.splitext(name_plus_ext)
+                        name = result[0]
+
+                #Check name
+                base_name = None
+                m = re.match("(.*)(-\d+)$", name)
+                if m == None and os.path.exists(path + os.sep + name + '.p5i'):
+                        base_name = name
+                if m and len(m.groups()) == 2:
+                        base_name = m.group(1)
+                name = name + '.p5i'
+                if base_name:
+                        for i in range(1, 99):
+                                full_path = path + os.sep + base_name + '-' + \
+                                    str(i) + '.p5i'
+                                if not os.path.exists(full_path):
+                                        name = base_name + '-' + str(i) + '.p5i'
+                                        break
+                chooser.set_current_folder(path)
+                chooser.set_current_name(name)
+                chooser.set_do_overwrite_confirmation(True)
+
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        filename = chooser.get_filename()
+                self.chooser_dialog = None
+                chooser.destroy()
+
+                return filename
