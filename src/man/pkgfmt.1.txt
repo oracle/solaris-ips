@@ -11,23 +11,23 @@ SYNOPSIS
 DESCRIPTION
 
      Pkgfmt without the -c option will format a package 
-     manifest in a consistant manner, wrapping lines at 
+     manifest in a consistent manner, wrapping lines at 
      80 characters, sorting actions by type, placing key 
      attributes first, etc.  Pkgfmt tries to be robust
      in the case of lines that don't parse into actions;
      such lines will not appear in sorted order.
 
      If no arguments are given, pkgfmt will read the stdin
-     until EOF, and then write the formated manifest on the
+     until EOF, and then write the formatted manifest on the
      stdout.  Any manifests specified on the command line
-     are formated in place.
+     are formatted in place.
 
      Pkgfmt with the -c option will check to make sure the
-     manifest(s) are formated in pkgfmt style.
+     manifest(s) are formatted in pkgfmt style.
 
 OPTIONS
      
-     -c   Check if the manifest is formated in the pkgfmt style.
+     -c   Check if the manifest is formatted in the pkgfmt style.
 
      -u   Do not wrap lines at 80 characters; this is useful for
           applying traditional text processing tools to package

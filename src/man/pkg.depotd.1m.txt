@@ -178,7 +178,7 @@ DESCRIPTION
                                    protected using the attribute
                                    'solaris.smf.read.pkg-server'.
 
-     The presentation and behaviour of the Browser User Interface
+     The presentation and behavior of the Browser User Interface
      (BUI) of the depot server is controlled using the following
      properties:
 
