@@ -605,7 +605,7 @@ class Transport(object):
 
         @LockedTransport()
         def get_catalog1(self, pub, flist, ts=None, path=None,
-            progtrack=None, ccancel=None):
+            progtrack=None, ccancel=None, revalidate=False, redownload=False):
                 """Get the catalog1 files from publisher 'pub' that
                 are given as a list in 'flist'.  If the caller supplies
                 an optional timestamp argument, only get the files that
@@ -629,7 +629,13 @@ class Transport(object):
 
                 If the caller wants the completed download to be placed
                 in an alternate directory (pub.catalog_root is standard),
-                set a directory path in 'path'."""
+                set a directory path in 'path'.
+
+                If the caller knows that the upstream metadata is cached,
+                and needs a refresh it should set 'revalidate' to True.
+                If the caller knows that the upstream metadata is cached and
+                is corrupted, it should set 'redownload' to True.  Either
+                'revalidate' or 'redownload' may be used, but not both."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
@@ -644,6 +650,10 @@ class Transport(object):
                 if ts and len(flist) > 1:
                         raise ValueError("Ts may only be used with a single"
                             " item flist.")
+
+                if redownload and revalidate:
+                        raise ValueError("Either revalidate or redownload"
+                            " may be used, but not both.")
 
                 # download_dir is temporary download path.  Completed_dir
                 # is the cache where valid content lives.
@@ -697,7 +707,9 @@ class Transport(object):
                         # unless we want to supress a permanent failure.
                         try:
                                 errlist = d.get_catalog1(flist, download_dir,
-                                    header, ts, progtrack=progtrack)
+                                    header, ts, progtrack=progtrack,
+                                    redownload=redownload,
+                                    revalidate=revalidate)
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that the client just gave up, make a note

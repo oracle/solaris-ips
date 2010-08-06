@@ -289,6 +289,7 @@ class DepotHTTP(_Depot):
                         # For these operations, cap the value based on
                         # refresh_seconds.
                         expires = now + min((rs, max_age))
+                        max_age = min((rs, max_age))
                 else:
                         expires = now + expires
 

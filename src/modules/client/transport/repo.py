@@ -63,14 +63,17 @@ class TransportRepo(object):
                 raise NotImplementedError
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None):
+            progtrack=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
                 may optionally specify a dictionary with header
                 elements in 'header'.  If a conditional get is
                 to be performed, 'ts' should contain a floating point
-                value of seconds since the epoch."""
+                value of seconds since the epoch.
+
+                Revalidate and redownload are used to control upstream
+                caching behavior, for protocols that support caching. (HTTP)"""
 
                 raise NotImplementedError
 
@@ -341,28 +344,39 @@ class HTTPRepo(TransportRepo):
                     ccancel=ccancel)
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None):
+            progtrack=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
                 may optionally specify a dictionary with header
                 elements in 'header'.  If a conditional get is
                 to be performed, 'ts' should contain a floating point
-                value of seconds since the epoch."""
+                value of seconds since the epoch.
+
+                If 'redownload' or 'revalidate' is set, cache control
+                headers are appended to the request.  Re-download
+                uses http's no-cache header, while revalidate uses
+                max-age=0."""
 
                 methodstr = "catalog/1/"
                 urllist = []
                 progclass = None
+                headers = {}
 
+                if redownload and revalidate:
+                        raise ValueError("Either revalidate or redownload"
+                            " may be used, but not both.")
                 if ts:
                         # Convert date to RFC 1123 compliant string
                         tsstr = formatdate(timeval=ts, localtime=False,
                             usegmt=True)
-                        if not header:
-                                header = {"If-Modified-Since": tsstr}
-                        else:
-                                header["If-Modified-Since"] = tsstr
-
+                        headers["If-Modified-Since"] = tsstr
+                if revalidate:
+                        headers["Cache-Control"] = "max-age=0"
+                if redownload:
+                        headers["Cache-Control"] = "no-cache"
+                if header:
+                        headers.update(header)
                 if progtrack:
                         progclass = ProgressCallback
 
@@ -373,7 +387,7 @@ class HTTPRepo(TransportRepo):
                         url = urlparse.urljoin(baseurl, f)
                         urllist.append(url)
                         fn = os.path.join(destloc, f)
-                        self._add_file_url(url, filepath=fn, header=header,
+                        self._add_file_url(url, filepath=fn, header=headers,
                             compress=True, progtrack=progtrack,
                             progclass=progclass)
 
@@ -987,14 +1001,16 @@ class FileRepo(TransportRepo):
                 return output()
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None):
+            progtrack=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
                 may optionally specify a dictionary with header
                 elements in 'header'.  If a conditional get is
                 to be performed, 'ts' should contain a floating point
-                value of seconds since the epoch."""
+                value of seconds since the epoch.  This protocol
+                doesn't implment revalidate and redownload.  The options
+                are ignored."""
 
                 urllist = []
                 progclass = None
