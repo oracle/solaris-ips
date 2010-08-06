@@ -4258,10 +4258,8 @@ Specify the location of these files.</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Package Manager</property>
-    <property name="version">2010.03</property>
-    <property name="copyright" translatable="yes">Copyright 2010 Sun Microsystems, Inc.  
-All rights reserved.
-Use is subject to license terms.</property>
+    <property name="copyright" translatable="yes">Copyright (c) 2008, 2010, Oracle and/or its affiliates.  
+All rights reserved.</property>
     <property name="license">COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
 1. Definitions.
@@ -4603,15 +4601,15 @@ venue lying in Santa Clara County, California.
 ----------------------------------------------------------------
 
 </property>
-    <property name="authors">Ann Kanodia &lt;Ann.Kanodia@sun.com&gt;
-Frank Ludolph &lt;Frank.Ludolph@Sun.Com&gt;
-Jenya Gestrin &lt;Jenya.Gestrin@Sun.Com&gt;
-Joanmarie Diggs &lt;Joanmarie.Diggs@Gmail.Com&gt;
+    <property name="authors">Ann Kanodia &lt;Ann.Kanodia@oracle.com&gt;
+Frank Ludolph &lt;Frank.Ludolph@oracle.com&gt;
+Jenya Gestrin &lt;Jenya.Gestrin@oracle.com&gt;
+Joanmarie Diggs &lt;Joanmarie.Diggs@gmail.com&gt;
 John Hawk &lt;johnthawk@excite.com&gt;
-John Rice &lt;John.Rice@Sun.Com&gt;
-Jyothi Srinath &lt;Jyothi.Srinath@Sun.COM&gt;
-Michal Pryc &lt;Michal.Pryc@Sun.Com&gt;
-Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
+John Rice &lt;John.Rice@oracle.com&gt;
+Michal Pryc &lt;Michal.Pryc@oracle.com&gt;
+Padraig O'Briain &lt;Padraig.Obriain@oracle.com&gt;</property>
+    <property name="documenters">Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox9">
         <property name="visible">True</property>

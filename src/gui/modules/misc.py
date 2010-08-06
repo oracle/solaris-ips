@@ -50,6 +50,7 @@ from pkg.gui.misc_non_gui import get_api_object as ngao
 from pkg.gui.misc_non_gui import setup_logging as su_logging
 from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
 from pkg.gui.misc_non_gui import get_version as g_version
+from pkg.gui.misc_non_gui import get_os_version_and_build as g_os_version_and_build
 
 from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
 from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
@@ -74,6 +75,9 @@ package_name = { 'SUNWcs' : 'SUNWcs',
 def get_version():
         return g_version()        
                 
+def get_os_version_and_build():
+        return g_os_version_and_build()
+
 def get_publishers_for_output(api_o):
         publisher_str = ""
         fmt = "\n%s\t%s\t%s (%s)"

@@ -2886,6 +2886,7 @@ class PackageManager:
                 aboutdialog.set_icon(self.window_icon)
                 aboutdialog.connect("response", lambda x = None, \
                     y = None: aboutdialog.destroy())
+                aboutdialog.set_version(gui_misc.get_os_version_and_build())
                 aboutdialog.run()
 
         @staticmethod

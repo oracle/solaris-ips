@@ -30,9 +30,11 @@ import urllib2
 import cPickle
 import logging
 import logging.handlers
+import platform
 import sys
 
 import pkg
+import pkg.portable as portable
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 from pkg.client import global_settings
@@ -63,6 +65,13 @@ class _LogFilter(logging.Filter):
 
 def get_version():
         return pkg.VERSION
+
+def get_os_version_and_build():
+        os_ver = portable.util.get_os_release()
+        os_name = portable.util.get_canonical_os_name()
+        if os_name == 'sunos':
+                os_ver += " (" + platform.uname()[3] + ")"
+        return os_ver
 
 def setup_logging(client_name):
         log_path = os.path.join(LOG_DIR, client_name)
