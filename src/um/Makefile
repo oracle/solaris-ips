@@ -119,7 +119,7 @@ ICONS48 = \
    data/icons/48x48/updatemanager.png
 
 PYGLADE = \
-   data/updatemanager.glade
+   data/updatemanager.ui
 
 SCRIPTS = \
    update-refresh.sh
@@ -212,7 +212,7 @@ PWD:sh = pwd
 #This will not link l10n files
 link:
 	ln -sf $(PWD)/../updatemanagernotifier.py /usr/lib/updatemanagernotifier
-	ln -sf $(PWD)/data/updatemanager.glade /usr/share/update-manager/updatemanager.glade
+	ln -sf $(PWD)/data/updatemanager.ui /usr/share/update-manager/updatemanager.ui
 	ln -sf $(PWD)/update-refresh.sh /usr/lib/update-manager/update-refresh.sh
 	ln -sf $(PWD)/pkg-update /lib/svc/method/pkg-update
 	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop

@@ -25,42 +25,38 @@
 
 import sys
 try:
-        import gtk
         import pango
 except ImportError:
         sys.exit(1)
 import pkg.gui.misc as gui_misc
 
 class SearchError:
-        def __init__(self, gladefile, gconf, parent):
+        def __init__(self, builder, gconf, parent):
                 self.gconf = gconf
                 self.parent = parent
-                self.w_tree_api_search_error = gtk.glade.XML(gladefile,
-                    "api_search_error")
                 self.api_search_error_dialog = \
-                    self.w_tree_api_search_error.get_widget("api_search_error")
+                    builder.get_object("api_search_error")
                 self.api_search_error_textview = \
-                    self.w_tree_api_search_error.get_widget("api_search_error_text")
+                    builder.get_object("api_search_error_text")
                 self.api_search_checkbox = \
-                    self.w_tree_api_search_error.get_widget("api_search_checkbox")
+                    builder.get_object("api_search_checkbox")
                 self.api_search_button = \
-                    self.w_tree_api_search_error.get_widget("api_search_button")
+                    builder.get_object("api_search_button")
                 infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 self.pylintstub = None
 
         def setup_signals(self):
-                dic_search_error = \
-                    {
-                        "on_api_search_checkbox_toggled": \
-                            self.__on_api_search_checkbox_toggled,
-                        "on_api_search_button_clicked": \
-                            self.__on_api_search_button_clicked,
-                        "on_api_search_error_delete_event": \
-                            self.__on_api_search_error_delete_event,
-                    }
-                self.w_tree_api_search_error.signal_autoconnect(
-                    dic_search_error)
+                signals_table = [
+                    (self.api_search_checkbox, "toggled",
+                     self.__on_api_search_checkbox_toggled),
+                    (self.api_search_button, "clicked",
+                     self.__on_api_search_button_clicked),
+                    (self.api_search_error_dialog, "delete_event",
+                     self.__on_api_search_error_delete_event)
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def set_modal_and_transient(self, parent_window):
                 gui_misc.set_modal_and_transient(self.api_search_error_dialog,

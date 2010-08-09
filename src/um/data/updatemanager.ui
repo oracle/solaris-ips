@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<glade-interface>
+<interface>
   <!-- interface-requires gtk+ 2.10 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <widget class="GtkDialog" id="progressdialog">
+  <object class="GtkDialog" id="progressdialog">
     <property name="width_request">450</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
@@ -14,181 +14,181 @@
     <property name="deletable">False</property>
     <property name="transient_for">um_dialog</property>
     <property name="has_separator">False</property>
-    <signal name="close" handler="on_um_dialog_close"/>
+    <signal handler="on_um_dialog_close" name="close"/>
     <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox17">
+      <object class="GtkVBox" id="dialog-vbox17">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">2</property>
         <child>
-          <widget class="GtkVBox" id="vbox14">
+          <object class="GtkVBox" id="vbox14">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">10</property>
             <child>
-              <widget class="GtkProgressBar" id="progressbar">
+              <object class="GtkProgressBar" id="progressbar">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-              </widget>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkVBox" id="progress_install_vbox">
+              <object class="GtkVBox" id="progress_install_vbox">
                 <property name="visible">True</property>
                 <property name="spacing">6</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox3">
+                  <object class="GtkHBox" id="hbox3">
                     <property name="width_request">40</property>
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkImage" id="progress_eval_img">
+                      <object class="GtkImage" id="progress_eval_img">
                         <property name="visible">True</property>
                         <property name="stock">gtk-refresh</property>
                         <property name="icon-size">2</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="progress_eval_label">
+                      <object class="GtkLabel" id="progress_eval_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">&lt;b&gt;Evaluate&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox4">
+                  <object class="GtkHBox" id="hbox4">
                     <property name="width_request">40</property>
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkImage" id="progress_download_img">
+                      <object class="GtkImage" id="progress_download_img">
                         <property name="visible">True</property>
                         <property name="stock">gtk-go-forward</property>
                         <property name="icon-size">2</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="progress_download_label">
+                      <object class="GtkLabel" id="progress_download_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Download</property>
                         <property name="use_markup">True</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox5">
+                  <object class="GtkHBox" id="hbox5">
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkImage" id="progress_install_img">
+                      <object class="GtkImage" id="progress_install_img">
                         <property name="visible">True</property>
                         <property name="stock">gtk-go-forward</property>
                         <property name="icon-size">2</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="progress_install_label">
+                      <object class="GtkLabel" id="progress_install_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Install Update</property>
                         <property name="use_markup">True</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox6">
+                  <object class="GtkHBox" id="hbox6">
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkImage" id="progress_index_img">
+                      <object class="GtkImage" id="progress_index_img">
                         <property name="visible">True</property>
                         <property name="stock">gtk-go-forward</property>
                         <property name="icon-size">2</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="progress_index_label">
+                      <object class="GtkLabel" id="progress_index_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Index</property>
                         <property name="use_markup">True</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">3</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
               <packing>
                 <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="progressinfo">
+              <object class="GtkLabel" id="progressinfo">
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="xalign">0.0099999997764825821</property>
                 <property name="yalign">0</property>
                 <property name="label" translatable="no">Place Holder</property>
                 <property name="use_markup">True</property>
-              </widget>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkCheckButton" id="closeon_finish_checkbutton">
+              <object class="GtkCheckButton" id="closeon_finish_checkbutton">
                 <property name="label" translatable="yes">Close dialog when _finished</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -196,43 +196,43 @@
                 <property name="use_underline">True</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-              </widget>
+              </object>
               <packing>
                 <property name="padding">4</property>
                 <property name="position">3</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkHSeparator" id="progressinfo_separator">
+              <object class="GtkHSeparator" id="progressinfo_separator">
                 <property name="visible">True</property>
-              </widget>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="position">4</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkExpander" id="progressinfo_expander">
+              <object class="GtkExpander" id="progressinfo_expander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <widget class="GtkScrolledWindow" id="scrolledwindow3">
+                  <object class="GtkScrolledWindow" id="scrolledwindow3">
                     <property name="height_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hscrollbar_policy">automatic</property>
                     <property name="vscrollbar_policy">automatic</property>
                     <child>
-                      <widget class="GtkTextView" id="progressinfo_textview">
+                      <object class="GtkTextView" id="progressinfo_textview">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                      </widget>
+                      </object>
                     </child>
-                  </widget>
+                  </object>
                 </child>
-                <child>
-                  <widget class="GtkLabel" id="progressinfo_expander_label">
+                <child type="label">
+                  <object class="GtkLabel" id="progressinfo_expander_label">
                     <property name="visible">True</property>
                     <property name="xalign">0.46000000834465027</property>
                     <property name="xpad">4</property>
@@ -240,36 +240,33 @@
                     <property name="label" translatable="yes">&lt;b&gt;_Details&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
-                  </widget>
-                  <packing>
-                    <property name="type">label_item</property>
-                  </packing>
+                  </object>
                 </child>
-              </widget>
+              </object>
               <packing>
                 <property name="position">5</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="position">1</property>
           </packing>
         </child>
         <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area17">
+          <object class="GtkHButtonBox" id="dialog-action_area17">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">end</property>
             <child>
-              <widget class="GtkButton" id="progresscancel">
+              <object class="GtkButton" id="progresscancel">
                 <property name="label" translatable="yes">_Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_progresscancel_clicked"/>
-              </widget>
+                <signal handler="on_progresscancel_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
@@ -277,74 +274,74 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="progressok">
+              <object class="GtkButton" id="progressok">
                 <property name="label" translatable="yes">_OK</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_progressok_clicked"/>
-              </widget>
+                <signal handler="on_progressok_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
-      </widget>
+      </object>
     </child>
-  </widget>
-  <widget class="GtkDialog" id="um_dialog">
+  </object>
+  <object class="GtkDialog" id="um_dialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Update Manager</property>
     <property name="window_position">center-on-parent</property>
     <property name="default_height">550</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
-    <signal name="destroy_event" handler="on_um_dialog_close"/>
-    <signal name="close" handler="on_um_dialog_close"/>
+    <signal handler="on_um_dialog_close" name="destroy_event"/>
+    <signal handler="on_um_dialog_close" name="close"/>
     <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox1">
+      <object class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
         <property name="spacing">2</property>
         <child>
-          <widget class="GtkAlignment" id="alignment1">
+          <object class="GtkAlignment" id="alignment1">
             <property name="visible">True</property>
             <property name="top_padding">5</property>
             <property name="bottom_padding">5</property>
             <property name="left_padding">5</property>
             <property name="right_padding">5</property>
             <child>
-              <widget class="GtkVBox" id="vbox1">
+              <object class="GtkVBox" id="vbox1">
                 <property name="visible">True</property>
                 <property name="spacing">10</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox2">
+                  <object class="GtkHBox" id="hbox2">
                     <property name="visible">True</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkImage" id="pm_image">
+                      <object class="GtkImage" id="pm_image">
                         <property name="visible">True</property>
                         <property name="icon-size">12</property>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkVBox" id="vbox2">
+                      <object class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <widget class="GtkLabel" id="um_intro_label">
+                          <object class="GtkLabel" id="um_intro_label">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
@@ -352,7 +349,7 @@
                             <property name="ypad">4</property>
                             <property name="label" translatable="yes">&lt;b&gt;Updates are available for the following packages&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
-                          </widget>
+                          </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
@@ -360,65 +357,62 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="um_intro2_label">
+                          <object class="GtkLabel" id="um_intro2_label">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="xpad">4</property>
                             <property name="label" translatable="yes">Select the packages you want to update and click Install.</property>
-                          </widget>
+                          </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
-                      </widget>
+                      </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkFrame" id="um_treeview_frame">
+                  <object class="GtkFrame" id="um_treeview_frame">
                     <property name="visible">True</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">in</property>
                     <child>
-                      <widget class="GtkScrolledWindow" id="um_scrolledwindow">
+                      <object class="GtkScrolledWindow" id="um_scrolledwindow">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hscrollbar_policy">automatic</property>
                         <property name="vscrollbar_policy">automatic</property>
                         <child>
-                          <widget class="GtkTreeView" id="um_treeview">
+                          <object class="GtkTreeView" id="um_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="rules_hint">True</property>
-                          </widget>
+                          </object>
                         </child>
-                      </widget>
+                      </object>
                     </child>
-                    <child>
+                    <child type="label">
                       <placeholder/>
-                      <packing>
-                        <property name="type">label_item</property>
-                      </packing>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkCheckButton" id="selectall_checkbutton">
+                  <object class="GtkCheckButton" id="selectall_checkbutton">
                     <property name="label" translatable="yes">_Select all Updates</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -427,8 +421,8 @@
                     <property name="use_underline">True</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_selectall_checkbutton_toggled"/>
-                  </widget>
+                    <signal handler="on_selectall_checkbutton_toggled" name="toggled"/>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
@@ -436,24 +430,24 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkExpander" id="um_expander">
+                  <object class="GtkExpander" id="um_expander">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="use_underline">True</property>
-                    <signal name="activate" handler="on_um_expander_activate"/>
+                    <signal handler="on_um_expander_activate" name="activate"/>
                     <child>
-                      <widget class="GtkFrame" id="frame1">
+                      <object class="GtkFrame" id="frame1">
                         <property name="visible">True</property>
                         <property name="label_xalign">0</property>
                         <property name="shadow_type">in</property>
                         <child>
-                          <widget class="GtkScrolledWindow" id="scrolledwindow2">
+                          <object class="GtkScrolledWindow" id="scrolledwindow2">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hscrollbar_policy">automatic</property>
                             <property name="vscrollbar_policy">automatic</property>
                             <child>
-                              <widget class="GtkTextView" id="um_textview">
+                              <object class="GtkTextView" id="um_textview">
                                 <property name="height_request">130</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -461,30 +455,24 @@
                                 <property name="editable">False</property>
                                 <property name="left_margin">4</property>
                                 <property name="indent">6</property>
-                              </widget>
+                              </object>
                             </child>
-                          </widget>
+                          </object>
                         </child>
-                        <child>
+                        <child type="label">
                           <placeholder/>
-                          <packing>
-                            <property name="type">label_item</property>
-                          </packing>
                         </child>
-                      </widget>
+                      </object>
                     </child>
-                    <child>
-                      <widget class="GtkLabel" id="label1">
+                    <child type="label">
+                      <object class="GtkLabel" id="label1">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Details</property>
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>
-                      </widget>
-                      <packing>
-                        <property name="type">label_item</property>
-                      </packing>
+                      </object>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="position">3</property>
@@ -493,27 +481,26 @@
                 <child>
                   <placeholder/>
                 </child>
-              </widget>
+              </object>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="position">1</property>
           </packing>
         </child>
         <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area1">
+          <object class="GtkHButtonBox" id="dialog-action_area1">
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <widget class="GtkButton" id="help_button">
+              <object class="GtkButton" id="help_button">
                 <property name="label">gtk-help</property>
-                <property name="response_id">-11</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_help_button_clicked"/>
-              </widget>
+                <signal handler="on_help_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
@@ -521,15 +508,14 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="cancel_button">
+              <object class="GtkButton" id="cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="response_id">-2</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_button_clicked"/>
-              </widget>
+                <signal handler="on_cancel_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
@@ -537,15 +523,14 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="um_updateall_button">
+              <object class="GtkButton" id="um_updateall_button">
                 <property name="label" translatable="yes">_Update All</property>
-                <property name="response_id">-3</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_um_updateall_button_clicked"/>
-              </widget>
+                <signal handler="on_um_updateall_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
@@ -553,15 +538,14 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="um_install_button">
+              <object class="GtkButton" id="um_install_button">
                 <property name="label" translatable="yes">_Install Updates</property>
-                <property name="response_id">-4</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_install_button_clicked"/>
-              </widget>
+                <signal handler="on_install_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
@@ -569,67 +553,73 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="close_button">
+              <object class="GtkButton" id="close_button">
                 <property name="label">gtk-close</property>
-                <property name="response_id">-5</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="no_show_all">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_button_clicked"/>
-              </widget>
+                <signal handler="on_cancel_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="position">4</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
-      </widget>
+      </object>
     </child>
-  </widget>
-  <widget class="GtkDialog" id="um_completed_dialog">
+    <action-widgets>
+      <action-widget response="-11">help_button</action-widget>
+      <action-widget response="-2">cancel_button</action-widget>
+      <action-widget response="-3">um_updateall_button</action-widget>
+      <action-widget response="-4">um_install_button</action-widget>
+      <action-widget response="-5">close_button</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkDialog" id="um_completed_dialog">
     <property name="border_width">5</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">um_dialog</property>
     <property name="has_separator">False</property>
-    <signal name="close" handler="on_um_dialog_close"/>
+    <signal handler="on_um_dialog_close" name="close"/>
     <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox3">
+      <object class="GtkVBox" id="dialog-vbox3">
         <property name="visible">True</property>
         <property name="spacing">2</property>
         <child>
-          <widget class="GtkAlignment" id="alignment7">
+          <object class="GtkAlignment" id="alignment7">
             <property name="visible">True</property>
             <property name="top_padding">5</property>
             <property name="bottom_padding">5</property>
             <property name="left_padding">5</property>
             <property name="right_padding">5</property>
             <child>
-              <widget class="GtkHBox" id="hbox1">
+              <object class="GtkHBox" id="hbox1">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkAlignment" id="alignment3">
+                  <object class="GtkAlignment" id="alignment3">
                     <property name="visible">True</property>
                     <property name="xalign">0.070000000298023224</property>
                     <property name="yalign">0.059999998658895493</property>
                     <property name="xscale">0</property>
                     <property name="yscale">0</property>
                     <child>
-                      <widget class="GtkImage" id="image1">
+                      <object class="GtkImage" id="image1">
                         <property name="visible">True</property>
                         <property name="stock">gtk-dialog-info</property>
                         <property name="icon-size">6</property>
-                      </widget>
+                      </object>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
@@ -637,15 +627,15 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkAlignment" id="alignment4">
+                  <object class="GtkAlignment" id="alignment4">
                     <property name="visible">True</property>
                     <property name="xalign">0.56999999284744263</property>
                     <property name="left_padding">10</property>
                     <child>
-                      <widget class="GtkVBox" id="vbox2">
+                      <object class="GtkVBox" id="vbox20">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkAlignment" id="alignment1">
+                          <object class="GtkAlignment" id="alignment10">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
@@ -654,13 +644,13 @@
                             <property name="top_padding">10</property>
                             <property name="bottom_padding">10</property>
                             <child>
-                              <widget class="GtkLabel" id="um_completed_time_label">
+                              <object class="GtkLabel" id="um_completed_time_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
-                              </widget>
+                              </object>
                             </child>
-                          </widget>
+                          </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
@@ -668,16 +658,16 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkAlignment" id="alignment5">
+                          <object class="GtkAlignment" id="alignment5">
                             <property name="visible">True</property>
                             <property name="bottom_padding">10</property>
                             <child>
-                              <widget class="GtkLabel" id="um_completed_release_label">
+                              <object class="GtkLabel" id="um_completed_release_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                              </widget>
+                              </object>
                             </child>
-                          </widget>
+                          </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
@@ -685,7 +675,7 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkAlignment" id="alignment6">
+                          <object class="GtkAlignment" id="alignment6">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
@@ -693,7 +683,7 @@
                             <property name="yscale">0</property>
                             <property name="left_padding">8</property>
                             <child>
-                              <widget class="GtkLinkButton" id="um_completed_linkbutton">
+                              <object class="GtkLinkButton" id="um_completed_linkbutton">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -703,26 +693,26 @@
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
                                 <property name="uri">http://www.opensolaris.org</property>
-                                <signal name="clicked" handler="on_um_completed_linkbutton_clicked"/>
-                              </widget>
+                                <signal handler="on_um_completed_linkbutton_clicked" name="clicked"/>
+                              </object>
                             </child>
-                          </widget>
+                          </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
-                      </widget>
+                      </object>
                     </child>
-                  </widget>
+                  </object>
                   <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>
-              </widget>
+              </object>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="position">1</property>
           </packing>
@@ -731,35 +721,35 @@
           <placeholder/>
         </child>
         <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area3">
+          <object class="GtkHButtonBox" id="dialog-action_area3">
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
               <placeholder/>
             </child>
             <child>
-              <widget class="GtkButton" id="um_complete_close_button">
+              <object class="GtkButton" id="um_complete_close_button">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_um_complete_close_button_clicked"/>
-              </widget>
+                <signal handler="on_um_complete_close_button_clicked" name="clicked"/>
+              </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
-      </widget>
+      </object>
     </child>
-  </widget>
-</glade-interface>
+  </object>
+</interface>

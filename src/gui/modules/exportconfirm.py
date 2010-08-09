@@ -38,21 +38,20 @@ import pkg.fmri as fmri
 import pkg.gui.misc as gui_misc
 
 class ExportConfirm:
-        def __init__(self, gladefile, window_icon, gconf, parent):
+        def __init__(self, builder, window_icon, gconf, parent):
                 self.gconf = gconf
                 self.parent = parent
                 self.parent_window = None
                 self.window_icon = window_icon
-                self.w_tree_confirm = gtk.glade.XML(gladefile,
-                    "confirmationdialog")
                 self.w_exportconfirm_dialog = \
-                    self.w_tree_confirm.get_widget("confirmationdialog")
+                    builder.get_object("confirmationdialog")
                 self.w_exportconfirm_dialog.set_icon(window_icon)
-                self.w_confirmok_button = self.w_tree_confirm.get_widget("ok_conf")
-                self.w_confirmhelp_button = self.w_tree_confirm.get_widget("help_conf")
-                self.w_confirm_textview = self.w_tree_confirm.get_widget("confirmtext")
-                self.w_confirm_label = self.w_tree_confirm.get_widget("confirm_label")
-                w_confirm_image = self.w_tree_confirm.get_widget("confirm_image")
+                self.w_confirmok_button = builder.get_object("ok_conf")
+                self.w_confirmcancel_button = builder.get_object("cancel_conf")
+                self.w_confirmhelp_button = builder.get_object("help_conf")
+                self.w_confirm_textview = builder.get_object("confirmtext")
+                self.w_confirm_label = builder.get_object("confirm_label")
+                w_confirm_image = builder.get_object("confirm_image")
                 w_confirm_image.set_from_stock(gtk.STOCK_DIALOG_INFO,
                     gtk.ICON_SIZE_DND)
                 self.__setup_export_selection_dialog()
@@ -74,18 +73,18 @@ class ExportConfirm:
                 self.w_confirmhelp_button.set_property('visible', True)
 
         def setup_signals(self):
-                dic_confirm = \
-                    {
-                        "on_confirmationdialog_delete_event": \
-                            self.__on_confirmation_dialog_delete_event,
-                        "on_help_conf_clicked": \
-                            self.__on_confirm_help_button_clicked,
-                        "on_ok_conf_clicked": \
-                            self.__on_confirm_proceed_button_clicked,
-                        "on_cancel_conf_clicked": \
-                            self.__on_confirm_cancel_button_clicked,
-                    }
-                self.w_tree_confirm.signal_autoconnect(dic_confirm)
+                signals_table = [
+                    (self.w_exportconfirm_dialog, "delete_event",
+                     self.__on_confirmation_dialog_delete_event),
+                    (self.w_confirmhelp_button, "clicked",
+                     self.__on_confirm_help_button_clicked),
+                    (self.w_confirmok_button, "clicked",
+                     self.__on_confirm_proceed_button_clicked),
+                    (self.w_confirmcancel_button, "clicked",
+                     self.__on_confirm_cancel_button_clicked),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def set_modal_and_transient(self, parent_window):
                 self.parent_window = parent_window

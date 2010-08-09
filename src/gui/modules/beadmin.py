@@ -35,7 +35,6 @@ try:
         import gobject
         gobject.threads_init()
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -92,30 +91,30 @@ class Beadmin:
                 self.initial_active = 0
                 self.initial_default = 0
                 gladefile = os.path.join(self.parent.application_dir,
-                    "usr/share/package-manager/packagemanager.glade")
-                w_tree_beadmin = gtk.glade.XML(gladefile, "beadmin")
-                w_tree_progress = gtk.glade.XML(gladefile, "progressdialog")
+                    "usr/share/package-manager/packagemanager.ui")
+                builder = gtk.Builder()
+                builder.add_from_file(gladefile)
                 # Dialog reused in the repository.py
-                w_tree_beconfirmation = gtk.glade.XML(gladefile,
-                    "confirmationdialog")
-                self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
+                self.w_beadmin_dialog = builder.get_object("beadmin")
                 self.w_beadmin_dialog.set_icon(self.parent.window_icon)
-                self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")
-                self.w_cancel_button = w_tree_beadmin.get_widget("cancelbebutton")
-                self.w_ok_button = w_tree_beadmin.get_widget("okbebutton")
-                w_active_gtkimage = w_tree_beadmin.get_widget("activebeimage")
-                self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
+                self.w_be_treeview = builder.get_object("betreeview")
+                self.w_help_button = builder.get_object("help_bebutton")
+                self.w_cancel_button = builder.get_object("cancelbebutton")
+                self.w_ok_button = builder.get_object("okbebutton")
+                w_active_gtkimage = builder.get_object("activebeimage")
+                self.w_progress_dialog = builder.get_object("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 self.w_progress_dialog.set_icon(self.parent.window_icon)
-                self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
-                progress_button = w_tree_progress.get_widget("progresscancel")
-                self.w_progressbar = w_tree_progress.get_widget("progressbar")
+                self.w_progressinfo_label = builder.get_object("progressinfo")
+                progress_button = builder.get_object("progresscancel")
+                self.w_progressbar = builder.get_object("progressbar")
                 self.w_beconfirmation_dialog =  \
-                    w_tree_beconfirmation.get_widget("confirmationdialog")
+                    builder.get_object("confirmationdialog")
                 self.w_beconfirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_beconfirmation_textview = \
-                    w_tree_beconfirmation.get_widget("confirmtext")
-                self.w_okbe_button = w_tree_beconfirmation.get_widget("ok_conf")
+                    builder.get_object("confirmtext")
+                self.w_okbe_button = builder.get_object("ok_conf")
+                self.w_cancelbe_button = builder.get_object("cancel_conf")
                 self.w_ok_button.set_sensitive(False)
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
@@ -129,31 +128,7 @@ class Beadmin:
                 bebuffer = self.w_beconfirmation_textview.get_buffer()
                 bebuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
-                try:
-                        dic = \
-                            {
-                                "on_cancel_be_clicked": \
-                                    self.__on_cancel_be_clicked,
-                                "on_ok_be_clicked": \
-                                    self.__on_ok_be_clicked,
-                                "on_help_bebutton_clicked": \
-                                    self.__on_help_bebutton_clicked,
-                            }
-                        dic_conf = \
-                            {
-                                "on_cancel_conf_clicked": \
-                                    self.__on_cancel_be_conf_clicked,
-                                "on_ok_conf_clicked": \
-                                    self.__on_ok_be_conf_clicked,
-                                "on_confirmationdialog_delete_event": \
-                                    self.__on_beconfirmationdialog_delete_event,
-                            }            
-                        w_tree_beadmin.signal_autoconnect(dic)
-                        w_tree_beconfirmation.signal_autoconnect(dic_conf)
-                except AttributeError, error:
-                        print _("GUI will not respond to any event! %s. "
-                            "Check beadmin.py signals") \
-                            % error
+                self.__setup_signals()
                 Thread(target = self.__progress_pulse).start()
                 Thread(target = self.__prepare_beadmin_list).start()
                 sel = self.w_be_treeview.get_selection()
@@ -170,6 +145,25 @@ class Beadmin:
                 self.w_progressinfo_label.set_text(
                     _("Fetching BE entries..."))
                 self.w_progress_dialog.show()
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_cancel_button, "clicked",
+                     self.__on_cancel_be_clicked),
+                    (self.w_ok_button, "clicked",
+                     self.__on_ok_be_clicked),
+                    (self.w_help_button, "clicked",
+                     self.__on_help_bebutton_clicked),
+
+                    (self.w_cancelbe_button, "clicked",
+                     self.__on_cancel_be_conf_clicked),
+                    (self.w_okbe_button, "clicked",
+                     self.__on_ok_be_conf_clicked),
+                    (self.w_beconfirmation_dialog, "delete_event", 
+                     self.__on_beconfirmationdialog_delete_event),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def cleanup(self):
                 self.progress_stop_thread = True

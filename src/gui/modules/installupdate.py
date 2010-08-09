@@ -51,7 +51,6 @@ from threading import Condition
 try:
         import gobject
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -137,63 +136,64 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.stopped_bouncing_progress = True
                 self.update_list = {}
                 gladefile = os.path.join(self.parent.application_dir,
-                    "usr/share/package-manager/packagemanager.glade")
-                w_tree_dialog = gtk.glade.XML(gladefile, "createplandialog")
-                w_tree_confirmdialog = \
-                    gtk.glade.XML(gladefile, "confirmdialog")
+                    "usr/share/package-manager/packagemanager.ui")
+                builder = gtk.Builder()
+                builder.add_from_file(gladefile)
 
-                self.w_confirm_dialog = w_tree_confirmdialog.get_widget("confirmdialog")
+                self.w_confirm_dialog = builder.get_object("confirmdialog")
                 self.w_install_expander = \
-                    w_tree_confirmdialog.get_widget("install_expander")
+                    builder.get_object("install_expander")
                 self.w_install_frame = \
-                    w_tree_confirmdialog.get_widget("frame1")
+                    builder.get_object("install_frame")
                 self.w_install_treeview = \
-                    w_tree_confirmdialog.get_widget("install_treeview")
+                    builder.get_object("install_treeview")
                 self.w_update_expander = \
-                    w_tree_confirmdialog.get_widget("update_expander")
+                    builder.get_object("update_expander")
                 self.w_update_frame = \
-                    w_tree_confirmdialog.get_widget("frame2")
+                    builder.get_object("update_frame")
                 self.w_update_treeview = \
-                    w_tree_confirmdialog.get_widget("update_treeview")
+                    builder.get_object("update_treeview")
                 self.w_remove_expander = \
-                    w_tree_confirmdialog.get_widget("remove_expander")
+                    builder.get_object("remove_expander")
                 self.w_remove_frame = \
-                    w_tree_confirmdialog.get_widget("frame3")
+                    builder.get_object("frame3")
                 self.w_remove_treeview = \
-                    w_tree_confirmdialog.get_widget("remove_treeview")
+                    builder.get_object("remove_treeview")
                 self.w_confirm_ok_button =  \
-                    w_tree_confirmdialog.get_widget("confirm_ok_button")
+                    builder.get_object("confirm_ok_button")
+                self.w_confirm_cancel_button =  \
+                    builder.get_object("confirm_cancel_button")
                 self.w_confirm_label =  \
-                    w_tree_confirmdialog.get_widget("confirm_label")
+                    builder.get_object("confirmdialog_confirm_label")
+                self.w_confirm_donotshow =  \
+                    builder.get_object("confirm_donotshow")
                 if self.um_special:
-                        w_confirm_donotshow =  \
-                            w_tree_confirmdialog.get_widget("confirm_donotshow")
-                        w_confirm_donotshow.hide()
+                        self.w_confirm_donotshow.hide()
 
                 self.w_confirm_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_confirm_dialog,
                     self.w_main_window)
 
-                self.w_dialog = w_tree_dialog.get_widget("createplandialog")
-                self.w_expander = w_tree_dialog.get_widget("details_expander")
-                self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
-                self.w_close_button = w_tree_dialog.get_widget("closecreateplan")
-                self.w_release_notes = w_tree_dialog.get_widget("release_notes")
+                self.w_dialog = builder.get_object("createplandialog")
+                self.w_expander = builder.get_object("details_expander")
+                self.w_cancel_button = builder.get_object("cancelcreateplan")
+                self.w_close_button = builder.get_object("closecreateplan")
+                self.w_release_notes = builder.get_object("release_notes")
                 self.w_release_notes_link = \
-                    w_tree_dialog.get_widget("ua_release_notes_button")
-                self.w_progressbar = w_tree_dialog.get_widget("createplanprogress")
-                self.w_details_textview = w_tree_dialog.get_widget("createplantextview")
+                    builder.get_object("ua_release_notes_button")
+                self.w_progressbar = builder.get_object("createplanprogress")
+                self.w_details_textview = builder.get_object("createplantextview")
 
-                self.w_stage2 = w_tree_dialog.get_widget("stage2")
-                self.w_stages_box = w_tree_dialog.get_widget("stages_box")
-                self.w_stage1_label = w_tree_dialog.get_widget("label_stage1")
-                self.w_stage1_icon = w_tree_dialog.get_widget("icon_stage1")
-                self.w_stage2_label = w_tree_dialog.get_widget("label_stage2")
-                self.w_stage2_icon = w_tree_dialog.get_widget("icon_stage2")
-                self.w_stage3_label = w_tree_dialog.get_widget("label_stage3")
-                self.w_stage3_icon = w_tree_dialog.get_widget("icon_stage3")
-                self.w_stages_label = w_tree_dialog.get_widget("label_stages")
-                self.w_stages_icon = w_tree_dialog.get_widget("icon_stages")
+                self.w_stage2 = builder.get_object("stage2")
+                self.w_stages_box = builder.get_object("stages_box")
+                self.w_stage1_label = builder.get_object("label_stage1")
+                self.w_stage1_icon = builder.get_object("icon_stage1")
+                self.w_stage2_label = builder.get_object("label_stage2")
+                self.w_stage2_icon = builder.get_object("icon_stage2")
+                self.w_stage3_label = builder.get_object("label_stage3")
+                self.w_stage3_icon = builder.get_object("icon_stage3")
+                self.w_stages_label = builder.get_object("label_stages")
+                self.w_stages_icon = builder.get_object("icon_stages")
                 self.current_stage_label = self.w_stage1_label
                 self.current_stage_icon = self.w_stage1_icon
 
@@ -222,16 +222,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_progressbar.set_pulse_step(0.02)
                 self.w_release_notes.hide()
 
-                w_license_dialog = gtk.glade.XML(gladefile, "license_dialog")
-                self.w_license_dialog = w_license_dialog.get_widget("license_dialog")
-                self.w_license_label = w_license_dialog.get_widget("instruction_label")
-                self.w_license_text = w_license_dialog.get_widget("textview1")
+                self.w_license_dialog = builder.get_object("license_dialog")
+                self.w_license_label = builder.get_object("instruction_label")
+                self.w_license_text = builder.get_object("textview1")
                 self.w_license_accept_checkbutton = \
-                    w_license_dialog.get_widget("license_accept_checkbutton")
+                    builder.get_object("license_accept_checkbutton")
                 self.w_license_accept_button = \
-                    w_license_dialog.get_widget("license_accept_button")
+                    builder.get_object("license_accept_button")
                 self.w_license_reject_button = \
-                    w_license_dialog.get_widget("license_reject_button")
+                    builder.get_object("license_reject_button")
                 self.accept_text = gui_misc.get_stockbutton_label_label(
                     self.w_license_accept_button)
                 gui_misc.change_stockbutton_label(self.w_license_reject_button,
@@ -246,57 +245,45 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.dlg_remove_collapsed_h = DIALOG_REMOVE_COLLAPSED_HEIGHT
                 self.dlg_done_collapsed_h = DIALOG_DONE_COLLAPSED_HEIGHT
 
-                try:
-                        dic_createplan = \
-                            {
-                                "on_cancelcreateplan_clicked": \
-                                    self.__on_cancelcreateplan_clicked,
-                                "on_closecreateplan_clicked": \
-                                    self.__on_closecreateplan_clicked,
-                                "on_createplandialog_delete_event": \
-                                    self.__on_createplandialog_delete,
-                                "on_details_expander_activate": \
-                                    self.__on_details_expander_activate,
-
-                            }
-                        dic_license = \
-                            {
-                                "on_license_reject_button_clicked": \
-                                    self.__on_license_reject_button_clicked,
-                                "on_license_accept_button_clicked": \
-                                    self.__on_license_accept_button_clicked,
-                                "on_license_accept_checkbutton_toggled": \
-                                    self.__on_license_accept_checkbutton_toggled,
-                                "on_license_dialog_delete_event": \
-                                    self.__on_license_dialog_delete,
-                            }
-                        dic_confirmdialog = \
-                            {
-                                "on_confirmdialog_delete_event": \
-                                    self.__on_confirmdialog_delete_event,
-                                "on_confirm_donotshow_toggled": \
-                                    self.__on_confirm_donotshow_toggled,
-                                "on_confirm_cancel_button_clicked": \
-                                    self.__on_confirm_cancel_button_clicked,
-                                "on_confirm_ok_button_clicked": \
-                                    self.__on_confirm_ok_button_clicked,
-                            }
-
-                        w_tree_confirmdialog.signal_autoconnect(dic_confirmdialog)
-                        w_tree_dialog.signal_autoconnect(dic_createplan)
-                        w_license_dialog.signal_autoconnect(dic_license)
-
-                except AttributeError, error:
-                        print _("GUI will not respond to any event! %s. "
-                            "Check installupdate.py signals") \
-                            % error
-
+                self.__setup_signals()
                 gui_misc.set_modal_and_transient(self.w_dialog, self.w_main_window)
                 self.w_license_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_license_dialog,
                     self.w_dialog)
                 self.__start_action()
                 self.__setup_createplan_dlg_sizes()
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_cancel_button, "clicked",
+                     self.__on_cancelcreateplan_clicked),
+                    (self.w_close_button, "clicked",
+                     self.__on_closecreateplan_clicked),
+                    (self.w_dialog, "delete_event",
+                     self.__on_createplandialog_delete),
+                    (self.w_expander, "activate",
+                     self.__on_details_expander_activate),
+
+                    (self.w_license_reject_button, "clicked",
+                     self.__on_license_reject_button_clicked),
+                    (self.w_license_accept_button, "clicked",
+                     self.__on_license_accept_button_clicked),
+                    (self.w_license_accept_checkbutton, "toggled",
+                     self.__on_license_accept_checkbutton_toggled),
+                    (self.w_license_dialog, "delete_event", 
+                     self.__on_license_dialog_delete),
+
+                    (self.w_confirm_dialog, "delete_event", 
+                     self.__on_confirmdialog_delete_event),
+                    (self.w_confirm_donotshow, "toggled",
+                     self.__on_confirm_donotshow_toggled),
+                    (self.w_confirm_cancel_button, "clicked",
+                     self.__on_confirm_cancel_button_clicked),
+                    (self.w_confirm_ok_button, "clicked",
+                     self.__on_confirm_ok_button_clicked),
+                     ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def __setup_createplan_dlg_sizes(self):
                 #Get effective screen space available (net of panels and docks)

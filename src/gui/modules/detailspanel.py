@@ -35,30 +35,30 @@ import pkg.version as version
 import pkg.client.api as api
 
 class DetailsPanel:
-        def __init__(self, parent, w_tree_main):
+        def __init__(self, parent, builder):
                 self.parent = parent
                 self.w_generalinfo_textview = \
-                    w_tree_main.get_widget("generalinfotextview")
+                    builder.get_object("generalinfotextview")
                 self.w_generalinfo_textview.get_buffer().create_tag(
                     "bold", weight=pango.WEIGHT_BOLD)
                 self.w_installedfiles_textview = \
-                    w_tree_main.get_widget("installedfilestextview")
+                    builder.get_object("installedfilestextview")
                 self.w_installedfiles_textview.get_buffer().create_tag(
                     "bold", weight=pango.WEIGHT_BOLD)
                 self.w_license_textview = \
-                    w_tree_main.get_widget("licensetextview")
+                    builder.get_object("licensetextview")
                 self.w_dependencies_textview = \
-                    w_tree_main.get_widget("dependenciestextview")
+                    builder.get_object("dependenciestextview")
                 self.w_versions_name_label = \
-                    w_tree_main.get_widget("versions_name_label")
+                    builder.get_object("versions_name_label")
                 self.w_versions_label = \
-                    w_tree_main.get_widget("versions_label")
+                    builder.get_object("versions_label")
                 self.w_versions_combobox = \
-                    w_tree_main.get_widget("versions_combo")
+                    builder.get_object("versions_combo")
                 self.w_versions_install_button = \
-                    w_tree_main.get_widget("versions_install_button")
+                    builder.get_object("versions_install_button")
                 self.w_installable_versions_hbox = \
-                    w_tree_main.get_widget("installable_versions_hbox")
+                    builder.get_object("installable_versions_hbox")
 
                 self.w_dependencies_textview.get_buffer().create_tag(
                     "bold", weight=pango.WEIGHT_BOLD)
@@ -66,18 +66,8 @@ class DetailsPanel:
                 self.versions_list = None
                 self.__init_versions_tree_view()
 
-                try:
-                        dic_versions = \
-                            {
-                                "on_versions_install_button_clicked": \
-                                    self.__on_versions_install_button_clicked,
-                            }
-                        w_tree_main.signal_autoconnect(dic_versions)
-                except AttributeError, error:
-                        print _(
-                            "GUI will not respond to any event! %s. "
-                            "Check declare_signals()") \
-                            % error
+                self.w_versions_install_button.connect("clicked",
+                    self.__on_versions_install_button_clicked)
 
         def __init_versions_tree_view(self):
                 cell = gtk.CellRendererText()

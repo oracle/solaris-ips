@@ -35,7 +35,6 @@ try:
         import gobject
         gobject.threads_init()
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -78,269 +77,168 @@ class Repository(progress.GuiProgressTracker):
                 self.repository_modify_publisher = None
                 self.no_changes = 0
                 self.pylintstub = None
-                w_tree_add_publisher = \
-                    gtk.glade.XML(parent.gladefile, "add_publisher")
-                w_tree_add_publisher_complete = \
-                    gtk.glade.XML(parent.gladefile, "add_publisher_complete")
-                w_tree_modify_repository = \
-                    gtk.glade.XML(parent.gladefile, "modify_repository")
-                w_tree_manage_publishers = \
-                    gtk.glade.XML(parent.gladefile, "manage_publishers")
-                w_tree_publishers_apply = \
-                    gtk.glade.XML(parent.gladefile, "publishers_apply")
+                builder = gtk.Builder()
+                builder.add_from_file(self.parent.gladefile)
                 # Dialog reused in the beadmin.py
-                w_tree_confirmation = gtk.glade.XML(parent.gladefile,
-                    "confirmationdialog")
                 self.w_confirmation_dialog =  \
-                    w_tree_confirmation.get_widget("confirmationdialog")
+                    builder.get_object("confirmationdialog")
                 self.w_confirmation_label = \
-                    w_tree_confirmation.get_widget("confirm_label")
+                    builder.get_object("confirm_label")
                 self.w_confirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_confirmation_textview = \
-                    w_tree_confirmation.get_widget("confirmtext")
-                self.w_confirm_cancel_btn = w_tree_confirmation.get_widget("cancel_conf")
+                    builder.get_object("confirmtext")
+                self.w_confirm_cancel_btn = builder.get_object("cancel_conf")
+                self.w_confirm_ok_btn = builder.get_object("ok_conf")
                 confirmbuffer = self.w_confirmation_textview.get_buffer()
                 confirmbuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 self.w_confirmation_dialog.set_title(
                     _("Manage Publishers Confirmation"))
                 self.w_publishers_treeview = \
-                    w_tree_manage_publishers.get_widget("publishers_treeview")
+                    builder.get_object("publishers_treeview")
                 self.w_add_publisher_dialog = \
-                    w_tree_add_publisher.get_widget("add_publisher")
+                    builder.get_object("add_publisher")
                 self.w_add_publisher_dialog.set_icon(self.parent.window_icon)
                 self.w_add_error_label = \
-                    w_tree_add_publisher.get_widget("add_error_label")
+                    builder.get_object("add_error_label")
                 self.w_add_sslerror_label = \
-                    w_tree_add_publisher.get_widget("add_sslerror_label")
+                    builder.get_object("add_sslerror_label")
                 self.w_publisher_add_button = \
-                    w_tree_add_publisher.get_widget("add_button")
+                    builder.get_object("add_button")
+                self.w_publisher_add_cancel_button = \
+                    builder.get_object("add_publisher_cancel_button")
                 self.w_ssl_box = \
-                    w_tree_add_publisher.get_widget("ssl_box")
+                    builder.get_object("ssl_box")
                 self.w_add_publisher_name = \
-                    w_tree_add_publisher.get_widget("add_publisher_name")
+                    builder.get_object("add_publisher_name")
                 self.w_add_pub_label = \
-                    w_tree_add_publisher.get_widget("add_pub_label")
+                    builder.get_object("add_pub_label")
                 self.w_add_pub_instr_label = \
-                    w_tree_add_publisher.get_widget("add_pub_instr_label")
+                    builder.get_object("add_pub_instr_label")
                 self.w_add_publisher_url = \
-                    w_tree_add_publisher.get_widget("add_publisher_url")
+                    builder.get_object("add_publisher_url")
                 self.w_cert_entry = \
-                    w_tree_add_publisher.get_widget("certentry")
+                    builder.get_object("certentry")
                 self.w_key_entry = \
-                    w_tree_add_publisher.get_widget("keyentry")
+                    builder.get_object("keyentry")
+                self.w_certbrowse_button = \
+                    builder.get_object("certbrowse")
+                self.w_keybrowse_button = \
+                    builder.get_object("keybrowse")
+                self.w_add_pub_help_button = \
+                    builder.get_object("add_pub_help")
                 self.w_publisher_add_button.set_sensitive(False)
                 self.w_add_publisher_comp_dialog = \
-                    w_tree_add_publisher_complete.get_widget("add_publisher_complete")
+                    builder.get_object("add_publisher_complete")
                 self.w_add_image = \
-                    w_tree_add_publisher_complete.get_widget("add_image")
+                    builder.get_object("add_image")
                 self.w_add_publisher_comp_dialog.set_icon(self.parent.window_icon)
                 self.w_add_publisher_c_name = \
-                    w_tree_add_publisher_complete.get_widget("add_publisher_name")
+                    builder.get_object("add_publisher_name_c")
                 self.w_add_publisher_c_url = \
-                    w_tree_add_publisher_complete.get_widget("add_publisher_url")
+                    builder.get_object("add_publisher_url_c")
                 self.w_add_publisher_c_desc = \
-                    w_tree_add_publisher_complete.get_widget("add_publisher_desc")
+                    builder.get_object("add_publisher_desc")
                 self.w_add_publisher_c_desc_l = \
-                    w_tree_add_publisher_complete.get_widget("add_publisher_desc_l")
+                    builder.get_object("add_publisher_desc_l")
+                self.w_add_publisher_c_close = \
+                    builder.get_object("add_publisher_c_close")
                 self.w_registration_box = \
-                    w_tree_add_publisher.get_widget("registration_box")
+                    builder.get_object("add_registration_box")
                 self.w_registration_link = \
-                    w_tree_add_publisher.get_widget("registration_button")
+                    builder.get_object("registration_button")
                 self.w_modify_repository_dialog = \
-                    w_tree_modify_repository.get_widget("modify_repository")
+                    builder.get_object("modify_repository")
                 self.w_modify_repository_dialog.set_icon(self.parent.window_icon)
+                self.w_modkeybrowse = \
+                    builder.get_object("modkeybrowse")
+                self.w_modcertbrowse = \
+                    builder.get_object("modcertbrowse")
                 self.w_addmirror_entry = \
-                    w_tree_modify_repository.get_widget("addmirror_entry")
+                    builder.get_object("addmirror_entry")
                 self.w_addorigin_entry = \
-                    w_tree_modify_repository.get_widget("add_repo")
+                    builder.get_object("add_repo")
                 self.w_addmirror_button = \
-                    w_tree_modify_repository.get_widget("addmirror_button")
+                    builder.get_object("addmirror_button")
                 self.w_rmmirror_button = \
-                    w_tree_modify_repository.get_widget("mirrorremove")
+                    builder.get_object("mirrorremove")
                 self.w_addorigin_button = \
-                    w_tree_modify_repository.get_widget("pub_add_repo")
+                    builder.get_object("pub_add_repo")
                 self.w_rmorigin_button = \
-                    w_tree_modify_repository.get_widget("pub_remove_repo")
+                    builder.get_object("pub_remove_repo")
                 self.w_modify_pub_alias = \
-                    w_tree_modify_repository.get_widget("repositorymodifyalias")
+                    builder.get_object("repositorymodifyalias")
                 self.w_repositorymodifyok_button = \
-                    w_tree_modify_repository.get_widget("repositorymodifyok")
+                    builder.get_object("repositorymodifyok")
+                self.w_repositorymodifycancel_button = \
+                    builder.get_object("repositorymodifycancel")
+                self.w_repositorymodifyhelp_button = \
+                    builder.get_object("modify_repo_help")
                 self.modify_repo_mirrors_treeview = \
-                    w_tree_modify_repository.get_widget("modify_repo_mirrors_treeview")
+                    builder.get_object("modify_repo_mirrors_treeview")
                 self.modify_repo_origins_treeview = \
-                    w_tree_modify_repository.get_widget("modify_pub_repos_treeview")
+                    builder.get_object("modify_pub_repos_treeview")
                 self.w_modmirrerror_label = \
-                    w_tree_modify_repository.get_widget("modmirrerror_label")
+                    builder.get_object("modmirrerror_label")
                 self.w_modoriginerror_label = \
-                    w_tree_modify_repository.get_widget("modrepoerror_label")
+                    builder.get_object("modrepoerror_label")
                 self.w_modsslerror_label = \
-                    w_tree_modify_repository.get_widget("modsslerror_label")
+                    builder.get_object("modsslerror_label")
                 self.w_repositorymodify_name = \
-                    w_tree_modify_repository.get_widget("repository_name_label")
+                    builder.get_object("repository_name_label")
                 self.w_repositorymodify_registration_link = \
-                    w_tree_modify_repository.get_widget(
+                    builder.get_object(
                     "repositorymodifyregistrationlinkbutton")
                 self.w_repositoryssl_expander = \
-                    w_tree_modify_repository.get_widget(
-                    "repositorymodifysslexpander")
+                    builder.get_object("repositorymodifysslexpander")
                 self.w_repositorymirror_expander = \
-                    w_tree_modify_repository.get_widget(
+                    builder.get_object(
                     "repositorymodifymirrorsexpander")
                 self.w_repositorymodify_registration_box = \
-                    w_tree_modify_repository.get_widget(
-                    "registration_box")   
+                    builder.get_object("modify_registration_box")   
                 self.w_repositorymodify_key_entry = \
-                    w_tree_modify_repository.get_widget(
-                    "modkeyentry")   
+                    builder.get_object("modkeyentry")   
                 self.w_repositorymodify_cert_entry = \
-                    w_tree_modify_repository.get_widget(
-                    "modcertentry")   
+                    builder.get_object("modcertentry")   
                 self.w_manage_publishers_dialog = \
-                    w_tree_manage_publishers.get_widget("manage_publishers")
+                    builder.get_object("manage_publishers")
                 self.w_manage_publishers_dialog.set_icon(self.parent.window_icon)
                 self.w_manage_publishers_details = \
-                    w_tree_manage_publishers.get_widget("manage_publishers_details")
+                    builder.get_object("manage_publishers_details")
                 manage_pub_details_buf =  self.w_manage_publishers_details.get_buffer()
                 manage_pub_details_buf.create_tag("level0", weight=pango.WEIGHT_BOLD)
-                self.w_manage_ok_btn = \
-                    w_tree_manage_publishers.get_widget("manage_ok")
-                self.w_manage_remove_btn = \
-                    w_tree_manage_publishers.get_widget("manage_remove")
+                self.w_manage_add_btn =  builder.get_object("manage_add")
+                self.w_manage_ok_btn =  builder.get_object("manage_ok")
+                self.w_manage_remove_btn = builder.get_object("manage_remove")
                 self.w_manage_modify_btn = \
-                    w_tree_manage_publishers.get_widget("manage_modify")
+                    builder.get_object("manage_modify")
                 self.w_manage_up_btn = \
-                    w_tree_manage_publishers.get_widget("manage_move_up")
+                    builder.get_object("manage_move_up")
                 self.w_manage_down_btn = \
-                    w_tree_manage_publishers.get_widget("manage_move_down")
+                    builder.get_object("manage_move_down")
+                self.w_manage_cancel_btn = \
+                    builder.get_object("manage_cancel")
+                self.w_manage_help_btn = \
+                    builder.get_object("manage_help")
                 self.publishers_apply = \
-                    w_tree_publishers_apply.get_widget("publishers_apply")
+                    builder.get_object("publishers_apply")
                 self.publishers_apply.set_icon(self.parent.window_icon)
                 self.publishers_apply_expander = \
-                    w_tree_publishers_apply.get_widget("apply_expander")
+                    builder.get_object("apply_expander")
                 self.publishers_apply_textview = \
-                    w_tree_publishers_apply.get_widget("apply_textview")
+                    builder.get_object("apply_textview")
                 applybuffer = self.publishers_apply_textview.get_buffer()
                 applybuffer.create_tag("level1", left_margin=30, right_margin=10)
                 self.publishers_apply_cancel = \
-                    w_tree_publishers_apply.get_widget("apply_cancel")
+                    builder.get_object("apply_cancel")
                 self.publishers_apply_progress = \
-                    w_tree_publishers_apply.get_widget("publishers_apply_progress")
+                    builder.get_object("publishers_apply_progress")
 
                 checkmark_icon = gui_misc.get_icon(
                     self.parent.icon_theme, "pm-check", 24)
 
                 self.w_add_image.set_from_pixbuf(checkmark_icon)
 
-                try:
-                        dic_add_publisher = \
-                            {
-                                "on_add_publisher_delete_event" : \
-                                    self.__on_add_publisher_delete_event,
-                                "on_publisherurl_changed": \
-                                    self.__on_publisherurl_changed,
-                                "on_publishername_changed": \
-                                    self.__on_publishername_changed,
-                                "on_keyentry_changed": \
-                                    self.__on_keyentry_changed,
-                                "on_certentry_changed": \
-                                    self.__on_certentry_changed,
-                                "on_add_publisher_add_clicked" : \
-                                    self.__on_add_publisher_add_clicked,
-                                "on_add_publisher_cancel_clicked" : \
-                                    self.__on_add_publisher_cancel_clicked,
-                                "on_keybrowse_clicked": \
-                                    self.__on_keybrowse_clicked,
-                                "on_certbrowse_clicked": \
-                                    self.__on_certbrowse_clicked,
-                                "on_add_pub_help_clicked": \
-                                    self.__on_add_pub_help_clicked,
-                            }
-                        dic_add_publisher_comp = \
-                            {
-                                "on_add_publisher_complete_delete_event" : \
-                                    self.__on_add_publisher_complete_delete_event,
-                                "on_add_publisher_c_close_clicked" : \
-                                    self.__on_add_publisher_c_close_clicked,
-                            }
-                        dic_manage_publishers = \
-                            {
-                                "on_manage_publishers_delete_event" : \
-                                    self.__on_manage_publishers_delete_event,
-                                "on_manage_add_clicked" : \
-                                    self.__on_manage_add_clicked,
-                                "on_manage_modify_clicked" : \
-                                    self.__on_manage_modify_clicked,
-                                "on_manage_remove_clicked" : \
-                                    self.__on_manage_remove_clicked,
-                                "on_manage_move_up_clicked" : \
-                                    self.__on_manage_move_up_clicked,
-                                "on_manage_move_down_clicked" : \
-                                    self.__on_manage_move_down_clicked,
-                                "on_manage_cancel_clicked" : \
-                                    self.__on_manage_cancel_clicked,
-                                "on_manage_ok_clicked" : \
-                                    self.__on_manage_ok_clicked,
-                                "on_manage_help_clicked": \
-                                    self.__on_manage_help_clicked,
-                            }
-                        dic_modify_repo = \
-                            {
-                                "on_modify_repository_delete_event": \
-                                    self.__delete_widget_handler_hide,
-                                "on_modkeybrowse_clicked": \
-                                    self.__on_modkeybrowse_clicked,
-                                "on_modcertbrowse_clicked": \
-                                    self.__on_modcertbrowse_clicked,
-                                "on_addmirror_entry_changed": \
-                                    self.__on_addmirror_entry_changed,
-                                "on_add_repo_changed": \
-                                    self.__on_addorigin_entry_changed,
-                                "on_addmirror_button_clicked": \
-                                    self.__on_addmirror_button_clicked,
-                                "on_pub_add_repo_clicked": \
-                                    self.__on_addorigin_button_clicked,
-                                "on_repositorymodifyok_clicked": \
-                                    self.__on_repositorymodifyok_clicked,
-                                "on_mirrorremove_clicked": \
-                                    self.__on_rmmirror_button_clicked,
-                                "on_pub_remove_repo_clicked": \
-                                    self.__on_rmorigin_button_clicked,
-                                "on_repositorymodifycancel_clicked": \
-                                    self.__on_repositorymodifycancel_clicked,
-                                "on_modkeyentry_changed": \
-                                    self.__on_modcertkeyentry_changed,
-                                "on_modcertentry_changed": \
-                                    self.__on_modcertkeyentry_changed,
-                                "on_modify_repo_help_clicked": \
-                                    self.__on_modify_repo_help_clicked,
-                            }
-                        dic_confirmation = \
-                            {
-                                "on_cancel_conf_clicked": \
-                                    self.__on_cancel_conf_clicked,
-                                "on_ok_conf_clicked": \
-                                    self.__on_ok_conf_clicked,
-                                "on_confirmationdialog_delete_event": \
-                                    self.__delete_widget_handler_hide,
-                            }
-                        dic_apply = \
-                            {
-                                "on_apply_cancel_clicked": \
-                                    self.__on_apply_cancel_clicked,
-                                "on_publishers_apply_delete_event": \
-                                    self.__on_publishers_apply_delete_event,
-                            }
-                        w_tree_add_publisher_complete.signal_autoconnect(
-                            dic_add_publisher_comp)
-                        w_tree_add_publisher.signal_autoconnect(dic_add_publisher)
-                        w_tree_manage_publishers.signal_autoconnect(dic_manage_publishers)
-                        w_tree_modify_repository.signal_autoconnect(dic_modify_repo)
-                        w_tree_confirmation.signal_autoconnect(dic_confirmation)
-                        w_tree_publishers_apply.signal_autoconnect(dic_apply)
-                except AttributeError, error:
-                        print _("GUI will not respond to any event! %s. "
-                            "Check repository.py signals") \
-                            % error
+                self.__setup_signals()
 
                 self.publishers_list = self.__get_publishers_liststore()
                 self.__init_pubs_tree_view(self.publishers_list)
@@ -377,6 +275,100 @@ class Repository(progress.GuiProgressTracker):
                             self.w_manage_publishers_dialog)
                         self.w_manage_publishers_dialog.show_all()
                         return
+
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_add_publisher_dialog, "delete_event",
+                     self.__on_add_publisher_delete_event),
+                    (self.w_add_publisher_url, "changed",
+                     self.__on_publisherurl_changed),
+                    (self.w_add_publisher_url, "activate",
+                     self.__on_add_publisher_add_clicked),
+                    (self.w_add_publisher_name, "changed",
+                     self.__on_publishername_changed),
+                    (self.w_add_publisher_name, "activate",
+                     self.__on_add_publisher_add_clicked),
+                    (self.w_publisher_add_button, "clicked",
+                     self.__on_add_publisher_add_clicked),
+                    (self.w_key_entry, "changed", self.__on_keyentry_changed),
+                    (self.w_cert_entry, "changed", self.__on_certentry_changed),
+                    (self.w_publisher_add_cancel_button, "clicked",
+                     self.__on_add_publisher_cancel_clicked),
+                    (self.w_keybrowse_button, "clicked",
+                     self.__on_keybrowse_clicked),
+                    (self.w_certbrowse_button, "clicked",
+                     self.__on_certbrowse_clicked),
+                    (self.w_add_pub_help_button, "clicked",
+                     self.__on_add_pub_help_clicked),
+
+                    (self.w_add_publisher_comp_dialog, "delete_event", 
+                     self.__on_add_publisher_complete_delete_event),
+                    (self.w_add_publisher_c_close, "clicked", 
+                     self.__on_add_publisher_c_close_clicked),
+
+                    (self.w_manage_publishers_dialog, "delete_event", 
+                     self.__on_manage_publishers_delete_event),
+                    (self.w_manage_add_btn, "clicked", 
+                     self.__on_manage_add_clicked),
+                    (self.w_manage_modify_btn, "clicked", 
+                     self.__on_manage_modify_clicked),
+                    (self.w_manage_remove_btn, "clicked", 
+                     self.__on_manage_remove_clicked),
+                    (self.w_manage_up_btn, "clicked", 
+                     self.__on_manage_move_up_clicked),
+                    (self.w_manage_down_btn, "clicked", 
+                     self.__on_manage_move_down_clicked),
+                    (self.w_manage_cancel_btn, "clicked", 
+                     self.__on_manage_cancel_clicked),
+                    (self.w_manage_ok_btn, "clicked", 
+                     self.__on_manage_ok_clicked),
+                    (self.w_manage_help_btn, "clicked", 
+                     self.__on_manage_help_clicked),
+
+                    (self.w_modify_repository_dialog, "delete_event", 
+                     self.__delete_widget_handler_hide),
+                    (self.w_modkeybrowse, "clicked", 
+                     self.__on_modkeybrowse_clicked),
+                    (self.w_modcertbrowse, "clicked", 
+                     self.__on_modcertbrowse_clicked),
+                    (self.w_addmirror_entry, "changed", 
+                     self.__on_addmirror_entry_changed),
+                    (self.w_addorigin_entry, "changed", 
+                     self.__on_addorigin_entry_changed),
+                    (self.w_addmirror_button, "clicked", 
+                     self.__on_addmirror_button_clicked),
+                    (self.w_addorigin_button, "clicked", 
+                     self.__on_addorigin_button_clicked),
+                    (self.w_rmmirror_button, "clicked", 
+                     self.__on_rmmirror_button_clicked),
+                    (self.w_rmorigin_button, "clicked", 
+                     self.__on_rmorigin_button_clicked),
+                    (self.w_repositorymodify_key_entry, "changed", 
+                     self.__on_modcertkeyentry_changed),
+                    (self.w_repositorymodify_cert_entry, "changed", 
+                     self.__on_modcertkeyentry_changed),
+                    (self.w_repositorymodifyok_button, "clicked",
+                     self.__on_repositorymodifyok_clicked),
+                    (self.w_repositorymodifycancel_button, "clicked",
+                     self.__on_repositorymodifycancel_clicked),
+                    (self.w_repositorymodifyhelp_button, "clicked",
+                     self.__on_modify_repo_help_clicked),
+
+                    (self.w_confirmation_dialog, "delete_event",
+                        self.__delete_widget_handler_hide),
+                    (self.w_confirm_cancel_btn, "clicked", 
+                        self.__on_cancel_conf_clicked),
+                    (self.w_confirm_ok_btn, "clicked", 
+                        self.__on_ok_conf_clicked),
+
+                    (self.publishers_apply, "delete_event", 
+                     self.__on_publishers_apply_delete_event),
+                    (self.publishers_apply_cancel, "clicked", 
+                     self.__on_apply_cancel_clicked),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def __init_pubs_tree_view(self, publishers_list):
                 publishers_list_filter = publishers_list.filter_new()

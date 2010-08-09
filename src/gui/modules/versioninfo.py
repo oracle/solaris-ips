@@ -26,44 +26,42 @@
 import sys
 try:
         import gobject
-        import gtk
         import pango
 except ImportError:
         sys.exit(1)
 import pkg.gui.misc as gui_misc
 
 class VersionInfo:
-        def __init__(self, gladefile, parent):
+        def __init__(self, builder, parent):
                 self.parent = parent
-                self.w_version_info = gtk.glade.XML(gladefile,
-                    "version_info_dialog")
                 self.w_version_info_dialog = \
-                    self.w_version_info.get_widget("version_info_dialog")
-                self.w_info_name_label = self.w_version_info.get_widget("info_name")
-                self.w_info_installed_label = self.w_version_info.get_widget(
+                    builder.get_object("version_info_dialog")
+                self.w_info_name_label = builder.get_object("info_name")
+                self.w_info_installed_label = builder.get_object(
                     "info_installed")
-                self.w_info_installable_label = self.w_version_info.get_widget(
+                self.w_info_installable_label = builder.get_object(
                     "info_installable")
-                self.w_info_installable_prefix_label = self.w_version_info.get_widget(
+                self.w_info_installable_prefix_label = builder.get_object(
                     "info_installable_label")
-                self.w_info_ok_button = self.w_version_info.get_widget("info_ok_button")
-                self.w_info_expander = self.w_version_info.get_widget(
+                self.w_info_ok_button = builder.get_object("info_ok_button")
+                self.w_info_help_button = builder.get_object("info_help_button")
+                self.w_info_expander = builder.get_object(
                      "version_info_expander")
-                self.w_info_textview = self.w_version_info.get_widget("infotextview")
+                self.w_info_textview = builder.get_object("infotextview")
                 infobuffer = self.w_info_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
         def setup_signals(self):
-                dic_version_info = \
-                    {
-                        "on_info_ok_clicked": \
-                            self.__on_info_ok_button_clicked,
-                        "on_info_help_clicked": \
-                            self.__on_info_help_button_clicked,
-                        "on_version_info_dialog_delete_event": \
-                            self.__on_version_info_dialog_delete_event,
-                    }
-                self.w_version_info.signal_autoconnect(dic_version_info)
+                signals_table = [
+                    (self.w_info_ok_button, "clicked",
+                     self.__on_info_ok_button_clicked),
+                    (self.w_info_help_button, "clicked",
+                     self.__on_info_help_button_clicked),
+                    (self.w_version_info_dialog, "delete_event",
+                     self.__on_version_info_dialog_delete_event)
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def set_modal_and_transient(self, parent_window):
                 gui_misc.set_modal_and_transient(self.w_version_info_dialog,

@@ -287,7 +287,7 @@ ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
 
-ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
+ROOTPYGLADE = $(ROOTSHARE)/packagemanager.ui
 
 #
 # .py and .pyc files
@@ -362,7 +362,7 @@ PWD:sh = pwd
 link:
 	mkdir -p /usr/share/lib/package-manager/data
 	ln -sf $(PWD)/../packagemanager.py /usr/bin/packagemanager
-	ln -sf $(PWD)/data/packagemanager.glade /usr/share/package-manager/packagemanager.glade
+	ln -sf $(PWD)/data/packagemanager.ui /usr/share/package-manager/packagemanager.ui
 	ln -sf $(PWD)/data/opensolaris.org.sections /usr/share/package-manager/data/opensolaris.org.sections
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop

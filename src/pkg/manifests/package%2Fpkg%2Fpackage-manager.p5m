@@ -328,7 +328,7 @@ file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-install_updat
 file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-refresh.png
 file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-remove.png
 file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-update_all.png
-file path=usr/share/package-manager/packagemanager.glade
+file path=usr/share/package-manager/packagemanager.ui
 license cr_Oracle license=cr_Oracle
 license lic_CDDL license=lic_CDDL
 legacy pkg=SUNWipkg-gui version=0.1.1

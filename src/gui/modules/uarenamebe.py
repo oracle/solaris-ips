@@ -33,7 +33,6 @@ import time
 try:
         import gobject
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -71,33 +70,38 @@ class RenameBeAfterUpdateAll:
                 self.parent = parent
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
+                builder = gtk.Builder()
                 gladefile = os.path.join(self.parent.application_dir,
-                    "usr/share/package-manager/packagemanager.glade")
-                w_tree_ua_completed = \
-                    gtk.glade.XML(gladefile, "ua_completed_dialog")
-                w_xmltree_progress = gtk.glade.XML(gladefile, "progressdialog")
+                    "usr/share/package-manager/packagemanager.ui")
+                builder.add_from_file(gladefile)
 
                 self.w_ua_completed_dialog = \
-                    w_tree_ua_completed.get_widget("ua_completed_dialog")
+                    builder.get_object("ua_completed_dialog")
                 self.w_ua_be_entry = \
-                    w_tree_ua_completed.get_widget("ua_be_entry")
+                    builder.get_object("ua_be_entry")
                 self.w_ua_release_notes_button = \
-                    w_tree_ua_completed.get_widget("ua_release_notes_button")
+                    builder.get_object("release_notes_button")
                 self.w_be_error_label = \
-                    w_tree_ua_completed.get_widget("be_error_label")
+                    builder.get_object("be_error_label")
+                self.w_ua_help_button = \
+                    builder.get_object("ua_help_button")
                 self.w_ua_restart_later_button = \
-                    w_tree_ua_completed.get_widget("ua_restart_later_button")
+                    builder.get_object("ua_restart_later_button")
                 self.w_ua_restart_now_button = \
-                    w_tree_ua_completed.get_widget("ua_restart_now_button")
+                    builder.get_object("ua_restart_now_button")
                 self.w_ua_ok_image = \
-                    w_tree_ua_completed.get_widget("ua_ok_image")
+                    builder.get_object("ua_ok_image")
                 self.w_ua_whats_this_button = \
-                    w_tree_ua_completed.get_widget("ua_whats_this_button")
+                    builder.get_object("ua_whats_this_button")
+                self.w_ua_whats_this_button.set_tooltip_text(_(
+                    "A boot environment (BE) contains the operating\n"
+                    "system image and updated packages. The\n"
+                    "system will boot into the new BE on restart."))
 
-                self.w_progress_dialog = w_xmltree_progress.get_widget("progressdialog")
-                self.w_progressinfo_label = w_xmltree_progress.get_widget("progressinfo")
-                self.w_progress_cancel = w_xmltree_progress.get_widget("progresscancel")
-                self.w_progressbar = w_xmltree_progress.get_widget("progressbar")
+                self.w_progress_dialog = builder.get_object("progressdialog")
+                self.w_progressinfo_label = builder.get_object("progressinfo")
+                self.w_progress_cancel = builder.get_object("progresscancel")
+                self.w_progressbar = builder.get_object("progressbar")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 self.w_progress_cancel.set_sensitive(False)
 
@@ -116,30 +120,25 @@ class RenameBeAfterUpdateAll:
                 gui_misc.set_modal_and_transient(self.w_ua_completed_dialog,
                     parent_window)
 
-                try:
-                        dic_be_rename = \
-                            {
-                                "on_ua_help_button_clicked" : \
-                                    self.__on_ua_help_button_clicked,
-                                "on_ua_restart_later_button_clicked" : \
-                                    self.__on_ua_restart_later_button_clicked,
-                                "on_ua_restart_now_button_clicked" : \
-                                    self.__on_ua_restart_now_button_clicked,
-                                "on_ua_dialog_close" : \
-                                    self.__on_ua_dialog_close,
-                                "on_ua_completed_dialog_delete_event" : \
-                                    self.__on_ua_completed_dialog_delete_event,
-                                "on_ua_be_entry_changed" : \
-                                    self.__on_ua_be_entry_changed,
-                                "on_ua_whats_this_button_clicked" : \
-                                    self.__on_ua_whats_this_button_clicked,
-                            }
-                        w_tree_ua_completed.signal_autoconnect(dic_be_rename)
-                except AttributeError, error:
-                        print _(
-                            "GUI will not respond to any event! %s. "
-                            "Check declare_signals()") \
-                            % error
+                self.__setup_signals()
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_ua_help_button, "clicked",
+                     self.__on_ua_help_button_clicked),
+                    (self.w_ua_restart_later_button, "clicked",
+                     self.__on_ua_restart_later_button_clicked),
+                    (self.w_ua_restart_now_button, "clicked",
+                     self.__on_ua_restart_now_button_clicked),
+                    (self.w_ua_completed_dialog, "delete_event",
+                     self.__on_ua_completed_dialog_delete_event),
+                    (self.w_ua_be_entry, "changed",
+                     self.__on_ua_be_entry_changed),
+                    (self.w_ua_whats_this_button, "clicked", 
+                     self.__on_ua_whats_this_button_clicked),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def show_rename_dialog(self, updated_packages_list):
                 '''Returns False if no BE rename is needed'''
@@ -165,9 +164,6 @@ class RenameBeAfterUpdateAll:
 
         def __on_ua_restart_now_button_clicked(self, widget):
                 self.__proceed_after_update(True)
-
-        def __on_ua_dialog_close(self, widget):
-                self.__proceed_after_update()
 
         def __on_ua_whats_this_button_clicked(self, widget):
                 msgbox = gtk.MessageDialog(parent = self.w_ua_completed_dialog,

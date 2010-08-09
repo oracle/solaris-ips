@@ -37,7 +37,6 @@ try:
         gobject.threads_init()
         import gconf
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -98,11 +97,10 @@ class UpdateManagerNotifier:
                 except KeyError:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
-                for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", os.path.join(
-                            self.application_dir,
-                            "usr/share/locale"))
-                        module.textdomain("pkg")
+                gettext.bindtextdomain("pkg", os.path.join(
+                    self.application_dir,
+                    "usr/share/locale"))
+                gettext.textdomain("pkg")
                 self.pr = None
                 self.last_check_filename = None
                 self.time_until_next_check = 0

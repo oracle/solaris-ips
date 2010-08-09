@@ -79,62 +79,68 @@ class Webinstall:
                 self.first_run = True
 
                 # Webinstall Dialog
+                builder = gtk.Builder()
                 self.gladefile = os.path.join(self.application_dir,
-                        "usr/share/package-manager/packagemanager.glade")
-                w_xmltree_webinstall = gtk.glade.XML(self.gladefile, "webinstalldialog")
+                        "usr/share/package-manager/packagemanager.ui")
+                builder.add_from_file(self.gladefile)
                 self.w_webinstall_dialog = \
-                        w_xmltree_webinstall.get_widget("webinstalldialog")
+                        builder.get_object("webinstalldialog")
                 
                 self.w_webinstall_proceed = \
-                        w_xmltree_webinstall.get_widget("proceed_button")
+                        builder.get_object("proceed_button")
                 self.w_webinstall_cancel = \
-                        w_xmltree_webinstall.get_widget("cancel_button")
+                        builder.get_object("cancel_button")
+                self.w_webinstall_help = \
+                        builder.get_object("help_button")
                 self.w_webinstall_close = \
-                        w_xmltree_webinstall.get_widget("close_button")
+                        builder.get_object("close_button")
                 self.w_webinstall_proceed_label = \
-                        w_xmltree_webinstall.get_widget("proceed_new_repo_label")
+                        builder.get_object("proceed_new_repo_label")
                 self.w_webinstall_toplabel = \
-                        w_xmltree_webinstall.get_widget("webinstall_toplabel")
+                        builder.get_object("webinstall_toplabel")
                 self.w_webinstall_frame = \
-                        w_xmltree_webinstall.get_widget("webinstall_frame")
+                        builder.get_object("webinstall_frame")
                 self.w_webinstall_image = \
-                        w_xmltree_webinstall.get_widget("pkgimage")
+                        builder.get_object("pkgimage")
                 self.window_icon = gui_misc.get_icon(self.icon_theme, 
                     'packagemanager', 48)
                 self.w_webinstall_image.set_from_pixbuf(self.window_icon)
                 self.w_webinstall_info_label = \
-                        w_xmltree_webinstall.get_widget("label19")
+                        builder.get_object("label19")
 
                 self.w_webinstall_textview = \
-                        w_xmltree_webinstall.get_widget("webinstall_textview")  
+                        builder.get_object("webinstall_textview")  
                 infobuffer = self.w_webinstall_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 infobuffer.create_tag("disabled", foreground="#757575") #Close to DimGrey
 
-                try:
-                        dic = \
-                            {
-                                "on_webinstalldialog_close": \
-                                    self.__on_webinstall_dialog_close,
-                                "on_cancel_button_clicked": \
-                                    self.__on_cancel_button_clicked,
-                                "on_help_button_clicked": \
-                                    self.__on_help_button_clicked,
-                                "on_proceed_button_clicked": \
-                                    self.__on_proceed_button_clicked,
-                            }
-                        w_xmltree_webinstall.signal_autoconnect(dic)
-
-
-                except AttributeError, error:
-                        print _("GUI will not respond to any event! %s. "
-                            "Check webinstall.py signals") % error
+                self.__setup_signals()
  
                 self.w_webinstall_dialog.set_icon(self.window_icon)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
                 gui_misc.setup_logging()
-        
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_webinstall_dialog, "destroy_event",
+                     self.__on_webinstall_dialog_close),
+                    (self.w_webinstall_dialog, "close",
+                     self.__on_webinstall_dialog_close),
+                    (self.w_webinstall_dialog, "delete_event",
+                     self.__on_webinstall_dialog_close),
+                    (self.w_webinstall_cancel, "clicked",
+                     self.__on_cancel_button_clicked),
+                    (self.w_webinstall_close, "clicked",
+                     self.__on_cancel_button_clicked),
+                    (self.w_webinstall_help, "clicked",
+                     self.__on_help_button_clicked),
+                    (self.w_webinstall_proceed, "clicked",
+                     self.__on_proceed_button_clicked),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
+
         def __output_new_pub_tasks(self, infobuffer, textiter, num_tasks):
                 if num_tasks == 0:
                         return

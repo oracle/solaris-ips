@@ -27,7 +27,6 @@ import os
 import re
 try:
         import gobject
-        import gtk
         import pango
 except ImportError:
         sys.exit(1)
@@ -37,35 +36,34 @@ REGEX_BOLD_MARKUP = re.compile(r'^<b>')
 REGEX_STRIP_MARKUP = re.compile(r'<.*?>')
 
 class PMLogging:
-        def __init__(self, gladefile, window_icon):
-                self.w_log = gtk.glade.XML(gladefile, "view_log_dialog")
-                self.w_view_log_dialog = \
-                    self.w_log.get_widget("view_log_dialog")
+        def __init__(self, builder, window_icon):
+                self.w_view_log_dialog = builder.get_object("view_log_dialog")
                 self.w_view_log_dialog.set_icon(window_icon)
                 self.w_view_log_dialog.set_title(_("Logs"))
-                self.w_log_info_textview = self.w_log.get_widget("log_info_textview")
-                self.w_log_errors_textview = self.w_log.get_widget("log_errors_textview")
+                self.w_log_info_textview = builder.get_object("log_info_textview")
+                self.w_log_errors_textview = builder.get_object("log_errors_textview")
+
                 infobuffer = self.w_log_info_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)          
                 infobuffer = self.w_log_errors_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)          
-                self.w_log_close_button = self.w_log.get_widget("log_close_button")
+                self.w_log_close_button = builder.get_object("log_close_button")
+                self.w_log_clear_button = builder.get_object("log_clear_button")
 
         def set_window_icon(self, window_icon):
                 self.w_view_log_dialog.set_icon(window_icon)
 
         def setup_signals(self):
-                dic_log = \
-                    {
-                        "on_log_close_button_clicked": \
-                            self.__on_log_close_button_clicked,
-                        "on_log_clear_button_clicked": \
-                            self.__on_log_clear_button_clicked,
-                        "on_view_log_dialog_delete_event": \
-                            self.__on_log_dialog_delete_event
-                    }
-
-                self.w_log.signal_autoconnect(dic_log)
+                signals_table = [
+                    (self.w_log_close_button, "clicked",
+                     self.__on_log_close_button_clicked),
+                    (self.w_log_clear_button, "clicked",
+                     self.__on_log_clear_button_clicked),
+                    (self.w_view_log_dialog, "delete_event",
+                     self.__on_log_dialog_delete_event)
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         def set_modal_and_transient(self, parent_window):
                 gui_misc.set_modal_and_transient(self.w_view_log_dialog,

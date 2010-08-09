@@ -239,103 +239,137 @@ class PackageManager:
                 self.error_logged = False
                 
                 # Create Widgets and show gui
+                self.builder = gtk.Builder()
                 self.gladefile = os.path.join(self.application_dir,
-                    "usr/share/package-manager/packagemanager.glade")
-                w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
+                    "usr/share/package-manager/packagemanager.ui")
+                self.builder.add_from_file(self.gladefile)
 
-                self.w_main_window = w_tree_main.get_widget("mainwindow")
+                self.w_main_window = self.builder.get_object("mainwindow")
                 self.w_main_window.set_icon(self.window_icon)
-                self.w_main_hpaned = \
-                    w_tree_main.get_widget("main_hpaned")
-                self.w_main_vpaned = \
-                    w_tree_main.get_widget("main_vpaned")
+                self.w_main_hpaned = self.builder.get_object("main_hpaned")
+                self.w_main_vpaned = self.builder.get_object("main_vpaned")
 
                 self.w_publisher_combobox_hbox = \
-                    w_tree_main.get_widget("publisher_combobox_hbox")
-                self.w_view_combobox_hbox = \
-                    w_tree_main.get_widget("view_combobox_hbox")
+                    self.builder.get_object("publisher_combobox_hbox")
+                self.w_view_combobox_hbox =  self.builder.get_object("view_combobox_hbox")
 
                 self.w_application_treeview = \
-                    w_tree_main.get_widget("applicationtreeview")
-                self.w_application_treeview.connect('key_press_event',
-                    self.__on_applicationtreeview_button_and_key_events)
+                    self.builder.get_object("applicationtreeview")
                 self.w_application_treeview.set_enable_search(True)
                 self.w_application_treeview.set_search_equal_func(
                       self.__applicationtreeview_compare_func)
 
-                self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
+                self.w_categories_treeview = self.builder.get_object("categoriestreeview")
                 self.w_categories_treeview.set_search_equal_func(
                     self.__categoriestreeview_compare_func)
 
-                self.w_info_notebook = w_tree_main.get_widget("details_notebook")
+                self.w_info_notebook = self.builder.get_object("details_notebook")
                 self.w_startpage_scrolled_window = \
-                    w_tree_main.get_widget("startpage_scrolled_window")
+                    self.builder.get_object("startpage_scrolled_window")
                 self.w_startpage_eventbox = \
-                    w_tree_main.get_widget("startpage_eventbox")
+                    self.builder.get_object("startpage_eventbox")
                 self.w_startpage_eventbox.modify_bg(gtk.STATE_NORMAL,
                     gtk.gdk.color_parse("white"))
 
-                self.w_main_statusbar = w_tree_main.get_widget("statusbar")
+                self.w_main_statusbar = self.builder.get_object("statusbar")
                 #Allow markup in StatusBar
                 self.w_main_statusbar_label = \
                         gui_misc.get_statusbar_label(self.w_main_statusbar)
                 if self.w_main_statusbar_label:
                         self.w_main_statusbar_label.set_use_markup(True) 
     
-                self.w_statusbar_hbox = w_tree_main.get_widget("statusbar_hbox")
-                self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
+                self.w_statusbar_hbox = self.builder.get_object("statusbar_hbox")
+                self.w_infosearch_frame = self.builder.get_object("infosearch_frame")
 
-                self.w_progress_frame = w_tree_main.get_widget("progress_frame")
-                self.w_status_progressbar = w_tree_main.get_widget("status_progressbar")
+                self.w_progress_frame = self.builder.get_object("progress_frame")
+                self.w_status_progressbar = self.builder.get_object("status_progressbar")
                 self.w_status_progressbar.set_pulse_step(0.1)
                 self.w_progress_frame.hide()
 
                 self.w_main_view_notebook = \
-                    w_tree_main.get_widget("main_view_notebook")
-                self.w_searchentry = w_tree_main.get_widget("searchentry")
+                    self.builder.get_object("main_view_notebook")
+                self.w_searchentry = self.builder.get_object("searchentry")
+                self.w_searchentry.set_tooltip_text(
+                    _("Type text to search for the package."))
                 self.entrystyle = entrystyle.EntryStyle(self.w_searchentry)
                 self.search_completion = gtk.ListStore(str)
-                self.w_package_menu = w_tree_main.get_widget("package_menu")
-                self.w_reload_button = w_tree_main.get_widget("reload_button")
+                self.w_package_menu = self.builder.get_object("package_menu")
+                self.w_reload_button = self.builder.get_object("reload_button")
+                self.w_reload_button.set_tooltip_text(
+                    _("Refresh list of packages and package status")) 
                 self.w_installupdate_button = \
-                    w_tree_main.get_widget("install_update_button")
-                self.w_remove_button = w_tree_main.get_widget("remove_button")
-                self.w_updateall_button = w_tree_main.get_widget("update_all_button")
-                self.w_repository_combobox = w_tree_main.get_widget("repositorycombobox")
-                self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
-                self.w_packageicon_image = w_tree_main.get_widget("packageimage")
-                self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
+                    self.builder.get_object("install_update_button")
+                self.w_installupdate_button.set_tooltip_text(
+                    _("Select packages by marking the checkbox and click "
+                      "to Install/Update"))
+                self.w_remove_button = self.builder.get_object("remove_button")
+                self.w_remove_button.set_tooltip_text(
+                    _("Select packages by marking the checkbox and click "
+                      "to Remove selected")) 
+                self.w_updateall_button = self.builder.get_object("update_all_button")
+                self.w_updateall_button.set_tooltip_text(
+                    _("Checks if updates are available")) 
+                self.w_repository_combobox = self.builder.get_object("repositorycombobox")
+                self.w_filter_combobox = self.builder.get_object("filtercombobox")
+                self.w_packageicon_image = self.builder.get_object("packageimage")
+                self.w_reload_menuitem = self.builder.get_object("file_reload")
                 gui_misc.set_icon_for_button_and_menuitem('pm-refresh',
                     self.w_reload_button, self.w_reload_menuitem)
                 self.w_version_info_menuitem = \
-                    w_tree_main.get_widget("package_version_info")
+                    self.builder.get_object("package_version_info")
+                self.__set_image_for_menuitem(self.w_version_info_menuitem,
+                    gtk.STOCK_INFO)
                 self.w_version_info_menuitem.set_sensitive(False)
                 self.w_installupdate_menuitem = \
-                    w_tree_main.get_widget("package_install_update")
+                    self.builder.get_object("package_install_update")
                 gui_misc.set_icon_for_button_and_menuitem('pm-install_update',
                     self.w_installupdate_button, self.w_installupdate_menuitem)
-                self.w_remove_menuitem = w_tree_main.get_widget("package_remove")
+                self.w_remove_menuitem = self.builder.get_object("package_remove")
                 gui_misc.set_icon_for_button_and_menuitem('pm-remove',
                     self.w_remove_button, self.w_remove_menuitem)
-                self.w_updateall_menuitem = w_tree_main.get_widget("package_update_all")
+                self.w_updateall_menuitem = self.builder.get_object("package_update_all")
                 gui_misc.set_icon_for_button_and_menuitem('pm-update_all',
                     self.w_updateall_button, self.w_updateall_menuitem)
-                self.w_be_menuitem = w_tree_main.get_widget("file_be")
-                self.w_export_selections_menuitem = w_tree_main.get_widget(
+                self.w_quit_menuitem = self.builder.get_object("file_quit")
+                self.w_be_menuitem = self.builder.get_object("file_be")
+                self.w_export_selections_menuitem = self.builder.get_object(
                     "file_export_selections")
-                self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
-                self.w_copy_menuitem = w_tree_main.get_widget("edit_copy")
-                self.w_paste_menuitem = w_tree_main.get_widget("edit_paste")
-                self.w_delete_menuitem = w_tree_main.get_widget("edit_delete")
-                self.w_selectall_menuitem = w_tree_main.get_widget("edit_select_all")
+                self.w_manage_publishers_menuitem = self.builder.get_object(
+                    "file_manage_publishers")
+                self.w_add_publisher_menuitem = self.builder.get_object(
+                    "file_add_publisher")
+                self.w_cut_menuitem = self.builder.get_object("edit_cut")
+                self.w_copy_menuitem = self.builder.get_object("edit_copy")
+                self.w_paste_menuitem = self.builder.get_object("edit_paste")
+                self.w_delete_menuitem = self.builder.get_object("edit_delete")
+                self.w_selectall_menuitem = self.builder.get_object("edit_select_all")
                 self.w_selectupdates_menuitem = \
-                    w_tree_main.get_widget("edit_select_updates")
-                self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
-                self.w_clear_search_menuitem = w_tree_main.get_widget("clear")
+                    self.builder.get_object("edit_select_updates")
+                self.w_deselect_menuitem = self.builder.get_object("edit_deselect")
+                self.w_clear_search_menuitem = self.builder.get_object("clear")
+                self.__set_image_for_menuitem(self.w_clear_search_menuitem,
+                    gtk.STOCK_CLEAR)
+                self.w_help_about_menuitem = self.builder.get_object("help_about")
+                self.w_online_help_menuitem = self.builder.get_object("online_help")
+                self.__set_image_for_menuitem(self.w_online_help_menuitem,
+                    gtk.STOCK_HELP)
                 self.w_main_clipboard =  gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
                 self.saved_filter_combobox_active = self.gconf.initial_show_filter
-                self.search_button = w_tree_main.get_widget("do_search")
-                self.progress_cancel = w_tree_main.get_widget("progress_cancel")
+                self.search_button = self.builder.get_object("do_search")
+                self.search_button.set_tooltip_text(_("Search"))
+                self.w_search_menuitem = self.builder.get_object("search")
+                self.__set_image_for_menuitem(self.w_search_menuitem,
+                    gtk.STOCK_FIND)
+                self.w_gotolist_menuitem = self.builder.get_object("gotolist")
+                self.w_edit_preferences_menuitem = self.builder.get_object(
+                    "edit_preferences")
+                self.w_log_menuitem = self.builder.get_object("log")
+                self.w_start_page_menuitem = self.builder.get_object("start_page")
+                self.w_infosearch_eventbox = self.builder.get_object(
+                    "infosearch_eventbox")
+                self.progress_cancel = self.builder.get_object("progress_cancel")
+                self.progress_cancel.set_tooltip_text(
+                    _("Cancel current operation"))
                 self.is_all_publishers = False
                 self.is_all_publishers_installed = False
                 self.is_all_publishers_search = False
@@ -349,111 +383,25 @@ class PackageManager:
                 self.saved_selected_application_path = None
                 self.section_categories_list = {}
                 self.statusbar_message_id = 0
-                toolbar =  w_tree_main.get_widget("toolbutton2")
+                toolbar =  self.builder.get_object("toolbutton2")
                 toolbar.set_expand(True)
-                self.detailspanel = detailspanel.DetailsPanel(self, w_tree_main)
-                self.exportconfirm = exportconfirm.ExportConfirm(self.gladefile,
+                self.detailspanel = detailspanel.DetailsPanel(self, self.builder)
+                self.exportconfirm = exportconfirm.ExportConfirm(self.builder,
                     self.window_icon, self.gconf, self)
-                self.logging = logging.PMLogging(self.gladefile,
-                    self.window_icon)
-                self.preferences = preferences.Preferences(self.gladefile,
+                self.logging = logging.PMLogging(self.builder, self.window_icon)
+                self.preferences = preferences.Preferences(self.builder,
                     self.window_icon, self.gconf)
-                self.searcherror = searcherror.SearchError(self.gladefile,
+                self.searcherror = searcherror.SearchError(self.builder,
                     self.gconf, self)
-                self.versioninfo = versioninfo.VersionInfo(self.gladefile, self)
+                self.versioninfo = versioninfo.VersionInfo(self.builder, self)
                 self.__init_repository_tree_view()
                 self.w_main_window.set_title(self.program_title)
 
                 self.__setup_startpage(self.gconf.show_startpage)
 
-                try:
-                        dic_mainwindow = \
-                            {
-                                "on_mainwindow_delete_event": \
-                                    self.__on_mainwindow_delete_event,
-                                "on_mainwindow_check_resize": \
-                                    self.__on_mainwindow_check_resize,
-                                "on_mainwindow_key_press_event": \
-                                    self.__on_mainwindow_key_press_event,
-                                "on_mainwindow_style_set": \
-                                    self.__on_mainwindow_style_set,
-                                "on_searchentry_changed":self.__on_searchentry_changed,
-                                "on_searchentry_focus_in_event": \
-                                    self.__on_searchentry_focus_in,
-                                "on_searchentry_focus_out_event": \
-                                    self.__on_searchentry_focus_out,
-                                "on_searchentry_activate": \
-                                    self.__do_search,
-                                "on_filtercombobox_changed": \
-                                    self.__on_filtercombobox_changed,
-                                "on_repositorycombobox_changed": \
-                                    self.__on_repositorycombobox_changed,
-                                #menu signals
-                                "on_file_export_selections": \
-                                        self.__on_file_export_selections,
-                                "on_file_quit_activate":self.__on_file_quit_activate,
-                                "on_file_be_activate":self.__on_file_be_activate,
-                                "on_package_version_info_activate": \
-                                    self.__on_version_info,
-                                "on_package_install_update_activate": \
-                                    self.__on_install_update,
-                                "on_file_manage_publishers_activate": \
-                                    self.__on_file_manage_publishers,
-                                "on_file_add_publisher_activate": \
-                                    self.__on_file_add_publisher,
-                                "on_package_remove_activate":self.__on_remove,
-                                "on_help_about_activate":self.__on_help_about,
-                                "on_help_help_activate":self.__on_help_help,
-                                "on_edit_paste_activate":self.__on_edit_paste,
-                                "on_edit_delete_activate":self.__on_delete,
-                                "on_edit_copy_activate":self.__on_copy,
-                                "on_edit_cut_activate":self.__on_cut,
-                                "on_edit_search_activate":self.__on_edit_search_clicked,
-                                "on_goto_list_activate":self.__on_goto_list_clicked,
-                                "on_clear_search_activate":self.__on_clear_search,
-                                "on_clear_search_clicked":self.__on_clear_search,
-                                "on_do_search_clicked":self.__do_search,
-                                "on_do_search_button_press_event":self.__do_search,
-                                "on_progress_cancel_clicked": \
-                                    self.__on_progress_cancel_clicked,
-                                "on_edit_select_all_activate":self.__on_select_all,
-                                "on_edit_select_updates_activate": \
-                                    self.__on_select_updates,
-                                "on_edit_deselect_activate":self.__on_deselect,
-                                "on_edit_preferences_activate":self.__on_preferences,
-                                "on_log_activate":self.__on_log_activate,
-                                # XXX disabled until new API
-                                "on_package_update_all_activate":self.__on_update_all,
-                                #toolbar signals
-                                # XXX disabled until new API
-                                "on_update_all_button_clicked":self.__on_update_all,
-                                "on_reload_button_clicked":self.__on_reload,
-                                "on_install_update_button_clicked": \
-                                    self.__on_install_update,
-                                "on_remove_button_clicked":self.__on_remove,
-                                "on_help_start_page_activate":self.__on_startpage,
-                                "on_details_notebook_switch_page": \
-                                    self.__on_notebook_change,
-                                "on_infosearch_eventbox_button_press_event": \
-                                    self.__on_infosearch_button_press_event,
-                                "on_applicationtreeview_button_press_event": \
-                                    self.__on_applicationtreeview_button_and_key_events,
-                                "on_applicationtreeview_query_tooltip": \
-                                    self.__on_applicationtreeview_query_tooltip,
-                            }
+                self.__setup_signals()
 
-                        w_tree_main.signal_autoconnect(dic_mainwindow)
-                        self.exportconfirm.setup_signals()
-                        self.logging.setup_signals()
-                        self.preferences.setup_signals()
-                        self.searcherror.setup_signals()
-                        self.versioninfo.setup_signals()
-                except AttributeError, error:
-                        print _(
-                            "GUI will not respond to any event! %s. "
-                            "Check declare_signals()") \
-                            % error
-
+                self.installupdate = None
                 self.package_selection = None
                 self.application_list_filter = None
                 self.application_list_sort = None
@@ -490,6 +438,122 @@ class PackageManager:
                 self.is_inverse_theme = False
                 self.theme_name = None
                 self.__setup_theme_properties()
+
+        @staticmethod
+        def __set_image_for_menuitem(widget, stock_id):
+                image_widget = gtk.image_new_from_stock(stock_id,
+                    gtk.ICON_SIZE_MENU)
+                widget.set_image(image_widget)
+
+        def __setup_signals(self):
+                ''' Setup signals required for widgets in Package Manager main
+                view which are got from GtkBuilder'''
+                signals_table = [
+                    (self.w_main_window, "delete_event", 
+                     self.__on_mainwindow_delete_event),
+                     (self.w_main_window, "check_resize", 
+                     self.__on_mainwindow_check_resize),
+                     (self.w_main_window, "key_press_event", 
+                     self.__on_mainwindow_key_press_event),
+                     (self.w_main_window, "style_set", 
+                     self.__on_mainwindow_style_set),
+                     (self.w_searchentry, "changed", 
+                     self.__on_searchentry_changed),
+                     (self.w_searchentry, "focus_in_event", 
+                     self.__on_searchentry_focus_in),
+                     (self.w_searchentry, "focus_out_event", 
+                     self.__on_searchentry_focus_out),
+                     (self.w_searchentry, "activate", 
+                     self.__do_search),
+                     (self.w_searchentry, "icon_press", 
+                     self.__on_clear_search),
+                     (self.w_filter_combobox, "changed", 
+                     self.__on_filtercombobox_changed),
+                     (self.w_repository_combobox, "changed", 
+                     self.__on_repositorycombobox_changed),
+                     (self.w_export_selections_menuitem, "activate", 
+                     self.__on_file_export_selections),
+                     (self.w_quit_menuitem, "activate", 
+                     self.__on_file_quit_activate),
+                     (self.w_be_menuitem, "activate", 
+                     self.__on_file_be_activate),
+                     (self.w_version_info_menuitem, "activate", 
+                     self.__on_version_info),
+                     (self.w_installupdate_menuitem, "activate", 
+                     self.__on_install_update),
+                     (self.w_manage_publishers_menuitem, "activate", 
+                     self.__on_file_manage_publishers),
+                     (self.w_add_publisher_menuitem, "activate", 
+                     self.__on_file_add_publisher),
+                     (self.w_remove_menuitem, "activate", 
+                     self.__on_remove),
+                     (self.w_help_about_menuitem, "activate", 
+                     self.__on_help_about),
+                     (self.w_online_help_menuitem, "activate", 
+                     self.__on_help_help),
+                     (self.w_paste_menuitem, "activate", 
+                     self.__on_edit_paste),
+                     (self.w_delete_menuitem, "activate", 
+                     self.__on_delete),
+                     (self.w_copy_menuitem, "activate", 
+                     self.__on_copy),
+                     (self.w_cut_menuitem, "activate", 
+                     self.__on_cut),
+                     (self.w_search_menuitem, "activate", 
+                     self.__on_edit_search_clicked),
+                     (self.w_gotolist_menuitem, "activate", 
+                     self.__on_goto_list_clicked),
+                     (self.w_clear_search_menuitem, "activate", 
+                     self.__on_clear_search),
+                     (self.search_button, "clicked", 
+                     self.__do_search),
+                     (self.search_button, "button_press_event", 
+                     self.__do_search),
+                     (self.progress_cancel, "clicked", 
+                     self.__on_progress_cancel_clicked),
+                     (self.w_selectall_menuitem, "activate", 
+                     self.__on_select_all),
+                     (self.w_selectupdates_menuitem, "activate", 
+                     self.__on_select_updates),
+                     (self.w_deselect_menuitem, "activate", 
+                     self.__on_deselect),
+                     (self.w_edit_preferences_menuitem, "activate", 
+                     self.__on_preferences),
+                     (self.w_log_menuitem, "activate", 
+                     self.__on_log_activate),
+                     (self.w_updateall_menuitem, "activate", 
+                     self.__on_update_all),
+                     (self.w_updateall_button, "clicked", 
+                     self.__on_update_all),
+                     (self.w_reload_menuitem, "activate", 
+                     self.__on_reload),
+                     (self.w_reload_button, "clicked", 
+                     self.__on_reload),
+                     (self.w_installupdate_button, "clicked", 
+                     self.__on_install_update),
+                     (self.w_remove_button, "clicked", 
+                     self.__on_remove),
+                     (self.w_start_page_menuitem, "activate", 
+                     self.__on_startpage),
+                     (self.w_info_notebook, "switch_page", 
+                     self.__on_notebook_change),
+                     (self.w_infosearch_eventbox, "button_press_event", 
+                     self.__on_infosearch_button_press_event),
+                     (self.w_application_treeview, "button_press_event", 
+                     self.__on_applicationtreeview_button_and_key_events),
+                     (self.w_application_treeview, "key_press_event", 
+                     self.__on_applicationtreeview_button_and_key_events),
+                     (self.w_application_treeview, "query_tooltip", 
+                     self.__on_applicationtreeview_query_tooltip),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
+
+                self.exportconfirm.setup_signals()
+                self.logging.setup_signals()
+                self.preferences.setup_signals()
+                self.searcherror.setup_signals()
+                self.versioninfo.setup_signals()
 
         def __setup_theme_properties(self):
                 s = gtk.settings_get_default()
@@ -2857,7 +2921,7 @@ class PackageManager:
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
 
-                installupdate.InstallUpdate(install_update, self, \
+                self.installupdate = installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
                     main_window = self.w_main_window,
                     confirmation_list = confirmation_list, api_lock = self.api_lock,
@@ -2881,11 +2945,10 @@ class PackageManager:
                 return
 
         def __on_help_about(self, widget):
-                wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
-                aboutdialog = wTreePlan.get_widget("aboutdialog")
+                aboutdialog = self.builder.get_widget("aboutdialog")
                 aboutdialog.set_icon(self.window_icon)
                 aboutdialog.connect("response", lambda x = None, \
-                    y = None: aboutdialog.destroy())
+                    y = None: aboutdialog.hide())
                 aboutdialog.set_version(gui_misc.get_os_version_and_build())
                 aboutdialog.run()
 
@@ -2926,7 +2989,7 @@ class PackageManager:
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
 
-                installupdate.InstallUpdate(remove_list, self,
+                self.installupdate = installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
                     main_window = self.w_main_window,
                     confirmation_list = confirmation_list, api_lock = self.api_lock,
@@ -4675,8 +4738,17 @@ class PackageManager:
                                 self.__reset_row_status(row)
 
         def update_package_list(self, update_list):
-                if update_list == None and self.img_timestamp:
-                        return
+                ''' update_package_list is called with update_list set to None
+                when InstallUpdate object can be discarded when installing or
+                removing packages.
+
+                update_package_list is called with update_list set to not None
+                to indicate what packages have been updated so Package Manager
+                can update its data.'''
+                if update_list == None:
+                        self.installupdate = None
+                        if self.img_timestamp:
+                                return
                 self.after_install_remove = True
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher

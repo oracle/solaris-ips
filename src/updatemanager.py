@@ -124,87 +124,86 @@ class Updatemanager:
                 self.api_obj = None
 
                 # Progress Dialog
+                builder = gtk.Builder()
                 self.gladefile = os.path.join(self.application_dir,
-                    "usr/share/update-manager/updatemanager.glade")
-                w_xmltree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
-                self.w_progress_dialog = w_xmltree_progress.get_widget("progressdialog")
+                    "usr/share/update-manager/updatemanager.ui")
+                builder.add_from_file(self.gladefile)
+                self.w_progress_dialog = builder.get_object("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 
-                self.w_progressinfo_label = w_xmltree_progress.get_widget("progressinfo")
-                self.w_progressinfo_separator = w_xmltree_progress.get_widget(
+                self.w_progressinfo_label = builder.get_object("progressinfo")
+                self.w_progressinfo_separator = builder.get_object(
                     "progressinfo_separator")                
                 self.w_progressinfo_expander = \
-                    w_xmltree_progress.get_widget("progressinfo_expander")
+                    builder.get_object("progressinfo_expander")
                 self.w_progressinfo_textview = \
-                    w_xmltree_progress.get_widget("progressinfo_textview")
+                    builder.get_object("progressinfo_textview")
                 infobuffer = self.w_progressinfo_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
                 self.w_progress_install_vbox = \
-                    w_xmltree_progress.get_widget("progress_install_vbox")
+                    builder.get_object("progress_install_vbox")
                 
                 self.w_progress_closeon_finish_chk = \
-                    w_xmltree_progress.get_widget("closeon_finish_checkbutton")
+                    builder.get_object("closeon_finish_checkbutton")
 
-                self.w_progress_cancel = w_xmltree_progress.get_widget("progresscancel")
-                self.w_progress_ok = w_xmltree_progress.get_widget("progressok")
-                self.w_progressbar = w_xmltree_progress.get_widget("progressbar")
+                self.w_progress_cancel = builder.get_object("progresscancel")
+                self.w_progress_ok = builder.get_object("progressok")
+                self.w_progressbar = builder.get_object("progressbar")
                 
                 # UM Dialog
-                w_xmltree_um = gtk.glade.XML(self.gladefile, "um_dialog")
-                self.w_um_dialog = w_xmltree_um.get_widget("um_dialog")
+                self.w_um_dialog = builder.get_object("um_dialog")
                 self.w_um_dialog.connect("destroy", self.__on_um_dialog_close)
-                self.w_um_intro_label = w_xmltree_um.get_widget("um_intro_label")
-                self.w_um_intro2_label = w_xmltree_um.get_widget("um_intro2_label")
-                self.w_um_install_button = w_xmltree_um.get_widget("um_install_button")
+                self.w_um_intro_label = builder.get_object("um_intro_label")
+                self.w_um_intro2_label = builder.get_object("um_intro2_label")
+                self.w_um_install_button = builder.get_object("um_install_button")
                 self.w_um_updateall_button = \
-                    w_xmltree_um.get_widget("um_updateall_button")
+                    builder.get_object("um_updateall_button")
                 self.pm_image = \
-                    w_xmltree_um.get_widget("pm_image")
+                    builder.get_object("pm_image")
                 self.pm_image.set_from_pixbuf(self.__get_icon_pixbuf('updatemanager', 48))
-                self.w_um_expander = w_xmltree_um.get_widget("um_expander")
+                self.w_um_expander = builder.get_object("um_expander")
                 self.w_um_expander.set_expanded(True)
 
                 self.w_progress_dialog.set_transient_for(self.w_um_dialog)
 
-                self.w_um_treeview = w_xmltree_um.get_widget("um_treeview")  
-                self.w_um_treeview_frame = w_xmltree_um.get_widget("um_treeview_frame")  
-                self.w_um_textview = w_xmltree_um.get_widget("um_textview")  
+                self.w_um_treeview = builder.get_object("um_treeview")  
+                self.w_um_treeview_frame = builder.get_object("um_treeview_frame")  
+                self.w_um_textview = builder.get_object("um_textview")  
                 infobuffer = self.w_um_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-                self.w_select_checkbox = w_xmltree_um.get_widget("selectall_checkbutton")
-                self.w_um_cancel_button = w_xmltree_um.get_widget("cancel_button")
-                self.w_um_close_button = w_xmltree_um.get_widget("close_button")
+                self.w_select_checkbox = builder.get_object("selectall_checkbutton")
+                self.w_um_help_button = builder.get_object("help_button")
+                self.w_um_cancel_button = builder.get_object("cancel_button")
+                self.w_um_close_button = builder.get_object("close_button")
 
-                try:
-                        dic = \
-                            {
-                                "on_um_dialog_close": \
-                                    self.__on_um_dialog_close,
-                                "on_cancel_button_clicked": \
-                                    self.__on_cancel_button_clicked,
-                                "on_close_button_clicked": \
-                                    self.__on_cancel_button_clicked,
-                                "on_help_button_clicked": \
-                                    self.__on_help_button_clicked,
-                                "on_um_updateall_button_clicked": \
-                                    self.__on_updateall_button_clicked,
-                                "on_um_expander_activate": \
-                                    self.__on_um_expander_activate,
-                                "on_selectall_checkbutton_toggled": \
-                                    self.__on_selectall_checkbutton_toggled,
-                            }
-                        w_xmltree_um.signal_autoconnect(dic)
-
-                except AttributeError, error:
-                        print _("GUI will not respond to any event! %s. "
-                            "Check updatemanager.py signals") % error
+                self.__setup_signals()
 
                 self.pr = progress.NullProgressTracker()
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
                 gui_misc.setup_logging()
+
+        def __setup_signals(self):
+                signals_table = [
+                    (self.w_progress_dialog, "close",
+                     self.__on_um_dialog_close),
+                    (self.w_um_cancel_button, "clicked",
+                     self.__on_cancel_button_clicked),
+                    (self.w_um_close_button, "clicked",
+                     self.__on_cancel_button_clicked),
+                    (self.w_um_help_button, "clicked",
+                     self.__on_help_button_clicked),
+                    (self.w_um_updateall_button, "clicked",
+                     self.__on_updateall_button_clicked),
+                    (self.w_um_expander, "activate",
+                     self.__on_um_expander_activate),
+                    (self.w_select_checkbox, "toggled",
+                     self.__on_selectall_checkbutton_toggled),
+                    ]
+                for widget, signal_name, callback in signals_table:
+                        widget.connect(signal_name, callback)
 
         @staticmethod
         def __get_um_liststore():
