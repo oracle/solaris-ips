@@ -172,6 +172,7 @@ class PackageManager:
                 self.image_directory = None
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.progress_stop_thread = True
+                self.progress_thread_stopped = True
                 self.update_all_proceed = False
                 self.application_path = None
                 self.default_publisher = None
@@ -3667,6 +3668,7 @@ class PackageManager:
             info_id, renamed_info = None, pkg_renamed = False):
                 if self.detailspanel.showing_empty_details or (info_id !=
                     self.last_show_info_id):
+                        self.unset_busy_cursor()
                         return
                 self.info_pkgstem = pkg_stem
                 self.detailspanel.update_package_info(pkg_name, local_info,
@@ -3706,6 +3708,7 @@ class PackageManager:
             info_id, pkg_renamed):
                 if self.detailspanel.showing_empty_details or \
                         info_id != self.last_show_info_id:
+                        self.unset_busy_cursor()
                         return
                 local_info, remote_info = self.__fetch_info(info_id,
                     self.last_show_info_id, pkg_stem, pkg_status)
@@ -4435,28 +4438,12 @@ class PackageManager:
                                 break
 
 
-        def __progress_set_fraction(self, count, total):
-                self.__progress_pulse_stop()
-                if count == total:
-                        self.w_progress_frame.hide()
-                        return False
-                if self.api_o and self.api_o.can_be_canceled():
-                        self.progress_cancel.set_sensitive(True)
-                else:
-                        self.progress_cancel.set_sensitive(False)
-                self.w_progress_frame.show()
-                result = (count + 0.0)/total
-                if result > 1.0:
-                        result = 1.0
-                elif result < 0.0:
-                        result = 0.0
-                self.w_status_progressbar.set_fraction(result)
-
-
         def __progress_pulse_start(self):
                 if self.progress_stop_thread == True:
                         self.progress_stop_thread = False
-                        Thread(target = self.__progress_pulse).start()
+                        if self.progress_thread_stopped:
+                                self.progress_thread_stopped = False
+                                Thread(target = self.__progress_pulse).start()
 
         def __progress_pulse_stop(self):
                 self.progress_stop_thread = True
@@ -4472,7 +4459,7 @@ class PackageManager:
                         gobject.idle_add(self.w_status_progressbar.pulse)
                         time.sleep(0.1)
                 gobject.idle_add(self.w_progress_frame.hide)
-                self.progress_stop_thread = True
+                self.progress_thread_stopped = True
 
         def error_occurred(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
                 if msg_title:
