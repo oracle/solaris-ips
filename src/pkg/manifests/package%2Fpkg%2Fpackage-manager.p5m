@@ -333,6 +333,10 @@ license cr_Oracle license=cr_Oracle
 license lic_CDDL license=lic_CDDL
 legacy pkg=SUNWipkg-gui version=0.1.1
 
-depend type=require fmri=library/python-2/python-gnome-libs-26@$(PKGVERS_COMPONENT)
+depend type=require fmri=desktop/gksu
+depend type=require fmri=gnome/theme/hicolor-icon-theme
+depend type=require fmri=library/python-2/python-gnome-libs-26
 depend type=require fmri=package/pkg
 depend type=require fmri=runtime/python-26@2.6.4
+depend type=require fmri=system/font/xorg/xorg-core
+depend type=require fmri=system/library/dbus
