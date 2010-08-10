@@ -31,6 +31,12 @@ class Preferences:
                 self.w_preferencesdialog = \
                     builder.get_object("preferencesdialog")
                 self.w_preferencesdialog.set_icon(window_icon)
+                w_startup_label = \
+                    builder.get_object("startup_label")
+                w_startup_label.hide()
+                w_startup_hbox =  \
+                    builder.get_object("startup_hbox")
+                w_startup_hbox.hide()
                 self.w_startpage_checkbutton = \
                     builder.get_object("startpage_checkbutton")
                 self.w_exit_checkbutton = \

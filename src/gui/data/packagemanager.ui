@@ -265,15 +265,6 @@
                   <object class="GtkMenu" id="menu4">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkMenuItem" id="start_page">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Start _Page</property>
-                        <property name="use_underline">True</property>
-                        <accelerator key="Home" signal="activate" modifiers="GDK_MOD1_MASK"/>
-                        <signal name="activate" handler="on_help_start_page_activate"/>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkMenuItem" id="log">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Logs</property>
@@ -2118,7 +2109,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkHBox" id="hbox7">
+                  <object class="GtkHBox" id="startup_hbox">
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkAlignment" id="alignment7">

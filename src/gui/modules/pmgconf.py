@@ -118,6 +118,7 @@ class PMGConf:
                         self.initial_app_hpos = 200
                         self.initial_app_vpos = 320
                         self.details_expanded = True
+                self.show_startpage = False
                 self.__fix_initial_values()
 
         def __fix_initial_values(self):

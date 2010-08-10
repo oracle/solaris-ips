@@ -365,7 +365,6 @@ class PackageManager:
                 self.w_edit_preferences_menuitem = self.builder.get_object(
                     "edit_preferences")
                 self.w_log_menuitem = self.builder.get_object("log")
-                self.w_start_page_menuitem = self.builder.get_object("start_page")
                 self.w_infosearch_eventbox = self.builder.get_object(
                     "infosearch_eventbox")
                 self.progress_cancel = self.builder.get_object("progress_cancel")
@@ -534,8 +533,6 @@ class PackageManager:
                      self.__on_install_update),
                      (self.w_remove_button, "clicked", 
                      self.__on_remove),
-                     (self.w_start_page_menuitem, "activate", 
-                     self.__on_startpage),
                      (self.w_info_notebook, "switch_page", 
                      self.__on_notebook_change),
                      (self.w_infosearch_eventbox, "button_press_event", 
