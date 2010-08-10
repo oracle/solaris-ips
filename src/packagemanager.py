@@ -4644,10 +4644,10 @@ class PackageManager:
                 search_text = self.w_searchentry.get_text()
 
                 self.__count_selected_packages()
+                if self.application_list == None:
+                        return
+                self.length_visible_list = len(self.application_list_filter)
                 if not self.in_search_mode:
-                        if self.application_list == None:
-                                return
-                        self.length_visible_list = len(self.application_list_filter)
                         selected_in_list = 0
                         for pkg_row in self.application_list_filter:
                                 if pkg_row[enumerations.MARK_COLUMN]:
