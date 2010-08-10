@@ -2946,7 +2946,7 @@ class PackageManager:
                 return
 
         def __on_help_about(self, widget):
-                aboutdialog = self.builder.get_widget("aboutdialog")
+                aboutdialog = self.builder.get_object("aboutdialog")
                 aboutdialog.set_icon(self.window_icon)
                 aboutdialog.connect("response", lambda x = None, \
                     y = None: aboutdialog.hide())
