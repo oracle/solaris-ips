@@ -1246,9 +1246,13 @@ class Transport(object):
                 must be used."""
 
                 # Get publisher information from FMRI.
-                pub = self.__tcfg.get_publisher(fmri.get_publisher())
+                try:
+                        pub = self.__tcfg.get_publisher(fmri.get_publisher())
+                except apx.UnknownPublisher:
+                        return False
 
-                if not pub:
+                # Handle case where publisher has no Catalog.
+                if not pub.catalog:
                         return False
 
                 # Use the publisher to get the catalog and its signature info.
