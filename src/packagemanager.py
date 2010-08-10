@@ -2035,6 +2035,8 @@ class PackageManager:
                 self.__set_empty_details_panel()
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
+                self.__enable_disable_select_all()
+                self.__enable_disable_deselect()
                 if not self.in_search_mode and self.length_visible_list > 0 and \
                         len_filtered_list == 0 and \
                         self.w_filter_combobox.get_active() != \
@@ -2423,7 +2425,6 @@ class PackageManager:
                 else:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_START_PAGE)
-                self.__enable_disable_select_all()
 
         def __on_categoriestreeview_row_collapsed(self, treeview, itr, path, data):
                 self.w_categories_treeview.set_cursor(path)
@@ -2763,7 +2764,6 @@ class PackageManager:
                         self.w_repository_combobox.get_active()
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
-                gobject.idle_add(self.__enable_disable_select_all)
 
         def __unset_saved(self):
                 self.__save_application_list(None)
@@ -4370,7 +4370,6 @@ class PackageManager:
                 self.__set_main_view_package_list()
                 self.__init_tree_views(application_list, None, None, None, None,
                     enumerations.NAME_COLUMN)
-                self.__enable_disable_select_all()
 
         def __setup_category_state(self):
                 self.cache_o.load_categories_active_dict(self.category_active_paths)
@@ -4606,6 +4605,8 @@ class PackageManager:
                 if need_refilter or active_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 else:
+                        self.__enable_disable_select_all()
+                        self.__enable_disable_deselect()
                         if not self.__doing_search():
                                 self.unset_busy_cursor()
                 if debug_perf:
