@@ -1,0 +1,11 @@
+package database/postgres/pgadmin
+consolidation "sfw"
+obsoleted 146
+version 1.10.0
+end package
+
+package SUNWpgadmin3
+consolidation "sfw"
+obsoleted 146
+version 1.10.0
+end package

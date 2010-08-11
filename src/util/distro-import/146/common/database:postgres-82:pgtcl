@@ -1,0 +1,11 @@
+package database/postgres-82/pgtcl
+consolidation "sfw"
+obsoleted 146
+version 1.5
+end package
+
+package SUNWpostgr-82-tcl
+consolidation "sfw"
+obsoleted 146
+version 1.5
+end package

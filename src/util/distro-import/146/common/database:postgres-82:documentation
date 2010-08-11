@@ -1,0 +1,11 @@
+package database/postgres-82/documentation
+consolidation "sfw"
+obsoleted 146
+version 8.2.17
+end package
+
+package SUNWpostgr-82-docs
+consolidation "sfw"
+obsoleted 146
+version 8.2.15
+end package

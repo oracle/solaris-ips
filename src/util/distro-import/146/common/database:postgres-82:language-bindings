@@ -1,0 +1,11 @@
+package database/postgres-82/language-bindings
+consolidation "sfw"
+obsoleted 146
+version 8.2.17
+end package
+
+package SUNWpostgr-82-pl
+consolidation "sfw"
+obsoleted 146
+version 8.2.15
+end package

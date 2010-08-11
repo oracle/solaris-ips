@@ -1,0 +1,14 @@
+package media/cdrtools
+consolidation "sfw"
+classification "System/Hardware"
+import SUNWmkcd
+import SUNWmkcdr
+version 3.00
+end package
+
+package SUNWmkcd
+consolidation "sfw"
+renamed 133
+depend media/cdrtools
+version 2.1.1.63
+end package

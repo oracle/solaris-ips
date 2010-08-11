@@ -1,0 +1,11 @@
+package library/perl-5/postgres-dbi
+consolidation "sfw"
+obsoleted 146
+version 1.49
+end package
+
+package SUNWpmdbdpg
+consolidation "sfw"
+obsoleted 146
+version 1.49
+end package

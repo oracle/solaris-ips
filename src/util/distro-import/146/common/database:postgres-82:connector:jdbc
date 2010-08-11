@@ -1,0 +1,11 @@
+package database/postgres-82/connector/jdbc
+consolidation "sfw"
+obsoleted 146
+version 8.2.504
+end package
+
+package SUNWpostgr-82-jdbc
+consolidation "sfw"
+obsoleted 146
+version 8.2.504
+end package

@@ -1,0 +1,11 @@
+package database/postgres-common
+consolidation "sfw"
+obsoleted 146
+version 8.4.4
+end package
+
+package SUNWpostgr-common
+consolidation "sfw"
+obsoleted 146
+version 8.4.2
+end package
