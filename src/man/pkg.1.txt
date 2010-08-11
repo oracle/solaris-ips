@@ -686,6 +686,18 @@ IMAGE PROPERTIES
      the set-property subcommand.  The values of these properties are
      viewable with the property subcommand.
 
+     ca-path
+          (string) A pathname that points to a directory where CA certs are
+	  kept for SSL operations.  The format of this directory is specific
+	  to the underlying SSL implementation.  If the administrator
+	  would like to use an alternate location for trusted CA
+	  certificates, this value should be changed to point to a
+	  different directory.  Please see the 'CApath' portions of
+	  SSL_CTX_load_verify_locations(3openssl) for requirements
+	  about the CA directory.
+
+	  Default value: /etc/openssl/certs
+
      flush-content-cache-on-success
           (boolean) If this is set to True, the package client will
 	  remove the files in its content-cache when install or

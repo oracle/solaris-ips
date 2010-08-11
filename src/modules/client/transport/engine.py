@@ -916,12 +916,9 @@ class CurlTransportEngine(TransportEngine):
                         hdl.setopt(pycurl.SSL_VERIFYHOST, 2)
 
                         cadir = self.__xport.get_ca_dir()
-                        if cadir:
-                                hdl.setopt(pycurl.SSL_VERIFYPEER, 1)
-                                hdl.setopt(pycurl.CAPATH, cadir)
-                                hdl.unsetopt(pycurl.CAINFO)
-                        else:
-                                hdl.setopt(pycurl.SSL_VERIFYPEER, 0)
+                        hdl.setopt(pycurl.SSL_VERIFYPEER, 1)
+                        hdl.setopt(pycurl.CAPATH, cadir)
+                        hdl.unsetopt(pycurl.CAINFO)
 
         def shutdown(self):
                 """Shutdown the transport engine, perform cleanup."""

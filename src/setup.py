@@ -151,9 +151,6 @@ else:
 pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
 extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 
-cacert_dir = os.path.normpath(os.path.join(pwd, "cacert"))
-cacert_install_dir = 'usr/share/pkg/cacert'
-
 py_install_dir = 'usr/lib/python2.6/vendor-packages'
 
 scripts_dir = 'usr/bin'
@@ -469,10 +466,6 @@ class install_func(_install):
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-                # Take cacerts in cacert_dir and install them in
-                # proto-area-relative cacert_install_dir
-                install_cacerts()
-
                 prep_sw(CP, CPARC, CPDIR, CPURL, CPHASH)
                 install_sw(CP, CPDIR, CPIDIR)
 		if osname == "sunos" and platform.uname()[2] == "5.11":
@@ -546,38 +539,6 @@ def hash_sw(swname, swarc, swhash):
                 print >> sys.stderr, "bad checksum! %s != %s" % \
                     (swhash, hash.hexdigest())
                 return False
-
-def install_cacerts():
-
-        findir = os.path.join(root_dir, cacert_install_dir)
-        dir_util.mkpath(findir, verbose = True)
-        for f in os.listdir(cacert_dir):
-
-                # Copy certificate
-                srcname = os.path.normpath(os.path.join(cacert_dir, f))
-                dn, copied = file_util.copy_file(srcname, findir, update = True)
-
-                if not copied:
-                        continue
-
-                # Call openssl to create hash symlink
-                cmd = ["openssl", "x509", "-noout", "-hash", "-in",
-                    srcname]
-
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                hashval = p.stdout.read()
-                p.wait()
-
-                hashval = hashval.strip()
-                hashval += ".0" 
-
-                hashpath = os.path.join(findir, hashval)
-                if os.path.exists(hashpath):
-                        os.unlink(hashpath)
-                if hasattr(os, "symlink"):
-                        os.symlink(f, hashpath)
-                else:
-                        file_util.copy_file(srcname, hashpath)
 
 def prep_sw(swname, swarc, swdir, swurl, swhash):
         swarc = os.path.join(extern_dir, swarc)

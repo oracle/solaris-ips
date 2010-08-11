@@ -68,6 +68,9 @@ class TransportCfg(object):
         def get_policy(self, policy_name):
                 raise NotImplementedError
 
+        def get_property(self, property_name):
+                raise NotImplementedError
+
         def get_publisher(self, publisher_name):
                 raise NotImplementedError
 
@@ -99,6 +102,11 @@ class ImageTransportCfg(TransportCfg):
                         return False
                 return self.__img.cfg_cache.get_policy(policy_name)
 
+        def get_property(self, property_name):
+                if not self.__img.cfg_cache:
+                        raise KeyError
+                return self.__img.get_property(property_name)
+
         def get_publisher(self, publisher_name):
                 return self.__img.get_publisher(publisher_name)
 
@@ -128,13 +136,15 @@ class GenericTransportCfg(TransportCfg):
         do not have an image."""
 
         def __init__(self, publishers=misc.EmptyI, c_download=None,
-            i_download=None, pkgdir=None, policy_map=misc.EmptyDict):
+            i_download=None, pkgdir=None, policy_map=misc.EmptyDict,
+            property_map=misc.EmptyDict):
 
                 self.__publishers = {}
                 self.__cached_download_dir = c_download
                 self.__incoming_download_dir = i_download
                 self.__pkgdir = pkgdir
                 self.__policy_map = policy_map
+                self.__property_map = property_map
 
                 for p in publishers:
                         self.__publishers[p.prefix] = p
@@ -147,6 +157,9 @@ class GenericTransportCfg(TransportCfg):
 
         def get_policy(self, policy_name):
                 return self.__policy_map.get(policy_name, False)
+
+        def get_property(self, property_name):
+                return self.__property_map[property_name]
 
         def get_publisher(self, publisher_name):
                 pub = self.__publishers.get(publisher_name)
@@ -504,16 +517,25 @@ class Transport(object):
                 """Return the path to the directory that contains CA
                 certificates."""
                 if self.__cadir is None:
-                        cadir = os.path.join(os.path.sep, "usr", "share",
-                            "pkg", "cacert")
-                        if os.path.exists(cadir):
-                                self.__cadir = cadir
-                                return cadir
-                        else:
-                                self.__cadir = ""
+                        # If transport isn't connected to image, or no
+                        # ca-dir is specified, fallback to this one.
+                        fb_cadir = os.path.join(os.path.sep, "etc",
+                            "openssl", "certs")
 
-                if self.__cadir == "":
-                        return None
+                        try:
+                                cadir = self.__tcfg.get_property("ca-path")
+                                cadir = os.path.normpath(cadir)
+                        except KeyError:
+                                cadir = fb_cadir
+
+                        if not os.path.exists(cadir):
+                                raise tx.TransportOperationError("Unable to "
+                                    "locate a CA directory: %s\n"
+                                    "Secure connection is not available."
+                                    % cadir)
+
+                        self.__cadir = cadir
+                        return cadir
 
                 return self.__cadir
 

@@ -54,6 +54,12 @@ default_policies = {
     SEND_UUID: True
 }
 
+CA_PATH = "ca-path"
+# Default CA_PATH is /etc/openssl/certs
+default_properties = {
+        CA_PATH: os.path.join(os.path.sep, "etc", "openssl", "certs")
+}
+
 # Assume the repository metadata should be checked no more than once every
 # 4 hours.
 REPO_REFRESH_SECONDS_DEFAULT = 4 * 60 * 60
@@ -84,6 +90,10 @@ class ImageConfig(object):
                     (p, str(v))
                     for p, v in default_policies.iteritems()
                 ))
+                self.properties.update(dict((
+                    (p, str(v))
+                    for p, v in default_properties.iteritems()
+                )))
                 self.facets = facet.Facets()
                 self.variants = variant.Variants()
                 self.children = []
@@ -253,6 +263,13 @@ class ImageConfig(object):
                                 del self.properties["preferred-authority"]
                         except KeyError:
                                 pass
+
+                try:
+                        self.properties["ca-path"] = str(
+                            self.properties["ca-path"])
+                except KeyError:
+                        self.properties["ca-path"] = \
+                            self.default_properties["ca-path"]
 
                 # read disabled publisher file
                 # XXX when compatility with the old code is no longer needed,
