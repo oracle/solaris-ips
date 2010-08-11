@@ -571,6 +571,20 @@ class InvalidCatalogFile(CatalogError):
                 return _("Catalog file '%s' is invalid.") % self.data
 
 
+class MismatchedCatalog(CatalogError):
+        """Used to indicate that a Catalog's attributes and parts do not
+        match.  This is likely the result of an attributes file being
+        retrieved which doesn't match the parts that were retrieved such
+        as in a misconfigured or stale cache case."""
+
+        def __str__(self):
+                return _("The content of the catalog for publisher '%s' "
+                    "doesn't match the catalog's attributes.  This is "
+                    "likely the result of a mix of older and newer "
+                    "catalog files being provided for the publisher.") % \
+                    self.data
+
+
 class ObsoleteCatalogUpdate(CatalogError):
         """Used to indicate that the specified catalog updates are for an older
         version of the catalog and cannot be applied."""

@@ -1402,14 +1402,24 @@ pkg unset-publisher %s
                         return True
                 return False
 
-        def __refresh_v1(self, tempdir, full_refresh, immediate):
+        def __refresh_v1(self, tempdir, full_refresh, immediate, mismatched):
                 """The method to refresh the publisher's metadata against
                 a catalog/1 source.  If the more recent catalog/1 version
                 isn't supported, __refresh_v0 is invoked as a fallback."""
 
+                # If full_refresh is True, then redownload should be True to
+                # ensure a non-cached version of the catalog is retrieved.
+                # If full_refresh is False, but mismatched is True, then
+                # the retrieval requests should indicate that content should
+                # be revalidated before being returned.  Note that this
+                # only applies to the catalog v1 case.
+                redownload = full_refresh
+                revalidate = not redownload and mismatched
+
                 try:
                         self.transport.get_catalog1(self, ["catalog.attrs"],
-                            path=tempdir)
+                            path=tempdir, redownload=redownload,
+                            revalidate=revalidate)
                 except api_errors.UnsupportedRepositoryOperation:
                         # No v1 catalogs available.
                         if self.catalog.exists:
@@ -1449,7 +1459,8 @@ pkg unset-publisher %s
                         # More catalog files to retrieve.
                         try:
                                 self.transport.get_catalog1(self, flist,
-                                    path=tempdir)
+                                    path=tempdir, redownload=redownload,
+                                    revalidate=revalidate)
                         except api_errors.UnsupportedRepositoryOperation:
                                 # Couldn't find a v1 catalog after getting one
                                 # before.  This would be a bizzare error, but we
@@ -1461,15 +1472,16 @@ pkg unset-publisher %s
                 # pieces that are necessary to construct a catalog.  If a
                 # catalog already exists, call apply_updates.  Otherwise,
                 # move the files to the appropriate location.
-                revalidate = False
+                validate = False
                 if not full_refresh and self.catalog.exists:
                         self.catalog.apply_updates(tempdir)
                 else:
-
                         if self.catalog.exists:
                                 # This is a full refresh.  Destroy
                                 # the existing catalog.
                                 self.catalog.destroy()
+                                self.__catalog = None
+
                         for fn in os.listdir(tempdir):
                                 srcpath = os.path.join(tempdir, fn)
                                 dstpath = os.path.join(self.catalog_root, fn)
@@ -1478,7 +1490,7 @@ pkg unset-publisher %s
                         # Apply_updates validates the newly constructed catalog.
                         # If refresh didn't call apply_updates, arrange to
                         # have the new catalog validated.
-                        revalidate = True
+                        validate = True
 
                 # Update refresh time.
                 self.last_refreshed = dt.datetime.utcnow()
@@ -1486,12 +1498,23 @@ pkg unset-publisher %s
                 # Clear __catalog, so we'll read in the new catalog.
                 self.__catalog = None
 
-                if revalidate:
-                        self.catalog.validate()
-
+                if validate:
+                        try:
+                                self.catalog.validate()
+                        except api_errors.BadCatalogSignatures:
+                                # If signature validation fails here, that means
+                                # that the attributes and individual parts were
+                                # self-consistent and not corrupt, but that the
+                                # attributes and parts didn't match.  This could
+                                # be the result of a broken source providing
+                                # an attributes file that is much older or newer
+                                # than the catalog parts being provided.
+                                self.catalog.destroy()
+                                self.__catalog = None
+                                raise api_errors.MismatchedCatalog(self.prefix)
                 return True
 
-        def __refresh(self, full_refresh, immediate):
+        def __refresh(self, full_refresh, immediate, mismatched=False):
                 """The method to handle the overall refresh process.  It
                 determines if a refresh is actually needed, and then calls
                 the first version-specific refresh method in the chain."""
@@ -1528,7 +1551,7 @@ pkg unset-publisher %s
                 # of success or failure.
                 try:
                         rval = self.__refresh_v1(tempdir, full_refresh,
-                            immediate)
+                            immediate, mismatched)
 
                         # Perform publisher metadata sanity checks.
                         self.__validate_metadata()
@@ -1537,45 +1560,6 @@ pkg unset-publisher %s
                 finally:
                         # Cleanup tempdir.
                         shutil.rmtree(tempdir, True)
-
-        def validate_config(self, repo_uri=None):
-                """Verify that the publisher's configuration (such as prefix)
-                matches that provided by the repository.  If the configuration
-                does not match as expected, an UnknownRepositoryPublishers
-                exception will be raised.
-
-                'repo_uri' is an optional RepositoryURI object or URI string
-                containing the location of the repository.  If not provided,
-                the publisher's selected_repository will be used instead."""
-
-                if repo_uri and not isinstance(repo_uri, RepositoryURI):
-                        repo = RepositoryURI(repo_uri)
-                elif not repo_uri:
-                        # Transport actually allows both type of objects.
-                        repo = self
-                else:
-                        repo = repo_uri
-
-                pubs = None
-                try:
-                        pubs = self.transport.get_publisherdata(repo)
-                except api_errors.UnsupportedRepositoryOperation:
-                        # Nothing more can be done.
-                        return
-
-                if not pubs:
-                        raise api_errors.RepoPubConfigUnavailable(
-                            location=repo_uri, pub=self)
-
-                if self.prefix not in pubs:
-                        known = [p.prefix for p in pubs]
-                        if repo_uri:
-                                raise api_errors.UnknownRepositoryPublishers(
-                                    known=known, unknown=[self.prefix],
-                                    location=repo_uri)
-                        raise api_errors.UnknownRepositoryPublishers(
-                            known=known, unknown=[self.prefix],
-                            origins=self.selected_repository.origins)
 
         def refresh(self, full_refresh=False, immediate=False):
                 """Refreshes the publisher's metadata, returning a boolean
@@ -1625,6 +1609,24 @@ pkg unset-publisher %s
                         #   by this version of the client, so a full retrieval
                         #   is required.
                         #
+                        return self.__refresh(True, True)
+                except api_errors.MismatchedCatalog:
+                        if full_refresh:
+                                # If this was a full refresh, don't bother
+                                # retrying as it implies that the content
+                                # retrieved wasn't cached.
+                                raise
+
+                        # Retrieval of the catalog attributes and/or parts was
+                        # successful, but the identity (digest or other
+                        # information) didn't match the catalog attributes.
+                        # This could be the result of a misbehaving or stale
+                        # cache.
+                        return self.__refresh(False, True, mismatched=True)
+                except (api_errors.BadCatalogSignatures,
+                    api_errors.InvalidCatalogFile):
+                        # Assembly of the catalog failed, but this could be due
+                        # to a transient error.  So, retry at least once more.
                         return self.__refresh(True, True)
                 except (api_errors.BadCatalogSignatures,
                     api_errors.InvalidCatalogFile):
@@ -1678,6 +1680,45 @@ pkg unset-publisher %s
 
                 self.__selected_repository = self.get_repository(name=name,
                     origin=origin)
+
+        def validate_config(self, repo_uri=None):
+                """Verify that the publisher's configuration (such as prefix)
+                matches that provided by the repository.  If the configuration
+                does not match as expected, an UnknownRepositoryPublishers
+                exception will be raised.
+
+                'repo_uri' is an optional RepositoryURI object or URI string
+                containing the location of the repository.  If not provided,
+                the publisher's selected_repository will be used instead."""
+
+                if repo_uri and not isinstance(repo_uri, RepositoryURI):
+                        repo = RepositoryURI(repo_uri)
+                elif not repo_uri:
+                        # Transport actually allows both type of objects.
+                        repo = self
+                else:
+                        repo = repo_uri
+
+                pubs = None
+                try:
+                        pubs = self.transport.get_publisherdata(repo)
+                except api_errors.UnsupportedRepositoryOperation:
+                        # Nothing more can be done.
+                        return
+
+                if not pubs:
+                        raise api_errors.RepoPubConfigUnavailable(
+                            location=repo_uri, pub=self)
+
+                if self.prefix not in pubs:
+                        known = [p.prefix for p in pubs]
+                        if repo_uri:
+                                raise api_errors.UnknownRepositoryPublishers(
+                                    known=known, unknown=[self.prefix],
+                                    location=repo_uri)
+                        raise api_errors.UnknownRepositoryPublishers(
+                            known=known, unknown=[self.prefix],
+                            origins=self.selected_repository.origins)
 
         alias = property(lambda self: self.__alias, __set_alias,
             doc="An alternative name for a publisher.")

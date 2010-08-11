@@ -46,7 +46,6 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.version
-import sys
 
 from operator import itemgetter
 from pkg.misc import EmptyI
@@ -170,7 +169,11 @@ class _JSONWriter(object):
                 sfile.seek(-2, os.SEEK_END)
 
                 # Add the signature data and close.
-                sfile.write(',"_SIGNATURE":')
+                sfoffset = sfile.tell()
+                if sfoffset > 1:
+                        # Catalog is not empty, so a separator is needed.
+                        sfile.write(",")
+                sfile.write('"_SIGNATURE":')
                 self._dump(self.signatures(), sfile, check_circular=False,
                     separators=(",", ":"))
                 sfile.write("}\n")
@@ -787,6 +790,9 @@ class CatalogPart(CatalogPartBase):
                         # Assume this is in-memory only.
                         return
 
+                # Ensure content is loaded before attempting save.
+                self.load()
+
                 CatalogPartBase.save(self, self.__data, single_pass=single_pass)
 
         def sort(self, pfmris=None, pubs=None):
@@ -907,6 +913,10 @@ class CatalogPart(CatalogPartBase):
                 if not self.signatures and not signatures:
                         # Nothing to validate.
                         return
+
+                # Ensure content is loaded before attempting to retrieve
+                # or generate signature data.
+                self.load()
                 if not signatures:
                         signatures = self.signatures
 
@@ -1006,6 +1016,10 @@ class CatalogUpdate(CatalogPartBase):
                 if not self.meta_root:
                         # Assume this is in-memory only.
                         return
+
+                # Ensure content is loaded before attempting save.
+                self.load()
+
                 CatalogPartBase.save(self, self.__data)
 
         def updates(self):
@@ -1055,6 +1069,9 @@ class CatalogUpdate(CatalogPartBase):
                         # Nothing to validate.
                         return
 
+                # Ensure content is loaded before attempting to retrieve
+                # or generate signature data.
+                self.load()
                 if not signatures:
                         signatures = self.signatures
 
@@ -1198,6 +1215,10 @@ class CatalogAttrs(CatalogPartBase):
                 if not self.meta_root:
                         # Assume this is in-memory only.
                         return
+
+                # Ensure content is loaded before attempting save.
+                self.load()
+
                 CatalogPartBase.save(self, self.__transform(), single_pass=True)
 
         def validate(self, signatures=None):
@@ -1210,6 +1231,9 @@ class CatalogAttrs(CatalogPartBase):
                         # Nothing to validate.
                         return
 
+                # Ensure content is loaded before attempting to retrieve
+                # or generate signature data.
+                self.load()
                 if not signatures:
                         signatures = self.signatures
 
@@ -3199,19 +3223,33 @@ class Catalog(object):
 
                 self._attrs.validate()
 
-                for name in self._attrs.parts:
-                        part = self.get_part(name)
+                def get_sigs(mdata):
+                        sigs = {}
+                        for key in mdata:
+                                if not key.startswith("signature-"):
+                                        continue
+                                sig = key.split("signature-")[1]
+                                sigs[sig] = mdata[key]
+                        if not sigs:
+                                # Allow validate() to perform its own fallback
+                                # logic if signature data isn't available.
+                                return None
+                        return sigs
+
+                for name, mdata in self._attrs.parts.iteritems():
+                        part = self.get_part(name, must_exist=True)
                         if part is None:
                                 # Part does not exist; no validation needed.
                                 continue
-                        part.validate()
+                        part.validate(signatures=get_sigs(mdata))
 
-                for name in self._attrs.updates:
-                        ulog = self.__get_update(name, cache=False)
+                for name, mdata in self._attrs.updates.iteritems():
+                        ulog = self.__get_update(name, cache=False,
+                            must_exist=True)
                         if ulog is None:
                                 # Update does not exist; no validation needed.
                                 continue
-                        ulog.validate()
+                        ulog.validate(signatures=get_sigs(mdata))
 
         batch_mode = property(__get_batch_mode, __set_batch_mode)
         last_modified = property(__get_last_modified, __set_last_modified,

@@ -334,6 +334,28 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # failure when attempting to refresh.
                 self.pkg("refresh test1", su_wrap=True, exit=1)
 
+        def __get_cache_entries(self, dc):
+                """Returns any HTTP cache headers found."""
+
+                entries = []
+                for hdr in ("CACHE-CONTROL", "PRAGMA"):
+                        logpath = dc.get_logpath()
+                        self.debug("check for HTTP cache headers in %s" %
+                            logpath)
+                        logfile = open(logpath, "r")
+                        for line in logfile.readlines():
+                                spos = line.find(hdr)
+                                if spos > -1:
+                                        self.debug("line: %s" % line)
+                                        self.debug("hdr: %s spos: %s" % (hdr, spos))
+                                        spos += len(hdr) + 1
+                                        l = line[spos:].strip()
+                                        l = l.strip("()")
+                                        self.debug("l: %s" % l)
+                                        if l:
+                                                entries.append({ hdr: l })
+                return entries
+
         def test_catalog_v1(self):
                 """Verify that refresh works as expected for publishers that
                 have repositories that offer catalog/1/ in exceptional error
@@ -518,13 +540,82 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 returned = self.get_op_entries(dc, "catalog", "1")
                 self.assertEqual(returned, expected)
 
-                # Finally, purposefully corrupt the catalog.attrs file in the
+                # Now verify that a full refresh will fail if the catalog parts
+                # retrieved don't match the catalog attributes.  Do this by
+                # saving a copy of the current repository catalog, publishing a
+                # new package, putting back the old catalog parts and then
+                # attempting a full refresh.  After that, verify the relevant
+                # log entries exist.
+                dc.stop()
+                dc.set_debug_feature("headers")
+                dc.start()
+
+                old_cat = os.path.join(self.test_root, "old-catalog")
+                shutil.copytree(v1_cat.meta_root, old_cat)
+                self.pkgsend_bulk(self.durl1, self.foo121)
+                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                for p in v1_cat.parts.keys():
+                        # Overwrite the existing parts with empty ones.
+                        part = catalog.CatalogPart(p, meta_root=cat_root)
+                        part.destroy()
+
+                        part = catalog.CatalogPart(p, meta_root=cat_root)
+                        part.save()
+
+                self.pkg("refresh --full", exit=1)
+                expected = [
+                    "/catalog/1/catalog.attrs",
+                    "/catalog/1/catalog.base.C",
+                ]
+                returned = self.get_op_entries(dc, "catalog", "1")
+                self.assertEqual(returned, expected)
+
+                entries = self.__get_cache_entries(dc)
+                expected = [
+                    { "CACHE-CONTROL": "no-cache" },
+                    { "CACHE-CONTROL": "no-cache" },
+                ]
+                self.assertEqualDiff(entries, expected)
+
+                # Next, verify that a refresh without --full but that is
+                # implicity a full because the catalog hasn't already been
+                # retrieved is handled gracefully and the expected log
+                # entries are present.
+                dc.stop()
+                dc.start()
+                self.pkg("refresh", exit=1)
+                expected = [
+                    "/catalog/1/catalog.attrs",
+                    "/catalog/1/catalog.base.C",
+                    "/catalog/1/catalog.attrs",
+                    "/catalog/1/catalog.base.C",
+                ]
+                returned = self.get_op_entries(dc, "catalog", "1")
+                self.assertEqual(returned, expected)
+
+                entries = self.__get_cache_entries(dc)
+                # The first two requests should have not had any cache
+                # headers attached, while the last two should have
+                # triggered transport's revalidation logic.
+                expected = [
+                    { "CACHE-CONTROL": "max-age=0" },
+                    { "CACHE-CONTROL": "max-age=0" },
+                ]
+                self.assertEqualDiff(entries, expected)
+
+                # Next, purposefully corrupt the catalog.attrs file in the
                 # repository and attempt a refresh.  The client should fail
                 # gracefully.
                 f = open(os.path.join(cat_root, "catalog.attrs"), "wb")
                 f.write("INVALID")
                 f.close()
                 self.pkg("refresh", exit=1)
+
+                # Finally, restore the catalog and verify the client can
+                # refresh.
+                shutil.rmtree(v1_cat.meta_root)
+                shutil.copytree(old_cat, v1_cat.meta_root)
+                self.pkg("refresh")
 
 
 if __name__ == "__main__":

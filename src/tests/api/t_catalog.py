@@ -674,7 +674,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 c = catalog.Catalog(meta_root=cpath, log_updates=True)
 
                 # Verify that a newly created catalog has no signature data.
-                for file, sigs in c.signatures.iteritems():
+                for sigs in c.signatures.itervalues():
                         self.assertEqual(len(sigs), 0)
 
                 # Verify that a newly created catalog will validate since no
@@ -697,14 +697,17 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertTrue("catalog.base.C" in old_sigs)
 
                 updates = 0
-                for file, sigs in old_sigs.iteritems():
+                for fname, sigs in old_sigs.iteritems():
                         self.assertTrue(len(sigs) >= 1)
 
-                        if file.startswith("update."):
+                        if fname.startswith("update."):
                                 updates += 1
 
                 # Only one updatelog should exist.
                 self.assertEqual(updates, 1)
+
+                # Verify that the newly saved catalog will validate.
+                c.validate()
 
                 # Next, retrieve the stored catalog.
                 c = catalog.Catalog(meta_root=cpath, log_updates=True)

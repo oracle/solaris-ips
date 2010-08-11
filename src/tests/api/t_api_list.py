@@ -36,7 +36,6 @@ import platform
 import pprint
 import re
 import shutil
-import simplejson as json
 import unittest
 
 import pkg.client.api as api
