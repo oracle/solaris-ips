@@ -1135,7 +1135,9 @@ class ImageInterface(object):
                                 excluded unless they are installed.
 
                         LIST_NEWEST
-                                The newest versions of all known packages.
+                                The newest versions of all known packages
+                                that match the provided patterns and
+                                other criteria.
 
                         LIST_UPGRADABLE
                                 Packages that are installed and upgradable.
@@ -1185,8 +1187,14 @@ class ImageInterface(object):
                 # extract the individual components for use in filtering.
                 illegals = []
                 pat_tuples = {}
+                pat_versioned = False
                 for pat in patterns:
                         try:
+                                if "@" in pat:
+                                        # Mark that a pattern containing
+                                        # version information was found.
+                                        pat_versioned = True
+
                                 if "*" in pat or "?" in pat:
                                         matcher = self.MATCH_GLOB
 
@@ -1335,8 +1343,14 @@ class ImageInterface(object):
 
                 matched_pats = set()
                 pkg_matching_pats = None
+
+                # Retrieve only the newest package versions for LIST_NEWEST if
+                # none of the patterns have version information.  (This cuts
+                # down on the number of entries that have to be filtered.)
+                use_last = newest and not pat_versioned
+
                 for t, entry, actions in img_cat.entry_actions(cat_info,
-                    cb=filter_cb, excludes=excludes, last=newest,
+                    cb=filter_cb, excludes=excludes, last=use_last,
                     ordered=True, pubs=pubs):
                         pub, stem, ver = t
 

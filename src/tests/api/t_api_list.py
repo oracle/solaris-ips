@@ -490,6 +490,30 @@ add set name=pkg.description value="%(desc)s"
                 self.__test_list(api.ImageInterface.LIST_NEWEST,
                     num_expected=16, variants=False)
 
+                # Verify that LIST_NEWEST will allow version-specific
+                # patterns such that the newest version allowed by the
+                # pattern is what is listed.
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                returned = self.__get_returned(api_obj.LIST_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.1", "bat/bar",
+                        "corge@1.0"], variants=True)
+
+                expected = [
+                    self.__get_exp_pub_entry("test1", 2, "apple", "1.1,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 2, "apple", "1.1,5.11-0"),
+                    self.__get_exp_pub_entry("test1", 7, "bat/bar",
+                        "1.2,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 7, "bat/bar",
+                        "1.2,5.11-0"),
+                    self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11"),
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 6)
+
         def test_list_03_cats(self):
                 """Verify the sort order and content of a list excluding
                 packages not for the current image variant, and packages
