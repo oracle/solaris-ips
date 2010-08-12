@@ -1298,10 +1298,12 @@ $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-glint
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-i128
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-i740
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-intel
+$(i386_ONLY)depend x11/server/xorg/driver/xorg-video-mach64
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-mga
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-neomagic
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-nv
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-openchrome
+$(i386_ONLY)depend x11/server/xorg/driver/xorg-video-r128
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-radeonhd
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-rendition
 $(i386_ONLY)depend x11/server/xorg/driver/xorg-video-s3
