@@ -251,11 +251,15 @@ license lic_minisat license=lic_minisat
 license lic_gustaebel license=lic_gustaebel
 legacy pkg=SUNWipkg version=0.0.0
 
+group groupname=pkg5srv gid=97
+user username=pkg5srv uid=97 group=pkg5srv gcos-field="pkg(5) server UID"
+
 depend type=require fmri=SUNWcs
 depend type=require fmri=crypto/ca-certificates
 depend type=require fmri=library/python-2/cherrypy@3.1.2
 depend type=require fmri=library/python-2/mako@0.2.2
 depend type=require fmri=library/python-2/ply@3.1
+depend type=require fmri=library/python-2/pybonjour@1.1.1
 depend type=require fmri=library/python-2/pycurl@7.19.0.1
 depend type=require fmri=library/python-2/pyopenssl-26@0.8
 depend type=require fmri=library/python-2/simplejson-26

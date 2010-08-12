@@ -122,6 +122,14 @@ PLYDIR = '%s-%s' % (PLY, PLYVER)
 PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
 PLYHASH = '38efe9e03bc39d40ee73fa566eb9c1975f1a8003'
 
+PBJ = 'pybonjour'
+PBJIDIR = 'pybonjour'
+PBJVER = '1.1.1'
+PBJARC = '%s-%s.tar.gz' % (PBJ, PBJVER)
+PBJDIR = '%s-%s' % (PBJ, PBJVER)
+PBJURL = 'http://pybonjour.googlecode.com/files/%s' % (PBJARC)
+PBJHASH = '92cabd14e04c5f62ce067c47c2057ee3d424d29b'
+
 PC = 'pycurl'
 PCIDIR = 'curl'
 PCVER = '7.19.0'
@@ -502,6 +510,8 @@ class install_func(_install):
                 install_sw(PC, PCDIR, PCIDIR, extra_env=PCENVIRON)
                 prep_sw(COV, COVARC, COVDIR, COVURL, COVHASH)
                 install_sw(COV, COVDIR, COVIDIR)
+                prep_sw(PBJ, PBJARC, PBJDIR, PBJURL, PBJHASH)
+                install_sw(PBJ, PBJDIR, PBJIDIR)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.

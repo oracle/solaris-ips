@@ -828,6 +828,7 @@ depend library/python-2/libxsl-26
 depend library/python-2/mako
 depend library/python-2/ply
 depend library/python-2/pyatspi-26
+depend library/python-2/pybonjour
 depend library/python-2/pycups
 depend library/python-2/pycurl
 depend library/python-2/pyopenssl-24
