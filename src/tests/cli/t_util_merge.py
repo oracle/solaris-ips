@@ -149,12 +149,6 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                             "repository's configuration data is not "
                             "valid:\n%s") % e)
 
-        def merge(self, args=misc.EmptyI, exit=0):
-                prog = os.path.realpath(os.path.join(path_to_pub_util,
-                    "merge.py"))
-                cmd = "%s %s" % (prog, " ".join(args))
-                self.cmdline_run(cmd, exit=exit)
-
         def test_0_merge(self):
                 """Verify that merge functionality works as expected."""
 

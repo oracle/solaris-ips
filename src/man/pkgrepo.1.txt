@@ -19,6 +19,11 @@ SYNOPSIS
      /usr/bin/pkgrepo rebuild [--no-index]
      /usr/bin/pkgrepo refresh [--no-catalog] [--no-index]
 
+     /usr/bin/pkgrepo add-signing-ca-cert path ...
+     /usr/bin/pkgrepo add-signing-intermediate-cert path ...
+     /usr/bin/pkgrepo remove-signing-ca-cert hash ...
+     /usr/bin/pkgrepo remove-signing-intermediate-cert hash ...
+
      /usr/bin/pkgrepo version
      /usr/bin/pkgrepo help
 
@@ -44,6 +49,14 @@ OPTIONS
 
 SUBCOMMANDS
      The following subcommands are supported:
+
+     add-signing-ca-certs path ...
+          Add the certificates provided as approved CA certificates for the 
+          publisher.
+
+     add-signing-intermediate-certs path ...
+          Add the certificates provided as intermediate certificates for the 
+          publisher.
 
      create <uri_or_path>
           Creates a pkg(5) repository at the specified location.  This
@@ -96,6 +109,14 @@ SUBCOMMANDS
 
           With --no-index, don't update search indexes.
 
+     remove-signing-ca-certs hash ...
+          Remove the certificates provided from the list of CA certificates for
+          the publisher.
+
+     remove-signing-intermediate-certs hash ...
+          Remove the certificates provided from the list of intermediate 
+          certificates for the publisher.
+
      version
           Display a unique string identifying the version of the
           pkg(5) system.  The values produced by the version
@@ -127,6 +148,16 @@ EXAMPLES
      $ pkgrepo -s /my/repository refresh
 
      $ pkgrepo -s http://example.com/repository refresh
+
+     Example 5:  Add the certificate stored in /tmp/example_file.pem as a
+     signing CA certificate for the repository located at /my/repository.
+
+     $ pkgrepo -s /my/repository add-signing-ca-cert /tmp/example_file.pem
+
+     Example 6:  Remove the certificate with hash a12345 from the list of
+     intermediate certificates for the repository located at /my/repository.
+
+     $ pkgrepo -s /my/repository remove-signing-intermediate-ca-cert a12345
 
 EXIT STATUS
      The following exit values are returned:

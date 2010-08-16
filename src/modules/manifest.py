@@ -25,6 +25,7 @@
 #
 
 from collections import namedtuple
+import copy
 import errno
 import hashlib
 import os
@@ -358,9 +359,16 @@ class Manifest(object):
                         content = self.__content_to_actions(content)
 
                 for action in content:
-                        self.__add_action(action, excludes)
+                        self.add_action(action, excludes)
+                return
 
-        def __add_action(self, action, excludes):
+        def exclude_content(self, excludes):
+                """Remove any actions from the manifest which should be
+                excluded."""
+
+                self.set_content(self.actions, excludes)
+
+        def add_action(self, action, excludes):
                 """Performs any needed transformations on the action then adds
                 it to the manifest.
 
@@ -937,6 +945,11 @@ class CachedManifest(Manifest):
                 if not self.loaded:
                         self.__load()
                 return Manifest.gen_actions(self, excludes=excludes)
+
+        def __str__(self, excludes=EmptyI):
+                if not self.loaded:
+                        self.__load()
+                return Manifest.__str__(self)
 
         def duplicates(self, excludes=EmptyI):
                 if not self.loaded:

@@ -19,8 +19,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 all := TARGET = all
 link := TARGET = link
@@ -38,6 +39,7 @@ link:
 	ln -sf $(PWD)/pkgrecv.1.txt /usr/share/man/cat1/pkgrecv.1
 	ln -sf $(PWD)/pkgrepo.1.txt /usr/share/man/cat1/pkgrepo.1
 	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
+	ln -sf $(PWD)/pkgsign.1.txt /usr/share/man/cat1/pkgsign.1
 	ln -sf $(PWD)/pm-updatemanager.1.txt /usr/share/man/cat1/pm-updatemanager.1
 	ln -sf $(PWD)/pkg.depotd.1m.txt /usr/share/man/cat1m/pkg.depotd.1m
 	ln -sf $(PWD)/pkg.5.txt /usr/share/man/man5/pkg.5
@@ -48,6 +50,7 @@ link-clean:
 	rm -f /usr/share/man/cat1/pkgrecv.1
 	rm -f /usr/share/man/cat1/pkgrepo.1
 	rm -f /usr/share/man/cat1/pkgsend.1
+	rm -f /usr/share/man/cat1/pkgsign.1
 	rm -f /usr/share/man/cat1/pm-updatemanager.1
 	rm -f /usr/share/man/cat1m/pkg.depotd.1m
 	rm -f /usr/share/man/cat5/pkg.5

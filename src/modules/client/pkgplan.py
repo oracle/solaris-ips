@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
+#
 
 import errno
 import itertools
@@ -138,6 +139,29 @@ class PkgPlan(object):
                 ddups = self.__destination_mfst.duplicates(new_excludes)
                 if ddups:
                         raise RuntimeError(["Duplicate actions", ddups])
+
+                # If new actions are being installed, check the destination
+                # manifest for signatures.
+                if self.destination_fmri is not None:
+                        dest_pub = self.image.get_publisher(
+                            prefix=self.destination_fmri.get_publisher())
+                        signature_policy = self.image.signature_policy.combine(
+                            dest_pub.signature_policy)
+                        # Check that the publisher's CA certs validate against
+                        # the image's trust anchors.
+                        signature_policy.check_cas(dest_pub,
+                            self.image.trust_anchors)
+                        try:
+                                signature_policy.process_signatures(
+                                    self.__destination_mfst.gen_actions_by_type(
+                                        "signature", new_excludes),
+                                    self.__destination_mfst.gen_actions(),
+                                        dest_pub)
+                                self.__destination_mfst.exclude_content(
+                                    new_excludes)
+                        except apx.SigningException, e:
+                                e.pfmri = self.destination_fmri
+                                raise
 
                 self.actions = self.__destination_mfst.difference(
                     self.__origin_mfst, old_excludes, new_excludes)

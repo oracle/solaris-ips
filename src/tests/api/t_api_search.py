@@ -64,7 +64,6 @@ class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
             add set name=description value='FOOO bAr O OO OOO' value="whee fun"
             add set name='weirdness' value='] [ * ?'
-            add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             add set name=opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default
             close """
 

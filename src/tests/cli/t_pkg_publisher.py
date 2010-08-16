@@ -172,6 +172,32 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg('set-publisher --no-refresh -k "" test1')
                 self.pkg('publisher -H test1 | grep "SSL Key: None"')
 
+                self.pkg("set-publisher --set-property foo test1", exit=2)
+                self.pkg("set-publisher --set-property foo=bar --set-property "
+                    "foo=baz test1", exit=2)
+                self.pkg("set-publisher --add-property-value foo test1", exit=2)
+                self.pkg("set-publisher --remove-property-value foo test1",
+                    exit=2)
+                self.pkg("set-publisher --approve-ca-cert /shouldnotexist/foo "
+                    "test1", exit=1)
+
+                key_fh, key_path = tempfile.mkstemp()
+                self.pkg("set-publisher --approve-ca-cert %s test1" % key_path,
+                    exit=1, su_wrap=True)
+                os.close(key_fh)
+                os.unlink(key_path)
+
+                self.pkg("set-publisher --no-refresh --set-property "
+                    "signature-policy=ignore test1")
+                self.pkg("set-publisher --no-refresh --set-property foo=bar "
+                    "test1")
+                self.pkg("set-publisher --no-refresh  --remove-property-value "
+                    "foo=baz test1", exit=1)
+                self.pkg("set-publisher --no-refresh  --set-property "
+                    "signature-policy=require-names test1", exit=1)
+                self.pkg("set-publisher --no-refresh --remove-property-value "
+                    "bar=baz test1", exit=1)
+
         def test_publisher_validation(self):
                 """Verify that we catch poorly formed auth prefixes and URL"""
 
@@ -292,6 +318,57 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "--socket-path=%s test1" % (self.bogus_url, sock_path),
                     exit=1)
                 self.pkg("unset-publisher test1")
+
+        def test_old_publisher_ca_certs(self):
+                """Check that approving and revoking CA certs is reflected in
+                the output of pkg publisher and that setting the CA certs when
+                setting an existing publisher works correctly."""
+
+                cert_dir = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced", "publisher_cas")
+
+                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1_h = self.calc_file_hash(app1)
+                app2_h = self.calc_file_hash(app2)
+                rev1_h = self.calc_file_hash(rev1)
+                rev2_h = self.calc_file_hash(rev2)
+                self.image_create(self.rurl)
+                self.pkg("set-publisher "
+                    "--approve-ca-cert %s "
+                    "--approve-ca-cert %s --revoke-ca-cert %s "
+                    "--revoke-ca-cert %s test " % (
+                    app1, app2, rev1_h, rev2_h))
+                self.pkg("publisher test")
+                r1 = "         Approved CAs: %s"
+                r2 = "                     : %s"
+                r3 = "          Revoked CAs: %s"
+                ls = self.output.splitlines()
+                found_approved = False
+                found_revoked = False
+                for i in range(0, len(ls)):
+                        if "Approved CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r1 % app1_h == ls[i] and
+                                    r2 % app2_h == ls[i+1]) or \
+                                    (r1 % app2_h == ls[i] and
+                                    r2 % app1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as approved certs. "
+                                            "Output was:\n%s" % (app1_h,
+                                            app2_h, self.output))
+                        elif "Revoked CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r3 % rev1_h == ls[i] and
+                                    r2 % rev2_h == ls[i+1]) or \
+                                    (r3 % rev2_h == ls[i] and
+                                    r2 % rev1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as revoked certs. "
+                                            "Output was:\n%s" % (rev1_h,
+                                            rev2_h, self.output))
 
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
@@ -654,6 +731,115 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --search-before=test3 test3", exit=1)
                 self.pkg("set-publisher --search-after=test3 test3", exit=1)
 
+class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
+
+        def setUp(self):
+                # This test suite needs actual depots.
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+
+                self.rurl1 = self.dcs[1].get_repo_url()
+                self.rurl2 = self.dcs[2].get_repo_url()
+                self.image_create(self.rurl1, prefix="test1")
+                
+        def test_new_publisher_ca_certs_with_refresh(self):
+                """Check that approving and revoking CA certs is reflected in
+                the output of pkg publisher and that setting the CA certs when
+                setting a new publisher works correctly."""
+
+                cert_dir = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced", "publisher_cas")
+
+                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1_h = self.calc_file_hash(app1)
+                app2_h = self.calc_file_hash(app2)
+                rev1_h = self.calc_file_hash(rev1)
+                rev2_h = self.calc_file_hash(rev2)
+                self.pkg("set-publisher -O %s "
+                    "--approve-ca-cert %s "
+                    "--approve-ca-cert %s --revoke-ca-cert %s "
+                    "--revoke-ca-cert %s test2 " % (self.dcs[2].get_repo_url(),
+                    app1, app2, rev1_h, rev2_h))
+                self.pkg("publisher test2")
+                r1 = "         Approved CAs: %s"
+                r2 = "                     : %s"
+                r3 = "          Revoked CAs: %s"
+                ls = self.output.splitlines()
+                found_approved = False
+                found_revoked = False
+                for i in range(0, len(ls)):
+                        if "Approved CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r1 % app1_h == ls[i] and
+                                    r2 % app2_h == ls[i+1]) or \
+                                    (r1 % app2_h == ls[i] and
+                                    r2 % app1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as approved certs. "
+                                            "Output was:\n%s" % (app1_h,
+                                            app2_h, self.output))
+                        elif "Revoked CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r3 % rev1_h == ls[i] and
+                                    r2 % rev2_h == ls[i+1]) or \
+                                    (r3 % rev2_h == ls[i] and
+                                    r2 % rev1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as revoked certs. "
+                                            "Output was:\n%s" % (rev1_h,
+                                            rev2_h, self.output))
+
+        def test_new_publisher_ca_certs_no_refresh(self):
+                """Check that approving and revoking CA certs is reflected in
+                the output of pkg publisher and that setting the CA certs when
+                setting a new publisher works correctly."""
+
+                cert_dir = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced", "publisher_cas")
+
+                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1_h = self.calc_file_hash(app1)
+                app2_h = self.calc_file_hash(app2)
+                rev1_h = self.calc_file_hash(rev1)
+                rev2_h = self.calc_file_hash(rev2)
+                self.pkg("set-publisher -O %s --no-refresh "
+                    "--approve-ca-cert %s "
+                    "--approve-ca-cert %s --revoke-ca-cert %s "
+                    "--revoke-ca-cert %s test2 " % (self.dcs[2].get_repo_url(),
+                    app1, app2, rev1_h, rev2_h))
+                self.pkg("publisher test2")
+                r1 = "         Approved CAs: %s"
+                r2 = "                     : %s"
+                r3 = "          Revoked CAs: %s"
+                ls = self.output.splitlines()
+                found_approved = False
+                found_revoked = False
+                for i in range(0, len(ls)):
+                        if "Approved CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r1 % app1_h == ls[i] and
+                                    r2 % app2_h == ls[i+1]) or \
+                                    (r1 % app2_h == ls[i] and
+                                    r2 % app1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as approved certs. "
+                                            "Output was:\n%s" % (app1_h,
+                                            app2_h, self.output))
+                        elif "Revoked CAs" in ls[i]:
+                                found_approved = True
+                                if not ((r3 % rev1_h == ls[i] and
+                                    r2 % rev2_h == ls[i+1]) or \
+                                    (r3 % rev2_h == ls[i] and
+                                    r2 % rev1_h == ls[i+1])):
+                                        raise RuntimeError("Expected to see "
+                                            "%s and %s as revoked certs. "
+                                            "Output was:\n%s" % (rev1_h,
+                                            rev2_h, self.output))
 
 if __name__ == "__main__":
         unittest.main()

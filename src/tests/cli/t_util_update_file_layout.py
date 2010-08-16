@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -44,13 +45,15 @@ class TestFileManager(pkg5unittest.CliTestCase):
 
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
+                self.base_dir = os.path.join(self.test_root, "fm")
+                os.mkdir(self.base_dir)
 
         @staticmethod
         def old_hash(s):
                 return os.path.join(s[0:2], s[2:8], s)
 
         def touch_old_file(self, s):
-                p = os.path.join(self.test_root, self.old_hash(s))
+                p = os.path.join(self.base_dir, self.old_hash(s))
                 if not os.path.exists(os.path.dirname(p)):
                         os.makedirs(os.path.dirname(p))
                 fh = open(p, "wb")
@@ -77,7 +80,7 @@ class TestFileManager(pkg5unittest.CliTestCase):
 
                 old_paths = [self.touch_old_file(h) for h in hashes]
 
-                self.update_file_layout(self.test_root)
+                self.update_file_layout(self.base_dir)
                 for p in old_paths:
                         if os.path.exists(p):
                                 raise RuntimeError("%s should not exist" % p)
@@ -86,13 +89,13 @@ class TestFileManager(pkg5unittest.CliTestCase):
                                     "exist")
                 l = layout.get_preferred_layout()
                 for h in hashes:
-                        if not os.path.exists(os.path.join(self.test_root,
+                        if not os.path.exists(os.path.join(self.base_dir,
                             l.lookup(h))):
                                 raise RuntimeError("file for %s is missing" % h)
 
-                self.update_file_layout(self.test_root)
+                self.update_file_layout(self.base_dir)
                 for h in hashes:
-                        if not os.path.exists(os.path.join(self.test_root,
+                        if not os.path.exists(os.path.join(self.base_dir,
                             l.lookup(h))):
                                 raise RuntimeError("file for %s is missing" % h)
 
@@ -102,10 +105,10 @@ class TestFileManager(pkg5unittest.CliTestCase):
 
                 self.update_file_layout("", exit=2)
                 self.update_file_layout("%s %s" %
-                    (self.test_root, self.test_root), exit=2)
+                    (self.base_dir, self.base_dir), exit=2)
                 self.update_file_layout("/foo/doesntexist/", exit=2)
 
-                empty_dir = tempfile.mkdtemp(dir=self.test_root)
+                empty_dir = tempfile.mkdtemp(dir=self.base_dir)
                 self.update_file_layout(empty_dir)
                  
 if __name__ == "__main__":

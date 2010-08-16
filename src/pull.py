@@ -51,7 +51,7 @@ import pkg.server.repository as sr
 import pkg.version as version
 
 from pkg.client import global_settings
-from pkg.misc import (emsg, get_pkg_otw_size, msg, PipeError)
+from pkg.misc import (config_temp_root, emsg, get_pkg_otw_size, msg, PipeError)
 
 # Globals
 cache_dir = None
@@ -377,26 +377,6 @@ def fetch_catalog(src_pub, tracker):
         complete_catalog = d
         tracker.catalog_done()
         return fmri_list
-
-def config_temp_root():
-        """Examine the environment.  If the environment has set TMPDIR, TEMP,
-        or TMP, return None.  This tells tempfile to use the environment
-        settings when creating temporary files/directories.  Otherwise,
-        return a path that the caller should pass to tempfile instead."""
-
-        default_root = "/var/tmp"
-
-        # In Python's tempfile module, the default temp directory
-        # includes some paths that are suboptimal for holding large numbers
-        # of files.  If the user hasn't set TMPDIR, TEMP, or TMP in the
-        # environment, override the default directory for creating a tempfile.
-        tmp_envs = [ "TMPDIR", "TEMP", "TMP" ]
-        for ev in tmp_envs:
-                env_val = os.getenv(ev)
-                if env_val:
-                        return None
-
-        return default_root
 
 def main_func():
         global cache_dir, download_start, xport, xport_cfg

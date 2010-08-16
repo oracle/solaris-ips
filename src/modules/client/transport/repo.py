@@ -77,13 +77,13 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def get_datastream(self, fhash, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
                 raise NotImplementedError
 
-        def get_files(self, filelist, dest, progtrack, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -131,6 +131,9 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
+        def publish_add_file(self, action, header=None, trans_id=None):
+                raise NotImplementedError
+
         def publish_abandon(self, header=None, trans_id=None):
                 """The 'abandon' publication operation, that tells a
                 Repository to abort the current transaction.  The caller
@@ -154,6 +157,10 @@ class TransportRepo(object):
                 client_release, and the package's name in pkg_name.
                 Returns a transaction-ID."""
 
+                raise NotImplementedError
+
+        def publish_append(self, header=None, client_release=None,
+            pkg_name=None):
                 raise NotImplementedError
 
         def publish_refresh_index(self, header=None):
@@ -288,11 +295,11 @@ class HTTPRepo(TransportRepo):
                     sock_path=self._sock_path, failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     repourl=self._url, ccancel=ccancel,
                     sock_path=self._sock_path, data_fobj=data_fobj,
-                    failonerror=failonerror)
+                    data_fp=data_fp, failonerror=failonerror)
 
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
@@ -421,11 +428,11 @@ class HTTPRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors)
 
-        def get_datastream(self, fhash, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
-                methodstr = "file/0/"
+                methodstr = "file/%s/" % version
 
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 requesturl = urlparse.urljoin(baseurl, fhash)
@@ -508,7 +515,7 @@ class HTTPRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors, urlmapping)
 
-        def get_files(self, filelist, dest, progtrack, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -516,7 +523,7 @@ class HTTPRepo(TransportRepo):
                 it contains a ProgressTracker object for the
                 downloads."""
 
-                methodstr = "file/0/"
+                methodstr = "file/%s/" % version
                 urllist = []
                 progclass = None
 
@@ -629,6 +636,32 @@ class HTTPRepo(TransportRepo):
                 finally:
                         fobj.close()
 
+        def publish_add_file(self, pth, header=None, trans_id=None):
+                """The publish operation that adds content to a repository.
+                The action must be populated with a data property.
+                Callers may supply a header, and should supply a transaction
+                id in trans_id."""
+
+                attrs = {}
+                methodstr = "file/1/"
+
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                request_str = "%s" % trans_id
+                requesturl = urlparse.urljoin(baseurl, request_str)
+
+                headers = dict(
+                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
+                    for i, k in enumerate(attrs)
+                )
+
+                if header:
+                        headers.update(header)
+
+                fobj = self._post_url(requesturl, header=headers, data_fp=pth)
+
+                # Discard response body
+                fobj.read()
+                
         def publish_abandon(self, header=None, trans_id=None):
                 """The 'abandon' publication operation, that tells a
                 Repository to abort the current transaction.  The caller
@@ -717,6 +750,12 @@ class HTTPRepo(TransportRepo):
                 Returns a transaction-ID."""
 
                 methodstr = "open/0/"
+                return self.__start_trans(methodstr, header, client_release,
+                    pkg_name)
+
+        def __start_trans(self, methodstr, header, client_release, pkg_name):
+                """Start a publication transaction."""
+
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 request_str = urllib.quote(pkg_name, "")
                 requesturl = urlparse.urljoin(baseurl, request_str)
@@ -747,6 +786,17 @@ class HTTPRepo(TransportRepo):
                         fobj.close()
 
                 return trans_id
+
+        def publish_append(self, header=None, client_release=None,
+            pkg_name=None):
+                """Begin a publication operation by calling 'append'.
+                The caller must specify the client's OS release in
+                client_release, and the package's name in pkg_name.
+                Returns a transaction-ID."""
+
+                methodstr = "append/0/"
+                return self.__start_trans(methodstr, header, client_release,
+                    pkg_name)
 
         def publish_refresh_index(self, header=None):
                 """If the Repo points to a Repository that has a refresh-able
@@ -848,12 +898,13 @@ class HTTPSRepo(HTTPRepo):
                     failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     ccancel=ccancel, sock_path=self._sock_path,
-                    data_fobj=data_fobj, failonerror=failonerror)
+                    data_fobj=data_fobj, data_fp=data_fp,
+                    failonerror=failonerror)
 
 
 class FileRepo(TransportRepo):
@@ -1057,7 +1108,7 @@ class FileRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors)
 
-        def get_datastream(self, fhash, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
@@ -1094,8 +1145,13 @@ class FileRepo(TransportRepo):
                             "alias")
                         pfx = self._frepo.cfg.get_property("publisher",
                             "prefix")
+                        scas = self._frepo.cfg.get_property("publisher",
+                            "signing_ca_certs")
+                        icas = self._frepo.cfg.get_property("publisher",
+                            "intermediate_certs")
                         pub = publisher.Publisher(pfx, alias=alias,
-                            repositories=[repo])
+                            repositories=[repo], ca_certs=scas,
+                            inter_certs=icas)
 
                         buf = cStringIO.StringIO()
                         p5i.write(buf, [pub])
@@ -1192,7 +1248,7 @@ class FileRepo(TransportRepo):
 
                 return errors + pre_exec_errors
 
-        def get_files(self, filelist, dest, progtrack, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -1278,8 +1334,9 @@ class FileRepo(TransportRepo):
 
                 buf = cStringIO.StringIO()
                 vops = {
+                    "append": ["0"],
                     "catalog": ["1"],
-                    "file": ["0"],
+                    "file": ["0", "1"],
                     "manifest": ["0"],
                     "publisher": ["0"],
                     "search": ["1"],
@@ -1309,6 +1366,15 @@ class FileRepo(TransportRepo):
 
                 try:
                         self._frepo.add(trans_id, action)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_add_file(self, pth, header=None, trans_id=None):
+                """The publish operation that adds a file to an existing
+                transaction."""
+
+                try:
+                        self._frepo.add_file(trans_id, pth)
                 except svr_repo.RepositoryError, e:
                         raise tx.TransportOperationError(str(e))
 
@@ -1349,6 +1415,15 @@ class FileRepo(TransportRepo):
 
                 try:
                         trans_id = self._frepo.open(client_release, pkg_name)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+                return trans_id
+
+        def publish_append(self, header=None, client_release=None,
+            pkg_name=None):
+                try:
+                        trans_id = self._frepo.append(client_release, pkg_name)
                 except svr_repo.RepositoryError, e:
                         raise tx.TransportOperationError(str(e))
 

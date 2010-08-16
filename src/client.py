@@ -172,6 +172,8 @@ Advanced subcommands:
         pkg variant [-H] [<variant_spec>]
         pkg facet [-H] [<facet_spec>]
         pkg set-property propname propvalue
+        pkg add-property-value propname propvalue
+        pkg remove-property-value propname propvalue
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
@@ -184,6 +186,13 @@ Advanced subcommands:
             [--reset-uuid] [--non-sticky] [--sticky]
             [--search-after=publisher]
             [--search-before=publisher]
+            [--approve-ca-cert=path_to_CA]
+            [--revoke-ca-cert=hash_of_CA_to_revoke]
+            [--unset-ca-cert=hash_of_CA_to_unset]
+            [--set-property name_of_property=value]
+            [--add-property-value name_of_property=value_to_add]
+            [--remove-property-value name_of_property=value_to_remove]
+            [--unset-property name_of_property_to_delete]
             [publisher]
         pkg unset-publisher publisher ...
         pkg publisher [-HPn] [publisher ...]
@@ -540,7 +549,7 @@ def fix_image(img, args):
                                         continue
 
                                 # Informational messages are ignored by fix.
-                                entries.append((act, errors, warnings ))
+                                entries.append((act, errors, warnings))
 
                         if not entries:
                                 # Nothing to fix for this package.
@@ -552,8 +561,9 @@ def fix_image(img, args):
 
                         failed = []
                         for act, errors, warnings in entries:
-                                failed.append(act)
-                                msg("\t%s" % act.distinguished_name())
+                                if act:
+                                        failed.append(act)
+                                        msg("\t%s" % act.distinguished_name())
                                 for x in errors:
                                         msg("\t\t%s" % x)
                                 for x in warnings:
@@ -597,7 +607,9 @@ def fix_image(img, args):
                 except (api_errors.InvalidPlanError,
                     api_errors.InvalidPackageErrors,
                     api_errors.ActionExecutionError,
-                    api_errors.PermissionsException), e:
+                    api_errors.PermissionsException,
+                    api_errors.SigningException,
+                    api_errors.InvalidResourceLocation), e:
                         logger.error("\n")
                         logger.error(str(e))
                 except api_errors.PlanLicenseErrors, e:
@@ -702,7 +714,8 @@ def verify_image(img, args):
                             "result": result })
 
                         for act, errors, warnings, pinfo in entries:
-                                msg("\t%s" % act.distinguished_name())
+                                if act:
+                                        msg("\t%s" % act.distinguished_name())
                                 for x in errors:
                                         msg("\t\t%s" % x)
                                 for x in warnings:
@@ -929,13 +942,18 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         if e_type in (api_errors.CertificateError,
             api_errors.UnknownErrors,
             api_errors.PlanCreationException,
-            api_errors.PermissionsException):
+            api_errors.PermissionsException,
+            api_errors.InvalidPropertyValue,
+            api_errors.InvalidResourceLocation):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return False
         if e_type == fmri.IllegalFmri:
                 error(e, cmd=op)
+                return False
+        if isinstance(e, api_errors.SigningException):
+                error(e)
                 return False
 
         # if we didn't deal with the exception above, pass it on.
@@ -2397,7 +2415,17 @@ def publisher_set(img, args):
             remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
             to remove] [-p repo_uri] [--enable] [--disable] [--no-refresh]
             [--sticky] [--non-sticky ] [--search-before=publisher]
-            [--search-after=publisher] [publisher]"""
+            [--search-after=publisher]
+            [--approve-ca-cert path to CA]
+            [--revoke-ca-cert hash of CA to remove]
+            [--unset-ca-cert hash of CA to unset]
+            [--set-property name of property=value]
+            [--add-property-value name of property=value to add]
+            [--remove-property-value name of property=value to remove]
+            [--unset-property name of property to delete]
+            [publisher] """
+
+        cmd_name = "set-publisher"
 
         preferred = False
         ssl_key = None
@@ -2418,11 +2446,21 @@ def publisher_set(img, args):
         sys_repo_uri = None
         socket_path = None
 
+        approved_ca_certs = []
+        revoked_ca_certs = []
+        unset_ca_certs = []
+        set_props = {}
+        add_prop_values = {}
+        remove_prop_values = {}
+        unset_props = set()
+
         opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
             ["add-mirror=", "remove-mirror=", "add-origin=",
             "clear-system-repo", "remove-origin=", "no-refresh", "reset-uuid",
             "enable", "disable", "sticky", "non-sticky", "search-before=",
-            "search-after=", "system-repo=", "socket-path="])
+            "search-after=", "system-repo=", "socket-path=", "approve-ca-cert=",
+            "revoke-ca-cert=", "unset-ca-cert=", "set-property=",
+            "add-property-value=", "remove-property-value=", "unset-property="])
 
         for opt, arg in opts:
                 if opt == "-c":
@@ -2465,6 +2503,41 @@ def publisher_set(img, args):
                         sys_repo_uri = arg
                 elif opt == "--socket-path":
                         socket_path = arg
+                elif opt == "--approve-ca-cert":
+                        approved_ca_certs.append(arg)
+                elif opt == "--revoke-ca-cert":
+                        revoked_ca_certs.append(arg)
+                elif opt == "--unset-ca-cert":
+                        unset_ca_certs.append(arg)
+                elif opt == "--set-property":
+                        t = arg.split("=", 1)
+                        if len(t) < 2:
+                                usage(_("properties to be set must be of the "
+                                    "form '<name>=<value>'. This is what was "
+                                    "given: %s") % arg, cmd=cmd_name)
+                        if t[0] in set_props:
+                                usage(_("a property may only be set once in a "
+                                    "command. %s was set twice") % t[0],
+                                    cmd=cmd_name)
+                        set_props[t[0]] = t[1]
+                elif opt == "--add-property-value":
+                        t = arg.split("=", 1)
+                        if len(t) < 2:
+                                usage(_("property values to be added must be "
+                                    "of the form '<name>=<value>'. This is "
+                                    "what was given: %s") % arg, cmd=cmd_name)
+                        add_prop_values.setdefault(t[0], [])
+                        add_prop_values[t[0]].append(t[1])
+                elif opt == "--remove-property-value":
+                        t = arg.split("=", 1)
+                        if len(t) < 2:
+                                usage(_("property values to be removed must be "
+                                    "of the form '<name>=<value>'. This is "
+                                    "what was given: %s") % arg, cmd=cmd_name)
+                        remove_prop_values.setdefault(t[0], [])
+                        remove_prop_values[t[0]].append(t[1])
+                elif opt == "--unset-property":
+                        unset_props.add(arg)
 
         name = None
         if len(pargs) == 0 and not repo_uri:
@@ -2523,7 +2596,13 @@ def publisher_set(img, args):
                     search_after=search_after, reset_uuid=reset_uuid,
                     refresh_allowed=refresh_allowed, preferred=preferred,
                     socket_path=socket_path, clear_sys_repo=clear_sys_repo,
-                    sys_repo_uri=sys_repo_uri)
+                    sys_repo_uri=sys_repo_uri,
+                    set_props=set_props, add_prop_values=add_prop_values,
+                    remove_prop_values=remove_prop_values,
+                    unset_props=unset_props, approved_cas=approved_ca_certs,
+                    revoked_cas=revoked_ca_certs, unset_cas=unset_ca_certs,
+                    img=img)
+
                 rval, rmsg = ret
                 if rmsg:
                         error(rmsg, cmd="set-publisher")
@@ -2601,7 +2680,11 @@ assistance."""))
                             add_origins=add_origins, ssl_cert=ssl_cert,
                             ssl_key=ssl_key, sticky=sticky,
                             search_after=search_after,
-                            search_before=search_before)
+                            search_before=search_before,
+                            set_props=set_props,
+                            add_prop_values=add_prop_values,
+                            remove_prop_values=remove_prop_values,
+                            unset_props=unset_props)
                         if rval == EXIT_OK:
                                 added.append(prefix)
                 else:
@@ -2664,7 +2747,11 @@ assistance."""))
 
                         rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
                             [], api_inst, prefix, pub=dest_pub,
-                            add_mirrors=add_mirrors, add_origins=add_origins)
+                            add_mirrors=add_mirrors, add_origins=add_origins,
+                            set_props=set_props,
+                            add_prop_values=add_prop_values,
+                            remove_prop_values=remove_prop_values,
+                            unset_props=unset_props)
 
                         if rval == EXIT_OK:
                                 updated.append(prefix)
@@ -2714,7 +2801,9 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
     add_origins=EmptyI, remove_origins=EmptyI, ssl_cert=None, ssl_key=None,
     search_before=None, search_after=None, socket_path=None, sys_repo_uri=None,
     reset_uuid=None, refresh_allowed=False, preferred=False,
-    clear_sys_repo=False):
+    clear_sys_repo=False, set_props=EmptyI, add_prop_values=EmptyI,
+    remove_prop_values=EmptyI, unset_props=EmptyI, approved_cas=EmptyI,
+    revoked_cas=EmptyI, unset_cas=EmptyI, img=None):
 
         repo = None
         new_pub = False
@@ -2810,10 +2899,39 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                         if ssl_key is not None:
                                 uri.ssl_key = ssl_key
 
+        if set_props or add_prop_values or remove_prop_values or unset_props:
+                pub.update_props(set_props=set_props,
+                    add_prop_values=add_prop_values,
+                    remove_prop_values=remove_prop_values,
+                    unset_props=unset_props)
+
         if new_pub:
                 api_inst.add_publisher(pub,
-                    refresh_allowed=refresh_allowed)
+                    refresh_allowed=refresh_allowed, approved_cas=approved_cas,
+                    revoked_cas=revoked_cas, unset_cas=unset_cas)
         else:
+                for ca in approved_cas:
+                        try:
+                                ca = os.path.normpath(
+                                    os.path.join(orig_cwd, ca))
+                                with open(ca, "rb") as fh:
+                                        s = fh.read()
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        raise api_errors.MissingFileArgumentException(
+                                            ca)
+                                elif e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            ca)
+                                raise
+                        pub.approve_ca_cert(s, manual=True)
+
+                for hsh in revoked_cas:
+                        pub.revoke_ca_cert(hsh)
+
+                for hsh in unset_cas:
+                        pub.unset_ca_cert(hsh)
+
                 api_inst.update_publisher(pub,
                     refresh_allowed=refresh_allowed)
 
@@ -3127,6 +3245,18 @@ def publisher_list(img, args):
                                         retcode = EXIT_PARTIAL
                         return retcode
 
+                def display_signing_certs(p):
+                        if p.approved_ca_certs:
+                                msg(_("         Approved CAs:"),
+                                    p.approved_ca_certs[0])
+                                for h in p.approved_ca_certs[1:]:
+                                        msg(_("                     :"), h)
+                        if p.revoked_ca_certs:
+                                msg(_("          Revoked CAs:"),
+                                    p.revoked_ca_certs[0])
+                                for h in p.revoked_ca_certs[1:]:
+                                        msg(_("                     :"), h)
+
                 for name in pargs:
                         # detailed print
                         pub = api_inst.get_publisher(prefix=name, alias=name)
@@ -3148,14 +3278,15 @@ def publisher_list(img, args):
 
                         msg(_("          Client UUID:"), pub.client_uuid)
                         msg(_("      Catalog Updated:"), dt)
+                        display_signing_certs(pub)
                         if pub.disabled:
                                 msg(_("              Enabled:"), _("No"))
                         else:
                                 msg(_("              Enabled:"), _("Yes"))
         return retcode
 
-def property_set(img, args):
-        """pkg set-property propname propvalue"""
+def property_add_value(img, args):
+        """pkg add-property-value propname propvalue"""
 
         # ensure no options are passed in
         opts, pargs = getopt.getopt(args, "")
@@ -3163,6 +3294,62 @@ def property_set(img, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(_("requires a property name and value"),
+                    cmd="property-add-value")
+
+        if propname == "preferred-publisher":
+                error(_("set-publisher must be used to change the preferred "
+                    "publisher"), cmd="property-add-value")
+                return EXIT_OOPS
+
+        try:
+                img.add_property_value(propname, propvalue)
+        except (api_errors.PermissionsException,
+            api_errors.InvalidPropertyValue), e:
+                # Prepend a newline because otherwise the exception
+                # will be printed on the same line as the spinner.
+                error("\n" + str(e), cmd="property-add-value")
+                return EXIT_OOPS
+        return EXIT_OK
+
+def property_remove_value(img, args):
+        """pkg remove-property-value propname propvalue"""
+
+        # ensure no options are passed in
+        opts, pargs = getopt.getopt(args, "")
+        try:
+                propname, propvalue = pargs
+        except ValueError:
+                usage(_("requires a property name and value"),
+                    cmd="property-remove-value")
+
+        if propname == "preferred-publisher":
+                error(_("set-publisher must be used to change the preferred "
+                    "publisher"), cmd="property-remove-value")
+                return EXIT_OOPS
+
+        try:
+                img.remove_property_value(propname, propvalue)
+        except (api_errors.PermissionsException,
+            api_errors.InvalidPropertyValue), e:
+                # Prepend a newline because otherwise the exception
+                # will be printed on the same line as the spinner.
+                error("\n" + str(e), cmd="property-remove-value")
+                return EXIT_OOPS
+        return EXIT_OK
+
+def property_set(img, args):
+        """pkg set-property propname propvalue [propvalue ...]"""
+
+        # ensure no options are passed in
+        opts, pargs = getopt.getopt(args, "")
+        try:
+                propname = pargs[0]
+                propvalues = pargs[1:]
+        except IndexError:
+                usage(_("requires a property name and at least one value"),
+                    cmd="set-property")
+        if len(propvalues) == 0:
+                usage(_("requires a property name and at least one value"),
                     cmd="set-property")
 
         if propname == "preferred-publisher":
@@ -3171,8 +3358,9 @@ def property_set(img, args):
                 return EXIT_OOPS
 
         try:
-                img.set_property(propname, propvalue)
-        except api_errors.PermissionsException, e:
+                img.set_property(propname, propvalues)
+        except (api_errors.PermissionsException,
+            api_errors.InvalidPropertyValue), e:
                 # Prepend a newline because otherwise the exception
                 # will be printed on the same line as the spinner.
                 error("\n" + str(e), cmd="set-property")
@@ -3314,6 +3502,8 @@ def image_create(args):
         component that consumes global zone-only information, such as various
         kernel statistics or device information."""
 
+        cmd_name = "image-create"
+        
         force = False
         imgtype = IMG_TYPE_USER
         is_zone = False
@@ -3329,11 +3519,12 @@ def image_create(args):
         sys_repo_uri = None
         variants = {}
         facets = pkg.facet.Facets()
+        set_props = {}
 
         opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
             ["force", "full", "partial", "user", "zone", "authority=", "facet=",
                 "mirror=", "origin=", "publisher=", "no-refresh", "variant=",
-                "system-repo", "socket-path="])
+                "system-repo", "socket-path=", "set-property="])
 
         for opt, arg in opts:
                 # -a is deprecated and will be removed at a future date.
@@ -3377,9 +3568,9 @@ def image_create(args):
                         except ValueError:
                                 usage(_("variant arguments must be of the "
                                     "form '<name>=<value>'."),
-                                    cmd="image-create")
+                                    cmd=cmd_name)
                         variants[v_name] = v_value
-                if opt == "--facet":
+                elif opt == "--facet":
                         allow = { "TRUE":True, "FALSE":False }
                         f_name, f_value = arg.split("=", 1)
                         if not f_name.startswith("facet."):
@@ -3387,20 +3578,31 @@ def image_create(args):
                         if f_value.upper() not in allow:
                                 usage(_("Facet arguments must be"
                                     "form 'facet..=[True|False]'"),
-                                    cmd="image-create")
+                                    cmd=cmd_name)
                         facets[f_name] = allow[f_value.upper()]
+                elif opt == "--set-property":
+                        t = arg.split("=", 1)
+                        if len(t) < 2:
+                                usage(_("properties to be set must be of the "
+                                    "form '<name>=<value>'. This is what was "
+                                    "given: %s") % arg, cmd=cmd_name)
+                        if t[0] in set_props:
+                                usage(_("a property may only be set once in a "
+                                    "command. %s was set twice") % t[0],
+                                    cmd=cmd_name)
+                        set_props[t[0]] = t[1]
 
         if not pargs:
                 usage(_("an image directory path must be specified"),
-                    cmd="image-create")
+                    cmd=cmd_name)
         elif len(pargs) > 1:
                 usage(_("only one image directory path may be specified"),
-                    cmd="image-create")
+                    cmd=cmd_name)
         image_dir = pargs[0]
 
         if not pub_name and not pub_url:
                 usage(_("publisher argument must be of the form "
-                    "'<prefix>=<uri> or '<uri>''."), cmd="image-create")
+                    "'<prefix>=<uri> or '<uri>''."), cmd=cmd_name)
         elif not pub_name and not refresh_allowed:
                 usage(_("--no-refresh cannot be used with -p unless a "
                     "publisher prefix is provided."))
@@ -3429,7 +3631,7 @@ def image_create(args):
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
                     socket_path=sock_path, ssl_cert=ssl_cert,
                     ssl_key=ssl_key, sys_repo=sys_repo_uri, repo_uri=repo_uri,
-                    variants=variants)
+                    variants=variants, props=set_props)
                 __img = api_inst.img
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
@@ -3439,18 +3641,18 @@ def image_create(args):
                     "location and the client's network configuration."
                     "\nAdditional details:\n\n%(error)s") %
                     { "pub_url": pub_url, "error": e },
-                    cmd="image-create")
+                    cmd=cmd_name)
                 print_proxy_config()
                 return EXIT_OOPS
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
-                error("", cmd="image-create")
+                error("", cmd=cmd_name)
                 if display_catalog_failures(cre) == 0:
                         return EXIT_OOPS
                 else:
                         return EXIT_PARTIAL
         except api_errors.ApiException, e:
-                error(str(e), cmd="image-create")
+                error(str(e), cmd=cmd_name)
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3742,6 +3944,7 @@ def main_func():
                 return EXIT_OOPS
 
         cmds = {
+                "add-property-value"     : property_add_value,
                 "authority"        : publisher_list,
                 "change-facet"     : change_facet,
                 "change-variant"   : change_variant,
@@ -3759,6 +3962,7 @@ def main_func():
                 "purge-history"    : history_purge,
                 "rebuild-index"    : rebuild_index,
                 "refresh"          : publisher_refresh,
+                "remove-property-value"  : property_remove_value,
                 "search"           : search,
                 "set-authority"    : publisher_set,
                 "set-property"     : property_set,

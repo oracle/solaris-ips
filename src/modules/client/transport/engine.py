@@ -677,7 +677,7 @@ class CurlTransportEngine(TransportEngine):
 
         def send_data(self, url, data=None, header=None, sslcert=None,
             sslkey=None, repourl=None, ccancel=None, sock_path=None,
-            data_fobj=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -698,7 +698,7 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header, data=data,
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
-                    sock_path=None, read_fobj=data_fobj,
+                    sock_path=None, read_fobj=data_fobj, read_filepath=data_fp,
                     failonerror=failonerror)
 
                 self.__req_q.appendleft(t)

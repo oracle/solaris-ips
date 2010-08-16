@@ -91,6 +91,13 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
                 self.make_misc_files(["tmp/empty", "tmp/truck1",
                     "tmp/truck2"])
 
+                self.path_to_certs = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced")
+                self.pub_cas_dir = os.path.join(self.path_to_certs,
+                    "publisher_cas")
+                self.inter_certs_dir = os.path.join(self.path_to_certs,
+                    "inter_certs")
+
         def test_00_base(self):
                 """Verify pkgrepo handles basic option and subcommand parsing
                 as expected.
@@ -175,27 +182,29 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
                 # Verify full default output.
                 self.pkgrepo("-s %s property" % repo_uri)
                 expected = """\
-SECTION    PROPERTY         VALUE
-feed       description      
-feed       icon             web/_themes/pkg-block-icon.png
-feed       id               
-feed       logo             web/_themes/pkg-block-logo.png
-feed       name             package repository feed
-feed       window           24
-publisher  alias            
-publisher  prefix           
-repository collection_type  core
-repository description      
-repository detailed_url     
-repository legal_uris       []
-repository maintainer       
-repository maintainer_url   
-repository mirrors          []
-repository name             package repository
-repository origins          []
-repository refresh_seconds  14400
-repository registration_uri 
-repository related_uris     []
+SECTION    PROPERTY           VALUE
+feed       description        
+feed       icon               web/_themes/pkg-block-icon.png
+feed       id                 
+feed       logo               web/_themes/pkg-block-logo.png
+feed       name               package repository feed
+feed       window             24
+publisher  alias              
+publisher  intermediate_certs []
+publisher  prefix             
+publisher  signing_ca_certs   []
+repository collection_type    core
+repository description        
+repository detailed_url       
+repository legal_uris         []
+repository maintainer         
+repository maintainer_url     
+repository mirrors            []
+repository name               package repository
+repository origins            []
+repository refresh_seconds    14400
+repository registration_uri   
+repository related_uris       []
 """
                 self.assertEqualDiff(expected, self.output)
 
@@ -210,7 +219,9 @@ feed\tlogo\tweb/_themes/pkg-block-logo.png
 feed\tname\tpackage repository feed
 feed\twindow\t24
 publisher\talias\t
+publisher\tintermediate_certs\t[]
 publisher\tprefix\t
+publisher\tsigning_ca_certs\t[]
 repository\tcollection_type\tcore
 repository\tdescription\t
 repository\tdetailed_url\t
@@ -235,8 +246,8 @@ repository\trelated_uris\t[]
                 self.pkgrepo("-s %s property publisher/prefix" %
                     repo_uri)
                 expected = """\
-SECTION    PROPERTY         VALUE
-publisher  prefix           
+SECTION    PROPERTY           VALUE
+publisher  prefix             
 """
                 self.assertEqualDiff(expected, self.output)
 
@@ -244,8 +255,8 @@ publisher  prefix
                 self.pkgrepo("-s %s property -H publisher/prefix "
                     "repository/origins" % repo_uri)
                 expected = """\
-publisher  prefix           
-repository origins          []
+publisher  prefix             
+repository origins            []
 """
                 self.assertEqualDiff(expected, self.output)
 
@@ -591,6 +602,51 @@ test\t3\t5\t%sZ
                 self.pkgrepo("version")
                 self.assert_(self.output.find(pkg.VERSION) != -1)
 
+        def test_07_certs(self):
+                """Verify that certificate commands work as expected."""
+
+                # Create a repository.
+                repo_path = os.path.join(self.test_root, "repo")
+                repo_uri = "file:%s" % repo_path
+                self.assert_(not os.path.exists(repo_path))
+                self.pkgrepo("-s %s create" % repo_path)
+
+                ca3_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
+                ca1_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta1_cert.pem")
+                
+                self.pkgrepo("-s %s add-signing-ca-cert %s" %
+                    (repo_uri, ca3_pth))
+                self.pkgrepo("-s %s add-signing-ca-cert %s" %
+                    (repo_uri, ca1_pth))
+
+                ca1_hsh = self.calc_file_hash(ca1_pth)
+                ca3_hsh = self.calc_file_hash(ca3_pth)
+
+                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
+                    (repo_uri, ca1_hsh))
+                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
+                    (repo_uri, ca3_hsh))
+                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
+                    (repo_uri, ca1_hsh))
+                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
+                    (repo_uri, ca3_hsh))
+
+                self.pkgrepo("-s %s add-signing-intermediate-cert %s" %
+                    (repo_uri, ca3_pth))
+                self.pkgrepo("-s %s add-signing-intermediate-cert %s" %
+                    (repo_uri, ca1_pth))
+
+                ca1_hsh = self.calc_file_hash(ca1_pth)
+                ca3_hsh = self.calc_file_hash(ca3_pth)
+
+                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
+                    (repo_uri, ca1_hsh))
+                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
+                    (repo_uri, ca3_hsh))
+                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
+                    (repo_uri, ca1_hsh))
+                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
+                    (repo_uri, ca3_hsh))
 
 if __name__ == "__main__":
         unittest.main()

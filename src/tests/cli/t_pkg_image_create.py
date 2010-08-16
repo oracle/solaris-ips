@@ -73,6 +73,12 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("image-create --bozo", exit=2)
                 self.pkg("image-create", exit=2)
 
+                self.pkg("image-create --set-property foo -p test1=%s %s" %
+                    (self.rurl1, self.test_root), exit=2)
+                self.pkg("image-create --set-property foo=bar --set-property "
+                    "foo=baz -p test1=%s %s" % (self.rurl1, self.test_root),
+                    exit=2)
+
         def __add_install_file(self, imgdir, fmri):
                 """Take an image path and fmri. Write a file to disk that
                 indicates that the package named by the fmri has been
@@ -133,7 +139,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # non-empty directory exists
                 p = os.path.join(self.get_img_path(), "3588_2_image")
                 os.mkdir(p)
-                self.cmdline_run("touch %s/%s" % (p, "somefile"))
+                self.cmdline_run("touch %s/%s" % (p, "somefile"),
+                    coverage=False)
                 self.pkg("image-create -p test1=%s %s" % (self.rurl1, p),
                     exit=1)
                 self.pkg("image-create -f -p test1=%s %s" % (self.rurl1, p))

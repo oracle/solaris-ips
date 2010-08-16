@@ -141,6 +141,14 @@ PCENVIRON = {}
 if osname in ("sunos", "linux", "darwin"):
         PCENVIRON = {'CFLAGS': '-O3'}
 
+M2C = 'M2Crypto'
+M2CIDIR = 'm2crypto'
+M2CVER = '0.20.2'
+M2CARC = '%s-%s.tar.gz' % (M2C, M2CVER)
+M2CDIR = '%s-%s' % (M2C, M2CVER)
+M2CURL = 'http://pypi.python.org/packages/source/M/M2Crypto/%s' % (M2CARC)
+M2CHASH = '6e85d7035971c353db74a497fca0ec2eaea4dea0'
+
 pwd = os.path.normpath(sys.path[0])
 
 #
@@ -193,6 +201,7 @@ scripts_sunos = {
                 ['util/publish/pkgmogrify.py', 'pkgmogrify'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
+                ['sign.py', 'pkgsign'],
                 ['packagemanager.py', 'packagemanager'],
                 ['updatemanager.py', 'pm-updatemanager'],
                 ],
@@ -261,6 +270,7 @@ man1_files = [
         'man/pkgfmt.1',
         'man/pkgmogrify.1',
         'man/pkgsend.1',
+        'man/pkgsign.1',
         'man/pkgrecv.1',
         'man/pkgrepo.1',
         'man/pm-updatemanager.1',
@@ -502,6 +512,8 @@ class install_func(_install):
                         prep_sw(PO, POARC, PODIR, POURL, POHASH)
                         install_sw(PO, PODIR, POIDIR)
                         os.environ = saveenv
+                prep_sw(M2C, M2CARC, M2CDIR, M2CURL, M2CHASH)
+                install_sw(M2C, M2CDIR, M2CIDIR)
                 prep_sw(MAKO, MAKOARC, MAKODIR, MAKOURL, MAKOHASH)
                 install_sw(MAKO, MAKODIR, MAKOIDIR)
                 prep_sw(PLY, PLYARC, PLYDIR, PLYURL, PLYHASH)

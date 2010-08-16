@@ -1,3 +1,12 @@
+Version 41:
+Compatible with clients using versions 40-41.
+
+    Allows the client to handle signed packages.  This includes the addition
+    of a large number of optional parameters to the client/publisher class.
+    It also makes changes to image creation to allow image properties to be set
+    during the process.  New subclasses of ApiException were created to indicate
+    different error conditions associated with signing failures.
+
 Version 40:
 Incompatible with clients using versions 0-39.
 

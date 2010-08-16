@@ -485,11 +485,12 @@ class ImagePlan(object):
                 self.__cached_actions[(name, key)] = d
                 return self.__cached_actions[(name, key)]
 
-        def __get_manifest(self, pfmri, intent):
+        def __get_manifest(self, pfmri, intent, all_variants=False):
                 """Return manifest for pfmri"""
                 if pfmri:
                         return self.image.get_manifest(pfmri, 
-                            all_variants=self.__variant_change, intent=intent)
+                            all_variants=all_variants or self.__variant_change,
+                            intent=intent)
                 else:
                         return manifest.NullCachedManifest
 
@@ -612,8 +613,10 @@ class ImagePlan(object):
                         pp = pkgplan.PkgPlan(self.image, self.__progtrack,
                             self.__check_cancelation)
 
-                        pp.propose(oldfmri, self.__get_manifest(oldfmri, old_in),
-                                   newfmri, self.__get_manifest(newfmri, new_in))
+                        pp.propose(oldfmri,
+                            self.__get_manifest(oldfmri, old_in),
+                            newfmri, self.__get_manifest(newfmri, new_in,
+                            all_variants=True))
 
                         pp.evaluate(self.__old_excludes, self.__new_excludes)
 

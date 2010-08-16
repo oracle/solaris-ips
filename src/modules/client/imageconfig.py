@@ -38,9 +38,10 @@ import pkg.client.publisher   as publisher
 import pkg.facet              as facet
 import pkg.fmri               as fmri
 import pkg.portable           as portable
+import pkg.client.sigpolicy   as sigpolicy
 import pkg.variant            as variant
 
-from pkg.misc import DictProperty
+from pkg.misc import DictProperty, SIGNATURE_POLICY
 # The default_policies dictionary defines the policies that are supported by
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
@@ -48,10 +49,12 @@ from pkg.misc import DictProperty
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
+
 default_policies = {
     FLUSH_CONTENT_CACHE: False,
     MIRROR_DISCOVERY: False,
-    SEND_UUID: True
+    SEND_UUID: True,
+    SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY
 }
 
 CA_PATH = "ca-path"
@@ -86,7 +89,7 @@ class ImageConfig(object):
                 self.__publishers = {}
                 self.__publisher_search_order = []
 
-                self.properties = dict((
+                self.__properties = dict((
                     (p, str(v))
                     for p, v in default_policies.iteritems()
                 ))
@@ -97,7 +100,7 @@ class ImageConfig(object):
                 self.facets = facet.Facets()
                 self.variants = variant.Variants()
                 self.children = []
-
+                self.__delay_validation = False
 
         def __str__(self):
                 return "%s\n%s" % (self.__publishers, self.properties)
@@ -168,6 +171,14 @@ class ImageConfig(object):
                         policystr = self.properties[policy]
                         return policystr.lower() in ("true", "yes")
                 return default_policies[policy]
+
+        def get_policy_str(self, policy):
+                """Return a boolean value for the named policy.  Returns
+                the default value for the policy if the named policy is
+                not defined in the image configuration.
+                """
+                assert policy in default_policies
+                return self.__properties.get(policy, default_policies[policy])
 
         def read(self, path):
                 """Read the config files for the image from the given directory.
@@ -245,10 +256,16 @@ class ImageConfig(object):
                         for o in cp.options("policy"):
                                 self.properties[o] = cp.get("policy", o)
 
+                # Set __delay_validation to be True so that the order the
+                # properties are read doesn't matter.
+                self.__delay_validation = True
                 if cp.has_section("property"):
                         for o in cp.options("property"):
                                 self.properties[o] = cp.get("property",
                                     o, raw=True).decode('utf-8')
+                self.__delay_validation = False
+                # Now validate the properties are consistent.
+                self.__validate_properties()
 
                 try:
                         preferred_publisher = \
@@ -337,7 +354,7 @@ class ImageConfig(object):
                 # For compatibility, the preferred-publisher is written out
                 # as the preferred-authority.  Modify a copy so that we don't
                 # change the in-memory copy.
-                props = self.properties.copy()
+                props = self.__properties.copy()
                 try:
                         del props["preferred-publisher"]
                 except KeyError:
@@ -347,7 +364,11 @@ class ImageConfig(object):
 
                 cp.add_section("property")
                 for p in props:
-                        cp.set("property", p, props[p].encode("utf-8"))
+                        if isinstance(props[p], basestring):
+                                cp.set("property", p, props[p].encode("utf-8"))
+                        else:
+                                cp.set("property", p, str(props[p]).encode(
+                                    "utf-8"))
 
                 cp.add_section("variant")
                 for f in self.variants:
@@ -370,6 +391,14 @@ class ImageConfig(object):
                         c.add_section(section)
                         c.set(section, "alias", str(pub.alias))
                         c.set(section, "prefix", str(pub.prefix))
+                        c.set(section, "signing_ca_certs", str(
+                            pub.signing_ca_certs))
+                        c.set(section, "approved_ca_certs", str(
+                            pub.approved_ca_certs))
+                        c.set(section, "revoked_ca_certs", str(
+                            pub.revoked_ca_certs))
+                        c.set(section, "intermediate_certs", str(
+                            pub.inter_certs))
                         c.set(section, "disabled", str(pub.disabled))
                         c.set(section, "sticky", str(pub.sticky))
 
@@ -442,6 +471,9 @@ class ImageConfig(object):
                         for key, val in repo_data.iteritems():
                                 c.set(section, "repo.%s" % key, str(val))
 
+                        for key, val in pub.properties.iteritems():
+                                c.set(section, "property.%s" % key, str(val))
+
                 # XXX Child images
 
                 for afile, acp in [(CFG_FILE, cp), (DA_FILE, da)]:
@@ -467,6 +499,7 @@ class ImageConfig(object):
                 """Take a list in string representation and convert it back
                 to a Python list."""
 
+                list_str = list_str.encode("utf-8")
                 # Strip brackets and any whitespace
                 list_str = list_str.strip("][ ")
                 # Strip comma and any whitespeace
@@ -479,6 +512,7 @@ class ImageConfig(object):
                 return lst
 
         def read_publisher(self, meta_root, cp, s):
+                # s is the section of the config file.
                 # publisher block has alias, prefix, origin, and mirrors
                 changed = False
                 try:
@@ -489,6 +523,38 @@ class ImageConfig(object):
                         alias = None
 
                 prefix = cp.get(s, "prefix")
+
+                try:
+                        ca_certs = self.read_list(cp.get(s, "signing_ca_certs"))
+                except ConfigParser.NoOptionError:
+                        ca_certs = []
+
+                try:
+                        approved_ca_certs = self.read_list(cp.get(s,
+                            "approved_ca_certs"))
+                except ConfigParser.NoOptionError:
+                        approved_ca_certs = []
+
+                try:
+                        revoked_ca_certs = self.read_list(cp.get(s,
+                            "revoked_ca_certs"))
+                except ConfigParser.NoOptionError:
+                        revoked_ca_certs = []
+
+                try:
+                        inter_certs = self.read_list(cp.get(s,
+                            "intermediate_certs"))
+                except ConfigParser.NoOptionError:
+                        inter_certs = []
+                try:
+                        signature_policy = cp.get(s, "signature_policy")
+                except ConfigParser.NoOptionError:
+                        signature_policy = sigpolicy.DEFAULT_POLICY
+                try:
+                        signature_names = self.read_list(cp.get(s,
+                            "signature-required-names"))
+                except ConfigParser.NoOptionError:
+                        signature_names = []
 
                 if prefix.startswith(fmri.PREF_PUB_PFX):
                         raise RuntimeError(
@@ -562,6 +628,14 @@ class ImageConfig(object):
                                 client_uuid = None
                 except ConfigParser.NoOptionError:
                         client_uuid = None
+
+                props = {}
+                for opt in cp.options(s):
+                        if not opt.startswith("property."):
+                                continue
+                        prop_name = opt[len("property."):]
+                        val = self.read_list(cp.get(s, opt))
+                        props[prop_name] = val
 
                 # Load selected repository data.
                 # XXX this is temporary until a switch to a more expressive
@@ -666,13 +740,110 @@ class ImageConfig(object):
 
                 pub = publisher.Publisher(prefix, alias=alias,
                     client_uuid=client_uuid, disabled=disabled,
-                    meta_root=pmroot, repositories=[r], sticky=sticky)
+                    meta_root=pmroot, repositories=[r], sticky=sticky,
+                    ca_certs=ca_certs, inter_certs=inter_certs, props=props,
+                    revoked_ca_certs=revoked_ca_certs,
+                    approved_ca_certs=approved_ca_certs)
 
                 # write out the UUID if it was set
                 if pub.client_uuid != client_uuid:
                         changed = True
 
                 return prefix, pub, changed
+
+        def __get_prop(self, name):
+                """Accessor method for properties dictionary"""
+                return self.__properties[name]
+
+        def __validate_properties(self):
+                """Check that properties are consistent with each other."""
+
+                if self.__properties[SIGNATURE_POLICY] == "require-names":
+                        if not self.__properties.get("signature-required-names",
+                            None):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "At least one name must be provided for "
+                                    "the signature-required-names policy."))
+
+        def __set_prop(self, name, values):
+                """Accessor method to add a property"""
+
+                if name == SIGNATURE_POLICY:
+                        if isinstance(values, basestring):
+                                values = [values]
+                        policy_name = values[0]
+                        if policy_name not in sigpolicy.Policy.policies():
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "%(val)s is not a valid value for this "
+                                    "property:%(prop)s") % {"val": policy_name,
+                                    "prop": SIGNATURE_POLICY})
+                        self.__properties[SIGNATURE_POLICY] = policy_name
+                        if policy_name == "require-names":
+                                # If __delay_validation is set, then it's
+                                # possible that signature-required-names was
+                                # set by a previous line in the cfg_cache
+                                # file.  If so, don't overwrite the values
+                                # that have already been read.
+                                if self.__delay_validation:
+                                        self.__properties.setdefault(
+                                            "signature-required-names", [])
+                                        self.__properties[
+                                            "signature-required-names"].extend(
+                                            values[1:])
+                                else:
+                                        self.__properties[
+                                            "signature-required-names"] = \
+                                            values[1:]
+                        else:
+                                if len(values) > 1:
+                                        raise api_errors.InvalidPropertyValue(
+                                            _("The %s signature-policy takes "
+                                            "no argument.") % policy_name)
+                elif name == "signature-required-names":
+                        if isinstance(values, basestring):
+                                values = self.read_list(values)
+                        self.__properties[name] = values
+                elif name == "trust-anchor-directory":
+                        if isinstance(values, list):
+                                if len(values) > 1:
+                                        raise api_errors.InvalidPropertyValue(
+                                            _("%(name)s is not a multivalued "
+                                            "property. Values are:%(value)r") %
+                                            {"name":name, "value":values})
+                                values = values[0]
+                        self.__properties[name] = values
+                else:
+                        self.__properties[name] = values
+                if not self.__delay_validation:
+                        self.__validate_properties()
+
+        def __del_prop(self, name):
+                """Accessor method for properties"""
+                del self.__properties[name]
+
+        def __prop_iter(self):
+                return self.__properties.__iter__()
+
+        def __prop_iteritems(self):
+                """Support iteritems on properties"""
+                return self.__properties.iteritems()
+
+        def __prop_keys(self):
+                """Support keys() on properties"""
+                return self.__properties.keys()
+
+        def __prop_values(self):
+                """Support values() on properties"""
+                return self.__properties.values()
+
+        def __prop_getdefault(self, name, value):
+                return self.__properties.get(name, value)
+
+        def __prop_setdefault(self, name, value):
+                return self.__properties.setdefault(name, value)
+
+        def __prop_update(self, d):
+                return self.__properties.update(d)
 
         # properties so we can enforce rules
 
@@ -682,3 +853,9 @@ class ImageConfig(object):
         publishers = DictProperty(__get_publisher, __set_publisher, __del_publisher,
             __publisher_iteritems, __publisher_keys, __publisher_values, __publisher_iter,
             doc="A dict mapping publisher prefixes to publisher objects")
+
+        properties = DictProperty(__get_prop, __set_prop, __del_prop,
+            __prop_iteritems, __prop_keys, __prop_values, __prop_iter,
+            doc="A dict holding the properties for an image.",
+            fgetdefault=__prop_getdefault, fsetdefault=__prop_setdefault,
+            update=__prop_update)

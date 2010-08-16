@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 40
+CURRENT_API_VERSION = 41
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -125,7 +125,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([40, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -2299,13 +2299,17 @@ class ImageInterface(object):
                 except StopIteration:
                         return False
 
-        def add_publisher(self, pub, refresh_allowed=True):
+        def add_publisher(self, pub, refresh_allowed=True,
+            approved_cas=misc.EmptyI, revoked_cas=misc.EmptyI,
+            unset_cas=misc.EmptyI):
                 """Add the provided publisher object to the image
                 configuration."""
                 try:
                         self.__img.add_publisher(pub,
                             refresh_allowed=refresh_allowed,
-                            progtrack=self.__progresstracker)
+                            progtrack=self.__progresstracker,
+                            approved_cas=approved_cas, revoked_cas=revoked_cas,
+                            unset_cas=unset_cas)
                 finally:
                         self.__img.cleanup_downloads()
 
@@ -2892,7 +2896,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
     mirrors=misc.EmptyI, origins=misc.EmptyI, prefix=None, refresh_allowed=True,
     repo_uri=None, socket_path=None, ssl_cert=None, ssl_key=None,
     sys_repo=None, user_provided_dir=False, progtrack=None,
-    variants=misc.EmptyDict):
+    variants=misc.EmptyDict, props=misc.EmptyDict):
         """Creates an image at the specified location.
 
         'pkg_client_name' is a string containing the name of the client,
@@ -2931,6 +2935,9 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         match the publisher configuration retrieved from the repository, an
         UnknownRepositoryPublishers exception will be raised.  If not provided,
         'refresh_allowed' cannot be False.
+
+        'props' is an optional dictionary mapping image property names to values
+        to be set while creating the image.
 
         'refresh_allowed' is an optional boolean value indicating whether
         publisher configuration data and metadata can be retrieved during
@@ -3106,7 +3113,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                 img.create(pubs, facets=facets, is_zone=is_zone,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
-                    variants=variants)
+                    variants=variants, props=props)
         except EnvironmentError, e:
                 if e.errno == errno.EACCES:
                         raise apx.PermissionsException(

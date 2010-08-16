@@ -145,6 +145,7 @@ class DepotHTTP(_Depot):
             "filelist",
             "file",
             "open",
+            "append",
             "close",
             "abandon",
             "add",
@@ -708,6 +709,28 @@ class DepotHTTP(_Depot):
 
         file_0._cp_config = { "response.stream": True }
 
+        def file_1(self, *tokens):
+                """Outputs the contents of the file, named by the SHA-1 hash
+                name in the request path, directly to the client."""
+
+                method = cherrypy.request.method
+                if method == "GET":
+                        return self.file_0(*tokens)
+                elif method in ("POST", "PUT"):
+                        return self.__upload_file(*tokens)
+                raise cherrypy.HTTPError(httplib.METHOD_NOT_ALLOWED,
+                    "%s is not allowed" % method)
+
+        # We need to prevent cherrypy from processing the request body so that
+        # file can parse the request body itself.  In addition, we also need to
+        # set the timeout higher since the default is five minutes; not really
+        # enough for a slow connection to upload content.
+        file_1._cp_config = {
+            "request.process_request_body": False,
+            "response.timeout": 3600,
+            "response.stream": True
+        }
+
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
             ("Expires", 0)])
@@ -730,6 +753,37 @@ class DepotHTTP(_Depot):
                 try:
                         trans_id = self.repo.open(client_release, pfmri)
                         response.headers["Content-type"] = "text/plain; charset=utf-8"
+                        response.headers["Transaction-ID"] = trans_id
+                except repo.RepositoryError, e:
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
+        def append_0(self, *tokens):
+                """Starts an append transaction for the package name specified
+                in the request path.  Returns no output."""
+
+                request = cherrypy.request
+                response = cherrypy.response
+
+                client_release = request.headers.get("Client-Release", None)
+                try:
+                        pfmri = tokens[0]
+                except IndexError:
+                        pfmri = None
+
+                # XXX Authentication will be handled by virtue of possessing a
+                # signed certificate (or a more elaborate system).
+
+                try:
+                        trans_id = self.repo.append(client_release, pfmri)
+                        response.headers["Content-type"] = \
+                            "text/plain; charset=utf-8"
                         response.headers["Transaction-ID"] = trans_id
                 except repo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
@@ -897,6 +951,38 @@ class DepotHTTP(_Depot):
             ]
         }
 
+        def __upload_file(self, *tokens):
+                """Adds a file to an in-flight transaction for the Transaction
+                ID specified in the request path.  The content is expected to be
+                in the request body.  Returns no output."""
+
+                try:
+                        # cherrypy decoded it, but we actually need it encoded.
+                        trans_id = urllib.quote(tokens[0], "")
+                except IndexError:
+                        raise
+                        trans_id = None
+
+                request = cherrypy.request
+                response = cherrypy.response
+
+                size = int(request.headers.get("Content-Length", 0))
+                if size < 0:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            _("file/1 must be sent a file."))
+                data = request.rfile
+
+                try:
+                        self.repo.add_file(trans_id, data, size)
+                except repo.RepositoryError, e:
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                response.headers["Content-Length"] = "0"
+                return response.body
+
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
             ("Expires", 0)])
@@ -1023,9 +1109,13 @@ License:
 
                 repo = publisher.Repository(**rargs)
                 alias = self.repo.cfg.get_property("publisher", "alias")
+                icas = self.repo.cfg.get_property("publisher",
+                    "intermediate_certs")
                 pfx = self.repo.cfg.get_property("publisher", "prefix")
+                scas = self.repo.cfg.get_property("publisher",
+                    "signing_ca_certs")
                 return publisher.Publisher(pfx, alias=alias,
-                    repositories=[repo])
+                    repositories=[repo], ca_certs=scas, inter_certs=icas)
 
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])

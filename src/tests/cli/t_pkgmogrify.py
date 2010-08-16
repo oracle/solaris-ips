@@ -418,7 +418,8 @@ file NOHASH path=kernel/drv/common2 reboot-needed=true
                 output_file = os.path.join(self.test_root, "output_file")
 
                 self.pkgmogrify([source_file], output=output_file, defines={})
-                self.cmdline_run("diff %s %s" % (source_file, output_file))
+                self.cmdline_run("diff %s %s" % (source_file, output_file),
+                    coverage=False)
                 
         def test_11(self):
                 """Test the generation of new actions."""

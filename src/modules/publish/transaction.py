@@ -21,13 +21,13 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 """Provides a set of publishing interfaces for interacting with a pkg(5)
 repository.  Note that only the Transaction class should be used directly,
 though the other classes can be referred to for documentation purposes."""
 
+import os
 import urllib
 import urlparse
 
@@ -149,6 +149,17 @@ class NullTransaction(object):
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
+        def add_file(self, pth):
+                """Adds an additional file to the inflight transaction so that
+                it will be available for retrieval once the transaction is
+                closed."""
+
+                if not os.path.isfile(pth):
+                        raise TransactionOperationError("add_file",
+                            trans_id=self.trans_id, msg=str(_("The file to "
+                            "be added is not a file.  The path given was %s.") %
+                            pth))
+
         def close(self, abandon=False, refresh_index=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
@@ -167,6 +178,11 @@ class NullTransaction(object):
                 """Starts an in-flight transaction. Returns a URL-encoded
                 transaction ID on success."""
                 return urllib.quote(self.pkg_name, "")
+
+        def append(self):
+                """Starts an in-flight transaction to append to an existing
+                manifest. Returns a URL-encoded transaction ID on success."""
+                return self.open()
 
         @staticmethod
         def refresh_index():
@@ -246,6 +262,25 @@ class TransportTransaction(object):
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=msg)
 
+        def add_file(self, pth):
+                """Adds an additional file to the inflight transaction so that
+                it will be available for retrieval once the transaction is
+                closed."""
+
+                if not os.path.isfile(pth):
+                        raise TransactionOperationError("add_file",
+                            trans_id=self.trans_id, msg=str(_("The file to "
+                            "be added is not a file.  The path given was %s.") %
+                            pth))
+
+                try:
+                        self.transport.publish_add_file(self.publisher,
+                            pth=pth, trans_id=self.trans_id)
+                except apx.TransportError, e:
+                        msg = str(e)
+                        raise TransactionOperationError("add_file",
+                            trans_id=self.trans_id, msg=msg)
+
         def close(self, abandon=False, refresh_index=True, add_to_catalog=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
@@ -316,6 +351,30 @@ class TransportTransaction(object):
                             " in response."))
 
                 return self.trans_id
+
+        def append(self):
+                """Starts an in-flight transaction to append to an existing
+                manifest. Returns a URL-encoded transaction ID on success."""
+
+                trans_id = None
+
+                try:
+                        trans_id = self.transport.publish_append(self.publisher,
+                            client_release=os_util.get_os_release(),
+                            pkg_name=self.pkg_name)
+                except apx.TransportError, e:
+                        msg = str(e)
+                        raise TransactionOperationError("append",
+                            trans_id=self.trans_id, msg=msg)
+
+                self.trans_id = trans_id
+
+                if self.trans_id is None:
+                        raise TransactionOperationError("append",
+                            msg=_("Unknown failure; no transaction ID provided"
+                            " in response."))
+
+                return self.trans_id        
 
         def refresh_index(self):
                 """Instructs the repository to refresh its search indices.

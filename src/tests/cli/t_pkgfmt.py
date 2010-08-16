@@ -956,8 +956,10 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
                 # remove backslashes in place
                 self.pkgfmt("-u < %s > %s" % (source_file, mod_file))
                 # sort into alternate order and format
-                self.cmdline_run("/usr/bin/sort -o %s %s" % (mod_file, mod_file)) 
+                self.cmdline_run("/usr/bin/sort -o %s %s" %
+                    (mod_file, mod_file), coverage=False)
                 self.pkgfmt("%s" % mod_file)
                 self.pkgfmt("%s" % source_file)
-                self.cmdline_run("/usr/bin/diff %s %s" % ( source_file, mod_file))
+                self.cmdline_run("/usr/bin/diff %s %s" %
+                    (source_file, mod_file), coverage=False)
 

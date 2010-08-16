@@ -43,6 +43,8 @@ SYNOPSIS
          [--licenses] <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg set-property propname propvalue
+     /usr/bin/pkg add-property-value propname propvalue
+     /usr/bin/pkg remove-property-value propname propvalue
      /usr/bin/pkg unset-property propname ...
      /usr/bin/pkg property [-H] [propname ...]
 
@@ -54,6 +56,13 @@ SYNOPSIS
          [-p repo_uri] [--enable] [--disable] [--no-refresh]
          [--reset-uuid] [--non-sticky] [--sticky]
          [--search-after=publisher] [--search-before=publisher]
+         [--approve-ca-cert=path_to_CA]
+         [--revoke-ca-cert=hash_of_CA_to_remove]
+         [--unset-ca-cert=hash_of_CA_to_remove]
+         [--set-property name_of_property=value]
+         [--add-property-value name_of_property=value_to_add]
+         [--remove-property-value name_of_property=value_to_remove]
+         [--unset-property name_of_property_to_delete]
          [publisher]
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPn] [publisher ...]
@@ -554,6 +563,15 @@ SUBCOMMANDS
           except for preferred-publisher, which can only be changed using
           set-publisher.
 
+     add-property-value propname propvalue
+          Add a value to an existing image property or add a new image property;
+          except for preferred-publisher, which can only be changed using
+          set-publisher.
+
+     remove-property-value propname propvalue
+          Remove a value from an existing image property; except for 
+          preferred-publisher, which can only be changed using set-publisher.
+
      unset-property propname ...
           Remove an existing image property or properties; except for
           preferred-publisher, which can only be changed using
@@ -575,6 +593,13 @@ SUBCOMMANDS
        [-p repo_uri] [--enable] [--disable] [--no-refresh]
        [--reset-uuid] [--non-sticky] [--sticky]
        [--search-after=publisher] [--search-before=publisher]
+       [--approve-ca-cert path_to_CA]
+       [--revoke-ca-cert hash_of_CA_to_remove]
+       [--unset-ca-cert hash_of_CA_to_remove]
+       [--set-property name_of_property=value]
+       [--add-property-value name_of_property=value_to_add]
+       [--remove-property-value name_of_property=value_to_remove]
+       [--unset-property name_of_property_to_delete]
        [publisher]
 
           Update an existing publisher or add an additional package
@@ -603,6 +628,30 @@ SUBCOMMANDS
           With --search-after, alter the publisher search order so that
           the publisher being modified is now searched after the specified
           publisher.
+
+	  With --approve-ca-cert, add the given certificate as a CA certificate 
+          that is trusted.  The hashes of the user approved CA certificates are
+          listed in the output of the detailed pkg publisher view for a
+          publisher.
+
+          With --revoked-ca-cert, treat the certificate with the given hash as
+          revoked.  The hashes of the user revoked CA certificates are
+          listed in the output of the detailed pkg publisher view for a
+          publisher.
+
+          With --unset-ca-cert, remove the certificate with the given hash from
+          the list of approved and the list of revoked certificates.
+
+          With --set-property, update an existing publisher property or add a 
+          new publisher property.
+
+          With --add-property-value, add a value to an existing publisher 
+          property or add a new publisher property.
+
+          With --remove-property-value, remove a value from an existing 
+          publisher property.
+
+          With --unset-property, remove an existing publisher property.
 
           With -c and -k, specify client SSL certificate and key respectively.
 
@@ -730,6 +779,56 @@ IMAGE PROPERTIES
 
 	  Default value: True
 
+     signature-policy
+          (string)  Determine what checks will be performed on manifests
+          when installing a package into this image.  The final policy 
+          applied to a  package depends on the combination of image policy 
+          and publisher policy.  The combination will be at least as strict 
+          as the stricter of the two policies taken individually.  The 
+          following are the valid values for this property.
+
+          ignore
+               Ignore signatures for all manifests.
+          verify
+               Verify that all manifests with signatures are validly
+               signed, but do not require all installed packages to be 
+               signed.
+          require-signatures
+               Require that all newly installed packages have at least
+               one valid signature.  'pkg fix' and 'pkg verify' will also
+               warn if an installed package does not have a valid 
+               signature.
+          require-names
+               Follow the same requirements as 'require-signatures' but
+               also require that the strings listed in the 
+               'signature-required-names' property appear as a common
+               name of the certificates used to verifiy the chains
+               of trust of the signatures.
+
+     signature-required-names
+          (list of strings)  A list of names which must be seen as common
+          names of certificates while validating the signatures of a 
+          package.
+
+     trust-anchor-directory
+          (string)  The pathname of the directory that contains the trust 
+          anchors for the image.
+
+
+PUBLISHER PROPERTIES
+     The following properties are part of the image and may be set using
+     the set-property option of the set-publisher subcommand.
+
+     signature-policy
+          (string)  This property functions identically to the image
+          property of the same name except it only applies to packages
+          from the particular publisher.
+
+     signature-required-names
+          (list of strings)  This property functions identically to the 
+          image property of the same name except it only applies to 
+          packages from the particular publisher.
+
 EXAMPLES
      Example 1:  Create a new, full image, with publisher example.com,
      stored at /aux0/example_root.
@@ -843,6 +942,46 @@ EXAMPLES
 
      $ pkg set-publisher -g file:/export/repo example.com
 
+     Example 13:  Configure an image to verify all signed packages.
+
+     $ pkg set-property signature-policy verify
+
+     Example 14:  Configure an image to require all packages to be signed and
+     the string "opensolaris.org" has to be seen as a common name for one of
+     the certificates in the chain of trust.
+
+     $ pkg set-property signature-policy require-names opensolaris.org
+
+     Example 15:  Configure an image so that all packages installed from
+     publisher foo must be signed.
+
+     $ pkg set-publisher --set-property signature-policy=require-signatures
+
+     Example 16:  Add the string "foo" to the image's list of common names that 
+     must be seen in a signature's chain of trust to be considered valid.
+
+     $ pkg add-property-value signature-require-names foo
+
+     Example 17:  Remove the string "foo" from publisher test's list of common
+     names that must be seen to validate a signature.
+
+     $ pkg set-publisher --remove-property-value signature-require-names=foo \
+         test
+
+     Example 18:  Add the certificate stored in /tmp/example_file.pem as a
+     trusted CA certificate for the publisher test.
+
+     $ pkg set-publisher --approve-ca-cert /tmp/example_file.pem
+
+     Example 19:  Revoke the certificate with the hash a12345 for publisher 
+     test, preventing it from validating any signatures for packages from test.
+
+     $ pkg set-publisher --revoke-ca-cert a12345
+
+     Example 20:  Make pkg forget that the certificate a12345 was ever added or
+     revoked by the user.
+
+     $ pkg set-publisher --unset-ca-cert a12345
 
 EXIT STATUS
      The following exit values are returned:

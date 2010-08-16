@@ -381,6 +381,27 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.dc.set_socket_path(None)
                 os.unlink(spath)
 
+        def test_append_reopen(self):
+                """Test that if a depot has a partially finished append
+                transaction, that it reopens it correctly."""
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend(durl, "append %s" % plist[0])
+                self.dc.stop()
+                self.dc.start()
+                self.pkgsend(durl, "close")
+
+        def test_nonsig_append(self):
+                """Test that sending a non-signature action to an append
+                transaction results in an error."""
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend(durl, "append %s" % plist[0])
+                self.pkgsend(durl, "add dir path=tmp/foo mode=0755 "
+                    "owner=root group=bin", exit=1)
+
 
 class TestDepotController(pkg5unittest.CliTestCase):
 

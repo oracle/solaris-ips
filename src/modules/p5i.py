@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -104,11 +103,14 @@ def parse(data=None, fileobj=None, location=None):
                 for p in plist:
                         alias = p.get("alias", None)
                         prefix = p.get("name", None)
-
+                        signing_ca_certs = p.get("signing_ca_certs", [])
+                        inter_certs = p.get("intermediate_certs", [])
+                        
                         if not prefix:
                                 prefix = "Unknown"
 
-                        pub = publisher.Publisher(prefix, alias=alias)
+                        pub = publisher.Publisher(prefix, alias=alias,
+                            ca_certs=signing_ca_certs, inter_certs=inter_certs)
                         pkglist = p.get("packages", [])
                         result.append((pub, pkglist))
 
@@ -177,9 +179,12 @@ def write(fileobj, pubs, pkg_names=None):
 
         dpubs = dump_struct["publishers"]
         for p in pubs:
+
                 dpub = {
                     "alias": p.alias,
                     "name": p.prefix,
+                    "signing_ca_certs": p.signing_ca_certs,
+                    "intermediate_certs": p.inter_certs,
                     "packages": [],
                     "repositories": []
                 }

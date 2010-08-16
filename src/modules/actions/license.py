@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -49,6 +48,8 @@ class LicenseAction(generic.Action):
         name = "license"
         key_attr = "license"
         reverse_indices = ("license", )
+
+        has_payload = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

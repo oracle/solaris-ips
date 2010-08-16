@@ -20,7 +20,9 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -29,12 +31,60 @@ import pkg5unittest
 
 import unittest
 import pkg.actions as action
+import pkg.actions.generic as generic
+import pkg.actions.signature as signature
+import pkg.client.api_errors as api_errors
 
 import os
 import sys
 
 class TestActions(pkg5unittest.Pkg5TestCase):
 
+
+        act_strings = [
+            "set name=foo value=foo",
+            "set name=foo value=\"\"",
+            "set name=foo value=f'o'o",
+            "set name=foo value='f\"o \"o'",
+            "set name=foo value='b\"a \"r' value='f\"o \"o'",
+            "set name=foo value=\"f'o 'o\"",
+            "set name=foo value=\"b'a 'r\" value=\"f'o 'o\"",
+            "set name=foo value='f\"o \\' \"o'",
+            "set name=foo value='b\"a \\' \"r' value='f\"o \\' \"o'",
+            "set name=foo value='\"foo\"'",
+            "set name=foo value='\"bar\"'value='\"foo\"'",
+            "set name=foo value=\"'foo'\"",
+            "set name=foo value=\"'bar'\" value=\"'foo'\"",
+            "set name=foo value='\"fo\\\'o\"'",
+            "set name=foo value='\"ba\\\'r\"' value='\"fo\\\'o\"'",
+            "set name=foo value=\"'fo\\\"o'\"",
+            "set name=foo value=\"'ba\\\"r'\" value=\"'fo\\\"o'\"",
+            'set name=foo value=ab value="" value=c',
+            "file 12345 name=foo path=/tmp/foo",
+            "file 12345 name=foo attr=bar path=/tmp/foo",
+            "file 12345 name=foo attr=bar attr=bar path=/tmp/foo",
+            "file 12345 name=foo     attr=bar path=/tmp/foo",
+            "file 12345 name=foo     path=/tmp/foo attr=bar   ",
+            "file 12345 name=foo     path=/tmp/foo attr=bar   ",
+            "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
+            "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
+            "file 12345 name=foo  value=barbaz path=/tmp/foo",
+            "file 12345 name=foo  value=\"bar baz\" path=/tmp/foo",
+            "file 12345 name=\"foo bar\"  value=baz path=/tmp/foo",
+            "file 12345 name=foo  value=barbazquux path=/tmp/foo",
+            "file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo",
+            "file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo",
+            "file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo",
+            "file 12345 name=foo  value=\"bar\" path=/tmp/foo",
+            "file 12345 name=\"foo\"  value=bar path=/tmp/foo",
+            "file 12345 name='foo' value=bar path=/tmp/foo",
+            "file 12345 name='f\"o\"o' value=bar path=/tmp/foo",
+            "file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo",
+            "file 12345 name=foo\tvalue=bar path=/tmp/foo",
+            "driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega",
+            "signature 12345 algorithm=foo",
+        ]
+        
         def assertAttributeValue(self, action, attr, value):
                 attrs = action.attrs[attr]
 
@@ -80,7 +130,7 @@ Incorrect attribute list.
                 action.fromstr("file 12345 name=foo  value=\"bar\" path=/tmp/foo")
                 action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo")
 
-                action.fromstr("signature 12345 name=foo  value=bar")
+                action.fromstr("signature 12345 algorithm=foo")
 
                 # Single quoted value
                 a = action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo")
@@ -194,51 +244,7 @@ Incorrect attribute list.
                 that we can feed the resulting string back into fromstr() and
                 get an identical action back."""
 
-                strings = [
-                    "set name=foo value=foo",
-                    "set name=foo value=\"\"",
-                    "set name=foo value=f'o'o",
-                    "set name=foo value='f\"o \"o'",
-                    "set name=foo value='b\"a \"r' value='f\"o \"o'",
-                    "set name=foo value=\"f'o 'o\"",
-                    "set name=foo value=\"b'a 'r\" value=\"f'o 'o\"",
-                    "set name=foo value='f\"o \\' \"o'",
-                    "set name=foo value='b\"a \\' \"r' value='f\"o \\' \"o'",
-                    "set name=foo value='\"foo\"'",
-                    "set name=foo value='\"bar\"'value='\"foo\"'",
-                    "set name=foo value=\"'foo'\"",
-                    "set name=foo value=\"'bar'\" value=\"'foo'\"",
-                    "set name=foo value='\"fo\\\'o\"'",
-                    "set name=foo value='\"ba\\\'r\"' value='\"fo\\\'o\"'",
-                    "set name=foo value=\"'fo\\\"o'\"",
-                    "set name=foo value=\"'ba\\\"r'\" value=\"'fo\\\"o'\"",
-                    'set name=foo value=ab value="" value=c',
-                    "file 12345 name=foo path=/tmp/foo",
-                    "file 12345 name=foo attr=bar path=/tmp/foo",
-                    "file 12345 name=foo attr=bar attr=bar path=/tmp/foo",
-                    "file 12345 name=foo     attr=bar path=/tmp/foo",
-                    "file 12345 name=foo     path=/tmp/foo attr=bar   ",
-                    "file 12345 name=foo     path=/tmp/foo attr=bar   ",
-                    "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
-                    "file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo",
-                    "file 12345 name=foo  value=barbaz path=/tmp/foo",
-                    "file 12345 name=foo  value=\"bar baz\" path=/tmp/foo",
-                    "file 12345 name=\"foo bar\"  value=baz path=/tmp/foo",
-                    "file 12345 name=foo  value=barbazquux path=/tmp/foo",
-                    "file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo",
-                    "file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo",
-                    "file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo",
-                    "file 12345 name=foo  value=\"bar\" path=/tmp/foo",
-                    "file 12345 name=\"foo\"  value=bar path=/tmp/foo",
-                    "file 12345 name='foo' value=bar path=/tmp/foo",
-                    "file 12345 name='f\"o\"o' value=bar path=/tmp/foo",
-                    "file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo",
-                    "file 12345 name=foo\tvalue=bar path=/tmp/foo",
-                    "driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega",
-                    "signature foo=v bar=y",
-                ]
-
-                for s in strings:
+                for s in self.act_strings:
                         self.debug(str(s))
                         a = action.fromstr(s)
                         s2 = str(a)
@@ -247,6 +253,44 @@ Incorrect attribute list.
                                 self.debug("a1 " + str(a))
                                 self.debug("a2 " + str(a2))
                                 self.assert_(not a.different(a2))
+
+        def test_action_sig_str(self):
+                sig_act = action.fromstr(
+                    "signature 54321 algorithm=baz")
+                for s in self.act_strings:
+                        # action.sig_str should return an identical string each
+                        # time it's called.  Also, parsing the result of
+                        # sig_str so produce the same action.
+                        a = action.fromstr(s)
+                        s2 = a.sig_str(sig_act, generic.Action.sig_version)
+                        s3 = a.sig_str(sig_act, generic.Action.sig_version)
+                        # If s2 is None, then s was a different signature
+                        # action, so there is no output to parse.
+                        if s2 is None:
+                                continue
+                        self.assertEqual(s2, s3)
+                        a2 = action.fromstr(s2)
+                        if a.different(a2):
+                                self.debug("a1 " + str(a))
+                                self.debug("a2 " + str(a2))
+                                self.assert_(not a.different(a2))
+                        s4 = a.sig_str(sig_act, generic.Action.sig_version)
+                        self.assertEqual(s2, s4)
+                # Test that using an unknown sig_version triggers the
+                # appropriate exception.
+                self.assertRaises(api_errors.UnsupportedSignatureVersion,
+                    sig_act.sig_str, sig_act, -1)
+                a = action.fromstr(self.act_strings[0])
+                self.assertRaises(api_errors.UnsupportedSignatureVersion,
+                    a.sig_str, sig_act, -1)
+                # Test that the sig_str of a signature action other than the
+                # argument action is None.
+                sig_act2 = action.fromstr(
+                    "signature 98765 algorithm=foobar")
+                self.assert_(sig_act.sig_str(sig_act2,
+                    generic.Action.sig_version) is None)
+                self.assert_(sig_act2.sig_str(sig_act,
+                    generic.Action.sig_version) is None)
 
         def assertMalformed(self, text):
                 malformed = False
@@ -327,6 +371,10 @@ Incorrect attribute list.
                 # exception action strings.
                 self.assertMalformed("""legacy arch=i386 category=GNOME2,application,JDSosol desc="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." hotline="Please contact your local service provider" name="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." pkg=SUNWxscreensaver vendor="XScreenSaver Community" version=5.11,REV=110.0.4.2010.07.08.22.18""")
                 self.assertMalformed("""legacy arch=i386 category=GNOME2,application,JDSosol desc="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." hotline="Please contact your local service provider" name="XScreenSaver is two things: it is both a large collection of screen savers (distributed in the "hacks" packages) and it is also the framework for blanking and locking the screen (this package)." pkg=SUNWxscreensaver-l10n vendor="XScreenSaver Community" version=5.11,REV=110.0.4.2010.07.08.22.18""")
+
+                # Missing required attribute 'algorithm'.
+                self.assertRaises(action.InvalidActionError, action.fromstr,
+                    "signature 12345 pkg.cert=bar")
 
         def test_validate(self):
                 """Verify that action validate() works as expected; currently

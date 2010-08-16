@@ -169,6 +169,35 @@ def trans_open(repo_uri, args):
 
         return 0
 
+def trans_append(repo_uri, args):
+
+        opts, pargs = getopt.getopt(args, "en")
+
+        parsed = []
+        eval_form = True
+        for opt, arg in opts:
+                parsed.append(opt)
+                if opt == "-e":
+                        eval_form = True
+                if opt == "-n":
+                        eval_form = False
+
+        if "-e" in parsed and "-n" in parsed:
+                usage(_("only -e or -n may be specified"), cmd="open")
+
+        if len(pargs) != 1:
+                usage(_("append requires one package name"), cmd="open")
+
+        xport, pub = setup_transport_and_pubs(repo_uri)
+
+        t = trans.Transaction(repo_uri, pkg_name=pargs[0], xport=xport, pub=pub)
+        if eval_form:
+                msg("export PKG_TRANS_ID=%s" % t.append())
+        else:
+                msg(t.append())
+
+        return 0
+
 def trans_close(repo_uri, args):
         abandon = False
         trans_id = None
@@ -313,9 +342,15 @@ def trans_publish(repo_uri, fargs):
                 # don't publish this action
                 if a.name == "set" and a.attrs["name"] in ["pkg.fmri", "fmri"]:
                         continue
-                elif a.name == "file":
-                        path, bd = pkg.actions.set_action_data(
-                            a.hash, a, basedirs)
+                elif a.has_payload:
+                        path, bd = pkg.actions.set_action_data(a.hash, a,
+                            basedirs)
+                elif a.name in nopub_actions:
+                        error(_("invalid action for publication: %s") % action,
+                            cmd="publish")
+                        t.close(abandon=True)
+                        return 1
+                if a.name == "file":
                         basename = os.path.basename(a.attrs["path"])
                         for pattern in timestamp_files:
                                 if fnmatch.fnmatch(basename, pattern):
@@ -323,13 +358,6 @@ def trans_publish(repo_uri, fargs):
                                             os.stat(path).st_mtime)
                                         a.attrs["timestamp"] = ts
                                         break
-                elif a.name == "license":
-                        pkg.actions.set_action_data(a.hash, a, basedirs)
-                elif a.name in nopub_actions:
-                        error(_("invalid action for publication: %s") % action,
-                            cmd="publish")
-                        t.close(abandon=True)
-                        return 1
                 try:
                         t.add(a)
                 except:
@@ -416,9 +444,10 @@ def trans_include(repo_uri, fargs, transaction=None):
                 # don't publish this action
                 if a.name == "set" and a.attrs["name"] in  ["pkg.fmri", "fmri"]:
                         continue
-                elif a.name == "file":
-                        path, bd = pkg.actions.set_action_data(
-                            a.hash, a, basedirs)
+                elif a.has_payload:
+                        path, bd = pkg.actions.set_action_data(a.hash, a,
+                            basedirs)
+                if a.name == "file":
                         basename = os.path.basename(a.attrs["path"])
                         for pattern in timestamp_files:
                                 if fnmatch.fnmatch(basename, pattern):
@@ -426,8 +455,6 @@ def trans_include(repo_uri, fargs, transaction=None):
                                             os.stat(path).st_mtime)
                                         a.attrs["timestamp"] = ts
                                         break
-                elif a.name == "license":
-                        pkg.actions.set_action_data(a.hash, a, basedirs)
 
                 if a.name in nopub_actions:
                         error(_("invalid action for publication: %s") % str(a),
@@ -606,6 +633,8 @@ def main_func():
                         ret = trans_create_repository(repo_uri, pargs)
                 elif subcommand == "open":
                         ret = trans_open(repo_uri, pargs)
+                elif subcommand == "append":
+                        ret = trans_append(repo_uri, pargs)
                 elif subcommand == "close":
                         ret = trans_close(repo_uri, pargs)
                 elif subcommand == "add":

@@ -33,11 +33,15 @@
 # the client version number and compatible_versions specifier found in
 # modules/client/api.py:__init__.
 #
+
 import calendar
 import copy
+import cStringIO
 import datetime as dt
 import errno
+import hashlib
 import os
+import pycurl
 import shutil
 import tempfile
 import time
@@ -49,10 +53,16 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 import pkg.catalog
+import pkg.actions.signature as signature
 import pkg.client.api_errors as api_errors
+import pkg.client.sigpolicy as sigpolicy
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.server.catalog as old_catalog
+import M2Crypto as m2
+
+from pkg.misc import EmptyI, SIGNATURE_POLICY, DictProperty
+from pkg.pkggzip import PkgGzipFile
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -869,7 +879,8 @@ class Publisher(object):
 
         def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
             meta_root=None, repositories=None, selected_repository=None,
-            transport=None, sticky=True):
+            transport=None, sticky=True, ca_certs=EmptyI, inter_certs=EmptyI,
+            props=None, revoked_ca_certs=EmptyI, approved_ca_certs=EmptyI):
                 """Initialize a new publisher object."""
 
                 if client_uuid is None:
@@ -897,6 +908,46 @@ class Publisher(object):
                 if selected_repository:
                         self.selected_repository = selected_repository
 
+                self.__sig_policy = None
+                self.__delay_validation = False
+
+                self.__properties = {}
+
+                # Writing out an EmptyI to a config file and reading it back
+                # in doesn't work correctly at the moment, but reading and
+                # writing an empty list does. So if inter_certs is empty, make
+                # sure it's stored as an empty list.
+                #
+                # The relevant implementation is probably the line which
+                # strips ][ from the input in imageconfig.read_list.
+                if ca_certs:
+                        self.signing_ca_certs = ca_certs
+                else:
+                        self.signing_ca_certs = []
+
+                if revoked_ca_certs:
+                        self.revoked_ca_certs = revoked_ca_certs
+                else:
+                        self.revoked_ca_certs = []
+
+                if approved_ca_certs:
+                        self.approved_ca_certs = approved_ca_certs
+                else:
+                        self.approved_ca_certs = []
+
+                if inter_certs:
+                        self.inter_certs = inter_certs
+                else:
+                        self.inter_certs = []
+
+                if props:
+                        self.properties.update(props)
+
+                self.ca_dict = None
+
+                self.__verified_cas = False
+                self.__bad_ca_certs = set()
+
         def __cmp__(self, other):
                 if other is None:
                         return 1
@@ -923,7 +974,11 @@ class Publisher(object):
                     client_uuid=self.__client_uuid, disabled=self.__disabled,
                     meta_root=self.meta_root, repositories=repositories,
                     selected_repository=selected, transport=self.transport,
-                    sticky=self.__sticky)
+                    sticky=self.__sticky, ca_certs=self.signing_ca_certs,
+                    props=self.properties,
+                    revoked_ca_certs=self.revoked_ca_certs,
+                    approved_ca_certs=self.approved_ca_certs,
+                    inter_certs=self.inter_certs)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -1057,6 +1112,11 @@ class Publisher(object):
                 self.__meta_root = pathname
                 if self.__catalog:
                         self.__catalog.meta_root = self.catalog_root
+                if self.__meta_root:
+                        self.cert_root = os.path.join(self.__meta_root, "certs")
+                        self.__subj_root = os.path.join(self.cert_root,
+                            "subject_hashes")
+                        self.__crl_root = os.path.join(self.cert_root, "crls")
 
         def __set_prefix(self, prefix):
                 if not misc.valid_pub_prefix(prefix):
@@ -1222,6 +1282,17 @@ pkg unset-publisher %s
                                 if e.errno == errno.EROFS:
                                         raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
+                                elif e.errno != errno.EEXIST:
+                                        # If the path already exists, move on.
+                                        # Otherwise, raise the exception.
+                                        raise
+                # Optional roots not needed for all operations.
+                for path in (self.cert_root, self.__subj_root, self.__crl_root):
+                        try:
+                                os.makedirs(path)
+                        except EnvironmentError, e:
+                                if e.errno in (errno.EACCES, errno.EROFS):
+                                        pass
                                 elif e.errno != errno.EEXIST:
                                         # If the path already exists, move on.
                                         # Otherwise, raise the exception.
@@ -1720,6 +1791,533 @@ pkg unset-publisher %s
                             known=known, unknown=[self.prefix],
                             origins=self.selected_repository.origins)
 
+        def approve_ca_cert(self, cert, manual=False, trust_anchors=None,
+            img_policy=None):
+                """Add the cert as a CA for manifest signing for this publisher.
+
+                The 'cert' parameter as a string of the certificate to add.
+
+                The 'manual' parameter indicates whether this is a CA the user
+                has explicitly added.
+
+                The 'trust_anchors' parameter is a dictionary which contains
+                the trust anchors to use to validate the certificate.
+
+                The 'img_policy' parameter is the signature policy for the
+                image."""
+
+                assert manual or (trust_anchors and img_policy)
+                # Verifying this one certificate shouldn't change whether
+                # the publisher's CA certs have been verified.
+                old_verification_value = self.__verified_cas
+                # Mark that not all CA certs have been verified.
+                self.__verified_cas = False
+                hsh = self.add_cert(cert)
+                self.signing_ca_certs.append(hsh)
+                # If the user had previously removed this certificate, remove
+                # the certificate from that list.
+                if manual and hsh in self.revoked_ca_certs:
+                        t = set(self.revoked_ca_certs)
+                        t.remove(hsh)
+                        self.revoked_ca_certs = list(t)
+                        self.__bad_ca_certs.discard(hsh)
+                # If the user indicated that this cert should be approved, add
+                # it to the approved list. 
+                if manual:
+                        self.approved_ca_certs.append(hsh)
+                else:
+                        # If the user did not add this certificate manually,
+                        # then ensure that it validates against the image's
+                        # trust anchors.
+                        self.__verify_ca_cert(cert, trust_anchors, img_policy)
+                self.__verified_cas = old_verification_value
+
+        def revoke_ca_cert(self, s):
+                """Record that the cert with hash 's' is no longer trusted
+                as a CA.  This method currently assumes it's only invoked as
+                a result of user action."""
+
+                self.revoked_ca_certs.append(s)
+                self.revoked_ca_certs = list(set(
+                    self.revoked_ca_certs))
+                if s in self.approved_ca_certs:
+                        t = set(self.approved_ca_certs)
+                        t.remove(s)
+                        self.approved_ca_certs = list(t)
+
+        def unset_ca_cert(self, s):
+                """If the cert with hash 's' has been added or removed by the
+                user, undo the add or removal."""
+
+                if s in self.approved_ca_certs:
+                        t = set(self.approved_ca_certs)
+                        t.remove(s)
+                        self.approved_ca_certs = list(t)
+                if s in self.revoked_ca_certs:
+                        t = set(self.revoked_ca_certs)
+                        t.remove(s)
+                        self.revoked_ca_certs = list(t)
+
+        def add_cert(self, s):
+                """Add the certificate stored as a string in 's' to the
+                certificates this publisher knows about."""
+
+                self.create_meta_root()
+                pkg_hash = hashlib.sha1()
+                pkg_hash.update(s)
+                pkg_hash = pkg_hash.hexdigest()
+                pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
+                try:
+                        with open(pkg_hash_pth, "wb") as fh:
+                                fh.write(s)
+                except EnvironmentError, e:
+                        raise api_errors.convert_environment_error(e)
+                try:
+                        c = m2.X509.load_cert_string(s)
+                except m2.X509.X509Error, e:
+                        try:
+                                portable.remove(pkg_hash_pth)
+                        except:
+                                # Pass because the bad file format error is the
+                                # more important one.
+                                pass
+                        raise api_errors.BadFileFormat(_("The file with hash "
+                            "%s was expected to be a PEM certificate but it "
+                            "could not be read.") % pkg_hash)
+
+                # Note that while we store certs by their subject hashes,
+                # M2Crypto's subject hashes differ from what openssl reports
+                # the subject hash to be.
+                subj_hsh = c.get_subject().as_hash()
+                c = 0
+                made_link = False
+                while not made_link:
+                        fn = os.path.join(self.__subj_root,
+                            "%s.%s" % (subj_hsh, c))
+                        if os.path.exists(fn):
+                                c += 1
+                        else:
+                                try:
+                                        portable.link(pkg_hash_pth, fn)
+                                except EnvironmentError, e:
+                                        raise api_errors.convert_environment_error(e)
+                                made_link = True
+                return pkg_hash
+
+        def get_cert_by_hash(self, pkg_hash, verify_hash=False,
+            only_retrieve=False):
+                """Given a pkg5 hash, retrieve the cert that's associated with
+                it.
+
+                The 'pkg_hash' parameter contains the file hash of the
+                certificate to retrieve.
+
+                The 'verify_hash' parameter determines the file that's read
+                from disk matches the expected hash.
+
+                The 'only_retrieve' parameter determines whether a X509 object
+                is built from the certificate retrieved or if the certificate
+                is only stored on disk. """
+
+                assert not (verify_hash and only_retrieve)
+                pth = os.path.join(self.cert_root, pkg_hash)
+                if not os.path.exists(pth):
+                        self.add_cert(self.transport.get_content(self,
+                            pkg_hash))
+                if only_retrieve:
+                        return None
+                with open(pth, "rb") as fh:
+                        s = fh.read()
+                        c = m2.X509.load_cert_string(s)
+
+                if verify_hash:
+                        h = misc.get_data_digest(cStringIO.StringIO(s),
+                            length=len(s))[0]
+                        if h != pkg_hash:
+                                raise api_errors.ModifiedCertificateException(c,
+                                    pth)
+                return c
+
+        def get_certs_by_name(self, name):
+                """Given 'name', a M2Crypto X509_Name, return the certs with
+                that name as a subject."""
+
+                res = []
+                c = 0
+                name_hsh = name.as_hash()
+                try:
+                        while True:
+                                pth = os.path.join(self.__subj_root,
+                                    "%s.%s" % (name_hsh, c))
+                                cert = m2.X509.load_cert(pth)
+                                res.append(cert)
+                                c += 1
+                except EnvironmentError, e:
+                        t = api_errors.convert_environment_error(e,
+                            [errno.ENOENT])
+                        if t:
+                                raise t
+                return res
+
+        def get_ca_certs(self):
+                """Return a dictionary of the CA certificates for this
+                publisher."""
+
+                # The CA certs must be verified before this method is called.
+                assert self.__verified_cas
+                if self.ca_dict is not None:
+                        return self.ca_dict
+                self.ca_dict = {}
+                # CA certs approved for this publisher are stored by hash to
+                # prevent the later substitution or confusion over what certs
+                # have or have not been approved.
+                for h in (set(self.signing_ca_certs) -
+                    set(self.__bad_ca_certs)) | set(self.approved_ca_certs):
+                        c = self.get_cert_by_hash(h, verify_hash=True)
+                        s = c.get_subject().as_hash()
+                        self.ca_dict.setdefault(s, [])
+                        self.ca_dict[s].append(c)
+                return self.ca_dict
+
+        def get_intermediate_certs(self):
+                """Retrieve the intermediate certificates the publisher deemed
+                were necessary to validate its CA certificates against the
+                image's trust anchors."""
+
+                for c in self.inter_certs:
+                        self.get_cert_by_hash(c, verify_hash=True)
+
+        def update_props(self, set_props=EmptyI, add_prop_values=EmptyI,
+            remove_prop_values=EmptyI, unset_props=EmptyI):
+                """Update the properties set for this publisher with the ones
+                provided as arguments.  The order of application is that any
+                existing properties are unset, then properties are set to their
+                new values, then values are added to properties, and finally
+                values are removed from properties."""
+
+                # Delay validation so that any intermittent inconsistent state
+                # doesn't cause problems.
+                self.__delay_validation = True
+                # Remove existing properties.
+                for n in unset_props:
+                        self.properties.pop(n, None)
+                # Add or reset new properties.
+                self.properties.update(set_props)
+                # Add new values to properties.
+                for n in add_prop_values.keys():
+                        self.properties.setdefault(n, [])
+                        self.properties[n].extend(add_prop_values[n])
+                # Remove values from properties.
+                for n in remove_prop_values.keys():
+                        if n not in self.properties:
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot remove a value from the property "
+                                    "%(name)s because the property does not "
+                                    "exist.") % {"name":n})
+                        if not isinstance(self.properties[n], list):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot remove a value from a single "
+                                    "valued property, unset must be used. The "
+                                    "property name is '%(name)s' and the "
+                                    "current value is '%(value)s'") %
+                                    {"name":n, "value":self.properties[n]})
+                        for v in remove_prop_values[n]:
+                                try:
+                                        self.properties[n].remove(v)
+                                except ValueError:
+                                        raise api_errors.InvalidPropertyValue(_(
+                                            "Cannot remove the value %(value)s "
+                                            "from the property %(name)s "
+                                            "because the value is not in the "
+                                            "property's list.") %
+                                            {"value":v, "name":n})
+                self.__delay_validation = False
+                self.__validate_properties()
+
+        def verify_ca_certs(self, trust_anchors):
+                """Verify the CA certs for this publisher against the image's
+                trust anchors."""
+
+                self.__bad_ca_certs = set(self.revoked_ca_certs)
+
+                self.get_intermediate_certs()
+                # The set of potential CA certs is all those certs the publisher
+                # declared minus the ones the user has explictly removed.
+                for c in set(self.signing_ca_certs) - \
+                    set(self.revoked_ca_certs):
+                        cert = self.get_cert_by_hash(c, verify_hash=True)
+                        try:
+                                self.verify_chain(cert, trust_anchors)
+                        except api_errors.CertificateException, e:
+                                # If the cert couldn't be verified, add it to
+                                # the certs to ignore for this operation but
+                                # don't treat it as if the user had declared
+                                # the cert untrustworthy.
+                                self.__bad_ca_certs.add(c)
+                self.__verified_cas = True
+
+        def __validate_properties(self):
+                """Check that the properties set for this publisher are
+                consistent with each other."""
+
+                if self.__properties.get(SIGNATURE_POLICY, "") == \
+                    "require-names":
+                        if not self.__properties.get("signature-required-names",
+                            None):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "At least one name must be provided for "
+                                    "the signature-required-names policy."))
+
+        def __format_safe_read_crl(self, pth):
+                """CRLs seem to frequently come in DER format, so try reading
+                the CRL using both of the formats before giving up."""
+
+                try:
+                        return m2.X509.load_crl(pth)
+                except m2.X509.X509Error, e:
+                        try:
+                                return m2.X509.load_crl(pth,
+                                    format=m2.X509.FORMAT_DER)
+                        except m2.X509.X509Error, e:
+                                raise api_errors.BadFileFormat(_("The CRL file "
+                                    "%s is not in a recognized format.") %
+                                    pth)
+
+        def get_crl(self, uri):
+                """Given a URI (for now only http URIs are supported), return
+                the CRL object created from the file stored at that uri."""
+
+                if uri.startswith("URI:"):
+                        uri = uri[4:]
+                if not uri.startswith("http://") and \
+                    not uri.startswith("file://"):
+                        raise api_errors.InvalidResourceLocation(uri.strip())
+                fn = urllib.quote(uri, "")
+                assert os.path.isdir(self.__crl_root)
+                fpath = os.path.join(self.__crl_root, fn)
+                crl = None
+                # Check if we already have a CRL for this URI.
+                if os.path.exists(fpath):
+                        # If we already have a CRL, check whether it's time
+                        # to retrieve a new one from the location.
+                        crl = self.__format_safe_read_crl(fpath)
+                        nu = crl.get_next_update().get_datetime()
+                        # get_datetime is supposed to return a UTC time, so
+                        # assert that's the case.
+                        assert nu.tzinfo.utcoffset(nu) == dt.timedelta(0)
+                        # Add timezone info to cur_time so that cur_time and
+                        # nu can be compared.
+                        cur_time = dt.datetime.now(nu.tzinfo)
+                        if cur_time < nu:
+                                return crl
+                # If no CRL already exists or it's time to try to get a new one,
+                # try to retrieve it from the server.
+                tmp_pth = fpath + ".tmp"
+                with open(tmp_pth, "wb") as fh:
+                        hdl = pycurl.Curl()
+                        hdl.setopt(pycurl.URL, uri)
+                        hdl.setopt(pycurl.WRITEDATA, fh)
+                        hdl.setopt(pycurl.FAILONERROR, 1)
+                        try:
+                                hdl.perform()
+                        except pycurl.error, e:
+                                # If we should treat failure to get a new CRL
+                                # as a failure, raise an exception here. If not,
+                                # if we should use an old CRL if it exists,
+                                # return that here. If none is available and
+                                # that means the cert should not be treated as
+                                # revoked, return None here.
+                                return crl
+                try:
+                        ncrl = self.__format_safe_read_crl(tmp_pth)
+                except api_errors.BadFileFormat, e:
+                        portable.remove(tmp_pth)
+                        return crl
+                portable.rename(tmp_pth, fpath)
+                return ncrl
+
+        def __check_crls(self, cert, ca_dict):
+                """Determines whether the certificate has been revoked by its
+                CRL.
+
+                The 'cert' parameter is the certificate to check for revocation.
+
+                The 'ca_dict' is a dictionary which maps subject hashes to
+                certs treated as trust anchors."""
+
+                # If the certificate doesn't have a CRL location listed, treat
+                # it as valid.
+                try:
+                        ext = cert.get_ext("crlDistributionPoints")
+                except LookupError, e:
+                        return True
+                uri = ext.get_value()
+                crl = self.get_crl(uri)
+                # If we couldn't retrieve a CRL from the distribution point
+                # and no CRL is cached on disk, assume the cert has not been
+                # revoked.  It's possible that this should be an image or
+                # publisher setting in the future.
+                if not crl:
+                        return True
+
+                # A CRL has been found, now it needs to be validated like
+                # a certificate is.
+                verified_crl = False
+                crl_issuer = crl.get_issuer()
+                tas = ca_dict.get(crl_issuer.as_hash(), [])
+                for t in tas:
+                        if crl.verify(t.get_pubkey()):
+                                verified_crl = True
+                if not verified_crl:
+                        crl_cas = self.get_certs_by_name(crl_issuer)
+                        for c in crl_cas:
+                                if crl.verify(c.get_pubkey()):
+                                        try:
+                                                self.verify_chain(c, ca_dict)
+                                        except api_errors.SigningException:
+                                                pass
+                                        else:
+                                                verified_crl = True
+                                                break
+                if not verified_crl:
+                        return True
+                # For a certificate to be revoked, its CRL must be validated
+                # and revoked the certificate.
+                rev = crl.is_revoked(cert)
+                if rev:
+                        raise api_errors.RevokedCertificate(cert, rev[1])
+
+        def check_critical(self, ext):
+                """Check whether this criticial extension is supported."""
+
+                if ext.get_name() != "basicConstraints":
+                        return False
+                v = ext.get_value()
+                if v.upper() not in ("CA:TRUE", "CA:FALSE"):
+                        return False
+                return True
+
+        def check_extensions(self, cert):
+                """Check whether the critical extensions in this certificate
+                are supported."""
+
+                for i in range(0, cert.get_ext_count()):
+                        ext = cert.get_ext_at(i)
+                        if not ext.get_critical() or self.check_critical(ext):
+                                continue
+                        raise api_errors.UnsupportedCriticalExtension(cert, ext)
+        
+        def verify_chain(self, cert, ca_dict, required_names=None):
+                """Validates the certificate against the given trust anchors.
+
+                The 'cert' parameter is the certificate to validate.
+
+                The 'ca_dict' is a dictionary which maps subject hashes to
+                certs treated as trust anchors.
+
+                The 'required_names' parameter is a set of strings that must
+                be seen as a CN in the chain of trust for the certificate."""
+
+                if required_names is None:
+                        required_names = set()
+                verified = False
+                found_req_name = not required_names
+                continue_loop = True
+                certs_with_problems = []
+
+                # Check whether we can validate this certificate.
+                self.check_extensions(cert)
+
+                # Check whether this certificate has been revoked.
+                self.__check_crls(cert, ca_dict)
+
+                while continue_loop:
+                        # If this certificate's CN is in the set of required
+                        # names, remove it.
+                        for cert_cn in [
+                            str(c.get_data())
+                            for c
+                            in cert.get_subject().get_entries_by_nid(
+                                m2.X509.X509_Name.nid["CN"])
+                        ]:
+                                required_names.discard(cert_cn)
+
+                        # Find the certificate that issued this certificate.
+                        issuer = cert.get_issuer()
+                        issuer_hash = issuer.as_hash()
+
+                        # See whether this certificate was issued by any of the
+                        # given trust anchors.
+                        for c in ca_dict.get(issuer_hash, []):
+                                if cert.verify(c.get_pubkey()):
+                                        verified = True
+                                        # If there are more names to check for
+                                        # continue up the chain of trust to look
+                                        # for them.
+                                        if not required_names:
+                                                continue_loop = False
+                                        break
+
+                        # If the subject and issuer for this certificate are
+                        # identical and the certificate hasn't been verified
+                        # then this is an untrusted self-signed cert and should
+                        # be rejected.
+                        if cert.get_subject().as_hash() == issuer_hash:
+                                if not verified:
+                                        raise \
+                                            api_errors.UntrustedSelfSignedCert(
+                                            cert)
+                                # This break should break the
+                                # while continue_loop loop.
+                                break
+
+                        # If the certificate hasn't been issued by a trust
+                        # anchor or more names need to be found, continue
+                        # looking up the chain of trust.
+                        if continue_loop:
+                                up_chain = False
+                                # Keep track of certs that would have verified
+                                # this certificate but had critical extensions
+                                # we can't handle yet for error reporting.
+                                certs_with_problems = []
+                                for c in self.get_certs_by_name(issuer):
+                                        # If the certificate is approved to
+                                        # sign another certificate, verifies
+                                        # the current certificate, and hasn't
+                                        # been revoked, consider it as the
+                                        # next link in the chain.
+                                        if c.check_ca() and \
+                                            cert.verify(c.get_pubkey()):
+                                                problem = False
+                                                # Check whether this certificate
+                                                # has a critical extension we
+                                                # don't understand.
+                                                try:
+                                                        self.check_extensions(c)
+                                                        self.__check_crls(c,
+                                                            ca_dict)
+                                                except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate), e:
+                                                        certs_with_problems.append(e)
+                                                        problem = True
+                                                # If this certificate has no
+                                                # problems with it, it's the
+                                                # next link in the chain so
+                                                # make it the current
+                                                # certificate.
+                                                if not problem:
+                                                        up_chain = True
+                                                        cert = c
+                                                        break
+                                # If there's not another link in the chain to be
+                                # found, stop the iteration.
+                                if not up_chain:
+                                        continue_loop = False
+                # If the certificate wasn't verified against a trust anchor,
+                # raise an exception.
+                if not verified:
+                        raise api_errors.BrokenChain(cert,
+                            certs_with_problems)
+
         alias = property(lambda self: self.__alias, __set_alias,
             doc="An alternative name for a publisher.")
 
@@ -1755,3 +2353,103 @@ pkg unset-publisher %s
         sticky = property(lambda self: self.__sticky, __set_stickiness,
             doc="Whether or not installed packages from this publisher are"
                 " always preferred to other publishers.")
+
+        def __get_prop(self, name):
+                """Accessor method for properites dictionary"""
+                return self.__properties[name]
+
+        def __set_prop(self, name, values):
+                """Accesor method to add a property"""
+
+                if name == SIGNATURE_POLICY:
+                        self.__sig_policy = None
+                        if isinstance(values, basestring):
+                                values = [values]
+                        policy_name = values[0]
+                        if policy_name not in sigpolicy.Policy.policies():
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "%(val)s is not a valid value for this "
+                                    "property:%(prop)s") % {"val": policy_name,
+                                    "prop": SIGNATURE_POLICY})
+                        if policy_name == "require-names":
+                                if self.__delay_validation:
+                                        # If __delay_validation is set, then
+                                        # it's possible that
+                                        # signature-required-names was
+                                        # set by a previous call to set_prop
+                                        # file.  If so, don't overwrite the
+                                        # values that have already been read.
+                                        self.__properties.setdefault(
+                                            "signature-required-names", [])
+                                        self.__properties[
+                                            "signature-required-names"].extend(
+                                            values[1:])
+                                else:
+                                        self.__properties[
+                                            "signature-required-names"] = \
+                                            values[1:]
+                                        self.__validate_properties()
+                        else:
+                                if len(values) > 1:
+                                        raise api_errors.InvalidPropertyValue(_(
+                                            "The %s signature-policy takes no "
+                                            "argument.") % policy_name)
+                        self.__properties[SIGNATURE_POLICY] = policy_name
+                        return
+                if name == "signature-required-names":
+                        if isinstance(values, basestring):
+                                values = self.read_list(values)
+                self.__properties[name] = values
+
+        def __del_prop(self, name):
+                """Accessor method for properties"""
+                del self.__properties[name]
+
+        def __prop_iter(self):
+                return self.__properties.__iter__()
+
+        def __prop_iteritems(self):
+                """Support iteritems on properties"""
+                return self.__properties.iteritems()
+
+        def __prop_keys(self):
+                """Support keys() on properties"""
+                return self.__properties.keys()
+
+        def __prop_values(self):
+                """Support values() on properties"""
+                return self.__properties.values()
+
+        def __prop_getdefault(self, name, value):
+                """Support getdefault() on properties"""
+                return self.__properties.get(name, value)
+
+        def __prop_setdefault(self, name, value):
+                """Support setdefault() on properties"""
+                return self.__properties.setdefault(name, value)
+
+        def __prop_update(self, d):
+                """Support update() on properties"""
+                return self.__properties.update(d)
+
+        def __prop_pop(self, d, default):
+                """Support pop() on properties"""
+                return self.__properties.pop(d, default)
+
+        properties = DictProperty(__get_prop, __set_prop, __del_prop,
+            __prop_iteritems, __prop_keys, __prop_values, __prop_iter,
+            doc="A dict holding the properties for an image.",
+            fgetdefault=__prop_getdefault, fsetdefault=__prop_setdefault,
+            update=__prop_update, pop=__prop_pop)
+
+        @property
+        def signature_policy(self):
+                """Return the signature policy for the publisher."""
+
+                if self.__sig_policy is not None:
+                        return self.__sig_policy
+                txt = self.properties.get(SIGNATURE_POLICY,
+                    [sigpolicy.DEFAULT_POLICY])[0]
+                names = self.properties.get("signature-required-names", [])
+                self.__sig_policy = sigpolicy.Policy.policy_factory(txt, names)
+                return self.__sig_policy

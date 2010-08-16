@@ -628,7 +628,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 prototype.close()
 
                 self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
-                         (pkgroot, rootdir, prototypepath))
+                         (pkgroot, rootdir, prototypepath), coverage=False)
 
                 shutil.rmtree(pkgroot)
 
@@ -655,7 +655,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 rootdir = self.test_root
                 self.create_sysv_package(rootdir)
                 self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
-                        os.path.join(rootdir, "nopkg.pkg")))
+                        os.path.join(rootdir, "nopkg.pkg")), coverage=False)
 
                 url = self.dc.get_depot_url()
                 self.pkgsend(url, "open nopkg@1.0")
@@ -934,7 +934,7 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
         def test_bundle_dir_hardlinks(self):
                 """Verify that hardlink targeting works correctly."""
 
-                rootdir = self.test_root
+                rootdir = os.path.join(self.test_root, "bundletest")
 
                 def diffmf(src, dst):
                         added, changed, removed = src.difference(dst)
@@ -980,7 +980,7 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                 def do_test_one(target, links):
                         self.debug("-" * 70)
                         self.debug("Testing: %s %s" % (target, links))
-                        tpath = self.make_misc_files(target)[0]
+                        tpath = self.make_misc_files(target, rootdir)[0]
                         expected_mf = "file %s path=%s\n" % (target, target)
                         dirs = set()
 

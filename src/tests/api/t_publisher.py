@@ -21,9 +21,9 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
+
 
 import testutils
 if __name__ == "__main__":
@@ -430,6 +430,39 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                                 pobj.remove_repository(name=r.name)
                                 self.assertRaises(api_errors.UnknownRepository,
                                     pobj.get_repository, name=r.name)
+
+                # Verify that adding, removing, and unsetting ca certs works
+                # as expected.
+                pobj.create_meta_root()
+                self.pub_cas_dir = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced", "publisher_cas")
+                ca_path = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
+                with open(ca_path, "rb") as fh:
+                        ca_data = fh.read()
+                hsh = self.calc_file_hash(ca_path)
+                # Test revoking a ca cert.
+                pobj.revoke_ca_cert(hsh)
+                self.assert_(hsh in pobj.revoked_ca_certs)
+                # Test moving from revoked to approved
+                pobj.approve_ca_cert(ca_data, manual=True)
+                self.assert_(hsh not in pobj.revoked_ca_certs)
+                self.assert_(hsh in pobj.approved_ca_certs)
+                self.assert_(hsh in pobj.signing_ca_certs)
+                # Test unsetting from approved
+                pobj.unset_ca_cert(hsh)
+                self.assert_(hsh not in pobj.revoked_ca_certs)
+                self.assert_(hsh not in pobj.approved_ca_certs)
+                # Test approving a ca cert
+                pobj.approve_ca_cert(ca_data, manual=True)
+                self.assert_(hsh in pobj.approved_ca_certs)
+                # Test moving from approved to revoked
+                pobj.revoke_ca_cert(hsh)
+                self.assert_(hsh in pobj.revoked_ca_certs)
+                self.assert_(hsh not in pobj.approved_ca_certs)
+                # Test moving from revoked to unset
+                pobj.unset_ca_cert(hsh)
+                self.assert_(hsh not in pobj.revoked_ca_certs)
+                self.assert_(hsh not in pobj.approved_ca_certs)
 
 
 if __name__ == "__main__":

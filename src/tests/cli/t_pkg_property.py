@@ -61,6 +61,28 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("unset-property description", exit=1)
                 self.pkg("unset-property", exit=2)
 
+                self.pkg("set-property signature-policy verify")
+                self.pkg("set-property signature-policy verify foo", exit=1)
+                self.pkg("set-property signature-policy vrify", exit=1)
+                self.pkg("set-property signature-policy require-names", exit=1)
+                self.pkg("set-property signature-policy require-names foo")
+
+                self.pkg("add-property-value signature-policy verify", exit=1)
+                self.pkg("add-property-value signature-required-names foo")
+                self.pkg("add-property-value signature-required-names bar")
+                self.pkg("remove-property-value signature-required-names foo")
+                self.pkg("remove-property-value signature-required-names baz",
+                    exit=1)
+                self.pkg("add-property-value foo", exit=2)
+                self.pkg("remove-property-value foo", exit=2)
+                self.pkg("set-property foo", exit=2)
+                self.pkg("set-property foo bar")
+                self.pkg("remove-property-value foo bar", exit=1)
+                self.pkg("set-property", exit=2)
+
+                self.pkg("set-property trust-anchor-directory %s %s" %
+                    (self.test_root, self.test_root), exit=1)
+
         def test_missing_permssions(self):
                 """Bug 2393"""
 

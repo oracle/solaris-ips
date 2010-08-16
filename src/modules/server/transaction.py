@@ -19,8 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import calendar
 import datetime
@@ -101,6 +103,12 @@ class TransactionOperationError(TransactionError):
                             "package data for more than one publisher or "
                             "a default publisher has not been defined.") % \
                             self._args.get("pfmri", "")
+                elif "missing_fmri" in self._args:
+                        return _("Need an existing instance of %s to exist to "
+                            "append to it") % self._args.get("pfmri", "")
+                elif "non_sig" in self._args:
+                        return _("Only a signature can be appended to an "
+                            "existing package")
                 elif "pfmri" in self._args:
                         return _("The specified FMRI, '%s', is invalid.") % \
                             self._args["pfmri"]
@@ -133,6 +141,8 @@ class Transaction(object):
                 self.renamed = False
                 self.has_reqdeps = False
                 self.types_found = set()
+                self.append_trans = False
+                self.remaining_payload_cnt = 0
                 return
 
         def get_basename(self):
@@ -251,6 +261,96 @@ class Transaction(object):
                 # if not found, create package
                 # set package state to TRANSACTING
 
+        def append(self, repo, client_release, pfmri):
+                # XXX needs to be done in __init__
+                self.repo = repo
+                self.append_trans = True
+
+                if client_release is None:
+                        raise TransactionOperationError(client_release=None,
+                            pfmri=pfmri)
+                if pfmri is None:
+                        raise TransactionOperationError(pfmri=None)
+
+                self.client_release = client_release
+                self.pkg_name = pfmri
+                self.esc_pkg_name = urllib.quote(pfmri, "")
+
+                # attempt to construct an FMRI object
+                try:
+                        self.fmri = fmri.PkgFmri(self.pkg_name,
+                            self.client_release)
+                except fmri.FmriError, e:
+                        raise TransactionOperationError(e)
+
+                # Version and timestamp is required for appending.
+                if self.fmri.version is None or not self.fmri.get_timestamp():
+                        raise TransactionOperationError(fmri_version=None,
+                            pfmri=pfmri)
+
+                # Ensure that the FMRI has been fully qualified with publisher
+                # information or apply the default if appropriate.
+                if not self.fmri.publisher:
+                        c = repo.catalog
+                        pubs = c.publishers()
+                        default_pub = repo.cfg.get_property("publisher",
+                            "prefix")
+
+                        if len(pubs) > 1 or not default_pub:
+                                # A publisher is required if the repository
+                                # contains package data for more than one
+                                # publisher or no default has been defined.
+                                raise TransactionOperationError(
+                                    publisher_required=True, pfmri=pfmri)
+
+                        self.fmri.publisher = default_pub
+                        pkg_name = self.pkg_name
+                        pub_string = "pkg://%s/" % default_pub
+                        if not pkg_name.startswith("pkg:/"):
+                                pkg_name = pub_string + pkg_name
+                        else:
+                                pkg_name = pkg_name.replace("pkg:/", pub_string)
+                        self.pkg_name = pkg_name
+                        self.esc_pkg_name = urllib.quote(pkg_name, "")
+
+                # record transaction metadata: opening_time, package, user
+                self.open_time = self.fmri.get_timestamp()
+                if self.open_time:
+                        # Strip the timestamp information for consistency with
+                        # the case where it was not specified.
+                        self.pkg_name = ":".join(pfmri.split(":")[:-1])
+                        self.esc_pkg_name = urllib.quote(self.pkg_name, "")
+                else:
+                        # A timestamp was not provided.
+                        self.open_time = datetime.datetime.utcnow()
+                        self.fmri.set_timestamp(self.open_time)
+
+                if not repo.valid_append_fmri(self.fmri):
+                        raise TransactionOperationError(missing_fmri=True,
+                            pfmri=self.fmri)
+
+                trans_basename = self.get_basename()
+                self.dir = "%s/%s" % (repo.trans_root, trans_basename)
+
+                try:
+                        os.makedirs(self.dir)
+                except EnvironmentError, e:
+                        if e.errno == errno.EEXIST:
+                                raise TransactionAlreadyOpenError(
+                                    trans_basename)
+                        raise TransactionOperationError(e)
+
+                # Record that this is an append operation so that it can be
+                # reopened correctly.
+                with open(os.path.join(self.dir, "append"), "wb") as fh:
+                        pass
+
+                # copy in existing manifest, then open it for appending
+                m = self.repo._get_manifest(pfmri)
+                tfile = file("%s/manifest" % self.dir, "ab+")
+                tfile.write(str(m))
+                tfile.close()
+
         def reopen(self, repo, trans_dir):
                 """The reopen() method is invoked on server restart, to
                 reestablish the status of inflight transactions."""
@@ -278,6 +378,8 @@ class Transaction(object):
                 m = pkg.manifest.Manifest()
                 m.set_content(tfile.read())
                 tfile.close()
+                if os.path.exists(os.path.join(self.dir, "append")):
+                        self.append_trans = True
                 self.obsolete = m.getbool("pkg.obsolete", "false")
                 self.renamed = m.getbool("pkg.renamed", "false")
                 self.types_found = set((
@@ -299,8 +401,12 @@ class Transaction(object):
                 pkg_state = "SUBMITTED"
 
                 # set state to PUBLISHED
-                pkg_fmri, pkg_state = self.accept_publish(refresh_index,
-                add_to_catalog)
+                if self.append_trans:
+                        pkg_fmri, pkg_state = self.accept_append(refresh_index,
+                            add_to_catalog)
+                else:
+                        pkg_fmri, pkg_state = self.accept_publish(refresh_index,
+                            add_to_catalog)
 
                 # Discard the in-flight transaction data.
                 try:
@@ -330,15 +436,16 @@ class Transaction(object):
                 except actions.ActionError, e:
                         raise TransactionOperationError(e)
 
+                if self.append_trans and action.name != "signature":
+                        raise TransactionOperationError(non_sig=True)
+
                 size = int(action.attrs.get("pkg.size", 0))
 
-                if action.name in ("file", "license") and size <= 0:
+                if action.has_payload and size <= 0:
                         # XXX hack for empty files
                         action.data = lambda: open(os.devnull, "rb")
 
                 if action.data is not None:
-                        bufsz = 64 * 1024
-
                         fname, data = misc.get_data_digest(action.data(),
                             length=size, return_content=True)
 
@@ -367,65 +474,16 @@ class Transaction(object):
                                 action.attrs["elfarch"] = elf_info["arch"]
                                 os.unlink(elf_name)
 
-                        #
-                        # This check prevents entering into the depot store
-                        # a file which is already there in the store.
-                        # This takes CPU load off the depot on large imports
-                        # of mostly-the-same stuff.  And in general it saves
-                        # disk bandwidth, and on ZFS in particular it saves
-                        # us space in differential snapshots.  We also need
-                        # to check that the destination is in the same
-                        # compression format as the source, as we must have
-                        # properly formed files for chash/csize properties
-                        # to work right.
-                        #
                         dst_path = self.repo.cache_store.lookup(fname)
-                        fileneeded = True
-                        if dst_path:
-                                if PkgGzipFile.test_is_pkggzipfile(dst_path):
-                                        fileneeded = False
-                                        opath = dst_path
-
-                        if fileneeded:
-                                opath = os.path.join(self.dir, fname)
-                                ofile = PkgGzipFile(opath, "wb")
-
-                                nbuf = size / bufsz
-
-                                for n in range(0, nbuf):
-                                        l = n * bufsz
-                                        h = (n + 1) * bufsz
-                                        ofile.write(data[l:h])
-
-                                m = nbuf * bufsz
-                                ofile.write(data[m:])
-                                ofile.close()
-
+                        csize, chash = misc.compute_compressed_attrs(fname,
+                            dst_path, data, size, self.dir)
+                        action.attrs["chash"] = chash.hexdigest()
+                        action.attrs["pkg.csize"] = csize
+                        chash = None
                         data = None
 
-                        # Now that the file has been compressed, determine its
-                        # size and store that as an attribute in the manifest
-                        # for the file.
-                        fs = os.stat(opath)
-                        action.attrs["pkg.csize"] = str(fs.st_size)
-
-                        # Compute the SHA hash of the compressed file.
-                        # Store this as the chash attribute of the file's
-                        # action.  In order for this to work correctly, we
-                        # have to use the PkgGzipFile class.  It omits
-                        # filename and timestamp information from the gzip
-                        # header, allowing us to generate deterministic
-                        # hashes for different files with identical content.
-                        cfile = open(opath, "rb")
-                        chash = hashlib.sha1()
-                        while True:
-                                cdata = cfile.read(bufsz)
-                                if cdata == "":
-                                        break
-                                chash.update(cdata)
-                        cfile.close()
-                        action.attrs["chash"] = chash.hexdigest()
-                        cdata = None
+                self.remaining_payload_cnt = \
+                    len(action.attrs.get("chain.sizes", "").split())
 
                 # Do some sanity checking on packages marked or being marked
                 # obsolete or renamed.
@@ -476,6 +534,23 @@ class Transaction(object):
 
                 self.types_found.add(action.name)
 
+        def add_file(self, f, size=None):
+                """Adds the file to the Transaction."""
+
+                fname, data = misc.get_data_digest(f, length=size,
+                    return_content=True)
+
+                if size is None:
+                        size = len(data)
+
+                dst_path = self.repo.cache_store.lookup(fname)
+                csize, chash = misc.compute_compressed_attrs(fname, dst_path,
+                    data, size, self.dir)
+                chash = None
+                data = None
+
+                self.remaining_payload_cnt -= 1
+
         def accept_publish(self, refresh_index=True, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog entries."""
@@ -488,11 +563,38 @@ class Transaction(object):
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
-                
+
                 self.publish_package()
 
                 if add_to_catalog:
                         self.repo.add_package(self.fmri)
+                if refresh_index:
+                        self.repo.refresh_index()
+
+                return (str(self.fmri), "PUBLISHED")
+
+        def accept_append(self, refresh_index=True, add_to_catalog=True):
+                """Transaction meets consistency criteria, and can be published.
+                Publish, making appropriate catalog replacements."""
+
+                # Ensure that a renamed package has at least one dependency
+                if self.renamed and not self.has_reqdeps:
+                        raise TransactionOperationError(_("A renamed package "
+                            "must contain at least one 'depend' action."))
+
+                if self.remaining_payload_cnt > 0:
+                        raise TransactionOperationError(_("At least one "
+                            "certificate has not been delivered for the "
+                            "signature action."))
+
+                # XXX If we are going to publish, then we should augment
+                # our response with any other packages that moved to
+                # PUBLISHED due to the package's arrival.
+                
+                self.publish_package()
+
+                if add_to_catalog:
+                        self.repo.replace_package(self.fmri)
                 if refresh_index:
                         self.repo.refresh_index()
 

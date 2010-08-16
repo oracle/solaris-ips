@@ -27,6 +27,7 @@ import copy
 import difflib
 import errno
 import gettext
+import hashlib
 import os
 import pprint
 import shutil
@@ -45,6 +46,8 @@ import textwrap
 
 EmptyI = tuple()
 EmptyDict = dict()
+
+path_to_pub_util = "../util/publish"
 
 #
 # These are initialized by pkg5testenv.setup_environment.
@@ -186,6 +189,13 @@ class Pkg5TestCase(unittest.TestCase):
         #
         test_root = property(fget=lambda self: self.__test_root)
 
+        def __get_ro_data_root(self):
+                if not self.__test_root:
+                        return None
+                return os.path.join(self.__test_root, "ro_data")
+        
+        ro_data_root = property(fget=__get_ro_data_root)
+
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None):
                 wrapper = ""
@@ -210,7 +220,6 @@ class Pkg5TestCase(unittest.TestCase):
                 if handle:
                         # Do nothing more.
                         return p
-
                 self.output, self.errout = p.communicate()
                 retcode = p.returncode
                 self.debugresult(retcode, exit, self.output)
@@ -301,6 +310,8 @@ class Pkg5TestCase(unittest.TestCase):
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e
+                shutil.copytree(os.path.join(self.__pwd, "ro_data"),
+                    self.ro_data_root)
                 #
                 # TMPDIR affects the behavior of mkdtemp and mkstemp.
                 # Setting this here should ensure that tests will make temp
@@ -551,6 +562,16 @@ class Pkg5TestCase(unittest.TestCase):
                 t_fh.close()
                 self.debugfilecreate(content, t_path)
                 return t_path
+
+        @staticmethod
+        def calc_file_hash(pth):
+                # Find the hash of the file.
+                fh = open(pth, "rb")
+                s = fh.read()
+                fh.close()
+                hsh = hashlib.sha1()
+                hsh.update(s)
+                return hsh.hexdigest()
 
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""
@@ -1357,6 +1378,18 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap)
 
+        def pkgsign(self, depot_url, command, exit=0, comment=""):
+                args = []
+                if depot_url:
+                        args.append("-s %s" % depot_url)
+
+                if command:
+                        args.append(command)
+
+                cmdline = "%s/usr/bin/pkgsign %s" % (g_proto_area,
+                    " ".join(args))
+                return self.cmdline_run(cmdline, comment=comment, exit=exit)
+
         def pkgsend(self, depot_url="", command="", exit=0, comment="",
             retry400=True):
                 args = []
@@ -1375,7 +1408,7 @@ class CliTestCase(Pkg5TestCase):
                 errout = self.errout
 
                 cmdop = command.split(' ')[0]
-                if cmdop == "open" and retcode == 0:
+                if cmdop in ("open", "append") and retcode == 0:
                         out = out.rstrip()
                         assert out.startswith("export PKG_TRANS_ID=")
                         arr = out.split("=")
@@ -1497,6 +1530,12 @@ class CliTestCase(Pkg5TestCase):
 
                 return plist
 
+        def merge(self, args=EmptyI, exit=0):
+                prog = os.path.realpath(os.path.join(path_to_pub_util,
+                    "merge.py"))
+                cmd = "%s %s" % (prog, " ".join(args))
+                self.cmdline_run(cmd, exit=exit)
+
         def copy_repository(self, src, src_pub, dest, dest_pub):
                 """Copies the packages from the src repository to a new
                 destination repository that will be created at dest.  In
@@ -1553,16 +1592,21 @@ class CliTestCase(Pkg5TestCase):
                                 msrc.close()
                                 mdest.close()
 
+        def get_img_manifest_path(self, pfmri, img_path=None):
+                """Returns the path to the manifest for the fiven fmri."""
+
+                if not img_path:
+                        img_path = self.get_img_path()
+
+                return os.path.join(img_path, "var", "pkg", "pkg",
+                    pfmri.get_dir_path(), "manifest")
+
         def get_img_manifest(self, pfmri, img_path=None):
                 """Retrieves the client's cached copy of the manifest for the
                 given package FMRI and returns it as a string.  Callers are
                 responsible for all error handling."""
 
-                if not img_path:
-                        img_path = self.get_img_path()
-
-                mpath = os.path.join(img_path, "var", "pkg", "pkg",
-                    pfmri.get_dir_path(), "manifest")
+                mpath = self.get_img_manifest_path(pfmri, img_path)
                 with open(mpath, "rb") as f:
                         return f.read()
 
@@ -1623,7 +1667,8 @@ class CliTestCase(Pkg5TestCase):
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
                 cmdline = "tidy %s %s" % (options, fname)
-                return self.cmdline_run(cmdline, comment=comment, exit=exit)
+                return self.cmdline_run(cmdline, comment=comment,
+                    coverage=False, exit=exit)
 
         def create_repo(self, repodir, properties=EmptyI):
                 """ Convenience routine to help subclasses create a package

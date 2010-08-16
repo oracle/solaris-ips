@@ -44,6 +44,7 @@ import urllib
 import urlparse
 import zlib
 
+from pkg.pkggzip import PkgGzipFile
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg import VERSION
 
@@ -52,6 +53,9 @@ MIN_WARN_DAYS = datetime.timedelta(days=30)
 
 # Copied from image.py as image.py can't be imported here (circular reference).
 PKG_STATE_INSTALLED = 2
+
+# Constant string used across many modules as a property name.
+SIGNATURE_POLICY = "signature-policy"
 
 def get_release_notes_url():
         """Return a release note URL pointing to the correct release notes
@@ -373,6 +377,65 @@ def get_data_digest(data, length=None, return_content=False):
 
         return fhash.hexdigest(), content.read()
 
+def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
+    bufsz=64*1024):
+        """Returns the size and hash of the compressed data.  If the file
+        located at file_path doesn't exist or isn't gzipped, it creates a file
+        in compress_dir named fname."""
+
+        #
+        # This check prevents compressing a file which is already compressed.
+        # This takes CPU load off the depot on large imports of mostly-the-same
+        # stuff.  And in general it saves disk bandwidth, and on ZFS in
+        # particular it saves us space in differential snapshots.  We also need
+        # to check that the destination is in the same compression format as
+        # the source, as we must have properly formed files for chash/csize
+        # properties to work right.
+        #
+
+        fileneeded = True
+        if file_path:
+                if PkgGzipFile.test_is_pkggzipfile(file_path):
+                        fileneeded = False
+                        opath = file_path
+
+        if fileneeded:
+                opath = os.path.join(compress_dir, fname)
+                ofile = PkgGzipFile(opath, "wb")
+
+                nbuf = size / bufsz
+
+                for n in range(0, nbuf):
+                        l = n * bufsz
+                        h = (n + 1) * bufsz
+                        ofile.write(data[l:h])
+
+                m = nbuf * bufsz
+                ofile.write(data[m:])
+                ofile.close()
+
+        data = None
+
+        # Now that the file has been compressed, determine its
+        # size.
+        fs = os.stat(opath)
+        csize = str(fs.st_size)
+
+        # Compute the SHA hash of the compressed file.  In order for this to
+        # work correctly, we have to use the PkgGzipFile class.  It omits
+        # filename and timestamp information from the gzip header, allowing us
+        # to generate deterministic hashes for different files with identical
+        # content.
+        cfile = open(opath, "rb")
+        chash = hashlib.sha1()
+        while True:
+                cdata = cfile.read(bufsz)
+                if cdata == "":
+                        break
+                chash.update(cdata)
+        cfile.close()
+        return csize, chash
+
 def __getvmusage():
         """Return the amount of virtual memory in bytes currently in use."""
 
@@ -456,7 +519,8 @@ class ImmutableDict(dict):
 
 class DictProperty(object):
         class __InternalProxy(object):
-                def __init__(self, obj, fget, fset, fdel, iteritems, keys, values, iterator):
+                def __init__(self, obj, fget, fset, fdel, iteritems, keys,
+                    values, iterator, fgetdefault, fsetdefault, update, pop):
                         self.__obj = obj
                         self.__fget = fget
                         self.__fset = fset
@@ -465,6 +529,10 @@ class DictProperty(object):
                         self.__keys = keys
                         self.__values = values
                         self.__iter = iterator
+                        self.__fgetdefault = fgetdefault
+                        self.__fsetdefault = fsetdefault
+                        self.__update = update
+                        self.__pop = pop
 
                 def __getitem__(self, key):
                         if self.__fget is None:
@@ -497,13 +565,34 @@ class DictProperty(object):
                                 raise AttributeError, "can't iterate over values"
                         return self.__values(self.__obj)
 
+                def get(self, key, default=None):
+                        if self.__fgetdefault is None:
+                                raise AttributeError, "can't use get"
+                        return self.__fgetdefault(self.__obj, key, default)
+
+                def setdefault(self, key, default=None):
+                        if self.__fsetdefault is None:
+                                raise AttributeError, "can't use setdefault"
+                        return self.__fsetdefault(self.__obj, key, default)
+
+                def update(self, d):
+                        if self.__update is None:
+                                raise AttributeError, "can't use update"
+                        return self.__update(self.__obj, d)
+
+                def pop(self, d, default):
+                        if self.__pop is None:
+                                raise AttributeError, "can't use pop"
+                        return self.__pop(self.__obj, d, default)
+
                 def __iter__(self):
                         if self.__iter is None:
                                 raise AttributeError, "can't iterate"
                         return self.__iter(self.__obj)
 
         def __init__(self, fget=None, fset=None, fdel=None, iteritems=None, 
-            keys=None, values=None, iterator=None, doc=None):
+            keys=None, values=None, iterator=None, doc=None, fgetdefault=None,
+            fsetdefault=None, update=None, pop=None):
                 self.__fget = fget
                 self.__fset = fset
                 self.__fdel = fdel
@@ -512,12 +601,18 @@ class DictProperty(object):
                 self.__keys = keys
                 self.__values = values
                 self.__iter = iterator
+                self.__fgetdefault = fgetdefault
+                self.__fsetdefault = fsetdefault
+                self.__update = update
+                self.__pop = pop
 
         def __get__(self, obj, objtype=None):
                 if obj is None:
                         return self
                 return self.__InternalProxy(obj, self.__fget, self.__fset, 
-                    self.__fdel, self.__iteritems, self.__keys, self.__values, self.__iter)
+                    self.__fdel, self.__iteritems, self.__keys, self.__values,
+                    self.__iter, self.__fgetdefault, self.__fsetdefault,
+                    self.__update, self.__pop)
 
         
 def get_sorted_publishers(pubs, preferred=None):
@@ -594,6 +689,52 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
                     publisher=prefix, days=diff.days)
 
         return cert
+
+# Used for the conversion of the signature value between hex and binary.
+char_list = "0123456789abcdef"
+
+def binary_to_hex(s):
+        """Converts a string of bytes to a hexadecimal representation.
+        """
+
+        res = ""
+        for i, p in enumerate(s):
+                p = ord(p)
+                a = char_list[p % 16]
+                p = p/16
+                b = char_list[p % 16]
+                res += b + a
+        return res
+
+def hex_to_binary(s):
+        """Converts a string of hex digits to the binary representation.
+        """
+
+        res = ""
+        for i in range(0, len(s), 2):
+                res += chr(char_list.find(s[i]) * 16 +
+                    char_list.find(s[i+1]))
+        return res
+
+def config_temp_root():
+        """Examine the environment.  If the environment has set TMPDIR, TEMP,
+        or TMP, return None.  This tells tempfile to use the environment
+        settings when creating temporary files/directories.  Otherwise,
+        return a path that the caller should pass to tempfile instead."""
+
+        default_root = "/var/tmp"
+
+        # In Python's tempfile module, the default temp directory
+        # includes some paths that are suboptimal for holding large numbers
+        # of files.  If the user hasn't set TMPDIR, TEMP, or TMP in the
+        # environment, override the default directory for creating a tempfile.
+        tmp_envs = [ "TMPDIR", "TEMP", "TMP" ]
+        for ev in tmp_envs:
+                env_val = os.getenv(ev)
+                if env_val:
+                        return None
+
+        return default_root
 
 class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.

@@ -76,6 +76,11 @@ class Action(object):
         orderdict = {}
         unknown = 0
 
+        # The version of signature used.
+        sig_version = 0
+        # Most types of actions do not have a payload.
+        has_payload = False
+
         def loadorderdict(self):
                 ol = [
                         "set",
@@ -210,7 +215,7 @@ class Action(object):
                 """
 
                 out = self.name
-                if hasattr(self, "hash"):
+                if hasattr(self, "hash") and self.hash is not None:
                         out += " " + self.hash
 
                 def q(s):
@@ -239,6 +244,57 @@ class Action(object):
                                         out += " " + k + "='" + v + "'"
                                 else:
                                         out += " " + k + "=\"" + v.replace("\"", "\\\"") + "\""
+                        else:
+                                out += " " + k + "=" + v
+                return out
+
+        def sig_str(self, a, ver):
+                """Create a stable string representation of an action that
+                is deterministic in its creation.  If creating a string from an
+                action is non-deterministic, then manifest signing cannot work.
+
+                The parameter "a" is the signature action that's going to use
+                the string produced.  It's needed for the signature string
+                action, and is here to keep the method signature the same.
+                """
+
+                # Any changes to this function or any subclasses sig_str mean
+                # Action.sig_version must be incremented.
+
+                if ver != Action.sig_version:
+                        raise apx.UnsupportedSignatureVersion(ver, sig=self)
+
+                out = self.name
+                if hasattr(self, "hash") and self.hash is not None:
+                        out += " " + self.hash
+
+                def q(s):
+                        if " " in s or "'" in s or "\"" in s or s == "":
+                                if "\"" not in s:
+                                        return '"%s"' % s
+                                elif "'" not in s:
+                                        return "'%s'" % s
+                                else:
+                                        return '"%s"' % s.replace("\"", "\\\"")
+                        else:
+                                return s
+
+                # Sort so that we get consistent action attribute ordering.
+                # We pay a performance penalty to do so, but it seems worth it.
+                for k in sorted(self.attrs.keys()):
+                        v = self.attrs[k]
+                        if isinstance(v, list) or isinstance(v, set):
+                                out += " " + " ".join([
+                                    "%s=%s" % (k, q(lmt)) for lmt in sorted(v)
+                                ])
+                        elif " " in v or "'" in v or "\"" in v or v == "":
+                                if "\"" not in v:
+                                        out += " " + k + "=\"" + v + "\""
+                                elif "'" not in v:
+                                        out += " " + k + "='" + v + "'"
+                                else:
+                                        out += " " + k + "=\"" + \
+                                            v.replace("\"", "\\\"") + "\""
                         else:
                                 out += " " + k + "=" + v
 

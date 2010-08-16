@@ -24,6 +24,7 @@
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import errno
 import os
 import urlparse
 
@@ -1389,6 +1390,213 @@ class UnsupportedRepositoryURIAttribute(PublisherError):
                     "attr": self.data, "scheme": self._args["scheme"] }
 
 
+class SigningException(ApiException):
+        """The base class for exceptions related to manifest signing."""
+
+        def __init__(self, pfmri=None, sig=None):
+                self.pfmri = pfmri
+                self.sig = sig
+
+        # This string method is used by subclasses to fill in the details
+        # about the package and signature involved.
+        def __str__(self):
+                if self.pfmri:
+                        if self.sig:
+                                return _("The relevant signature action is "
+                                    "found in %(pfmri)s and has a hash of "
+                                    "%(hsh)s") % \
+                                    {"pfmri": self.pfmri, "hsh": self.sig.hash}
+                        return _("The package involved is:%s") % self.pfmri
+                if self.sig:
+                        return _("The relevant signature action's value "
+                            "attribute is %s") % self.sig.attrs["value"]
+                return ""
+
+
+class BadFileFormat(SigningException):
+        """Exception used when a key, certificate or CRL file is not in a
+        recognized format."""
+
+        def __init__(self, txt):
+                self.txt = txt
+
+        def __str__(self):
+                return self.txt
+       
+
+class UnsupportedSignatureVersion(SigningException):
+        """Exception used when a signature reports a version which this version
+        of pkg(5) doesn't support."""
+
+        def __init__(self, version, *args, **kwargs):
+                SigningException.__init__(self, *args, **kwargs)
+                self.version = version
+
+        def __str__(self):
+                return _("The signature action %(act)s was made using a "
+                    "version (%(ver)s) this version of pkg(5) doesn't "
+                    "understand.") % {"act":self.sig, "ver":self.version}
+
+
+class CertificateException(SigningException):
+        """Base class for exceptions encountered while establishing the chain
+        of trust."""
+
+        def __init__(self, cert, pfmri=None):
+                SigningException.__init__(self, pfmri)
+                self.cert = cert
+
+
+class ModifiedCertificateException(CertificateException):
+        """Exception used when a certificate does not match its expected hash
+        value."""
+
+        def __init__(self, cert, path, pfmri=None):
+                CertificateException.__init__(self, cert, pfmri)
+                self.path = path
+        
+        def __str__(self):
+                return _("Certificate %s has been modified on disk. Its hash "
+                    "value is not what was expected.") % self.path
+
+
+class UntrustedSelfSignedCert(CertificateException):
+        """Exception used when a chain of trust is rooted in an untrusted
+        self-signed certificate."""
+
+        def __str__(self):
+                return _("Chain was rooted in an untrusted self-signed "
+                    "certificate.\n") + CertificateException.__str__(self)
+
+
+class BrokenChain(CertificateException):
+        """Exception used when a chain of trust can not be established between
+        the leaf certificate and a trust anchor."""
+
+        def __init__(self, cert, cert_exceptions, *args, **kwargs):
+                CertificateException.__init__(self, cert, *args, **kwargs)
+                self.ext_exs = cert_exceptions
+        
+        def __str__(self):
+                s = ""
+                if self.ext_exs:
+                        s = _("The following problems were encountered:\n") + \
+                        "\n".join([str(e) for e in self.ext_exs])
+                return _("The certificate which issued this "
+                    "certificate:%(subj)s could not be found. The issuer "
+                    "is:%(issuer)s\n") % {"subj":self.cert.get_subject(),
+                    "issuer":self.cert.get_issuer()} + s + \
+                    CertificateException.__str__(self)
+
+
+class RevokedCertificate(CertificateException):
+        """Exception used when a chain of trust contains a revoked certificate.
+        """
+
+        def __init__(self, cert, reason, *args, **kwargs):
+                CertificateException.__init__(self, cert, *args, **kwargs)
+                self.reason = reason
+
+        def __str__(self):
+                return _("This certificate was revoked:%(cert)s for this "
+                    "reason:\n%(reason)s") % {"cert":self.cert.get_subject(),
+                    "reason":self.reason} + CertificateException.__str__(self)
+
+
+class UnverifiedSignature(SigningException):
+        """Exception used when a signature could not be verified by the
+        expected certificate."""
+
+        def __init__(self, sig, reason, pfmri=None):
+                SigningException.__init__(self, pfmri)
+                self.sig = sig
+                self.reason = reason
+
+        def __str__(self):
+                if self.pfmri:
+                        return _("A signature in %(pfmri)s could not be "
+                            "verified for "
+                            "this reason:\n%(reason)s\nThe signature's hash is "
+                            "%(hash)s") % {"pfmri": self.pfmri,
+                            "reason": self.reason,
+                            "hash": self.sig.hash}
+                return _("The signature with this signature value:\n"
+                    "%(sigval)s\n could not be verified for this reason:\n"
+                    "%(reason)s\n") % {"reason": self.reason,
+                    "sigval": self.sig.attrs["value"]}
+
+
+class RequiredSignaturePolicyException(SigningException):
+        """Exception used when signatures were required but none were found."""
+
+        def __init__(self, pub, pfmri=None):
+                SigningException.__init__(self, pfmri)
+                self.pub = pub
+
+        def __str__(self):
+                pub_str = self.pub.prefix
+                if self.pfmri:
+                        return _("The policy for %(pub_str)s requires "
+                            "signatures to be present but no signature was "
+                            "found in %(fmri_str)s.") % \
+                            {"pub_str": pub_str, "fmri_str": self.pfmri}
+                return _("The policy for %(pub_str)s requires signatures to be "
+                    "present but no signature was found.") % {
+                    "pub_str": pub_str}
+
+
+class MissingRequiredNamesException(SigningException):
+        """Exception used when a signature policy required names to be seen
+        which weren't seen."""
+
+        def __init__(self, pub, missing_names, pfmri=None):
+                SigningException.__init__(self, pfmri)
+                self.pub = pub
+                self.missing_names = missing_names
+
+        def __str__(self):
+                pub_str = self.pub.prefix
+                if self.pfmri:
+                        return _("The policy for %(pub_str)s requires certain "
+                            "CNs to be seen in a chain of trust. The following "
+                            "required names couldn't be found for this "
+                            "package:%(fmri_str)s.\n%(missing)s") % \
+                            {"pub_str": pub_str, "fmri_str": self.pfmri,
+                            "missing": "\n".join(self.missing_names)}
+                return _("The policy for %(pub_str)s requires certain CNs to "
+                    "be seen in a chain of trust. The following required names "
+                    "couldn't be found.\n%(missing)s") % {"pub_str": pub_str,
+                    "missing": "\n".join(self.missing_names)}
+
+class UnsupportedCriticalExtension(SigningException):
+        """Exception used when a certificate in the chain of trust uses a
+        critical extension pkg5 doesn't understand."""
+
+        def __init__(self, cert, ext):
+                SigningException.__init__(self)
+                self.cert = cert
+                self.ext = ext
+
+        def __str__(self):
+                return _("The certificate whose subject is %(cert)s could not "
+                    "be verified "
+                    "because it uses a critical extension that pkg5 cannot "
+                    "handle yet.\nExtension name:%(name)s\nExtension "
+                    "value:%(val)s") % {"cert": self.cert.get_subject(),
+                    "name":self.ext.get_name(), "val":self.ext.get_value()}
+
+
+class InvalidPropertyValue(ApiException):
+        """Exception used when a property was set to an invalid value."""
+
+        def __init__(self, s):
+                ApiException.__init__(self)
+                self.str = s
+
+        def __str__(self):
+                return self.str
+
+
 class CertificateError(ApiException):
         """Base exception class for all certificate exceptions."""
 
@@ -1629,3 +1837,13 @@ class CreatingImageInNonEmptyDir(ImageCreationException):
         def __str__(self):
                 return _("the specified image path is not empty: %s.\nTo "
                     "override, use the -f (force) option.") % self.path
+
+
+def convert_environment_error(e, ignored_errors=EmptyI):
+        if e.errno in ignored_errors:
+                return None
+        if e.errno in (errno.EACCES, errno.EPERM):
+                return PermissionsException(e.filename)
+        if e.errno == errno.EROFS:
+                return ReadOnlyFileSystemException(e.filename)
+        return e

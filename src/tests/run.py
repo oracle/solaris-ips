@@ -396,6 +396,7 @@ if __name__ == "__main__":
                     "%s/cherrypy" % vp,
                     "%s/ply" % vp,
                     "%s/mako" % vp,
+                    "%s/M2Crypto" % vp,
                     # This removes test-related stuff, as well as compiled
                     # expressions such as Mako templates and filters.
                     ""

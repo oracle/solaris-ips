@@ -111,6 +111,11 @@ Subcommands:
         pkgrepo rebuild [--no-index]
         pkgrepo refresh [--no-catalog] [--no-index]
 
+        pkgrepo add-signing-ca-cert path ...
+        pkgrepo add-signing-intermediate-cert path ...
+        pkgrepo remove-signing-ca-cert hash ...
+        pkgrepo remove-signing-intermediate-cert hash ...
+
         pkgrepo version
         pkgrepo help
 
@@ -173,6 +178,52 @@ def get_repo(conf, read_only=True, refresh_index=False):
                 raise sr.RepositoryInvalidError(str(repo_uri))
         return sr.Repository(auto_create=False, read_only=read_only,
             refresh_index=refresh_index, repo_root=path)
+
+
+def subcmd_add_signing_ca_cert(conf, args):
+        subcommand = "add-signing-ca-cert"
+        repo = get_repo(conf, read_only=False)
+        opts, pargs = getopt.getopt(args, "")
+
+        if len(pargs) < 1:
+                usage(_("At least one path to a certificate must be provided."))
+
+        fps = [os.path.abspath(f) for f in pargs]
+        repo.add_signing_certs(fps, ca=True)
+
+
+def subcmd_add_signing_intermediate_cert(conf, args):
+        subcommand = "add-signing-intermediate-cert"
+        repo = get_repo(conf, read_only=False)
+        opts, pargs = getopt.getopt(args, "")
+
+        if len(pargs) < 1:
+                usage(_("At least one path to a certificate must be provided."))
+
+        fps = [os.path.abspath(f) for f in pargs]
+        repo.add_signing_certs(fps, ca=False)
+
+
+def subcmd_remove_signing_ca_cert(conf, args):
+        subcommand = "remove-signing-ca-cert"
+        repo = get_repo(conf, read_only=False)
+        opts, pargs = getopt.getopt(args, "")
+
+        if len(pargs) < 1:
+                usage(_("At least one certificate hash must be provided."))
+
+        repo.remove_signing_certs(pargs, ca=True)
+
+
+def subcmd_remove_signing_intermediate_cert(conf, args):
+        subcommand = "remove-signing-intermediate-cert"
+        repo = get_repo(conf, read_only=False)
+        opts, pargs = getopt.getopt(args, "")
+
+        if len(pargs) < 1:
+                usage(_("At least one certificate hash must be provided."))
+
+        repo.remove_signing_certs(pargs, ca=False)
 
 
 def subcmd_create(conf, args):

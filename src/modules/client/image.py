@@ -49,6 +49,7 @@ import pkg.client.imageplan             as imageplan
 import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
+import pkg.client.sigpolicy             as sigpolicy
 import pkg.client.transport.transport   as transport
 import pkg.fmri
 import pkg.manifest                     as manifest
@@ -56,6 +57,7 @@ import pkg.misc                         as misc
 import pkg.portable                     as portable
 import pkg.server.catalog
 import pkg.version
+import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
@@ -209,6 +211,8 @@ class Image(object):
                 self.__lock = pkg.nrlock.NRLock()
                 self.__locked = False
                 self.__lockf = None
+                self.__sig_policy = None
+                self.__trust_anchors = None
 
                 # When users and groups are added before their database files
                 # have been installed, the actions store them temporarily in the
@@ -259,6 +263,52 @@ class Image(object):
 
                 # This is used to cache image catalogs.
                 self.__catalogs = {}
+
+        @property
+        def signature_policy(self):
+                """Returns the signature policy for this image."""
+
+                if self.__sig_policy is not None:
+                        return self.__sig_policy
+                if not self.cfg_cache:
+                        self.__load_config()
+                txt = self.cfg_cache.get_policy_str(
+                    imageconfig.SIGNATURE_POLICY)
+                names = self.cfg_cache.properties.get(
+                    "signature-required-names", [])
+                self.__sig_policy = sigpolicy.Policy.policy_factory(txt, names)
+                return self.__sig_policy
+
+        @property
+        def trust_anchors(self):
+                """Return a dictionary mapping subject hashes for certificates
+                this image trusts to those certs."""
+
+                if self.__trust_anchors is not None:
+                        return self.__trust_anchors
+                if not self.cfg_cache:
+                        self.__load_config()
+                trust_anchor_loc = self.cfg_cache.properties.get(
+                    "trust-anchor-directory", "/etc/certs/CA/")
+                if not os.path.isdir(trust_anchor_loc):
+                        raise api_errors.InvalidPropertyValue(_("The trust "
+                            "anchor for the image were expected to be found "
+                            "in %s, but that is not a directory.  Please set "
+                            "the image property 'trust-anchor-directory' to "
+                            "the correct path.") % trust_anchor_loc)
+                self.__trust_anchors = {}
+                for fn in os.listdir(trust_anchor_loc):
+                        pth = os.path.join(trust_anchor_loc, fn)
+                        if os.path.islink(pth):
+                                continue
+                        trusted_ca = m2.X509.load_cert(pth)
+                        # M2Crypto's subject hash doesn't match openssl's
+                        # subject hash so recompute it so all hashes are in the
+                        # same universe.
+                        s = trusted_ca.get_subject().as_hash()
+                        self.__trust_anchors.setdefault(s, [])
+                        self.__trust_anchors[s].append(trusted_ca)
+                return self.__trust_anchors
 
         @property
         def locked(self):
@@ -630,7 +680,7 @@ class Image(object):
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
         def create(self, pubs, facets=EmptyDict, is_zone=False,  progtrack=None,
-            refresh_allowed=True, variants=EmptyDict):
+            props=EmptyDict, refresh_allowed=True, variants=EmptyDict):
                 """Creates a new image with the given attributes if it does not
                 exist; should not be used with an existing image.
 
@@ -644,6 +694,9 @@ class Image(object):
                 allowed.
 
                 'progtrack' is an optional ProgressTracker object.
+
+                'props' is an option dictionary mapping image property names to
+                values.
 
                 'variants' is an optional dictionary of variant names and
                 values.
@@ -659,6 +712,8 @@ class Image(object):
                 self.cfg_cache = imageconfig.ImageConfig(self.root,
                     self._get_publisher_meta_dir())
                 self.history.log_operation_start("image-create")
+
+                self.cfg_cache.properties.update(props)
 
                 # Determine and add the default variants for the image.
                 if is_zone:
@@ -680,7 +735,7 @@ class Image(object):
                 # Since multiple publishers are allowed, they are all
                 # added at once without any publisher data retrieval.
                 # A single retrieval is then performed afterwards, if
-                # allowed, to nimimize the amount of work the client
+                # allowed, to minimize the amount of work the client
                 # needs to perform.
                 for p in pubs:
                         self.add_publisher(p, refresh_allowed=False,
@@ -869,10 +924,10 @@ class Image(object):
                                 self.cfg_cache.preferred_publisher = pub.prefix
                                 self.save_config()
 
-        def set_property(self, prop_name, prop_value):
+        def set_property(self, prop_name, prop_values):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("set-property"):
-                        self.cfg_cache.properties[prop_name] = prop_value
+                        self.cfg_cache.properties[prop_name] = prop_values
                         self.save_config()
 
         def get_property(self, prop_name):
@@ -885,6 +940,41 @@ class Image(object):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("unset-property"):
                         del self.cfg_cache.properties[prop_name]
+                        self.save_config()
+
+        def add_property_value(self, prop_name, prop_value):
+                assert prop_name != "preferred-publisher"
+                with self.locked_op("add-property-value"):
+                        t = self.cfg_cache.properties.setdefault(prop_name, [])
+                        if not isinstance(t, list):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot add a value to a single valued "
+                                    "property. The property name is:%(name)s "
+                                    "and the current value is:%(value)s") %
+                                    {"name":prop_name, "value":t})
+                        self.cfg_cache.properties[prop_name].append(prop_value)
+                        self.save_config()
+
+        def remove_property_value(self, prop_name, prop_value):
+                assert prop_name != "preferred-publisher"
+                with self.locked_op("remove-property-value"):
+                        t = self.cfg_cache.properties.get(prop_name, None)
+                        if not isinstance(t, list):
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot remove a value from a single "
+                                    "valued property, unset must be used. The "
+                                    "property name is:%(name)s and the current "
+                                    "value is:%(value)s") %
+                                    {"name":prop_name, "value":t})
+                        try:
+                                self.cfg_cache.properties[prop_name].remove(
+                                    prop_value)
+                        except ValueError:
+                                raise api_errors.InvalidPropertyValue(_(
+                                    "Cannot remove the value %(value)s from "
+                                    "the property %(name)s because the value "
+                                    "is not in the property's list.") %
+                                    {"value":prop_value, "name":prop_name})
                         self.save_config()
 
         def destroy(self):
@@ -913,7 +1003,8 @@ class Image(object):
                 for p in self.cfg_cache.properties:
                         yield p
 
-        def add_publisher(self, pub, refresh_allowed=True, progtrack=None):
+        def add_publisher(self, pub, refresh_allowed=True, progtrack=None,
+            approved_cas=EmptyI, revoked_cas=EmptyI, unset_cas=EmptyI):
                 """Adds the provided publisher object to the image
                 configuration.
 
@@ -957,6 +1048,11 @@ class Image(object):
                                         pub.validate_config()
                                         self.refresh_publishers(pubs=[pub],
                                             progtrack=progtrack)
+                                        # Check that all CA certs claimed by
+                                        # this publisher validate against the
+                                        # trust anchors for this image.
+                                        self.signature_policy.check_cas(pub,
+                                            self.trust_anchors)
                                 except Exception, e:
                                         # Remove the newly added publisher since
                                         # it is invalid or the retrieval failed.
@@ -969,6 +1065,28 @@ class Image(object):
                                         self.cfg_cache.remove_publisher(
                                             pub.prefix)
                                         raise
+
+                        for ca in approved_cas:
+                                try:
+                                        ca = os.path.abspath(ca)
+                                        fh = open(ca, "rb")
+                                        s = fh.read()
+                                        fh.close()
+                                except EnvironmentError, e:
+                                        if e.errno == errno.ENOENT:
+                                                raise api_errors.MissingFileArgumentException(
+                                                    ca)
+                                        elif e.errno == errno.EACCES:
+                                                raise api_errors.PermissionsException(ca)
+                                        raise
+                                pub.approve_ca_cert(s, manual=True)
+
+                        for hsh in revoked_cas:
+                                pub.revoke_ca_cert(hsh)
+
+                        for hsh in unset_cas:
+                                pub.unset_ca_cert(hsh)
+                        
 
                         # Only after success should the configuration be saved.
                         self.save_config()
@@ -988,7 +1106,23 @@ class Image(object):
                 'args' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
-                for act in self.get_manifest(fmri).gen_actions(
+                pub = self.get_publisher(prefix=fmri.get_publisher())
+                manf = self.get_manifest(fmri)
+                try:
+                        sig_pol = self.signature_policy.combine(
+                            pub.signature_policy)
+                        sig_pol.check_cas(pub, self.trust_anchors)
+                        sig_pol.process_signatures(
+                            manf.gen_actions_by_type(
+                                "signature", self.list_excludes()),
+                            manf.gen_actions(), pub)
+                except api_errors.SigningException, e:
+                        e.pfmri = fmri
+                        yield e.sig, [e], [], []
+                except api_errors.InvalidResourceLocation, e:
+                        yield [], [e], [], []
+
+                for act in manf.gen_actions(
                     self.list_excludes()):
                         errors, warnings, info = act.verify(self, pkg_fmri=fmri,
                             **args)

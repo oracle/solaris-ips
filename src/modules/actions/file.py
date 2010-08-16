@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -53,6 +52,8 @@ class FileAction(generic.Action):
         name = "file"
         key_attr = "path"
         globally_unique = True
+
+        has_payload = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

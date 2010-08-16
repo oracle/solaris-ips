@@ -51,6 +51,7 @@ import pkg.server.transaction as trans
 import pkg.version as version
 
 from pkg.misc import EmptyI, EmptyDict
+from pkg.pkggzip import PkgGzipFile
 
 class RepositoryError(Exception):
         """Base exception class for all Repository exceptions."""
@@ -231,8 +232,9 @@ class Repository(object):
                 if self.mirror:
                         self.__required_dirs = [self.file_root]
                 else:
-                        self.__required_dirs = [self.trans_root, self.manifest_root,
-                            self.catalog_root, self.file_root]
+                        self.__required_dirs = [self.trans_root,
+                            self.manifest_root, self.catalog_root,
+                            self.file_root]
 
                 # Ideally, callers would just specify overrides for the feed
                 # cache root, index_root, etc.  But this must be set after all
@@ -478,6 +480,16 @@ class Repository(object):
                 if not manifest:
                         manifest = self._get_manifest(pfmri, sig=True)
                 c = self.catalog
+                c.add_package(pfmri, manifest=manifest)
+
+        def __replace_package(self, pfmri, manifest=None):
+                """Private version; caller responsible for repository
+                locking."""
+
+                if not manifest:
+                        manifest = self._get_manifest(pfmri, sig=True)
+                c = self.catalog
+                c.remove_package(pfmri)
                 c.add_package(pfmri, manifest=manifest)
 
         def __check_search(self):
@@ -1118,6 +1130,32 @@ class Repository(object):
                 finally:
                         self.__unlock_repository()
 
+        def add_file(self, trans_id, data, size=None):
+                """Adds a certificate to a transaction with the specified
+                Transaction ID."""
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                self.__lock_repository()
+                try:
+                        try:
+                                t = self.__in_flight_trans[trans_id]
+                        except KeyError:
+                                raise RepositoryInvalidTransactionIDError(
+                                    trans_id)
+
+                        try:
+                                t.add_file(data, size)
+                        except trans.TransactionError, e:
+                                raise RepositoryError(e)
+                finally:
+                        self.__unlock_repository()
+
         def add_package(self, pfmri):
                 """Adds the specified FMRI to the repository's catalog."""
 
@@ -1131,6 +1169,24 @@ class Repository(object):
                 self.__lock_repository()
                 try:
                         self.__add_package(pfmri)
+                        self.__save_catalog()
+                finally:
+                        self.__unlock_repository()
+
+        def replace_package(self, pfmri):
+                """Replaces the information for the specified FMRI in the
+                repository's catalog."""
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                self.__lock_repository()
+                try:
+                        self.__replace_package(pfmri)
                         self.__save_catalog()
                 finally:
                         self.__unlock_repository()
@@ -1285,6 +1341,30 @@ class Repository(object):
                         try:
                                 t = trans.Transaction()
                                 t.open(self, client_release, pfmri)
+                                self.__in_flight_trans[t.get_basename()] = t
+                                return t.get_basename()
+                        except trans.TransactionError, e:
+                                raise RepositoryError(e)
+                finally:
+                        self.__unlock_repository()
+
+        def append(self, client_release, pfmri):
+                """Starts an append transaction for the specified client
+                release and FMRI.  Returns the Transaction ID for the new
+                transaction."""
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
+
+                self.__lock_repository()
+                try:
+                        try:
+                                t = trans.Transaction()
+                                t.append(self, client_release, pfmri)
                                 self.__in_flight_trans[t.get_basename()] = t
                                 return t.get_basename()
                         except trans.TransactionError, e:
@@ -1449,6 +1529,22 @@ class Repository(object):
                 entry = c.get_entry(pfmri)
                 return entry is None
 
+        def valid_append_fmri(self, pfmri):
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if not self.repo_root:
+                        raise RepositoryUnsupportedOperationError()
+                if not fmri.is_valid_pkg_name(pfmri.get_name()):
+                        return False
+                if not pfmri.version:
+                        return False
+                if not pfmri.version.timestr:
+                        return False
+
+                c = self.catalog
+                entry = c.get_entry(pfmri)
+                return entry
+
         def write_config(self):
                 """Save the repository's current configuration data."""
 
@@ -1457,6 +1553,54 @@ class Repository(object):
                         self.__write_config()
                 finally:
                         self.__unlock_repository()
+
+        def add_signing_certs(self, cert_paths, ca, write_config=True):
+                """Add the certificates stored in the given paths to the
+                files in the repository and as properties of the publisher.
+                Whether the certificates are added as CA certificates or
+                intermediate certificates is determined by the 'ca' parameter.
+                """
+
+                hshs = []
+                
+                for p in cert_paths:
+                        # Get the hash of the file.
+                        hsh, s = misc.get_data_digest(p, return_content=True)
+                        hshs.append(hsh)
+                        if self.read_only:
+                                if not self.cache_store.lookup(hsh):
+                                        raise RepositoryReadOnlyError(hsh)
+                        else:
+                                # The temporary file is moved into place by the
+                                # insert.
+                                fd, pth = tempfile.mkstemp()
+                                gfh = PkgGzipFile(filename=pth, mode="wb")
+                                gfh.write(s)
+                                gfh.close()
+                                self.cache_store.insert(hsh, pth)
+                prop_name = "intermediate_certs"
+                if ca:
+                        prop_name = "signing_ca_certs"
+                t = set(self.cfg.get_property("publisher", prop_name))
+                t.update(hshs)
+                self.cfg.set_property("publisher", prop_name, sorted(t))
+                if write_config:
+                        self.write_config()
+
+        def remove_signing_certs(self, hshs, ca, write_config=True):
+                """Remove the given hashes from the certificates configured
+                for the publisher.  Whether the hashes are removed from the
+                list of CA certificates or the list of intermediate certificates
+                is determined by the 'ca' parameter. """
+
+                prop_name = "intermediate_certs"
+                if ca:
+                        prop_name = "signing_ca_certs"
+                t = set(self.cfg.get_property("publisher", prop_name))
+                t.difference_update(hshs)
+                self.cfg.set_property("publisher", prop_name, sorted(t))
+                if write_config:
+                        self.write_config()
 
         catalog_root = property(__get_catalog_root, __set_catalog_root)
         file_root = property(__get_file_root, __set_file_root)
@@ -1494,6 +1638,8 @@ class RepositoryConfig(object):
                 cfg.PropertySection("publisher", [
                     cfg.PropPublisher("alias"),
                     cfg.PropPublisher("prefix"),
+                    cfg.PropList("signing_ca_certs"),
+                    cfg.PropList("intermediate_certs"),
                 ]),
                 cfg.PropertySection("repository", [
                     cfg.PropDefined("collection_type", ["core",

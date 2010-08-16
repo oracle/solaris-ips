@@ -28,6 +28,7 @@ depend fmri=pkg:/developer/build/make type=require
 depend fmri=pkg:/developer/build/onbld type=require
 depend fmri=pkg:/developer/gnome/gettext type=require
 depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
+depend fmri=pkg:/developer/swig type=require
 depend fmri=pkg:/developer/versioning/mercurial type=require
 depend fmri=pkg:/library/python-2/setuptools-26 type=require
 depend fmri=pkg:/package/svr4 type=require
