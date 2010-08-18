@@ -19,9 +19,9 @@
 #
 # CDDL HEADER END
 #
+
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
@@ -46,6 +46,7 @@ ZONENAME=$1
 ZONEPATH=$2
 state=$3
 cmd=$4
+ALTROOT=$5
 
 # If we're not halting the zone, then just return.
 if [ $cmd -eq 4 ]; then

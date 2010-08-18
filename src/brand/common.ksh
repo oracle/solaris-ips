@@ -83,7 +83,13 @@ fail_usage() {
 }
 
 is_brand_labeled() {
-	brand=$(/usr/sbin/zoneadm -z $ZONENAME list -p | awk -F: '{print $6}')
+	if [ -z $ALTROOT ]; then
+		AR_OPTIONS=""
+	else
+		AR_OPTIONS="-R $ALTROOT"
+	fi
+	brand=$(/usr/sbin/zoneadm $AR_OPTIONS -z $ZONENAME \
+		list -p | awk -F: '{print $6}')
 	[[ $brand == "labeled" ]] && return 1
 	return 0
 }
@@ -136,18 +142,31 @@ sanity_check() {
 
 get_current_gzbe() {
 	#
-	# If there is no beadm command then the system doesn't really
-	# support multiple boot environments.  We still want zones to work,
-	# so simulate the existence of a single boot environment.
+	# If there is no alternate root (normal case) then set the
+	# global zone boot environment by finding the boot environment
+	# that is active now.
+	# If a zone exists in a boot environment mounted on an alternate root,
+	# then find the boot environment where the alternate root is mounted.
 	#
 	if [ -x /usr/sbin/beadm ]; then
-		CURRENT_GZBE=`/usr/sbin/beadm list -H | /usr/bin/nawk -F\; '{
-			# Field 3 is the BE status.  'N' is the active BE.
-			if ($3 ~ "N")
-				# Field 2 is the BE UUID
-				print $2
+		CURRENT_GZBE=`/usr/sbin/beadm list -H | /usr/bin/nawk \
+				-v alt=$ALTROOT -F\; '{
+			if (length(alt) == 0) {
+			    # Field 3 is the BE status.  'N' is the active BE.
+			    if ($3 !~ "N")
+				next
+			} else {
+			    # Field 4 is the BE mountpoint.
+			    if ($4 != alt)
+				next
+			}
+			# Field 2 is the BE UUID
+			print $2
 		}'`
 	else
+		# If there is no beadm command then the system doesn't really
+		# support multiple boot environments.  We still want zones to
+		# work so simulate the existence of a single boot environment.
 		CURRENT_GZBE="opensolaris"
 	fi
 
