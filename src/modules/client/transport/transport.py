@@ -882,6 +882,16 @@ class Transport(object):
                                     ccancel=ccancel, pub=pub)
                                 s = cStringIO.StringIO()
                                 hash_val = misc.gunzip_from_stream(resp, s)
+
+                                if hash_val != fhash:
+                                        exc = tx.InvalidContentException(
+                                            reason="hash failure:  expected: %s"
+                                            "computed: %s" % (fhash, hash_val),
+                                            url=url)
+                                        repostats = self.stats[url]
+                                        repostats.record_error(content=True)
+                                        raise exc
+
                                 content = s.getvalue()
                                 s.close()
 

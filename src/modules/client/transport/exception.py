@@ -273,7 +273,7 @@ class InvalidContentException(TransportException):
         """Raised when the content's hash/chash doesn't verify, or the
         content is received in an unreadable format."""
 
-        def __init__(self, path, reason, size=0, url=None):
+        def __init__(self, path=None, reason=None, size=0, url=None):
                 TransportException.__init__(self)
                 self.path = path
                 self.reason = reason
@@ -282,7 +282,9 @@ class InvalidContentException(TransportException):
                 self.url = url
 
         def __str__(self):
-                s = "Invalid content path %s" % self.path
+                s = "Invalid content"
+                if self.path:
+                        s += "path %s" % self.path
                 if self.reason:
                         s += ": %s." % self.reason
                 if self.url:

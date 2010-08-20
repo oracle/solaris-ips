@@ -19,48 +19,83 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import sys
 import threading
+import traceback
 
 # Rename some stuff so "from pkg.nrlock import *" is safe
 __all__ = [ 'NRLock' ]
 
 def NRLock(*args, **kwargs):
-    return _NRLock(*args, **kwargs)
+        return _NRLock(*args, **kwargs)
 
 class _NRLock(threading._RLock):
-    """Interface and implementation for Non-Reentrant locks.  Derived from
-    RLocks (which are reentrant locks).  The default Python base locking
-    type, threading.Lock(), is non-reentrant but it doesn't support any
-    operations other than aquire() and release(), and we'd like to be able
-    to support things like RLocks._is_owned() so that we can "assert" lock
-    ownership assumptions in our code."""
+        """Interface and implementation for Non-Reentrant locks.  Derived from
+        RLocks (which are reentrant locks).  The default Python base locking
+        type, threading.Lock(), is non-reentrant but it doesn't support any
+        operations other than aquire() and release(), and we'd like to be
+        able to support things like RLocks._is_owned() so that we can "assert"
+        lock ownership assumptions in our code."""
 
-    def __init__(self, verbose=None):
-        threading._RLock.__init__(self, verbose)
+        def __init__(self, verbose=None):
+                threading._RLock.__init__(self, verbose)
 
-    def acquire(self, blocking=1):
-        if self._is_owned():
-            raise NRLockException()
-        rval = threading._RLock.acquire(self, blocking)
-        if rval:
-                self.__locked = True
-        return rval
+        def acquire(self, blocking=1):
+                if self._is_owned():
+                        raise NRLockException("Recursive NRLock acquire")
+                rval = threading._RLock.acquire(self, blocking)
+                if rval:
+                        self.__locked = True
+                return rval
 
-    def release(self):
-        if self._is_owned():
-                self.__locked = False
-        threading._RLock.release(self)
+        @property
+        def locked(self):
+                """A boolean indicating whether the lock is currently locked."""
+                return self.__locked
 
-    @property
-    def locked(self):
-        """A boolean indicating whether the lock is currently locked."""
-        return self.__locked
+        def _debug_lock_release(self):
+                errbuf = ""
+                owner = self._RLock__owner
+                if not owner:
+                        return errbuf
+
+                # Get stack of current owner, if lock is owned.
+                for tid, stack in sys._current_frames().items():
+                        if tid != owner.ident:
+                                continue
+                        errbuf += "Stack of owner:\n"
+                        for filenm, lno, func, txt in \
+                            traceback.extract_stack(stack):
+                                errbuf += "  File: \"%s\", line %d,in %s" \
+                                     % (filenm, lno, func)
+                                if txt:
+                                        errbuf += "\n    %s" % txt.strip()
+                                errbuf += "\n"
+                        break
+
+                return errbuf
+
+        def release(self):
+                try:
+                        if self._is_owned():
+                                self.__locked = False
+                        threading._RLock.release(self)
+                except RuntimeError:
+                        errbuf = "Release of unacquired lock\n"
+                        errbuf += self._debug_lock_release()
+                        raise NRLockException(errbuf)
 
 class NRLockException(Exception):
 
-    def __str__(self):
-        return "recursive NRLock acquire" 
+        def __init__(self, *args, **kwargs):
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self._args = kwargs
+
+        def __str__(self):
+                return str(self.data)
