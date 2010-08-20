@@ -28,7 +28,6 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import os.path
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import shutil
@@ -325,6 +324,14 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                                 shutil.rmtree(rpath)
                         self.pkgsend("file:%s%s" % (slashes, rpath), "create-repository"
                             " --set-property publisher.prefix=test")
+
+                        # Assert that create-repository creates as version 3
+                        # repository for compatibility with older consumers.
+                        for expected in ("catalog", "file", "index", "pkg",
+                            "trans", "tmp", "cfg_cache"):
+                                # A v3 repository must have all of the above.
+                                assert os.path.exists(os.path.join(rpath,
+                                    expected))
 
                         # Now verify that the repository was created by starting the
                         # depot server in readonly mode using the target repository.
@@ -706,9 +713,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                             self.img_path, use_file=True), st.st_gid)
     
         def test_13_pkgsend_indexcontrol(self):
-                """Verify that "pkgsend close --no-index" suppresses
-                indexing and that "pkgsend refresh-index" triggers
-                indexing."""
+                """Verify that "pkgsend refresh-index" triggers indexing."""
 
                 dhurl = self.dc.get_depot_url()
                 dfurl = "file://%s" % urllib.pathname2url(self.dc.get_repodir())
@@ -723,7 +728,11 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.pkgsend(dfurl, "open file@1.0")
                 self.pkgsend(dfurl, "add file %s %s path=/tmp/f.foo" \
                     % ( fpath, "mode=0755 owner=root group=bin" ))
+
+                # Verify that --no-index (even though it is now ignored) can be
+                # specified and doesn't cause pkgsend failure.
                 self.pkgsend(dfurl, "close --no-index")
+                self.wait_repo(self.dc.get_repodir())
 
                 self.dc.start()
                 self.pkg("search file:::", exit=1)
@@ -739,10 +748,10 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
 
                 self.pkgsend(dhurl, "open http@1.0")
                 self.pkgsend(dhurl, "add file %s %s path=/tmp/f.foo" \
-                    % ( fpath, "mode=0755 owner=root group=bin" ))
-                self.pkgsend(dhurl, "close --no-index")
+                    % (fpath, "mode=0755 owner=root group=bin" ))
+                self.pkgsend(dhurl, "close")
 
-                self.dc.wait_search()
+                self.wait_repo(self.dc.get_repodir())
                 self.pkg("search http:::", exit=1)
 
                 self.pkgsend(dhurl, "refresh-index")
@@ -830,9 +839,13 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 # within the same second, so force the version
                                 # to be incremented.
                                 p2 = p.replace("<ver>", str(ver))
-                                self.pkgsend_bulk(url, p2, exit=exit)
-                                #if exit:
-                                #        self.pkgsend(url, "close -A")
+                                try:
+                                        self.pkgsend_bulk(url, p2, exit=exit)
+                                except:
+                                        self.debug("Expected exit code %s "
+                                            "while publishing %s" % (exit,
+                                            p2))
+                                        raise
 
                                 # Then do it line-by-line
                                 for i, l in enumerate(p.splitlines()):
@@ -862,21 +875,32 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 f.close()
                 self.pkgsend("file://%s" % rpath,
                     "create-repository --set-property publisher.prefix=test")
-                cat_path = os.path.join(rpath, "catalog/catalog.attrs")
+
+                repo = self.dc.get_repo()
+                cat_path = repo.catalog_1("catalog.attrs")
                 mtime = os.stat(cat_path).st_mtime
-                self.pkgsend("file://%s publish --fmri-in-manifest --no-catalog %s" % (
-                                rpath, fpath))
+                self.pkgsend("file://%s" % rpath, "publish --fmri-in-manifest "
+                    "--no-catalog %s" % fpath)
                 new_mtime = os.stat(cat_path).st_mtime
-                # check that modified times are the same before and after publication
+                # Check that modified times are the same before and after
+                # publication.
                 self.assertEqual(mtime, new_mtime)
+
+                self.pkgsend("file://%s" % rpath, "open bar@1.0")
+                self.pkgsend("file://%s" % rpath, "close --no-catalog")
+                new_mtime = os.stat(cat_path).st_mtime
+                # Check that modified times are the same before and after
+                # publication
+                self.assertEqual(mtime, new_mtime)
+
+                # Now start depot and verify both packages are visible when
+                # set to add content on startup.
                 self.dc.set_add_content()
-
                 self.dc.start()
-
                 dhurl = self.dc.get_depot_url()
                 self.dc.set_repodir(rpath)
                 self.image_create(dhurl)
-                self.pkg("list -a foo")
+                self.pkg("list -a bar foo")
                 self.image_destroy()
 
         def test_16_multiple_manifests(self):

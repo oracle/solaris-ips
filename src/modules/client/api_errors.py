@@ -671,16 +671,6 @@ class SearchException(ApiException):
         pass
 
 
-class MainDictParsingException(SearchException):
-        """This is used when the main dictionary could not parse a line."""
-        def __init__(self, e):
-                SearchException.__init__(self)
-                self.e = e
-
-        def __str__(self):
-                return str(self.e)
-
-
 class MalformedSearchRequest(SearchException):
         """Raised when the server cannot understand the format of the
         search request."""
@@ -786,6 +776,18 @@ class CorruptedIndexException(IndexingException):
 class InconsistentIndexException(IndexingException):
         """This is used when the existing index is found to have inconsistent
         versions."""
+        def __init__(self, e):
+                IndexingException.__init__(self, e)
+                self.exception = e
+
+        def __str__(self):
+                return str(self.exception)
+
+
+class IndexLockedException(IndexingException):
+        """This is used when an attempt to modify an index locked by another
+        process or thread is made."""
+
         def __init__(self, e):
                 IndexingException.__init__(self, e)
                 self.exception = e
@@ -1069,6 +1071,13 @@ class BadPublisherMetaRoot(PublisherError):
                 return _("Publisher meta_root '%(root)s' is invalid; unable "
                     "to complete operation: '%(op)s'.") % { "root": self.data,
                     "op": self._args.get("operation", None) }
+
+
+class BadPublisherAlias(PublisherError):
+        """Used to indicate that a publisher alias is not valid."""
+
+        def __str__(self):
+                return _("'%s' is not a valid publisher alias.") % self.data
 
 
 class BadPublisherPrefix(PublisherError):
@@ -1755,7 +1764,7 @@ class NotYetValidCertificate(CertificateError):
 
 
 class ServerReturnError(ApiException):
-        """This exception is used when the server reutrns a line which the
+        """This exception is used when the server returns a line which the
         client cannot parse correctly."""
 
         def __init__(self, line):

@@ -175,7 +175,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
-
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -218,7 +217,8 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11),
+                    refresh_index=True)
                 self.image_create(self.rurl)
 
                 self.pkg("list -a")
@@ -3161,7 +3161,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # Copy contents of test1's repo to a repo for test3.
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[7].get_repodir()
-                self.copy_repository(d1dir, "test1", d2dir, "test3")
+                self.copy_repository(d1dir, d2dir, { "test1": "test3" })
                 self.dcs[7].get_repo(auto_create=True).rebuild()
 
                 # Create image and hence primary publisher
@@ -4932,7 +4932,7 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 with open(mpath, "rb") as mfile:
                         mcontent = mfile.read()
 
-                cat = repo.catalog
+                cat = repo.get_catalog("test")
                 cat.log_updates = False
 
                 # Update the catalog signature.

@@ -62,7 +62,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # as those in the first ... by duplicating the repo.
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
-                self.copy_repository(d1dir, "test1", d2dir, "test2")
+                self.copy_repository(d1dir, d2dir, { "test1": "test2" })
                 self.dcs[2].get_repo(auto_create=True).rebuild()
 
                 self.image_create(rurl1, prefix="test1")

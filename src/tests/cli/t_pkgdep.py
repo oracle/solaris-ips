@@ -692,8 +692,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 expected = set(expected.splitlines())
                 seen_but_not_expected = self.__compare_res(seen, expected)
                 expected_but_not_seen = self.__compare_res(expected, seen)
-                self.assertEqualDiff(seen_but_not_expected,
-                    expected_but_not_seen)
+                self.assertEqualDiff(expected_but_not_seen,
+                    seen_but_not_expected)
 
         def test_opts(self):
                 """Ensure that incorrect arguments don't cause a traceback."""

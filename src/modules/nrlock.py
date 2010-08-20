@@ -45,7 +45,20 @@ class _NRLock(threading._RLock):
     def acquire(self, blocking=1):
         if self._is_owned():
             raise NRLockException()
-        return threading._RLock.acquire(self, blocking)
+        rval = threading._RLock.acquire(self, blocking)
+        if rval:
+                self.__locked = True
+        return rval
+
+    def release(self):
+        if self._is_owned():
+                self.__locked = False
+        threading._RLock.release(self)
+
+    @property
+    def locked(self):
+        """A boolean indicating whether the lock is currently locked."""
+        return self.__locked
 
 class NRLockException(Exception):
 

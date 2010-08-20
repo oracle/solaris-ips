@@ -219,7 +219,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
+                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11),
+                    refresh_index=True)
                 api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
@@ -230,8 +231,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("search -l /lib/libc.so.1")
                 self.pkg("search -r /lib/libc.so.1")
-                self.pkg("search -l blah", exit = 1)
-                self.pkg("search -r blah", exit = 1)
+                self.pkg("search -l blah", exit=1)
+                self.pkg("search -r blah", exit=1)
 
                 # check to make sure timestamp was set to correct value
                 libc_path = os.path.join(self.get_img_path(), "lib/libc.so.1")
@@ -260,12 +261,12 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_install(api_obj, ["foo@1.0"])
 
                 self.pkg("list foo@1.0")
-                self.pkg("list foo@1.1", exit = 1)
+                self.pkg("list foo@1.1", exit=1)
 
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.1"])
                 self.pkg("list foo@1.1")
-                self.pkg("list foo@1.0", exit = 1)
+                self.pkg("list foo@1.0", exit=1)
                 self.pkg("list foo@1")
                 self.pkg("verify")
 
@@ -291,9 +292,27 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_uninstall(api_obj, ["bar", "foo"])
 
                 # foo and bar should not be installed at this point
-                self.pkg("list bar", exit = 1)
-                self.pkg("list foo", exit = 1)
+                self.pkg("list bar", exit=1)
+                self.pkg("list foo", exit=1)
                 self.pkg("verify")
+
+        def test_multi_publisher(self):
+                """ Verify that package install works as expected when multiple
+                publishers share the same repository. """
+
+                # Publish a package for 'test'.
+                self.pkgsend_bulk(self.rurl, self.bar10)
+
+                # Now change the default publisher to 'test2' and publish
+                # another package.
+                self.pkgrepo("set -s %s publisher/prefix=test2" % self.rurl)
+                self.pkgsend_bulk(self.rurl, self.foo10)
+
+                # Finally, create an image and verify that packages from
+                # both publishers may be installed.
+                api_obj = self.image_create(self.rurl, prefix=None)
+                self.__do_install(api_obj, ["pkg://test/bar@1.0",
+                    "pkg://test2/foo@1.0"])
 
         def test_pkg_file_errors(self):
                 """ Verify that package install and uninstall works as expected
@@ -483,8 +502,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # be removed by this action.
                 self.__do_uninstall(api_obj, ["foo"], True)
 
-                self.pkg("list bar", exit = 1)
-                self.pkg("list foo", exit = 1)
+                self.pkg("list bar", exit=1)
+                self.pkg("list foo", exit=1)
 
         def test_nonrecursive_dependent_uninstall(self):
                 """Trying to remove a package that's a dependency of another

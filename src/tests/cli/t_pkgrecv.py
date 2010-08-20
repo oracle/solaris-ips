@@ -139,8 +139,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 path = urllib.url2pathname(parts[2])
 
                 try:
-                        return repo.Repository(auto_create=False,
-                            fork_allowed=False, repo_root=path)
+                        return repo.Repository(root=path)
                 except cfg.ConfigError, e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "

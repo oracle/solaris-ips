@@ -124,7 +124,7 @@ def usage(text=None, retcode=2, full=False):
                 sys.exit(retcode)
 
         print """\
-Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
+Usage: /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
            [-t socket_timeout] [--cfg] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--file-root dir] [--log-access dest] [--log-errors dest]
@@ -132,18 +132,18 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [--socket-path] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
            [--sort-file-max-size size] [--writable-root dir]
 
-        -d              The file system path at which the server should find its
+        -d inst_root    The file system path at which the server should find its
                         repository data.  Required unless PKG_REPO has been set
                         in the environment.
-        -p              The port number on which the instance should listen for
+        -p port         The port number on which the instance should listen for
                         incoming package requests.  The default value is 80 if
                         ssl certificate and key information has not been
                         provided; otherwise, the default value is 443.
-        -s              The maximum number of seconds the server should wait for
+        -s threads      The number of threads that will be started to serve
+                        requests.  The default value is 10.
+        -t timeout      The maximum number of seconds the server should wait for
                         a response from a client before closing a connection.
                         The default value is 60.
-        -t              The number of threads that will be started to serve
-                        requests.  The default value is 10.
         --cfg           The pathname of the file to use when reading and writing
                         depot configuration data, or a fully qualified service
                         fault management resource identifier (FMRI) of the SMF
@@ -162,7 +162,7 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         Possible values are: headers.
         --file-root     The path to the root of the file content for a given
                         repository.  This is used to override the default,
-                        <repo_root>/file.
+                        <inst_root>/file or <inst_root>/publisher/<prefix>/file.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -210,7 +210,7 @@ Options:
         --help or -?
 
 Environment:
-        PKG_REPO                Used as default repo_dir if -d not provided.
+        PKG_REPO                Used as default inst_root if -d not provided.
         PKG_DEPOT_CONTENT       Used as default content_root if --content-root
                                 not provided."""
         sys.exit(retcode)
@@ -220,7 +220,6 @@ class OptionError(Exception):
 
         def __init__(self, *args):
                 Exception.__init__(self, *args)
-
 
 if __name__ == "__main__":
 
@@ -386,8 +385,8 @@ if __name__ == "__main__":
                                 rebuild = True
                         elif opt == "--refresh-index":
                                 # Note: This argument is for internal use
-                                # only. It's used when pkg.depotd is reexecing
-                                # itself and needs to know that's the case.
+                                # only.
+                                #
                                 # This flag is purposefully omitted in usage.
                                 # The supported way to forcefully reindex is to
                                 # kill any pkg.depot using that directory,
@@ -395,6 +394,7 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
+                                exit_ready = True
                         elif opt == "--set-property":
                                 try:
                                         prop, p_value = arg.split("=", 1)
@@ -560,7 +560,7 @@ if __name__ == "__main__":
 
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
-        if not reindex and not exit_ready:
+        if not exit_ready:
                 try:
                         cherrypy.process.servers.check_port(HOST_DEFAULT, port)
                 except Exception, e:
@@ -607,7 +607,7 @@ if __name__ == "__main__":
         # Setup SSL if requested.
         key_data = None
         ssl_dialog = dconf.get_property("pkg", "ssl_dialog")
-        if not reindex and ssl_cert_file and ssl_key_file and \
+        if not exit_ready and ssl_cert_file and ssl_key_file and \
             ssl_dialog != "builtin":
                 cmdline = None
                 def get_ssl_passphrase(*ignored):
@@ -737,17 +737,25 @@ if __name__ == "__main__":
         # remaining preparation.
 
         # Initialize repository state.
-        fork_allowed = not reindex and not exit_ready  
+        if not readonly:
+                # Not readonly, so assume a new repository should be created.
+                try:
+                        sr.repository_create(inst_root, properties=repo_props)
+                except sr.RepositoryExistsError:
+                        # Already exists, nothing to do.
+                        pass
+                except (api_errors.ApiException, sr.RepositoryError), _e:
+                        emsg("pkg.depotd: %s" % _e)
+                        sys.exit(1)
+
         try:
                 sort_file_max_size = dconf.get_property("pkg",
                     "sort_file_max_size")
 
-                repo = sr.Repository(auto_create=not readonly,
-                    cfgpathname=repo_config_file, file_root=file_root,
-                    fork_allowed=fork_allowed, log_obj=cherrypy,
-                    mirror=mirror, properties=repo_props, read_only=readonly,
-                    refresh_index=not add_content, repo_root=inst_root,
-                    sort_file_max_size=sort_file_max_size,
+                repo = sr.Repository(cfgpathname=repo_config_file,
+                    file_root=file_root, log_obj=cherrypy, mirror=mirror,
+                    properties=repo_props, read_only=readonly,
+                    root=inst_root, sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except (RuntimeError, sr.RepositoryError), _e:
                 emsg("pkg.depotd: %s" % _e)
@@ -759,14 +767,23 @@ if __name__ == "__main__":
                 emsg("pkg.depotd: %s" % str(_e))
                 sys.exit(1)
 
-        if reindex:
-                # Initializing the repository above updated search indices
-                # as needed; nothing left to do, so exit.
-                sys.exit(0)
+        if not rebuild and not add_content and not repo.mirror and \
+            not (repo.read_only and not repo.writable_root):
+                # Automatically update search indexes on startup if not already
+                # told to, and not in readonly/mirror mode.
+                reindex = True
 
-        if rebuild:
+        if reindex:
                 try:
-                        repo.rebuild()
+                        if repo.root:
+                                repo.refresh_index()
+                except (sr.RepositoryError, search_errors.IndexingException,
+                    api_errors.ApiException), e:
+                        emsg(str(e), "INDEX")
+                        sys.exit(1)
+        elif rebuild:
+                try:
+                        repo.rebuild(build_index=True)
                 except sr.RepositoryError, e:
                         emsg(str(e), "REBUILD")
                         sys.exit(1)
@@ -775,10 +792,10 @@ if __name__ == "__main__":
                     api_errors.PermissionsException), e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
-
         elif add_content:
                 try:
                         repo.add_content()
+                        repo.refresh_index()
                 except sr.RepositoryError, e:
                         emsg(str(e), "ADD_CONTENT")
                         sys.exit(1)
@@ -788,7 +805,7 @@ if __name__ == "__main__":
                         emsg(str(e), "INDEX")
                         sys.exit(1)
 
-        # ready to start depot; exit now if requested
+        # Ready to start depot; exit now if requested.
         if exit_ready:
                 sys.exit(0)
 

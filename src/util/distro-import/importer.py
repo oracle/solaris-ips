@@ -57,7 +57,7 @@ from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.misc import emsg
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
-CLIENT_API_VERSION = 40
+CLIENT_API_VERSION = 42
 PKG_CLIENT_NAME = "importer.py"
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
@@ -575,8 +575,8 @@ def publish_pkg(pkg, proto_dir):
         assert len(svr4_traversal_dict) == len(svr4_traversal_list)
 
         t = trans.Transaction(def_repo, create_repo=file_repo,
-            refresh_index=False, pkg_name=pkg.fmristr(), noexecute=nopublish,
-            xport=xport, pub=def_pub)
+            pkg_name=pkg.fmristr(), noexecute=nopublish, xport=xport,
+            pub=def_pub)
         transaction_id = t.open()
 
         # publish easy actions
@@ -714,7 +714,7 @@ def publish_pkg(pkg, proto_dir):
         for a in depend_actions:
                 publish_action(t, pkg, a)
 
-        pkg_fmri, pkg_state = t.close(refresh_index=False, add_to_catalog=not file_repo)
+        pkg_fmri, pkg_state = t.close(add_to_catalog=not file_repo)
         print "%s: %s\n" % (pkg_fmri, pkg_state)
 
 def search_dicts(path):
@@ -1539,7 +1539,7 @@ def main_func():
         xport_cfg.incoming_download_dir = incoming_dir
 
         def_pub = transport.setup_publisher(def_repo, "default", xport,
-            xport_cfg)
+            xport_cfg, remote_prefix=True)
 
         print "Seeding local SMF manifest database from %s" % def_repo
 

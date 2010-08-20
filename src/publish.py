@@ -201,9 +201,10 @@ def trans_append(repo_uri, args):
 def trans_close(repo_uri, args):
         abandon = False
         trans_id = None
-        refresh_index = True
         add_to_catalog = True
 
+        # --no-index is now silently ignored as the publication process no
+        # longer builds search indexes automatically.
         opts, pargs = getopt.getopt(args, "At:", ["no-index", "no-catalog"])
 
         for opt, arg in opts:
@@ -211,8 +212,6 @@ def trans_close(repo_uri, args):
                         abandon = True
                 elif opt == "-t":
                         trans_id = arg
-                elif opt == "--no-index":
-                        refresh_index = False
                 elif opt == "--no-catalog":
                         add_to_catalog = False
         if trans_id is None:
@@ -223,9 +222,9 @@ def trans_close(repo_uri, args):
                             "$PKG_TRANS_ID."), cmd="close")
 
         xport, pub = setup_transport_and_pubs(repo_uri)
-        t = trans.Transaction(repo_uri, trans_id=trans_id,
-            add_to_catalog=add_to_catalog, xport=xport, pub=pub)
-        pkg_state, pkg_fmri = t.close(abandon, refresh_index)
+        t = trans.Transaction(repo_uri, trans_id=trans_id, xport=xport, pub=pub)
+        pkg_state, pkg_fmri = t.close(abandon=abandon,
+            add_to_catalog=add_to_catalog)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
                         msg(val)
@@ -259,7 +258,6 @@ def trans_publish(repo_uri, fargs):
         basedirs = []
         timestamp_files = []
 
-        refresh_index = True
         add_to_catalog = True
         embedded_fmri = False
 
@@ -335,7 +333,7 @@ def trans_publish(repo_uri, fargs):
 
         xport, pub = setup_transport_and_pubs(repo_uri)
         t = trans.Transaction(repo_uri, pkg_name=pkg_name,
-            refresh_index=refresh_index, xport=xport, pub=pub)
+            xport=xport, pub=pub)
         t.open()
 
         for a in m.gen_actions():
@@ -365,7 +363,7 @@ def trans_publish(repo_uri, fargs):
                         raise
 
         pkg_state, pkg_fmri = t.close(abandon=False,
-            refresh_index=refresh_index, add_to_catalog=add_to_catalog)
+            add_to_catalog=add_to_catalog)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
                         msg(val)
@@ -576,7 +574,8 @@ def trans_refresh_index(repo_uri, args):
 
         xport, pub = setup_transport_and_pubs(repo_uri)
         try:
-                t = trans.Transaction(repo_uri, xport=xport, pub=pub).refresh_index()
+                t = trans.Transaction(repo_uri, xport=xport,
+                    pub=pub).refresh_index()
         except trans.TransactionError, e:
                 error(e, cmd="refresh-index")
                 return 1
@@ -668,8 +667,7 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError, pkg.fmri.IllegalFmri, apx.BadRepositoryURI,
-            apx.UnsupportedRepositoryURI, apx.InvalidPackageErrors), _e:
+            RuntimeError, pkg.fmri.IllegalFmri, apx.ApiException), _e:
                 print >> sys.stderr, "pkgsend: %s" % _e
                 __ret = 1
         except (PipeError, KeyboardInterrupt):

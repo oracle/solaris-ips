@@ -101,10 +101,6 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 t = tempfile.gettempdir()
                 no_dir = os.path.join(t, "not_exist")
 
-                self.check_exception(file_manager.FileManager,
-                    file_manager.NeedToModifyReadOnlyFileManager,
-                    ["create", no_dir], no_dir, readonly=True)
-
                 # Test that a read only FileManager won't modify the file
                 # system.
                 fm = file_manager.FileManager(self.base_dir, readonly=True)

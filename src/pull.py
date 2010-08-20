@@ -196,7 +196,7 @@ def get_repo(uri):
         path = urllib.url2pathname(parts[2])
 
         try:
-                repo = sr.Repository(read_only=True, repo_root=path)
+                repo = sr.Repository(read_only=True, root=path)
         except EnvironmentError, _e:
                 error("an error occurred while trying to " \
                     "initialize the repository directory " \
@@ -391,7 +391,7 @@ def main_func():
         src_pub = None
         targ_pub = None
 
-        temp_root = config_temp_root()
+        temp_root = misc.config_temp_root()
 
         gettext.install("pkg", "/usr/share/locale")
 
@@ -460,7 +460,6 @@ def main_func():
         if pargs == None or len(pargs) == 0:
                 usage(_("must specify at least one pkgfmri"))
 
-        defer_refresh = False
         republish = False
 
         if not target:
@@ -476,10 +475,6 @@ def main_func():
                 # Files have to be decompressed for republishing.
                 keep_compressed = False
                 if target.startswith("file://"):
-                        # For efficiency, and publishing speed, don't update
-                        # indexes until all file publishing is finished.
-                        defer_refresh = True
-
                         # Check to see if the repository exists first.
                         try:
                                 t = trans.Transaction(target, xport=xport,
@@ -603,8 +598,7 @@ def main_func():
 
                 try:
                         t = trans.Transaction(target, pkg_name=pkg_name,
-                            trans_id=trans_id, refresh_index=not defer_refresh,
-                            xport=xport, pub=targ_pub)
+                            trans_id=trans_id, xport=xport, pub=targ_pub)
 
                         # Remove any previous failed attempt to
                         # to republish this package.
@@ -630,24 +624,13 @@ def main_func():
                                         a.data = lambda: open(fname,
                                             "rb")
                                 t.add(a)
-                        t.close(refresh_index=not defer_refresh)
+                        t.close()
                 except trans.TransactionError, e:
                         abort(err=e)
                         return 1
 
         # Dump all temporary data.
         cleanup()
-
-        if republish:
-                if defer_refresh:
-                        msg(_("Refreshing repository search indices ..."))
-                        try:
-                                t = trans.Transaction(target, xport=xport,
-                                    pub=targ_pub)
-                                t.refresh_index()
-                        except trans.TransactionError, e:
-                                error(e)
-                                return 1
         return 0
 
 if __name__ == "__main__":

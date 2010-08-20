@@ -25,7 +25,7 @@ PKGVERS_COMPONENT = 0.5.11
 PKGVERS_BUILTON   = 5.11
 BUILDNUM.cmd      = hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 1; exit}'
 BUILDNUM          = $(BUILDNUM.cmd:sh)
-CURBUILD.cmd      = pkg list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
+CURBUILD.cmd      = pkg -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
 CURBUILD          = $(CURBUILD.cmd:sh)
 PKGVERS_BRANCH    = 0.$(BUILDNUM)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
@@ -96,7 +96,7 @@ publish-pkgs: $(PKGDEST)/repo .WAIT $(PUBLIFESTS)
 # Initialize the repository
 $(PKGDEST)/repo:
 	$(PKGREPO) create $@
-	$(PKGREPO) -s $@ set-property publisher/prefix=$(PKGPUBLISHER)
+	$(PKGREPO) -s $@ set publisher/prefix=$(PKGPUBLISHER)
 
 # Special rule for creating the incorporation.  Note that the incorporation
 # looks at all manifests, not just the ones listed in $(MANIFESTS).  This is

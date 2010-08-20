@@ -26,7 +26,7 @@
         import pkg.server.api as api
         import pkg.server.api_errors as api_errors
 
-        CLIENT_API_VERSION = 10
+        CLIENT_API_VERSION = 11
 %>\
 <%page args="g_vars"/>\
 <%
@@ -52,6 +52,11 @@
         # Third, determine if we need to redirect the user to a particular
         # page.
         rpath = request.path_info.strip("/")
+        pub = g_vars["pub"]
+        if pub:
+                # Ignore publisher component of path.
+                rpath = rpath.replace(pub, "").strip("/")
+
         if rpath == "":
                 rpath = "index.shtml"
 

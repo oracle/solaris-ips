@@ -39,6 +39,7 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.client.publisher as publisher
 import pkg.config as cfg
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
@@ -416,16 +417,24 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.__dc.set_depotd_content_root(pkg5unittest.g_proto_area + \
                     "/usr/share/lib/pkg")
 
-                depotpath = os.path.join(self.test_root, "depot")
+                repopath = os.path.join(self.test_root, "repo")
                 logpath = os.path.join(self.test_root, self.id())
-
-                try:
-                        os.makedirs(depotpath, misc.PKG_DIR_MODE)
-                except:
-                        pass
-
-                self.__dc.set_repodir(depotpath)
+                self.create_repo(repopath, properties={ "publisher": {
+                    "prefix": "test" }})
+                self.__dc.set_repodir(repopath)
                 self.__dc.set_logpath(logpath)
+
+        def _get_repo_index_dir(self):
+                depotpath = self.__dc.get_repodir()
+                repo = self.__dc.get_repo()
+                rstore = repo.get_pub_rstore("test")
+                return rstore.index_root
+
+        def _get_repo_writ_dir(self):
+                depotpath = self.__dc.get_repodir()
+                repo = self.__dc.get_repo()
+                rstore = repo.get_pub_rstore("test")
+                return rstore.writable_root
 
         def tearDown(self):
                 pkg5unittest.CliTestCase.tearDown(self)
@@ -454,38 +463,42 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.make_misc_files(TestPkgDepot.misc_files)
                 writable_root = os.path.join(self.test_root,
                     "writ_root")
-                index_dir = os.path.join(writable_root, "index")
-                feed = os.path.join(writable_root, "feed.xml")
-                base_dir = os.path.join(self.test_root, "depot")
-                o_index_dir = os.path.join(base_dir, "index")
-                o_feed = os.path.join(base_dir, "feed.xml")
+                o_index_dir = os.path.join(self._get_repo_index_dir(), "index")
 
                 timeout = 10
 
                 def check_state(check_feed):
+                        index_dir = os.path.join(self._get_repo_writ_dir(),
+                            "index")
+                        feed = os.path.join(writable_root, "publisher", "test",
+                            "feed.xml")
                         found = not os.path.exists(o_index_dir) and \
-                            not os.path.exists(o_feed) and \
                             os.path.isdir(index_dir) and \
                             (not check_feed or os.path.isfile(feed))
                         start_time = time.time()
                         while not found and time.time() - start_time < timeout:
                                 time.sleep(1)
                                 found = not os.path.exists(o_index_dir) and \
-                                    not os.path.exists(o_feed) and \
                                     os.path.isdir(index_dir) and \
                                     (not check_feed or os.path.isfile(feed))
 
                         self.assert_(not os.path.exists(o_index_dir))
-                        self.assert_(not os.path.exists(o_feed))
                         self.assert_(os.path.isdir(index_dir))
                         if check_feed:
-                                self.assert_(os.path.isfile(feed))
-                def get_feed(durl):
+                                try:
+                                        self.assert_(os.path.isfile(feed))
+                                except:
+                                        raise RuntimeError("Feed cache file "
+                                            "not found at '%s'." % feed)
+                def get_feed(durl, pub=""):
                         start_time = time.time()
                         got = False
                         while not got and (time.time() - start_time) < timeout:
+                                if pub:
+                                        pub = "%s/" % pub
                                 try:
-                                        urllib2.urlopen("%s/feed" % durl)
+                                        urllib2.urlopen("%s%s/feed" % (durl,
+                                            pub))
                                         got = True
                                 except urllib2.HTTPError, e:
                                         self.debug(str(e))
@@ -493,17 +506,27 @@ class TestDepotController(pkg5unittest.CliTestCase):
                         self.assert_(got)
 
                 self.__dc.set_port(12000)
-                self.__dc.set_writable_root(writable_root)
                 durl = self.__dc.get_depot_url()
+
+                repo = self.__dc.get_repo()
+                pub = repo.get_publisher("test")
+                pub_repo = pub.selected_repository
+                if not pub_repo:
+                        pub_repo = publisher.Repository()
+                        while pub.repositories:
+                                pub.repositories.pop()
+                        pub.repositories.append(pub_repo)
+                pub_repo.origins = [durl]
+                repo.update_publisher(pub)
+
+                self.__dc.set_writable_root(writable_root)
                 self.__dc.set_property("publisher", "prefix", "test")
-                self.__dc.set_property("repository", "origins", durl)
                 self.__dc.start()
                 check_state(False)
-                self.pkgsend_bulk(durl, TestPkgDepot.quux10)
+                self.pkgsend_bulk(durl, TestPkgDepot.quux10, refresh_index=True)
                 get_feed(durl)
                 check_state(True)
 
-                self.__dc.wait_search()
                 self.image_create(durl)
                 self.pkg("search -r cat")
                 self.__dc.stop()
@@ -645,44 +668,37 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
         repo_cfg = {
             "publisher": {
-                "alias": "pending",
                 "prefix": "org.opensolaris.pending"
             },
-            "repository": {
-                "collection_type": "supplemental",
-                "description":
-                    "Development packages for the contrib repository.",
-                "legal_uris": [
-                    "http://www.opensolaris.org/os/copyrights",
-                    "http://www.opensolaris.org/os/tou",
-                    "http://www.opensolaris.org/os/trademark"
-                ],
-                "mirrors": [],
-                "name": """"Pending" Repository""",
-                "origins": [],  # Has to be set during setUp for correct origin.
-                "refresh_seconds": 86400,
-                "registration_uri": "",
-                "related_uris": [
-                    "http://jucr.opensolaris.org/contrib",
-                    "http://jucr.opensolaris.org/pending",
-                    "http://pkg.opensolaris.org/contrib",
-                ]
-            }
+        }
+
+        pub_repo_cfg = {
+            "collection_type": "supplemental",
+            "description":
+                "Development packages for the contrib repository.",
+            "legal_uris": [
+                "http://www.opensolaris.org/os/copyrights",
+                "http://www.opensolaris.org/os/tou",
+                "http://www.opensolaris.org/os/trademark"
+            ],
+            "mirrors": [],
+            "name": """"Pending" Repository""",
+            "origins": [],  # Has to be set during setUp for correct origin.
+            "refresh_seconds": 86400,
+            "registration_uri": "",
+            "related_uris": [
+                "http://jucr.opensolaris.org/contrib",
+                "http://jucr.opensolaris.org/pending",
+                "http://pkg.opensolaris.org/contrib",
+            ]
         }
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self, start_depot=True)
-
-                # All of the tests will start depot if needed.
-                self.dc.stop()
+                pkg5unittest.SingleDepotTestCase.setUp(self)
 
                 # Prevent override of custom configuration;
                 # tests will set as needed.
                 self.dc.clear_property("publisher", "prefix")
-
-                # Set repository origins.
-                self.repo_cfg["repository"]["origins"] = \
-                    [self.dc.get_depot_url()]
 
                 self.tpath = tempfile.mkdtemp(prefix="tpath",
                     dir=self.test_root)
@@ -693,7 +709,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 """Verify that a non-error response and valid HTML is returned
                 for each known BUI page in every available depot mode."""
 
-                self.dc.set_property("publisher", "prefix", "test")
+                pub = "test"
+                self.dc.set_property("publisher", "prefix", pub)
 
                 # A list of tuples containing the name of the method used to set
                 # the mode, and then the method needed to unset that mode.
@@ -712,15 +729,19 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                     "en/stats.shtml",
                 ]
 
+                repodir = self.dc.get_repodir()
+                durl = self.dc.get_depot_url()
                 for with_packages in (False, True):
-                        shutil.rmtree(self.dc.get_repodir(),
-                            ignore_errors=True)
+                        shutil.rmtree(repodir, ignore_errors=True)
+
+                        # Create repository and set publisher origins.
+                        self.create_repo(self.dc.get_repodir())
+                        self.pkgrepo("set -s %(repodir)s -p %(pub)s "
+                            "repository/origins=%(durl)s" % locals())
 
                         if with_packages:
                                 self.dc.set_readwrite()
-                                self.dc.set_port(12000)
                                 self.dc.start()
-                                durl = self.dc.get_depot_url()
                                 self.pkgsend_bulk(durl, (self.info10,
                                     self.quux10, self.system10))
                                 self.dc.stop()
@@ -729,10 +750,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 if set_method:
                                         getattr(self.dc, set_method)()
 
-                                self.dc.set_port(12000)
                                 self.dc.start()
-                                durl = self.dc.get_depot_url()
-
                                 for path in pages:
                                         # Any error responses will cause an
                                         # exception.
@@ -755,6 +773,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 """Helper function to generate test repository configuration."""
                 # Find and load the repository configuration.
                 rpath = self.dc.get_repodir()
+                assert os.path.isdir(rpath)
                 rcpath = os.path.join(rpath, "cfg_cache")
 
                 rc = sr.RepositoryConfig(target=rcpath)
@@ -769,6 +788,25 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Save it.
                 rc.write()
 
+                # Apply publisher properties and update.
+                repo = self.dc.get_repo()
+                try:
+                        pub = repo.get_publisher("org.opensolaris.pending")
+                except sr.RepositoryUnknownPublisher:
+                        pub = publisher.Publisher("org.opensolaris.pending")
+                        repo.add_publisher(pub)
+
+                pub_repo = pub.selected_repository
+                if not pub_repo:
+                        pub_repo = publisher.Repository()
+                        while pub.repositories:
+                                pub.repositories.pop()
+                        pub.repositories.append(pub_repo)
+
+                for attr, val in self.pub_repo_cfg.iteritems():
+                        setattr(pub_repo, attr, val)
+                repo.update_publisher(pub)
+
         def test_1_depot_publisher(self):
                 """Verify the output of the depot /publisher operation."""
 
@@ -781,18 +819,20 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 durl = self.dc.get_depot_url()
                 purl = urlparse.urljoin(durl, "publisher/0")
-                pub, pkglist = p5i.parse(location=purl)[0]
+                entries = p5i.parse(location=purl)
+                assert entries[0][0].prefix == "test"
+                assert entries[1][0].prefix == "org.opensolaris.pending"
 
                 # Now verify that the parsed response has the expected data.
+                pub, pkglist = entries[-1]
                 cfgdata = self.repo_cfg
                 for prop in cfgdata["publisher"]:
                         self.assertEqual(getattr(pub, prop),
                             cfgdata["publisher"][prop])
 
                 repo = pub.selected_repository
-                for prop in cfgdata["repository"]:
+                for prop, expected in self.pub_repo_cfg.iteritems():
                         returned = getattr(repo, prop)
-                        expected = cfgdata["repository"][prop]
                         if prop.endswith("uris") or prop == "origins":
                                 uris = []
                                 for u in returned:
@@ -865,8 +905,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 self.dc.start()
 
                 durl = self.dc.get_depot_url()
-                pfmri = fmri.PkgFmri(self.pkgsend_bulk(durl, self.file10)[0],
-                    "5.11")
+                pfmri = fmri.PkgFmri(self.pkgsend_bulk(durl, self.file10,
+                    refresh_index=True)[0], "5.11")
 
                 def get_headers(req_path):
                         try:
@@ -912,9 +952,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 # Then, publish some packages we can abuse for testing.
                 durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.quux10)
+                plist = self.pkgsend_bulk(durl, self.quux10, refresh_index=True)
 
-                self.dc.wait_search()
                 surl = urlparse.urljoin(durl,
                     "en/search.shtml?action=Search&token=*")
                 urllib2.urlopen(surl).read()

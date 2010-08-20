@@ -40,7 +40,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 40
+API_VERSION = 42
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
@@ -292,7 +292,11 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # First create the image and get v1 catalog.
                 self.dc.start()
                 self.pkgsend_bulk(self.durl, (self.foo10, self.quux10))
-                api_obj = self.image_create(self.durl, prefix="bobcat")
+                try:
+                        api_obj = self.image_create(self.durl, prefix="bobcat")
+                except api_errors.CatalogRefreshException, e:
+                        self.debug("\n".join(str(x[-1]) for x in e.failed))
+                        raise
 
                 self.pkg("publisher")
                 img = api_obj.img
@@ -937,7 +941,6 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
-
 
 
 if __name__ == "__main__":

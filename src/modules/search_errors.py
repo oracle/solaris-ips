@@ -52,15 +52,26 @@ class InconsistentIndexException(IndexingException):
                     "rebuild from scratch by clearing out %s " \
                     " and restarting the depot." % self.cause
 
-class PartialIndexingException(IndexingException):
-        """This is used when the directory the temporary files the indexer
-        should write to already exists."""
+
+class IndexLockedException(IndexingException):
+        """This is used when an attempt to modify an index locked by another
+        thread or process is made."""
+
+        def __init__(self, hostname=None, pid=None):
+                IndexingException.__init__(self, None)
+                self.hostname = hostname
+                self.pid = pid
 
         def __str__(self):
-                return "Unable to build or update search indices. Result of " \
-                    "partial indexing found:%s. Please remove this directory "\
-                    "and start a depot with the --refresh-index flag." % \
-                    self.cause
+                if self.pid is not None:
+                        # Used even if hostname is undefined.
+                        return _("The search indexe cannot be modified as it "
+                            "is currently in use by another process: "
+                            "pid %(pid)s on %(host)s.") % {
+                            "pid": self.pid, "host": self.hostname }
+                return _("The search index cannot be modified as it is "
+                    "currently in use by another process.")
+
 
 class ProblematicPermissionsIndexException(IndexingException):
         """This is used when the indexer is unable to create, move, or remove
@@ -106,45 +117,3 @@ class IncorrectIndexFileHash(Exception):
         def __str__(self):
                 return "existing_val was:%s\nincoming_val was:%s" % \
                     (self.ev, self.iv)
-
-class MainDictParsingException(Exception):
-        """This is used when an error occurred while parsing the main search
-        dictionary file."""
-
-        def __init__(self, split_chars, unquote_list, line, file_pos):
-                self.split_chars = split_chars
-                self.unquote_list = unquote_list
-                self.line = line
-                self.file_pos = file_pos
-                
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
-        
-class EmptyUnquoteList(MainDictParsingException):
-        """This is used when the function to parse the main dictionary file
-        wasn't given enough values in its unquote_list argument."""
-
-        def __init__(self, split_chars, line):
-                Exception.__init__(self, split_chars, None, line)
-
-        def __str__(self):
-                return _("Got an empty unquote_list while indexing. split_chars"
-                    " was %(sc)s and line was %(l)s" %
-                    { "sc": self.split_chars, "l": self.line })
-
-class EmptyMainDictLine(MainDictParsingException):
-        """This is used when a blank line in the main dictionary file was
-        encountered."""
-
-        def __init__(self, split_chars, unquote_list):
-                Exception.__init__(self, split_chars, unquote_list, None)
-
-        def __str__(self):
-                return _("Had an empty line in the main dictionary. split_chars"
-                    " is %(sc)s and unquote_list is %(ul)s.%(s)s" %
-                    { "sc": self.split_chars, "ul": self.unquote_list, "l": s })
-        

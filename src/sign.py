@@ -44,7 +44,6 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.publish.transaction as trans
-import pkg.server.repository as sr
 from pkg.client import global_settings
 from pkg.misc import emsg, msg, PipeError
 
@@ -138,7 +137,6 @@ def main_func():
         cert_path = None
         key_path = None
         chain_certs = []
-        refresh_index = True
         add_to_catalog = True
         set_alg = False
         sign_all = False
@@ -172,8 +170,6 @@ def main_func():
                         repo_uri = arg
                 elif opt == "--help":
                         show_usage = True
-                elif opt == "--no-index":
-                        refresh_index = False
                 elif opt == "--no-catalog":
                         add_to_catalog = False
                 elif opt == "--sign-all":
@@ -238,7 +234,7 @@ def main_func():
                     list_packages=sign_all)
                 if not sign_all:
                         fmris = pargs
-                succesful_publish = False
+                successful_publish = False
 
                 for pfmri in fmris:
                         try:
@@ -271,25 +267,24 @@ def main_func():
                                 # published manifest.
                                 t = trans.Transaction(repo_uri,
                                     pkg_name=str(pfmri), xport=xport,
-                                    pub=src_pub, refresh_index=refresh_index)
+                                    pub=src_pub)
                                 t.append()
                                 try:
                                         t.add(a)
                                         for c in chain_certs:
                                                 t.add_file(c)
-                                        t.close(refresh_index=refresh_index,
-                                            add_to_catalog=add_to_catalog)
+                                        t.close(add_to_catalog=add_to_catalog)
                                 except:
                                         t.close(abandon=True)
                                         raise
                                 msg(_("Signed %s") % pfmri)
-                                succesful_publish = True
+                                successful_publish = True
                         except (api_errors.ApiException, fmri.FmriError,
                             trans.TransactionError), e:
                                 errors.append(e)
                 if errors:
                         error("\n".join([str(e) for e in errors]))
-                        if succesful_publish:
+                        if successful_publish:
                                 return EXIT_PARTIAL
                         else:
                                 return EXIT_OOPS

@@ -5,7 +5,7 @@ NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
+     /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
          [-t socket_timeout] [--add-content] [--cfg] [--content-root]
          [--debug] [--disable-ops=<op[/1]>[,...]] [--log-access]
          [--log-errors] [--mirror] [--proxy-base url] [--readonly]
@@ -248,7 +248,7 @@ OPTIONS
      '--cfg', the following options can be used to alter the default
      behavior of the depot server:
 
-     -d repo_dir                See pkg/repo_dir above.
+     -d inst_root               See pkg/inst_root above.
 
      -p port                    See pkg/port above.
 

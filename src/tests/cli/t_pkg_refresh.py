@@ -390,8 +390,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 # A bit hacky, but load the repository's catalog directly
                 # and then get the list of updates files it has created.
-                cat_root = os.path.join(dc.get_repodir(), "catalog")
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
                 update = v1_cat.updates.keys()[-1]
 
                 # All of the entries from the previous operations, and then
@@ -432,7 +432,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # of the log so far, so expected needs to be reset and the
                 # catalog reloaded.
                 expected = []
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
 
                 dc.stop()
                 dc.set_rebuild()
@@ -469,7 +470,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                     "/catalog/1/catalog.attrs",
                     "/catalog/1/%s" % update
                 ]
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
 
                 # Stop the depot server and put the old repository data back.
                 dc.stop()
@@ -477,7 +479,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 shutil.move(trpath, dc.get_repodir())
                 dc.start()
                 expected = []
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
 
                 # Now verify that a refresh induces a full retrieval.  The
                 # catalog.attrs file will be retrieved twice due to the
@@ -501,7 +504,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Publish a new package.
                 self.pkgsend_bulk(self.durl1, self.foo12)
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
 
                 # Refresh to get an incremental update, and verify it worked.
                 self.pkg("refresh")
@@ -510,7 +514,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                     "/catalog/1/catalog.attrs",
                     "/catalog/1/%s" % update
                 ]
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
 
                 # Stop the depot server and put the old repository data back.
                 dc.stop()
@@ -523,7 +528,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # entry to exist, but at a different point in time in the
                 # update logs.
                 self.pkgsend_bulk(self.durl1, self.foo12)
-                v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
+                repo = dc.get_repo()
+                v1_cat = repo.get_catalog("test1")
                 update = v1_cat.updates.keys()[-1]
 
                 # Now verify that a refresh induces a full retrieval.  The
@@ -551,6 +557,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 dc.start()
 
                 old_cat = os.path.join(self.test_root, "old-catalog")
+                cat_root = v1_cat.meta_root
                 shutil.copytree(v1_cat.meta_root, old_cat)
                 self.pkgsend_bulk(self.durl1, self.foo121)
                 v1_cat = catalog.Catalog(meta_root=cat_root, read_only=True)
@@ -606,7 +613,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # Next, purposefully corrupt the catalog.attrs file in the
                 # repository and attempt a refresh.  The client should fail
                 # gracefully.
-                f = open(os.path.join(cat_root, "catalog.attrs"), "wb")
+                f = open(os.path.join(v1_cat.meta_root, "catalog.attrs"), "wb")
                 f.write("INVALID")
                 f.close()
                 self.pkg("refresh", exit=1)

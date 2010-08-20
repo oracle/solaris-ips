@@ -132,8 +132,14 @@ class DepotController(object):
                 return self.__dir
 
         def get_repo(self, auto_create=False):
-                return sr.Repository(auto_create=auto_create,
-                    cfgpathname=self.__cfg_file, repo_root=self.__dir)
+                if auto_create:
+                        try:
+                                sr.repository_create(self.__dir)
+                        except sr.RepositoryExistsError:
+                                # Already exists, nothing to do.
+                                pass
+                return sr.Repository(cfgpathname=self.__cfg_file,
+                    root=self.__dir, writable_root=self.__writable_root)
 
         def get_repo_url(self):
                 return urlparse.urlunparse(("file", "", urllib.pathname2url(
@@ -468,31 +474,6 @@ class DepotController(object):
                         raise DepotStateException("Depot already stopped")
 
                 return self.kill()
-
-        def wait_search(self):
-                if self.__writable_root:
-                        idx_tmp_dir = os.path.join(self.__writable_root,
-                            "index", "TMP")
-                else:
-                        idx_tmp_dir = os.path.join(self.__dir, "index", "TMP")
-
-                if not os.path.exists(idx_tmp_dir):
-                        return
-
-                begintime = time.time()
-
-                sleeptime = 0.0
-                check_interval = 0.20
-                ready = False
-                while (time.time() - begintime) <= 10.0:
-                        if not os.path.exists(idx_tmp_dir):
-                                ready = True
-                                break
-                        time.sleep(check_interval)
-
-                if not ready:
-                        raise DepotStateException("Depot search "
-                            "readiness timeout exceeded.")
 
 
 def test_func(testdir):

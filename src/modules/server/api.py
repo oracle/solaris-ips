@@ -40,7 +40,7 @@ import pkg.version as version
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 
-CURRENT_API_VERSION = 10
+CURRENT_API_VERSION = 11
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -50,12 +50,15 @@ class BaseInterface(object):
         needed by interfaces to provide functionality to clients.
         """
 
-        def __init__(self, request, depot):
+        def __init__(self, request, depot, pub):
                 # A protected reference to a pkg.server.depot object.
                 self._depot = depot
 
                 # A protected reference to a cherrypy request object.
                 self._request = request
+
+                # A protected reference to the publisher this interface is for.
+                self._pub = pub
 
 
 class _Interface(object):
@@ -68,6 +71,7 @@ class _Interface(object):
                             version_id)
 
                 self._depot = base._depot
+                self._pub = base._pub
                 self._request = base._request
 
 class CatalogInterface(_Interface):
@@ -84,10 +88,10 @@ class CatalogInterface(_Interface):
                 """A generator function that produces FMRIs as it iterates
                 over the contents of the server's catalog."""
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return iter(())
-                return self._depot.repo.catalog.fmris()
+                return c.fmris()
 
         def get_entry_all_variants(self, pfmri):
                 """A generator function that yields tuples of the format
@@ -95,10 +99,10 @@ class CatalogInterface(_Interface):
                 variant and variants is a list of the variants for that
                 name."""
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return iter(((), {}))
-                return self._depot.repo.catalog.get_entry_all_variants(pfmri)
+                return c.get_entry_all_variants(pfmri)
 
         def get_matching_pattern_fmris(self, patterns):
                 """Returns a tuple of a sorted list of PkgFmri objects, newest
@@ -107,7 +111,7 @@ class CatalogInterface(_Interface):
                 match criteria.
                 """
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return tuple(), {}
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
@@ -128,7 +132,7 @@ class CatalogInterface(_Interface):
                 a single character).
                 """
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return tuple(), {}
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
@@ -161,8 +165,8 @@ class CatalogInterface(_Interface):
                                 if not pfmri:
                                         notfound.append(pattern)
 
-                repo_cat = self._depot.repo.catalog
-                
+                repo_cat = self._depot.repo.get_catalog(self._pub)
+
                 # Set of options that can use catalog data.
                 cat_opts = frozenset([PackageInfo.SUMMARY,
                     PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION,
@@ -206,10 +210,8 @@ class CatalogInterface(_Interface):
                                 mfst = manifest.Manifest()
                                 mfst.set_fmri(None, f)
                                 try:
-                                        mpath = os.path.join(
-                                            self._depot.repo.manifest_root,
-                                            f.get_dir_path())
-                                except pkg.fmri.FmriError, e:
+                                        mpath = self._depot.repo.manifest(f)
+                                except sr.RepositoryError, e:
                                         notfound.append(f)
                                         continue
 
@@ -218,7 +220,7 @@ class CatalogInterface(_Interface):
                                         continue
 
                                 mfst.set_content(file(mpath).read())
-                                
+
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst)
 
@@ -264,7 +266,7 @@ class CatalogInterface(_Interface):
                 available.
                 """
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.last_modified
@@ -275,7 +277,7 @@ class CatalogInterface(_Interface):
                 if the catalog is not available.
                 """
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.package_count
@@ -286,7 +288,7 @@ class CatalogInterface(_Interface):
                 None if the catalog is not available.
                 """
                 try:
-                        c = self._depot.repo.catalog
+                        c = self._depot.repo.get_catalog(self._pub)
                 except srepo.RepositoryMirrorError:
                         return None
                 return c.package_version_count
@@ -348,8 +350,7 @@ class CatalogInterface(_Interface):
                                         pfmri = result[2][0]
 
                                 if mver is not None:
-                                        if mver != version.Version(pfmri.split(
-                                            "@", 1)[1], None):
+                                        if mver != pfmri.version:
                                                 continue
 
                                 if return_latest and \
@@ -404,7 +405,8 @@ class CatalogInterface(_Interface):
                         # can be immediately raised.
                         query = qp.Query(" ".join(tokens), case_sensitive,
                             return_type, None, None)
-                        res_list = self._depot.repo.search([str(query)])
+                        res_list = self._depot.repo.search([str(query)],
+                            pub=self._pub)
                         if not res_list:
                                 return
 
@@ -412,7 +414,8 @@ class CatalogInterface(_Interface):
 
                 query = qp.Query(" ".join(tokens), case_sensitive,
                     return_type, num_to_return, start_point)
-                res_list = self._depot.repo.search([str(query)])
+                res_list = self._depot.repo.search([str(query)],
+                    pub=self._pub)
                 if not res_list:
                         return
                 return res_list[0]
@@ -422,15 +425,19 @@ class CatalogInterface(_Interface):
                 """Returns a Boolean value indicating whether search
                 functionality is available for the catalog.
                 """
-                return self._depot.repo.search_available
-        
+                try:
+                        rstore = self._depot.repo.get_pub_rstore(self._pub)
+                except srepo.RepositoryUnknownPublisher:
+                        return False
+                return rstore.search_available
+
         def __licenses(self, mfst):
                 """Private function. Returns the license info from the
                 manifest mfst."""
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
                         s = StringIO.StringIO()
-                        lpath = self._depot.repo.cache_store.lookup(lic.hash)
+                        lpath = self._depot.repo.file(lic.hash, pub=self._pub)
                         lfile = file(lpath, "rb")
                         misc.gunzip_from_stream(lfile, s)
                         text = s.getvalue()
@@ -438,6 +445,22 @@ class CatalogInterface(_Interface):
                         license_lst.append(LicenseInfo(mfst.fmri, lic,
                             text=text))
                 return license_lst
+
+        @property
+        def version(self):
+                """Returns the version of the catalog or None if no catalog
+                is available.
+                """
+
+                try:
+                        c = self._depot.repo.get_catalog(self._pub)
+                except srepo.RepositoryMirrorError:
+                        return None
+                if hasattr(c, "version"):
+                        return c.version
+                # Assume version 0.
+                return 0
+
 
 class ConfigInterface(_Interface):
         """This class presents a read-only interface to configuration
@@ -470,14 +493,14 @@ class ConfigInterface(_Interface):
                 """The number of /filelist operation requests that have occurred
                 during the current server session.
                 """
-                return self._depot.repo.flist_requests
+                return self._depot.flist_requests
 
         @property
         def filelist_file_requests(self):
                 """The number of files served by /filelist operations requested
                 during the current server session.
                 """
-                return self._depot.repo.flist_files
+                return self._depot.flist_file_requests
 
         @property
         def in_flight_transactions(self):
@@ -505,13 +528,6 @@ class ConfigInterface(_Interface):
                 operating in readonly mode.
                 """
                 return self._depot.repo.read_only
-
-        @property
-        def rename_requests(self):
-                """The number of /rename operation requests that have occurred
-                during the current server session.
-                """
-                return self._depot.repo.pkgs_renamed
 
         @property
         def web_root(self):
@@ -546,67 +562,14 @@ class ConfigInterface(_Interface):
 
                 Section     Property            Description
                 ==========  ==========          ===============
-                publisher   alias               An alternative name for the
-                                                publisher of the packages in
-                                                the repository.
+                publisher   prefix              The name of the default
+                                                publisher to use for packaging
+                                                operations if one is not
+                                                provided.
 
-                            prefix              The name of the publisher of
-                                                the packages in the repository.
-
-                repository  collection_type     A constant value indicating the
-                                                type of packages in the
-                                                repository.  See the pydoc for
-                                                pkg.client.publisher.Repository
-                                                for details.
-
-                            description         A string value containing a
-                                                descriptive paragraph for the
-                                                repository.
-
-                            detailed_url        A comma-separated list of URIs
-                                                where more information about the
-                                                repository can be found.
-
-                            legal_uris          A comma-separated list of URIs
-                                                where licensing, legal, and
-                                                terms of service information
-                                                for the repository can be found.
-
-                            maintainer          A human readable string
-                                                describing the entity
-                                                maintaining the repository.  For
-                                                an individual, this string is
-                                                expected to be their name or
-                                                name and email.
-
-                            maintainer_url      A URI associated with the entity
-                                                maintaining the repository.
-
-                            mirrors             A comma-separated list of URIs
-                                                where package content can be
-                                                retrieved.
-
-                            name                A short, descriptive name for
-                                                the repository.
-
-                            origins             A comma-separated list of URIs
-                                                where package metadata can be
-                                                retrieved.
-
-                            refresh_seconds     An integer value indicating the
-                                                number of seconds clients should
-                                                wait before refreshing cached
-                                                repository catalog or repository
-                                                metadata information.
-
-                            registration_uri    A URI indicating a location
-                                                clients can use to register or
-                                                obtain credentials needed to
-                                                access the repository.
-
-                            related_uris        A comma-separated list of URIs
-                                                of related repositories that a
-                                                client may be interested in.
+                repository  version             An integer value representing
+                                                the version of the repository's
+                                                format.
                 """
                 rval = {}
                 for sname, props in self._depot.repo.cfg.get_index().iteritems():
@@ -639,7 +602,7 @@ class RequestInterface(_Interface):
         def get_rel_path(self, uri):
                 """Returns uri relative to the current request path.
                 """
-                return pkg.misc.get_rel_path(self._request, uri)
+                return pkg.misc.get_rel_path(self._request, uri, pub=self._pub)
 
         def log(self, msg):
                 """Instruct the server to log the provided message to its error
@@ -660,6 +623,16 @@ class RequestInterface(_Interface):
                 URL.
                 """
                 return self._request.path_info
+
+        @property
+        def publisher(self):
+                """The Publisher object for the package data related to this
+                request or None if not available.
+                """
+                try:
+                        return self._depot.repo.get_publisher(self._pub)
+                except srepo.RepositoryUnknownPublisher:
+                        return None
 
         @property
         def query_string(self):
@@ -695,4 +668,3 @@ class RequestInterface(_Interface):
                 """
                 return cherrypy.url(path=path, qs=qs, script_name=script_name,
                     relative=relative)
-

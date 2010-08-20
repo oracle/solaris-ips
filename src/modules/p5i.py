@@ -104,13 +104,14 @@ def parse(data=None, fileobj=None, location=None):
                         alias = p.get("alias", None)
                         prefix = p.get("name", None)
                         signing_ca_certs = p.get("signing_ca_certs", [])
-                        inter_certs = p.get("intermediate_certs", [])
+                        intermediate_certs = p.get("intermediate_certs", [])
                         
                         if not prefix:
                                 prefix = "Unknown"
 
                         pub = publisher.Publisher(prefix, alias=alias,
-                            ca_certs=signing_ca_certs, inter_certs=inter_certs)
+                            ca_certs=signing_ca_certs,
+                            intermediate_certs=intermediate_certs)
                         pkglist = p.get("packages", [])
                         result.append((pub, pkglist))
 
@@ -184,7 +185,7 @@ def write(fileobj, pubs, pkg_names=None):
                     "alias": p.alias,
                     "name": p.prefix,
                     "signing_ca_certs": p.signing_ca_certs,
-                    "intermediate_certs": p.inter_certs,
+                    "intermediate_certs": p.intermediate_certs,
                     "packages": [],
                     "repositories": []
                 }

@@ -29,7 +29,16 @@
         request = g_vars["request"]
 %>\
 <%def name="page_title(g_vars)"><%
-        return self.shared.rcval(g_vars, "repository", "name")
+        req = g_vars["request"]
+        pub = req.publisher
+        rname = ""
+        if pub:
+                repo = pub.selected_repository
+                if repo and repo.name:
+                        rname = repo.name
+                else:
+                        rname = "package repository"
+        return rname
 %></%def>\
 <%def name="page_crumbs(g_vars)"><%
         # None at top level.
@@ -41,7 +50,13 @@
 <div id="yui-main">
         <div class="yui-b">
 <%
-        repo_desc = self.shared.rcval(g_vars, "repository", "description")
+        req = g_vars["request"]
+        pub = req.publisher
+        repo_desc = ""
+        if pub:
+                repo = pub.selected_repository
+                if repo and repo.description:
+                        repo_desc = repo.description
 %>
 % if repo_desc:
                 <h2 class="section-title">About</h2>
@@ -59,7 +74,7 @@
                         </p>
                 </form>
 % endif
-% if not config.mirror:
+% if not config.mirror and request.publisher:
 <%
         versions = self.shared.get_releases(g_vars)
         selected_version = request.params.get("version", None)
@@ -103,13 +118,17 @@ the packages available for it.</p>
                 <p>The list of all available packages can be found
 <a href="catalog.shtml">here</a>.</p>
 %       endif
+% elif not request.publisher:
+                <p>This package repository is empty or no default publisher has
+ been set.</p>
 % else:
-                <p>Information about packages is not available when the server is operating in mirror mode.</p>
+                <p>Information about packages is not available when the server
+ is operating in mirror mode.</p>
 % endif
         </div>
 </div>
 <div class="yui-b">
-% if not config.mirror:
+% if not config.mirror and request.publisher:
         <table class="stats" summary="A summary of information about the
  package repository.">
                 <tr class="first">
@@ -121,19 +140,29 @@ the packages available for it.</p>
                         </th>
                 </tr>
                 <tr>
+                        <td class="label">Publisher</td>
+                        <td class="value">${pub.prefix}</td>
+                </tr>
+                <tr>
                         <td class="label">Packages</td>
                         <td class="value">${catalog.package_count}</td>
                 </tr>
                 <tr>
                         <td class="label">Last Updated</td>
 <%
-        # Note: last_modified() is in local time relative to the timezone where
-        # catalog was last modified.
-        lm = catalog.last_modified
-        if lm:
-                lm = lm.replace(microsecond=0)
+        if catalog.version == 0:
+                # Note: last_modified() is in local time relative to the
+                # timezone where catalog was last modified.
+                lm = catalog.last_modified()
+                if not lm:
+                        lm = "Never"
         else:
-                lm = "Never"
+                # last_modified is a UTC datetime object.
+                lm = catalog.last_modified
+                if lm:
+                        lm = lm.replace(microsecond=0)
+                else:
+                        lm = "Never"
 %>
                         <td class="value">${lm}</td>
                 </tr>

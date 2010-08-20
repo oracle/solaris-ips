@@ -19,21 +19,25 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import errno
+import fcntl
 import os
+import platform
 import shutil
 import urllib
 
-import pkg.version
-
 import pkg.fmri as fmri
 import pkg.manifest as manifest
+import pkg.nrlock
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
-from pkg.misc import EmptyI, PKG_FILE_BUFSIZ
+import pkg.version
+from pkg.misc import EmptyI, PKG_DIR_MODE, PKG_FILE_BUFSIZ
 
 # Constants for indicating whether pkgplans or fmri-manifest path pairs are
 # used as arguments.
@@ -50,6 +54,25 @@ SORT_FILE_PREFIX = "sort."
 
 SORT_FILE_MAX_SIZE = 128 * 1024 * 1024
 
+
+def makedirs(pathname):
+        """Create a directory at the specified location if it does not
+        already exist (including any parent directories).
+        """
+
+        try:
+                os.makedirs(pathname, PKG_DIR_MODE)
+        except EnvironmentError, e:
+                if e.filename == pathname and (e.errno == errno.EEXIST or
+                    os.path.exists(e.filename)):
+                        return
+                elif e.errno in (errno.EACCES, errno.EROFS):
+                        raise search_errors.ProblematicPermissionsIndexException(
+                            e.filename)
+                elif e.errno != errno.EEXIST or e.filename != pathname:
+                        raise
+
+
 class Indexer(object):
         """Indexer is a class designed to index a set of manifests or pkg plans
         and provide a compact representation on disk, which is quickly
@@ -58,7 +81,7 @@ class Indexer(object):
         file_version_string = "VERSION: "
 
         def __init__(self, index_dir, get_manifest_func, get_manifest_path_func,
-            progtrack=None, excludes=EmptyI, log=None, 
+            progtrack=None, excludes=EmptyI, log=None,
             sort_file_max_size=SORT_FILE_MAX_SIZE):
                 self._num_keys = 0
                 self._num_manifests = 0
@@ -66,6 +89,8 @@ class Indexer(object):
                 self.get_manifest_func = get_manifest_func
                 self.get_manifest_path_func = get_manifest_path_func
                 self.excludes = excludes
+                self.__lock = pkg.nrlock.NRLock()
+                self.__lockf = None
                 self.__log = log
                 self.sort_file_max_size = sort_file_max_size
                 # This structure was used to gather all index files into one
@@ -101,7 +126,7 @@ class Indexer(object):
                 self._data_dict["fmri_offsets"] = \
                     ss.InvertedDict(ss.FMRI_OFFSETS_FILE, self._data_manf)
                 self._data_fmri_offsets = self._data_dict["fmri_offsets"]
-                
+
                 self._index_dir = index_dir
                 self._tmp_dir = os.path.join(self._index_dir, "TMP")
 
@@ -216,7 +241,7 @@ class Indexer(object):
 
                 p_id = self._data_manf.get_id_and_add(pfmri)
                 pfmri = p_id
-                
+
                 for tok_tup in new_dict.keys():
                         tok, action_type, subtype, fv = tok_tup
                         lst = [(action_type, [(subtype, [(fv, [(pfmri,
@@ -288,7 +313,7 @@ class Indexer(object):
                                         self._data_fast_add.remove_entity(o_tmp)
                                 else:
                                         self._data_fast_remove.add_entity(o_tmp)
-                        
+
                         if self._progtrack is not None:
                                 self._progtrack.index_add_progress()
                 return
@@ -402,7 +427,7 @@ class Indexer(object):
                 # temporary sort file with that number.
                 fh_dict = dict([
                     (i, open(os.path.join(self._tmp_dir,
-                    SORT_FILE_PREFIX + str(i)), "rb", 
+                    SORT_FILE_PREFIX + str(i)), "rb",
                     buffering=PKG_FILE_BUFSIZ))
                     for i in range(self._sort_file_num)
                 ])
@@ -473,7 +498,7 @@ class Indexer(object):
                         old_min_token = min_token
                         yield min_token, res
                 return
-                
+
         def _update_index(self, dicts, out_dir):
                 """Processes the main dictionary file and writes out a new
                 main dictionary file reflecting the changes in the packages.
@@ -622,7 +647,7 @@ class Indexer(object):
                             d == self._data_token_offset:
                                 continue
                         d.write_dict_file(out_dir, self.file_version_number)
-                        
+
         def _generic_update_index(self, inputs, input_type,
             tmp_index_dir=None, image=None):
                 """Performs all the steps needed to update the indexes.
@@ -641,27 +666,31 @@ class Indexer(object):
                 of packages added since last index rebuild is greater than
                 MAX_ADDED_NUMBER_PACKAGES."""
 
-                # Allow the use of a directory other than the default
-                # directory to store the intermediate results in.
-                if not tmp_index_dir:
-                        tmp_index_dir = self._tmp_dir
-                assert not (tmp_index_dir == self._index_dir)
-
-                # Read the existing dictionaries.
-                self._read_input_indexes(self._index_dir)
-
-                
+                self.lock()
                 try:
-                        # If the tmp_index_dir exists, it suggests a previous
-                        # indexing attempt aborted or that another indexer is
-                        # running. In either case, throw an exception.
-                        try:
-                                os.makedirs(os.path.join(tmp_index_dir))
-                        except OSError, e:
-                                if e.errno == errno.EEXIST:
-                                        raise search_errors.PartialIndexingException(tmp_index_dir)
-                                else:
-                                        raise
+                        # Allow the use of a directory other than the default
+                        # directory to store the intermediate results in.
+                        if not tmp_index_dir:
+                                tmp_index_dir = self._tmp_dir
+                        assert not (tmp_index_dir == self._index_dir)
+
+                        # Read the existing dictionaries.
+                        self._read_input_indexes(self._index_dir)
+                except:
+                        self.unlock()
+                        raise
+
+                try:
+                        # If the temporary indexing directory already exists,
+                        # remove it to ensure its empty.  Since the caller
+                        # should have locked the index already, this should
+                        # be safe.
+                        if os.path.exists(tmp_index_dir):
+                                shutil.rmtree(tmp_index_dir)
+
+                        # Create directory.
+                        makedirs(os.path.join(tmp_index_dir))
+
                         inputs = list(inputs)
                         fast_update = False
 
@@ -682,10 +711,14 @@ class Indexer(object):
                                                 self._progtrack.index_optimize()
                                         self._data_fast_add.clear()
                                         self._data_fast_remove.clear()
-                                        self.rebuild_index_from_scratch(
+
+                                        # Before passing control to rebuild
+                                        # index, the index lock must be
+                                        # released.
+                                        self.unlock()
+                                        return self.rebuild_index_from_scratch(
                                             image.gen_installed_pkgs(),
                                             tmp_index_dir)
-                                        return
 
                         elif input_type == IDX_INPUT_TYPE_FMRI:
                                 assert not self._sort_fh
@@ -721,8 +754,10 @@ class Indexer(object):
 
                 finally:
                         self._data_main_dict.close_file_handle()
-                
-        def client_update_index(self, pkgplan_list, image, tmp_index_dir = None):
+                        if self.__lock and self.__lock.locked:
+                                self.unlock()
+
+        def client_update_index(self, pkgplan_list, image, tmp_index_dir=None):
                 """This version of update index is designed to work with the
                 client side of things.  Specifically, it expects a pkg plan
                 list with added and removed FMRIs/manifests.  Note: if
@@ -736,7 +771,7 @@ class Indexer(object):
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
                     tmp_index_dir=tmp_index_dir, image=image)
 
-        def server_update_index(self, fmris, tmp_index_dir = None):
+        def server_update_index(self, fmris, tmp_index_dir=None):
                 """ This version of update index is designed to work with the
                 server side of things. Specifically, since we don't currently
                 support removal of a package from a repo, this function simply
@@ -746,8 +781,8 @@ class Indexer(object):
                 specified, it must NOT exist in the current directory structure.
                 This prevents the indexer from accidentally removing files."""
 
-                self._generic_update_index(fmris,
-                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
+                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
+                    tmp_index_dir)
 
         def check_index_existence(self):
                 """ Returns a boolean value indicating whether a consistent
@@ -772,7 +807,7 @@ class Indexer(object):
                 return res
 
         def rebuild_index_from_scratch(self, fmris,
-            tmp_index_dir = None):
+            tmp_index_dir=None):
                 """Removes any existing index directory and rebuilds the
                 index based on the fmris and manifests provided as an
                 argument.
@@ -782,14 +817,18 @@ class Indexer(object):
 
                 self.file_version_number = INITIAL_VERSION_NUMBER
                 self.empty_index = True
-                
+
+                self.lock()
                 try:
                         shutil.rmtree(self._index_dir)
-                        os.makedirs(self._index_dir)
+                        makedirs(self._index_dir)
                 except OSError, e:
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
+                finally:
+                        self.unlock()
+
                 self._generic_update_index(fmris,
                     IDX_INPUT_TYPE_FMRI, tmp_index_dir)
                 self.empty_index = False
@@ -801,9 +840,7 @@ class Indexer(object):
                 absent = False
                 present = False
 
-                if not os.path.exists(self._index_dir):
-                        os.makedirs(self._index_dir)
-                
+                makedirs(self._index_dir)
                 for d in self._data_dict.values():
                         file_path = os.path.join(self._index_dir,
                             d.get_file_name())
@@ -812,14 +849,13 @@ class Indexer(object):
                         else:
                                 absent = True
                         if absent and present:
-                                raise \
-                                    search_errors.InconsistentIndexException( \
+                                raise search_errors.InconsistentIndexException(
                                         self._index_dir)
                 if present:
                         return
                 if self.file_version_number:
-                        raise RuntimeError("Got file_version_number other"
-                                           "than None in setup.")
+                        raise RuntimeError("Got file_version_number other than "
+                            "None in setup.")
                 self.file_version_number = INITIAL_VERSION_NUMBER
                 for d in self._data_dict.values():
                         d.write_dict_file(self._index_dir,
@@ -835,8 +871,8 @@ class Indexer(object):
                 'cat' is the catalog to check for new fmris."""
 
                 fmri_set = set((f.remove_publisher() for f in cat.fmris()))
-                
-                data =  ss.IndexStoreSet("full_fmri_list")
+
+                data = ss.IndexStoreSet("full_fmri_list")
                 try:
                         data.open(index_root)
                 except IOError, e:
@@ -901,3 +937,92 @@ class Indexer(object):
                                     os.path.join(source_dir, "__st_" + st),
                                     os.path.join(dest_dir, "__st_" + st))
                 shutil.rmtree(source_dir)
+
+        def lock(self, blocking=True):
+                """Locks the index in preparation for an index-modifying
+                operation.  Raises an IndexLockedException exception on
+                failure.
+
+                'blocking' is an optional boolean value indicating whether
+                to block until the lock can be obtained or to raise an
+                exception immediately if it cannot be."""
+
+                # First, attempt to obtain a thread lock.
+                if not self.__lock.acquire(blocking=blocking):
+                        raise search_errors.IndexLockedException()
+
+                try:
+                        # Attempt to obtain a file lock.
+                        self.__lockf = self.__lock_process(self._index_dir,
+                            blocking=blocking)
+                except:
+                        self.__lock.release()
+                        raise
+
+        @staticmethod
+        def __lock_process(lock_dir, blocking=True):
+                """Create a lock file in the specified directory and attempts
+                to obtain a lock on it to prevent modification by other
+                processes."""
+
+                if not os.path.exists(lock_dir):
+                        # Structure doesn't exist yet so a file lock
+                        # cannot be obtained.
+                        return
+
+                # Attempt to obtain a file lock.
+                lfpath = os.path.join(lock_dir, "lock")
+
+                lock_type = fcntl.LOCK_EX
+                if not blocking:
+                        lock_type |= fcntl.LOCK_NB
+
+                # Attempt an initial open of the lock file.
+                try:
+                        lf = open(lfpath, "ab+")
+                except EnvironmentError, e:
+                        if e.errno in (errno.EACCES, errno.EROFS):
+                                raise search_errors.ProblematicPermissionsIndexException(
+                                    e.filename)
+                        raise
+
+                # Attempt to lock the file.
+                try:
+                        fcntl.lockf(lf, lock_type)
+                except IOError, e:
+                        if e.errno not in (errno.EAGAIN, errno.EACCES):
+                                raise
+
+                        # If the lock failed (because it is likely contended),
+                        # then extract the information about the lock acquirer
+                        # and raise an exception.
+                        pid_data = lf.read().strip()
+                        pid, hostname, lock_ts = pid_data.split("\n", 3)
+                        raise search_errors.IndexLockedException(pid=pid,
+                            hostname=hostname)
+
+                # Store lock time as ISO-8601 basic UTC timestamp in lock file.
+                lock_ts = pkg.catalog.now_to_basic_ts()
+
+                # Store information about the lock acquirer and write it.
+                try:
+                        lf.truncate(0)
+                        lf.write("\n".join((str(os.getpid()), platform.node(),
+                            lock_ts, "\n")))
+                        lf.flush()
+                        return lf
+                except:
+                        lf.close()
+                        raise
+
+        def unlock(self):
+                """Unlocks the index."""
+
+                if self.__lockf:
+                        # To avoid race conditions with the next caller waiting
+                        # for the lock file, it is simply truncated instead of
+                        # removed.
+                        self.__lockf.truncate(0)
+                        self.__lockf.close()
+                        self.__lockf = None
+                self.__lock.release()

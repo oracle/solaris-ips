@@ -66,7 +66,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                         t = trans.Transaction(durl, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()
-                        pkg_fmri, pkg_state = t.close(refresh_index=True)
+                        pkg_fmri, pkg_state = t.close()
                         self.debug("%s: %s" % (pkg_fmri, pkg_state))
 
         def test_stress_file_publish(self):
@@ -92,7 +92,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                         t = trans.Transaction(location, pkg_name=str(pf),
                             xport=xport, pub=pub)
                         t.open()
-                        pkg_fmri, pkg_state = t.close(refresh_index=True)
+                        pkg_fmri, pkg_state = t.close()
                         self.debug("%s: %s" % (pkg_fmri, pkg_state))
 
 

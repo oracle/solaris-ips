@@ -118,8 +118,9 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
                 # Copy contents of repository 2 to repos 4 and 5.
                 for i in (4, 5):
-                        self.copy_repository(self.dcs[2].get_repodir(), "test1",
-                                self.dcs[i].get_repodir(), "test%d" % i)
+                        self.copy_repository(self.dcs[2].get_repodir(),
+                                self.dcs[i].get_repodir(),
+                                { "test1": "test%d" % i })
                         self.dcs[i].get_repo(auto_create=True).rebuild()
 
         def test_image_update_bad_opts(self):

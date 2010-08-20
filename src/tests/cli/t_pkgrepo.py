@@ -32,9 +32,10 @@ import pkg5unittest
 from pkg.server.query_parser import Query
 import os
 import pkg
+import pkg.depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.search_errors as se
+import pkg.server.repository as sr
 import shutil
 import tempfile
 import time
@@ -42,25 +43,25 @@ import urllib
 import urlparse
 import unittest
 
-class TestPkgRepo(pkg5unittest.CliTestCase):
+class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
 
         tree10 = """
             open tree@1.0,5.11-0
-            close 
+            close
         """
 
         amber10 = """
             open amber@1.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         amber20 = """
             open amber@2.0,5.11-0
             add depend fmri=pkg:/tree@1.0 type=require
-            close 
+            close
         """
 
         truck10 = """
@@ -77,17 +78,16 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
             add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/truck1
             add file tmp/truck2 mode=0444 owner=root group=bin path=/etc/truck2
             add depend fmri=pkg:/amber@2.0 type=require
-            close 
+            close
         """
 
         zoo10 = """
             open zoo@1.0,5.11-0
-            close 
+            close
         """
 
         def setUp(self):
-                pkg5unittest.CliTestCase.setUp(self)
-
+                pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(["tmp/empty", "tmp/truck1",
                     "tmp/truck2"])
 
@@ -120,11 +120,9 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
                 # global option with no subcommand should exit with 2.
                 self.pkgrepo("-s %s" % self.test_root, exit=2)
 
-                # Verify an invalid URI causes an exit.  (For the moment,
-                # only the file scheme is supported.)
-                for baduri in ("file://not/valid", "http://localhost",
-                    "http://not$valid"):
-                        self.pkgrepo("-s %s" % baduri, exit=1)
+                # Verify an invalid URI causes an exit 2.
+                for baduri in ("file://not/valid", "http://not@$$_-^valid"):
+                        self.pkgrepo("info -s %s" % baduri, exit=2)
 
         def test_01_create(self):
                 """Verify pkgrepo create works as expected."""
@@ -132,23 +130,22 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
                 # Verify create without a destination exits.
                 self.pkgrepo("create", exit=2)
 
-                # Verify create with an invalid URI exits.  (For the moment,
-                # only the file scheme is supported.)
-                for baduri in ("file://not/valid", "http://localhost",
-                    "http://not$valid"):
-                        self.pkgrepo("create %s" % baduri, exit=1)
+                # Verify create with an invalid URI as an operand exits with 2.
+                for baduri in ("file://not/valid", "http://not@$$_-^valid"):
+                        self.pkgrepo("create %s" % baduri, exit=2)
 
                 # Verify create works whether -s is used to supply the location
                 # of the new repository or it is passed as an operand.  Also
                 # verify that either a path or URI can be used to provide the
                 # repository's location.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
+                repo_path = self.dc.get_repodir()
+                shutil.rmtree(repo_path)
+                repo_uri = self.dc.get_repo_url()
 
                 # Specify using global option and path.
-                self.pkgrepo("-s %s create" % repo_path)
+                self.pkgrepo("create -s %s" % repo_path)
                 # This will fail if a repository wasn't created.
-                self.get_repo(repo_path)
+                self.dc.get_repo()
                 shutil.rmtree(repo_path)
 
                 # Specify using operand and URI.
@@ -157,276 +154,592 @@ class TestPkgRepo(pkg5unittest.CliTestCase):
                 self.get_repo(repo_path)
                 shutil.rmtree(repo_path)
 
-        def test_02_property(self):
-                """Verify pkgrepo property and set-property works as expected.
-                """
+        def test_02_get_set_property(self):
+                """Verify pkgrepo get and set works as expected."""
 
                 # Verify command without a repository exits.
-                self.pkgrepo("property", exit=2)
+                self.pkgrepo("get", exit=2)
 
-                # Create a repository.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
+                # Create a repository (a version 3 one is needed for these
+                # tests).
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+                depot_uri = self.dc.get_depot_url()
+                shutil.rmtree(repo_path)
                 self.assert_(not os.path.exists(repo_path))
-                self.pkgrepo("-s %s create" % repo_path)
+                self.pkgrepo("create -s %s --version=3" % repo_path)
 
-                # Verify property handles unknown properties gracefully.
-                self.pkgrepo("-s %s property repository/unknown" % repo_uri,
-                    exit=1)
+                # Verify get handles unknown properties gracefully.
+                self.pkgrepo("get -s %s repository/unknown" % repo_uri, exit=1)
 
-                # Verify property returns partial failure if only some
+                # Verify get returns partial failure if only some
                 # properties cannot be found.
-                self.pkgrepo("-s %s property repository/origins "
+                self.pkgrepo("get -s %s repository/origins "
                     "repository/unknown" % repo_uri, exit=3)
 
-                # Verify full default output.
-                self.pkgrepo("-s %s property" % repo_uri)
-                expected = """\
+                # Verify full default output for both network and file case.
+                self.dc.start()
+                for uri in (repo_uri, depot_uri):
+                        self.pkgrepo("get -s %s" % uri)
+                        expected = """\
 SECTION    PROPERTY           VALUE
-feed       description        
+feed       description        ""
 feed       icon               web/_themes/pkg-block-icon.png
-feed       id                 
+feed       id                 ""
 feed       logo               web/_themes/pkg-block-logo.png
-feed       name               package repository feed
+feed       name               package\ repository\ feed
 feed       window             24
-publisher  alias              
-publisher  intermediate_certs []
-publisher  prefix             
-publisher  signing_ca_certs   []
+publisher  alias              ""
+publisher  intermediate_certs ()
+publisher  prefix             test
+publisher  signing_ca_certs   ()
 repository collection_type    core
-repository description        
-repository detailed_url       
-repository legal_uris         []
-repository maintainer         
-repository maintainer_url     
-repository mirrors            []
-repository name               package repository
-repository origins            []
+repository description        ""
+repository detailed_url       ""
+repository legal_uris         ()
+repository maintainer         ""
+repository maintainer_url     ""
+repository mirrors            ()
+repository name               package\ repository
+repository origins            ()
 repository refresh_seconds    14400
-repository registration_uri   
-repository related_uris       []
+repository registration_uri   ""
+repository related_uris       ()
+repository version            3
 """
-                self.assertEqualDiff(expected, self.output)
+                        self.assertEqualDiff(expected, self.output)
+                self.dc.stop()
 
                 # Verify full tsv output.
-                self.pkgrepo("-s %s property -Ftsv" % repo_uri)
+                self.pkgrepo("get -s %s -Ftsv" % repo_uri)
                 expected = """\
 SECTION\tPROPERTY\tVALUE
-feed\tdescription\t
+feed\tdescription\t""
 feed\ticon\tweb/_themes/pkg-block-icon.png
-feed\tid\t
+feed\tid\t""
 feed\tlogo\tweb/_themes/pkg-block-logo.png
-feed\tname\tpackage repository feed
+feed\tname\tpackage\ repository\ feed
 feed\twindow\t24
-publisher\talias\t
-publisher\tintermediate_certs\t[]
-publisher\tprefix\t
-publisher\tsigning_ca_certs\t[]
+publisher\talias\t""
+publisher\tintermediate_certs\t()
+publisher\tprefix\ttest
+publisher\tsigning_ca_certs\t()
 repository\tcollection_type\tcore
-repository\tdescription\t
-repository\tdetailed_url\t
-repository\tlegal_uris\t[]
-repository\tmaintainer\t
-repository\tmaintainer_url\t
-repository\tmirrors\t[]
-repository\tname\tpackage repository
-repository\torigins\t[]
+repository\tdescription\t""
+repository\tdetailed_url\t""
+repository\tlegal_uris\t()
+repository\tmaintainer\t""
+repository\tmaintainer_url\t""
+repository\tmirrors\t()
+repository\tname\tpackage\ repository
+repository\torigins\t()
 repository\trefresh_seconds\t14400
-repository\tregistration_uri\t
-repository\trelated_uris\t[]
+repository\tregistration_uri\t""
+repository\trelated_uris\t()
+repository\tversion\t3
 """
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify that -H omits headers for full output.
-                self.pkgrepo("-s %s property -H" % repo_uri)
+                self.pkgrepo("get -s %s -H" % repo_uri)
                 self.assert_(self.output.find("SECTION") == -1)
 
-                # Verify specific property default output and that
-                # -H omits headers for specific property output.
-                self.pkgrepo("-s %s property publisher/prefix" %
+                # Verify specific get default output and that
+                # -H omits headers for specific get output.
+                self.pkgrepo("get -s %s publisher/prefix" %
                     repo_uri)
                 expected = """\
 SECTION    PROPERTY           VALUE
-publisher  prefix             
+publisher  prefix             test
 """
                 self.assertEqualDiff(expected, self.output)
 
-                
-                self.pkgrepo("-s %s property -H publisher/prefix "
+                self.pkgrepo("get -s %s -H publisher/prefix "
                     "repository/origins" % repo_uri)
                 expected = """\
-publisher  prefix             
-repository origins            []
+publisher  prefix             test
+repository origins            ()
 """
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify specific property tsv output.
-                self.pkgrepo("-s %s property -F tsv publisher/prefix" %
+                # Verify specific get tsv output.
+                self.pkgrepo("get -s %s -F tsv publisher/prefix" %
                     repo_uri)
                 expected = """\
 SECTION\tPROPERTY\tVALUE
-publisher\tprefix\t
+publisher\tprefix\ttest
 """
                 self.assertEqualDiff(expected, self.output)
 
-                self.pkgrepo("-s %s property -HF tsv publisher/prefix "
+                self.pkgrepo("get -s %s -HF tsv publisher/prefix "
                     "repository/origins" % repo_uri)
                 expected = """\
-publisher\tprefix\t
-repository\torigins\t[]
+publisher\tprefix\ttest
+repository\torigins\t()
 """
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify set-property fails if no property is provided.
-                self.pkgrepo("-s %s set-property" % repo_uri, exit=2)
+                # Verify set fails if no property is provided.
+                self.pkgrepo("set -s %s" % repo_uri, exit=2)
 
-                # Verify set-property gracefully handles bad property values.
-                self.pkgrepo("-s %s set-property publisher/prefix=_invalid" %
-                    repo_uri, exit=1)
+                # Verify set gracefully handles bad property values.
+                self.pkgrepo("set -s %s publisher/prefix=_invalid" %repo_uri,
+                    exit=1)
 
-                # Verify set-property can set single value properties.
-                self.pkgrepo("-s %s set-property "
-                    "publisher/prefix=opensolaris.org" % repo_uri)
-                self.pkgrepo("-s %s property -HF tsv publisher/prefix" %
+                # Verify set can set single value properties.
+                self.pkgrepo("set -s %s publisher/prefix=opensolaris.org" %
                     repo_uri)
+                self.pkgrepo("get -s %s -HF tsv publisher/prefix" % repo_uri)
                 expected = """\
 publisher\tprefix\topensolaris.org
 """
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify set-property can set multi-value properties.
-                self.pkgrepo("-s %s set-property "
+                # Verify set can set multi-value properties.
+                self.pkgrepo("set -s %s "
                     "'repository/origins=(http://pkg.opensolaris.org/dev "
                     "http://pkg-eu-2.opensolaris.org/dev)'" % repo_uri)
-                self.pkgrepo("-s %s property -HF tsv repository/origins" %
-                    repo_uri)
+                self.pkgrepo("get -s %s -HF tsv repository/origins" % repo_uri)
                 expected = """\
-repository\torigins\t['http://pkg.opensolaris.org/dev', 'http://pkg-eu-2.opensolaris.org/dev']
+repository\torigins\t(http://pkg.opensolaris.org/dev http://pkg-eu-2.opensolaris.org/dev)
 """
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify set-property can set unknown properties.
-                self.pkgrepo("-s %s set-property 'foo/bar=value'" % repo_uri)
-                self.pkgrepo("-s %s property -HF tsv foo/bar" % repo_uri)
+                # Verify set can set unknown properties.
+                self.pkgrepo("set -s %s 'foo/bar=value'" % repo_uri)
+                self.pkgrepo("get -s %s -HF tsv foo/bar" % repo_uri)
                 expected = """\
 foo\tbar\tvalue
 """
                 self.assertEqualDiff(expected, self.output)
 
-        def test_03_publisher(self):
-                """Verify pkgrepo publisher works as expected."""
-
-                # Verify command without a repository exits.
-                self.pkgrepo("publisher", exit=2)
-
-                # Create a repository.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
+                # Create a repository (a version 3 one is needed for this
+                # test).
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+                depot_uri = self.dc.get_depot_url()
+                shutil.rmtree(repo_path)
                 self.assert_(not os.path.exists(repo_path))
-                self.pkgrepo("-s %s create" % repo_path)
+                self.pkgrepo("create -s %s --version=3" % repo_path)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
 
-                # Verify subcommand behaviour for empty repository and -H
-                # functionality.
-                self.pkgrepo("-s %s publisher" % repo_uri)
+                # Verify setting publisher properties fails for version 3
+                # repositories.
+                self.pkgrepo("set -s %s -p all "
+                    "repository/origins=http://localhost" % repo_uri, exit=1)
+
+                # Create version 4 repository.
+                shutil.rmtree(repo_path)
+                self.assert_(not os.path.exists(repo_path))
+                self.create_repo(repo_path)
+
+                # Verify get handles unknown publishers gracefully.
+                self.pkgrepo("get -s %s -p test repository/origins" % repo_uri,
+                    exit=1)
+
+                # Add a publisher by setting properties for one that doesn't
+                # exist yet.
+                self.pkgrepo("set -s %s -p test "
+                    "repository/name='package repository' "
+                    "repository/refresh-seconds=7200" %
+                    repo_uri)
+
+                # Verify get handles unknown properties gracefully.
+                self.pkgrepo("get -s %s -p test repository/unknown" % repo_uri,
+                    exit=1)
+
+                # Verify get returns partial failure if only some properties
+                # cannot be found.
+                self.pkgrepo("get -s %s -p all repository/origins "
+                    "repository/unknown" % repo_uri, exit=3)
+
+                # Verify full default output for both network and file case.
+                self.dc.start()
+                for uri in (repo_uri, depot_uri):
+                        self.pkgrepo("get -s %s -p all" % uri)
+                        expected = """\
+PUBLISHER SECTION    PROPERTY         VALUE
+test      publisher  alias            
+test      publisher  prefix           test
+test      repository collection-type  core
+test      repository description      
+test      repository legal-uris       ()
+test      repository mirrors          ()
+test      repository name             package\ repository
+test      repository origins          ()
+test      repository refresh-seconds  7200
+test      repository registration-uri ""
+test      repository related-uris     ()
+"""
+                        self.assertEqualDiff(expected, self.output)
+                self.dc.stop()
+
+                # Verify full tsv output.
+                self.pkgrepo("get -s %s -p all -Ftsv" % repo_uri)
                 expected = """\
-PUBLISHER                PACKAGES VERSIONS UPDATED
+PUBLISHER\tSECTION\tPROPERTY\tVALUE
+test\tpublisher\talias\t
+test\tpublisher\tprefix\ttest
+test\trepository\tcollection-type\tcore
+test\trepository\tdescription\t
+test\trepository\tlegal-uris\t()
+test\trepository\tmirrors\t()
+test\trepository\tname\tpackage\ repository
+test\trepository\torigins\t()
+test\trepository\trefresh-seconds\t7200
+test\trepository\tregistration-uri\t""
+test\trepository\trelated-uris\t()
 """
                 self.assertEqualDiff(expected, self.output)
 
-                self.pkgrepo("-s %s publisher -H" % repo_uri)
+                # Verify that -H omits headers for full output.
+                self.pkgrepo("get -s %s -p all -H" % repo_uri)
+                self.assert_(self.output.find("SECTION") == -1)
+
+                # Verify specific get default output and that
+                # -H omits headers for specific get output.
+                self.pkgrepo("get -s %s -p all publisher/prefix" %
+                    repo_uri)
+                expected = """\
+PUBLISHER SECTION    PROPERTY         VALUE
+test      publisher  prefix           test
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("get -s %s -p all -H publisher/prefix "
+                    "repository/origins" % repo_uri)
+                expected = """\
+test      publisher  prefix           test
+test      repository origins          ()
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify specific get tsv output.
+                self.pkgrepo("get -s %s -p all -F tsv publisher/prefix" %
+                    repo_uri)
+                expected = """\
+PUBLISHER\tSECTION\tPROPERTY\tVALUE
+test\tpublisher\tprefix\ttest
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("get -s %s -HF tsv -p all publisher/prefix "
+                    "repository/origins" % repo_uri)
+                expected = """\
+test\tpublisher\tprefix\ttest
+test\trepository\torigins\t()
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify set fails if no property is provided.
+                self.pkgrepo("set -s %s -p test" % repo_uri, exit=2)
+
+                # Verify set gracefully handles bad property values and
+                # properties that can't be set.
+                self.pkgrepo("set -s %s -p test publisher/alias=_invalid" %
+                    repo_uri, exit=1)
+                self.pkgrepo("set -s %s -p test publisher/prefix=_invalid" %
+                    repo_uri, exit=2)
+
+                # Verify set can set single value properties.
+                self.pkgrepo("set -s %s -p all publisher/alias=test1" %
+                    repo_uri)
+                self.pkgrepo("get -s %s -p all -HF tsv publisher/alias "
+                    "publisher/prefix" % repo_uri)
+                expected = """\
+test\tpublisher\talias\ttest1
+test\tpublisher\tprefix\ttest
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify set can set multi-value properties.
+                self.pkgrepo("set -s %s -p all "
+                    "'repository/origins=(http://pkg.opensolaris.org/dev "
+                    "http://pkg-eu-2.opensolaris.org/dev)'" % repo_uri)
+                self.pkgrepo("get -s %s -p all -HF tsv repository/origins" %
+                    repo_uri)
+                expected = """\
+test\trepository\torigins\t(http://pkg-eu-2.opensolaris.org/dev/ http://pkg.opensolaris.org/dev/)
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify set can not set unknown properties.
+                self.pkgrepo("set -s %s -p all 'foo/bar=value'" % repo_uri,
+                    exit=2)
+
+                # Add another publisher by setting a property for it.
+                self.pkgrepo("set -p test2 -s %s publisher/alias=''" % repo_uri)
+
+                # Verify get returns properties for multiple publishers.
+                expected = """\
+test\tpublisher\talias\ttest1
+test\tpublisher\tprefix\ttest
+test\trepository\tcollection-type\tcore
+test\trepository\tdescription\t
+test\trepository\tlegal-uris\t()
+test\trepository\tmirrors\t()
+test\trepository\tname\tpackage\ repository
+test\trepository\torigins\t(http://pkg-eu-2.opensolaris.org/dev/ http://pkg.opensolaris.org/dev/)
+test\trepository\trefresh-seconds\t7200
+test\trepository\tregistration-uri\t""
+test\trepository\trelated-uris\t()
+test2\tpublisher\talias\t""
+test2\tpublisher\tprefix\ttest2
+test2\trepository\tcollection-type\tcore
+test2\trepository\tdescription\t""
+test2\trepository\tlegal-uris\t()
+test2\trepository\tmirrors\t()
+test2\trepository\tname\t""
+test2\trepository\torigins\t()
+test2\trepository\trefresh-seconds\t""
+test2\trepository\tregistration-uri\t""
+test2\trepository\trelated-uris\t()
+"""
+                self.pkgrepo("get -s %s -p all -HFtsv" % repo_uri)
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("get -s %s -p test -p test2 -HFtsv" % repo_uri)
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify get can list multiple specific properties for
+                # multiple specific publishers correctly.
+                expected = """\
+test\tpublisher\talias\ttest1
+test2\tpublisher\talias\t""
+"""
+                self.pkgrepo("get -s %s -HFtsv -p test -p test2 "
+                    "publisher/alias" % repo_uri)
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify get has correct output even when some publishers
+                # can't be found (and exits with partial failure).
+                expected = """\
+test\tpublisher\talias\ttest1
+test\tpublisher\tprefix\ttest
+test\trepository\tcollection-type\tcore
+test\trepository\tdescription\t
+test\trepository\tlegal-uris\t()
+test\trepository\tmirrors\t()
+test\trepository\tname\tpackage\ repository
+test\trepository\torigins\t(http://pkg-eu-2.opensolaris.org/dev/ http://pkg.opensolaris.org/dev/)
+test\trepository\trefresh-seconds\t7200
+test\trepository\tregistration-uri\t""
+test\trepository\trelated-uris\t()
+"""
+                self.pkgrepo("get -s %s -p test -p bogus -HFtsv" % repo_uri,
+                    exit=3)
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify set can set multiple properties for all or specific
+                # publishers when multiple publishers are known.
+                self.pkgrepo("set -s %s -p all "
+                    "repository/description='Support Repository'" % repo_uri)
+                expected = """\
+test\trepository\tdescription\tSupport\\ Repository
+test2\trepository\tdescription\tSupport\\ Repository
+"""
+                self.pkgrepo("get -s %s -HFtsv -p all repository/description" %
+                    repo_uri)
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("set -s %s -p test2 "
+                    "repository/description='2nd Support Repository'" %
+                        repo_uri)
+                expected = """\
+test\trepository\tdescription\tSupport\\ Repository
+test2\trepository\tdescription\t2nd\\ Support\\ Repository
+"""
+                self.pkgrepo("get -s %s -HFtsv -p all repository/description" %
+                    repo_uri)
+                self.assertEqualDiff(expected, self.output)
+
+        def __test_info(self, repo_path, repo_uri):
+                """Private function to verify publisher subcommand behaviour."""
+
+                # Verify subcommand behaviour for empty repository and -H
+                # functionality.
+                self.pkgrepo("info -s %s" % repo_uri)
+                expected = """\
+PUBLISHER PACKAGES STATUS           UPDATED
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                self.pkgrepo("info -s %s -H" % repo_uri)
                 expected = """\
 """
                 self.assertEqualDiff(expected, self.output)
 
                 # Set a default publisher.
-                self.pkgrepo("-s %s set-property publisher/prefix=test" %
-                    repo_uri)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+
+                # If a depot is running, this will trigger a reload of the
+                # configuration data.
+                self.dc.refresh()
 
                 # Publish some packages.
                 self.pkgsend_bulk(repo_uri, (self.tree10, self.amber10,
                     self.amber20, self.truck10, self.truck20))
 
-                # Verify publisher handles unknown publishers gracefully.
-                self.pkgrepo("-s %s publisher unknown" % repo_uri, exit=1)
+                # Verify info handles unknown publishers gracefully.
+                self.pkgrepo("info -s %s -p unknown" % repo_uri, exit=1)
 
-                # Verify publisher returns partial failure if only some
-                # publishers cannot be found.
-                self.pkgrepo("-s %s publisher test unknown" % repo_uri, exit=3)
+                # Verify info returns partial failure if only some publishers
+                # cannot be found.
+                self.pkgrepo("info -s %s -p test -p unknown" % repo_uri, exit=3)
 
                 # Verify full default output.
                 repo = self.get_repo(repo_path)
-                self.pkgrepo("-s %s publisher -H" % repo_uri)
+                self.pkgrepo("info -s %s -H" % repo_uri)
+                cat = repo.get_catalog("test")
+                cat_lm = cat.last_modified.isoformat()
                 expected = """\
-test                     3        5        %sZ
-""" % repo.catalog.last_modified.isoformat()
+test      3        online           %sZ
+""" % cat_lm
                 self.assertEqualDiff(expected, self.output)
 
                 # Verify full tsv output.
-                self.pkgrepo("-s %s publisher -HF tsv" % repo_uri)
+                self.pkgrepo("info -s %s -HF tsv" % repo_uri)
                 expected = """\
-test\t3\t5\t%sZ
-""" % repo.catalog.last_modified.isoformat()
+test\t3\tonline\t%sZ
+""" % cat_lm
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify specific publisher default output.
-                self.pkgrepo("-s %s publisher -H test" % repo_uri)
+                # Verify info specific publisher default output.
+                self.pkgrepo("info -s %s -H -p test" % repo_uri)
                 expected = """\
-test                     3        5        %sZ
-""" % repo.catalog.last_modified.isoformat()
+test      3        online           %sZ
+""" % cat_lm
                 self.assertEqualDiff(expected, self.output)
 
-                # Verify specific publisher tsv output.
-                self.pkgrepo("-s %s publisher -HF tsv test" % repo_uri)
+                # Verify info specific publisher tsv output.
+                self.pkgrepo("info -s %s -HF tsv -p test" % repo_uri)
                 expected = """\
-test\t3\t5\t%sZ
-""" % repo.catalog.last_modified.isoformat()
+test\t3\tonline\t%sZ
+""" % cat_lm
                 self.assertEqualDiff(expected, self.output)
 
-        def test_04_rebuild(self):
-                """Verify pkgrepo rebuild works as expected."""
+        def test_03_info(self):
+                """Verify pkgrepo info works as expected."""
 
-                # Verify create without a destination exits.
-                self.pkgrepo("rebuild", exit=2)
+                # Verify command without a repository exits.
+                self.pkgrepo("info", exit=2)
 
-                # Create a repository.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
+                # Create a repository, verify file-based repository access,
+                # and then discard the repository.
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+                shutil.rmtree(repo_path)
+                self.create_repo(repo_path)
+                self.__test_info(repo_path, repo_uri)
+                shutil.rmtree(repo_path)
+
+                # Create a repository and verify http-based repository access.
                 self.assert_(not os.path.exists(repo_path))
-                repo = self.create_repo(repo_path, properties={ "publisher": {
-                    "prefix": "test" } })
+                self.create_repo(repo_path)
+                self.dc.clear_property("publisher", "prefix")
+                self.dc.start()
+                repo_uri = self.dc.get_depot_url()
+                self.__test_info(repo_path, repo_uri)
+                self.dc.stop()
 
+        def __test_rebuild(self, repo_path, repo_uri):
+                """Private function to verify rebuild subcommand behaviour."""
+
+                #
                 # Verify rebuild works for an empty repository.
-                lm = repo.catalog.last_modified.isoformat()
-                self.pkgrepo("-s %s rebuild" % repo_path)
+                #
                 repo = self.get_repo(repo_path)
-                self.assertNotEqual(lm, repo.catalog.last_modified.isoformat())
+                lm = repo.get_catalog("test").last_modified.isoformat()
+                self.pkgrepo("rebuild -s %s" % repo_uri)
+                self.wait_repo(repo_path)
+                repo = self.get_repo(repo_path)
+                nlm = repo.get_catalog("test").last_modified.isoformat()
+                self.assertNotEqual(lm, nlm)
 
-                # Publish some packages.
+                #
+                # Verify rebuild --no-index works for an empty repository.
+                #
+                lm = repo.get_catalog("test").last_modified.isoformat()
+                self.pkgrepo("rebuild -s %s --no-index" % repo_uri)
+                self.wait_repo(repo_path)
+                repo = self.get_repo(repo_path)
+                nlm = repo.get_catalog("test").last_modified.isoformat()
+                self.assertNotEqual(lm, nlm)
+
+                #
+                # Verify rebuild --no-catalog works for an empty repository,
+                # and that the catalog itself does not change.
+                #
+                lm = repo.get_catalog("test").last_modified.isoformat()
+                self.pkgrepo("rebuild -s %s --no-catalog" % repo_uri)
+                self.wait_repo(repo_path)
+                repo = self.get_repo(repo_path)
+                nlm = repo.get_catalog("test").last_modified.isoformat()
+                self.assertEqual(lm, nlm)
+
+                #
+                # Publish some packages and verify they are known afterwards.
+                #
                 plist = self.pkgsend_bulk(repo_uri, (self.amber10, self.tree10))
-
-                # Check that the published packages are seen.
                 repo = self.get_repo(repo_path)
                 self.assertEqual(list(
-                    str(f) for f in repo.catalog.fmris(ordered=True)
+                    str(f) for f in repo.get_catalog("test").fmris(ordered=True)
                 ), plist)
+
+                #
+                # Verify that rebuild --no-catalog works for a repository with
+                # packages.
+                #
+
+                # Now rebuild and verify packages are still known and catalog
+                # remains unchanged.
+                lm = repo.get_catalog("test").last_modified.isoformat()
+                self.pkgrepo("rebuild -s %s --no-catalog" % repo_uri)
+                self.wait_repo(repo_path)
+                repo = self.get_repo(repo_path)
+                self.assertEqual(plist,
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
+                nlm = repo.get_catalog("test").last_modified.isoformat()
+                self.assertEqual(lm, nlm)
+
+                # Destroy the catalog.
+                repo.get_catalog("test").destroy()
+
+                # Reload the repository object and verify no packages are known.
+                repo = self.get_repo(repo_path)
+                self.assertEqual(set(), repo.get_catalog("test").names())
+
+                # Now rebuild and verify packages are still unknown and catalog
+                # remains unchanged.
+                lm = repo.get_catalog("test").last_modified.isoformat()
+                self.pkgrepo("rebuild -s %s --no-catalog" % repo_uri)
+                self.wait_repo(repo_path)
+                repo = self.get_repo(repo_path)
+                self.assertEqual(set(), repo.get_catalog("test").names())
+                nlm = repo.get_catalog("test").last_modified.isoformat()
+                self.assertEqual(lm, nlm)
 
                 #
                 # Verify rebuild will find all the packages again and that they
                 # can be searched for.
                 #
 
-                # Destroy the catalog and index.
-                repo.catalog.destroy()
-                shutil.rmtree(repo.index_root)
+                # Destroy the catalog.
+                repo.get_catalog("test").destroy()
 
                 # Reload the repository object and verify no packages are known.
                 repo = self.get_repo(repo_path)
-                self.assertEqual(set(), repo.catalog.names())
+                self.assertEqual(set(), repo.get_catalog("test").names())
 
-                self.pkgrepo("-s %s rebuild" % repo_uri)
+                # Now rebuild and verify packages are known and can be searched
+                # for.
+                self.pkgrepo("rebuild -s %s" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path)
                 self.assertEqual(plist,
-                    list(str(f) for f in repo.catalog.fmris(ordered=True)))
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
 
                 query = Query("tree", False, Query.RETURN_PACKAGES, None, None)
                 result = list(e for e in [r for r in repo.search([query])][0])
@@ -453,16 +766,18 @@ test\t3\t5\t%sZ
 
                 # Destroy the catalog only (to verify that rebuild destroys
                 # the index).
-                repo.catalog.destroy()
+                repo.get_catalog("test").destroy()
 
                 # Reload the repository object and verify no packages are known.
                 repo = self.get_repo(repo_path)
-                self.assertEqual(set(), repo.catalog.names())
+                self.assertEqual(set(), repo.get_catalog("test").names())
 
-                self.pkgrepo("-s %s rebuild --no-index" % repo_uri)
+                self.pkgrepo("rebuild -s %s --no-index" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist,
-                    list(str(f) for f in repo.catalog.fmris(ordered=True)))
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
 
                 query = Query("tree", False, Query.RETURN_PACKAGES, None, None)
                 try:
@@ -472,52 +787,65 @@ test\t3\t5\t%sZ
                             ][0]
                         )
                 except Exception, e:
-                        self.assert_(isinstance(e, se.NoIndexException))
+                        self.debug("query exception: %s" % e)
+                        self.assert_(isinstance(e,
+                            sr.RepositorySearchUnavailableError))
                 else:
-                        raise RuntimeError("Expected NoIndexException")
+                        raise RuntimeError("Expected "
+                            "RepositorySearchUnavailableError")
 
-        def test_05_refresh(self):
-                """Verify pkgrepo refresh works as expected."""
+        def test_04_rebuild(self):
+                """Verify pkgrepo rebuild works as expected."""
 
-                # Verify create without a destination exits.
-                self.pkgrepo("refresh", exit=2)
+                # Verify rebuild without a target exits.
+                self.pkgrepo("rebuild", exit=2)
 
-                # Create a repository.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
+                # Create a repository, verify file-based repository access,
+                # and then discard the repository.
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+                self.__test_rebuild(repo_path, repo_uri)
+                shutil.rmtree(repo_path)
+
+                # Create a repository and verify network-based repository
+                # access.
                 self.assert_(not os.path.exists(repo_path))
-                repo = self.create_repo(repo_path, properties={ "publisher": {
+                self.create_repo(repo_path, properties={ "publisher": {
                     "prefix": "test" } })
+                self.dc.clear_property("publisher", "prefix")
+                self.dc.start()
+                repo_uri = self.dc.get_depot_url()
+                self.__test_rebuild(repo_path, repo_uri)
+                self.dc.stop()
+
+        def __test_refresh(self, repo_path, repo_uri):
+                """Private function to verify refresh subcommand behaviour."""
 
                 # Verify refresh doesn't fail for an empty repository.
-                self.pkgrepo("-s %s refresh" % repo_path)
+                self.pkgrepo("refresh -s %s" % repo_path)
+                self.wait_repo(repo_path)
 
                 # Publish some packages.
                 plist = self.pkgsend_bulk(repo_uri, (self.amber10, self.tree10))
-
-                # Check that the published packages are seen.
-                repo = self.get_repo(repo_path)
-                self.assertEqual(list(
-                    str(f) for f in repo.catalog.fmris(ordered=True)
-                ), plist)
 
                 #
                 # Verify refresh will find new packages and that they can be
                 # searched for.
                 #
 
-                # Destroy the index.
-                shutil.rmtree(repo.index_root)
-
-                # Reload the repository object.
+                # Reload the repository object and verify published packages
+                # are known.
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist,
-                    list(str(f) for f in repo.catalog.fmris(ordered=True)))
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
 
-                self.pkgrepo("-s %s refresh" % repo_uri)
+                self.pkgrepo("refresh -s %s" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist,
-                    list(str(f) for f in repo.catalog.fmris(ordered=True)))
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
 
                 query = Query("tree", False, Query.RETURN_PACKAGES, None, None)
                 result = list(e for e in [r for r in repo.search([query])][0])
@@ -541,14 +869,15 @@ test\t3\t5\t%sZ
                 # Now publish a new package and refresh again with --no-index,
                 # and verify that search data doesn't include the new package.
                 #
-                plist.extend(self.pkgsend_bulk(repo_uri, self.truck10,
-                    no_index=True))
+                plist.extend(self.pkgsend_bulk(repo_uri, self.truck10))
                 fmris.append(fmri.PkgFmri(plist[-1]).get_fmri(anarchy=True))
 
-                self.pkgrepo("-s %s refresh --no-index" % repo_uri)
+                self.pkgrepo("refresh -s %s --no-index" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqualDiff(plist,
-                    list(str(f) for f in repo.catalog.fmris(ordered=True)))
+                    list(str(f) for f in repo.get_catalog("test").fmris(
+                    ordered=True)))
 
                 query = Query("truck", False, Query.RETURN_PACKAGES, None, None)
                 result = list(e for e in [r for r in repo.search([query])][0])
@@ -561,13 +890,14 @@ test\t3\t5\t%sZ
                 # search.
                 #
                 plist.extend(self.pkgsend_bulk(repo_uri, self.zoo10,
-                    no_catalog=True, no_index=True))
+                    no_catalog=True))
                 fmris.append(fmri.PkgFmri(plist[-1]).get_fmri(anarchy=True))
 
-                self.pkgrepo("-s %s refresh --no-catalog" % repo_uri)
+                self.pkgrepo("refresh -s %s --no-catalog" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist[:-1], list(
-                    str(f) for f in repo.catalog.fmris(ordered=True)
+                    str(f) for f in repo.get_catalog("test").fmris(ordered=True)
                 ))
 
                 query = Query("truck", False, Query.RETURN_PACKAGES, None, None)
@@ -582,11 +912,36 @@ test\t3\t5\t%sZ
 
                 # Finally, run refresh once more and verify that all packages
                 # are now visible in the catalog.
-                self.pkgrepo("-s %s refresh" % repo_uri)
+                self.pkgrepo("refresh -s %s" % repo_uri)
+                self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist, list(
-                    str(f) for f in repo.catalog.fmris(ordered=True)
+                    str(f) for f in repo.get_catalog("test").fmris(ordered=True)
                 ))
+
+        def test_05_refresh(self):
+                """Verify pkgrepo refresh works as expected."""
+
+                # Verify create without a destination exits.
+                self.pkgrepo("refresh", exit=2)
+
+                # Create a repository, verify file-based repository access,
+                # and then discard the repository.
+                repo_path = self.dc.get_repodir()
+                repo_uri = self.dc.get_repo_url()
+                self.__test_refresh(repo_path, repo_uri)
+                shutil.rmtree(repo_path)
+
+                # Create a repository and verify network-based repository
+                # access.
+                self.assert_(not os.path.exists(repo_path))
+                self.create_repo(repo_path, properties={ "publisher": {
+                    "prefix": "test" } })
+                self.dc.clear_property("publisher", "prefix")
+                self.dc.start()
+                repo_uri = self.dc.get_depot_url()
+                self.__test_refresh(repo_path, repo_uri)
+                self.dc.stop()
 
         def test_06_version(self):
                 """Verify pkgrepo version works as expected."""
@@ -596,11 +951,59 @@ test\t3\t5\t%sZ
 
                 # Verify version exits with error if a repository location is
                 # provided.
-                self.pkgrepo("-s %s version" % self.test_root, exit=2)
+                self.pkgrepo("version -s %s" % self.test_root, exit=2)
 
                 # Verify version output is sane.
                 self.pkgrepo("version")
                 self.assert_(self.output.find(pkg.VERSION) != -1)
+
+        def __test_add_remove_certs(self, repo_uri, pubs=[]):
+                """Private helper method to test certificate add and remove
+                for default publisher case."""
+
+                pub_opt = "".join(" -p %s " % p for p in pubs)
+                exit = 0
+                if "nosuchpub" in pubs:
+                        if len(pubs) > 1:
+                                # Expect partial in this case.
+                                exit = 3
+                        else:
+                                # Expect failure in this case.
+                                exit = 1
+
+                ca3_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
+                ca1_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta1_cert.pem")
+
+                ca1_hsh = self.calc_file_hash(ca1_pth)
+                ca3_hsh = self.calc_file_hash(ca3_pth)
+
+                self.pkgrepo("add-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_pth), exit=exit)
+                self.pkgrepo("add-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_pth), exit=exit)
+
+                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
+                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
+                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
+                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
+
+                self.pkgrepo("add-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_pth), exit=exit)
+                self.pkgrepo("add-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_pth), exit=exit)
+
+                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
+                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
+                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
+                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
+                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
 
         def test_07_certs(self):
                 """Verify that certificate commands work as expected."""
@@ -608,45 +1011,59 @@ test\t3\t5\t%sZ
                 # Create a repository.
                 repo_path = os.path.join(self.test_root, "repo")
                 repo_uri = "file:%s" % repo_path
-                self.assert_(not os.path.exists(repo_path))
-                self.pkgrepo("-s %s create" % repo_path)
+                self.create_repo(repo_path)
 
                 ca3_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
                 ca1_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta1_cert.pem")
-                
-                self.pkgrepo("-s %s add-signing-ca-cert %s" %
-                    (repo_uri, ca3_pth))
-                self.pkgrepo("-s %s add-signing-ca-cert %s" %
-                    (repo_uri, ca1_pth))
 
                 ca1_hsh = self.calc_file_hash(ca1_pth)
                 ca3_hsh = self.calc_file_hash(ca3_pth)
 
-                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
-                    (repo_uri, ca1_hsh))
-                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
-                    (repo_uri, ca3_hsh))
-                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
-                    (repo_uri, ca1_hsh))
-                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
-                    (repo_uri, ca3_hsh))
-
+                # Verify that signing commands will fail gracefully if no
+                # default publisher has been set and a publisher was not
+                # specified.
+                self.pkgrepo("-s %s add-signing-ca-cert %s" % (repo_uri,
+                    ca3_pth), exit=1)
                 self.pkgrepo("-s %s add-signing-intermediate-cert %s" %
-                    (repo_uri, ca3_pth))
-                self.pkgrepo("-s %s add-signing-intermediate-cert %s" %
-                    (repo_uri, ca1_pth))
-
-                ca1_hsh = self.calc_file_hash(ca1_pth)
-                ca3_hsh = self.calc_file_hash(ca3_pth)
-
-                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
-                    (repo_uri, ca1_hsh))
-                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
-                    (repo_uri, ca3_hsh))
+                    (repo_uri, ca3_pth), exit=1)
                 self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
-                    (repo_uri, ca1_hsh))
-                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
-                    (repo_uri, ca3_hsh))
+                    (repo_uri, ca3_hsh), exit=1)
+                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
+                    (repo_uri, ca1_hsh), exit=1)
+
+                # Now verify that add / remove work as expected for a
+                # repository.
+
+                # Test default publisher case.
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+                self.__test_add_remove_certs(repo_uri)
+
+                # Test specific publisher case.
+                shutil.rmtree(repo_path)
+                self.create_repo(repo_path)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+                self.__test_add_remove_certs(repo_uri, ["test"])
+                self.__test_add_remove_certs(repo_uri, ["nosuchpub"])
+
+                # Test multiple publisher case.
+                shutil.rmtree(repo_path)
+                self.create_repo(repo_path)
+                self.pkgrepo("set -s %s -p test publisher/alias=test" %
+                    repo_path)
+                self.pkgrepo("set -s %s -p test2 publisher/alias=test2" %
+                    repo_path)
+                self.__test_add_remove_certs(repo_uri, ["test", "test2"])
+                self.__test_add_remove_certs(repo_uri, ["test", "test2",
+                    "nosuchpub"])
+
+                # Last, verify that add/remove works for a v3 repository.
+                shutil.rmtree(repo_path)
+                self.create_repo(repo_path, version=3)
+                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
+                self.__test_add_remove_certs(repo_uri, ["test"])
+                self.__test_add_remove_certs(repo_uri)
+                self.__test_add_remove_certs(repo_uri, ["nosuchpub"])
+
 
 if __name__ == "__main__":
         unittest.main()

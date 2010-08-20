@@ -28,6 +28,7 @@ import difflib
 import errno
 import gettext
 import hashlib
+import logging
 import os
 import pprint
 import shutil
@@ -96,7 +97,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 40
+CLIENT_API_VERSION = 42
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -165,6 +166,27 @@ class AssFailException(Pkg5CommonException):
                 return str
 
 
+class DebugLogHandler(logging.Handler):
+        """This class is a special log handler to redirect logger output to
+        the test case class' debug() method.
+        """
+
+        def __init__(self, test_case):
+                self.test_case = test_case
+                logging.Handler.__init__(self)
+
+        def emit(self, record):
+                self.test_case.debug(record)
+
+def setup_logging(test_case):
+        # Ensure logger messages output by unit tests are redirected
+        # to debug output so they are not shown by default.
+        from pkg.client import global_settings
+        log_handler = DebugLogHandler(test_case)
+        global_settings.info_log_handler = log_handler
+        global_settings.error_log_handler = log_handler
+
+
 class Pkg5TestCase(unittest.TestCase):
 
         # Needed for compatability
@@ -179,6 +201,7 @@ class Pkg5TestCase(unittest.TestCase):
                 self.__pid = os.getpid()
                 self.__pwd = os.getcwd()
                 self.__didteardown = False
+                setup_logging(self)
 
         def __str__(self):
                 return "%s.py %s.%s" % (self.__class__.__module__,
@@ -320,6 +343,7 @@ class Pkg5TestCase(unittest.TestCase):
                 #
                 os.environ["TMPDIR"] = self.__test_root
                 tempfile.tempdir = self.__test_root
+                setup_logging(self)
 
         def impl_tearDown(self):
                 # impl_tearDown exists so that we can ensure that this class's
@@ -466,7 +490,7 @@ class Pkg5TestCase(unittest.TestCase):
                         cmd.extend(opts)
                         cmd.append(c_path)
                         try:
-                                # Make sure to use shell=true so that env.
+                                # Make sure to use shell=True so that env.
                                 # vars and $PATH are evaluated.
                                 self.debugcmd(" ".join(cmd))
                                 s = subprocess.Popen(" ".join(cmd),
@@ -1318,9 +1342,9 @@ class CliTestCase(Pkg5TestCase):
                     (prefix, repourl, additional_args, self.img_path)
                 self.debugcmd(cmdline)
 
-                p = subprocess.Popen(cmdline, shell = True,
-                    stdout = subprocess.PIPE,
-                    stderr = subprocess.STDOUT)
+                p = subprocess.Popen(cmdline, shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
                 output = p.stdout.read()
                 retcode = p.wait()
                 self.debugresult(retcode, 0, output)
@@ -1390,8 +1414,7 @@ class CliTestCase(Pkg5TestCase):
                     " ".join(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit)
 
-        def pkgsend(self, depot_url="", command="", exit=0, comment="",
-            retry400=True):
+        def pkgsend(self, depot_url="", command="", exit=0, comment=""):
                 args = []
                 if depot_url:
                         args.append("-s " + depot_url)
@@ -1429,32 +1452,17 @@ class CliTestCase(Pkg5TestCase):
                 elif (cmdop == "generate" and retcode == 0):
                         published = out
 
-                # This may be a failure due to us being too quick to republish,
-                # and getting the same timestamp twice.  Keep trying for a
-                # little more than 1 second.
-                #
-                # This is a nasty hack which is here as a placeholder until
-                # pkgsend can give us better error granularity.
-                #
-                if cmdop in ["publish", "open"] and retry400 and \
-                    ("status '400'" in errout or
-                    "'open' failed for transaction ID" in errout) and \
-                    "already exists" in errout:
-                        time.sleep(1)
-                        return self.pkgsend(depot_url, command, exit,
-                            comment, retry400=False)
-
                 if retcode == 99:
                         raise TracebackException(cmdline, out, comment)
 
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, exit,
-                            retcode, out, comment)
+                            retcode, out + errout, comment)
 
                 return retcode, published
 
         def pkgsend_bulk(self, depot_url, commands, exit=0, comment="",
-            no_catalog=False, no_index=False):
+            no_catalog=False, refresh_index=False):
                 """ Send a series of packaging commands; useful  for quickly
                     doing a bulk-load of stuff into the repo.  All commands are
                     expected to work; if not, the transaction is abandoned.  If
@@ -1471,8 +1479,6 @@ class CliTestCase(Pkg5TestCase):
                 extra_opts = []
                 if no_catalog:
                         extra_opts.append("--no-catalog")
-                if no_index:
-                        extra_opts.append("--no-index")
                 extra_opts = " ".join(extra_opts)
 
                 plist = []
@@ -1520,13 +1526,17 @@ class CliTestCase(Pkg5TestCase):
                                 if line.startswith("open"):
                                         current_fmri = line[5:].strip()
 
+                        if exit == 0 and refresh_index:
+                                self.pkgrepo("-s %s refresh --no-catalog" %
+                                    depot_url)
                 except UnexpectedExitCodeException, e:
                         if e.exitcode != exit:
                                 raise
                         retcode = e.exitcode
 
                 if retcode != exit:
-                        raise UnexpectedExitCodeException(line, exit, retcode)
+                        raise UnexpectedExitCodeException(line, exit, retcode,
+                            self.output + self.errout)
 
                 return plist
 
@@ -1536,17 +1546,18 @@ class CliTestCase(Pkg5TestCase):
                 cmd = "%s %s" % (prog, " ".join(args))
                 self.cmdline_run(cmd, exit=exit)
 
-        def copy_repository(self, src, src_pub, dest, dest_pub):
+        def copy_repository(self, src, dest, pub_map):
                 """Copies the packages from the src repository to a new
                 destination repository that will be created at dest.  In
                 addition, any packages from the src_pub will be assigned
                 to the dest_pub during the copy.  The new repository will
                 not have a catalog or search indices, so a depot server
                 pointed at the new repository must be started with the
-                --rebuild option."""
+                --rebuild option.
+                """
 
                 # Preserve destination repository's cfg_cache if it exists.
-                dest_cfg = os.path.join(dest, "cfg_cache")
+                dest_cfg = os.path.join(dest, "pkg5.repository")
                 dest_cfg_data = None
                 if os.path.exists(dest_cfg):
                         with open(dest_cfg, "rb") as f:
@@ -1559,38 +1570,64 @@ class CliTestCase(Pkg5TestCase):
                     with open(dest_cfg, "wb") as f:
                             f.write(dest_cfg_data)
 
-                for entry in os.listdir(src):
-                        spath = os.path.join(src, entry)
+                def copy_manifests(src_root, dest_root):
+                        # Now copy each manifest and replace any references to
+                        # the old publisher with that of the new publisher as
+                        # they are copied.
+                        src_pkg_root = os.path.join(src_root, "pkg")
+                        dest_pkg_root = os.path.join(dest_root, "pkg")
+                        for stem in os.listdir(src_pkg_root):
+                                src_pkg_path = os.path.join(src_pkg_root, stem)
+                                dest_pkg_path = os.path.join(dest_pkg_root,
+                                    stem)
+                                for mname in os.listdir(src_pkg_path):
+                                        # Ensure destination manifest directory
+                                        # exists.
+                                        if not os.path.isdir(dest_pkg_path):
+                                                os.makedirs(dest_pkg_path,
+                                                    mode=0755)
 
-                        # Skip the catalog, index, and pkg directories
-                        # as they will be copied manually.  Also skip
-                        # any unknown files in the repository directory.
-                        if entry in ("catalog", "index", "pkg") or \
-                            not os.path.isdir(spath):
-                                continue
-                        shutil.copytree(spath, os.path.join(dest, entry))
+                                        msrc = open(os.path.join(src_pkg_path,
+                                            mname), "rb")
+                                        mdest = open(os.path.join(dest_pkg_path,
+                                            mname), "wb")
+                                        for l in msrc:
+                                                if l.find("pkg://") == -1:
+                                                        mdest.write(l)
+                                                        continue
+                                                nl = l
+                                                for src_pub in pub_map:
+                                                        nl = nl.replace(
+                                                            src_pub,
+                                                            pub_map[src_pub])
+                                                mdest.write(nl)
+                                        msrc.close()
+                                        mdest.close()
 
-                # Now copy each manifest and replace any references to the old
-                # publisher with that of the new publisher as they are copied.
-                pkg_root = os.path.join(src, "pkg")
-                for stem in os.listdir(pkg_root):
-                        pkg_path = os.path.join(pkg_root, stem)
-                        for mname in os.listdir(pkg_path):
-                                # Ensure destination manifest directory exists.
-                                dmdpath = os.path.join(dest, "pkg", stem)
-                                if not os.path.isdir(dmdpath):
-                                        os.makedirs(dmdpath, mode=0755)
-
-                                msrc = open(os.path.join(pkg_path, mname), "rb")
-                                mdest = open(os.path.join(dmdpath, mname), "wb")
-                                for l in msrc:
-                                        if l.find("pkg://") > -1:
-                                                mdest.write(l.replace(src_pub,
-                                                    dest_pub))
-                                        else:
-                                                mdest.write(l)
-                                msrc.close()
-                                mdest.close()
+                src_pub_root = os.path.join(src, "publisher")
+                if os.path.exists(src_pub_root):
+                        dest_pub_root = os.path.join(dest, "publisher")
+                        for pub in os.listdir(src_pub_root):
+                                if pub not in pub_map:
+                                        continue
+                                src_root = os.path.join(src_pub_root, pub)
+                                dest_root = os.path.join(dest_pub_root,
+                                    pub_map[pub])
+                                for entry in os.listdir(src_root):
+                                        # Skip the catalog, index, and pkg
+                                        # directories as they will be copied
+                                        # manually.
+                                        if entry not in ("catalog", "index",
+                                            "pkg", "tmp", "trans"):
+                                                spath = os.path.join(src_root,
+                                                    entry)
+                                                dpath = os.path.join(dest_root,
+                                                    entry)
+                                                shutil.copytree(spath, dpath)
+                                                continue
+                                        if entry != "pkg":
+                                                continue
+                                        copy_manifests(src_root, dest_root)
 
         def get_img_manifest_path(self, pfmri, img_path=None):
                 """Returns the path to the manifest for the fiven fmri."""
@@ -1670,7 +1707,7 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment,
                     coverage=False, exit=exit)
 
-        def create_repo(self, repodir, properties=EmptyI):
+        def create_repo(self, repodir, properties=EmptyDict, version=None):
                 """ Convenience routine to help subclasses create a package
                     repository.  Returns a pkg.server.repository.Repository
                     object. """
@@ -1678,9 +1715,14 @@ class CliTestCase(Pkg5TestCase):
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.server.repository as sr
-                repo = sr.Repository(auto_create=True, properties=properties,
-                    repo_root=repodir)
-                self.debug("created repository %s" % repodir)
+                try:
+                        repo = sr.repository_create(repodir,
+                            properties=properties, version=version)
+                        self.debug("created repository %s" % repodir)
+                except sr.RepositoryExistsError:
+                        # Already exists.
+                        repo = sr.Repository(root=repodir,
+                            properties=properties)
                 return repo
 
         def get_repo(self, repodir, read_only=False):
@@ -1691,8 +1733,7 @@ class CliTestCase(Pkg5TestCase):
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.server.repository as sr
-                return sr.Repository(auto_create=False, read_only=read_only,
-                    repo_root=repodir)
+                return sr.Repository(read_only=read_only, root=repodir)
 
         def prep_depot(self, port, repodir, logpath, refresh_index=False,
             debug_features=EmptyI, properties=EmptyI, start=False):
@@ -1736,6 +1777,38 @@ class CliTestCase(Pkg5TestCase):
                         self.create_repo(repodir, properties=properties)
                 return dc
 
+        def wait_repo(self, repodir, timeout=5.0):
+                """Wait for the specified repository to complete its current
+                operations before continuing."""
+
+                check_interval = 0.20
+                time.sleep(check_interval)
+
+                begintime = time.time()
+                ready = False
+                while (time.time() - begintime) <= timeout:
+                        status = self.get_repo(repodir).get_status()
+                        rdata = status.get("repository", {})
+                        repo_status = rdata.get("status", "")
+                        if repo_status == "online":
+                                for pubdata in rdata.get("publishers",
+                                    {}).values():
+                                        if pubdata.get("status", "") != "online":
+                                                ready = False
+                                                break
+                                else:
+                                        # All repository stores were ready.
+                                        ready = True
+
+                        if not ready:
+                                time.sleep(check_interval)
+                        else:
+                                break
+
+                if not ready:
+                        raise RuntimeError("Repository readiness "
+                            "timeout exceeded.")
+
         def _api_install(self, api_obj, pkg_list, **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
                 api_obj.plan_install(pkg_list, **kwargs)
@@ -1776,15 +1849,11 @@ class ManyDepotTestCase(CliTestCase):
                         i = n + 1
                         testdir = os.path.join(self.test_root)
 
-                        repodir = os.path.join(testdir,
-                            "repo_contents%d" % i)
-
-                        for dir in (testdir, repodir):
-                                try:
-                                        os.makedirs(dir, 0755)
-                                except OSError, e:
-                                        if e.errno != errno.EEXIST:
-                                                raise e
+                        try:
+                                os.makedirs(testdir, 0755)
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise e
 
                         depot_logfile = os.path.join(testdir,
                             "depot_logfile%d" % i)
@@ -1793,6 +1862,7 @@ class ManyDepotTestCase(CliTestCase):
 
                         # We pick an arbitrary base port.  This could be more
                         # automated in the future.
+                        repodir = os.path.join(testdir, "repo_contents%d" % i)
                         self.dcs[i] = self.prep_depot(12000 + i, repodir,
                             depot_logfile, debug_features=debug_features,
                             properties=props, start=start_depots)
@@ -1965,9 +2035,9 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                         self.debugcmd(cmdline)
 
                         # Run the command to actually create a good image
-                        p = subprocess.Popen(cmdline, shell = True,
-                                             stdout = subprocess.PIPE,
-                                             stderr = subprocess.STDOUT)
+                        p = subprocess.Popen(cmdline, shell=True,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.STDOUT)
                         output = p.stdout.read()
                         retcode = p.wait()
                         self.debugresult(retcode, 0, output)

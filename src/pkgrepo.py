@@ -35,28 +35,44 @@ EXIT_PARTIAL = 3
 # listing constants
 LISTING_FORMATS = ("tsv", )
 
+# globals
+tmpdirs = []
+
+import atexit
+import copy
 import errno
 import getopt
 import gettext
 import locale
 import logging
 import os
+import pipes
+import shlex
+import shutil
 import sys
-import urllib
-import urlparse
+import tempfile
+import traceback
 import warnings
 
 from pkg.client import global_settings
 from pkg.misc import msg, PipeError
 import pkg
+import pkg.catalog
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
+import pkg.client.progress as progress
+import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.server.repository as sr
-import shlex
-import traceback
 
 logger = global_settings.logger
+orig_cwd = None
+
+@atexit.register
+def cleanup():
+        """To be called at program finish."""
+        for d in tmpdirs:
+                shutil.rmtree(d, True)
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -100,31 +116,40 @@ Usage:
         pkgrepo [options] command [cmd_options] [operands]
 
 Subcommands:
-        pkgrepo create uri_or_path
+     pkgrepo create [--version] uri_or_path
 
-        pkgrepo property [-F format] [-H] [<section/property> ...]
-        pkgrepo set-property <section/property>=<value> or 
-            <section/property>=(["<value>", ...])
+     pkgrepo add-signing-ca-cert [-p publisher ...]
+         [-s repo_uri_or_path] path ...
 
-        pkgrepo publisher [-F format] [-H] [publisher ...]
+     pkgrepo add-signing-intermediate-cert [-p publisher ...]
+         [-s repo_uri_or_path] path ...
 
-        pkgrepo rebuild [--no-index]
-        pkgrepo refresh [--no-catalog] [--no-index]
+     pkgrepo get [-p publisher ...] [-s repo_uri_or_path]
+         [section/property ...]
 
-        pkgrepo add-signing-ca-cert path ...
-        pkgrepo add-signing-intermediate-cert path ...
-        pkgrepo remove-signing-ca-cert hash ...
-        pkgrepo remove-signing-intermediate-cert hash ...
+     pkgrepo info [-F format] [-H] [-p publisher ...]
+         [-s repo_uri_or_path]
 
-        pkgrepo version
-        pkgrepo help
+     pkgrepo rebuild [-s repo_uri_or_path] [--no-catalog]
+         [--no-index]
+
+     pkgrepo refresh [-s repo_uri_or_path] [--no-catalog]
+         [--no-index]
+
+     pkgrepo remove-signing-ca-cert [-p publisher ...]
+         [-s repo_uri_or_path] hash ...
+
+     pkgrepo remove-signing-intermediate-cert [-p publisher ...]
+         [-s repo_uri_or_path] hash ...
+
+     pkgrepo set [-p publisher ...] [-s repo_uri_or_path]
+         section/property[+|-]=[value] ... or
+         section/property[+|-]=([value]) ...
+
+     pkgrepo help
+     pkgrepo version
 
 Options:
-        -s repo_uri_or_path
-            A URI or filesystem path representing the location of a package
-            repository. Currently, only filesystem-based repositories are
-            supported.
-
         --help or -?
             Displays a usage message."""))
 
@@ -142,110 +167,162 @@ def parse_uri(uri):
         into a valid repository URI.
         """
 
-        if uri.find("://") == -1 and not uri.startswith("file:/"):
-                # Convert the file path to a URI.
-                uri = os.path.abspath(uri)
-                uri = urlparse.urlunparse(("file", "",
-                    urllib.pathname2url(uri), "", "", ""))
-
-        scheme, netloc, path, params, query, fragment = \
-            urlparse.urlparse(uri, "file", allow_fragments=0)
-        scheme = scheme.lower()
-
-        if scheme != "file":
-                usage(_("Network repositories are not currently supported."),
-                    retcode=1)
-
-        if scheme == "file":
-                # During urlunparsing below, ensure that the path starts with
-                # only one '/' character, if any are present.
-                if path.startswith("/"):
-                        path = "/" + path.lstrip("/")
-
-        # Rebuild the url with the sanitized components.
-        uri = urlparse.urlunparse((scheme, netloc, path, params,
-            query, fragment))
-        return publisher.RepositoryURI(uri)
+        return publisher.RepositoryURI(misc.parse_uri(uri))
 
 
-def get_repo(conf, read_only=True, refresh_index=False):
-        """Return the repository object for current program configuration."""
+def _add_certs(conf, subcommand, args, ca):
+        opts, pargs = getopt.getopt(args, "p:s:")
+        pubs = set()
 
-        repo_uri = conf["repo_root"]
-        path = repo_uri.get_pathname()
-        if not path:
-                # Bad URI?
-                raise sr.RepositoryInvalidError(str(repo_uri))
-        return sr.Repository(auto_create=False, read_only=read_only,
-            refresh_index=refresh_index, repo_root=path)
+        for opt, arg in opts:
+                if opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
 
+        # Get repository object.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
 
-def subcmd_add_signing_ca_cert(conf, args):
-        subcommand = "add-signing-ca-cert"
-        repo = get_repo(conf, read_only=False)
-        opts, pargs = getopt.getopt(args, "")
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
 
         if len(pargs) < 1:
                 usage(_("At least one path to a certificate must be provided."))
 
-        fps = [os.path.abspath(f) for f in pargs]
-        repo.add_signing_certs(fps, ca=True)
+        failed = []
+        def add_certs(pfx=None):
+                if orig_cwd:
+                        certs = [os.path.join(orig_cwd, f) for f in pargs]
+                else:
+                        certs = [os.path.abspath(f) for f in pargs]
+
+                try:
+                        repo.add_signing_certs(certs, ca=ca, pub=pfx)
+                except (apx.ApiException, sr.RepositoryError), e:
+                        failed.append((pfx, e))
+
+        if "all" in pubs:
+                # Default to list of all publishers.
+                pubs = repo.publishers
+
+        if not pubs:
+                # Assume default publisher or older repository.
+                add_certs()
+        else:
+                # Add for each publisher specified.
+                map(add_certs, pubs)
+
+        return pubs, failed
+
+
+def subcmd_add_signing_ca_cert(conf, args):
+        """Add the provided signing ca certificates to the repository for
+        the given publisher."""
+
+        subcommand = "add-signing-ca-cert"
+        pubs, failed = _add_certs(conf, subcommand, args, True)
+        if failed:
+                for pfx, details in failed:
+                        error(_("Unable to add signing ca certificates for "
+                            "publisher '%(pfx)s':\n%(details)s") % locals(),
+                            cmd=subcommand)
+                if len(failed) < len(pubs):
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+        return EXIT_OK
 
 
 def subcmd_add_signing_intermediate_cert(conf, args):
         subcommand = "add-signing-intermediate-cert"
-        repo = get_repo(conf, read_only=False)
-        opts, pargs = getopt.getopt(args, "")
+        pubs, failed = _add_certs(conf, subcommand, args, True)
+        if failed:
+                for pfx, details in failed:
+                        if pfx:
+                                error(_("Unable to add signing intermediate "
+                                    "certificates for publisher '%(pfx)s':\n"
+                                    "%(details)s") % locals(), cmd=subcommand)
+                        else:
+                                error(_("Unable to add signing intermediate "
+                                    "certificates:\n%(details)s") % locals(),
+                                    cmd=subcommand)
+                if len(failed) < len(pubs):
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+        return EXIT_OK
+
+
+def _remove_certs(conf, subcommand, args, ca):
+        opts, pargs = getopt.getopt(args, "p:s:")
+        pubs = set()
+
+        for opt, arg in opts:
+                if opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        # Get repository object.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
 
         if len(pargs) < 1:
-                usage(_("At least one path to a certificate must be provided."))
+                usage(_("At least one certificate hash must be provided."))
 
-        fps = [os.path.abspath(f) for f in pargs]
-        repo.add_signing_certs(fps, ca=False)
+        failed = []
+        def remove_certs(pfx=None):
+                try:
+                        repo.remove_signing_certs(pargs, ca=True, pub=pfx)
+                except (apx.ApiException, sr.RepositoryError), e:
+                        failed.append((pfx, e))
+
+        if "all" in pubs:
+                # Default to list of all publishers.
+                pubs = repo.publishers
+
+        if not pubs:
+                # Assume default publisher or older repository.
+                remove_certs()
+        else:
+                # Add for each publisher specified.
+                map(remove_certs, pubs)
+
+        return pubs, failed
 
 
 def subcmd_remove_signing_ca_cert(conf, args):
         subcommand = "remove-signing-ca-cert"
-        repo = get_repo(conf, read_only=False)
-        opts, pargs = getopt.getopt(args, "")
-
-        if len(pargs) < 1:
-                usage(_("At least one certificate hash must be provided."))
-
-        repo.remove_signing_certs(pargs, ca=True)
+        pubs, failed = _remove_certs(conf, subcommand, args, True)
+        if failed:
+                for pfx, details in failed:
+                        error(_("Unable to remove signing ca certificates for "
+                            "publisher '%(pfx)s':\n%(details)s") % locals(),
+                            cmd=subcommand)
+                if len(failed) < len(pubs):
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+        return EXIT_OK
 
 
 def subcmd_remove_signing_intermediate_cert(conf, args):
         subcommand = "remove-signing-intermediate-cert"
-        repo = get_repo(conf, read_only=False)
-        opts, pargs = getopt.getopt(args, "")
-
-        if len(pargs) < 1:
-                usage(_("At least one certificate hash must be provided."))
-
-        repo.remove_signing_certs(pargs, ca=False)
-
-
-def subcmd_create(conf, args):
-        """Create a package repository at the given location."""
-
-        subcommand = "create"
-        opts, pargs = getopt.getopt(args, "")
-
-        if len(pargs) > 1:
-                usage(_("Only one repository location may be specified."),
-                    cmd=subcommand)
-        elif pargs:
-                conf["repo_root"] = parse_uri(pargs[0])
-
-        repo_root = conf.get("repo_root", None)
-        if not repo_root:
-                usage(_("No repository location specified."), cmd=subcommand)
-
-        # Attempt to create a repository at the specified location.  Allow
-        # whatever exceptions are raised to bubble up.
-        sr.repository_create(repo_root)
-
+        pubs, failed = _remove_certs(conf, subcommand, args, True)
+        if failed:
+                for pfx, details in failed:
+                        if pfx:
+                                error(_("Unable to remove signing intermediate "
+                                    "certificates for publisher '%(pfx)s':\n"
+                                    "%(details)s") % locals(), cmd=subcommand)
+                        else:
+                                error(_("Unable to remove signing intermediate "
+                                    "certificates:\n%(details)s") % locals(),
+                                    cmd=subcommand)
+                if len(failed) < len(pubs):
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
         return EXIT_OK
 
 
@@ -271,8 +348,48 @@ def print_col_listing(desired_field_order, field_data, field_values, out_format,
         def get_value(record):
                 return record[2]
 
+        def quote_value(val):
+                if out_format == "tsv":
+                        # Expand tabs if tsv output requested.
+                        val = val.replace("\t", " " * 8)
+                nval = val
+                # Escape bourne shell metacharacters.
+                for c in ("\\", " ", "\t", "\n", "'", "`", ";", "&", "(", ")",
+                    "|", "^", "<", ">"):
+                        nval = nval.replace(c, "\\" + c)
+                return nval
+
         def set_value(entry):
-                entry[0][2] = entry[1]
+                val = entry[1]
+                multi_value = False
+                if isinstance(val, (list, set)):
+                        multi_value = True
+                elif val == "":
+                        entry[0][2] = '""'
+                        return
+                elif val is None:
+                        entry[0][2] = ''
+                        return
+                else:
+                        val = [val]
+
+                nval = []
+                for v in val:
+                        if v == "":
+                                # Indicate empty string value using "".
+                                nval.append('""')
+                        elif v is None:
+                                # Indicate no value using empty string.
+                                nval.append('')
+                        else:
+                                # Otherwise, escape the value to be displayed.
+                                nval.append(quote_value(str(v)))
+
+                val = " ".join(nval)
+                nval = None
+                if multi_value:
+                        val = "(%s)" % val
+                entry[0][2] = val
 
         if out_format == "default":
                 # Create a formatting string for the default output
@@ -306,16 +423,98 @@ def print_col_listing(desired_field_order, field_data, field_values, out_format,
                 msg(fmt % tuple(values))
 
 
-def subcmd_property(conf, args):
-        """Display the list of properties for the repository."""
+def get_repo(conf, read_only=True, subcommand=None):
+        """Return the repository object for current program configuration."""
 
-        subcommand = "property"
-        repo = get_repo(conf)
+        repo_uri = conf["repo_uri"]
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
 
+        path = repo_uri.get_pathname()
+        if not path:
+                # Bad URI?
+                raise sr.RepositoryInvalidError(str(repo_uri))
+        return sr.Repository(read_only=read_only, root=path)
+
+
+def setup_transport(conf):
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("No repository location specified."), cmd=subcommand)
+
+        temp_root = misc.config_temp_root()
+
+        tmp_dir = tempfile.mkdtemp(dir=temp_root)
+        tmpdirs.append(tmp_dir)
+
+        incoming_dir = tempfile.mkdtemp(dir=temp_root)
+        tmpdirs.append(incoming_dir)
+
+        cache_dir = tempfile.mkdtemp(dir=temp_root)
+        tmpdirs.append(cache_dir)
+
+        # Create transport and transport config.
+        xport, xport_cfg = transport.setup_transport()
+        xport_cfg.cached_download_dir = cache_dir
+        xport_cfg.incoming_download_dir = incoming_dir
+
+        # Configure target publisher.
+        src_pub = transport.setup_publisher(str(repo_uri), "target", xport,
+            xport_cfg, remote_prefix=True)
+
+        return xport, src_pub, tmp_dir
+
+
+def subcmd_create(conf, args):
+        """Create a package repository at the given location."""
+
+        subcommand = "create"
+
+        opts, pargs = getopt.getopt(args, "s:", ["version="])
+
+        version = None
+        for opt, arg in opts:
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--version":
+                        # This option is currently private and allows creating a
+                        # repository with a specific format based on version.
+                        try:
+                                version = int(arg)
+                        except ValueError:
+                                usage(_("Version must be an integer value."),
+                                    cmd=subcommand)
+
+        if len(pargs) > 1:
+                usage(_("Only one repository location may be specified."),
+                    cmd=subcommand)
+        elif pargs:
+                conf["repo_uri"] = parse_uri(pargs[0])
+
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("No repository location specified."), cmd=subcommand)
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
+
+        # Attempt to create a repository at the specified location.  Allow
+        # whatever exceptions are raised to bubble up.
+        sr.repository_create(repo_uri, version=version)
+
+        return EXIT_OK
+
+
+def subcmd_get(conf, args):
+        """Display repository properties."""
+
+        subcommand = "get"
         omit_headers = False
         out_format = "default"
+        pubs = set()
 
-        opts, pargs = getopt.getopt(args, "F:H")
+        opts, pargs = getopt.getopt(args, "F:Hp:s:")
         for opt, arg in opts:
                 if opt == "-F":
                         out_format = arg
@@ -323,14 +522,36 @@ def subcmd_property(conf, args):
                                 usage(_("Unrecognized format %(format)s."
                                     " Supported formats: %(valid)s") % \
                                     { "format": out_format,
-                                    "valid": LISTING_FORMATS }, cmd="publisher")
+                                    "valid": LISTING_FORMATS }, cmd="get")
                                 return EXIT_OOPS
                 elif opt == "-H":
                         omit_headers = True
+                elif opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        # Setup transport so configuration can be retrieved.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf)
+
+        # Get properties.
+        if pubs:
+                return _get_pub(conf, subcommand, xport, xpub, omit_headers,
+                    out_format, pubs, pargs)
+        return _get_repo(conf, subcommand, xport, xpub, omit_headers,
+            out_format, pargs)
+
+
+def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
+        """Display repository properties."""
 
         # Configuration index is indexed by section name and property name.
-        # Flatten it to simplify listing process.
-        cfg_idx = repo.cfg.get_index()
+        # Retrieve and flatten it to simplify listing process.
+        stat_idx = xport.get_status(xpub)
+        cfg_idx = stat_idx.get("repository", {}).get("configuration", {})
         props = set()
 
         # Set minimum widths for section and property name columns by using the
@@ -343,11 +564,11 @@ def subcmd_property(conf, args):
                 for pname in cfg_idx[sname]:
                         max_pname_len = max(max_pname_len, len(pname))
                         props.add("/".join((sname, pname)))
-        del cfg_idx
 
-        if len(pargs) >= 1:
-                found = props & set(pargs)
-                notfound = set(pargs) - found
+        req_props = set(pargs)
+        if len(req_props) >= 1:
+                found = props & req_props
+                notfound = req_props - found
                 del props
         else:
                 found = props
@@ -356,7 +577,7 @@ def subcmd_property(conf, args):
         def gen_listing():
                 for prop in sorted(found):
                         sname, pname = prop.rsplit("/", 1)
-                        sval = str(repo.cfg.get_property(sname, pname))
+                        sval = cfg_idx[sname][pname]
                         yield {
                             "section": sname,
                             "property": pname,
@@ -372,19 +593,19 @@ def subcmd_property(conf, args):
             "property" : [("default", "tsv"), _("PROPERTY"), ""],
             "value" : [("default", "tsv"), _("VALUE"), ""],
         }
-        desired_field_order = (_("SECTION"), "", _("PROPERTY"), _("VALUE"))
+        desired_field_order = ((_("SECTION"), _("PROPERTY"), _("VALUE")))
 
         # Default output formatting.
         def_fmt = "%-" + str(max_sname_len) + "s %-" + str(max_pname_len) + \
             "s %s"
 
-        if found or (not pargs and out_format == "default"):
+        if found or (not req_props and out_format == "default"):
                 print_col_listing(desired_field_order, field_data,
                     gen_listing(), out_format, def_fmt, omit_headers)
 
         if found and notfound:
                 return EXIT_PARTIAL
-        if pargs and not found:
+        if req_props and not found:
                 if out_format == "default":
                         # Don't pollute other output formats.
                         error(_("no matching properties found"),
@@ -393,110 +614,235 @@ def subcmd_property(conf, args):
         return EXIT_OK
 
 
-def subcmd_set_property(conf, args):
-        """Set a repository property."""
+def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
+    pargs):
+        """Display publisher properties."""
 
-        subcommand = "property"
-        repo = get_repo(conf, read_only=False)
-
-        omit_headers = False
-        out_format = "default"
-
-        opts, pargs = getopt.getopt(args, "")
-        bad_args = False
-        if not pargs or len(pargs) > 1:
-                bad_args = True
+        # Retrieve publisher information.
+        pub_data = xport.get_publisherdata(xpub)
+        known_pubs = set(p.prefix for p in pub_data)
+        if len(pubs) > 0 and "all" not in pubs:
+                found = known_pubs & pubs
+                notfound = pubs - found
         else:
-                try:
-                        if len(pargs) == 1:
-                                prop, val = pargs[0].split("=", 1)
+                found = known_pubs
+                notfound = set()
+
+        # Establish initial return value and perform early exit if appropriate.
+        rval = EXIT_OK
+        if found and notfound:
+                rval = EXIT_PARTIAL
+        elif pubs and not found:
+                if out_format == "default":
+                        # Don't pollute other output formats.
+                        error(_("no matching publishers found"),
+                            cmd=subcommand)
+                return EXIT_OOPS
+
+        # Set minimum widths for section and property name columns by using the
+        # length of the column headers and data.
+        max_pubname_len = str(max(
+            [len(_("PUBLISHER"))] + [len(p) for p in found]
+        ))
+        max_sname_len = len(_("SECTION"))
+        max_pname_len = len(_("PROPERTY"))
+
+        # For each requested publisher, retrieve the requested property data.
+        failed = set()
+        pub_idx = {}
+        for pub in pub_data:
+                if pub.prefix not in found:
+                        continue
+
+                pub_idx[pub.prefix] = {
+                    "publisher": {
+                        "alias": pub.alias,
+                        "prefix": pub.prefix,
+                    },
+                }
+
+                pub_repo = pub.selected_repository
+                if pub_repo:
+                        pub_idx[pub.prefix]["repository"] = {
+                            "collection-type": pub_repo.collection_type,
+                            "description": pub_repo.description,
+                            "legal-uris": pub_repo.legal_uris,
+                            "mirrors": pub_repo.mirrors,
+                            "name": pub_repo.name,
+                            "origins": pub_repo.origins,
+                            "refresh-seconds": pub_repo.refresh_seconds,
+                            "registration-uri": pub_repo.registration_uri,
+                            "related-uris": pub_repo.related_uris,
+                        }
+                else:
+                        pub_idx[pub.prefix]["repository"] = {
+                            "collection-type": "core",
+                            "description": "",
+                            "legal-uris": [],
+                            "mirrors": [],
+                            "name": "",
+                            "origins": [],
+                            "refresh-seconds": "",
+                            "registration-uri": "",
+                            "related-uris": [],
+                        }
+
+        # Determine possible set of properties and lengths.
+        props = set()
+        for pub in pub_idx:
+            for sname in pub_idx[pub]:
+                    max_sname_len = max(max_sname_len, len(sname))
+                    for pname in pub_idx[pub][sname]:
+                            max_pname_len = max(max_pname_len, len(pname))
+                            props.add("/".join((sname, pname)))
+
+        # Determine properties to display.
+        req_props = set(pargs)
+        if len(req_props) >= 1:
+                found = props & req_props
+                notfound = req_props - found
+                del props
+        else:
+                found = props
+                notfound = set()
+
+        def gen_listing():
+                for pub in sorted(pub_idx.keys()):
+                        for prop in sorted(found):
                                 sname, pname = prop.rsplit("/", 1)
-                except ValueError:
-                        bad_args = True
+                                sval = pub_idx[pub][sname][pname]
+                                yield {
+                                    "publisher": pub,
+                                    "section": sname,
+                                    "property": pname,
+                                    "value": sval,
+                                }
 
-        if bad_args:
-                usage(_("a property name and value must be provided in the "
-                    "form <section/property>=<value> or "
-                    "<section/property>=([\"<value>\", ...])"))
+        #    PUBLISHER SECTION PROPERTY VALUE
+        #    <pub_1>   <sec_1> <prop_1> <prop_1_value>
+        #    <pub_1>   <sec_2> <prop_2> <prop_2_value>
+        #    ...
+        field_data = {
+            "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
+            "section" : [("default", "tsv"), _("SECTION"), ""],
+            "property" : [("default", "tsv"), _("PROPERTY"), ""],
+            "value" : [("default", "tsv"), _("VALUE"), ""],
+        }
+        desired_field_order = (_("PUBLISHER"), _("SECTION"), _("PROPERTY"),
+            _("VALUE"))
 
-        if len(val) > 0  and val[0] == "(" and val[-1] == ")":
-                val = shlex.split(val.strip("()"))
+        # Default output formatting.
+        def_fmt = "%-" + str(max_pubname_len) + "s %-" + str(max_sname_len) + \
+            "s %-" + str(max_pname_len) + "s %s"
 
-        repo.cfg.set_property(sname, pname, val)
-        repo.write_config()
+        if found or (not req_props and out_format == "default"):
+                print_col_listing(desired_field_order, field_data,
+                    gen_listing(), out_format, def_fmt, omit_headers)
+
+        if found and notfound:
+                rval = EXIT_PARTIAL
+        if req_props and not found:
+                if out_format == "default":
+                        # Don't pollute other output formats.
+                        error(_("no matching properties found"),
+                            cmd=subcommand)
+                rval = EXIT_OOPS
+        return rval
 
 
-def subcmd_publisher(conf, args):
+def subcmd_info(conf, args):
         """Display a list of known publishers and a summary of known packages
         and when the package data for the given publisher was last updated.
         """
 
-        subcommand = "publisher"
-        repo = get_repo(conf)
-
+        subcommand = "info"
         omit_headers = False
         out_format = "default"
+        pubs = set()
 
-        opts, pargs = getopt.getopt(args, "F:H")
+        opts, pargs = getopt.getopt(args, "F:Hp:s:")
         for opt, arg in opts:
                 if opt == "-F":
-                        out_format = arg
-                        if out_format not in LISTING_FORMATS:
+                        if arg not in LISTING_FORMATS:
                                 usage(_("Unrecognized format %(format)s."
                                     " Supported formats: %(valid)s") % \
-                                    { "format": out_format,
+                                    { "format": arg,
                                     "valid": LISTING_FORMATS }, cmd="publisher")
                                 return EXIT_OOPS
+                        out_format = arg
                 elif opt == "-H":
                         omit_headers = True
+                elif opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
 
-        cat = repo.catalog
-        pub_idx = {}
-        for pub, pkg_count, pkg_ver_count in cat.get_package_counts_by_pub():
-                pub_idx[pub] = (pkg_count, pkg_ver_count)
+        if pargs:
+                usage(_("command does not take operands"), cmd=subcommand)
 
-        if len(pargs) >= 1:
-                found = set(pub_idx.keys()) & set(pargs)
-                notfound = set(pargs) - found
+        # Setup transport so status can be retrieved.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        xport, xpub, tmp_dir = setup_transport(conf)
+
+        # Retrieve repository status information.
+        stat_idx = xport.get_status(xpub)
+        pub_idx = stat_idx.get("repository", {}).get("publishers", {})
+        if len(pubs) > 0 and "all" not in pubs:
+                found = set(pub_idx.keys()) & pubs
+                notfound = pubs - found
         else:
                 found = set(pub_idx.keys())
                 notfound = set()
 
         def gen_listing():
                 for pfx in found:
-                        pkg_count, pkg_ver_count = pub_idx[pfx]
+                        pdata = pub_idx[pfx]
+                        pkg_count = pdata.get("package-count", 0)
+                        last_update = pdata.get("last-catalog-update", "")
+                        if last_update:
+                                # Reformat the date into something more user
+                                # friendly (and locale specific).
+                                last_update = pkg.catalog.basic_ts_to_datetime(
+                                    last_update)
+                                last_update = "%sZ" % pkg.catalog.datetime_to_ts(
+                                    last_update)
+                        rstatus = _(pub_idx[pfx].get("status", "online"))
                         yield {
                             "publisher": pfx,
                             "packages": pkg_count,
-                            "versions": pkg_ver_count,
-                            "updated": "%sZ" % cat.last_modified.isoformat(),
+                            "status": rstatus,
+                            "updated": last_update,
                         }
 
-        #    PUBLISHER PACKAGES        VERSIONS       UPDATED
-        #    <pub_1>   <num_uniq_pkgs> <num_pkg_vers> <cat_last_modified>
-        #    <pub_2>   <num_uniq_pkgs> <num_pkg_vers> <cat_last_modified>
+        #    PUBLISHER PACKAGES        STATUS   UPDATED
+        #    <pub_1>   <num_uniq_pkgs> <status> <cat_last_modified>
+        #    <pub_2>   <num_uniq_pkgs> <status> <cat_last_modified>
         #    ...
-
         field_data = {
             "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
             "packages" : [("default", "tsv"), _("PACKAGES"), ""],
-            "versions" : [("default", "tsv"), _("VERSIONS"), ""],
+            "status" : [("default", "tsv"), _("STATUS"), ""],
             "updated" : [("default", "tsv"), _("UPDATED"), ""],
         }
 
-        desired_field_order = (_("PUBLISHER"), "", _("PACKAGES"), _("VERSIONS"),
+        desired_field_order = (_("PUBLISHER"), "", _("PACKAGES"), _("STATUS"),
             _("UPDATED"))
 
         # Default output formatting.
-        def_fmt = "%-24s %-8s %-8s %s"
+        pub_len = str(max(
+            [len(desired_field_order[0])] + [len(p) for p in found]
+        ))
+        def_fmt = "%-" + pub_len + "s %-8s %-16s %s"
 
-        if found or (not pargs and out_format == "default"):
+        if found or (not pubs and out_format == "default"):
                 print_col_listing(desired_field_order, field_data,
                     gen_listing(), out_format, def_fmt, omit_headers)
 
         if found and notfound:
                 return EXIT_PARTIAL
-        if pargs and not found:
+        if pubs and not found:
                 if out_format == "default":
                         # Don't pollute other output formats.
                         error(_("no matching publishers found"),
@@ -509,24 +855,38 @@ def subcmd_rebuild(conf, args):
         """Rebuild the repository's catalog and index data (as permitted)."""
 
         subcommand = "rebuild"
-        repo = get_repo(conf, read_only=False)
-
+        build_catalog = True
         build_index = True
-        opts, pargs = getopt.getopt(args, "", ["no-index"])
+
+        opts, pargs = getopt.getopt(args, "s:", ["no-catalog", "no-index"])
         for opt, arg in opts:
-                if opt == "--no-index":
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--no-catalog":
+                        build_catalog = False
+                elif opt == "--no-index":
                         build_index = False
 
         if pargs:
                 usage(_("command does not take operands"), cmd=subcommand)
 
-        logger.info("Rebuilding package repository...")
-        repo.rebuild(build_index=False)
+        if not build_catalog and not build_index:
+                # Why?  Who knows; but do what was requested--nothing!
+                return EXIT_OK
 
-        if build_index:
-                # Always build search indexes seperately (and if permitted).
-                logger.info("Building search indexes...")
-                repo.refresh_index()
+        # Setup transport so operation can be performed.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        xport, src_pub, tmp_dir = setup_transport(conf)
+
+        logger.info("Repository rebuild initiated.")
+        if build_catalog and build_index:
+                xport.publish_rebuild(src_pub)
+        elif build_catalog:
+                xport.publish_rebuild_packages(src_pub)
+        elif build_index:
+                xport.publish_rebuild_indexes(src_pub)
 
         return EXIT_OK
 
@@ -535,13 +895,14 @@ def subcmd_refresh(conf, args):
         """Refresh the repository's catalog and index data (as permitted)."""
 
         subcommand = "refresh"
-        repo = get_repo(conf, read_only=False)
-
         add_content = True
         refresh_index = True
-        opts, pargs = getopt.getopt(args, "", ["no-catalog", "no-index"])
+
+        opts, pargs = getopt.getopt(args, "s:", ["no-catalog", "no-index"])
         for opt, arg in opts:
-                if opt == "--no-catalog":
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+                elif opt == "--no-catalog":
                         add_content = False
                 elif opt == "--no-index":
                         refresh_index = False
@@ -553,14 +914,188 @@ def subcmd_refresh(conf, args):
                 # Why?  Who knows; but do what was requested--nothing!
                 return EXIT_OK
 
-        if add_content:
-                logger.info("Adding new package content...")
-                repo.add_content(refresh_index=False)
+        # Setup transport so operation can be performed.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        xport, src_pub, tmp_dir = setup_transport(conf)
 
-        if refresh_index:
-                # Always update search indexes separately (and if permitted).
-                logger.info("Updating search indexes...")
-                repo.refresh_index()
+        logger.info("Repository refresh initiated.")
+        if add_content and refresh_index:
+                xport.publish_refresh(src_pub)
+        elif add_content:
+                xport.publish_refresh_packages(src_pub)
+        elif refresh_index:
+                xport.publish_refresh_indexes(src_pub)
+        return EXIT_OK
+
+
+def subcmd_set(conf, args):
+        """Set repository properties."""
+
+        subcommand = "set"
+        omit_headers = False
+        pubs = set()
+
+        opts, pargs = getopt.getopt(args, "p:s:")
+        for opt, arg in opts:
+                if opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        bad_args = False
+        props = {}
+        if not pargs:
+                bad_args = True
+        else:
+                for arg in pargs:
+                        try:
+                                # Attempt to parse property into components.
+                                prop, val = arg.split("=", 1)
+                                sname, pname = prop.rsplit("/", 1)
+
+                                # Store property values by section.
+                                props.setdefault(sname, {})
+
+                                # Parse the property value into a list if
+                                # necessary, otherwise append it to the list
+                                # of values for the property.
+                                if len(val) > 0  and val[0] == "(" and \
+                                    val[-1] == ")":
+                                        val = shlex.split(val.strip("()"))
+
+                                if sname in props and pname in props[sname]:
+                                        # Determine if previous value is already
+                                        # a list, and if not, convert and append
+                                        # the value.
+                                        pval = props[sname][pname]
+                                        if not isinstance(pval, list):
+                                                pval = [pval]
+                                        if isinstance(val, list):
+                                                pval.extend(val)
+                                        else:
+                                                pval.append(val)
+                                        props[sname][pname] = pval
+                                else:
+                                        # Otherwise, just store the value.
+                                        props[sname][pname] = val
+                        except ValueError:
+                                bad_args = True
+                                break
+
+        if bad_args:
+                usage(_("a property name and value must be provided in the "
+                    "form <section/property>=<value> or "
+                    "<section/property>=([\"<value>\" ...])"))
+
+        # Get repository object.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
+
+        # Set properties.
+        if pubs:
+                return _set_pub(conf, subcommand, omit_headers, props, pubs,
+                    repo)
+
+        return _set_repo(conf, subcommand, omit_headers, props, repo)
+
+
+def _set_pub(conf, subcommand, omit_headers, props, pubs, repo):
+        """Set publisher properties."""
+
+        for sname, sprops in props.iteritems():
+                if sname not in ("publisher", "repository"):
+                        usage(_("unknown property section "
+                            "'%s'") % sname, cmd=subcommand)
+                for pname in sprops:
+                        if sname == "publisher" and pname =="prefix":
+                                usage(_("'%s' may not be set using "
+                                    "this command" % pname))
+                        attrname = pname.replace("-", "_")
+                        if not hasattr(publisher.Publisher, attrname) and \
+                            not hasattr(publisher.Repository, attrname):
+                                usage(_("unknown property '%s'") %
+                                    pname, cmd=subcommand)
+
+        if "all" in pubs:
+                # Default to list of all publishers.
+                pubs = repo.publishers
+                if not pubs:
+                        # If there are still no known publishers, this
+                        # operation cannot succeed, so fail now.
+                        usage(_("One or more publishers must be specified to "
+                            "create and set properties for as none exist yet."),
+                            cmd=subcommand)
+
+        # Get publishers and update properties.
+        failed = []
+        new_pub = False
+        for pfx in pubs:
+                try:
+                        # Get a copy of the existing publisher.
+                        pub = copy.copy(repo.get_publisher(pfx))
+                except sr.RepositoryUnknownPublisher, e:
+                        pub = publisher.Publisher(pfx)
+                        new_pub = True
+                except sr.RepositoryError, e:
+                        failed.append((pfx, e))
+                        continue
+
+                try:
+                        # Set/update the publisher's properties.
+                        for sname, sprops in props.iteritems():
+                                if sname == "publisher":
+                                        target = pub
+                                elif sname == "repository":
+                                        target = pub.selected_repository
+                                        if not target:
+                                                target = publisher.Repository()
+                                                pub.repositories.append(target)
+
+                                for pname, val in sprops.iteritems():
+                                        attrname = pname.replace("-", "_")
+                                        pval = getattr(target, attrname)
+                                        if isinstance(pval, list) and \
+                                            not isinstance(val, list):
+                                                # If the target property expects
+                                                # a list, transform the provided
+                                                # value into one if it isn't
+                                                # already.
+                                                if val == "":
+                                                        val = []
+                                                else:
+                                                        val = [val]
+                                        setattr(target, attrname, val)
+                except apx.ApiException, e:
+                        failed.append((pfx, e))
+                        continue
+
+                if new_pub:
+                        repo.add_publisher(pub)
+                else:
+                        repo.update_publisher(pub)
+
+        if failed:
+                for pfx, details in failed:
+                        error(_("Unable to set properties for publisher "
+                            "'%(pfx)s':\n%(details)s") % locals())
+                if len(failed) < len(pubs):
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+        return EXIT_OK
+
+
+def _set_repo(conf, subcommand, omit_headers, props, repo):
+        """Set repository properties."""
+
+        # Set properties.
+        for sname, props in props.iteritems():
+                for pname, val in props.iteritems():
+                        repo.cfg.set_property(sname, pname, val)
+        repo.write_config()
 
         return EXIT_OK
 
@@ -569,10 +1104,6 @@ def subcmd_version(conf, args):
         """Display the version of the pkg(5) API."""
 
         subcommand = "version"
-
-        if conf.get("repo_root", None):
-                usage(_("-s not allowed for %s subcommand") %
-                      subcommand)
         if args:
                 usage(_("command does not take operands"), cmd=subcommand)
         msg(pkg.VERSION)
@@ -581,6 +1112,18 @@ def subcmd_version(conf, args):
 
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
+
+        global orig_cwd
+
+        try:
+                orig_cwd = os.getcwd()
+        except OSError, e:
+                try:
+                        orig_cwd = os.environ["PWD"]
+                        if not orig_cwd or orig_cwd[0] != "/":
+                                orig_cwd = None
+                except KeyError:
+                        orig_cwd = None
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:?",
@@ -592,9 +1135,7 @@ def main_func():
         show_usage = False
         for opt, arg in opts:
                 if opt == "-s":
-                        if not arg:
-                                continue
-                        conf["repo_root"] = parse_uri(arg)
+                        conf["repo_uri"] = parse_uri(arg)
                 elif opt in ("--help", "-?"):
                         show_usage = True
 
@@ -612,18 +1153,16 @@ def main_func():
         subcommand = subcommand.replace("-", "_")
         func = globals().get("subcmd_%s" % subcommand, None)
         if not func:
+                subcommand = subcommand.replace("_", "-")
                 usage(_("unknown subcommand '%s'") % subcommand)
 
         try:
-                if (subcommand != "create" and subcommand != "version") and \
-                    not conf.get("repo_root", None):
-                        usage(_("A package repository location must be "
-                            "provided using -s."), cmd=subcommand)
                 return func(conf, pargs)
         except getopt.GetoptError, e:
                 if e.opt in ("help", "?"):
                         usage(full=True)
                 usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
+
 
 #
 # Establish a specific exit status which means: "python barfed an exception"
@@ -666,6 +1205,9 @@ def handle_errors(func, *args, **kwargs):
                      'api': __e.expected_version
                     })
                 __ret = EXIT_OOPS
+        except apx.BadRepositoryURI, __e:
+                error(str(__e))
+                __ret = EXIT_BADOPT
         except (apx.ApiException, sr.RepositoryError), __e:
                 error(str(__e))
                 __ret = EXIT_OOPS

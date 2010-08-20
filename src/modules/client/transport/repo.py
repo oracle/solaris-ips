@@ -29,6 +29,7 @@ import errno
 import httplib
 import itertools
 import os
+import simplejson as json
 import sys
 import urlparse
 import urllib
@@ -51,19 +52,19 @@ class TransportRepo(object):
         the operations that are performed against a repo.  Subclasses
         should implement protocol specific repo modifications."""
 
-        def do_search(self, data, header=None, ccancel=None):
+        def do_search(self, data, header=None, ccancel=None, pub=None):
                 """Perform a search request."""
 
                 raise NotImplementedError
 
-        def get_catalog(self, ts=None, header=None, ccancel=None):
+        def get_catalog(self, ts=None, header=None, ccancel=None, pub=None):
                 """Get the catalog from the repo.  If ts is defined,
                 request only changes newer than timestamp ts."""
 
                 raise NotImplementedError
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None, revalidate=False, redownload=False):
+            progtrack=None, pub=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
@@ -77,13 +78,13 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def get_datastream(self, fhash, version, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None, pub=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
                 raise NotImplementedError
 
-        def get_files(self, filelist, dest, progtrack, version, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None, pub=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -91,14 +92,14 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def get_manifest(self, fmri, header=None, ccancel=None):
+        def get_manifest(self, fmri, header=None, ccancel=None, pub=None):
                 """Get a manifest from repo.  The name of the
                 package is given in fmri.  If dest is set, download
                 the manifest to dest."""
 
                 raise NotImplementedError
 
-        def get_manifests(self, mfstlist, dest, progtrack=None):
+        def get_manifests(self, mfstlist, dest, progtrack=None, pub=None):
                 """Get manifests named in list.  The mfstlist argument contains
                 tuples (fmri, header).  This is so that each manifest may have
                 unique header information.  The destination directory is spec-
@@ -109,6 +110,11 @@ class TransportRepo(object):
         def get_publisherinfo(self, header=None, ccancel=None):
                 """Get publisher configuration information from the
                 repository."""
+
+                raise NotImplementedError
+
+        def get_status(self, header=None, ccancel=None):
+                """Get status from the repository."""
 
                 raise NotImplementedError
 
@@ -142,12 +148,12 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+        def publish_close(self, header=None, trans_id=None,
             add_to_catalog=False):
                 """The close operation tells the Repository to commit
                 the transaction identified by trans_id.  The caller may
-                specify refresh_index and add_to_catalog, if needed.
-                This method returns a (publish-state, fmri) tuple."""
+                specify add_to_catalog, if needed.  This method returns a
+                (publish-state, fmri) tuple."""
 
                 raise NotImplementedError
 
@@ -159,17 +165,39 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def publish_append(self, header=None, client_release=None,
-            pkg_name=None):
-                raise NotImplementedError
-
-        def publish_refresh_index(self, header=None):
-                """If the Repo points to a Repository that has a refresh-able
-                index, refresh the index."""
+        def publish_rebuild(self, header=None, pub=None):
+                """Attempt to rebuild the package data and search data in the
+                repository."""
 
                 raise NotImplementedError
 
-        def touch_manifest(self, fmri, header=None, ccancel=None):
+        def publish_rebuild_indexes(self, header=None, pub=None):
+                """Attempt to rebuild the search data in the repository."""
+
+                raise NotImplementedError
+
+        def publish_rebuild_packages(self, header=None, pub=None):
+                """Attempt to rebuild the package data in the repository."""
+
+                raise NotImplementedError
+
+        def publish_refresh(self, header=None, pub=None):
+                """Attempt to refresh the package data and search data in the
+                repository."""
+
+                raise NotImplementedError
+
+        def publish_refresh_indexes(self, header=None, pub=None):
+                """Attempt to refresh the search data in the repository."""
+
+                raise NotImplementedError
+
+        def publish_refresh_packages(self, header=None, pub=None):
+                """Attempt to refresh the package data in the repository."""
+
+                raise NotImplementedError
+
+        def touch_manifest(self, fmri, header=None, ccancel=None, pub=None):
                 """Send data about operation intent without actually
                 downloading a manifest."""
 
@@ -211,7 +239,7 @@ class TransportRepo(object):
                 msg = None
                 if not content:
                         return msg
-        
+
                 from xml.dom.minidom import Document, parse
                 dom = parse(cStringIO.StringIO(content))
                 msg = ""
@@ -301,46 +329,86 @@ class HTTPRepo(TransportRepo):
                     sock_path=self._sock_path, data_fobj=data_fobj,
                     data_fp=data_fp, failonerror=failonerror)
 
+        def __check_response_body(self, fobj):
+                """Parse the response body found accessible using the provided
+                filestream object and raise an exception if appropriate."""
+
+                try:
+                        fobj.free_buffer = False
+                        fobj.read()
+                except tx.TransportProtoError, e:
+                        if e.code == httplib.BAD_REQUEST:
+                                exc_type, exc_value, exc_tb = sys.exc_info()
+                                try:
+                                        e.details = self._parse_html_error(
+                                            fobj.read())
+                                except:
+                                        # If parse fails, raise original
+                                        # exception.
+                                        raise exc_value, None, exc_tb
+                        raise
+                finally:
+                        fobj.close()
+
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
                 supports."""
 
                 self._verdata = verdict
 
-        def do_search(self, data, header=None, ccancel=None):
+        def __get_request_url(self, methodstr, query=None, pub=None):
+                """Generate the request URL for the given method and
+                publisher.
+                """
+
+                base = self._repouri.uri
+
+                # Only append the publisher prefix if the publisher of the
+                # request is known, not already part of the URI, if this isn't
+                # an open operation, and if the repository supports version 1
+                # of the publisher opation.  The prefix shouldn't be appended
+                # for open because the publisher may not yet be known to the
+                # repository, and not in other cases because the repository
+                # doesn't support it.
+                pub_prefix = getattr(pub, "prefix", None)
+                if pub_prefix and not methodstr.startswith("open/") and \
+                    not base.endswith("/%s/" % pub_prefix) and \
+                    self.supports_version("publisher", [1]):
+                        # Append the publisher prefix to the repository URL.
+                        base = urlparse.urljoin(base, pub_prefix)
+
+                uri = urlparse.urljoin(base, methodstr)
+                if not query:
+                        return uri
+
+                # If a set of query data was provided, then decompose the URI
+                # into its component parts and replace the query portion with
+                # the encoded version of the new query data.
+                components = list(urlparse.urlparse(uri))
+                components[4] = urllib.urlencode(query)
+                return urlparse.urlunparse(components)
+
+        def do_search(self, data, header=None, ccancel=None, pub=None):
                 """Perform a remote search against origin repos."""
 
-                methodstr = "search/1/"
-
+                requesturl = self.__get_request_url("search/1/", pub=pub)
                 if len(data) > 1:
-                        requesturl = urlparse.urljoin(self._repouri.uri,
-                            methodstr)
+                        # Post and retrieve.
                         request_data = urllib.urlencode(
-                            [(i, str(q))
-                            for i, q in enumerate(data)])
-
-                        resp = self._post_url(requesturl, request_data,
+                            [(i, str(q)) for i, q in enumerate(data)])
+                        return self._post_url(requesturl, request_data,
                             header, ccancel=ccancel)
 
-                else:
-                        baseurl = urlparse.urljoin(self._repouri.uri,
-                            methodstr)
-                        requesturl = urlparse.urljoin(baseurl, urllib.quote(
-                            str(data[0]), safe=''))
+                # Retrieval only.
+                requesturl = urlparse.urljoin(requesturl, urllib.quote(
+                    str(data[0]), safe=''))
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
 
-                        resp = self._fetch_url(requesturl, header,
-                            ccancel=ccancel)
-
-                return resp
-
-        def get_catalog(self, ts=None, header=None, ccancel=None):
+        def get_catalog(self, ts=None, header=None, ccancel=None, pub=None):
                 """Get the catalog from the repo.  If ts is defined,
                 request only changes newer than timestamp ts."""
 
-                methodstr = "catalog/0/"
-
-                requesturl = urlparse.urljoin(self._repouri.uri, methodstr)
-
+                requesturl = self.__get_request_url("catalog/0/", pub=pub)
                 if ts:
                         if not header:
                                 header = {"If-Modified-Since": ts}
@@ -351,7 +419,7 @@ class HTTPRepo(TransportRepo):
                     ccancel=ccancel)
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None, revalidate=False, redownload=False):
+            progtrack=None, pub=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
@@ -365,7 +433,7 @@ class HTTPRepo(TransportRepo):
                 uses http's no-cache header, while revalidate uses
                 max-age=0."""
 
-                methodstr = "catalog/1/"
+                baseurl = self.__get_request_url("catalog/1/", pub=pub)
                 urllist = []
                 progclass = None
                 headers = {}
@@ -386,9 +454,6 @@ class HTTPRepo(TransportRepo):
                         headers.update(header)
                 if progtrack:
                         progclass = ProgressCallback
-
-                # create URL for requests
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
 
                 for f in filelist:
                         url = urlparse.urljoin(baseurl, f)
@@ -428,48 +493,50 @@ class HTTPRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors)
 
-        def get_datastream(self, fhash, version, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None,
+            pub=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
-                methodstr = "file/%s/" % version
+                # The only versions this operation is compatible with.
+                assert version == 0 or version == 1
 
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                baseurl = self.__get_request_url("file/%s/" % version, pub=pub)
                 requesturl = urlparse.urljoin(baseurl, fhash)
-
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def get_publisherinfo(self, header=None, ccancel=None):
-                """Get publisher/0 information from the repository."""
+                """Get publisher information from the repository."""
 
-                requesturl = urlparse.urljoin(self._repouri.uri, "publisher/0/")
+                requesturl = self.__get_request_url("publisher/0/")
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
-        def get_manifest(self, fmri, header=None, ccancel=None):
+        def get_status(self, header=None, ccancel=None):
+                """Get status/0 information from the repository."""
+
+                requesturl = self.__get_request_url("status/0")
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
+
+        def get_manifest(self, fmri, header=None, ccancel=None, pub=None):
                 """Get a package manifest from repo.  The FMRI of the
                 package is given in fmri."""
 
-                methodstr = "manifest/0/"
-
                 mfst = fmri.get_url_path()
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                baseurl = self.__get_request_url("manifest/0/", pub=pub)
                 requesturl = urlparse.urljoin(baseurl, mfst)
 
                 return self._fetch_url(requesturl, header, compress=True,
                     ccancel=ccancel)
 
-        def get_manifests(self, mfstlist, dest, progtrack=None):
+        def get_manifests(self, mfstlist, dest, progtrack=None, pub=None):
                 """Get manifests named in list.  The mfstlist argument contains
                 tuples (fmri, header).  This is so that each manifest may have
                 unique header information.  The destination directory is spec-
                 ified in the dest argument."""
 
-                methodstr = "manifest/0/"
+                baseurl = self.__get_request_url("manifest/0/", pub=pub)
                 urlmapping = {}
                 progclass = None
-
-                # create URL for requests
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
 
                 if progtrack:
                         progclass = ProgressCallback
@@ -515,7 +582,7 @@ class HTTPRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors, urlmapping)
 
-        def get_files(self, filelist, dest, progtrack, version, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None, pub=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -523,15 +590,12 @@ class HTTPRepo(TransportRepo):
                 it contains a ProgressTracker object for the
                 downloads."""
 
-                methodstr = "file/%s/" % version
+                baseurl = self.__get_request_url("file/%s/" % version, pub=pub)
                 urllist = []
                 progclass = None
 
                 if progtrack:
                         progclass = FileProgress
-
-                # create URL for requests
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
 
                 for f in filelist:
                         url = urlparse.urljoin(baseurl, f)
@@ -580,7 +644,7 @@ class HTTPRepo(TransportRepo):
                 """Query the repo for versions information.
                 Returns a fileobject."""
 
-                requesturl = urlparse.urljoin(self._repouri.uri, "versions/0/")
+                requesturl = self.__get_request_url("versions/0/")
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def has_version_data(self):
@@ -597,9 +661,8 @@ class HTTPRepo(TransportRepo):
                 attrs = action.attrs
                 data_fobj = None
                 data = None
-                methodstr = "add/0/"
 
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                baseurl = self.__get_request_url("add/0/")
                 request_str = "%s/%s" % (trans_id, action.name)
                 requesturl = urlparse.urljoin(baseurl, request_str)
 
@@ -618,23 +681,7 @@ class HTTPRepo(TransportRepo):
 
                 fobj = self._post_url(requesturl, header=headers,
                     data_fobj=data_fobj, data=data, failonerror=False)
-
-                try:
-                        fobj.free_buffer = False
-                        fobj.read()
-                except tx.TransportProtoError, e:
-                        if e.code == httplib.BAD_REQUEST:
-                                exc_type, exc_value, exc_tb = sys.exc_info()
-                                try:
-                                        e.details = self._parse_html_error(
-                                            fobj.read())
-                                except:
-                                        # If parse fails, raise original
-                                        # exception.
-                                        raise exc_value, None, exc_tb
-                        raise
-                finally:
-                        fobj.close()
+                self.__check_response_body(fobj)
 
         def publish_add_file(self, pth, header=None, trans_id=None):
                 """The publish operation that adds content to a repository.
@@ -643,11 +690,8 @@ class HTTPRepo(TransportRepo):
                 id in trans_id."""
 
                 attrs = {}
-                methodstr = "file/1/"
-
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
-                request_str = "%s" % trans_id
-                requesturl = urlparse.urljoin(baseurl, request_str)
+                baseurl = self.__get_request_url("file/1/")
+                requesturl = urlparse.urljoin(baseurl, trans_id)
 
                 headers = dict(
                     ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
@@ -658,22 +702,16 @@ class HTTPRepo(TransportRepo):
                         headers.update(header)
 
                 fobj = self._post_url(requesturl, header=headers, data_fp=pth)
+                self.__check_response_body(fobj)
 
-                # Discard response body
-                fobj.read()
-                
         def publish_abandon(self, header=None, trans_id=None):
                 """The 'abandon' publication operation, that tells a
                 Repository to abort the current transaction.  The caller
                 must specify the transaction id in trans_id. Returns
                 a (publish-state, fmri) tuple."""
 
-                methodstr = "abandon/0/"
-
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
-                request_str = trans_id
-                requesturl = urlparse.urljoin(baseurl, request_str)
-
+                baseurl = self.__get_request_url("abandon/0/")
+                requesturl = urlparse.urljoin(baseurl, trans_id)
                 fobj = self._fetch_url(requesturl, header=header,
                     failonerror=False)
 
@@ -698,25 +736,21 @@ class HTTPRepo(TransportRepo):
 
                 return state, pkgfmri
 
-        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+        def publish_close(self, header=None, trans_id=None,
             add_to_catalog=False):
                 """The close operation tells the Repository to commit
                 the transaction identified by trans_id.  The caller may
-                specify refresh_index and add_to_catalog, if needed.
-                This method returns a (publish-state, fmri) tuple."""
+                specify add_to_catalog, if needed.  This method returns a
+                (publish-state, fmri) tuple."""
 
-                methodstr = "close/0/"
                 headers = {}
-                if not refresh_index:
-                        headers["X-IPkg-Refresh-Index"] = 0
                 if not add_to_catalog:
                         headers["X-IPkg-Add-To-Catalog"] = 0
                 if header:
                         headers.update(header)
 
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
-                request_str = trans_id
-                requesturl = urlparse.urljoin(baseurl, request_str)
+                baseurl = self.__get_request_url("close/0/")
+                requesturl = urlparse.urljoin(baseurl, trans_id)
 
                 fobj = self._fetch_url(requesturl, header=headers,
                     failonerror=False)
@@ -749,14 +783,13 @@ class HTTPRepo(TransportRepo):
                 client_release, and the package's name in pkg_name.
                 Returns a transaction-ID."""
 
-                methodstr = "open/0/"
-                return self.__start_trans(methodstr, header, client_release,
+                baseurl = self.__get_request_url("open/0/")
+                return self.__start_trans(baseurl, header, client_release,
                     pkg_name)
 
-        def __start_trans(self, methodstr, header, client_release, pkg_name):
+        def __start_trans(self, baseurl, header, client_release, pkg_name):
                 """Start a publication transaction."""
 
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 request_str = urllib.quote(pkg_name, "")
                 requesturl = urlparse.urljoin(baseurl, request_str)
 
@@ -794,37 +827,79 @@ class HTTPRepo(TransportRepo):
                 client_release, and the package's name in pkg_name.
                 Returns a transaction-ID."""
 
-                methodstr = "append/0/"
-                return self.__start_trans(methodstr, header, client_release,
+                baseurl = self.__get_request_url("append/0/")
+                return self.__start_trans(baseurl, header, client_release,
                     pkg_name)
 
         def publish_refresh_index(self, header=None):
                 """If the Repo points to a Repository that has a refresh-able
                 index, refresh the index."""
 
-                methodstr = "index/0/refresh/"
-                requesturl = urlparse.urljoin(self._repouri.uri, methodstr)
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "rebuild" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
+
+        def publish_rebuild(self, header=None, pub=None):
+                """Attempt to rebuild the package data and search data in the
+                repository."""
+
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "rebuild" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
+
+        def publish_rebuild_indexes(self, header=None, pub=None):
+                """Attempt to rebuild the search data in the repository."""
+
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "rebuild-indexes" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
+
+        def publish_rebuild_packages(self, header=None, pub=None):
+                """Attempt to rebuild the package data in the repository."""
+
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "rebuild-packages" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
+
+        def publish_refresh(self, header=None, pub=None):
+                """Attempt to refresh the package data and search data in the
+                repository."""
+
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "refresh" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
+
+        def publish_refresh_indexes(self, header=None, pub=None):
+                """Attempt to refresh the search data in the repository."""
+
+                if self.supports_version("admin", [0]):
+                        requesturl = self.__get_request_url("admin/0", query={
+                            "cmd": "refresh-indexes" }, pub=pub)
+                else:
+                        requesturl = self.__get_request_url("index/0/refresh")
 
                 fobj = self._fetch_url(requesturl, header=header,
                     failonerror=False)
+                self.__check_response_body(fobj)
 
-                try:
-                        fobj.free_buffer = False
-                        fobj.read()
-                except tx.TransportProtoError, e:
-                        if e.code == httplib.BAD_REQUEST:
-                                exc_type, exc_value, exc_tb = sys.exc_info()
-                                try:
-                                        e.details = self._parse_html_error(
-                                            fobj.read())
-                                except:
-                                        # If parse fails, raise original
-                                        # exception.
-                                        raise exc_value, None, exc_tb
+        def publish_refresh_packages(self, header=None, pub=None):
+                """Attempt to refresh the package data in the repository."""
 
-                        raise
-                finally:
-                        fobj.close()
+                requesturl = self.__get_request_url("admin/0", query={
+                    "cmd": "refresh-packages" }, pub=pub)
+                fobj = self._fetch_url(requesturl, header=header,
+                    failonerror=False)
+                self.__check_response_body(fobj)
 
         def supports_version(self, op, verlist):
                 """Returns version-id of highest supported version.
@@ -843,12 +918,10 @@ class HTTPRepo(TransportRepo):
                                 return v
                 return -1
 
-        def touch_manifest(self, mfst, header=None, ccancel=None):
+        def touch_manifest(self, mfst, header=None, ccancel=None, pub=None):
                 """Invoke HTTP HEAD to send manifest intent data."""
 
-                methodstr = "manifest/0/"
-
-                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+                baseurl = self.__get_request_url("manifest/0/", pub=pub)
                 requesturl = urlparse.urljoin(baseurl, mfst)
 
                 resp = self._fetch_url_header(requesturl, header,
@@ -858,6 +931,7 @@ class HTTPRepo(TransportRepo):
                 resp.read()
 
                 return True
+
 
 class HTTPSRepo(HTTPRepo):
 
@@ -936,7 +1010,7 @@ class FileRepo(TransportRepo):
                             allow_fragments=0)
                         path = urllib.url2pathname(path)
                         self._frepo = svr_repo.Repository(read_only=True,
-                            repo_root=path)
+                            root=path)
                 except cfg.ConfigError, e:
                         reason = _("The configuration file for the repository "
                             "is invalid or incomplete:\n%s") % e
@@ -958,7 +1032,7 @@ class FileRepo(TransportRepo):
         def __del__(self):
                 # Dump search cache if repo goes out of scope.
                 if self._frepo:
-                        sqp.TermQuery.clear_cache(self._frepo.index_root)
+                        self._frepo.reset_search()
                         self._frepo = None
 
         def _add_file_url(self, url, filepath=None, progclass=None,
@@ -993,18 +1067,18 @@ class FileRepo(TransportRepo):
 
                 self._verdata = verdict
 
-        def do_search(self, data, header=None, ccancel=None):
+        def do_search(self, data, header=None, ccancel=None, pub=None):
                 """Perform a search against repo."""
 
-                if not self._frepo.search_available:
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        res_list = self._frepo.search(data, pub=pub_prefix)
+                except svr_repo.RepositorySearchUnavailableError:
                         ex = tx.TransportProtoError("file", errno.EAGAIN,
                             reason=_("Search temporarily unavailable."),
                             repourl=self._url)
                         self.__record_proto_error(ex)
                         raise ex
-
-                try:
-                        res_list = self._frepo.search(data)
                 except sqp.QueryException, e:
                         ex = tx.TransportProtoError("file", errno.EINVAL,
                             reason=str(e), repourl=self._url)
@@ -1052,7 +1126,7 @@ class FileRepo(TransportRepo):
                 return output()
 
         def get_catalog1(self, filelist, destloc, header=None, ts=None,
-            progtrack=None, revalidate=False, redownload=False):
+            progtrack=None, pub=None, revalidate=False, redownload=False):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
@@ -1065,14 +1139,24 @@ class FileRepo(TransportRepo):
 
                 urllist = []
                 progclass = None
+                pub_prefix = getattr(pub, "prefix", None)
+
                 if progtrack:
                         progclass = ProgressCallback
 
                 # create URL for requests
                 for f in filelist:
-                        url = urlparse.urlunparse(("file", "", 
-                            urllib.pathname2url(self._frepo.catalog_1(f)), "",
-                            "", ""))
+                        try:
+                                url = urlparse.urlunparse(("file", None,
+                                    urllib.pathname2url(self._frepo.catalog_1(f,
+                                    pub=pub_prefix)), None, None, None))
+                        except svr_repo.RepositoryError, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                raise ex
+
                         urllist.append(url)
                         fn = os.path.join(destloc, f)
                         self._add_file_url(url, filepath=fn, header=header,
@@ -1108,14 +1192,15 @@ class FileRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors)
 
-        def get_datastream(self, fhash, version, header=None, ccancel=None):
+        def get_datastream(self, fhash, version, header=None, ccancel=None, pub=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
+                pub_prefix = getattr(pub, "prefix", None)
                 try:
-                        requesturl = urlparse.urlunparse(("file", "", 
-                            urllib.pathname2url(self._frepo.file(fhash)), "",
-                            "", ""))
+                        requesturl = urlparse.urlunparse(("file", None,
+                            urllib.pathname2url(self._frepo.file(fhash,
+                            pub=pub_prefix)), None, None, None))
                 except svr_repo.RepositoryFileNotFoundError, e:
                         ex = tx.TransportProtoError("file", errno.ENOENT,
                             reason=str(e), repourl=self._url, request=fhash)
@@ -1129,32 +1214,12 @@ class FileRepo(TransportRepo):
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def get_publisherinfo(self, header=None, ccancel=None):
-                """Get publisher/0 information from the repository."""
+                """Get publisher information from the repository."""
 
                 try:
-                        rargs = {}
-                        for prop in ("collection_type", "description",
-                            "legal_uris", "mirrors", "name", "origins",
-                            "refresh_seconds", "registration_uri",
-                            "related_uris"):
-                                rargs[prop] = self._frepo.cfg.get_property(
-                                    "repository", prop)
-
-                        repo = publisher.Repository(**rargs)
-                        alias = self._frepo.cfg.get_property("publisher",
-                            "alias")
-                        pfx = self._frepo.cfg.get_property("publisher",
-                            "prefix")
-                        scas = self._frepo.cfg.get_property("publisher",
-                            "signing_ca_certs")
-                        icas = self._frepo.cfg.get_property("publisher",
-                            "intermediate_certs")
-                        pub = publisher.Publisher(pfx, alias=alias,
-                            repositories=[repo], ca_certs=scas,
-                            inter_certs=icas)
-
+                        pubs = self._frepo.get_publishers()
                         buf = cStringIO.StringIO()
-                        p5i.write(buf, [pub])
+                        p5i.write(buf, pubs)
                 except Exception, e:
                         reason = "Unable to retrieve publisher configuration " \
                             "data:\n%s" % e
@@ -1165,14 +1230,33 @@ class FileRepo(TransportRepo):
                 buf.seek(0)
                 return buf
 
-        def get_manifest(self, fmri, header=None, ccancel=None):
+        def get_status(self, header=None, ccancel=None):
+                """Get status/0 information from the repository."""
+
+                buf = cStringIO.StringIO()
+                try:
+                        rstatus = self._frepo.get_status()
+                        json.dump(rstatus, buf, ensure_ascii=False, indent=2,
+                            sort_keys=True)
+                        buf.write("\n")
+                except Exception, e:
+                        reason = "Unable to retrieve status data:\n%s" % e
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=reason, repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                buf.seek(0)
+                return buf
+
+        def get_manifest(self, fmri, header=None, ccancel=None, pub=None):
                 """Get a manifest from repo.  The fmri of the package for the
                 manifest is given in fmri."""
 
+                pub_prefix = getattr(pub, "prefix", None)
                 try:
-                        requesturl = urlparse.urlunparse(("file", "", 
-                            urllib.pathname2url(self._frepo.manifest(fmri)), "",
-                            "", ""))
+                        requesturl = urlparse.urlunparse(("file", None,
+                            urllib.pathname2url(self._frepo.manifest(fmri,
+                            pub=pub_prefix)), None, None, None))
                 except svr_repo.RepositoryError, e:
                         ex = tx.TransportProtoError("file", errno.EPROTO,
                             reason=str(e), repourl=self._url, request=str(fmri))
@@ -1181,7 +1265,7 @@ class FileRepo(TransportRepo):
 
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
-        def get_manifests(self, mfstlist, dest, progtrack=None):
+        def get_manifests(self, mfstlist, dest, progtrack=None, pub=None):
                 """Get manifests named in list.  The mfstlist argument contains
                 tuples (fmri, header).  This is so that each manifest may have
                 unique header information.  The destination directory is spec-
@@ -1189,6 +1273,7 @@ class FileRepo(TransportRepo):
 
                 urlmapping = {}
                 progclass = None
+                pub_prefix = getattr(pub, "prefix", None)
 
                 if progtrack:
                         progclass = ProgressCallback
@@ -1199,9 +1284,9 @@ class FileRepo(TransportRepo):
                 pre_exec_errors = []
                 for fmri, h in mfstlist:
                         try:
-                                url = urlparse.urlunparse(("file", "", 
+                                url = urlparse.urlunparse(("file", None,
                                     urllib.pathname2url(self._frepo.manifest(
-                                    fmri)), "", "", ""))
+                                    fmri, pub=pub_prefix)), None, None, None))
                         except svr_repo.RepositoryError, e:
                                 ex = tx.TransportProtoError("file",
                                     errno.EPROTO, reason=str(e),
@@ -1248,7 +1333,7 @@ class FileRepo(TransportRepo):
 
                 return errors + pre_exec_errors
 
-        def get_files(self, filelist, dest, progtrack, version, header=None):
+        def get_files(self, filelist, dest, progtrack, version, header=None, pub=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -1258,6 +1343,7 @@ class FileRepo(TransportRepo):
 
                 urllist = []
                 progclass = None
+                pub_prefix = getattr(pub, "prefix", None)
 
                 if progtrack:
                         progclass = FileProgress
@@ -1268,9 +1354,9 @@ class FileRepo(TransportRepo):
                 pre_exec_errors = []
                 for f in filelist:
                         try:
-                                url = urlparse.urlunparse(("file", "", 
-                                    urllib.pathname2url(self._frepo.file(f)),
-                                    "", "", ""))
+                                url = urlparse.urlunparse(("file", None,
+                                    urllib.pathname2url(self._frepo.file(f,
+                                    pub=pub_prefix)), None, None, None))
                         except svr_repo.RepositoryFileNotFoundError, e:
                                 ex = tx.TransportProtoError("file",
                                     errno.ENOENT, reason=str(e),
@@ -1334,12 +1420,18 @@ class FileRepo(TransportRepo):
 
                 buf = cStringIO.StringIO()
                 vops = {
+                    "abandon": ["0"],
+                    "add": ["0"],
+                    "admin": ["0"],
                     "append": ["0"],
                     "catalog": ["1"],
+                    "close": ["0"],
                     "file": ["0", "1"],
                     "manifest": ["0"],
-                    "publisher": ["0"],
+                    "open": ["0"],
+                    "publisher": ["0", "1"],
                     "search": ["1"],
+                    "status": ["0"],
                     "versions": ["0"],
                 }
 
@@ -1364,6 +1456,9 @@ class FileRepo(TransportRepo):
                 Callers may supply a header, and should supply a transaction
                 id in trans_id."""
 
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
                 try:
                         self._frepo.add(trans_id, action)
                 except svr_repo.RepositoryError, e:
@@ -1384,6 +1479,9 @@ class FileRepo(TransportRepo):
                 transaction id in trans_id. Returns a (publish-state, fmri)
                 tuple."""
 
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
                 try:
                         pkg_state = self._frepo.abandon(trans_id)
                 except svr_repo.RepositoryError, e:
@@ -1391,16 +1489,18 @@ class FileRepo(TransportRepo):
 
                 return None, pkg_state
 
-        def publish_close(self, header=None, trans_id=None, refresh_index=False,
+        def publish_close(self, header=None, trans_id=None,
             add_to_catalog=False):
                 """The close operation tells the Repository to commit
                 the transaction identified by trans_id.  The caller may
-                specify refresh_index and add_to_catalog, if needed.
-                This method returns a (publish-state, fmri) tuple."""
+                specify add_to_catalog, if needed.  This method returns a
+                (publish-state, fmri) tuple."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
 
                 try:
                         pkg_fmri, pkg_state = self._frepo.close(trans_id,
-                            refresh_index=refresh_index,
                             add_to_catalog=add_to_catalog)
                 except svr_repo.RepositoryError, e:
                         raise tx.TransportOperationError(str(e))
@@ -1412,6 +1512,9 @@ class FileRepo(TransportRepo):
                 The caller must specify the client's OS release in
                 client_release, and the package's name in pkg_name.
                 Returns a transaction-ID string."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
 
                 try:
                         trans_id = self._frepo.open(client_release, pkg_name)
@@ -1429,12 +1532,81 @@ class FileRepo(TransportRepo):
 
                 return trans_id
 
-        def publish_refresh_index(self, header=None):
-                """If the Repo points to a Repository that has a refresh-able
-                index, refresh the index."""
+        def publish_rebuild(self, header=None, pub=None):
+                """Attempt to rebuild the package data and search data in the
+                repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        self._frepo.rebuild(pub=pub_prefix,
+                            build_catalog=True, build_index=True)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_rebuild_indexes(self, header=None, pub=None):
+                """Attempt to rebuild the search data in the repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        self._frepo.rebuild(pub=pub_prefix,
+                            build_catalog=False, build_index=True)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_rebuild_packages(self, header=None, pub=None):
+                """Attempt to rebuild the package data in the repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        self._frepo.rebuild(pub=pub_prefix,
+                            build_catalog=True, build_index=False)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_refresh(self, header=None, pub=None):
+                """Attempt to refresh the package data and search data in the
+                repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        self._frepo.add_content(pub=pub_prefix,
+                            refresh_index=True)
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_refresh_indexes(self, header=None, pub=None):
+                """Attempt to refresh the search data in the repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
 
                 try:
                         self._frepo.refresh_index()
+                except svr_repo.RepositoryError, e:
+                        raise tx.TransportOperationError(str(e))
+
+        def publish_refresh_packages(self, header=None, pub=None):
+                """Attempt to refresh the package data in the repository."""
+
+                # Calling any publication operation sets read_only to False.
+                self._frepo.read_only = False
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        self._frepo.add_content(pub=pub_prefix,
+                            refresh_index=False)
                 except svr_repo.RepositoryError, e:
                         raise tx.TransportOperationError(str(e))
 
@@ -1455,7 +1627,7 @@ class FileRepo(TransportRepo):
                                 return v
                 return -1
 
-        def touch_manifest(self, mfst, header=None, ccancel=None):
+        def touch_manifest(self, mfst, header=None, ccancel=None, pub=None):
                 """No-op for file://."""
 
                 return True

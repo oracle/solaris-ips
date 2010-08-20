@@ -398,7 +398,7 @@ class ImageConfig(object):
                         c.set(section, "revoked_ca_certs", str(
                             pub.revoked_ca_certs))
                         c.set(section, "intermediate_certs", str(
-                            pub.inter_certs))
+                            pub.intermediate_certs))
                         c.set(section, "disabled", str(pub.disabled))
                         c.set(section, "sticky", str(pub.sticky))
 
@@ -542,10 +542,10 @@ class ImageConfig(object):
                         revoked_ca_certs = []
 
                 try:
-                        inter_certs = self.read_list(cp.get(s,
+                        intermediate_certs = self.read_list(cp.get(s,
                             "intermediate_certs"))
                 except ConfigParser.NoOptionError:
-                        inter_certs = []
+                        intermediate_certs = []
                 try:
                         signature_policy = cp.get(s, "signature_policy")
                 except ConfigParser.NoOptionError:
@@ -741,8 +741,8 @@ class ImageConfig(object):
                 pub = publisher.Publisher(prefix, alias=alias,
                     client_uuid=client_uuid, disabled=disabled,
                     meta_root=pmroot, repositories=[r], sticky=sticky,
-                    ca_certs=ca_certs, inter_certs=inter_certs, props=props,
-                    revoked_ca_certs=revoked_ca_certs,
+                    ca_certs=ca_certs, intermediate_certs=intermediate_certs,
+                    props=props, revoked_ca_certs=revoked_ca_certs,
                     approved_ca_certs=approved_ca_certs)
 
                 # write out the UUID if it was set

@@ -483,6 +483,12 @@ class ServerCatalog(object):
 
                 return self.attrs.get("origin", None)
 
+        @property
+        def package_count(self):
+                """Returns the number of packages in the catalog."""
+
+                return self.attrs["npkgs"] or 0
+
         @classmethod
         def recv(cls, filep, path, pub=None):
                 """A static method that takes a file-like object and

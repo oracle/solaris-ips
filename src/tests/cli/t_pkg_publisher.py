@@ -395,15 +395,19 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             "repository": {
                 "collection_type": "supplemental",
                 "description": "This repository serves packages for test3.",
-                "legal_uris": "http://www.opensolaris.org/os/copyrights,"
-                        "http://www.opensolaris.org/os/tou,"
-                        "http://www.opensolaris.org/os/trademark",
+                "legal_uris": [
+                    "http://www.opensolaris.org/os/copyrights",
+                    "http://www.opensolaris.org/os/tou",
+                    "http://www.opensolaris.org/os/trademark"
+                ],
                 "name": "The Test3 Repository",
                 "refresh_seconds": 86400,
                 "registration_uri": "",
-                "related_uris": "http://pkg.opensolaris.org/contrib,"
-                        "http://jucr.opensolaris.org/pending,"
-                        "http://jucr.opensolaris.org/contrib",
+                "related_uris": [
+                    "http://pkg.opensolaris.org/contrib",
+                    "http://jucr.opensolaris.org/pending",
+                    "http://jucr.opensolaris.org/contrib"
+                ],
             },
         }
 
@@ -511,7 +515,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                                         if not val:
                                                 val = set()
                                         else:
-                                                val = set(val.split(","))
+                                                val = set(val)
                                         new_pub_val = set()
                                         for u in pub_val:
                                                 uri = u.uri
@@ -521,13 +525,32 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                                         pub_val = new_pub_val
                                 self.assertEqual(val, pub_val)
 
+        def __update_repo_pub_cfg(self, dc, pubcfg):
+                """Private helper method to update a repository's publisher
+                configuration based on the provided dictionary structure."""
+
+                rpath = dc.get_repodir()
+                props = ""
+                for sname in pubcfg:
+                        for pname, pval in pubcfg[sname].iteritems():
+                                if sname == "publisher" and pname == "prefix":
+                                        continue
+                                pname = pname.replace("_", "-")
+                                if isinstance(pval, list):
+                                        props += "%s/%s='(%s)' " % \
+                                            (sname, pname, " ".join(pval))
+                                else:
+                                        props += "%s/%s='%s' " % \
+                                            (sname, pname, pval)
+
+                pfx = pubcfg["publisher"]["prefix"]
+                self.pkgrepo("set -s %s -p %s %s" % (rpath, pfx, props))
+                self.pkgrepo("get -p all -s %s" % rpath)
+
         def test_set_auto(self):
                 """Verify that set-publisher -p works as expected."""
 
-                # XXX can't test multiple publisher configuration case as
-                # depot doesn't support that yet (i.e. publisher/0 response
-                # does not contain multiple publishers).  So this only tests
-                # the single add/update case for the moment.
+                # Test the single add/update case first.
                 durl1 = self.dcs[1].get_depot_url()
                 durl3 = self.dcs[3].get_depot_url()
                 durl4 = self.dcs[4].get_depot_url()
@@ -550,7 +573,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                         "prefix": "test3",
                     },
                     "repository": {
-                        "origins": durl3,
+                        "origins": [durl3],
                     },
                 }
                 self.pkg("set-publisher -p %s" % durl3)
@@ -566,11 +589,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # Origin and mirror info wasn't known until this point, so add
                 # it to the test configuration.
                 t3cfg = self.test3_pub_cfg.copy()
-                t3cfg["repository"]["origins"] = durl3
-                t3cfg["repository"]["mirrors"] = ",".join((durl1, durl3, durl4))
-                for section in t3cfg:
-                        for prop, val in t3cfg[section].iteritems():
-                                self.dcs[3].set_property(section, prop, val)
+                t3cfg["repository"]["origins"] = [durl3]
+                t3cfg["repository"]["mirrors"] = [durl1, durl3, durl4]
+                self.__update_repo_pub_cfg(self.dcs[3], t3cfg)
                 self.dcs[3].start()
 
                 # Should succeed and configure test3 publisher.
@@ -598,12 +619,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                                         # Clear all other props.
                                         val = ""
                                 t6cfg[section][prop] = val
-                t6cfg["repository"]["origins"] = ",".join((durl3, durl6))
-                t6cfg["repository"]["mirrors"] = ",".join((durl1, durl3, durl4,
-                    durl6))
-                for section in t6cfg:
-                        for prop, val in t6cfg[section].iteritems():
-                                self.dcs[6].set_property(section, prop, val)
+                t6cfg["repository"]["origins"] = [durl3, durl6]
+                t6cfg["repository"]["mirrors"] = [durl1, durl3, durl4, durl6]
+                self.__update_repo_pub_cfg(self.dcs[6], t6cfg)
                 self.dcs[6].start()
 
                 # Should fail since even though repository publisher prefix
@@ -618,6 +636,14 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # Load image configuration to verify publisher was configured
                 # as expected.
                 self.__verify_pub_cfg("test3", t6cfg)
+
+                # Test multi-publisher add case.
+                self.pkgrepo("set -s %s -p test2 publisher/alias=''" %
+                    self.dcs[6].get_repodir())
+                self.pkg("unset-publisher test3")
+                self.dcs[6].refresh()
+                self.pkg("set-publisher -p %s" % durl6)
+                self.pkg("publisher test3 test2")
 
         def test_set_mirrors_origins(self):
                 """Test set-publisher functionality for mirrors and origins."""

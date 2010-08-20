@@ -5,44 +5,50 @@ NAME
      pkgrepo - image packaging system repository management utility
 
 SYNOPSIS
-     /usr/bin/pkgrepo [options] command [cmd_options] [operands]
+     pkgrepo create [--version] uri_or_path
 
-     /usr/bin/pkgrepo create uri_or_path
+     pkgrepo add-signing-ca-cert [-p publisher ...]
+         [-s repo_uri_or_path] path ...
 
-     /usr/bin/pkgrepo property [-F format] [-H]
-         [<section/property> ...]
-     /usr/bin/pkgrepo set-property <section/property>=<value> or 
-         <section/property>=(["<value>", ...])
+     pkgrepo add-signing-intermediate-cert [-p publisher ...]
+         [-s repo_uri_or_path] path ...
 
-     /usr/bin/pkgrepo publisher [-F format] [-H] [publisher ...]
+     pkgrepo get [-p publisher ...] [-s repo_uri_or_path]
+         [section/property ...]
 
-     /usr/bin/pkgrepo rebuild [--no-index]
-     /usr/bin/pkgrepo refresh [--no-catalog] [--no-index]
+     pkgrepo info [-F format] [-H] [-p publisher ...]
+         [-s repo_uri_or_path]
 
-     /usr/bin/pkgrepo add-signing-ca-cert path ...
-     /usr/bin/pkgrepo add-signing-intermediate-cert path ...
-     /usr/bin/pkgrepo remove-signing-ca-cert hash ...
-     /usr/bin/pkgrepo remove-signing-intermediate-cert hash ...
+     pkgrepo rebuild [-s repo_uri_or_path] [--no-catalog]
+         [--no-index]
 
-     /usr/bin/pkgrepo version
-     /usr/bin/pkgrepo help
+     pkgrepo refresh [-s repo_uri_or_path] [--no-catalog]
+         [--no-index]
+
+     pkgrepo remove-signing-ca-cert [-p publisher ...]
+         [-s repo_uri_or_path] hash ...
+
+     pkgrepo remove-signing-intermediate-cert [-p publisher ...]
+         [-s repo_uri_or_path] hash ...
+
+     pkgrepo set [-p publisher] [-s repo_uri_or_path]
+         section/property=[value] ... or
+         section/property=([value]) ...
+
+     pkgrepo help
+     pkgrepo version
 
 DESCRIPTION
-     pkgrepo provides the ability to create, manage, and manage pkg(5)
-     package repositories.  Package repositories are a pre-defined set
-     of directories and files that permit the storage and retrieval of
+     pkgrepo provides the ability to create and manage pkg(5) package
+     repositories.  Package repositories are a pre-defined set of
+     directories and files that permit the storage and retrieval of
      package data by pkg(1) and publication clients such as pkgsend(1)
      or pkgrecv(1).  In addition, when network-based access to a
      package repository is needed, pkg.depotd(1m) can provide clients
-     access to store and/or retrieve package data.
+     access to the repository to store and/or retrieve package data.
 
 OPTIONS
      The following options are supported:
-
-     -s repo_uri_or_path
-          A URI or filesystem path representing the location of a
-          package repository. Currently, only filesystem-based
-          repositories are supported.
 
      --help or -?
           Displays a usage message.
@@ -50,72 +56,176 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     add-signing-ca-certs path ...
-          Add the certificates provided as approved CA certificates for the 
-          publisher.
+     create [--version] <uri_or_path>
+          May only be used with filesystem-based repositories.
 
-     add-signing-intermediate-certs path ...
-          Add the certificates provided as intermediate certificates for the 
-          publisher.
+          Creates a pkg(5) repository at the specified location.
 
-     create <uri_or_path>
-          Creates a pkg(5) repository at the specified location.  This
-          command can only be used to create filesystem-based
-          repositories.
+          With --version, create a repository in a format compatible
+          with the specified version.  By default, version 4
+          repositories are created.  Supported versions are:
 
-     property [-F format] [-H] [<section/property> ...]
-          Display repository property information.  With no arguments,
-          display the section, name, and values of all properties.  If
-          a specific list of property names is requested, only the
-          matching ones are displayed.
+               3    Supports storage of packages for a single
+                    publisher, catalog version 1, and search
+                    version 1.
+
+               4    Supports storage of packages for multiple
+                    publishers, catalog version 1, and search
+                    version 1.
+
+     add-signing-ca-certs [-p publisher ...]
+       [-s repo_uri_or_path] path ...
+          May only be used with filesystem-based repositories.
+
+          Add the certificates provided as approved CA certificates.
+
+          With -p, only add certificate data for the given publisher.
+          The special value 'all' may be used to add the certificate
+          data for all publishers.  If not specified, the default
+          publisher will be used.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     add-signing-intermediate-certs [-p publisher ...]
+       [-s repo_uri_or_path] path ...
+          May only be used with filesystem-based repositories.
+
+          Add the certificates provided as intermediate certificates.
+
+          With -p, only add certificate data for the given publisher.
+          The special value 'all' may be used to add the certificate
+          data for all publishers.  If not specified, the default
+          publisher will be used.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     get [-F format] [-H] [-s repo_uri_or_path] [section/property ...]
+          Displays the property information for the repository or
+          its publishers.
+
+          By default, each property and its value are printed on
+          separate lines.  Empty ASCII string values are represented
+          by a  pair of double  quotes ("").  Bourne  shell  meta-
+          characters (';', '&', '(', ')', '|', '^', '<', '>', newline,
+          space, tab, backslash, '"', single-quote, '`') in ASCII
+          string values are quoted by backslashes (\).
 
           With -F, specify an alternative output format.  Currently,
           only 'tsv' (Tab Separated Values) is valid.
 
           With -H, omit the headers from the listing.
 
-     set-property <section/property>=<value> or
-         <section/property>=(["<value>", ...])
+          With -p, display the property information for the given
+          publisher.  The special value 'all' can be used to display
+          the properties for all publishers.  This option may be
+          specified multiple times.
 
-          Update the value of an existing repository property or add
-          a new one.
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
 
-     publisher [-F format] [-H] [<publisher> ...]
-          Lists the publishers of packages in the specified repository
-          with a summary of the number of packages for each publisher
-          and when the publisher's package data was last updated.
+     info [-F format] [-H] [-p publisher ...] [-s repo_uri_or_path]
+          Displays a listing of the package publishers known by the
+          repository.  The listing includes the number of packages
+          for each publisher, when the publisher's package data was
+          last updated, and the status of the publisher's package
+          data (such as whether it is currently being processed).
 
           With -F, specify an alternative output format.  Currently,
           only 'tsv' (Tab Separated Values) is valid.
 
           With -H, omit the headers from the listing.
 
-     rebuild [--no-index]
+          With -p, only display the data for the given publisher.
+          If not provided, the data for all publishers will be
+          displayed.  This option may be specified multiple times.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     rebuild [-s repo_uri_or_path] [--no-catalog] [--no-index]
           Discards all catalog, search, and other cached information
           found in the repository and then re-creates it based on the
-          current contents of the repository.  This command can only
-          be used with filesystem-based repositories.
+          current contents of the repository.
 
-          With --no-index, don't update search indexes.
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
 
-     refresh [--no-catalog] [--no-index]
+          With --no-catalog, don't rebuild package data.
+
+          With --no-index, don't rebuild search indexes.
+
+     refresh [-s repo_uri_or_path] [--no-catalog] [--no-index]
           Catalogs any new packages found in the repository and
           updates all search indexes.  This is intended for use with
           deferred publication (--no-catalog or --no-index options of
-          pkgsend).  This command can only be used with filesystem-
-          based repositories.
+          pkgsend).
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
 
           With --no-catalog, don't add any new packages.
 
           With --no-index, don't update search indexes.
 
-     remove-signing-ca-certs hash ...
-          Remove the certificates provided from the list of CA certificates for
-          the publisher.
+     remove-signing-ca-certs [-p publisher ...]
+       [-s repo_uri_or_path] hash ...
+          May only be used with filesystem-based repositories.
 
-     remove-signing-intermediate-certs hash ...
-          Remove the certificates provided from the list of intermediate 
-          certificates for the publisher.
+          Remove the certificates provided from the list of CA
+          certificates.
+
+          With -p, only remove certificate data for the given
+          publisher.  The special value 'all' may be used to remove
+          the certificate data for all publishers.  If not specified,
+          the default publisher will be used.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     remove-signing-intermediate-certs [-p publisher ...]
+       [-s repo_uri_or_path] hash ...
+          May only be used with filesystem-based repositories.
+
+          Remove the certificates provided from the list of
+          intermediate certificates.
+
+          With -p, only remove certificate data for the given
+          publisher.  The special value 'all' may be used to remove
+          the certificate data for all publishers.  If not specified,
+          the default publisher will be used.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     set [-p publisher] [-s repo_uri_or_path]
+       [section/property=value ...]
+          May only be used with filesystem-based repositories.
+
+          Sets the value of the specified properties for the
+          repository or publishers.
+
+          With -p, only set property data for the given publisher.
+          The special value 'all' may be used to set the property
+          for all publishers.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+          Properties and values may be specified using one of the
+          following forms:
+
+               section/property=
+                    The property's value will be cleared.
+
+               section/property=value
+                    The property's value will replaced with the given
+                    value.
+
+               section/property=(value1 value2 valueN)
+                    The property's value will be replaced with the
+                    list of values.
 
      version
           Display a unique string identifying the version of the
@@ -131,33 +241,73 @@ EXAMPLES
      Example 2:  Display a summary of publishers and the number of
          packages in a repository:
 
-     $ pkgrepo -s /my/repository publisher
-     PUBLISHER   PACKAGES VERSIONS UPDATED
-     example.com 5        8        May 22, 2010 12:06:03 PM
+     $ pkgrepo info -s /my/repository
+     PUBLISHER   PACKAGES STATUS UPDATED
+     example.com 5        online May 22, 2010 12:06:03 PM
 
-     $ pkgrepo -s http://example.com/repository
-     PUBLISHER   PACKAGES VERSIONS UPDATED
-     example.com 5        8        May 22, 2010 12:06:03 PM
+     $ pkgrepo info -s http://example.com/repository
+     PUBLISHER   PACKAGES STATUS UPDATED
+     example.com 5        online May 22, 2010 12:06:03 PM
 
      Example 3:  Rebuild the repository's catalogs and search data.
 
-     $ pkgrepo -s /my/repository rebuild
+     $ pkgrepo rebuild -s /my/repository
 
      Example 4:  Refresh the repository's catalogs and search data.
 
-     $ pkgrepo -s /my/repository refresh
+     $ pkgrepo refresh -s /my/repository
 
-     $ pkgrepo -s http://example.com/repository refresh
+     $ pkgrepo refresh -s http://example.com/repository
 
-     Example 5:  Add the certificate stored in /tmp/example_file.pem as a
-     signing CA certificate for the repository located at /my/repository.
+     Example 5:  Display all repository properties.
 
-     $ pkgrepo -s /my/repository add-signing-ca-cert /tmp/example_file.pem
+     $ pkgrepo get -s /my/repository
+     PUBLISHER SECTION    PROPERTY VALUE
+               publisher  prefix   example.com
 
-     Example 6:  Remove the certificate with hash a12345 from the list of
-     intermediate certificates for the repository located at /my/repository.
+     Example 6:  Display all publisher properties.
 
-     $ pkgrepo -s /my/repository remove-signing-intermediate-ca-cert a12345
+     $ pkgrepo get -s /my/repository -p all
+     PUBLISHER   SECTION    PROPERTY VALUE
+     example.com repository origins  http://example.com/repository
+     example.net repository origins  http://example.net/repository
+
+     Example 7:  Set a repository property.
+
+     $ pkgrepo set -s /my/repository publisher/prefix=example.com
+
+     Example 8:  Set a publisher property.
+
+     $ pkgrepo set -s /my/repository -p example.com \
+         repository/origins=http://example.com/repository
+
+     Example 9:  Add the certificate stored in /tmp/example_file.pem
+     as a signing CA certificate for the repository located at
+     /my/repository for the default publisher.
+
+     $ pkgrepo add-signing-ca-cert -s /my/repository \
+         /tmp/example_file.pem
+
+     Example 10:  Add the certificate stored in /tmp/example_file.pem
+     as a signing CA certificate for the repository located at
+     /my/repository for a specific publisher.
+
+     $ pkgrepo add-signing-ca-cert -s /my/repository \
+         -p example.com /tmp/example_file.pem
+
+     Example 11:  Remove the certificate with hash a12345 from the
+     list of intermediate certificates for the repository located at
+     /my/repository for the default publisher.
+
+     $ pkgrepo remove-signing-intermediate-ca-cert -s /my/repository \
+         a12345
+
+     Example 12:  Remove the certificate with hash a12345 from the
+     list of intermediate certificates for the repository located at
+     /my/repository for a specific publisher.
+
+     $ pkgrepo remove-signing-intermediate-ca-cert -s /my/repository \
+         -p example.com a12345
 
 EXIT STATUS
      The following exit values are returned:

@@ -38,7 +38,7 @@ import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 from pkg.fmri import PkgFmri
 
-API_VERSION = 40
+API_VERSION = 42
 PKG_CLIENT_NAME = "pkg"
 
 

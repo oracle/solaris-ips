@@ -38,14 +38,15 @@ import datetime
 import httplib
 import os
 import rfc822
+import shutil
 import time
 import urllib
 import urlparse
 import uuid
 import xml.dom.minidom as xmini
 
-from pkg.misc import get_rel_path
 import pkg.catalog as catalog
+import pkg.misc as misc
 
 MIME_TYPE = "application/atom+xml"
 CACHE_FILENAME = "feed.xml"
@@ -76,11 +77,8 @@ def init(depot):
         for feeds to work correctly.
         """
 
-        repo = depot.repo
-        if repo.feed_cache_root and not \
-            (repo.read_only and not repo.writable_root):
-                # Ensure any configuration changes are reflected in the feed.
-                __clear_cache(repo)
+        # Ensure any configuration changes are reflected in the feed.
+        __clear_cache(depot, None)
 
 def set_title(depot, doc, feed, update_ts):
         """This function attaches the necessary RSS/Atom feed elements needed
@@ -132,40 +130,6 @@ def set_title(depot, doc, feed, update_ts):
         l.appendChild(lt)
         feed.appendChild(l)
 
-        maintainer = depot.repo.cfg.get_property("repository", "maintainer")
-        # The author information isn't required, but can be useful.
-        if maintainer:
-                name, email = rfc822.AddressList(maintainer).addresslist[0]
-
-                if email and not name:
-                        # If we got an email address, but no name, then
-                        # the name was likely parsed as a local address. In
-                        # that case, assume the whole string is the name.
-                        name = maintainer
-                        email = None
-
-                a = doc.createElement("author")
-
-                # First we have to add a name element. This is required if an
-                # author element exists.
-                n = doc.createElement("name")
-                nt = xmini.Text()
-                nt.replaceWholeText(name)
-                n.appendChild(nt)
-                a.appendChild(n)
-
-                if email:
-                        # If we were able to extract an email address from the
-                        # maintainer information, add the optional email
-                        # element to provide a point of communication.
-                        e = doc.createElement("email")
-                        et = xmini.Text()
-                        et.replaceWholeText(email)
-                        e.appendChild(et)
-                        a.appendChild(e)
-
-                # Done with the author.
-                feed.appendChild(a)
 
 add_op = ("Added", "%s was added to the repository.")
 remove_op = ("Removed", "%s was removed from the repository.")
@@ -223,7 +187,8 @@ def add_transaction(request, doc, feed, entry, first):
         e.appendChild(eu)
 
         # Link to the info output for the given package FMRI.
-        e_uri = get_rel_path(request, "info/0/%s" % urllib.quote(str(pfmri)))
+        e_uri = misc.get_rel_path(request,
+            "info/0/%s" % urllib.quote(str(pfmri)))
 
         l = doc.createElement("link")
         l.setAttribute("rel", "alternate")
@@ -242,12 +207,12 @@ def add_transaction(request, doc, feed, entry, first):
 
         feed.appendChild(e)
 
-def get_updates_needed(repo, ts):
+def get_updates_needed(repo, ts, pub):
         """Returns a list of the CatalogUpdate files that contain the changes
         that have been made to the catalog since the specified UTC datetime
         object 'ts'."""
 
-        c = repo.catalog
+        c = repo.get_catalog(pub)
         if c.last_modified <= ts:
                 # No updates needed.
                 return []
@@ -277,9 +242,9 @@ def get_updates_needed(repo, ts):
         # Ensure updates are in chronological ascending order.
         return sorted(updates)
 
-def update(request, depot, last, cf):
+def update(request, depot, last, cf, pub):
         """Generate new Atom document for current updates.  The cached feed
-        file is written to repo.feed_cache_root/CACHE_FILENAME.
+        file is written to depot.tmp_root/CACHE_FILENAME.
         """
 
         # Our configuration is stored in hours, convert it to days and seconds.
@@ -293,7 +258,8 @@ def update(request, depot, last, cf):
         feed = d.createElementNS("http://www.w3.org/2005/Atom", "feed")
         feed.setAttribute("xmlns", "http://www.w3.org/2005/Atom")
 
-        set_title(depot, d, feed, depot.repo.catalog.last_modified)
+        cat = depot.repo.get_catalog(pub)
+        set_title(depot, d, feed, cat.last_modified)
 
         d.appendChild(feed)
 
@@ -301,15 +267,13 @@ def update(request, depot, last, cf):
         # in the list of updates so that it can be used to quickly determine if
         # the fmri in the update is a 'new' package or an update to an existing
         # package.
-        c = depot.repo.catalog
-
         first = {}
         def get_first(f):
                 stem = f.get_pkg_stem()
                 if stem in first:
                         return first[stem]
 
-                for v, entries in c.entries_by_version(f.pkg_name):
+                for v, entries in cat.entries_by_version(f.pkg_name):
                         # The first version returned is the oldest version.
                         # Add all of the unique package stems for that version
                         # to the list.
@@ -326,8 +290,8 @@ def update(request, depot, last, cf):
                 return first[stem]
 
         # Updates should be presented in reverse chronological order.
-        for name in reversed(get_updates_needed(depot.repo, feed_ts)):
-                ulog = catalog.CatalogUpdate(name, meta_root=c.meta_root)
+        for name in reversed(get_updates_needed(depot.repo, feed_ts, pub)):
+                ulog = catalog.CatalogUpdate(name, meta_root=cat.meta_root)
                 for entry in ulog.updates():
                         pfmri = entry[0]
                         op_time = entry[2]
@@ -339,15 +303,16 @@ def update(request, depot, last, cf):
 
         d.writexml(cf)
 
-def __get_cache_pathname(repo):
-        return os.path.join(repo.feed_cache_root, CACHE_FILENAME)
+def __get_cache_pathname(depot, pub):
+        if not pub:
+                return os.path.join(depot.tmp_root, CACHE_FILENAME)
+        return os.path.join(depot.tmp_root, "publisher", pub, CACHE_FILENAME)
 
-def __clear_cache(repo):
-        if repo.read_only and repo.writable_root:
-                # Ignore the request due to repository configuration.
+def __clear_cache(depot, pub):
+        if not pub:
+                shutil.rmtree(os.path.join(depot.tmp_root, "feed"), True)
                 return
-
-        pathname = __get_cache_pathname(repo)
+        pathname = __get_cache_pathname(depot, pub)
         try:
                 if os.path.exists(pathname):
                         os.remove(pathname)
@@ -356,13 +321,13 @@ def __clear_cache(repo):
                     httplib.INTERNAL_SERVER_ERROR,
                     "Unable to clear feed cache.")
 
-def __cache_needs_update(repo):
+def __cache_needs_update(depot, pub):
         """Checks to see if the feed cache file exists and if it is still
         valid.  Returns False, None if the cache is valid or True, last
         where last is a timestamp representing when the cache was
         generated.
         """
-        cfpath = __get_cache_pathname(repo)
+        cfpath = __get_cache_pathname(depot, pub)
         last = None
         need_update = True
         if os.path.isfile(cfpath):
@@ -372,7 +337,7 @@ def __cache_needs_update(repo):
                         d = xmini.parse(cfpath)
                 except Exception:
                         d = None
-                        __clear_cache(repo)
+                        __clear_cache(depot, pub)
 
                 # Get the feed element and attempt to get the time we last
                 # generated the feed to determine whether we need to regenerate
@@ -396,27 +361,27 @@ def __cache_needs_update(repo):
                                 # been created within the same second, we need
                                 # to ignore small variances when determining
                                 # whether to update the feed cache.
-                                up_ts = copy.copy(repo.catalog.last_modified)
+                                cat = depot.repo.get_catalog(pub)
+                                up_ts = copy.copy(cat.last_modified)
                                 up_ts = up_ts.replace(microsecond=0)
                                 if last >= up_ts:
                                         need_update = False
                         else:
-                                __clear_cache(repo)
+                                __clear_cache(depot, pub)
                 else:
-                        __clear_cache(repo)
+                        __clear_cache(depot, pub)
         return need_update, last
 
-def handle(depot, request, response):
+def handle(depot, request, response, pub):
         """If there have been package updates since we last generated the feed,
         update the feed and send it to the client.  Otherwise, send them the
         cached copy if it is available.
         """
 
-        repo = depot.repo
-        cfpath = __get_cache_pathname(repo)
+        cfpath = __get_cache_pathname(depot, pub)
 
         # First check to see if we already have a valid cache of the feed.
-        need_update, last = __cache_needs_update(repo)
+        need_update, last = __cache_needs_update(depot, pub)
 
         if need_update:
                 # Update always looks at feed.window seconds before the last
@@ -425,30 +390,10 @@ def handle(depot, request, response):
                 if last is None:
                         last = datetime.datetime.utcnow()
 
-                if repo.read_only and not repo.writable_root:
-                        # If the server is operating in readonly mode, the
-                        # feed will have to be generated every time.
-                        cf = cStringIO.StringIO()
-                        update(request, depot, last, cf)
-                        cf.seek(0)
-                        buf = cf.read()
-                        cf.close()
-
-                        # Now that the feed has been generated, set the headers
-                        # correctly and return it.
-                        response.headers['Content-type'] = MIME_TYPE
-
-                        # Return the current time and date in GMT.
-                        response.headers['Last-Modified'] = rfc822.formatdate()
-
-                        response.headers['Content-length'] = len(buf)
-                        return buf
-                else:
-                        # If the server isn't operating in readonly mode, the
-                        # feed can be generated and cached in inst_dir.
-                        cf = file(cfpath, "w")
-                        update(request, depot, last, cf)
-                        cf.close()
+                # Generate and cache the feed.
+                misc.makedirs(os.path.dirname(cfpath))
+                cf = file(cfpath, "w")
+                update(request, depot, last, cf, pub)
+                cf.close()
 
         return serve_file(cfpath, MIME_TYPE)
-

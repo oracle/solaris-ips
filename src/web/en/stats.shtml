@@ -27,13 +27,14 @@
 <%
         catalog = g_vars["catalog"]
         config = g_vars["config"]
+        request = g_vars["request"]
 %>\
 <%def name="page_title(g_vars)"><%
         return "Depot Statistics"
 %></%def>\
 <div id="yui-main" class="yui-b">
         <div class="yui-gb">
-% if not config.mirror:
+% if not config.mirror and request.publisher:
                 <div class="yui-u first">
                 <table class="stats" summary="A summary of high-level statistics
  about the package repository's catalog.">
@@ -102,10 +103,6 @@
                         <tr>
                                 <td class="label">manifest</td>
                                 <td class="value">${config.manifest_requests}</td>
-                        </tr>
-                        <tr>
-                                <td class="label">rename</td>
-                                <td class="value">${config.rename_requests}</td>
                         </tr>
 % endif
                 </table>

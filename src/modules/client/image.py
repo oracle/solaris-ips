@@ -54,6 +54,7 @@ import pkg.client.transport.transport   as transport
 import pkg.fmri
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
+import pkg.nrlock
 import pkg.portable                     as portable
 import pkg.server.catalog
 import pkg.version
@@ -209,7 +210,6 @@ class Image(object):
                 self.pkgdir = None
                 self.root = root
                 self.__lock = pkg.nrlock.NRLock()
-                self.__locked = False
                 self.__lockf = None
                 self.__sig_policy = None
                 self.__trust_anchors = None
@@ -315,7 +315,7 @@ class Image(object):
                 """Returns a boolean value indicating whether the image is
                 currently locked."""
 
-                return self.__locked
+                return self.__lock and self.__lock.locked
 
         @contextmanager
         def locked_op(self, op, allow_unprivileged=False):
@@ -362,7 +362,6 @@ class Image(object):
                 if not self.__lock.acquire(blocking=blocking):
                         raise api_errors.ImageLockedError()
 
-                self.__locked = True
                 try:
                         # Attempt to obtain a file lock.
                         self.__lock_process()
@@ -433,6 +432,7 @@ class Image(object):
                         lf.flush()
                         self.__lockf = lf
                 except EnvironmentError, e:
+                        lf.close()
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
@@ -440,19 +440,23 @@ class Image(object):
                                 raise api_errors.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
+                except:
+                        lf.close()
+                        raise
 
         def unlock(self):
                 """Unlocks the image."""
 
-                if self.__lockf:
-                        # To avoid race conditions with the next caller waiting
-                        # for the lock file, it is simply truncated instead of
-                        # removed.
-                        self.__lockf.truncate(0)
-                        self.__lockf.close()
+                try:
+                        if self.__lockf:
+                                # To avoid race conditions with the next caller
+                                # waiting for the lock file, it is simply
+                                # truncated instead of removed.
+                                self.__lockf.truncate(0)
+                                self.__lockf.close()
+                finally:
                         self.__lockf = None
-                self.__locked = False
-                self.__lock.release()
+                        self.__lock.release()
 
         def image_type(self, d):
                 """Returns the type of image at directory: d; or None"""
@@ -585,7 +589,7 @@ class Image(object):
                 # If current image is locked, then it should be unlocked
                 # and then relocked after the imgdir is changed.  This
                 # ensures that alternate BE scenarios work.
-                relock = self.imgdir and self.__locked
+                relock = self.imgdir and self.locked
                 if relock:
                         self.unlock()
 
@@ -659,7 +663,13 @@ class Image(object):
 
                 # Ensure structure for publishers is valid.
                 for pub in self.gen_publishers():
-                        pub.create_meta_root()
+                        try:
+                                pub.create_meta_root()
+                        except api_errors.PermissionsException:
+                                # Assume that an unprivileged user is attempting
+                                # to use the image after a publisher's metadata
+                                # was removed.
+                                continue
 
                 # Once its structure is valid, then ensure state information
                 # is intact.

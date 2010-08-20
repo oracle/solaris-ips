@@ -88,7 +88,6 @@ error_results = {
     api_errors.ImageUpdateOnLiveImageException: RESULT_FAILED_BAD_REQUEST,
     api_errors.ProblematicPermissionsIndexException: RESULT_FAILED_STORAGE,
     api_errors.PermissionsException: RESULT_FAILED_STORAGE,
-    api_errors.MainDictParsingException: RESULT_FAILED_STORAGE,
     api_errors.SearchException: RESULT_FAILED_SEARCH,
     api_errors.PlanCreationException: RESULT_FAILED_CONSTRAINED,
     api_errors.NonLeafPackageException: RESULT_FAILED_CONSTRAINED,

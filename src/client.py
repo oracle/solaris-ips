@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 40
+CLIENT_API_VERSION = 42
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -871,9 +871,6 @@ def __api_execute_plan(operation, api_inst):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return EXIT_OOPS
-        except api_errors.MainDictParsingException, e:
-                error(str(e))
                 return EXIT_OOPS
         except KeyboardInterrupt:
                 raise
@@ -3678,9 +3675,6 @@ def rebuild_index(img, pargs):
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE,
                     cmd="rebuild-index")
-                return EXIT_OOPS
-        except api_errors.MainDictParsingException, e:
-                error(str(e), cmd="rebuild-index")
                 return EXIT_OOPS
         else:
                 return EXIT_OK

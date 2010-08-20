@@ -112,9 +112,12 @@
         except qp.QueryException, e:
                 results = None
                 query_error = e.html()
+        except Exception, e:
+                results = None
+                query_error = urllib.quote(str(e))
 
         # Before showing the results, the type of results being shown has to be
-        # determined since the user might have overriden the return_type
+        # determined since the user might have overridden the return_type
         # selection above using query syntax.  To do that, the first result will
         # have to be checked for the real return type.
         if results:

@@ -1623,6 +1623,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # expiration and start dates.
                 self.assertRaises(apx.TransportError, self._api_install,
                     api_obj, ["var_pkg"], refresh_catalogs=False)
+
                 # Test that a TransportError from certificate retrieval is
                 # handled correctly.
                 self.pkg("install --no-refresh var_pkg", exit=1)

@@ -52,19 +52,19 @@ def init(depot):
         pkg.server.feed.init(depot)
         tlookup = mako.lookup.TemplateLookup(directories=[depot.web_root])
 
-def feed(depot, request, response):
+def feed(depot, request, response, pub):
         if depot.repo.mirror:
                 raise cherrypy.HTTPError(httplib.NOT_FOUND,
                     "Operation not supported in current server mode.")
-        if not depot.repo.catalog.updates:
+        if not depot.repo.get_catalog(pub).updates:
                 raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
-        return pkg.server.feed.handle(depot, request, response)
+        return pkg.server.feed.handle(depot, request, response, pub)
 
-def __render_template(depot, request, path):
+def __render_template(depot, request, path, pub):
         template = tlookup.get_template(path)
-        base = api.BaseInterface(request, depot)
-        return template.render_unicode(g_vars={ "base": base })
+        base = api.BaseInterface(request, depot, pub)
+        return template.render_unicode(g_vars={ "base": base, "pub": pub })
 
 def __handle_error(path, error):
         # All errors are treated as a 404 since reverse proxies such as Apache
@@ -76,15 +76,33 @@ def __handle_error(path, error):
 
         raise cherrypy.NotFound()
 
-def respond(depot, request, response):
+def respond(depot, request, response, pub):
         path = request.path_info.strip("/")
+        if pub and os.path.exists(os.path.join(depot.web_root, pub)):
+                # If an item exists under the web root
+                # with this name, it isn't a publisher
+                # prefix.
+                pub = None
+        elif pub and pub not in depot.repo.publishers:
+                raise cherrypy.NotFound()
+
+        if pub:
+                # Strip publisher from path as it can't be used to determine
+                # resource locations.
+                path = path.replace(pub, "").strip("/")
+        else:
+                # No publisher specified in request, so assume default.
+                pub = depot.repo.cfg.get_property("publisher", "prefix")
+                if not pub:
+                        pub = None
+
         if path == "":
                 path = "index.shtml"
         elif path.split("/")[0] == "feed":
                 response.headers.update({ "Expires": 0, "Pragma": "no-cache",
                     "Cache-Control": "no-cache, no-transform, must-revalidate"
                     })
-                return feed(depot, request, response)
+                return feed(depot, request, response, pub)
 
         if not path.endswith(".shtml"):
                 spath = urllib.unquote(path)
@@ -101,7 +119,7 @@ def respond(depot, request, response):
                 response.headers.update({ "Expires": 0, "Pragma": "no-cache",
                     "Cache-Control": "no-cache, no-transform, must-revalidate"
                     })
-                return __render_template(depot, request, path)
+                return __render_template(depot, request, path, pub)
         except sae.VersionException, e:
                 # The user shouldn't see why we can't render a template, but
                 # the reason should be logged (cleanly).

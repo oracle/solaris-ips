@@ -45,7 +45,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-API_VERSION = 40
+API_VERSION = 42
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
@@ -244,7 +244,7 @@ add set name=pkg.description value="%(desc)s"
                 # timestamps as those in the first ... by copying the repo over.
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
-                self.copy_repository(d1dir, "test1", d2dir, "test2")
+                self.copy_repository(d1dir, d2dir, { "test1": "test2" })
 
                 self.dlist1 = []
                 self.dlist2 = []

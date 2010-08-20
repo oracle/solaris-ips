@@ -142,8 +142,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 path = urllib.url2pathname(parts[2])
 
                 try:
-                        return repo.Repository(auto_create=False,
-                            fork_allowed=False, repo_root=path)
+                        return repo.Repository(root=path)
                 except cfg.ConfigError, e:
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
@@ -180,9 +179,8 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                 def get_expected(f):
                         exp_lines = ["set name=pkg.fmri value=%s" % f]
                         for dc in self.dcs.values():
-                                mpath = os.path.join(dc.get_repodir(),
-                                    "pkg", f.get_dir_path())
-
+                                repo = dc.get_repo()
+                                mpath = repo.manifest(f) 
                                 if not os.path.exists(mpath):
                                         # Not in this repository, check next.
                                         continue

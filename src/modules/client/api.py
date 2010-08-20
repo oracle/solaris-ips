@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 41
+CURRENT_API_VERSION = 42
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -733,17 +733,16 @@ class ImageInterface(object):
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
                                 raise
+                        except search_errors.IndexLockedException, e:
+                                error = apx.IndexLockedException(e)
+                                self.log_operation_end(error=error)
+                                raise error
                         except search_errors.ProblematicPermissionsIndexException, e:
                                 error = apx.ProblematicPermissionsIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except (search_errors.InconsistentIndexException,
-                            search_errors.PartialIndexingException), e:
+                        except search_errors.InconsistentIndexException, e:
                                 error = apx.CorruptedIndexException(e)
-                                self.log_operation_end(error=error)
-                                raise error
-                        except search_errors.MainDictParsingException, e:
-                                error = apx.MainDictParsingException(e)
                                 self.log_operation_end(error=error)
                                 raise error
                         except actuator.NonzeroExitException, e:

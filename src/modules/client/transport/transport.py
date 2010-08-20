@@ -28,6 +28,7 @@ import cStringIO
 import errno
 import httplib
 import os
+import simplejson as json
 import statvfs
 import tempfile
 import urllib
@@ -470,7 +471,7 @@ class Transport(object):
 
                         try:
                                 fobj = d.do_search(data, header,
-                                    ccancel=ccancel)
+                                    ccancel=ccancel, pub=pub)
                                 if hasattr(fobj, "_prime"):
                                         fobj._prime()
 
@@ -568,7 +569,7 @@ class Transport(object):
                         try:
 
                                 resp = d.get_catalog(ts, header,
-                                    ccancel=ccancel)
+                                    ccancel=ccancel, pub=pub)
 
                                 updatelog.recv(resp, croot, ts, pub)
 
@@ -661,7 +662,6 @@ class Transport(object):
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
-                repo_found = False
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 if progtrack and ccancel:
@@ -720,7 +720,6 @@ class Transport(object):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
-                        repo_found = True
                         gave_up = False
 
                         # This returns a list of transient errors
@@ -729,7 +728,7 @@ class Transport(object):
                         # unless we want to supress a permanent failure.
                         try:
                                 errlist = d.get_catalog1(flist, download_dir,
-                                    header, ts, progtrack=progtrack,
+                                    header, ts, progtrack=progtrack, pub=pub,
                                     redownload=redownload,
                                     revalidate=revalidate)
                         except tx.ExcessiveTransientFailure, ex:
@@ -802,10 +801,6 @@ class Transport(object):
                         if not flist and not errlist:
                                 return
 
-                if not repo_found:
-                        raise apx.UnsupportedRepositoryOperation(pub,
-                            "catalog/1")
-
                 if failedreqs and failures:
                         failures = [
                             x for x in failures
@@ -825,19 +820,13 @@ class Transport(object):
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
-                repo_found = False
                 header = None
 
                 if isinstance(pub, publisher.Publisher):
                         header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
                 for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
                     operation="publisher", versions=[0], ccancel=ccancel):
-                        repo_found = True
                         try:
                                 resp = d.get_publisherinfo(header,
                                     ccancel=ccancel)
@@ -870,9 +859,6 @@ class Transport(object):
                                 else:
                                         raise
 
-                if not repo_found:
-                        raise apx.UnsupportedRepositoryOperation(pub,
-                            "publisher/0")
                 raise failures
 
         @LockedTransport()
@@ -886,10 +872,6 @@ class Transport(object):
                 failures = tx.TransportFailures()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
                 for d, v in self.__gen_repo(pub, retry_count, operation="file",
                     versions=[0, 1]):
 
@@ -897,7 +879,7 @@ class Transport(object):
 
                         try:
                                 resp = d.get_datastream(fhash, v, header,
-                                    ccancel=ccancel)
+                                    ccancel=ccancel, pub=pub)
                                 s = cStringIO.StringIO()
                                 hash_val = misc.gunzip_from_stream(resp, s)
                                 content = s.getvalue()
@@ -930,6 +912,51 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
+        def get_status(self, pub, ccancel=None):
+                """Given a publisher pub, return the stats information
+                for the repository as a dictionary."""
+
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                failures = tx.TransportFailures()
+                header = None
+
+                if isinstance(pub, publisher.Publisher):
+                        header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    operation="status", versions=[0], ccancel=ccancel):
+                        try:
+                                resp = d.get_status(header, ccancel=ccancel)
+                                infostr = resp.read()
+
+                                # If parse succeeds, then the data is valid.
+                                return dict(json.loads(infostr))
+                        except tx.ExcessiveTransientFailure, e:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(e.failures)
+
+                        except (TypeError, ValueError), e:
+                                url = d.get_url()
+                                exc = tx.TransferContentException(url,
+                                    "Invalid stats response: %s" % e)
+                                repostats = self.stats[url]
+                                repostats.record_error(content=True)
+                                if exc.retryable:
+                                        failures.append(exc)
+                                else:
+                                        raise exc
+
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        @LockedTransport()
         def touch_manifest(self, fmri, intent=None, ccancel=None):
                 """Touch a manifest.  This operation does not
                 return the manifest's content.  The FMRI is given
@@ -944,17 +971,14 @@ class Transport(object):
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
                 for d in self.__gen_repo(pub, retry_count, origin_only=True):
 
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
                         try:
-                                d.touch_manifest(mfst, header, ccancel=ccancel)
+                                d.touch_manifest(mfst, header, ccancel=ccancel,
+                                    pub=pub)
                                 return
 
                         except tx.ExcessiveTransientFailure, ex:
@@ -1009,7 +1033,7 @@ class Transport(object):
                         verified = False
                         try:
                                 resp = d.get_manifest(fmri, header,
-                                    ccancel=ccancel)
+                                    ccancel=ccancel, pub=pub)
                                 mcontent = resp.read()
 
                                 verified = self._verify_manifest(fmri,
@@ -1160,7 +1184,7 @@ class Transport(object):
                         # unless we want to suppress a permanant failure.
                         try:
                                 errlist = d.get_manifests(mfstlist,
-                                    download_dir, progtrack=progtrack)
+                                    download_dir, progtrack=progtrack, pub=pub)
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, record this for later
@@ -1399,7 +1423,7 @@ class Transport(object):
                         # unless we want to supress a permanant failure.
                         try:
                                 errlist = d.get_files(filelist, download_dir,
-                                    progtrack, v, header)
+                                    progtrack, v, header, pub=pub)
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, record this for later
@@ -1683,14 +1707,13 @@ class Transport(object):
                 versions and operation are specified, it returns a tuple
                 of (Repo, highest supported version)."""
 
-                repo = None
-                
                 if not self.__engine:
                         self.__setup()
 
                 # If alt_repository supplied, use that as the Repository.
                 # Otherwise, check that a Publisher was passed, and use
                 # its selected_repository.
+                repo = None
                 if alt_repository:
                         repo = alt_repository
                 elif isinstance(pub, publisher.Publisher):
@@ -1724,11 +1747,14 @@ class Transport(object):
                 if versions:
                         versions = sorted(versions, reverse=True)
 
+                fail = None
                 for i in xrange(count):
                         rslist = self.stats.get_repostats(repolist, origins)
                         if prefer_remote:
                                 rslist.sort(cmp=remote_first)
 
+                        fail = tx.TransportFailures()
+                        repo_found = False
                         for rs, ruri in rslist:
                                 if operation and versions:
                                         repo = self.__repo_cache.new_repo(rs,
@@ -1738,16 +1764,42 @@ class Transport(object):
                                                         self.__fill_repo_vers(
                                                             repo,
                                                             ccancel=ccancel)
-                                                except tx.TransportException:
+                                                except tx.TransportException, ex:
+                                                        # Encountered a
+                                                        # transport error while
+                                                        # trying to contact this
+                                                        # origin.  Save the
+                                                        # errors on each retry
+                                                        # so that they can be
+                                                        # raised instead of
+                                                        # an unsupported
+                                                        # operation error.
+                                                        if isinstance(ex,
+                                                            tx.TransportFailures):
+                                                                fail.extend(
+                                                                    ex.exceptions)
+                                                        else:
+                                                                fail.append(ex)
                                                         continue
 
                                         verid = repo.supports_version(operation,
                                             versions)
                                         if verid >= 0:
+                                                repo_found = True
                                                 yield repo, verid
                                 else:
+                                        repo_found = True
                                         yield self.__repo_cache.new_repo(rs,
                                             ruri)
+
+                        if not repo_found and fail:
+                                raise fail
+                        if not repo_found and operation and versions:
+                                # If a versioned operation was requested and
+                                # wasn't found, then raise an unsupported
+                                # exception using the newest version allowed.
+                                raise apx.UnsupportedRepositoryOperation(pub,
+                                    "%s/%d" % (operation, versions[-1]))
 
         def __chunk_size(self, pub, origin_only=False):
                 """Determine the chunk size based upon how many of the known
@@ -2009,12 +2061,8 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if the transport isn't configured or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    single_repository=True):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="add", versions=[0]):
                         try:
                                 d.publish_add(action, header=header,
                                     trans_id=trans_id)
@@ -2046,10 +2094,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                repo_found = False
                 for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
                     single_repository=True, operation="file", versions=[1]):
-                        repo_found = True
                         try:
                                 d.publish_add_file(pth, header=header,
                                     trans_id=trans_id)
@@ -2064,9 +2110,6 @@ class Transport(object):
                                         failures.append(e)
                                 else:
                                         raise
-                if not repo_found:
-                        raise apx.UnsupportedRepositoryOperation(pub,
-                            "file/1")
 
                 raise failures
 
@@ -2080,12 +2123,8 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if transport isn't configured, or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    single_repository=True):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="abandon", versions=[0]):
                         try:
                                 state, fmri = d.publish_abandon(header=header,
                                     trans_id=trans_id)
@@ -2108,9 +2147,7 @@ class Transport(object):
             add_to_catalog=False):
                 """Perform a 'close' publication operation to the
                 publisher supplied in the pub argument.  The caller should
-                also include the transaction id in trans_id.  If
-                the refresh_index argument is true, the repository
-                will be told to refresh its index.  If add_to_catalog
+                also include the transaction id in trans_id.  If add_to_catalog
                 is true, the pkg will be added to the catalog once
                 the transactions close.  Not all transport methods
                 recognize this parameter."""
@@ -2119,16 +2156,11 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if transport isn't configured, or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    single_repository=True):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="close", versions=[0]):
                         try:
                                 state, fmri = d.publish_close(header=header,
                                     trans_id=trans_id,
-                                    refresh_index=refresh_index,
                                     add_to_catalog=add_to_catalog)
                                 return state, fmri
                         except tx.ExcessiveTransientFailure, ex:
@@ -2155,17 +2187,39 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if transport isn't configured, or was shutdown.
-                if not self.__engine:
-                        self.__setup()
-
-                for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    single_repository=True):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="open", versions=[0]):
                         try:
                                 trans_id = d.publish_open(header=header,
                                     client_release=client_release,
                                     pkg_name=pkg_name)
                                 return trans_id
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+                raise failures
+
+        @LockedTransport()
+        def publish_rebuild(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to rebuild package and search data."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="admin", versions=[0]):
+                        try:
+                                d.publish_rebuild(header=header, pub=pub)
+                                return
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
@@ -2194,10 +2248,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                repo_found = False
                 for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
                     single_repository=True, operation="append", versions=[0]):
-                        repo_found = True
                         try:
                                 trans_id = d.publish_append(header=header,
                                     client_release=client_release,
@@ -2213,29 +2265,138 @@ class Transport(object):
                                         failures.append(e)
                                 else:
                                         raise
-                if not repo_found:
-                        raise apx.UnsupportedRepositoryOperation(pub,
-                            "append/0")
 
                 raise failures
 
         @LockedTransport()
-        def publish_refresh_index(self, pub):
+        def publish_rebuild_indexes(self, pub):
                 """Instructs the repositories named by Publisher pub
-                to refresh their index."""
+                to rebuild their search indexes."""
 
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # Call setup if transport isn't configured, or was shutdown.
-                if not self.__engine:
-                        self.__setup()
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="admin", versions=[0]):
+                        try:
+                                d.publish_rebuild_indexes(header=header,
+                                    pub=pub)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
 
+                raise failures
+
+        @LockedTransport()
+        def publish_rebuild_packages(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to rebuild package data."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="admin", versions=[0]):
+                        try:
+                                d.publish_rebuild_packages(header=header,
+                                    pub=pub)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        @LockedTransport()
+        def publish_refresh(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to refresh package and search data."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="admin", versions=[0]):
+                        try:
+                                d.publish_refresh(header=header, pub=pub)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        @LockedTransport()
+        def publish_refresh_indexes(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to refresh their search indexes."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # In this case, the operation and versions keywords are
+                # purposefully avoided as the underlying repo function
+                # will automatically determine what operation to use
+                # for the single origin returned by __gen_repo.
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     single_repository=True):
                         try:
-                                d.publish_refresh_index(header=header)
+                                d.publish_refresh_indexes(header=header,
+                                    pub=pub)
+                                return
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        @LockedTransport()
+        def publish_refresh_packages(self, pub):
+                """Instructs the repositories named by Publisher pub
+                to refresh package data."""
+
+                failures = tx.TransportFailures()
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    single_repository=True, operation="admin", versions=[0]):
+                        try:
+                                d.publish_refresh_packages(header=header,
+                                    pub=pub)
                                 return
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
@@ -2275,7 +2436,6 @@ class Transport(object):
 
                 originuri = pub.selected_repository.origins[0].uri
                 return originuri in self.__repo_cache
-
 
 
 class MultiXfr(object):

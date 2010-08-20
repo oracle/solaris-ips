@@ -39,7 +39,11 @@
 <div id="yui-main">
         <div class="yui-b">
 % if config.mirror:
-                <p>Information about packages is not available when the server is operating in mirror mode.</p>
+                <p>Information about packages is not available when the server
+ is operating in mirror mode.</p>
+% elif not request.publisher:
+                <p>This package repository is empty or no default publisher has
+ been set.</p>
 % else:
 <%
         versions = self.shared.get_releases(g_vars)

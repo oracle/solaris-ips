@@ -27,7 +27,7 @@
 <%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
 <%page args="g_vars"/>\
 <%
-        CLIENT_API_VERSION = 10
+        CLIENT_API_VERSION = 11
         base = g_vars["base"]
         catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
         config = api.ConfigInterface(CLIENT_API_VERSION, base)
@@ -37,7 +37,12 @@
         g_vars["request"] = request
 
         rpath = request.path_info.strip("/")
-        g_vars["web_config"] = { "locale-region": rpath.split("/")[0] }
+        comps = rpath.split("/")
+        pub = g_vars["pub"]
+        if pub and comps[0] == pub:
+                # Ignore publisher component of path.
+                comps.pop(0)
+        g_vars["web_config"] = { "locale-region": comps[0] }
 %>\
 <%include file="../config.shtml" args="g_vars=g_vars"/>\
 <%def name="global_menu_items(g_vars)"><%

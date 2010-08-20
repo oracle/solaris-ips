@@ -879,8 +879,9 @@ class Publisher(object):
 
         def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
             meta_root=None, repositories=None, selected_repository=None,
-            transport=None, sticky=True, ca_certs=EmptyI, inter_certs=EmptyI,
-            props=None, revoked_ca_certs=EmptyI, approved_ca_certs=EmptyI):
+            transport=None, sticky=True, ca_certs=EmptyI,
+            intermediate_certs=EmptyI, props=None, revoked_ca_certs=EmptyI,
+            approved_ca_certs=EmptyI):
                 """Initialize a new publisher object."""
 
                 if client_uuid is None:
@@ -915,8 +916,8 @@ class Publisher(object):
 
                 # Writing out an EmptyI to a config file and reading it back
                 # in doesn't work correctly at the moment, but reading and
-                # writing an empty list does. So if inter_certs is empty, make
-                # sure it's stored as an empty list.
+                # writing an empty list does. So if intermediate_certs is empty,
+                # make sure it's stored as an empty list.
                 #
                 # The relevant implementation is probably the line which
                 # strips ][ from the input in imageconfig.read_list.
@@ -935,10 +936,10 @@ class Publisher(object):
                 else:
                         self.approved_ca_certs = []
 
-                if inter_certs:
-                        self.inter_certs = inter_certs
+                if intermediate_certs:
+                        self.intermediate_certs = intermediate_certs
                 else:
-                        self.inter_certs = []
+                        self.intermediate_certs = []
 
                 if props:
                         self.properties.update(props)
@@ -978,7 +979,7 @@ class Publisher(object):
                     props=self.properties,
                     revoked_ca_certs=self.revoked_ca_certs,
                     approved_ca_certs=self.approved_ca_certs,
-                    inter_certs=self.inter_certs)
+                    intermediate_certs=self.intermediate_certs)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -1037,6 +1038,12 @@ class Publisher(object):
                 return True
 
         def __set_alias(self, value):
+                # Aliases must comply with the same restrictions that prefixes
+                # have as they are intended to be useable in any case where
+                # a prefix may be used.
+                if value is not None and value != "" and \
+                    not misc.valid_pub_prefix(value):
+                        raise api_errors.BadPublisherAlias(value)
                 self.__alias = value
 
         def __set_disabled(self, disabled):
@@ -1773,8 +1780,11 @@ pkg unset-publisher %s
                 pubs = None
                 try:
                         pubs = self.transport.get_publisherdata(repo)
-                except api_errors.UnsupportedRepositoryOperation:
-                        # Nothing more can be done.
+                except (api_errors.TransportError,
+                    api_errors.UnsupportedRepositoryOperation):
+                        # Nothing more can be done (because the target origin
+                        # can't be contacted, or beacuse it doesn't support
+                        # retrievel of publisher configuration data).
                         return
 
                 if not pubs:
@@ -1984,7 +1994,7 @@ pkg unset-publisher %s
                 were necessary to validate its CA certificates against the
                 image's trust anchors."""
 
-                for c in self.inter_certs:
+                for c in self.intermediate_certs:
                         self.get_cert_by_hash(c, verify_hash=True)
 
         def update_props(self, set_props=EmptyI, add_prop_values=EmptyI,

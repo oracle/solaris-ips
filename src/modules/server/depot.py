@@ -36,6 +36,7 @@ except (OSError, ImportError):
 else:
         import select
 
+import atexit
 import cStringIO
 import errno
 import httplib
@@ -44,8 +45,12 @@ import itertools
 import os
 import random
 import re
+import shutil
+import simplejson as json
 import socket
 import tarfile
+import tempfile
+import threading
 import time
 import urlparse
 # Without the below statements, tarfile will trigger calls to getpwuid and
@@ -57,20 +62,22 @@ tarfile.pwd = None
 tarfile.grp = None
 
 import urllib
+import Queue
 
 import pkg
 import pkg.actions as actions
 import pkg.catalog as catalog
-import pkg.client.publisher as publisher
 import pkg.config as cfg
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.manifest as manifest
 import pkg.misc as misc
+import pkg.nrlock
 import pkg.p5i as p5i
+import pkg.server.catalog as old_catalog
 import pkg.server.face as face
-import pkg.server.repository as repo
-import pkg.version as version
+import pkg.server.repository as srepo
+import pkg.version
 
 from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
@@ -151,7 +158,9 @@ class DepotHTTP(_Depot):
             "add",
             "p5i",
             "publisher",
-            "index"
+            "index",
+            "status",
+            "admin",
         ]
 
         REPO_OPS_READONLY = [
@@ -163,14 +172,16 @@ class DepotHTTP(_Depot):
             "filelist",
             "file",
             "p5i",
-            "publisher"
+            "publisher",
+            "status",
         ]
 
         REPO_OPS_MIRROR = [
             "versions",
             "filelist",
             "file",
-            "publisher"
+            "publisher",
+            "status",
         ]
 
         content_root = None
@@ -181,8 +192,14 @@ class DepotHTTP(_Depot):
                 doing so, ensure that the operations have been explicitly
                 "exposed" for external usage."""
 
+                # This lock is used to protect the depot from multiple
+                # threads modifying data structures at the same time.
+                self.__lock = pkg.nrlock.NRLock()
+
                 self.cfg = dconf
                 self.repo = repo
+                self.flist_requests = 0
+                self.flist_file_requests = 0
 
                 content_root = dconf.get_property("pkg", "content_root")
                 pkg_root = dconf.get_property("pkg", "pkg_root")
@@ -196,13 +213,25 @@ class DepotHTTP(_Depot):
                         self.content_root = None
                         self.web_root = None
 
+                # Ensure a temporary storage area exists for depot components
+                # to use during operations.
+                tmp_root = dconf.get_property("pkg", "writable_root")
+                if not tmp_root:
+                        # If no writable root, create a temporary area.
+                        tmp_root = tempfile.mkdtemp()
+
+                        # Try to ensure temporary area is cleaned up on exit.
+                        atexit.register(shutil.rmtree, tmp_root,
+                            ignore_errors=True)
+                self.tmp_root = tmp_root
+
                 # Handles the BUI (Browser User Interface).
                 face.init(self)
 
                 # Store any possible configuration changes.
                 repo.write_config()
 
-                if repo.mirror or not repo.repo_root:
+                if repo.mirror or not repo.root:
                         self.ops_list = self.REPO_OPS_MIRROR[:]
                         if not repo.cfg.get_property("publisher", "prefix"):
                                 self.ops_list.remove("publisher")
@@ -239,11 +268,14 @@ class DepotHTTP(_Depot):
                         if op in disable_ops and (ver in disable_ops[op] or
                             "*" in disable_ops[op]):
                                 continue
+                        if not repo.supports(op, int(ver)):
+                                # Unsupported operation.
+                                continue
 
                         func.__dict__["exposed"] = True
 
                         if op in self.vops:
-                                self.vops[op].append(ver)
+                                self.vops[op].append(int(ver))
                         else:
                                 # We need a Dummy object here since we need to
                                 # be able to set arbitrary attributes that
@@ -252,8 +284,17 @@ class DepotHTTP(_Depot):
                                 # dispatch tree mapping mechanism.  We can't
                                 # use other object types here since Python
                                 # won't let us set arbitary attributes on them.
-                                setattr(self, op, Dummy())
-                                self.vops[op] = [ver]
+                                opattr = Dummy()
+                                setattr(self, op, opattr)
+                                self.vops[op] = [int(ver)]
+
+                                for pub in self.repo.publishers:
+                                        pub = pub.replace(".", "_")
+                                        pubattr = getattr(self, pub, None)
+                                        if not pubattr:
+                                                pubattr = Dummy()
+                                                setattr(self, pub, pubattr)
+                                        setattr(pubattr, op, opattr)
 
                         opattr = getattr(self, op)
                         setattr(opattr, ver, func)
@@ -261,6 +302,33 @@ class DepotHTTP(_Depot):
                 if hasattr(cherrypy.engine, "signal_handler"):
                         # This handles SIGUSR1
                         cherrypy.engine.subscribe("graceful", self.refresh)
+
+                # Setup background task execution handler.
+                self.__bgtask = BackgroundTaskPlugin(cherrypy.engine)
+                self.__bgtask.subscribe()
+
+        def _get_req_pub(self):
+                """Private helper function to retrieve the publisher prefix
+                for the current operation from the request path.  Returns None
+                if a publisher prefix was not found in the request path.  The
+                publisher is assumed to be the first component of the path_info
+                string if it doesn't match the operation's name.  This does mean
+                that a publisher can't be named the same as an operation, but
+                that isn't viewed as an unreasonable limitation.
+                """
+
+                try:
+                        req_pub = cherrypy.request.path_info.strip("/").split(
+                            "/")[0]
+                except IndexError:
+                        return None
+
+                if req_pub not in self.REPO_OPS_DEFAULT and req_pub != "feed":
+                        # Assume that if the first component of the request path
+                        # doesn't match a known operation that it's a publisher
+                        # prefix.
+                        return req_pub
+                return None
 
         def __set_response_expires(self, op_name, expires, max_age=None):
                 """Used to set expiration headers on a response dynamically
@@ -279,8 +347,25 @@ class DepotHTTP(_Depot):
                 parameter is equal to the repository's refresh_seconds
                 property."""
 
-                rs = self.repo.cfg.get_property("repository",
-                    "refresh_seconds")
+                prefix = self._get_req_pub()
+                if not prefix:
+                        prefix = self.repo.cfg.get_property("publisher",
+                            "prefix")
+
+                rs = None
+                if prefix:
+                        try:
+                                pub = self.repo.get_publisher(prefix)
+                        except Exception, e:
+                                # Couldn't get pub.
+                                pass
+                        else:
+                                repo = pub.selected_repository
+                                if repo:
+                                        rs = repo.refresh_seconds
+                if rs is None:
+                        rs = 14400
+
                 if max_age is None:
                         max_age = min((rs, expires))
 
@@ -310,15 +395,36 @@ class DepotHTTP(_Depot):
                 # Handles the BUI (Browser User Interface).
                 face.init(self)
 
+        def __map_pub_ops(self, pub_prefix):
+                # Map the publisher into the depot's operation namespace if
+                # needed.
+                self.__lock.acquire() # Prevent race conditions.
+                try:
+                        pubattr = getattr(self, pub_prefix, None)
+                        if not pubattr:
+                                # Might have already been done in
+                                # another thread.
+                                pubattr = Dummy()
+                                setattr(self, pub_prefix, pubattr)
+
+                                for op in self.vops:
+                                        opattr = getattr(self, op)
+                                        setattr(pubattr, op, opattr)
+                finally:
+                        self.__lock.release()
+
         @cherrypy.expose
         def default(self, *tokens, **params):
                 """Any request that is not explicitly mapped to the repository
                 object will be handled by the "externally facing" server
                 code instead."""
 
+                pub = self._get_req_pub()
                 op = None
-                if len(tokens) > 0:
+                if not pub and tokens:
                         op = tokens[0]
+                elif pub and len(tokens) > 1:
+                        op = tokens[1]
 
                 if op in self.REPO_OPS_DEFAULT and op not in self.vops:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND,
@@ -326,12 +432,17 @@ class DepotHTTP(_Depot):
                 elif op not in self.vops:
                         request = cherrypy.request
                         response = cherrypy.response
-                        return face.respond(self, request, response)
+                        if not misc.valid_pub_prefix(pub):
+                                pub = None
+                        return face.respond(self, request, response, pub)
 
                 # If we get here, we know that 'operation' is supported.
                 # Ensure that we have a integer protocol version.
                 try:
-                        ver = int(tokens[1])
+                        if not pub:
+                                ver = int(tokens[1])
+                        else:
+                                ver = int(tokens[2])
                 except IndexError:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                             "Missing version\n")
@@ -339,7 +450,32 @@ class DepotHTTP(_Depot):
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                             "Non-integer version\n")
 
-                # Assume 'version' is not supported for the operation.
+                if ver not in self.vops[op]:
+                        # 'version' is not supported for the operation.
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                            "Version '%s' not supported for operation '%s'\n" %
+                            (ver, op))
+                elif op == "open" and pub not in self.repo.publishers:
+                        if not misc.valid_pub_prefix(pub):
+                                raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                                    "Invalid publisher prefix: %s\n" % pub)
+
+                        # Map operations for new publisher.
+                        self.__map_pub_ops(pub)
+
+                        # Finally, perform an internal redirect so that cherrypy
+                        # will correctly redispatch to the newly mapped
+                        # operations.
+                        rel_uri = cherrypy.request.path_info
+                        if cherrypy.request.query_string:
+                                rel_uri += "?%s" % cherrypy.request.query_string
+                        raise cherrypy.InternalRedirect(rel_uri)
+                elif pub:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "Unknown publisher: %s\n" % pub)
+
+                # Assume 'version' is not supported for the operation for some
+                # other reason.
                 raise cherrypy.HTTPError(httplib.NOT_FOUND, "Version '%s' not "
                     "supported for operation '%s'\n" % (ver, op))
 
@@ -352,7 +488,7 @@ class DepotHTTP(_Depot):
                 self.__set_response_expires("versions", 5*60, 5*60)
                 versions = "pkg-server %s\n" % pkg.VERSION
                 versions += "\n".join(
-                    "%s %s" % (op, " ".join(vers))
+                    "%s %s" % (op, " ".join(str(v) for v in vers))
                     for op, vers in self.vops.iteritems()
                 ) + "\n"
                 return versions
@@ -375,11 +511,12 @@ class DepotHTTP(_Depot):
                     start_point=None))]
 
                 try:
-                        res_list = self.repo.search(query_args_lst)
-                except repo.RepositorySearchUnavailableError, e:
+                        res_list = self.repo.search(query_args_lst,
+                            pub=self._get_req_pub())
+                except srepo.RepositorySearchUnavailableError, e:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -428,18 +565,15 @@ class DepotHTTP(_Depot):
                 if not query_str_lst:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST)
 
-                if not self.repo.search_available:
-                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
-                            "Search temporarily unavailable")
-
                 try:
-                        res_list = self.repo.search(query_str_lst)
+                        res_list = self.repo.search(query_str_lst,
+                            pub=self._get_req_pub())
                 except (ParseError, BooleanQueryException), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-                except repo.RepositorySearchUnavailableError, e:
+                except srepo.RepositorySearchUnavailableError, e:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -495,18 +629,30 @@ class DepotHTTP(_Depot):
 
                 # Response headers have to be setup *outside* of the function
                 # that yields the catalog content.
-                c = self.repo.catalog
+                try:
+                        cat = self.repo.get_catalog(pub=self._get_req_pub())
+                except srepo.RepositoryError, e:
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
                 response = cherrypy.response
                 response.headers["Content-type"] = "text/plain; charset=utf-8"
-                response.headers["Last-Modified"] = c.last_modified.isoformat()
+                if hasattr(cat, "version"):
+                        response.headers["Last-Modified"] = \
+                            cat.last_modified.isoformat()
+                else:
+                        response.headers["Last-Modified"] = \
+                            old_catalog.ts_to_datetime(
+                            cat.last_modified()).isoformat()
                 response.headers["X-Catalog-Type"] = "full"
                 self.__set_response_expires("catalog", 86400, 86400)
 
                 def output():
                         try:
-                                for l in self.repo.catalog_0():
+                                for l in self.repo.catalog_0(
+                                    pub=self._get_req_pub()):
                                         yield l
-                        except repo.RepositoryError, e:
+                        except srepo.RepositoryError, e:
                                 # Can't do anything in a streaming generator
                                 # except log the error and return.
                                 cherrypy.log("Request failed: %s" % str(e))
@@ -527,8 +673,9 @@ class DepotHTTP(_Depot):
                             _("Directory listing not allowed."))
 
                 try:
-                        fpath = self.repo.catalog_1(name)
-                except repo.RepositoryError, e:
+                        fpath = self.repo.catalog_1(name,
+                            pub=self._get_req_pub())
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -547,10 +694,9 @@ class DepotHTTP(_Depot):
                 of the catalog and its image policies."""
 
                 try:
-                        cat = self.repo.catalog
-                        pubs = cat.publishers()
+                        pubs = self.repo.publishers
                 except Exception, e:
-                        cherrypy.log("Request Failed: %s" % e)
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # A broken proxy (or client) has caused a fully-qualified FMRI
@@ -560,7 +706,7 @@ class DepotHTTP(_Depot):
                         raise cherrypy.HTTPError(httplib.FORBIDDEN,
                             _("Directory listing not allowed."))
 
-                if comps[0] == "pkg:" and comps[1] in pubs:
+                if len(comps) > 1 and comps[0] == "pkg:" and comps[1] in pubs:
                         # Only one slash here as another will be added below.
                         comps[0] += "/"
 
@@ -571,10 +717,12 @@ class DepotHTTP(_Depot):
                         # of the fmri and have been split out because of bad
                         # proxy behaviour.
                         pfmri = "/".join(comps)
-                        fpath = self.repo.manifest(pfmri)
-                except (IndexError, repo.RepositoryInvalidFMRIError), e:
+                        pfmri = fmri.PkgFmri(pfmri, None)
+                        fpath = self.repo.manifest(pfmri,
+                            pub=self._get_req_pub())
+                except (IndexError, fmri.FmriError), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -619,7 +767,7 @@ class DepotHTTP(_Depot):
                 is output directly to the client. """
 
                 try:
-                        self.repo.inc_flist()
+                        self.flist_requests += 1
 
                         # Create a dummy file object that hooks to the write()
                         # callable which is all tarfile needs to output the
@@ -642,17 +790,18 @@ class DepotHTTP(_Depot):
                         # closed properly regardless of which thread is
                         # executing.
                         cherrypy.request.hooks.attach("on_end_request",
-                            self._tar_stream_close, failsafe = True)
+                            self._tar_stream_close, failsafe=True)
 
+                        pub = self._get_req_pub()
                         for v in params.values():
-                                filepath = self.repo.cache_store.lookup(v)
-
-                                # If file isn't here, skip it
-                                if not filepath:
+                                try:
+                                        filepath = self.repo.file(v, pub=pub)
+                                except srepo.RepositoryFileNotFoundError:
+                                        # If file isn't here, skip it
                                         continue
 
                                 tar_stream.add(filepath, v, False)
-                                self.repo.inc_flist_files()
+                                self.flist_file_requests += 1
 
                         # Flush the remaining bytes to the client.
                         tar_stream.close()
@@ -694,10 +843,10 @@ class DepotHTTP(_Depot):
                         fhash = None
 
                 try:
-                        fpath = self.repo.file(fhash)
-                except repo.RepositoryFileNotFoundError, e:
+                        fpath = self.repo.file(fhash, pub=self._get_req_pub())
+                except srepo.RepositoryFileNotFoundError, e:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -749,17 +898,27 @@ class DepotHTTP(_Depot):
 
                 # XXX Authentication will be handled by virtue of possessing a
                 # signed certificate (or a more elaborate system).
+                if not pfmri:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            _("A valid package FMRI must be specified."))
 
                 try:
+                        pfmri = fmri.PkgFmri(pfmri, client_release)
                         trans_id = self.repo.open(client_release, pfmri)
-                        response.headers["Content-type"] = "text/plain; charset=utf-8"
-                        response.headers["Transaction-ID"] = trans_id
-                except repo.RepositoryError, e:
+                except (fmri.FmriError, srepo.RepositoryError), e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
                         # operation.
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+                if pfmri.publisher and not self._get_req_pub():
+                        self.__map_pub_ops(pfmri.publisher)
+
+                # Set response headers before returning.
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
+                response.headers["Transaction-ID"] = trans_id
 
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
@@ -779,18 +938,27 @@ class DepotHTTP(_Depot):
 
                 # XXX Authentication will be handled by virtue of possessing a
                 # signed certificate (or a more elaborate system).
+                if not pfmri:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            _("A valid package FMRI must be specified."))
 
                 try:
+                        pfmri = fmri.PkgFmri(pfmri, client_release)
                         trans_id = self.repo.append(client_release, pfmri)
-                        response.headers["Content-type"] = \
-                            "text/plain; charset=utf-8"
-                        response.headers["Transaction-ID"] = trans_id
-                except repo.RepositoryError, e:
+                except (fmri.FmriError, srepo.RepositoryError), e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
                         # operation.
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+                if pfmri.publisher and not self._get_req_pub():
+                        self.__map_pub_ops(pfmri.publisher)
+
+                # Set response headers before returning.
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
+                response.headers["Transaction-ID"] = trans_id
 
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
@@ -813,20 +981,6 @@ class DepotHTTP(_Depot):
 
                 try:
                         # Assume "True" for backwards compatibility.
-                        refresh_index = int(request.headers.get(
-                            "X-IPkg-Refresh-Index", 1))
-
-                        # Force a boolean value.
-                        if refresh_index:
-                                refresh_index = True
-                        else:
-                                refresh_index = False
-                except ValueError, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "X-IPkg-Refresh-Index: %s" % e)
-
-                try:
-                        # Assume "True" for backwards compatibility.
                         add_to_catalog = int(request.headers.get(
                             "X-IPkg-Add-To-Catalog", 1))
 
@@ -841,9 +995,8 @@ class DepotHTTP(_Depot):
 
                 try:
                         pfmri, pstate = self.repo.close(trans_id,
-                            refresh_index=refresh_index,
                             add_to_catalog=add_to_catalog)
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
@@ -853,6 +1006,79 @@ class DepotHTTP(_Depot):
                 response = cherrypy.response
                 response.headers["Package-FMRI"] = pfmri
                 response.headers["State"] = pstate
+
+        @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
+            ("Cache-Control", "no-cache, no-transform, must-revalidate"),
+            ("Expires", 0)])
+        def admin_0(self, *tokens, **params):
+                """Execute a specified repository administration operation based
+                on the provided query string.  Example:
+
+                        <repo_uri>[/<publisher>]/admin/0?cmd=refresh-index
+
+                Available commands are:
+                        rebuild
+                            Discard search data and package catalogs and
+                            rebuild both.
+                        rebuild-indexes
+                            Discard search data and rebuild.
+                        rebuild-packages
+                            Discard package catalogs and rebuild.
+                        refresh
+                            Update search and package data.
+                        refresh-indexes
+                            Update search data.  (Add packages found in the
+                            repository to their related search indexes.)
+                        refresh-packages
+                            Update package data.  (Add packages found in the
+                            repository to their related catalog.)
+                """
+
+                cmd = params.get("cmd", "")
+
+                # These commands cause the operation requested to be queued
+                # for later execution.  This does mean that if the operation
+                # fails, the client won't know about it, but this is necessary
+                # since these are long running operations (are likely to exceed
+                # connection timeout limits).
+                try:
+                        if cmd == "rebuild":
+                                # Discard existing catalog and search data and
+                                # rebuild.
+                                self.__bgtask.put(self.repo.rebuild,
+                                    pub=self._get_req_pub(), build_catalog=True,
+                                    build_index=True)
+                        elif cmd == "rebuild-indexes":
+                                # Discard search data and rebuild.
+                                self.__bgtask.put(self.repo.rebuild,
+                                    pub=self._get_req_pub(),
+                                    build_catalog=False, build_index=True)
+                        elif cmd == "rebuild-packages":
+                                # Discard package data and rebuild.
+                                self.__bgtask.put(self.repo.rebuild,
+                                    pub=self._get_req_pub(), build_catalog=True,
+                                    build_index=False)
+                        elif cmd == "refresh":
+                                # Add new packages and update search indexes.
+                                self.__bgtask.put(self.repo.add_content,
+                                    pub=self._get_req_pub(), refresh_index=True)
+                        elif cmd == "refresh-indexes":
+                                # Update search indexes.
+                                self.__bgtask.put(self.repo.refresh_index,
+                                    pub=self._get_req_pub())
+                        elif cmd == "refresh-packages":
+                                # Add new packages.
+                                self.__bgtask.put(self.repo.add_content,
+                                    pub=self._get_req_pub(),
+                                    refresh_index=False)
+                        else:
+                                raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                                   "Unknown or unsupported operation: '%s'" %
+                                   cmd)
+                except Queue.Full:
+                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                           "Another operation is already in progress; try "
+                           "again later.")
 
         @cherrypy.tools.response_headers(headers=[("Pragma", "no-cache"),
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
@@ -869,7 +1095,7 @@ class DepotHTTP(_Depot):
 
                 try:
                         self.repo.abandon(trans_id)
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
@@ -921,6 +1147,7 @@ class DepotHTTP(_Depot):
                 try:
                         action = actions.types[entry_type](data, **attrs)
                 except actions.ActionError, e:
+                        cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # XXX Once actions are labelled with critical nature.
@@ -929,11 +1156,12 @@ class DepotHTTP(_Depot):
 
                 try:
                         self.repo.add(trans_id, action)
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
                         # operation.
+                        cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         # We need to prevent cherrypy from processing the request body so that
@@ -987,23 +1215,35 @@ class DepotHTTP(_Depot):
             ("Cache-Control", "no-cache, no-transform, must-revalidate"),
             ("Expires", 0)])
         def index_0(self, *tokens):
-                """Triggers a refresh of the search indices.
-                Returns no output."""
+                """Provides an administrative interface for search indexing.
+                Returns no output if successful; otherwise the response body
+                will contain the failure details.
+                """
 
-                cmd = tokens[0]
+                try:
+                        cmd = tokens[0]
+                except IndexError:
+                        cmd = ""
 
-                if cmd == "refresh":
-                        try:
-                                self.repo.refresh_index()
-                        except repo.RepositoryError, e:
-                                # Assume a bad request was made.  A 404 can't be
-                                # returned here as misc.versioned_urlopen will interpret
-                                # that to mean that the server doesn't support this
-                                # operation.
-                                raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-                else:
-                        cherrypy.log("Unknown index subcommand: %s" % cmd)
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                # These commands cause the operation requested to be queued
+                # for later execution.  This does mean that if the operation
+                # fails, the client won't know about it, but this is necessary
+                # since these are long running operations (are likely to exceed
+                # connection timeout limits).
+                try:
+                        if cmd == "refresh":
+                                # Update search indexes.
+                                self.__bgtask.put(self.repo.refresh_index,
+                                    pub=self._get_req_pub())
+                        else:
+                                cherrypy.log("Unknown index subcommand: %s" %
+                                    cmd)
+                                raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                                    str(e))
+                except Queue.Full:
+                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                           "Another operation is already in progress; try "
+                           "again later.")
 
         @cherrypy.tools.response_headers(headers=\
             [("Content-Type", "text/plain; charset=utf-8")])
@@ -1016,16 +1256,15 @@ class DepotHTTP(_Depot):
                     policies. """
 
                 try:
-                        cat = self.repo.catalog
-                        pubs = cat.publishers()
+                        pubs = self.repo.publishers
                 except Exception, e:
-                        cherrypy.log("Request Failed: %s" % e)
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # A broken proxy (or client) has caused a fully-qualified FMRI
                 # to be split up.
                 comps = [t for t in tokens]
-                if comps[0] == "pkg:" and comps[1] in pubs:
+                if len(comps) > 1 and comps[0] == "pkg:" and comps[1] in pubs:
                         # Only one slash here as another will be added below.
                         comps[0] += "/"
 
@@ -1036,49 +1275,46 @@ class DepotHTTP(_Depot):
                         # of the fmri and have been split out because of bad
                         # proxy behaviour.
                         pfmri = "/".join(comps)
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                try:
-                        f = fmri.PkgFmri(pfmri, None)
-                except fmri.FmriError, e:
-                        # If the FMRI couldn't be parsed for whatever reason,
-                        # assume the client made a bad request.
+                        pfmri = fmri.PkgFmri(pfmri, None)
+                        pub = self._get_req_pub()
+                        if not pfmri.publisher:
+                                if not pub:
+                                        pub = self.repo.cfg.get_property(
+                                            "publisher", "prefix")
+                                if pub:
+                                        pfmri.publisher = pub
+                        fpath = self.repo.manifest(pfmri, pub=pub)
+                except (IndexError, fmri.FmriError), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except srepo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                if not os.path.exists(fpath):
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 m = manifest.Manifest()
                 m.set_fmri(None, pfmri)
+                m.set_content(file(fpath).read())
 
-                try:
-                        mpath = os.path.join(self.repo.manifest_root,
-                            f.get_dir_path())
-                except fmri.FmriError, e:
-                        # If the FMRI operation couldn't be performed, assume
-                        # the client made a bad request.
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-
-                if not os.path.exists(mpath):
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
-
-                m.set_content(file(mpath).read())
-
-                publisher, name, ver = f.tuple()
-                if not publisher:
-                        publisher = self.repo.cfg.get_property("publisher",
-                            "prefix")
-                        if not publisher:
-                                publisher = ""
-
+                pub, name, ver = pfmri.tuple()
                 summary = m.get("pkg.summary", m.get("description", ""))
 
                 lsummary = cStringIO.StringIO()
                 for i, entry in enumerate(m.gen_actions_by_type("license")):
                         if i > 0:
                                 lsummary.write("\n")
-                        lpath = self.repo.cache_store.lookup(entry.hash)
+                        try:
+                                lpath = self.repo.file(entry.hash, pub=pub)
+                        except srepo.RepositoryFileNotFoundError:
+                                # Skip the license.
+                                continue
 
-                        lfile = file(lpath, "rb")
-                        misc.gunzip_from_stream(lfile, lsummary)
+                        with file(lpath, "rb") as lfile:
+                                misc.gunzip_from_stream(lfile, lsummary)
                 lsummary.seek(0)
 
                 self.__set_response_expires("info", 86400*365, 86400*365)
@@ -1095,27 +1331,9 @@ Packaging Date: %s
 
 License:
 %s
-""" % (name, summary, publisher, ver.release, ver.build_release,
+""" % (name, summary, pub, ver.release, ver.build_release,
     ver.branch, ver.get_timestamp().strftime("%c"),
-    misc.bytes_to_str(m.get_size()), f, lsummary.read())
-
-        def __get_publisher(self):
-                rargs = {}
-                for prop in ("collection_type", "description", "legal_uris",
-                    "mirrors", "name", "origins", "refresh_seconds",
-                    "registration_uri", "related_uris"):
-                        rargs[prop] = self.repo.cfg.get_property(
-                            "repository", prop)
-
-                repo = publisher.Repository(**rargs)
-                alias = self.repo.cfg.get_property("publisher", "alias")
-                icas = self.repo.cfg.get_property("publisher",
-                    "intermediate_certs")
-                pfx = self.repo.cfg.get_property("publisher", "prefix")
-                scas = self.repo.cfg.get_property("publisher",
-                    "signing_ca_certs")
-                return publisher.Publisher(pfx, alias=alias,
-                    repositories=[repo], ca_certs=scas, inter_certs=icas)
+    misc.bytes_to_str(m.get_size()), pfmri, lsummary.read())
 
         @cherrypy.tools.response_headers(headers=[(
             "Content-Type", p5i.MIME_TYPE)])
@@ -1123,18 +1341,20 @@ License:
                 """Returns a pkg(5) information datastream based on the
                 repository configuration's publisher information."""
 
-                try:
-                        pub = self.__get_publisher()
-                except Exception, e:
-                        # If the Publisher object creation fails, return a not
-                        # found error to the client so it will treat it as an
-                        # an unsupported operation.
+                prefix = self._get_req_pub()
+                pubs = [
+                   pub for pub in self.repo.get_publishers()
+                   if not prefix or pub.prefix == prefix
+                ]
+                if prefix and not pubs:
+                        # Publisher specified in request is unknown.
+                        e = srepo.RepositoryUnknownPublisher(prefix)
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
                 buf = cStringIO.StringIO()
                 try:
-                        p5i.write(buf, [pub])
+                        p5i.write(buf, pubs)
                 except Exception, e:
                         # Treat any remaining error as a 404, but log it and
                         # include the real failure information.
@@ -1142,6 +1362,85 @@ License:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 buf.seek(0)
                 self.__set_response_expires("publisher", 86400*365, 86400*365)
+                return buf.getvalue()
+
+        @cherrypy.tools.response_headers(headers=[(
+            "Content-Type", p5i.MIME_TYPE)])
+        def publisher_1(self, *tokens):
+                """Returns a pkg(5) information datastream based on the
+                the request's publisher or all if not specified."""
+
+                prefix = self._get_req_pub()
+
+                pubs = []
+                if not prefix:
+                        pubs = self.repo.get_publishers()
+                else:
+                        try:
+                                pub = self.repo.get_publisher(prefix)
+                                pubs.append(pub)
+                        except Exception, e:
+                                # If the Publisher object creation fails, return
+                                # a not found error to the client so it will
+                                # treat it as an unsupported operation.
+                                cherrypy.log("Request failed: %s" % str(e))
+                                raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                                    str(e))
+
+                buf = cStringIO.StringIO()
+                try:
+                        p5i.write(buf, pubs)
+                except Exception, e:
+                        # Treat any remaining error as a 404, but log it and
+                        # include the real failure information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                buf.seek(0)
+                self.__set_response_expires("publisher", 86400*365, 86400*365)
+                return buf.getvalue()
+
+        def __get_matching_p5i_data(self, rstore, matcher, pfmri):
+                # Attempt to find matching entries in the catalog.
+                try:
+                        pub = self.repo.get_publisher(rstore.publisher)
+                except srepo.RepositoryUnknownPublisher:
+                        return ""
+
+                try:
+                        cat = rstore.catalog
+                except (srepo.RepositoryMirrorError,
+                    srepo.RepositoryUnsupportedOperationError):
+                        return ""
+
+                try:
+                        matches, unmatched = catalog.extract_matching_fmris(
+                            cat.fmris(), patterns=[pfmri],
+                            constraint=pkg.version.CONSTRAINT_AUTO,
+                            matcher=matcher)
+                except Exception, e:
+                        # If this fails, it's ok to raise an exception since bad
+                        # input was likely provided.
+                        cherrypy.log("Request failed: %s" % e)
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+                if not matches:
+                        return ""
+                elif matcher in (fmri.exact_name_match, fmri.glob_match):
+                        # When using wildcards or exact name match, trim the
+                        # results to only the unique package stems.
+                        matches = sorted(set([m.pkg_name for m in matches]))
+                else:
+                        # Ensure all fmris are output without publisher prefix
+                        # and without scheme.
+                        matches = [
+                            m.get_fmri(anarchy=True, include_scheme=False)
+                            for m in matches
+                        ]
+
+                buf = cStringIO.StringIO()
+                pkg_names = { pub.prefix: matches }
+                p5i.write(buf, [pub], pkg_names=pkg_names)
+                buf.seek(0)
                 return buf.getvalue()
 
         @cherrypy.tools.response_headers(headers=[(
@@ -1154,16 +1453,15 @@ License:
                 datastream as provided."""
 
                 try:
-                        cat = self.repo.catalog
-                        pubs = cat.publishers()
+                        pubs = self.repo.publishers
                 except Exception, e:
-                        cherrypy.log("Request Failed: %s" % e)
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # A broken proxy (or client) has caused a fully-qualified FMRI
                 # to be split up.
                 comps = [t for t in tokens]
-                if comps[0] == "pkg:" and comps[1] in pubs:
+                if len(comps) > 1 and comps[0] == "pkg:" and comps[1] in pubs:
                         # Only one slash here as another will be added below.
                         comps[0] += "/"
 
@@ -1197,52 +1495,40 @@ License:
                                 raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                                     str(e))
 
-                # Attempt to find matching entries in the catalog.
-                try:
-                        matches, unmatched = catalog.extract_matching_fmris(cat.fmris(),
-                            patterns=[pfmri], constraint=version.CONSTRAINT_AUTO,
-                            matcher=matcher)
-                except Exception, e:
-                        cherrypy.log("Request Failed: %s" % e)
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                output = ""
+                prefix = self._get_req_pub()
+                for rstore in self.repo.rstores:
+                        if not rstore.publisher:
+                                continue
+                        if prefix and prefix != rstore.publisher:
+                                continue
+                        output += self.__get_matching_p5i_data(rstore,
+                            matcher, pfmri)
 
-                if not matches:
+                if output == "":
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, _("No "
-                            "matching FMRI found in repository catalog."))
-                elif matcher in (fmri.exact_name_match, fmri.glob_match):
-                        # When using wildcards or exact name match, trim the
-                        # results to only the unique package stems.
-                        matches = sorted(set([m.pkg_name for m in matches]))
-                else:
-                        # Ensure all fmris are output without publisher prefix
-                        # and without scheme.
-                        matches = [
-                            m.get_fmri(anarchy=True, include_scheme=False)
-                            for m in matches
-                        ]
+                            "matching package found in repository."))
 
-                try:
-                        pub = self.__get_publisher()
-                except Exception, e:
-                        # If the Publisher object creation fails, return a not
-                        # found error to the client so it will treat it as an
-                        # unsupported operation.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                            str(e))
-
-                buf = cStringIO.StringIO()
-                try:
-                        pkg_names = { pub.prefix: matches }
-                        p5i.write(buf, [pub], pkg_names=pkg_names)
-                except Exception, e:
-                        # Treat any remaining error as a 404, but log it and
-                        # include the real failure information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
-                buf.seek(0)
                 self.__set_response_expires("p5i", 86400*365, 86400*365)
-                return buf.getvalue()
+                return output
+
+        @cherrypy.tools.response_headers(headers=\
+            [("Content-Type", "application/json; charset=utf-8")])
+        def status_0(self, *tokens):
+                """Return a JSON formatted dictionary containing statistics
+                information for the repository being served."""
+
+                self.__set_response_expires("versions", 5*60, 5*60)
+
+                dump_struct = self.repo.get_status()
+
+                try:
+                        out = json.dumps(dump_struct, ensure_ascii=False,
+                            indent=2, sort_keys=True)
+                except Exception, e:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, _("Unable "
+                            "to generate statistics."))
+                return out + "\n"
 
 
 class NastyDepotHTTP(DepotHTTP):
@@ -1268,9 +1554,8 @@ class NastyDepotHTTP(DepotHTTP):
                     NastyDepotHTTP.nasty_retryable_error)
 
         # Method for CherryPy tool for Nasty Depot
-        @staticmethod
-        def nasty_retryable_error(bonus=0):
-                """A static method that's used by the cherrpy tools,
+        def nasty_retryable_error(self, bonus=0):
+                """A static method that's used by the cherrypy tools,
                 and in depot code, to generate a retryable HTTP error."""
 
                 retryable_errors = [httplib.REQUEST_TIMEOUT,
@@ -1289,21 +1574,26 @@ class NastyDepotHTTP(DepotHTTP):
                 the requesting client.  Incremental catalogs are not supported
                 for v0 catalog clients."""
 
-                request = cherrypy.request
-
                 # Response headers have to be setup *outside* of the function
                 # that yields the catalog content.
-                c = self.repo.catalog
+                try:
+                        cat = self.repo.get_catalog(pub=self._get_req_pub())
+                except srepo.RepositoryError, e:
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
                 response = cherrypy.response
                 response.headers["Content-type"] = "text/plain; charset=utf-8"
-                response.headers["Last-Modified"] = c.last_modified.isoformat()
+                response.headers["Last-Modified"] = \
+                    cat.last_modified.isoformat()
                 response.headers["X-Catalog-Type"] = "full"
 
                 def output():
                         try:
-                                for l in self.repo.catalog_0():
+                                for l in self.repo.catalog_0(
+                                    pub=self._get_req_pub()):
                                         yield l
-                        except repo.RepositoryError, e:
+                        except srepo.RepositoryError, e:
                                 # Can't do anything in a streaming generator
                                 # except log the error and return.
                                 cherrypy.log("Request failed: %s" % str(e))
@@ -1324,16 +1614,19 @@ class NastyDepotHTTP(DepotHTTP):
                 of the catalog and its image policies."""
 
                 try:
-                        cat = self.repo.catalog
-                        pubs = cat.publishers()
+                        pubs = self.repo.publishers
                 except Exception, e:
-                        cherrypy.log("Request Failed: %s" % e)
+                        cherrypy.log("Request failed: %s" % e)
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # A broken proxy (or client) has caused a fully-qualified FMRI
                 # to be split up.
                 comps = [t for t in tokens]
-                if comps[0] == "pkg:" and comps[1] in pubs:
+                if not comps:
+                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
+                            _("Directory listing not allowed."))
+
+                if len(comps) > 1 and comps[0] == "pkg:" and comps[1] in pubs:
                         # Only one slash here as another will be added below.
                         comps[0] += "/"
 
@@ -1344,10 +1637,12 @@ class NastyDepotHTTP(DepotHTTP):
                         # of the fmri and have been split out because of bad
                         # proxy behaviour.
                         pfmri = "/".join(comps)
-                        fpath = self.repo.manifest(pfmri)
-                except (IndexError, repo.RepositoryInvalidFMRIError), e:
+                        pfmri = fmri.PkgFmri(pfmri, None)
+                        fpath = self.repo.manifest(pfmri,
+                            pub=self._get_req_pub())
+                except (IndexError, fmri.FmriError), e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -1394,7 +1689,7 @@ class NastyDepotHTTP(DepotHTTP):
                 is output directly to the client. """
 
                 try:
-                        self.repo.inc_flist()
+                        self.flist_requests += 1
 
                         # NASTY
                         if self.need_nasty_occasionally():
@@ -1421,12 +1716,13 @@ class NastyDepotHTTP(DepotHTTP):
                         # closed properly regardless of which thread is
                         # executing.
                         cherrypy.request.hooks.attach("on_end_request",
-                            self._tar_stream_close, failsafe = True)
+                            self._tar_stream_close, failsafe=True)
 
                         # NASTY
                         if self.need_nasty_infrequently():
                                 time.sleep(35)
 
+                        pub = self._get_req_pub()
                         for v in params.values():
 
                                 # NASTY
@@ -1449,10 +1745,10 @@ class NastyDepotHTTP(DepotHTTP):
                                         # Take a nap
                                         time.sleep(35)
 
-                                filepath = self.repo.cache_store.lookup(v)
-
-                                # If file isn't here, skip it
-                                if not os.path.exists(filepath):
+                                try:
+                                        filepath = self.repo.file(v, pub=pub)
+                                except srepo.RepositoryFileNotFoundError:
+                                        # If file isn't here, skip it
                                         continue
 
                                 # NASTY
@@ -1467,7 +1763,7 @@ class NastyDepotHTTP(DepotHTTP):
                                 else:
                                         tar_stream.add(filepath, v, False)
 
-                                self.repo.inc_flist_files()
+                                self.flist_file_requests += 1
 
                         # NASTY
                         # Write garbage into the stream
@@ -1480,9 +1776,7 @@ class NastyDepotHTTP(DepotHTTP):
                                 pick = random.randint(0,
                                     len(self.requested_files) - 1)
                                 extrafn = self.requested_files[pick]
-                                extrapath = self.repo.cache_store.lookup(
-                                    extrafn)
-
+                                extrapath = self.repo.file(extrafn, pub=pub)
                                 tar_stream.add(extrapath, extrafn, False)
 
                         # Flush the remaining bytes to the client.
@@ -1517,8 +1811,8 @@ class NastyDepotHTTP(DepotHTTP):
         }
 
         def __get_bad_path(self, v):
-                return os.path.join(self.repo.cache_store.root,
-                    self.repo.cache_store.layouts[0].lookup(v))
+                fpath = self.repo.file(v, pub=self._get_req_pub())
+                return os.path.join(os.path.dirname(fpath), fpath)
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash
@@ -1530,10 +1824,10 @@ class NastyDepotHTTP(DepotHTTP):
                         fhash = None
 
                 try:
-                        fpath = self.repo.file(fhash)
-                except repo.RepositoryFileNotFoundError, e:
+                        fpath = self.repo.file(fhash, pub=self._get_req_pub())
+                except srepo.RepositoryFileNotFoundError, e:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -1585,8 +1879,9 @@ class NastyDepotHTTP(DepotHTTP):
                             _("Directory listing not allowed."))
 
                 try:
-                        fpath = self.repo.catalog_1(name)
-                except repo.RepositoryError, e:
+                        fpath = self.repo.catalog_1(name,
+                            pub=self._get_req_pub())
+                except srepo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
                         # information.
@@ -1769,6 +2064,65 @@ class DNSSD_Plugin(SimplePlugin):
                         self.sd_hdl.close()
                 self.sd_hdl = None
                 self.bus.log("Service unregistration for DNS-SD complete.")
+
+
+class BackgroundTaskPlugin(SimplePlugin):
+        """This class allows background task execution for the depot server.  It
+        is designed in such a way as to only allow a single task to be queued
+        for execution at a time.
+        """
+
+        def __init__(self, bus):
+                # Setup the background task queue.
+                SimplePlugin.__init__(self, bus)
+                self.__q = Queue.Queue(1)
+                self.__thread = None
+
+        def put(self, task, *args, **kwargs):
+                """Schedule the given task for background execution if one
+                is not already.
+                """
+                if self.__q.unfinished_tasks:
+                        raise Queue.Full()
+                self.__q.put_nowait((task, args, kwargs))
+
+        def run(self):
+                """Run any background task scheduled for execution."""
+                while self.__running:
+                        try:
+                                try:
+                                        # A brief timeout here is necessary
+                                        # to reduce CPU usage and to ensure
+                                        # that shutdown doesn't wait forever
+                                        # for a new task to appear.
+                                        task, args, kwargs = \
+                                            self.__q.get(timeout=.5)
+                                except Queue.Empty:
+                                        continue
+                                task(*args, **kwargs)
+                                if hasattr(self.__q, "task_done"):
+                                        # Task is done; mark it so.
+                                        self.__q.task_done()
+                        except:
+                                self.bus.log("Failure encountered executing "
+                                    "background task %r." % self,
+                                    traceback=True)
+
+        def start(self):
+                """Start the background task plugin."""
+                self.__running = True
+                if not self.__thread:
+                        # Create and start a thread for the caller.
+                        self.__thread = threading.Thread(target=self.run)
+                        self.__thread.start()
+
+        def stop(self):
+                """Stop the background task plugin."""
+                self.__running = False
+                if self.__thread:
+                        # Wait for the thread to terminate.
+                        self.__thread.join()
+                        self.__thread = None
 
 
 class DepotConfig(object):

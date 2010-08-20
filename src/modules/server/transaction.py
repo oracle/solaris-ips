@@ -31,6 +31,7 @@ import hashlib
 import os
 import re
 import shutil
+import time
 import urllib
 
 import pkg.actions as actions
@@ -115,6 +116,14 @@ class TransactionOperationError(TransactionError):
                 return str(self.data)
 
 
+class TransactionUnknownIDError(TransactionError):
+        """Used to indicate that the specified transaction ID is unknown."""
+
+        def __str__(self):
+                return _("No Transaction matching ID '%s' could be found.") % \
+                    self.data
+
+
 class TransactionAlreadyOpenError(TransactionError):
         """Used to indicate that a Transaction is already open for use."""
 
@@ -133,7 +142,7 @@ class Transaction(object):
                 self.open_time = None
                 self.pkg_name = ""
                 self.esc_pkg_name = ""
-                self.repo = None
+                self.rstore = None
                 self.client_release = ""
                 self.fmri = None
                 self.dir = ""
@@ -143,7 +152,6 @@ class Transaction(object):
                 self.types_found = set()
                 self.append_trans = False
                 self.remaining_payload_cnt = 0
-                return
 
         def get_basename(self):
                 assert self.open_time
@@ -152,15 +160,18 @@ class Transaction(object):
                     (calendar.timegm(self.open_time.utctimetuple()),
                     urllib.quote(str(self.fmri), ""))
 
-        def open(self, repo, client_release, pfmri):
-                # XXX needs to be done in __init__
-                self.repo = repo
+        def open(self, rstore, client_release, pfmri):
+                # Store a reference to the repository storage object.
+                self.rstore = rstore
 
                 if client_release is None:
                         raise TransactionOperationError(client_release=None,
                             pfmri=pfmri)
                 if pfmri is None:
                         raise TransactionOperationError(pfmri=None)
+
+                if not isinstance(pfmri, basestring):
+                        pfmri = str(pfmri)
 
                 self.client_release = client_release
                 self.pkg_name = pfmri
@@ -181,15 +192,9 @@ class Transaction(object):
                 # Ensure that the FMRI has been fully qualified with publisher
                 # information or apply the default if appropriate.
                 if not self.fmri.publisher:
-                        c = repo.catalog
-                        pubs = c.publishers()
-                        default_pub = repo.cfg.get_property("publisher",
-                            "prefix")
-
-                        if len(pubs) > 1 or not default_pub:
-                                # A publisher is required if the repository
-                                # contains package data for more than one
-                                # publisher or no default has been defined.
+                        default_pub = rstore.publisher
+                        if not default_pub:
+                                # A publisher is required.
                                 raise TransactionOperationError(
                                     publisher_required=True, pfmri=pfmri)
 
@@ -213,22 +218,28 @@ class Transaction(object):
                         self.pkg_name = ":".join(pfmri.split(":")[:-1])
                         self.esc_pkg_name = urllib.quote(self.pkg_name, "")
                 else:
-                        # A timestamp was not provided.
-                        self.open_time = datetime.datetime.utcnow()
-                        self.fmri.set_timestamp(self.open_time)
+                        # A timestamp was not provided; try to generate a
+                        # unique one.
+                        while 1:
+                                self.open_time = datetime.datetime.utcnow()
+                                self.fmri.set_timestamp(self.open_time)
+                                cat = rstore.catalog
+                                if not cat.get_entry(self.fmri):
+                                        break
+                                time.sleep(.25)
 
                 # Check that the new FMRI's version is valid.  In other words,
                 # the package has not been renamed or frozen for the new
                 # version.
-                if not repo.valid_new_fmri(self.fmri):
+                if not self.rstore.valid_new_fmri(self.fmri):
                         raise TransactionOperationError(valid_new_fmri=False,
                             pfmri=pfmri)
 
                 trans_basename = self.get_basename()
-                self.dir = "%s/%s" % (repo.trans_root, trans_basename)
+                self.dir = os.path.join(self.rstore.trans_root, trans_basename)
 
                 try:
-                        os.makedirs(self.dir)
+                        os.makedirs(self.dir, misc.PKG_DIR_MODE)
                 except EnvironmentError, e:
                         if e.errno == errno.EEXIST:
                                 raise TransactionAlreadyOpenError(
@@ -238,7 +249,8 @@ class Transaction(object):
                 #
                 # always create a minimal manifest
                 #
-                tfile = file("%s/manifest" % self.dir, "ab+")
+                tfpath = os.path.join(self.dir, "manifest")
+                tfile = file(tfpath, "ab+")
 
                 # Build a set action containing the fully qualified FMRI and add
                 # it to the manifest.  While it may seem inefficient to create
@@ -261,9 +273,8 @@ class Transaction(object):
                 # if not found, create package
                 # set package state to TRANSACTING
 
-        def append(self, repo, client_release, pfmri):
-                # XXX needs to be done in __init__
-                self.repo = repo
+        def append(self, rstore, client_release, pfmri):
+                self.rstore = rstore
                 self.append_trans = True
 
                 if client_release is None:
@@ -271,6 +282,9 @@ class Transaction(object):
                             pfmri=pfmri)
                 if pfmri is None:
                         raise TransactionOperationError(pfmri=None)
+
+                if not isinstance(pfmri, basestring):
+                        pfmri = str(pfmri)
 
                 self.client_release = client_release
                 self.pkg_name = pfmri
@@ -291,15 +305,9 @@ class Transaction(object):
                 # Ensure that the FMRI has been fully qualified with publisher
                 # information or apply the default if appropriate.
                 if not self.fmri.publisher:
-                        c = repo.catalog
-                        pubs = c.publishers()
-                        default_pub = repo.cfg.get_property("publisher",
-                            "prefix")
-
-                        if len(pubs) > 1 or not default_pub:
-                                # A publisher is required if the repository
-                                # contains package data for more than one
-                                # publisher or no default has been defined.
+                        default_pub = rstore.publisher
+                        if not default_pub:
+                                # A publisher is required.
                                 raise TransactionOperationError(
                                     publisher_required=True, pfmri=pfmri)
 
@@ -315,25 +323,21 @@ class Transaction(object):
 
                 # record transaction metadata: opening_time, package, user
                 self.open_time = self.fmri.get_timestamp()
-                if self.open_time:
-                        # Strip the timestamp information for consistency with
-                        # the case where it was not specified.
-                        self.pkg_name = ":".join(pfmri.split(":")[:-1])
-                        self.esc_pkg_name = urllib.quote(self.pkg_name, "")
-                else:
-                        # A timestamp was not provided.
-                        self.open_time = datetime.datetime.utcnow()
-                        self.fmri.set_timestamp(self.open_time)
 
-                if not repo.valid_append_fmri(self.fmri):
+                # Strip the timestamp information for consistency with
+                # the case where it was not specified.
+                self.pkg_name = ":".join(pfmri.split(":")[:-1])
+                self.esc_pkg_name = urllib.quote(self.pkg_name, "")
+
+                if not rstore.valid_append_fmri(self.fmri):
                         raise TransactionOperationError(missing_fmri=True,
                             pfmri=self.fmri)
 
                 trans_basename = self.get_basename()
-                self.dir = "%s/%s" % (repo.trans_root, trans_basename)
+                self.dir = os.path.join(rstore.trans_root, trans_basename)
 
                 try:
-                        os.makedirs(self.dir)
+                        os.makedirs(self.dir, misc.PKG_DIR_MODE)
                 except EnvironmentError, e:
                         if e.errno == errno.EEXIST:
                                 raise TransactionAlreadyOpenError(
@@ -345,19 +349,22 @@ class Transaction(object):
                 with open(os.path.join(self.dir, "append"), "wb") as fh:
                         pass
 
-                # copy in existing manifest, then open it for appending
-                m = self.repo._get_manifest(pfmri)
-                tfile = file("%s/manifest" % self.dir, "ab+")
-                tfile.write(str(m))
-                tfile.close()
+                # copy in existing manifest, then open it for appending.
+                portable.copyfile(rstore.manifest(self.fmri),
+                    os.path.join(self.dir, "manifest"))
 
-        def reopen(self, repo, trans_dir):
-                """The reopen() method is invoked on server restart, to
-                reestablish the status of inflight transactions."""
+        def reopen(self, rstore, trans_dir):
+                """The reopen() method is invoked by the repository as needed to
+                load Transaction data."""
 
-                self.repo = repo
-                open_time_str, self.esc_pkg_name = \
-                    os.path.basename(trans_dir).split("_", 1)
+                self.rstore = rstore
+                try:
+                        open_time_str, self.esc_pkg_name = \
+                            os.path.basename(trans_dir).split("_", 1)
+                except ValueError:
+                        raise TransactionUnknownIDError(os.path.baseame(
+                            trans_dir))
+
                 self.open_time = \
                     datetime.datetime.utcfromtimestamp(int(open_time_str))
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
@@ -366,11 +373,19 @@ class Transaction(object):
                 # client release on the initial open of the transaction.
                 self.fmri = fmri.PkgFmri(self.pkg_name, None)
 
-                self.dir = "%s/%s" % (repo.trans_root, self.get_basename())
+                self.dir = os.path.join(rstore.trans_root, self.get_basename())
+
+                if not os.path.exists(self.dir):
+                        raise TransactionUnknownIDError(self.get_basename())
+
+                tmode = "rb"
+                if not rstore.read_only:
+                        tmode += "+"
 
                 # Find out if the package is renamed or obsolete.
                 try:
-                        tfile = file("%s/manifest" % self.dir, "rb+")
+                        tfpath = os.path.join(self.dir, "manifest")
+                        tfile = file(tfpath, tmode)
                 except IOError, e:
                         if e.errno == errno.ENOENT:
                                 return
@@ -386,7 +401,7 @@ class Transaction(object):
                     action.name for action in m.gen_actions()
                 ))
 
-        def close(self, refresh_index=True, add_to_catalog=True):
+        def close(self, add_to_catalog=True):
                 """Closes an open transaction, returning the published FMRI for
                 the corresponding package, and its current state in the catalog.
                 """
@@ -402,16 +417,14 @@ class Transaction(object):
 
                 # set state to PUBLISHED
                 if self.append_trans:
-                        pkg_fmri, pkg_state = self.accept_append(refresh_index,
-                            add_to_catalog)
+                        pkg_fmri, pkg_state = self.accept_append(add_to_catalog)
                 else:
-                        pkg_fmri, pkg_state = self.accept_publish(refresh_index,
+                        pkg_fmri, pkg_state = self.accept_publish(
                             add_to_catalog)
 
                 # Discard the in-flight transaction data.
                 try:
-                        shutil.rmtree(os.path.join(self.repo.trans_root,
-                            trans_id))
+                        shutil.rmtree(self.dir)
                 except EnvironmentError, e:
                         # Ensure that the error goes to stderr, and then drive
                         # on as the actual package was published.
@@ -420,9 +433,12 @@ class Transaction(object):
                 return (pkg_fmri, pkg_state)
 
         def abandon(self):
-                trans_id = self.get_basename()
                 # state transition from TRANSACTING to ABANDONED
-                shutil.rmtree("%s/%s" % (self.repo.trans_root, trans_id))
+                try:
+                        shutil.rmtree(self.dir)
+                except EnvironmentError, e:
+                        if e.filename == self.dir and e.errno != errno.ENOENT:
+                                raise
                 return "ABANDONED"
 
         def add_content(self, action):
@@ -454,7 +470,8 @@ class Transaction(object):
                         # Extract ELF information
                         # XXX This needs to be modularized.
                         if haveelf and data[:4] == "\x7fELF":
-                                elf_name = "%s/.temp" % self.dir
+                                elf_name = os.path.join(self.dir, ".temp-%s"
+                                    % fname)
                                 elf_file = open(elf_name, "wb")
                                 elf_file.write(data)
                                 elf_file.close()
@@ -474,9 +491,18 @@ class Transaction(object):
                                 action.attrs["elfarch"] = elf_info["arch"]
                                 os.unlink(elf_name)
 
-                        dst_path = self.repo.cache_store.lookup(fname)
-                        csize, chash = misc.compute_compressed_attrs(fname,
-                            dst_path, data, size, self.dir)
+                        try:
+                                dst_path = self.rstore.file(fname)
+                        except Exception, e:
+                                # The specific exception can't be named here due
+                                # to the cyclic dependency between this class
+                                # and the repository class.
+                                if getattr(e, "data", "") != fname:
+                                        raise
+                                dst_path = None
+
+                        csize, chash = misc.compute_compressed_attrs(
+                            fname, dst_path, data, size, self.dir)
                         action.attrs["chash"] = chash.hexdigest()
                         action.attrs["pkg.csize"] = csize
                         chash = None
@@ -519,16 +545,17 @@ class Transaction(object):
                             " be marked for both obsoletion and renaming."))
                 elif self.obsolete and action.name != "set":
                         raise TransactionOperationError(_("A '%s' action cannot"
-                            " be present in an obsolete package: %s") % 
+                            " be present in an obsolete package: %s") %
                             (action.name, action))
                 elif self.renamed and action.name not in ("set", "depend"):
                         raise TransactionOperationError(_("A '%s' action cannot"
-                            " be present in a renamed package: %s") % 
+                            " be present in a renamed package: %s") %
                             (action.name, action))
 
                 # Now that the action is known to be sane, we can add it to the
                 # manifest.
-                tfile = file("%s/manifest" % self.dir, "ab+")
+                tfpath = os.path.join(self.dir, "manifest")
+                tfile = file(tfpath, "ab+")
                 print >> tfile, action
                 tfile.close()
 
@@ -543,7 +570,16 @@ class Transaction(object):
                 if size is None:
                         size = len(data)
 
-                dst_path = self.repo.cache_store.lookup(fname)
+                try:
+                        dst_path = self.rstore.file(fname)
+                except Exception, e:
+                        # The specific exception can't be named here due
+                        # to the cyclic dependency between this class
+                        # and the repository class.
+                        if getattr(e, "data", "") != fname:
+                                raise
+                        dst_path = None
+
                 csize, chash = misc.compute_compressed_attrs(fname, dst_path,
                     data, size, self.dir)
                 chash = None
@@ -551,7 +587,7 @@ class Transaction(object):
 
                 self.remaining_payload_cnt -= 1
 
-        def accept_publish(self, refresh_index=True, add_to_catalog=True):
+        def accept_publish(self, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog entries."""
 
@@ -565,15 +601,12 @@ class Transaction(object):
                 # PUBLISHED due to the package's arrival.
 
                 self.publish_package()
-
                 if add_to_catalog:
-                        self.repo.add_package(self.fmri)
-                if refresh_index:
-                        self.repo.refresh_index()
+                        self.rstore.add_package(self.fmri)
 
                 return (str(self.fmri), "PUBLISHED")
 
-        def accept_append(self, refresh_index=True, add_to_catalog=True):
+        def accept_append(self, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog replacements."""
 
@@ -594,9 +627,7 @@ class Transaction(object):
                 self.publish_package()
 
                 if add_to_catalog:
-                        self.repo.replace_package(self.fmri)
-                if refresh_index:
-                        self.repo.refresh_index()
+                        self.rstore.replace_package(self.fmri)
 
                 return (str(self.fmri), "PUBLISHED")
 
@@ -605,28 +636,19 @@ class Transaction(object):
 
                 It moves the files associated with the transaction into the
                 appropriate position in the server repository.  Callers
-                shall supply a fmri, repository, and transaction in fmri,
-                repo, and trans, respectively."""
-
-                repo = self.repo
+                shall supply a fmri, repo store, and transaction in fmri,
+                rstore, and trans, respectively."""
 
                 pkg_name = self.fmri.pkg_name
-                pkgdir = os.path.join(repo.manifest_root,
-                    urllib.quote(pkg_name, ""))
-
-                # If the directory isn't there, create it.
-                if not os.path.exists(pkgdir):
-                        os.makedirs(pkgdir)
 
                 # mv manifest to pkg_name / version
-                # A package may have no files, so there needn't be a manifest.
-                mpath = os.path.join(self.dir, "manifest")
-                if os.path.exists(mpath):
-                        portable.rename(mpath, os.path.join(pkgdir,
-                            urllib.quote(str(self.fmri.version), "")))
+                src_mpath = os.path.join(self.dir, "manifest")
+                dest_mpath = self.rstore.manifest(self.fmri)
+                misc.makedirs(os.path.dirname(dest_mpath))
+                portable.rename(src_mpath, dest_mpath)
 
                 # Move each file to file_root, with appropriate directory
                 # structure.
                 for f in os.listdir(self.dir):
                         src_path = os.path.join(self.dir, f)
-                        self.repo.cache_store.insert(f, src_path)
+                        self.rstore.cache_store.insert(f, src_path)

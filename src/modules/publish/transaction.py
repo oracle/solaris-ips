@@ -23,6 +23,7 @@
 #
 # Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
+
 """Provides a set of publishing interfaces for interacting with a pkg(5)
 repository.  Note that only the Transaction class should be used directly,
 though the other classes can be referred to for documentation purposes."""
@@ -96,7 +97,7 @@ class TransactionOperationError(TransactionError):
                             "trans_id": self._args.get("trans_id", ""),
                             "status": self._args["status"],
                             "msg": self._args.get("msg", "") }
-                if "trans_id" in self._args:
+                if self._args.get("trans_id", None):
                         return _("'%(op)s' failed for transaction ID "
                             "'%(trans_id)s': %(msg)s") % { "op": self.data,
                             "trans_id": self._args["trans_id"],
@@ -130,8 +131,7 @@ class NullTransaction(object):
         purposes."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, refresh_index=True,
-            xport=None, pub=None):
+            repo_props=EmptyDict, trans_id=None, xport=None, pub=None):
                 self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
@@ -160,7 +160,7 @@ class NullTransaction(object):
                             "be added is not a file.  The path given was %s.") %
                             pth))
 
-        def close(self, abandon=False, refresh_index=True):
+        def close(self, abandon=False, add_to_catalog=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
                 related package."""
@@ -190,12 +190,12 @@ class NullTransaction(object):
                 Returns nothing."""
                 pass
 
+
 class TransportTransaction(object):
         """Provides a publishing interface that uses client transport."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, refresh_index=True,
-            xport=None, pub=None):
+            repo_props=EmptyDict, trans_id=None, xport=None, pub=None):
 
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
@@ -209,23 +209,34 @@ class TransportTransaction(object):
 
                 if scheme == "file":
                         self.create_file_repo(origin_url, repo_props=repo_props,
-                            create_repo=create_repo,
-                            refresh_index=refresh_index)
+                            create_repo=create_repo)
                 elif scheme != "file" and create_repo:
                         raise UnsupportedRepoTypeOperationError("create_repo",
                             type=scheme)
 
-
         def create_file_repo(self, origin_url, repo_props=EmptyDict,
-            create_repo=False, refresh_index=True):
+            create_repo=False):
 
                 if self.transport.publish_cache_contains(self.publisher):
                         return
-        
+
+                if create_repo:
+                        try:
+                                # For compatbility reasons, assume that
+                                # repositories created using pkgsend
+                                # should be in version 3 format (single
+                                # publisher only).
+                                sr.repository_create(self.path, version=3)
+                        except sr.RepositoryExistsError:
+                                # Already exists, nothing to do.
+                                pass
+                        except (apx.ApiException, sr.RepositoryError), _e:
+                                raise TransactionOperationError(None,
+                                    msg=str(e))
+
                 try:
-                        repo = sr.Repository(auto_create=create_repo,
-                            properties=repo_props, repo_root=self.path, 
-                            refresh_index=refresh_index)
+                        repo = sr.Repository(properties=repo_props,
+                            root=self.path)
                 except EnvironmentError, e:
                         raise TransactionOperationError(None, msg=_(
                             "An error occurred while trying to "
@@ -281,7 +292,7 @@ class TransportTransaction(object):
                         raise TransactionOperationError("add_file",
                             trans_id=self.trans_id, msg=msg)
 
-        def close(self, abandon=False, refresh_index=True, add_to_catalog=True):
+        def close(self, abandon=False, add_to_catalog=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
                 related package.
@@ -290,10 +301,6 @@ class TransportTransaction(object):
                 otherwise the server will discard the current transaction and
                 its related data.
 
-                If 'refresh_index' is True, the repository will be instructed
-                to update its search indices after publishing.  Has no effect
-                if 'abandon' is True.
-                
                 'add_to_catalog' tells the depot to add a package to the
                 catalog, if True.
                 """
@@ -307,19 +314,9 @@ class TransportTransaction(object):
                                 raise TransactionOperationError("abandon",
                                     trans_id=self.trans_id, msg=msg)
                 else:
-
-                        # If caller hasn't supplied add_to_catalog, pick an
-                        # appropriate default, based upon the transport.
-                        if add_to_catalog is None:
-                                if self.scheme == "file":
-                                        add_to_catalog = True
-                                else:
-                                        add_to_catalog = False
-                        
                         try:
                                 state, fmri = self.transport.publish_close(
                                     self.publisher, trans_id=self.trans_id,
-                                    refresh_index=refresh_index,
                                     add_to_catalog=add_to_catalog)
                         except apx.TransportError, e:
                                 msg = str(e)
@@ -383,7 +380,7 @@ class TransportTransaction(object):
                 op = "index"
 
                 try:
-                        self.transport.publish_refresh_index(self.publisher)
+                        self.transport.publish_refresh_indexes(self.publisher)
                 except apx.TransportError, e:
                         msg = str(e)
                         raise TransactionOperationError(op,
@@ -422,9 +419,9 @@ class Transaction(object):
             "null": NullTransaction,
         }
 
-        def __new__(cls, origin_url, add_to_catalog=True, create_repo=False,
-            pkg_name=None, repo_props=EmptyDict, trans_id=None,
-            noexecute=False, refresh_index=True, xport=None, pub=None):
+        def __new__(cls, origin_url, create_repo=False, pkg_name=None,
+            repo_props=EmptyDict, trans_id=None, noexecute=False, xport=None,
+            pub=None):
 
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
@@ -452,6 +449,8 @@ class Transaction(object):
                         # are present
                         if path.startswith("/"):
                                 path = "/" + path.lstrip("/")
+                        elif not path:
+                                raise TransactionRepositoryURLError(origin_url)
 
                 # Rebuild the url with the sanitized components.
                 origin_url = urlparse.urlunparse((scheme, netloc, path, params,
@@ -459,5 +458,5 @@ class Transaction(object):
 
                 return cls.__schemes[scheme](origin_url,
                     create_repo=create_repo, pkg_name=pkg_name,
-                    refresh_index=refresh_index, repo_props=repo_props,
-                    trans_id=trans_id, xport=xport, pub=pub)
+                    repo_props=repo_props, trans_id=trans_id, xport=xport,
+                    pub=pub)

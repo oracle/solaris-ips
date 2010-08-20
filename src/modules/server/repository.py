@@ -21,36 +21,42 @@
 #
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
+import cStringIO
+import codecs
 import datetime
 import errno
+import fcntl
 import logging
 import os
 import os.path
+import platform
 import shutil
-import signal
+import stat
 import sys
 import tempfile
-import threading
 import urllib
 
 import pkg.actions as actions
 import pkg.catalog as catalog
-import pkg.client.api_errors as api_errors
+import pkg.client.api_errors as apx
+import pkg.client.publisher as publisher
 import pkg.config as cfg
 import pkg.file_layout.file_manager as file_manager
 import pkg.fmri as fmri
 import pkg.indexer as indexer
-import pkg.manifest as manifest
+import pkg.manifest
+import pkg.p5i as p5i
 import pkg.portable as portable
 import pkg.misc as misc
-import pkg.pkgsubprocess as subprocess
+import pkg.nrlock
 import pkg.search_errors as se
 import pkg.query_parser as qp
+import pkg.server.catalog as old_catalog
 import pkg.server.query_parser as sqp
 import pkg.server.transaction as trans
-import pkg.version as version
+import pkg.version
 
-from pkg.misc import EmptyI, EmptyDict
+CURRENT_REPO_VERSION = 4
 from pkg.pkggzip import PkgGzipFile
 
 class RepositoryError(Exception):
@@ -77,8 +83,8 @@ class RepositoryExistsError(RepositoryError):
         """
 
         def __str__(self):
-                return _("A package repository already exists at '%s'.") % \
-                    self.data
+                return _("A package repository (or directory) already exists "
+                    "at '%s'.") % self.data
 
 
 class RepositoryFileNotFoundError(RepositoryError):
@@ -95,6 +101,9 @@ class RepositoryInvalidError(RepositoryError):
         specified location."""
 
         def __str__(self):
+                if not self.data:
+                        return _("The specified path does not contain a valid "
+                            "package repository.")
                 return _("The path '%s' does not contain a valid package "
                     "repository.") % self.data
 
@@ -103,12 +112,42 @@ class RepositoryInvalidFMRIError(RepositoryError):
         """Used to indicate that the FMRI provided is invalid."""
 
 
+class RepositoryUnqualifiedFMRIError(RepositoryError):
+        """Used to indicate that the FMRI provided is valid, but is missing
+        publisher information."""
+
+        def __str__(self):
+                return _("This operation requires that a default publisher has "
+                    "been set or that a publisher be specified in the FMRI "
+                    "'%s'.") % self.data
+
+
 class RepositoryInvalidTransactionIDError(RepositoryError):
         """Used to indicate that an invalid Transaction ID was supplied."""
 
         def __str__(self):
-                return _("The specified Transaction ID '%s' is invalid.") % \
+                return _("No transaction matching '%s' could be found.") % \
                     self.data
+
+
+class RepositoryLockedError(RepositoryError):
+        """Used to indicate that the repository is currently locked by another
+        thread or process and cannot be modified."""
+
+        def __init__(self, hostname=None, pid=None):
+                ApiException.__init__(self)
+                self.hostname = hostname
+                self.pid = pid
+
+        def __str__(self):
+                if self.pid is not None:
+                        # Even if the host is none, use this message.
+                        return _("The repository cannot be modified as it is "
+                            "currently in use by another process: "
+                            "pid %(pid)s on %(host)s.") % {
+                            "pid": self.pid, "host": self.hostname }
+                return _("The repository cannot be modified as it is currently "
+                    "in use by another process.")
 
 
 class RepositoryManifestNotFoundError(RepositoryError):
@@ -126,6 +165,24 @@ class RepositoryMirrorError(RepositoryError):
         def __str__(self):
                 return _("The requested operation cannot be performed when the "
                     "repository is used in mirror mode.")
+
+
+class RepositoryNoPublisherError(RepositoryError):
+        """Used to indicate that the requested repository operation could not be
+        completed as not default publisher has been set and one was not
+        specified.
+        """
+
+        def __str__(self):
+                return _("The requested operation could not be completed as a "
+                    "default publisher has not been configured.")
+
+
+class RepositoryNoSuchFileError(RepositoryError):
+        """Used to indicate that the file provided does not exist."""
+
+        def __str__(self):
+                return _("No such file '%s'.") % self.data
 
 
 class RepositoryReadOnlyError(RepositoryError):
@@ -155,323 +212,136 @@ class RepositorySearchUnavailableError(RepositoryError):
                 return _("Search functionality is temporarily unavailable.")
 
 
+class RepositoryDuplicatePublisher(RepositoryError):
+        """Raised when the publisher specified for an operation already exists,
+        and so cannot be added again.
+        """
+
+        def __str__(self):
+                return _("Publisher '%s' already exists.") % self.data
+
+
+class RepositoryUnknownPublisher(RepositoryError):
+        """Raised when the publisher specified for an operation is unknown to
+        the repository.
+        """
+
+        def __str__(self):
+                if not self.data:
+                        return _("No publisher was specified or no default "
+                            "publisher has been configured for the repository.")
+                return _("No publisher matching '%s' could be found.") % \
+                    self.data
+
+
+class RepositoryVersionError(RepositoryError):
+        """Raised when the repository specified uses an unsupported format
+        (version).
+        """
+
+        def __init__(self, location, version):
+                RepositoryError.__init__(self)
+                self.location = location
+                self.version = version
+
+        def __str__(self):
+                return("The repository at '%(location)s' is version "
+                    "'%(version)s'; only versions up to are supported.") % \
+                    self.__dict__
+
+
 class RepositoryUnsupportedOperationError(RepositoryError):
         """Raised when the repository is unable to support an operation,
-        based upon its current configuration."""
+        based upon its current configuration.
+        """
 
         def __str__(self):
                 return("Operation not supported for this configuration.")
 
-class RepositoryUpgradeError(RepositoryError):
-        """Used to indicate that the specified repository root cannot be used
-        as the catalog or format of it is an older version that needs to be
-        upgraded before use and cannot be."""
 
-        def __str__(self):
-                return _("The format of the repository or its contents needs "
-                    "to be upgraded before it can be used to serve package "
-                    "data.  However, it is currently read-only and cannot be "
-                    "upgraded.  If using pkg.depotd, please restart the server "
-                    "without read-only so that the repository can be upgraded.")
+class _RepoStore(object):
+        """The _RepoStore object provides an interface for performing operations
+        on a set of package data contained within a repository.  This class is
+        intended only for use by the Repository class.
+        """
 
-
-class Repository(object):
-        """A Repository object is a representation of data contained within a
-        pkg(5) repository and an interface to manipulate it."""
-
-        __catalog = None
-        __lock = None
-
-        def __init__(self, auto_create=False, catalog_root=None,
-            cfgpathname=None, file_root=None, fork_allowed=False,
-            index_root=None, log_obj=None, manifest_root=None, mirror=False,
-            properties=EmptyDict, read_only=False, repo_root=None,
-            trans_root=None, refresh_index=True,
+        def __init__(self, file_root=None, log_obj=None, mirror=False, pub=None,
+            read_only=False, root=None,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
                 # This lock is used to protect the repository from multiple
                 # threads modifying it at the same time.
-                self.__lock = threading.Lock()
+                self.__lock = pkg.nrlock.NRLock()
+                self.__lockf = None
 
-                self.auto_create = auto_create
-                self.cfg = None
-                self.cfgpathname = None
-                self.fork_allowed = fork_allowed
-                self.log_obj = log_obj
-                self.mirror = mirror
-                self.read_only = read_only
+                self.__catalog = None
+                self.__catalog_root = None
+                self.__file_root = None
+                self.__in_flight_trans = {}
+                self.__root = None
                 self.__sort_file_max_size = sort_file_max_size
                 self.__tmp_root = None
-                self.__file_root = None
+                self.__writable_root = None
+                self.cache_store = None
+                self.catalog_version = -1
+                self.manifest_root = None
+                self.trans_root = None
 
-                # Set before repo root, since it's possible to have
-                # the file root in an entirely different location.  Repo
-                # root will govern file_root, if an argument to file_root
-                # is not supplied in __init__.
+                self.log_obj = log_obj
+                self.mirror = mirror
+                self.publisher = pub
+                self.read_only = read_only
+
+                # Set before root, since it's possible to have the
+                # file_root in an entirely different location.  The root
+                # will govern file_root, if a value for file_root is not
+                # supplied.
                 if file_root:
-                        self.file_root = file_root
+                        self.__set_file_root(file_root)
 
-                # Must be set before most other roots.
-                self.repo_root = repo_root
-
-                # These are all overrides for the default values that setting
-                # repo_root will provide.  If a caller provides one of these,
-                # they are responsible for creating the corresponding path
-                # and setting its mode appropriately.
-                if catalog_root:
-                        self.catalog_root = catalog_root
-                if index_root:
-                        self.index_root = index_root
-                if manifest_root:
-                        self.manifest_root = manifest_root
-                if trans_root:
-                        self.trans_root = trans_root
-
-                # Must be set before writable_root.
-                if self.mirror:
-                        self.__required_dirs = [self.file_root]
-                else:
-                        self.__required_dirs = [self.trans_root,
-                            self.manifest_root, self.catalog_root,
-                            self.file_root]
+                # Must be set before remaining roots.
+                self.__set_root(root)
 
                 # Ideally, callers would just specify overrides for the feed
                 # cache root, index_root, etc.  But this must be set after all
                 # of the others above.
-                self.writable_root = writable_root
+                self.__set_writable_root(writable_root)
 
-                # Must be set after all other roots.
-                self.__optional_dirs = [self.index_root]
-
-                # Stats
-                self.catalog_requests = 0
-                self.manifest_requests = 0
-                self.file_requests = 0
-                self.flist_requests = 0
-                self.flist_files = 0
-                self.pkgs_renamed = 0
-
-                # The update_handle lock protects the update_handle variable.
-                # This allows update_handle to be checked and acted on in a
-                # consistent step, preventing the dropping of needed updates.
-                # The check at the top of refresh index should always be done
-                # prior to deciding to spin off a process for indexing as it
-                # prevents more than one indexing process being run at the same
-                # time.
-                self.__searchdb_update_handle_lock = threading.Lock()
-
-                if os.name == "posix" and self.fork_allowed:
-                        try:
-                                signal.signal(signal.SIGCHLD,
-                                    self._child_handler)
-                        except ValueError:
-                                self.__log("Tried to create signal handler in "
-                                    "a thread other than the main thread.")
-
-                self.__searchdb_update_handle = None
                 self.__search_available = False
-                self.__deferred_searchdb_updates = []
-                self.__deferred_searchdb_updates_lock = threading.Lock()
                 self.__refresh_again = False
 
                 # Initialize.
-                self.__lock_repository()
+                self.__lock_rstore()
                 try:
-                        self.__init_config(cfgpathname=cfgpathname,
-                            properties=properties)
-                        self.__init_dirs()
-                        self.__init_state(refresh_index=refresh_index)
+                        self.__init_state()
                 finally:
-                        self.__unlock_repository()
-
-        def _child_handler(self, sig, frame):
-                """ Handler method for the SIGCHLD signal.  Checks to see if the
-                search database update child has finished, and enables searching
-                if it finished successfully, or logs an error if it didn't.
-                """
-
-                try:
-                        signal.signal(signal.SIGCHLD, self._child_handler)
-                except ValueError:
-                        self.__log("Tried to create signal handler in a thread "
-                            "other than the main thread.")
-
-                # If there's no update_handle, then another subprocess was
-                # spun off and that was what finished. If the poll() returns
-                # None, then while the indexer was running, another process
-                # that was spun off finished.
-                rval = None
-                if not self.__searchdb_update_handle:
-                        return
-                rval = self.__searchdb_update_handle.poll()
-                if rval == None:
-                        return
-
-                if rval == 0:
-                        self.__search_available = True
-                        self.__index_log("Search indexes updated and "
-                            "available.")
-                        # Need to acquire this lock to prevent the possibility
-                        # of a race condition with refresh_index where a needed
-                        # refresh is dropped. It is possible that an extra
-                        # refresh will be done with this code, but that refresh
-                        # should be very quick to finish.
-                        self.__searchdb_update_handle_lock.acquire()
-                        self.__searchdb_update_handle = None
-                        self.__searchdb_update_handle_lock.release()
-
-                        if self.__refresh_again:
-                                self.__refresh_again = False
-                                self.refresh_index()
-                elif rval > 0:
-                        # If the refresh of the index failed, defensively
-                        # declare that search is unavailable.
-                        self.__index_log("ERROR building search database, exit "
-                            "code: %s" % rval)
-                        try:
-                                self.__log(
-                                    self.__searchdb_update_handle.stderr.read())
-                                self.__searchdb_update_handle.stderr.read()
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                pass
-                        self.__searchdb_update_handle_lock.acquire()
-                        self.__searchdb_update_handle = None
-                        self.__searchdb_update_handle_lock.release()
+                        self.__unlock_rstore()
 
         def __mkdtemp(self):
                 """Create a temp directory under repository directory for
                 various purposes."""
 
-                if not self.repo_root:
+                if not self.root:
                         return
 
-                root = self.repo_root
                 if self.writable_root:
                         root = self.writable_root
+                else:
+                        root = self.root
 
                 tempdir = os.path.normpath(os.path.join(root, "tmp"))
+                misc.makedirs(tempdir)
                 try:
-                        if not os.path.exists(tempdir):
-                                os.makedirs(tempdir)
                         return tempfile.mkdtemp(dir=tempdir)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
+                                raise apx.PermissionsException(
                                     e.filename)
                         if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
+                                raise apx.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
-
-        def __upgrade(self):
-                """Upgrades the repository's format and contents if needed."""
-
-                def get_file_lm(pathname):
-                        try:
-                                mod_time = os.stat(pathname).st_mtime
-                        except EnvironmentError, e:
-                                if e.errno == errno.ENOENT:
-                                        return None
-                                raise
-                        return datetime.datetime.utcfromtimestamp(mod_time)
-
-                if not self.catalog_root:
-                        return
-
-                # To determine if an upgrade is needed, first check for a v0
-                # catalog attrs file.
-                need_upgrade = False
-                v0_attrs = os.path.join(self.catalog_root, "attrs")
-
-                # The only place a v1 catalog should exist, at all,
-                # is either in self.catalog_root, or in a subdirectory
-                # of self.writable_root if a v0 catalog exists.
-                v1_cat = None
-                writ_cat_root = None
-                if self.writable_root:
-                        writ_cat_root = os.path.join(
-                            self.writable_root, "catalog")
-                        v1_cat = catalog.Catalog(
-                            meta_root=writ_cat_root, read_only=True)
-
-                v0_lm = None
-                if os.path.exists(v0_attrs):
-                        # If a v0 catalog exists, then assume any existing v1
-                        # catalog needs to be kept in sync if it exists.  If
-                        # one doesn't exist, then it needs to be created.
-                        v0_lm = get_file_lm(v0_attrs)
-                        if not v1_cat or not v1_cat.exists or \
-                            v0_lm != v1_cat.last_modified:
-                                need_upgrade = True
-
-                if writ_cat_root and not self.read_only:
-                        # If a writable root was specified, but the server is
-                        # not in read-only mode, then the catalog must not be
-                        # stored using the writable root (this is consistent
-                        # with the storage of package data in this case).  As
-                        # such, destroy any v1 catalog data that might exist
-                        # and proceed.
-                        shutil.rmtree(writ_cat_root, True)
-                        writ_cat_root = None
-                        if os.path.exists(v0_attrs) and not self.catalog.exists:
-                                # A v0 catalog exists, but no v1 catalog exists;
-                                # this can happen when a repository that was
-                                # previously run with --writable-root and
-                                # --readonly is now being run with only
-                                # --writable-root.
-                                need_upgrade = True
-                elif writ_cat_root and v0_lm and self.read_only:
-                        # The catalog lives in the writable_root if a v0 catalog
-                        # exists, writ_cat_root is set, and readonly is True.
-                        self.catalog_root = writ_cat_root
-
-                if not need_upgrade or self.mirror:
-                        # If an upgrade isn't needed, or this is a mirror, then
-                        # nothing more should be done to the existing catalog
-                        # data.
-                        return
-
-                if self.read_only and not self.writable_root:
-                        # Any further operations would attempt to alter the
-                        # existing catalog data, which can't be done due to
-                        # read_only status.
-                        raise RepositoryUpgradeError()
-
-                if self.catalog.exists:
-                        # v1 catalog should be destroyed if it exists already.
-                        self.catalog.destroy()
-                elif writ_cat_root and not os.path.exists(writ_cat_root):
-                        try:
-                                os.mkdir(writ_cat_root, misc.PKG_DIR_MODE)
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                if e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(
-                                            e.filename)
-                                raise
-
-                # To upgrade the repository, the catalog will have to
-                # be rebuilt.
-                self.__log(_("Upgrading repository; this process will "
-                    "take some time."))
-                self.__rebuild(lm=v0_lm)
-
-                if not self.read_only and self.repo_root:
-                        v0_cat = os.path.join(self.repo_root, "catalog",
-                            "catalog")
-                        for f in v0_attrs, v0_cat:
-                                if os.path.exists(f):
-                                        portable.remove(f)
-
-                        # If this fails, it doesn't really matter, but it should
-                        # be removed if possible.
-                        shutil.rmtree(os.path.join(self.repo_root, "updatelog"),
-                            True)
 
         def __add_package(self, pfmri, manifest=None):
                 """Private version; caller responsible for repository
@@ -506,8 +376,17 @@ class Repository(object):
                 except se.InconsistentIndexException:
                         pass
                 if cie:
+                        if not self.__search_available:
+                                # State change to available.
+                                self.__index_log("Search Available")
+                                self.reset_search()
                         self.__search_available = True
-                        self.__index_log("Search Available")
+                else:
+                        if self.__search_available:
+                                # State change to unavailable.
+                                self.__index_log("Search Unavailable")
+                                self.reset_search()
+                        self.__search_available = False
 
         def __destroy_catalog(self):
                 """Destroy the catalog."""
@@ -517,13 +396,13 @@ class Repository(object):
                         shutil.rmtree(self.catalog_root)
 
         @staticmethod
-        def __fmri_from_path(pkg, ver):
+        def __fmri_from_path(pkgpath, ver):
                 """Helper method that takes the full path to the package
                 directory and the name of the manifest file, and returns an FMRI
                 constructed from the information in those components."""
 
-                v = version.Version(urllib.unquote(ver), None)
-                f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkg)))
+                v = pkg.version.Version(urllib.unquote(ver), None)
+                f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkgpath)))
                 f.version = v
                 return f
 
@@ -532,7 +411,7 @@ class Repository(object):
                 to its usage as a callback."""
 
                 mpath = self.manifest(pfmri)
-                m = manifest.Manifest()
+                m = pkg.manifest.Manifest()
                 try:
                         f = open(mpath, "rb")
                         content = f.read()
@@ -543,202 +422,298 @@ class Repository(object):
                                     e.filename)
                         raise
                 m.set_fmri(None, pfmri)
-                m.set_content(content, EmptyI, signatures=sig)
+                m.set_content(content, misc.EmptyI, signatures=sig)
                 return m
-
-        def __get_catalog_root(self):
-                return self.__catalog_root
-
-        def __get_repo_root(self):
-                return self.__repo_root
-
-        def __get_writable_root(self):
-                return self.__writable_root
 
         def __index_log(self, msg):
                 return self.__log(msg, "INDEX")
 
-        def __init_config(self, cfgpathname=None, properties=EmptyDict):
-                """Private helper function to initialize configuration."""
-
-                # Load configuration information.
-                if not cfgpathname:
-                        cfgpathname = self.cfgpathname
-                self.__load_config(cfgpathname, properties=properties)
-
-                # Set any specified properties again for cases where no existing
-                # configuration could be loaded and so that individual property
-                # validation messages can be re-raised to caller.
-                for section in properties:
-                        for prop, value in properties[section].iteritems():
-                                self.cfg.set_property(section, prop, value)
-
-        def __init_dirs(self, create=False):
-                """Verify and instantiate repository directory structure."""
-                if not self.repo_root:
-                        return
-                emsg = _("repository directories incomplete")
-                for d in self.__required_dirs + self.__optional_dirs:
-                        if create or self.auto_create or (self.writable_root and
-                            d.startswith(self.writable_root)):
-                                try:
-                                        os.makedirs(d)
-                                except EnvironmentError, e:
-                                        if e.errno in (errno.EACCES,
-                                            errno.EROFS):
-                                                emsg = _("repository "
-                                                    "directories not writeable "
-                                                    "by current user id or "
-                                                    "group and are incomplete")
-                                        elif e.errno != errno.EEXIST:
-                                                raise
-
-                for d in self.__required_dirs:
-                        if not os.path.exists(d):
-                                if create or self.auto_create:
-                                        raise RepositoryError(emsg)
-                                raise RepositoryInvalidError(self.repo_root)
-
-                searchdb_file = os.path.join(self.repo_root, "search")
-                for ext in ".pag", ".dir":
-                        try:
-                                os.unlink(searchdb_file + ext)
-                        except OSError:
-                                # If these can't be removed, it doesn't matter.
-                                continue
-
-        def __load_config(self, cfgpathname=None, properties=EmptyDict):
-                """Load stored configuration data and configure the repository
-                appropriately."""
-
-                if not self.repo_root:
-                        self.cfg = RepositoryConfig(target=cfgpathname,
-                            overrides=properties)
-                        return
-
-                default_cfg_path = False
-
-                # Now load our repository configuration / metadata.
-                if not cfgpathname:
-                        cfgpathname = os.path.join(self.repo_root,
-                            "cfg_cache")
-                        default_cfg_path = True
-
-                # Create or load the repository configuration.
-                self.cfg = RepositoryConfig(target=cfgpathname,
-                    overrides=properties)
-
-                self.cfgpathname = cfgpathname
-
-        def __load_in_flight(self):
-                """Walk trans_root, acquiring valid transaction IDs."""
-
-                if self.mirror:
-                        # Mirrors don't permit publication.
-                        return
+        def __get_transaction(self, trans_id):
+                """Return the in-flight transaction with the matching trans_id.
+                """
 
                 if not self.trans_root:
-                        return
+                        raise RepositoryInvalidTransactionIDError(trans_id)
 
-                self.__in_flight_trans = {}
-                for txn in os.walk(self.trans_root):
-                        if txn[0] == self.trans_root:
-                                continue
+                try:
+                        return self.__in_flight_trans[trans_id]
+                except KeyError:
+                        # Transaction not cached already, so load and
+                        # cache if possible.
                         t = trans.Transaction()
-                        t.reopen(self, txn[0])
-                        self.__in_flight_trans[t.get_basename()] = t
+                        try:
+                                t.reopen(self, trans_id)
+                        except trans.TransactionUnknownIDError:
+                                raise RepositoryInvalidTransactionIDError(
+                                    trans_id)
 
-        def __lock_repository(self):
+                        if not t:
+                                raise RepositoryInvalidTransactionIDError(
+                                    trans_id)
+                        self.__in_flight_trans[trans_id] = t
+                        return t
+
+        def __discard_transaction(self, trans_id):
+                """Discard any state information cached for a Transaction."""
+                self.__in_flight_trans.pop(trans_id, None)
+
+        def get_lock_status(self):
+                """Returns a tuple of booleans of the form (storage_locked,
+                index_locked).
+                """
+
+                storage_locked = False
+                try:
+                        self.__lock_rstore(blocking=False)
+                except RepositoryLockedError:
+                        storage_locked = True
+                except:
+                        pass
+                else:
+                        self.__unlock_rstore()
+
+                index_locked = False
+                if self.index_root and os.path.exists(self.index_root) and \
+                    (not self.read_only or self.writable_root):
+                        try:
+                                ind = indexer.Indexer(self.index_root,
+                                    self._get_manifest, self.manifest,
+                                    log=self.__index_log,
+                                    sort_file_max_size=self.__sort_file_max_size)
+                                ind.lock()
+                        except se.IndexLockedException:
+                                index_locked = True
+                        except:
+                                pass
+                        finally:
+                                if ind and not index_locked:
+                                        # If ind is defined, the index exists,
+                                        # and a lock was obtained because
+                                        # index_locked is False, so call
+                                        # unlock().
+                                        ind.unlock()
+                return storage_locked, index_locked
+
+        def get_status(self):
+                """Return a dictionary of status information about the
+                repository storage object.
+                """
+
+                try:
+                        cat = self.catalog
+                        pkg_count = cat.package_count
+                        pkg_ver_count = cat.package_version_count
+                        lcat_update = catalog.datetime_to_basic_ts(
+                            cat.last_modified)
+                except:
+                        # Can't get the info, drive on.
+                        pkg_count = 0
+                        pkg_ver_count = 0
+                        lcat_update = ""
+
+                storage_locked, index_locked = self.get_lock_status()
+                if storage_locked:
+                        rstatus = "processing"
+                elif index_locked:
+                        rstatus = "indexing"
+                else:
+                        rstatus = "online"
+
+                return {
+                    "package-count": pkg_count,
+                    "package-version-count": pkg_ver_count,
+                    "last-catalog-update": lcat_update,
+                    "status": rstatus,
+                }
+
+        def __lock_rstore(self, blocking=True, process=True):
                 """Locks the repository preventing multiple consumers from
                 modifying it during operations."""
 
-                # XXX need filesystem lock too?
-                self.__lock.acquire()
+                # First, attempt to obtain a thread lock.
+                if not self.__lock.acquire(blocking=blocking):
+                        raise RepositoryLockedError()
+
+                if not process or (self.read_only and
+                    not self.writable_root) or not (self.__tmp_root and
+                    os.path.exists(self.__tmp_root)):
+                        # Process lock wasn't desired, or repository structure
+                        # doesn't exist yet or is readonly so a file lock cannot
+                        # be obtained.
+                        return
+
+                try:
+                        # Attempt to obtain a file lock.
+                        self.__lockf = self.__lock_process(self.__tmp_root,
+                            blocking=blocking)
+                except:
+                        # If process lock fails, ensure thread lock is released.
+                        self.__lock.release()
+                        raise
+
+        @staticmethod
+        def __lock_process(lock_dir, blocking=True):
+                """Locks the repository to prevent modification by other
+                processes."""
+
+                # Attempt to obtain a file lock for the repository.
+                lfpath = os.path.join(lock_dir, "lock")
+
+                lock_type = fcntl.LOCK_EX
+                if not blocking:
+                        lock_type |= fcntl.LOCK_NB
+
+                # Attempt an initial open of the lock file.
+                lf = None
+                try:
+                        lf = open(lfpath, "ab+")
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+                # Attempt to lock the file.
+                try:
+                        fcntl.lockf(lf, lock_type)
+                except IOError, e:
+                        if e.errno not in (errno.EAGAIN, errno.EACCES):
+                                raise
+
+                        # If the lock failed (because it is likely contended),
+                        # then extract the information about the lock acquirer
+                        # and raise an exception.
+                        pid_data = lf.read().strip()
+                        pid, hostname, lock_ts = pid_data.split("\n", 3)
+                        raise RepositoryLockedError(pid=pid, hostname=hostname)
+
+                # Store lock time as ISO-8601 basic UTC timestamp in lock file.
+                lock_ts = catalog.now_to_basic_ts()
+
+                # Store information about the lock acquirer and write it.
+                try:
+                        lf.truncate(0)
+                        lf.write("\n".join((str(os.getpid()),
+                            platform.node(), lock_ts, "\n")))
+                        lf.flush()
+                        return lf
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
 
         def __log(self, msg, context="", severity=logging.INFO):
                 if self.log_obj:
                         self.log_obj.log(msg=msg, context=context,
                             severity=severity)
 
-        def __rebuild(self, lm=None, incremental=False):
+        def __rebuild(self, build_catalog=True, build_index=False, lm=None,
+            incremental=False):
                 """Private version; caller responsible for repository
                 locking."""
 
-                if not self.manifest_root:
+                if not (build_catalog or build_index) or not self.manifest_root:
+                        # Nothing to do.
                         return
 
-                default_pub = self.cfg.get_property("publisher", "prefix")
+                if build_catalog:
+                        self.__destroy_catalog()
+                        default_pub = self.publisher
+                        if self.read_only:
+                                # Temporarily mark catalog as not read-only so
+                                # that it can be modified.
+                                self.catalog.read_only = False
 
-                if self.read_only:
-                        # Temporarily mark catalog as not read-only so that it
-                        # can be modified.
-                        self.catalog.read_only = False
+                        # Set batch_mode for catalog to speed up rebuild.
+                        self.catalog.batch_mode = True
 
-                # Set batch_mode for catalog to speed up rebuild.
-                self.catalog.batch_mode = True
+                        # Pointless to log incremental updates since a new 
+                        # catalog is being built.  This also helps speed up
+                        # rebuild.
+                        self.catalog.log_updates = incremental
 
-                # Pointless to log incremental updates since a new catalog
-                # is being built.  This also helps speed up rebuild.
-                self.catalog.log_updates = incremental
+                        def add_package(f):
+                                m = self._get_manifest(f, sig=True)
+                                if "pkg.fmri" in m:
+                                        f = fmri.PkgFmri(m["pkg.fmri"])
+                                if default_pub and not f.publisher:
+                                        f.publisher = default_pub
+                                self.__add_package(f, manifest=m)
+                                self.__log(str(f))
 
-                def add_package(f):
-                        m = self._get_manifest(f, sig=True)
-                        if "pkg.fmri" in m:
-                                f = fmri.PkgFmri(m["pkg.fmri"])
-                        if default_pub and not f.publisher:
-                                f.publisher = default_pub
-                        self.__add_package(f, manifest=m)
-                        self.__log(str(f))
+                        # XXX eschew os.walk in favor of another os.listdir
+                        # here?
+                        for pkgpath in os.walk(self.manifest_root):
+                                if pkgpath[0] == self.manifest_root:
+                                        continue
 
-                # XXX eschew os.walk in favor of another os.listdir here?
-                for pkg in os.walk(self.manifest_root):
-                        if pkg[0] == self.manifest_root:
-                                continue
+                                for e in os.listdir(pkgpath[0]):
+                                        f = self.__fmri_from_path(pkgpath[0], e)
+                                        try:
+                                                add_package(f)
+                                        except (apx.InvalidPackageErrors,
+                                            actions.ActionError), e:
+                                                # Don't add packages with
+                                                # corrupt manifests to the
+                                                # catalog.
+                                                self.__log(_("Skipping "
+                                                    "%(fmri)s; invalid "
+                                                    "manifest: %(error)s") % {
+                                                    "fmri": f, "error": e })
+                                        except apx.DuplicateCatalogEntry, e:
+                                                # Raise dups if not in
+                                                # incremental mode.
+                                                if not incremental:
+                                                        raise
 
-                        for e in os.listdir(pkg[0]):
-                                f = self.__fmri_from_path(pkg[0], e)
-                                try:
-                                        add_package(f)
-                                except (api_errors.InvalidPackageErrors,
-                                    actions.ActionError), e:
-                                        # Don't add packages with corrupt
-                                        # manifests to the catalog.
-                                        self.__log(_("Skipping %(fmri)s; "
-                                            "invalid manifest: %(error)s") % {
-                                            "fmri": f, "error": e })
-                                except api_errors.DuplicateCatalogEntry, e:
-                                        # ignore dups if incremental mode
-                                        if incremental:
-                                                continue
-                                        raise
-
-                # Private add_package doesn't automatically save catalog
-                # so that operations can be batched (there is significant
-                # overhead in writing the catalog).
-                self.catalog.batch_mode = False
-                self.catalog.log_updates = True
-                self.catalog.read_only = self.read_only
-                self.catalog.finalize()
-                self.__save_catalog(lm=lm)
+                        # Private add_package doesn't automatically save catalog
+                        # so that operations can be batched (there is
+                        # significant overhead in writing the catalog).
+                        self.catalog.batch_mode = False
+                        self.catalog.log_updates = True
+                        self.catalog.read_only = self.read_only
+                        self.catalog.finalize()
+                        self.__save_catalog(lm=lm)
 
                 if not incremental and self.index_root and \
                     os.path.exists(self.index_root):
-                        # Search data is no longer valid and search can't handle
-                        # package removal, so discard existing search data.
+                        # Only discard search data if this isn't an incremental
+                        # rebuild, and there's an index to destroy.
+                        ind = indexer.Indexer(self.index_root,
+                            self._get_manifest,
+                            self.manifest,
+                            log=self.__index_log,
+                            sort_file_max_size=self.__sort_file_max_size)
+                        ind.lock(blocking=False)
                         try:
                                 shutil.rmtree(self.index_root)
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
+                                        raise apx.PermissionsException(
                                             e.filename)
                                 if e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(
+                                        raise apx.ReadOnlyFileSystemException(
                                             e.filename)
                                 if e.errno != errno.ENOENT:
                                         raise
-                self.__init_dirs(create=True)
+                        finally:
+                                ind.unlock()
 
-        def __refresh_index(self, synchronous=False):
+                        # Discard in-memory search data.
+                        self.reset_search()
+
+                if build_index:
+                        self.__refresh_index()
+                else:
+                        self.__check_search()
+
+        def __refresh_index(self):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -747,80 +722,28 @@ class Repository(object):
                 if self.read_only and not self.writable_root:
                         raise RepositoryReadOnlyError()
 
-                self.__searchdb_update_handle_lock.acquire()
-
-                if self.__searchdb_update_handle:
-                        self.__refresh_again = True
-                        self.__searchdb_update_handle_lock.release()
-                        return
-
                 cat = self.catalog
-                forked = False
+                self.__index_log("Checking for updated package data.")
+                fmris_to_index = indexer.Indexer.check_for_updates(
+                    self.index_root, cat)
 
-                try:
-                        fmris_to_index = indexer.Indexer.check_for_updates(
-                            self.index_root, cat)
+                if fmris_to_index:
+                        return self.__run_update_index()
 
-                        pub = self.cfg.get_property("publisher", "prefix")
-                        if fmris_to_index:
-                                if os.name == "posix" and self.fork_allowed:
-                                        cmd = self.__whence(sys.argv[0])
-                                        args = (sys.executable, cmd,
-                                            "--refresh-index", "-d",
-                                            self.repo_root)
-                                        if pub:
-                                                args += ("--set-property",
-                                                    "publisher.prefix=%s" % pub)
-                                        if os.path.normpath(
-                                            self.index_root) != \
-                                            os.path.normpath(os.path.join(
-                                            self.repo_root, "index")):
-                                                writ, t = os.path.split(
-                                                    self.index_root)
-                                                args += ("--writable-root",
-                                                    writ)
-                                        if self.read_only:
-                                                args += ("--readonly",)
-                                        try:
-                                                self.__searchdb_update_handle = \
-                                                    subprocess.Popen(args,
-                                                    stderr=subprocess.STDOUT)
-                                        except Exception, e:
-                                                self.__log("Starting the "
-                                                    "indexing process failed: "
-                                                    "%s" % e)
-                                                raise
-                                        forked = True
-                                else:
-                                        self.run_update_index()
-                        else:
-                                # Since there is nothing to index, setup
-                                # the index and declare search available.
-                                # We only log this if this represents
-                                # a change in status of the server.
-                                ind = indexer.Indexer(self.index_root,
-                                    self._get_manifest,
-                                    self.manifest,
-                                    log=self.__index_log,
-                                    sort_file_max_size=self.__sort_file_max_size)
-                                ind.setup()
-                                if not self.__search_available:
-                                        self.__index_log("Search Available")
-                                self.__search_available = True
-                finally:
-                        self.__searchdb_update_handle_lock.release()
-                        if forked and synchronous:
-                                while self.__searchdb_update_handle is not None:
-                                        try:
-                                                self.__searchdb_update_handle.wait()
-                                                self.__searchdb_update_handle = None
-                                        except OSError, e:
-                                                if e.errno == errno.EINTR:
-                                                        continue
-                                                break
+                # Since there is nothing to index, setup the index
+                # and declare search available.  This is only logged
+                # if this represents a change in status of the server.
+                ind = indexer.Indexer(self.index_root,
+                    self._get_manifest,
+                    self.manifest,
+                    log=self.__index_log,
+                    sort_file_max_size=self.__sort_file_max_size)
+                ind.setup()
+                if not self.__search_available:
+                        self.__index_log("Search Available")
+                self.__search_available = True
 
-
-        def __init_state(self, refresh_index=True):
+        def __init_state(self):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -828,57 +751,158 @@ class Repository(object):
                 # when needed).
                 self.__catalog = None
 
-                # Load in-flight transaction information.
-                self.__load_in_flight()
+                # Determine location and version of catalog data.
+                self.__init_catalog()
 
-                # Ensure default configuration is written.
-                self.__write_config()
+                # Prepare search for use (ensuring most current data is loaded).
+                self.reset_search()
 
-                # Ensure repository state is current before attempting
-                # to load it.
-                self.__upgrade()
-
-                if self.mirror or not self.repo_root:
-                        # In mirror-mode, or no repo_root, nothing to do.
+                if self.mirror:
+                        # In mirror mode, nothing more to do.
                         return
 
                 # If no catalog exists on-disk yet, ensure an empty one does
                 # so that clients can discern that a repository has an empty
-                # empty catalog, as opposed to missing one entirely (which
-                # could easily happen with multiple origins).  This must be
-                # done before the search checks below.
-                if not self.read_only and not self.catalog.exists:
-                        self.catalog.save()
+                # catalog, as opposed to missing one entirely (which could
+                # easily happen with multiple origins).  This must be done
+                # before the search checks below.
+                if not self.read_only and self.catalog_root and \
+                    not self.catalog.exists:
+                        self.__save_catalog()
 
-                if refresh_index and not self.read_only or self.writable_root:
+                self.__check_search()
+
+        def __init_catalog(self):
+                """Private function to determine version and location of
+                catalog data.  This will also perform any necessary
+                transformations of existing catalog data if the repository
+                is read-only and a writable_root has been provided.
+                """
+
+                # Reset versions to default.
+                self.catalog_version = -1
+
+                if not self.catalog_root or self.mirror:
+                        return
+
+                def get_file_lm(pathname):
                         try:
-                                try:
-                                        self.__refresh_index()
-                                except se.InconsistentIndexException, e:
-                                        s = _("Index corrupted or out of date. "
-                                            "Removing old index directory (%s) "
-                                            " and rebuilding search "
-                                            "indexes.") % e.cause
-                                        self.__log(s, "INDEX")
-                                        shutil.rmtree(self.index_root)
-                                        try:
-                                                self.__refresh_index()
-                                        except se.IndexingException, e:
-                                                self.__log(str(e), "INDEX")
-                                except se.IndexingException, e:
-                                        self.__log(str(e), "INDEX")
+                                mod_time = os.stat(pathname).st_mtime
                         except EnvironmentError, e:
-                                if e.errno in (errno.EACCES, errno.EROFS):
-                                        if self.writable_root:
-                                                raise RepositoryError(
-                                                    _("writable root not "
-                                                    "writable by current user "
-                                                    "id or group."))
-                                        raise RepositoryError(_("unable to "
-                                            "write to index directory."))
+                                if e.errno == errno.ENOENT:
+                                        return None
                                 raise
-                else:
-                        self.__check_search()
+                        return datetime.datetime.utcfromtimestamp(mod_time)
+
+                # To determine if a transformation is needed, first check for a
+                # v0 catalog attrs file.
+                need_transform = False
+                v0_attrs = os.path.join(self.catalog_root, "attrs")
+
+                # The only place a v1 catalog should exist, at all,
+                # is either in self.catalog_root, or in a subdirectory
+                # of self.writable_root if a v0 catalog exists.
+                v1_cat = None
+                writ_cat_root = None
+                if self.writable_root:
+                        writ_cat_root = os.path.join(
+                            self.writable_root, "catalog")
+                        v1_cat = catalog.Catalog(
+                            meta_root=writ_cat_root, read_only=True)
+
+                v0_lm = None
+                if os.path.exists(v0_attrs):
+                        # If a v0 catalog exists, then assume any existing v1
+                        # catalog needs to be kept in sync if it exists.  If
+                        # one doesn't exist, then it needs to be created.
+                        v0_lm = get_file_lm(v0_attrs)
+                        if not v1_cat or not v1_cat.exists or \
+                            v0_lm != v1_cat.last_modified:
+                                need_transform = True
+
+                if writ_cat_root and not self.read_only:
+                        # If a writable root was specified, but the server is
+                        # not in read-only mode, then the catalog must not be
+                        # stored using the writable root (this is consistent
+                        # with the storage of package data in this case).  As
+                        # such, destroy any v1 catalog data that might exist
+                        # and proceed.
+                        shutil.rmtree(writ_cat_root, True)
+                        writ_cat_root = None
+                        if os.path.exists(v0_attrs) and not self.catalog.exists:
+                                # A v0 catalog exists, but no v1 catalog exists;
+                                # this can happen when a repository that was
+                                # previously run with writable-root and
+                                # read_only is now being run with only
+                                # writable_root.
+                                need_transform = True
+                elif writ_cat_root and v0_lm and self.read_only:
+                        # The catalog lives in the writable_root if a v0 catalog
+                        # exists, writ_cat_root is set, and readonly is True.
+                        self.__set_catalog_root(writ_cat_root)
+
+                if self.mirror:
+                        need_transform = False
+
+                if need_transform and self.read_only and not self.writable_root:
+                        # Catalog data can't be transformed.
+                        need_transform = False
+
+                if need_transform:
+                        # v1 catalog should be destroyed if it exists already.
+                        self.catalog.destroy()
+
+                        # Create the transformed catalog.
+                        self.__log(_("Transforming repository catalog; this "
+                            "process will take some time."))
+                        self.__rebuild(lm=v0_lm)
+
+                        if not self.read_only and self.root:
+                                v0_cat = os.path.join(self.root,
+                                    "catalog", "catalog")
+                                for f in v0_attrs, v0_cat:
+                                        if os.path.exists(f):
+                                                portable.remove(f)
+
+                                # If this fails, it doesn't really matter, but
+                                # it should be removed if possible.
+                                shutil.rmtree(os.path.join(self.root,
+                                    "updatelog"), True)
+
+                # Determine effective catalog version after all transformation
+                # work is complete.
+                if os.path.exists(v0_attrs):
+                        # The only place a v1 catalog should exist, at all, is
+                        # either in catalog_root or in a subdirectory of
+                        # writable_root if a v0 catalog exists.
+                        v1_cat = None
+                        # If a writable root was specified, but the repository
+                        # is not in read-only mode, then the catalog must not be
+                        # stored using the writable root (this is consistent
+                        # with the storage of package data in this case).
+                        if self.writable_root and self.read_only:
+                                writ_cat_root = os.path.join(
+                                    self.writable_root, "catalog")
+                                v1_cat = catalog.Catalog(
+                                    meta_root=writ_cat_root, read_only=True)
+
+                        if v1_cat and v1_cat.exists:
+                                self.catalog_version = 1
+                                self.__set_catalog_root(v1_cat.meta_root)
+                        else:
+                                self.catalog_version = 0
+                elif self.catalog.exists:
+                        self.catalog_version = 1
+
+                if self.catalog_version >= 1 and not self.publisher:
+                        # If there's no information available to determine
+                        # the publisher identity, then assume it's the first
+                        # publisher in this repository store's catalog.
+                        # (This is reasonably safe since there should only
+                        # ever be one.)
+                        pubs = list(p for p in self.catalog.publishers())
+                        if pubs:
+                                self.publisher = pubs[0]
 
         def __save_catalog(self, lm=None):
                 """Private helper function that attempts to save the catalog in
@@ -886,7 +910,7 @@ class Repository(object):
 
                 # Ensure new catalog is created in a temporary location so that
                 # it can be renamed into place *after* creation to prevent
-                # unexpected failure from causing future upgrades to fail.
+                # unexpected failure causing future updates to fail.
                 old_cat_root = self.catalog_root
                 tmp_cat_root = self.__mkdtemp()
 
@@ -919,17 +943,17 @@ class Repository(object):
                                                             entry[-1]
                                                 else:
                                                         msg += "%s\n" % entry
-                                raise api_errors.UnknownErrors(msg)
+                                raise apx.UnknownErrors(msg)
                         elif e.errno == errno.EACCES or e.errno == errno.EPERM:
-                                raise api_errors.PermissionsException(
+                                raise apx.PermissionsException(
                                     e.filename)
                         elif e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
+                                raise apx.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
 
                 # Save the new catalog data in the temporary location.
-                self.catalog_root = tmp_cat_root
+                self.__set_catalog_root(tmp_cat_root)
                 if lm:
                         self.catalog.last_modified = lm
                 self.catalog.save()
@@ -945,9 +969,12 @@ class Repository(object):
                 # Finally, rename the new catalog data into place, reset the
                 # catalog's location, and remove the old catalog data.
                 shutil.move(tmp_cat_root, old_cat_root)
-                self.catalog_root = old_cat_root
+                self.__set_catalog_root(old_cat_root)
                 if orig_cat_root:
                         shutil.rmtree(orig_cat_root)
+
+                # Set catalog version.
+                self.catalog_version = self.catalog.version
 
         def __set_catalog_root(self, root):
                 self.__catalog_root = root
@@ -956,55 +983,54 @@ class Repository(object):
                         # its meta_root.
                         self.catalog.meta_root = root
 
-        def __set_repo_root(self, root):
+        def __set_root(self, root):
                 if root:
                         root = os.path.abspath(root)
-                        self.__repo_root = root
+                        self.__root = root
                         self.__tmp_root = os.path.join(root, "tmp")
-                        self.catalog_root = os.path.join(root, "catalog")
-                        self.feed_cache_root = root
+                        self.__set_catalog_root(os.path.join(root, "catalog"))
                         self.index_root = os.path.join(root, "index")
                         self.manifest_root = os.path.join(root, "pkg")
                         self.trans_root = os.path.join(root, "trans")
                         if not self.file_root:
-                                self.file_root = os.path.join(root, "file")
+                                self.__set_file_root(os.path.join(root, "file"))
                 else:
-                        self.__repo_root = None
-                        self.catalog_root = None
-                        self.feed_cache_root = None
+                        self.__root = None
+                        self.__set_catalog_root(None)
                         self.index_root = None
                         self.manifest_root = None
                         self.trans_root = None
- 
-        def __get_file_root(self):
-                return self.__file_root
 
         def __set_file_root(self, root):
                 self.__file_root = root
+                if not root:
+                        self.cache_store = None
+                        return
+
                 try:
                         self.cache_store = file_manager.FileManager(root,
                             self.read_only)
                 except file_manager.NeedToModifyReadOnlyFileManager:
-                        if self.repo_root:
+                        if self.root:
                                 try:
-                                        fs = os.lstat(self.repo_root)
+                                        os.lstat(self.root)
                                 except OSError, e:
                                         # If the stat failed due to this, then
                                         # assume the repository is possibly
                                         # valid but that there is a permissions
                                         # issue.
                                         if e.errno == errno.EACCES:
-                                                raise api_errors.\
+                                                raise apx.\
                                                     PermissionsException(
                                                     e.filename)
                                         if e.errno == errno.ENOENT:
                                                 raise RepositoryInvalidError(
-                                                    self.repo_root)
+                                                    self.root)
                                         raise
                                 # If the stat succeeded, then regardless of
-                                # whether repo_root is really a directory, the
+                                # whether root is really a directory, the
                                 # repository is invalid.
-                                raise RepositoryInvalidError(self.repo_root)
+                                raise RepositoryInvalidError(self.root)
                         # If repository root hasn't been specified yet,
                         # just raise the error with the path that is available.
                         raise RepositoryInvalidError(root)
@@ -1013,26 +1039,32 @@ class Repository(object):
                 if root:
                         root = os.path.abspath(root)
                         self.__tmp_root = os.path.join(root, "tmp")
-                        self.feed_cache_root = root
                         self.index_root = os.path.join(root, "index")
-                elif self.repo_root:
-                        self.__tmp_root = os.path.join(self.repo_root, "tmp")
-                        self.feed_cache_root = self.repo_root
-                        self.index_root = os.path.join(self.repo_root, "index")
+                elif self.root:
+                        self.__tmp_root = os.path.join(self.root, "tmp")
+                        self.index_root = os.path.join(self.root,
+                            "index")
                 else:
                         self.__tmp_root = None
-                        self.feed_cache_root = None
                         self.index_root = None
                 self.__writable_root = root
 
-        def __unlock_repository(self):
+        def __unlock_rstore(self):
                 """Unlocks the repository so other consumers may modify it."""
 
-                # XXX need filesystem unlock too?
-                self.__lock.release()
+                try:
+                        if self.__lockf:
+                                # To avoid race conditions with the next caller
+                                # waiting for the lock file, it is simply
+                                # truncated instead of removed.
+                                self.__lockf.truncate(0)
+                                self.__lockf.close()
+                                self.__lockf = None
+                finally:
+                        self.__lock.release()
 
         def __update_searchdb_unlocked(self, fmris):
-                """ Creates an indexer then hands it fmris It assumes that all
+                """Creates an indexer then hands it fmris; it assumes that all
                 needed locking has already occurred.
                 """
                 assert self.index_root
@@ -1043,38 +1075,9 @@ class Repository(object):
                             log=self.__index_log,
                             sort_file_max_size=self.__sort_file_max_size)
                         index_inst.server_update_index(fmris)
-
-        @staticmethod
-        def __whence(cmd):
-                if cmd[0] != '/':
-                        tmp_cmd = cmd
-                        cmd = None
-                        path = os.environ['PATH'].split(':')
-                        path.append(os.environ['PWD'])
-                        for p in path:
-                                if os.path.exists(os.path.join(p, tmp_cmd)):
-                                        cmd = os.path.join(p, tmp_cmd)
-                                        break
-                        assert cmd
-                return cmd
-
-        def __write_config(self):
-                """Save the repository's current configuration data."""
-
-                # No changes should be written to disk in readonly mode.
-                if self.read_only:
-                        return
-
-                # Save a new configuration (or refresh existing).
-                try:
-                        self.cfg.write()
-                except EnvironmentError, e:
-                        # If we're unable to write due to the following
-                        # errors, it isn't critical to the operation of
-                        # the repository.
-                        if e.errno not in (errno.EPERM, errno.EACCES,
-                            errno.EROFS):
-                                raise
+                        if not self.__search_available:
+                                self.__index_log("Search Available")
+                        self.__search_available = True
 
         def abandon(self, trans_id):
                 """Aborts a transaction with the specified Transaction ID.
@@ -1084,25 +1087,16 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                t = self.__get_transaction(trans_id)
                 try:
-                        try:
-                                t = self.__in_flight_trans[trans_id]
-                        except KeyError:
-                                raise RepositoryInvalidTransactionIDError(
-                                    trans_id)
-
-                        try:
-                                pstate = t.abandon()
-                                del self.__in_flight_trans[trans_id]
-                                return pstate
-                        except trans.TransactionError, e:
-                                raise RepositoryError(e)
-                finally:
-                        self.__unlock_repository()
+                        pstate = t.abandon()
+                        self.__discard_transaction(trans_id)
+                        return pstate
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
         def add(self, trans_id, action):
                 """Adds an action and its content to a transaction with the
@@ -1112,49 +1106,60 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                t = self.__get_transaction(trans_id)
                 try:
-                        try:
-                                t = self.__in_flight_trans[trans_id]
-                        except KeyError:
-                                raise RepositoryInvalidTransactionIDError(
-                                    trans_id)
+                        t.add_content(action)
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
-                        try:
-                                t.add_content(action)
-                        except trans.TransactionError, e:
-                                raise RepositoryError(e)
+        def add_content(self, refresh_index=False):
+                """Looks for packages added to the repository that are not in
+                the catalog and adds them.
+
+                'refresh_index' is an optional boolean value indicating whether
+                search indexes should be updated.
+                """
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if not self.catalog_root or self.catalog_version < 1:
+                        raise RepositoryUnsupportedOperationError()
+
+                self.__lock_rstore()
+                try:
+                        self.__rebuild(build_catalog=True,
+                            build_index=refresh_index, incremental=True)
                 finally:
-                        self.__unlock_repository()
+                        self.__unlock_rstore()
 
         def add_file(self, trans_id, data, size=None):
-                """Adds a certificate to a transaction with the specified
-                Transaction ID."""
+                """Adds a file to an in-flight transaction.
+
+                'trans_id' is the identifier of a transaction that
+                the file should be added to.
+
+                'data' is the string object containing the payload of the
+                file to add.
+
+                'size' is an optional integer value indicating the size of
+                the provided payload.
+                """
 
                 if self.mirror:
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                t = self.__get_transaction(trans_id)
                 try:
-                        try:
-                                t = self.__in_flight_trans[trans_id]
-                        except KeyError:
-                                raise RepositoryInvalidTransactionIDError(
-                                    trans_id)
-
-                        try:
-                                t.add_file(data, size)
-                        except trans.TransactionError, e:
-                                raise RepositoryError(e)
-                finally:
-                        self.__unlock_repository()
+                        t.add_file(data, size)
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
+                return
 
         def add_package(self, pfmri):
                 """Adds the specified FMRI to the repository's catalog."""
@@ -1163,15 +1168,15 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                self.__lock_rstore()
                 try:
                         self.__add_package(pfmri)
                         self.__save_catalog()
                 finally:
-                        self.__unlock_repository()
+                        self.__unlock_rstore()
 
         def replace_package(self, pfmri):
                 """Replaces the information for the specified FMRI in the
@@ -1181,15 +1186,15 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                self.__lock_rstore()
                 try:
                         self.__replace_package(pfmri)
                         self.__save_catalog()
                 finally:
-                        self.__unlock_repository()
+                        self.__unlock_rstore()
 
         @property
         def catalog(self):
@@ -1201,6 +1206,12 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
+                if not self.catalog_root:
+                        # Object not available.
+                        raise RepositoryUnsupportedOperationError()
+                if self.catalog_version == 0:
+                        return old_catalog.ServerCatalog(self.catalog_root,
+                            read_only=True, publisher=self.publisher)
 
                 self.__catalog = catalog.Catalog(meta_root=self.catalog_root,
                     log_updates=True, read_only=self.read_only)
@@ -1212,11 +1223,26 @@ class Repository(object):
                 as the v0 updatelog does not support renames, obsoletion,
                 package removal, etc."""
 
-                if not self.catalog_root:
+                if not self.catalog_root or self.catalog_version < 0:
                         raise RepositoryUnsupportedOperationError()
 
+                if self.catalog_version == 0:
+                        # If catalog is v0, it must be read and returned
+                        # directly to the caller.
+                        if not self.publisher:
+                                raise RepositoryUnsupportedOperationError()
+                        c = old_catalog.ServerCatalog(self.catalog_root,
+                            read_only=True, publisher=self.publisher)
+                        output = cStringIO.StringIO()
+                        c.send(output)
+                        output.seek(0)
+                        for l in output:
+                                yield l
+                        return
+
+                # For all other cases where the catalog object is available,
+                # fake a v0 catalog for the caller's sake.
                 c = self.catalog
-                self.inc_catalog()
 
                 # Yield each catalog attr in the v0 format:
                 # S Last-Modified: 2009-08-28T15:01:48.546606
@@ -1236,15 +1262,22 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.catalog_root:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
                 assert name
-                self.inc_catalog()
-
                 return os.path.normpath(os.path.join(self.catalog_root, name))
 
-        def close(self, trans_id, refresh_index=True, add_to_catalog=True):
+        def reset_search(self):
+                """Discards currenty loaded search data so that it will be
+                reloaded the next a search is performed.
+                """
+                if not self.index_root:
+                        # Nothing to do.
+                        return
+                sqp.TermQuery.clear_cache(self.index_root)
+
+        def close(self, trans_id, add_to_catalog=True):
                 """Closes the transaction specified by 'trans_id'.
 
                 Returns a tuple containing the package FMRI and the current
@@ -1252,27 +1285,28 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
+                # The repository store should not be locked at this point
+                # as transaction will trigger that indirectly through
+                # add_package().
+                t = self.__get_transaction(trans_id)
                 try:
-                        t = self.__in_flight_trans[trans_id]
-                except KeyError:
-                        raise RepositoryInvalidTransactionIDError(trans_id)
-
-                try:
-                        pfmri, pstate = t.close(refresh_index=refresh_index,
-                        add_to_catalog=add_to_catalog)
-                        del self.__in_flight_trans[trans_id]
+                        pfmri, pstate = t.close(
+                            add_to_catalog=add_to_catalog)
+                        self.__discard_transaction(trans_id)
                         return pfmri, pstate
-                except (api_errors.CatalogError, trans.TransactionError), e:
+                except (apx.CatalogError,
+                    trans.TransactionError), e:
                         raise RepositoryError(e)
 
         def file(self, fhash):
                 """Returns the absolute pathname of the file specified by the
                 provided SHA1-hash name."""
 
-                self.inc_file()
+                if not self.file_root:
+                        raise RepositoryUnsupportedOperationError()
 
                 if fhash is None:
                         raise RepositoryFileNotFoundError(fhash)
@@ -1282,28 +1316,51 @@ class Repository(object):
                         return fp
                 raise RepositoryFileNotFoundError(fhash)
 
+        def get_publisher(self):
+                """Return the Publisher object for this storage object or None
+                if not available.
+                """
+
+                if not self.publisher:
+                        raise RepositoryUnsupportedOperationError()
+
+                if self.root:
+                        # Determine if configuration for publisher exists
+                        # on-disk already and then return that if it does.
+                        p5ipath = os.path.join(self.root, "pub.p5i")
+                        if os.path.exists(p5ipath):
+                                pubs = p5i.parse(location=p5ipath)
+                                if pubs:
+                                        # Only expecting one, so only return
+                                        # the first.
+                                        return pubs[0][0]
+
+                # No p5i exists, or existing one doesn't contain publisher info,
+                # so return a stub publisher object.
+                return publisher.Publisher(self.publisher)
+
+        def has_transaction(self, trans_id):
+                """Returns a boolean value indicating whether the given
+                in-flight Transaction ID exists.
+                """
+
+                try:
+                        self.__get_transaction(trans_id)
+                        return True
+                except RepositoryInvalidTransactionIDError:
+                        return False
+
         @property
         def in_flight_transactions(self):
                 """The number of transactions awaiting completion."""
                 return len(self.__in_flight_trans)
 
-        def inc_catalog(self):
-                self.catalog_requests += 1
+        @property
+        def locked(self):
+                """A boolean value indicating whether the repository is locked.
+                """
 
-        def inc_manifest(self):
-                self.manifest_requests += 1
-
-        def inc_file(self):
-                self.file_requests += 1
-
-        def inc_flist(self):
-                self.flist_requests += 1
-
-        def inc_flist_files(self):
-                self.flist_files += 1
-
-        def inc_renamed(self):
-                self.pkgs_renamed += 1
+                return self.__lock and self.__lock.locked
 
         def manifest(self, pfmri):
                 """Returns the absolute pathname of the manifest file for the
@@ -1311,19 +1368,9 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.repo_root:
+                if not self.manifest_root:
                         raise RepositoryUnsupportedOperationError()
-
-                self.inc_manifest()
-
-                try:
-                        if not isinstance(pfmri, fmri.PkgFmri):
-                                pfmri = fmri.PkgFmri(pfmri)
-                        fpath = pfmri.get_dir_path()
-                except fmri.FmriError, e:
-                        raise RepositoryInvalidFMRIError(e)
-
-                return os.path.join(self.manifest_root, fpath)
+                return os.path.join(self.manifest_root, pfmri.get_dir_path())
 
         def open(self, client_release, pfmri):
                 """Starts a transaction for the specified client release and
@@ -1333,20 +1380,16 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
                 try:
-                        try:
-                                t = trans.Transaction()
-                                t.open(self, client_release, pfmri)
-                                self.__in_flight_trans[t.get_basename()] = t
-                                return t.get_basename()
-                        except trans.TransactionError, e:
-                                raise RepositoryError(e)
-                finally:
-                        self.__unlock_repository()
+                        t = trans.Transaction()
+                        t.open(self, client_release, pfmri)
+                        self.__in_flight_trans[t.get_basename()] = t
+                        return t.get_basename()
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
         def append(self, client_release, pfmri):
                 """Starts an append transaction for the specified client
@@ -1357,92 +1400,86 @@ class Repository(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.trans_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
                 try:
-                        try:
-                                t = trans.Transaction()
-                                t.append(self, client_release, pfmri)
-                                self.__in_flight_trans[t.get_basename()] = t
-                                return t.get_basename()
-                        except trans.TransactionError, e:
-                                raise RepositoryError(e)
-                finally:
-                        self.__unlock_repository()
+                        t = trans.Transaction()
+                        t.append(self, client_release, pfmri)
+                        self.__in_flight_trans[t.get_basename()] = t
+                        return t.get_basename()
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
         def refresh_index(self):
-                """ This function refreshes the search indexes if there any new
-                packages.  It starts a subprocess which results in a call to
-                run_update_index (see below) which does the actual update."""
-
-                if self.mirror:
-                        raise RepositoryMirrorError()
-                if not self.repo_root:
-                        raise RepositoryUnsupportedOperationError()
-
-                self.__lock_repository()
-                try:
-                        self.__refresh_index()
-                finally:
-                        self.__unlock_repository()
-
-        def add_content(self, refresh_index=True):
-                """Looks for packages added to the repository that are not in
-                the catalog, adds them, and then updates search data by default.
+                """This function refreshes the search indexes if there any new
+                packages.
                 """
+
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.repo_root:
+                if not self.index_root:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                self.__lock_rstore(process=False)
                 try:
-                        self.__check_search()
-                        self.__rebuild(incremental=True)
-                        if refresh_index:
-                                self.__refresh_index(synchronous=True)
+                        try:
+                                try:
+                                        self.__refresh_index()
+                                except se.InconsistentIndexException, e:
+                                        s = _("Index corrupted or out of date. "
+                                            "Removing old index directory (%s) "
+                                            " and rebuilding search "
+                                            "indexes.") % e.cause
+                                        self.__log(s, "INDEX")
+                                        try:
+                                                self.__rebuild(
+                                                    build_catalog=False,
+                                                    build_index=True)
+                                        except se.IndexingException, e:
+                                                self.__log(str(e), "INDEX")
+                                except se.IndexingException, e:
+                                        self.__log(str(e), "INDEX")
+                        except EnvironmentError, e:
+                                if e.errno in (errno.EACCES, errno.EROFS):
+                                        if self.writable_root:
+                                                raise RepositoryError(
+                                                    _("writable root not "
+                                                    "writable by current user "
+                                                    "id or group."))
+                                        raise RepositoryError(_("unable to "
+                                            "write to index directory."))
+                                raise
                 finally:
-                        self.__unlock_repository()
+                        self.__unlock_rstore()
 
-        def rebuild(self, build_index=True):
+        def rebuild(self, build_catalog=True, build_index=False):
                 """Rebuilds the repository catalog and search indexes using the
                 package manifests currently in the repository.
 
+                'build_catalog' is an optional boolean value indicating whether
+                package catalogs should be rebuilt.  If True, existing search
+                data will be discarded.
+
                 'build_index' is an optional boolean value indicating whether
-                search indexes should be built.  Regardless of this value, any
-                existing search data will be discarded.
+                search indexes should be built.
                 """
 
                 if self.mirror:
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.repo_root:
+                if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_repository()
+                self.__lock_rstore()
                 try:
-                        self.__destroy_catalog()
-                        self.__init_dirs(create=True)
-                        self.__check_search()
-                        self.__rebuild()
-                        if build_index:
-                                self.__refresh_index()
+                        self.__rebuild(build_catalog=build_catalog,
+                            build_index=build_index)
                 finally:
-                        self.__unlock_repository()
+                        self.__unlock_rstore()
 
-        def reload(self, cfgpathname=None, properties=EmptyDict):
-                """Reloads the repository state information from disk."""
-
-                self.__lock_repository()
-                self.__init_config(cfgpathname=cfgpathname,
-                    properties=properties)
-                self.__init_state()
-                self.__unlock_repository()
-
-        def run_update_index(self):
+        def __run_update_index(self):
                 """ Determines which fmris need to be indexed and passes them
                 to the indexer.
 
@@ -1453,7 +1490,7 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.index_root:
+                if not self.index_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
                 c = self.catalog
@@ -1469,6 +1506,9 @@ class Repository(object):
                             log=self.__index_log,
                             sort_file_max_size=self.__sort_file_max_size)
                         ind.setup()
+                        if not self.__search_available:
+                                self.__index_log("Search Available")
+                        self.__search_available = True
 
         def search(self, queries):
                 """Searches the index for each query in the list of queries.
@@ -1477,23 +1517,28 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.index_root:
+                if not self.index_root or not self.catalog_root:
                         raise RepositoryUnsupportedOperationError()
+
+                self.__check_search()
+                if not self.search_available:
+                        raise RepositorySearchUnavailableError()
 
                 def _search(q):
                         assert self.index_root
                         l = sqp.QueryLexer()
                         l.build()
-                        qp = sqp.QueryParser(l)
-                        query = qp.parse(q.text)
+                        qqp = sqp.QueryParser(l)
+                        query = qqp.parse(q.text)
                         query.set_info(num_to_return=q.num_to_return,
                             start_point=q.start_point,
                             index_dir=self.index_root,
                             get_manifest_path=self.manifest,
                             case_sensitive=q.case_sensitive)
-                        return query.search(c.fmris)
+                        if q.return_type == sqp.Query.RETURN_PACKAGES:
+                                query.propagate_pkg_return()
+                        return query.search(self.catalog.fmris)
 
-                c = self.catalog
                 query_lst = []
                 try:
                         for s in queries:
@@ -1508,7 +1553,58 @@ class Repository(object):
 
         @property
         def search_available(self):
-                return self.__search_available or self.__check_search()
+                return (self.__search_available and self.index_root and
+                    os.path.exists(self.index_root)) or self.__check_search()
+
+        def update_publisher(self, pub):
+                """Updates the configuration information for the publisher
+                defined by the provided Publisher object.
+                """
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.root:
+                        raise RepositoryUnsupportedOperationError()
+
+                p5ipath = os.path.join(self.root, "pub.p5i")
+                fn = None
+                try:
+                        dirname = os.path.dirname(p5ipath)
+                        fd, fn = tempfile.mkstemp(dir=dirname)
+
+                        st = None
+                        try:
+                                st = os.stat(p5ipath)
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+
+                        if st:
+                                os.fchmod(fd, stat.S_IMODE(st.st_mode))
+                                try:
+                                        portable.chown(fn, st.st_uid, st.st_gid)
+                                except OSError, e:
+                                        if e.errno != errno.EPERM:
+                                                raise
+                        else:
+                                os.fchmod(fd, misc.PKG_FILE_MODE)
+
+                        with os.fdopen(fd, "wb") as f:
+                                with codecs.EncodedFile(f, "utf-8") as ef:
+                                        p5i.write(ef, [pub])
+                        portable.rename(fn, p5ipath)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        elif e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+                finally:
+                        if fn and os.path.exists(fn):
+                                os.unlink(fn)
 
         def valid_new_fmri(self, pfmri):
                 """Check that the FMRI supplied as an argument would be valid
@@ -1518,7 +1614,7 @@ class Repository(object):
 
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.repo_root:
+                if not self.catalog_root:
                         raise RepositoryUnsupportedOperationError()
                 if not fmri.is_valid_pkg_name(pfmri.get_name()):
                         return False
@@ -1532,7 +1628,7 @@ class Repository(object):
         def valid_append_fmri(self, pfmri):
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.repo_root:
+                if not self.catalog_root:
                         raise RepositoryUnsupportedOperationError()
                 if not fmri.is_valid_pkg_name(pfmri.get_name()):
                         return False
@@ -1543,7 +1639,947 @@ class Repository(object):
 
                 c = self.catalog
                 entry = c.get_entry(pfmri)
-                return entry
+                return entry is not None
+
+        catalog_root = property(lambda self: self.__catalog_root)
+        file_root = property(lambda self: self.__file_root)
+        root = property(lambda self: self.__root)
+        writable_root = property(lambda self: self.__writable_root)
+
+
+class Repository(object):
+        """A Repository object is a representation of data contained within a
+        pkg(5) repository and an interface to manipulate it."""
+
+        def __init__(self, cfgpathname=None, file_root=None, log_obj=None,
+            mirror=False, properties=misc.EmptyDict, read_only=False,
+            root=None, sort_file_max_size=indexer.SORT_FILE_MAX_SIZE,
+            writable_root=None):
+                """Prepare the repository for use."""
+
+                # This lock is used to protect the repository from multiple
+                # threads modifying it at the same time.  This must be set
+                # first.
+                self.__lock = pkg.nrlock.NRLock()
+                self.__prop_lock = pkg.nrlock.NRLock()
+
+                # Setup any root overrides or root defaults first.
+                self.__file_root = file_root
+                self.__pub_root = None
+                self.__root = None
+                self.__tmp_root = None
+                self.__writable_root = None
+
+                # Set root after roots above.
+                self.__set_root(root)
+
+                # Set writable root last.
+                self.__set_writable_root(writable_root)
+
+                # Stats
+                self.__catalog_requests = 0
+                self.__file_requests = 0
+                self.__manifest_requests = 0
+
+                # Initialize.
+                self.__cfgpathname = cfgpathname
+                self.__cfg = None
+                self.__mirror = mirror
+                self.__read_only = read_only
+                self.__rstores = None
+                self.__sort_file_max_size = sort_file_max_size
+                self.log_obj = log_obj
+                self.version = -1
+
+                self.__lock_repository()
+                try:
+                        self.__init_state(properties=properties)
+                finally:
+                        self.__unlock_repository()
+
+        def __init_format(self, properties=misc.EmptyI):
+                """Private helper function to determine repository format and
+                validity.
+                """
+
+                cfgpathname = None
+                if self.__cfgpathname:
+                        # Use the custom configuration.
+                        cfgpathname = self.__cfgpathname
+                elif self.root:
+                        # Fallback to older standard configuration.
+                        cfgpathname = os.path.join(self.root,
+                            "cfg_cache")
+
+                if self.root:
+                        # Determine if the standard configuration file exists,
+                        # and if so, ignore any custom location specified as it
+                        # is only valid for older formats.
+                        cfgpath = os.path.join(self.root,
+                            "pkg5.repository")
+                        if (cfgpathname and not os.path.exists(cfgpathname)) or \
+                            os.path.isfile(cfgpath):
+                                cfgpathname = cfgpath
+
+                # Load the repository configuration.
+                self.__cfg = RepositoryConfig(target=cfgpathname,
+                    overrides=properties)
+
+                try:
+                        self.version = int(self.cfg.get_property("repository",
+                            "version"))
+                except (cfg.PropertyConfigError, ValueError):
+                        # If version couldn't be read from configuration,
+                        # then allow fallback path below to set things right.
+                        self.version = -1
+
+                if self.version <= 0 and self.root:
+                        # If version doesn't exist, attempt to determine version
+                        # based on structure.
+                        pub_root = os.path.join(self.root, "publisher")
+                        cat_root = os.path.join(self.root, "catalog")
+                        if os.path.exists(pub_root) or \
+                            (self.cfg.version > 3 and
+                            not os.path.exists(cat_root)):
+                                # If publisher root exists or new configuration
+                                # format exists (and the old catalog root
+                                # does not), assume this is a v4 repository.
+                                self.version = 4
+                        elif self.root:
+                                if os.path.exists(cat_root):
+                                        if os.path.exists(os.path.join(
+                                            cat_root, "attrs")):
+                                                # Old catalog implies v2.
+                                                self.version = 2
+                                        else:
+                                                # Assume version 3 otherwise.
+                                                self.version = 3
+
+                                        # Reload the repository configuration
+                                        # so that configuration definitions
+                                        # can match.
+                                        self.__cfg = RepositoryConfig(
+                                            target=cfgpathname,
+                                            overrides=properties,
+                                            version=self.version)
+                                else:
+                                        raise RepositoryInvalidError(
+                                            self.root)
+                        else:
+                                raise RepositoryInvalidError()
+
+                        self.cfg.set_property("repository", "version",
+                            self.version)
+                elif self.version <= 0 and self.file_root:
+                        # If only file root specified, treat as version 4
+                        # repository.
+                        self.version = 4
+
+                # Setup roots.
+                if self.root and not self.file_root:
+                        # Don't create the default file root at this point, but
+                        # set its default location if it exists.
+                        froot = os.path.join(self.root, "file")
+                        if not self.file_root and os.path.exists(froot):
+                                self.__file_root = froot
+
+                if self.version > CURRENT_REPO_VERSION:
+                        raise RepositoryVersionError(self.root,
+                            self.version)
+                if self.version == 4:
+                        if self.root and not self.pub_root:
+                                # Don't create the publisher root at this point,
+                                # but set its expected location.
+                                self.__pub_root = os.path.join(self.root,
+                                    "publisher")
+
+                # Setup repository stores.
+                def_pub = self.cfg.get_property("publisher", "prefix")
+                if self.version == 4:
+                        # For repository versions 4+, there is a repository
+                        # store for the top-level file root...
+                        froot = self.file_root
+                        if not froot:
+                                froot = os.path.join(self.root, "file")
+                        rstore = _RepoStore(file_root=froot,
+                            log_obj=self.log_obj, mirror=self.mirror,
+                            read_only=self.read_only)
+                        self.__rstores[rstore.publisher] = rstore
+
+                        # ...and then one for each publisher if any are known.
+                        if self.pub_root and os.path.exists(self.pub_root):
+                                for pub in os.listdir(self.pub_root):
+                                        self.__new_rstore(pub)
+
+                        # If a default publisher is set, ensure that a storage
+                        # object always exists for it.
+                        if def_pub and def_pub not in self.__rstores:
+                                self.__new_rstore(def_pub)
+                else:
+                        # For older repository versions, there is only one
+                        # repository store, and it might have an associated
+                        # publisher prefix.
+                        rstore = _RepoStore(file_root=self.file_root,
+                            log_obj=self.log_obj, pub=def_pub,
+                            mirror=self.mirror,
+                            read_only=self.read_only,
+                            root=self.root,
+                            writable_root=self.writable_root)
+                        self.__rstores[rstore.publisher] = rstore
+
+                if not self.root:
+                        # Nothing more to do.
+                        return
+
+                try:
+                        fs = os.lstat(self.root)
+                except OSError, e:
+                        # If the stat failed due to this, then assume the
+                        # repository is possibly valid but that there is a
+                        # permissions issue.
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        elif e.errno == errno.ENOENT:
+                                raise RepositoryInvalidError(self.root)
+                        raise
+
+                if not stat.S_ISDIR(stat.S_IFMT(fs.st_mode)):
+                        # Not a directory.
+                        raise RepositoryInvalidError(self.root)
+
+                # Ensure obsolete search data is removed.
+                if self.version >= 3 and not self.read_only:
+                        searchdb_file = os.path.join(self.root, "search")
+                        for ext in ".pag", ".dir":
+                                try:
+                                        os.unlink(searchdb_file + ext)
+                                except OSError:
+                                        # If these can't be removed, it doesn't
+                                        # matter.
+                                        continue
+
+        def __init_state(self, properties=misc.EmptyDict):
+                """Private helper function to initialize state."""
+
+                # Discard current repository storage state data.
+                self.__rstores = {}
+
+                # Determine format, configuration location, and validity.
+                self.__init_format(properties=properties)
+
+                # Ensure default configuration is written.
+                self.__write_config()
+
+        def __lock_repository(self):
+                """Locks the repository preventing multiple consumers from
+                modifying it during operations."""
+
+                # XXX need filesystem lock too?
+                self.__lock.acquire()
+
+        def __log(self, msg, context="", severity=logging.INFO):
+                if self.log_obj:
+                        self.log_obj.log(msg=msg, context=context,
+                            severity=severity)
+
+        def __set_mirror(self, value):
+                self.__prop_lock.acquire()
+                try:
+                        self.__mirror = value
+                        for rstore in self.rstores:
+                                rstore.mirror = value
+                finally:
+                        self.__prop_lock.release()
+
+        def __set_read_only(self, value):
+                self.__prop_lock.acquire()
+                try:
+                        self.__read_only = value
+                        for rstore in self.rstores:
+                                rstore.read_only = value
+                finally:
+                        self.__prop_lock.release()
+
+        def __set_root(self, root):
+                self.__prop_lock.acquire()
+                try:
+                        if root:
+                                root = os.path.abspath(root)
+                                self.__root = root
+                                self.__tmp_root = os.path.join(root, "tmp")
+                        else:
+                                self.__root = None
+                finally:
+                        self.__prop_lock.release()
+
+        def __set_writable_root(self, root):
+                self.__prop_lock.acquire()
+                try:
+                        if root:
+                                root = os.path.abspath(root)
+                                self.__tmp_root = os.path.join(root, "tmp")
+                        elif self.root:
+                                self.__tmp_root = os.path.join(self.root,
+                                    "tmp")
+                        else:
+                                self.__tmp_root = None
+                        self.__writable_root = root
+                finally:
+                        self.__prop_lock.release()
+
+        def __unlock_repository(self):
+                """Unlocks the repository so other consumers may modify it."""
+
+                # XXX need filesystem unlock too?
+                self.__lock.release()
+
+        def __write_config(self):
+                """Save the repository's current configuration data."""
+
+                # No changes should be written to disk in readonly mode.
+                if self.read_only:
+                        return
+
+                # Save a new configuration (or refresh existing).
+                try:
+                        self.cfg.write()
+                except EnvironmentError, e:
+                        # If we're unable to write due to the following
+                        # errors, it isn't critical to the operation of
+                        # the repository.
+                        if e.errno not in (errno.EPERM, errno.EACCES,
+                            errno.EROFS):
+                                raise
+
+        def __new_rstore(self, pub):
+                assert pub
+                if pub in self.__rstores:
+                        raise RepositoryDuplicatePublisher(pub)
+
+                if self.pub_root:
+                        # Newer repository format stores repository data
+                        # partitioned by publisher.
+                        root = os.path.join(self.pub_root, pub)
+                else:
+                        # Older repository formats store repository data
+                        # in a shared root area.
+                        root = self.root
+
+                writ_root = None
+                if self.writable_root:
+                        writ_root = os.path.join(self.writable_root,
+                            "publisher", pub)
+
+                froot = self.file_root
+                if self.root and froot and \
+                    froot.startswith(self.root):
+                        # Ignore the file root if it's the default one.
+                        froot = None
+
+                rstore = _RepoStore(file_root=froot, log_obj=self.log_obj,
+                    mirror=self.mirror, pub=pub, read_only=self.read_only,
+                    root=root,
+                    sort_file_max_size=self.__sort_file_max_size,
+                    writable_root=writ_root)
+                self.__rstores[pub] = rstore
+                return rstore
+
+        def abandon(self, trans_id):
+                """Aborts a transaction with the specified Transaction ID.
+                Returns the current package state.
+                """
+
+                rstore = self.get_trans_rstore(trans_id)
+                return rstore.abandon(trans_id)
+
+        def add(self, trans_id, action):
+                """Adds an action and its content to a transaction with the
+                specified Transaction ID.
+                """
+
+                rstore = self.get_trans_rstore(trans_id)
+                return rstore.add(trans_id, action)
+
+        def add_publisher(self, pub):
+                """Creates a repository storage area for the publisher defined
+                by the provided Publisher object and then stores the publisher's
+                configuration information.  Only supported for version 4 and
+                later repositories.
+                """
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.pub_root or self.version < 4:
+                        raise RepositoryUnsupportedOperationError()
+
+                # Create the new repository storage area.
+                rstore = self.__new_rstore(pub.prefix)
+
+                # Update the publisher's configuration.
+                try:
+                        rstore.update_publisher(pub)
+                except:
+                        # If the above fails, be certain to delete the new
+                        # repository storage area and then re-raise the
+                        # original exception.
+                        exc_type, exc_value, exc_tb = sys.exc_info()
+                        try:
+                                shutil.rmtree(rstore.root)
+                        finally:
+                                # This ensures that the original exception and
+                                # traceback are used.
+                                raise exc_value, None, exc_tb
+
+        def add_package(self, pfmri):
+                """Adds the specified FMRI to the repository's catalog."""
+
+                rstore = self.get_pub_rstore(pfmri.publisher)
+                return rstore.add_package(pfmri)
+
+        def append(self, client_release, pfmri, pub=None):
+                """Starts an append transaction for the specified client
+                release and FMRI.  Returns the Transaction ID for the new
+                transaction."""
+
+                try:
+                        if not isinstance(pfmri, fmri.PkgFmri):
+                                pfmri = fmri.PkgFmri(pfmri, client_release)
+                except fmri.FmriError, e:
+                        raise RepositoryInvalidFMRIError(e)
+ 
+                if pub and not pfmri.publisher:
+                        pfmri.publisher = pub
+
+                try:
+                        rstore = self.get_pub_rstore(pfmri.publisher)
+                except RepositoryUnknownPublisher, e:
+                        if not pfmri.publisher:
+                                # No publisher given in FMRI and no default
+                                # publisher so treat as invalid FMRI.
+                                raise RepositoryUnqualifiedFMRIError(pfmri)
+                        raise
+                return rstore.append(client_release, pfmri)
+
+        def catalog_0(self, pub=None):
+                """Returns a generator object for the full version of
+                the catalog contents.  Incremental updates are not provided
+                as the v0 updatelog does not support renames, obsoletion,
+                package removal, etc.
+
+                'pub' is the prefix of the publisher to return catalog data for.
+                If not specified, the default publisher will be used.  If no
+                default publisher has been configured, an AssertionError will be
+                raised.
+                """
+
+                self.inc_catalog()
+                rstore = self.get_pub_rstore(pub)
+                return rstore.catalog_0()
+
+        def catalog_1(self, name, pub=None):
+                """Returns the absolute pathname of the named catalog file.
+
+                'pub' is the prefix of the publisher to return catalog data for.
+                If not specified, the default publisher will be used.  If no
+                default publisher has been configured, an AssertionError will be
+                raised.
+                """
+
+                self.inc_catalog()
+                rstore = self.get_pub_rstore(pub)
+                return rstore.catalog_1(name)
+
+        def close(self, trans_id, add_to_catalog=True):
+                """Closes the transaction specified by 'trans_id'.
+
+                Returns a tuple containing the package FMRI and the current
+                package state in the catalog.
+                """
+
+                self.inc_catalog()
+                rstore = self.get_trans_rstore(trans_id)
+                return rstore.close(trans_id, add_to_catalog=add_to_catalog)
+
+        def file(self, fhash, pub=None):
+                """Returns the absolute pathname of the file specified by the
+                provided SHA1-hash name.
+
+                'pub' is the prefix of the publisher to return catalog data for.
+                If not specified, the default publisher will be used.  If no
+                default publisher has been configured, an AssertionError will be
+                raised.
+                """
+
+                self.inc_file()
+                if pub:
+                        rstore = self.get_pub_rstore(pub)
+                        return rstore.file(fhash)
+
+                # If a publisher wasn't specified, every repository store will
+                # have to be tried since default publisher can't safely apply
+                # here.
+                for rstore in self.rstores:
+                        try:
+                                return rstore.file(fhash)
+                        except RepositoryFileNotFoundError:
+                                # Ignore and try next repository store.
+                                pass
+
+                # Not found in any repository store.
+                raise RepositoryFileNotFoundError(fhash)
+
+        def get_catalog(self, pub=None):
+                """Return the catalog object for the given publisher.
+
+                'pub' is the optional name of the publisher to return the
+                catalog for.  If not provided, the default publisher's
+                catalog will be returned.
+                """
+
+                try:
+                        rstore = self.get_pub_rstore(pub)
+                        return rstore.catalog
+                except RepositoryUnknownPublisher:
+                        if pub:
+                                # In this case, an unknown publisher's
+                                # catalog was requested.
+                                raise
+                        # No catalog to return.
+                        raise RepositoryUnsupportedOperationError()
+
+        def get_pub_rstore(self, pub=None):
+                """Return a repository storage object matching the given
+                publisher (if provided).  If not provided, a repository
+                storage object for the default publisher will be returned.
+                A RepositoryUnknownPublisher exception will be raised if
+                no storage object for the given publisher exists.
+                """
+
+                if pub is None:
+                        pub = self.cfg.get_property("publisher", "prefix")
+                if not pub:
+                        raise RepositoryUnknownPublisher(pub)
+
+                try:
+                        rstore = self.__rstores[pub]
+                except KeyError:
+                        raise RepositoryUnknownPublisher(pub)
+                return rstore
+
+        def __get_cfg_publisher(self, pub):
+                """Return a publisher object for the given publisher prefix
+                based on the repository's configuration information.
+                """
+                assert self.version < 4
+
+                alias = self.cfg.get_property("publisher", "alias")
+                icas = self.cfg.get_property("publisher",
+                    "intermediate_certs")
+                scas = self.cfg.get_property("publisher",
+                    "signing_ca_certs")
+
+                rargs = {}
+                for prop in ("collection_type", "description",
+                    "legal_uris", "mirrors", "name", "origins",
+                    "refresh_seconds", "registration_uri",
+                    "related_uris"):
+                        rargs[prop] = self.cfg.get_property(
+                            "repository", prop)
+
+                repo = publisher.Repository(**rargs)
+                return publisher.Publisher(pub, alias=alias,
+                    repositories=[repo], ca_certs=scas, intermediate_certs=icas)
+
+        def get_publishers(self):
+                """Return publisher objects for all publishers known by the
+                repository.
+                """
+                return [
+                    self.get_publisher(pub)
+                    for pub in self.publishers
+                ]
+
+        def get_publisher(self, pub):
+                """Return the publisher object for the given publisher.  Raises
+                RepositoryUnknownPublisher if no matching publisher can be
+                found.
+                """
+
+                if not pub:
+                        raise RepositoryUnknownPublisher(pub)
+                if self.version < 4:
+                        return self.__get_cfg_publisher(pub)
+
+                rstore = self.get_pub_rstore(pub)
+                if not rstore:
+                        raise RepositoryUnknownPublisher(pub)
+                return rstore.get_publisher()
+
+        def get_status(self):
+                """Return a dictionary of status information about the
+                repository.
+                """
+
+                if self.locked:
+                        rstatus = "processing"
+                else:
+                        rstatus = "online"
+
+                rdata = {
+                    "repository": {
+                        "configuration": self.cfg.get_index(),
+                        "publishers": {},
+                        "requests": {
+                            "catalog": self.catalog_requests,
+                            "file": self.file_requests,
+                            "manifests": self.manifest_requests,
+                        },
+                        "status": rstatus, # Overall repository state.
+                        "version": self.version, # Version of repository.
+                    },
+                    "version": 1, # Version of status structure.
+                }
+
+                for rstore in self.rstores:
+                        if not rstore.publisher:
+                                continue
+                        pubdata = rdata["repository"]["publishers"]
+                        pubdata[rstore.publisher] = rstore.get_status()
+                return rdata
+
+        def get_trans_rstore(self, trans_id):
+                """Return a repository storage object matching the given
+                Transaction ID.  If no repository storage object has a
+                matching Transaction ID, a RepositoryInvalidTransactionIDError
+                will be raised.
+                """
+
+                for rstore in self.rstores:
+                        if rstore.has_transaction(trans_id):
+                                return rstore
+                raise RepositoryInvalidTransactionIDError(trans_id)
+
+        @property
+        def in_flight_transactions(self):
+                """The number of transactions awaiting completion."""
+
+                return sum(
+                    rstore.in_flight_transactions
+                    for rstore in self.rstores
+                )
+
+        def inc_catalog(self):
+                self.__catalog_requests += 1
+
+        def inc_file(self):
+                self.__file_requests += 1
+
+        def inc_manifest(self):
+                self.__manifest_requests += 1
+
+        @property
+        def locked(self):
+                """A boolean value indicating whether the repository is locked.
+                """
+
+                return self.__lock and self.__lock.locked
+
+        def manifest(self, pfmri, pub=None):
+                """Returns the absolute pathname of the manifest file for the
+                specified FMRI.
+                """
+
+                self.inc_manifest()
+
+                try:
+                        if not isinstance(pfmri, fmri.PkgFmri):
+                                pfmri = fmri.PkgFmri(pfmri)
+                except fmri.FmriError, e:
+                        raise RepositoryInvalidFMRIError(e)
+ 
+                if not pub and pfmri.publisher:
+                        pub = pfmri.publisher
+                elif pub and not pfmri.publisher:
+                        pfmri.publisher = pub
+
+                if pub:
+                        try:
+                                rstore = self.get_pub_rstore(pub)
+                        except RepositoryUnknownPublisher, e:
+                                raise RepositoryManifestNotFoundError(pfmri)
+                        return rstore.manifest(pfmri)
+
+                # If a publisher wasn't specified, every repository store will
+                # have to be tried since default publisher can't safely apply
+                # here.  It's assumed that it's unlikely that two publishers
+                # share the exact same FMRI.  Since this case is only for
+                # compatibility, it shouldn't be much of a concern.
+                mpath = None
+                for rstore in self.rstores:
+                        if not rstore.publisher:
+                                continue
+                        mpath = rstore.manifest(pfmri)
+                        if not mpath or not os.path.exists(mpath):
+                                continue
+                        return mpath
+                raise RepositoryManifestNotFoundError(pfmri)
+
+        def open(self, client_release, pfmri, pub=None):
+                """Starts a transaction for the specified client release and
+                FMRI.  Returns the Transaction ID for the new transaction.
+                """
+
+                try:
+                        if not isinstance(pfmri, fmri.PkgFmri):
+                                pfmri = fmri.PkgFmri(pfmri, client_release)
+                except fmri.FmriError, e:
+                        raise RepositoryInvalidFMRIError(e)
+ 
+                if pub and not pfmri.publisher:
+                        pfmri.publisher = pub
+
+                try:
+                        rstore = self.get_pub_rstore(pfmri.publisher)
+                except RepositoryUnknownPublisher, e:
+                        if not pfmri.publisher:
+                                # No publisher given in FMRI and no default
+                                # publisher so treat as invalid FMRI.
+                                raise RepositoryUnqualifiedFMRIError(pfmri)
+                        # A publisher was provided, but no repository storage
+                        # object exists yet, so add one.
+                        rstore = self.__new_rstore(pfmri.publisher)
+                return rstore.open(client_release, pfmri)
+
+        @property
+        def publishers(self):
+                """A set containing the list of publishers known to the
+                repository."""
+
+                pubs = set()
+                pub = self.cfg.get_property("publisher", "prefix")
+                if pub:
+                        pubs.add(pub)
+
+                for rstore in self.rstores:
+                        if rstore.publisher:
+                                pubs.add(rstore.publisher)
+                return pubs
+
+        def refresh_index(self, pub=None):
+                """ This function refreshes the search indexes if there any new
+                packages.
+                """
+
+                for rstore in self.rstores:
+                        if not rstore.publisher:
+                                continue
+                        if pub and rstore.publisher and rstore.publisher != pub:
+                                continue
+                        rstore.refresh_index()
+
+        def add_content(self, pub=None, refresh_index=False):
+                """Looks for packages added to the repository that are not in
+                the catalog, adds them, and then updates search data by default.
+                """
+
+                for rstore in self.rstores:
+                        if not rstore.publisher:
+                                continue
+                        if pub and rstore.publisher and rstore.publisher != pub:
+                                continue
+                        rstore.add_content(refresh_index=refresh_index)
+
+        def add_file(self, trans_id, data, size=None):
+                """Adds a file to a transaction with the specified Transaction
+                ID."""
+
+                rstore = self.get_trans_rstore(trans_id)
+                return rstore.add_file(trans_id, data=data, size=size)
+
+        def add_signing_certs(self, cert_paths, ca, pub=None):
+                """Add the certificates stored in the given paths to the
+                files in the repository and as properties of the publisher.
+                Whether the certificates are added as CA certificates or
+                intermediate certificates is determined by the 'ca' parameter.
+                """
+
+                rstore = self.get_pub_rstore(pub)
+
+                hshs = []
+                for p in cert_paths:
+                        try:
+                                # Get the hash of the cert file and then add it.
+                                hsh, s = misc.get_data_digest(p,
+                                    return_content=True)
+
+                                # The cert must be compressed first before
+                                # adding it to the repository.  The temporary
+                                # file created to do this is moved into place
+                                # by the insert.
+                                fd, pth = tempfile.mkstemp()
+                                gfh = PkgGzipFile(filename=pth, mode="wb")
+                                gfh.write(s)
+                                gfh.close()
+                                rstore.cache_store.insert(hsh, pth)
+                                hshs.append(hsh)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise apx.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.ENOENT:
+                                        raise RepositoryNoSuchFileError(
+                                            e.filename)
+                                raise
+
+                prop_name = "intermediate_certs"
+                if ca:
+                        prop_name = "signing_ca_certs"
+
+                if self.version < 4:
+                        # For older repositories, the information is stored
+                        # in the repository configuration.
+                        t = set(self.cfg.get_property("publisher", prop_name))
+                        t.update(hshs)
+                        self.cfg.set_property("publisher", prop_name, sorted(t))
+                        self.write_config()
+                        return
+
+                # For newer repositories, the certs are stored as part of the
+                # publisher's metadata.
+                pub_obj = rstore.get_publisher()
+                t = set(getattr(pub_obj, prop_name))
+                t.update(hshs)
+                setattr(pub_obj, prop_name, sorted(t))
+                rstore.update_publisher(pub_obj)
+
+        def rebuild(self, build_catalog=True, build_index=False, pub=None):
+                """Rebuilds the repository catalog and search indexes using the
+                package manifests currently in the repository.
+
+                'build_catalog' is an optional boolean value indicating whether
+                package catalogs should be rebuilt.  If True, existing search
+                data will be discarded.
+
+                'build_index' is an optional boolean value indicating whether
+                search indexes should be built.
+                """
+
+                for rstore in self.rstores:
+                        if not rstore.publisher:
+                                continue
+                        if pub and rstore.publisher and rstore.publisher != pub:
+                                continue
+                        rstore.rebuild(build_catalog=build_catalog,
+                            build_index=build_index)
+
+        def reload(self):
+                """Reloads the repository state information."""
+
+                self.__lock_repository()
+                self.__init_state()
+                self.__unlock_repository()
+
+        def remove_signing_certs(self, hshs, ca, pub=None):
+                """Remove the given hashes from the certificates configured
+                for the publisher.  Whether the hashes are removed from the
+                list of CA certificates or the list of intermediate certificates
+                is determined by the 'ca' parameter. """
+
+                rstore = self.get_pub_rstore(pub)
+
+                prop_name = "intermediate_certs"
+                if ca:
+                        prop_name = "signing_ca_certs"
+
+                if self.version < 4:
+                        # For older repositories, the information is stored
+                        # in the repository configuration.
+                        t = set(self.cfg.get_property("publisher", prop_name))
+                        t.difference_update(hshs)
+                        self.cfg.set_property("publisher", prop_name, sorted(t))
+                        self.write_config()
+                        return
+
+                # For newer repositories, the certs are stored as part of the
+                # publisher's metadata.
+                pub_obj = rstore.get_publisher()
+                t = set(getattr(pub_obj, prop_name))
+                t.difference_update(hshs)
+                setattr(pub_obj, prop_name, sorted(t))
+                rstore.update_publisher(pub_obj)
+
+        def replace_package(self, pfmri):
+                """Replaces the information for the specified FMRI in the
+                repository's catalog."""
+
+                rstore = self.get_pub_rstore(pfmri.publisher)
+                return rstore.replace_package(pfmri)
+
+        def reset_search(self, pub=None):
+                """Discards currenty loaded search data so that it will be
+                reloaded for the next search operation.
+                """
+                for rstore in self.rstores:
+                        if pub and rstore.publisher and rstore.publisher != pub:
+                                continue
+                        rstore.reset_search()
+
+        def search(self, queries, pub=None):
+                """Searches the index for each query in the list of queries.
+                Each entry should be the output of str(Query), or a Query
+                object.
+                """
+
+                rstore = self.get_pub_rstore(pub)
+                return rstore.search(queries)
+
+        def supports(self, op, ver):
+                """Returns a boolean value indicating whether the specified
+                operation is supported at the given version.
+                """
+
+                if op == "search" and self.root:
+                        return True
+                if op == "catalog" and ver == 1:
+                        # For catalog v1 to be "supported", all storage objects
+                        # must use it.
+                        for rstore in self.rstores:
+                                if rstore.catalog_version == 0:
+                                        return False
+                        return True
+                # Assume operation is supported otherwise.
+                return True
+
+        def update_publisher(self, pub):
+                """Updates the configuration information for the publisher
+                defined by the provided Publisher object.  Only supported
+                for version 4 and later repositories.
+                """
+
+                if self.mirror:
+                        raise RepositoryMirrorError()
+                if self.read_only:
+                        raise RepositoryReadOnlyError()
+                if not self.pub_root or self.version < 4:
+                        raise RepositoryUnsupportedOperationError()
+
+                # Get the repository storage area for the given publisher.
+                rstore = self.get_pub_rstore(pub.prefix)
+
+                # Update the publisher's configuration.
+                rstore.update_publisher(pub)
+
+        def valid_new_fmri(self, pfmri):
+                """Check that the FMRI supplied as an argument would be valid
+                to add to the repository catalog.  This checks to make sure
+                that any past catalog operations (such as a rename or freeze)
+                would not prohibit the caller from adding this FMRI."""
+
+                rstore = self.get_pub_rstore(pfmri.publisher)
+                return rstore.valid_new_fmri(pfmri)
 
         def write_config(self):
                 """Save the repository's current configuration data."""
@@ -1554,58 +2590,17 @@ class Repository(object):
                 finally:
                         self.__unlock_repository()
 
-        def add_signing_certs(self, cert_paths, ca, write_config=True):
-                """Add the certificates stored in the given paths to the
-                files in the repository and as properties of the publisher.
-                Whether the certificates are added as CA certificates or
-                intermediate certificates is determined by the 'ca' parameter.
-                """
-
-                hshs = []
-                
-                for p in cert_paths:
-                        # Get the hash of the file.
-                        hsh, s = misc.get_data_digest(p, return_content=True)
-                        hshs.append(hsh)
-                        if self.read_only:
-                                if not self.cache_store.lookup(hsh):
-                                        raise RepositoryReadOnlyError(hsh)
-                        else:
-                                # The temporary file is moved into place by the
-                                # insert.
-                                fd, pth = tempfile.mkstemp()
-                                gfh = PkgGzipFile(filename=pth, mode="wb")
-                                gfh.write(s)
-                                gfh.close()
-                                self.cache_store.insert(hsh, pth)
-                prop_name = "intermediate_certs"
-                if ca:
-                        prop_name = "signing_ca_certs"
-                t = set(self.cfg.get_property("publisher", prop_name))
-                t.update(hshs)
-                self.cfg.set_property("publisher", prop_name, sorted(t))
-                if write_config:
-                        self.write_config()
-
-        def remove_signing_certs(self, hshs, ca, write_config=True):
-                """Remove the given hashes from the certificates configured
-                for the publisher.  Whether the hashes are removed from the
-                list of CA certificates or the list of intermediate certificates
-                is determined by the 'ca' parameter. """
-
-                prop_name = "intermediate_certs"
-                if ca:
-                        prop_name = "signing_ca_certs"
-                t = set(self.cfg.get_property("publisher", prop_name))
-                t.difference_update(hshs)
-                self.cfg.set_property("publisher", prop_name, sorted(t))
-                if write_config:
-                        self.write_config()
-
-        catalog_root = property(__get_catalog_root, __set_catalog_root)
-        file_root = property(__get_file_root, __set_file_root)
-        repo_root = property(__get_repo_root, __set_repo_root)
-        writable_root = property(__get_writable_root, __set_writable_root)
+        catalog_requests = property(lambda self: self.__catalog_requests)
+        cfg = property(lambda self: self.__cfg)
+        file_requests = property(lambda self: self.__file_requests)
+        file_root = property(lambda self: self.__file_root)
+        manifest_requests = property(lambda self: self.__manifest_requests)
+        mirror = property(lambda self: self.__mirror, __set_mirror)
+        pub_root = property(lambda self: self.__pub_root)
+        read_only = property(lambda self: self.__read_only, __set_read_only)
+        root = property(lambda self: self.__root)
+        rstores = property(lambda self: self.__rstores.values())
+        writable_root = property(lambda self: self.__writable_root)
 
 
 class RepositoryConfig(object):
@@ -1634,6 +2629,39 @@ class RepositoryConfig(object):
         # This dictionary defines the set of default properties and property
         # groups for a repository configuration indexed by version.
         __defs = {
+            2: [
+                cfg.PropertySection("publisher", [
+                    cfg.PropPublisher("alias"),
+                    cfg.PropPublisher("prefix"),
+                ]),
+                cfg.PropertySection("repository", [
+                    cfg.PropDefined("collection_type", ["core",
+                        "supplemental"], default="core"),
+                    cfg.PropDefined("description"),
+                    cfg.PropPubURI("detailed_url"),
+                    cfg.PropPubURIList("legal_uris"),
+                    cfg.PropDefined("maintainer"),
+                    cfg.PropPubURI("maintainer_url"),
+                    cfg.PropPubURIList("mirrors"),
+                    cfg.PropDefined("name",
+                        default="package repository"),
+                    cfg.PropPubURIList("origins"),
+                    cfg.PropInt("refresh_seconds", default=14400),
+                    cfg.PropPubURI("registration_uri"),
+                    cfg.PropPubURIList("related_uris"),
+                ]),
+                cfg.PropertySection("feed", [
+                    cfg.PropUUID("id"),
+                    cfg.PropDefined("name",
+                        default="package repository feed"),
+                    cfg.PropDefined("description"),
+                    cfg.PropDefined("icon", allowed=["", "<pathname>"],
+                        default="web/_themes/pkg-block-icon.png"),
+                    cfg.PropDefined("logo", allowed=["", "<pathname>"],
+                        default="web/_themes/pkg-block-logo.png"),
+                    cfg.PropInt("window", default=24),
+                ]),
+            ],
             3: [
                 cfg.PropertySection("publisher", [
                     cfg.PropPublisher("alias"),
@@ -1669,6 +2697,14 @@ class RepositoryConfig(object):
                     cfg.PropInt("window", default=24),
                 ]),
             ],
+            4: [
+                cfg.PropertySection("publisher", [
+                    cfg.PropPublisher("prefix"),
+                ]),
+                cfg.PropertySection("repository", [
+                    cfg.PropInt("version"),
+                ]),
+            ],
         }
 
         def __new__(cls, target=None, overrides=misc.EmptyDict, version=None):
@@ -1681,24 +2717,57 @@ class RepositoryConfig(object):
                 return cfg.FileConfig(target, definitions=cls.__defs,
                     overrides=overrides, version=version)
 
-def repository_create(repo_uri):
+
+def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
         """Create a repository at given location and return the Repository
-        object for the new repository.  If the repository already exists,
-        a RepositoryExistsError will be raised.  Other errors can raise
-        exceptions of class ApiException.
+        object for the new repository.  If a repository (or directory at
+        the given location) already exists, a RepositoryExistsError will be
+        raised.  Other errors can raise exceptions of class ApiException.
         """
+
+        if isinstance(repo_uri, basestring):
+                repo_uri = publisher.RepositoryURI(misc.parse_uri(repo_uri))
 
         path = repo_uri.get_pathname()
         if not path:
                 # Bad URI?
                 raise RepositoryInvalidError(str(repo_uri))
 
+        if version is not None and (version < 3 or
+            version > CURRENT_REPO_VERSION):
+                raise RepositoryUnsupportedOperationError()
+
         try:
-                Repository(auto_create=False, read_only=True, repo_root=path)
-        except RepositoryInvalidError:
-                # No valid repository found; so create one.
-                repo = Repository(auto_create=True, repo_root=path)
-                assert os.path.exists(repo.repo_root)
-                return repo
-        # A repository isn't supposed to exist at this location.
-        raise RepositoryExistsError(path)
+                os.makedirs(path, misc.PKG_DIR_MODE)
+        except EnvironmentError, e:
+                if e.filename == path and (e.errno == errno.EEXIST or
+                    os.path.exists(e.filename)):
+                        raise RepositoryExistsError(e.filename)
+                elif e.errno == errno.EACCES:
+                        raise apx.PermissionsException(e.filename)
+                elif e.errno == errno.EROFS:
+                        raise apx.ReadOnlyFileSystemException(e.filename)
+                elif e.errno != errno.EEXIST or e.filename != path:
+                        raise
+
+        if version == 3:
+                # Version 3 repositories are expected to contain an additional
+                # set of specific directories...
+                for d in ("catalog", "file", "index", "pkg", "trans", "tmp"):
+                        misc.makedirs(os.path.join(path, d))
+
+                # ...and this file (which can be empty).
+                try:
+                        with file(os.path.join(path, "cfg_cache"), "wb") as cf:
+                                cf.write("\n")
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise apx.ReadOnlyFileSystemException(
+                                    e.filename)
+                        elif e.errno != errno.EEXIST:
+                                raise
+
+        return Repository(read_only=False, properties=properties, root=path)

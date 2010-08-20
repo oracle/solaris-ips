@@ -374,7 +374,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 # the download directory doesn't exist.
                 cache_dir = os.path.join(self.img_path, "var", "pkg",
                     "download")
-                shutil.rmtree(cache_dir)
+                shutil.rmtree(cache_dir, ignore_errors=True)
                 self.assertFalse(os.path.exists(cache_dir))
                 self._search_op(True, "fo*", self.res_remote_foo, su_wrap=True)
 
@@ -482,6 +482,12 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 index_dir_tmp = index_dir + "TMP"
                 return index_dir, index_dir_tmp
 
+        def pkgsend_bulk(self, durl, pkg):
+                # Ensure indexing is performed for every published package.
+                pkg5unittest.SingleDepotTestCase.pkgsend_bulk(self, durl, pkg,
+                    refresh_index=True)
+                self.wait_repo(self.dc.get_repodir())
+
 	def test_pkg_search_cli(self):
 		"""Test search cli options."""
 
@@ -508,7 +514,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -o search.match -a '<example_path>'", exit=2)
                 self.pkg("search -o search.match_type -p pkg", exit=2)
                 self.pkg("search -o search.match_type -a '<pkg>'", exit=1)
-                self.pkg("search -o search.match_type -a '<example_path>'", exit=2)
+                self.pkg("search -o search.match_type -a '<example_path>'",
+                    exit=2)
                 self.pkg("search -o action.foo -a pkg", exit=2)
 
         def test_remote(self):
@@ -601,9 +608,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 expected."""
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg11)
-                self.pkgsend_bulk(durl, self.incorp_pkg10)
+                self.pkgsend_bulk(durl, (self.example_pkg10, self.example_pkg11,
+                    self.incorp_pkg10))
 
                 self.image_create(durl)
 
@@ -641,8 +647,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 # This test can't be moved to t_api_search until bug 8497 has
                 # been resolved.
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.fat_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, (self.fat_pkg10, self.example_pkg10))
 
                 self.image_create(durl)
 

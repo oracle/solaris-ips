@@ -81,7 +81,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # send those changes after restarting depot 2.
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
-                self.copy_repository(d1dir, "test1", d2dir, "test2")
+                self.copy_repository(d1dir, d2dir, { "test1": "test2" })
 
                 # The new repository won't have a catalog, so rebuild it.
                 self.dcs[2].get_repo(auto_create=True).rebuild()
@@ -298,22 +298,6 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # installed for test2, and test3 shouldn't be listed since the
                 # packages in the specified repository are for publisher test2.
                 self.pkg("unset-publisher test2")
-
-                # A refresh has to be prevented here as set-publisher will not
-                # allow the provided repository URI as it is for a different
-                # publisher.  However, since this test is checking for the case
-                # where a different publisher's data is now being used for
-                # a publisher, this can be worked around.
-                self.pkg("set-publisher --no-refresh -O %s test3" % self.rurl2)
-                self.pkg("refresh test3")
-                self.pkg("list -aHf foo@1.0")
-                expected = \
-                    "foo 1.0-0 known u----\n" + \
-                    "foo (test2) 1.0-0 installed u----\n"
-                output = self.reduceSpaces(self.output)
-                self.assertEqualDiff(expected, output)
-                self.pkg("unset-publisher test3")
-                self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Uninstall the package so any remaining tests won't be
                 # impacted.
@@ -542,7 +526,7 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 with open(mpath, "rb") as mfile:
                         mcontent = mfile.read()
 
-                cat = repo.catalog
+                cat = repo.get_catalog("test")
                 cat.log_updates = False
 
                 # Update the catalog signature.

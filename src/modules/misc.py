@@ -315,11 +315,14 @@ def bytes_to_str(bytes, format=None):
                             "unit": uom
                         }
 
-def get_rel_path(request, uri):
+def get_rel_path(request, uri, pub=None):
         # Calculate the depth of the current request path relative to our base
         # uri. path_info always ends with a '/' -- so ignore it when
         # calculating depth.
-        depth = request.path_info.count("/") - 1
+        rpath = request.path_info
+        if pub:
+                rpath = rpath.replace("/%s/" % pub, "/")
+        depth = rpath.count("/") - 1
         return ("../" * depth) + uri
 
 def get_pkg_otw_size(action):
@@ -562,7 +565,8 @@ class DictProperty(object):
 
                 def values(self):
                         if self.__values is None:
-                                raise AttributeError, "can't iterate over values"
+                                raise AttributeError, "can't iterate over " \
+                                    "values"
                         return self.__values(self.__obj)
 
                 def get(self, key, default=None):
@@ -736,6 +740,53 @@ def config_temp_root():
 
         return default_root
 
+def parse_uri(uri):
+        """Parse the repository location provided and attempt to transform it
+        into a valid repository URI.
+        """
+
+        if uri.find("://") == -1 and not uri.startswith("file:/"):
+                # Convert the file path to a URI.
+                uri = os.path.abspath(uri)
+                uri = urlparse.urlunparse(("file", "",
+                    urllib.pathname2url(uri), "", "", ""))
+
+        scheme, netloc, path, params, query, fragment = \
+            urlparse.urlparse(uri, "file", allow_fragments=0)
+        scheme = scheme.lower()
+
+        if scheme == "file":
+                # During urlunparsing below, ensure that the path starts with
+                # only one '/' character, if any are present.
+                if path.startswith("/"):
+                        path = "/" + path.lstrip("/")
+
+        # Rebuild the URI with the sanitized components.
+        return urlparse.urlunparse((scheme, netloc, path, params,
+            query, fragment))
+
+
+def makedirs(pathname):
+        """Create a directory at the specified location if it does not
+        already exist (including any parent directories) re-raising any
+        unexpected exceptions as ApiExceptions.
+        """
+
+        try:
+                os.makedirs(pathname, PKG_DIR_MODE)
+        except EnvironmentError, e:
+                if e.filename == pathname and (e.errno == errno.EEXIST or
+                    os.path.exists(e.filename)):
+                        return
+                elif e.errno == errno.EACCES:
+                        raise api_errors.PermissionsException(
+                            e.filename)
+                elif e.errno == errno.EROFS:
+                        raise api_errors.ReadOnlyFileSystemException(
+                            e.filename)
+                elif e.errno != errno.EEXIST or e.filename != pathname:
+                        raise
+
 class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.
         See http://en.wikipedia.org/wiki/Singleton_pattern """
@@ -746,7 +797,8 @@ class Singleton(type):
  
         def __call__(self, *args, **kw):
                 if self.instance is None:
-                        self.instance = super(Singleton, self).__call__(*args, **kw)
+                        self.instance = super(Singleton, self).__call__(*args,
+                            **kw)
  
                 return self.instance
 

@@ -491,6 +491,23 @@ close
                                     str(proposed_answer - correct_answer))
                         self.assertEqual(correct_answer, proposed_answer)
 
+        def _get_repo_index_dir(self):
+                depotpath = self.dc.get_repodir()
+                repo = self.dc.get_repo()
+                rstore = repo.get_pub_rstore("test")
+                return rstore.index_root
+
+        def _get_repo_writ_dir(self):
+                depotpath = self.dc.get_repodir()
+                repo = self.dc.get_repo()
+                rstore = repo.get_pub_rstore("test")
+                return rstore.writable_root
+
+        def _get_repo_catalog(self):
+                repo = self.dc.get_repo()
+                rstore = repo.get_pub_rstore("test")
+                return rstore.catalog
+
         @staticmethod
         def _replace_act(act):
                 if act.startswith('set name=pkg.fmri'):
@@ -1239,20 +1256,21 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
         def pkgsend_bulk(self, durl, pkg, optional=True):
                 if pkg not in self.sent_pkgs or optional == False:
                         self.sent_pkgs.add(pkg)
-                        TestApiSearchBasics.pkgsend_bulk(self, durl, pkg)
+                        # Ensures indexing is done for every pkgsend.
+                        TestApiSearchBasics.pkgsend_bulk(self, durl, pkg,
+                            refresh_index=True)
+                        self.wait_repo(self.dc.get_repodir())
 
         def setUp(self):
                 TestApiSearchBasics.setUp(self)
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.fat_pkg10)
-                self.pkgsend_bulk(durl, self.another_pkg10)
+                self.pkgsend_bulk(durl, (self.example_pkg10, self.fat_pkg10,
+                    self.another_pkg10))
 
         def test_010_remote(self):
                 """Test remote search."""
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
-                time.sleep(1)
                 # This should be a full test to test all functionality.
                 self._run_full_remote_tests(api_obj)
                 self._search_op(api_obj, True, ":file::", self.res_remote_file)
@@ -1505,7 +1523,6 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 api_obj = self.image_create(durl)
 
                 self._api_install(api_obj, ["space_pkg"])
-                time.sleep(1)
 
                 self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
                 api_obj.refresh(immediate=True)
@@ -1522,14 +1539,12 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._search_op(api_obj, remote, 'unique_dir',
                     self.res_space_unique)
                 remote = True
-                time.sleep(1)
                 self._search_op(api_obj, remote, 'with', set())
                 self._search_op(api_obj, remote, 'with*',
                     self.res_space_with_star)
                 self._search_op(api_obj, remote, '*space',
                     self.res_space_space_star)
                 self._search_op(api_obj, remote, 'space', set())
-                time.sleep(1)
                 self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
                 # Need to add install of subsequent package and
                 # local side search as well as remote
@@ -1725,11 +1740,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                             case_sensitive=False)
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.cat_pkg10)
-                self.pkgsend_bulk(durl, self.cat2_pkg10)
-                self.pkgsend_bulk(durl, self.cat3_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
+                self.pkgsend_bulk(durl, (self.cat_pkg10, self.cat2_pkg10,
+                    self.cat3_pkg10, self.bad_cat_pkg10, self.bad_cat2_pkg10))
                 api_obj = self.image_create(durl)
 
                 remote = True
@@ -1757,29 +1769,31 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Checks whether incremental update generates wrong
                 additional lines."""
                 durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                ind_dir = os.path.join(depotpath, "index")
+                ind_dir = self._get_repo_index_dir()
                 tok_file = os.path.join(ind_dir, ss.BYTE_OFFSET_FILE)
                 main_file = os.path.join(ind_dir, ss.MAIN_FILE)
+
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(2)
                 fh = open(tok_file)
                 tok_1 = fh.readlines()
                 tok_len = len(tok_1)
                 fh.close()
+
                 fh = open(main_file)
                 main_1 = fh.readlines()
                 main_len = len(main_1)
+
                 self.pkgsend_bulk(durl, self.example_pkg10, optional=False)
-                time.sleep(2)
                 fh = open(tok_file)
                 tok_2 = fh.readlines()
                 new_tok_len = len(tok_2)
                 fh.close()
+
                 fh = open(main_file)
                 main_2 = fh.readlines()
                 new_main_len = len(main_2)
                 fh.close()
+
                 # Since the server now adds a set action for the FMRI to
                 # manifests during publication, there should be one
                 # additional line for the token file.
@@ -1790,7 +1804,6 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Test for known bug 983."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bug_983_manifest)
-                time.sleep(2)
                 api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "gmake", self.res_bug_983)
@@ -1839,9 +1852,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 """Tests that field queries and phrase queries work together.
                 """
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bug_8492_manf_1)
-                self.pkgsend_bulk(durl, self.bug_8492_manf_2)
-                time.sleep(2)
+                self.pkgsend_bulk(durl, (self.bug_8492_manf_1,
+                    self.bug_8492_manf_2))
                 api_obj = self.image_create(durl)
 
                 self._search_op(api_obj, True, "set::'image packaging'",
@@ -2046,9 +2058,6 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.hierarchical_named_pkg)
                 api_obj = self.image_create(durl)
 
-                # XXX wait for depot to be ready.
-                time.sleep(1)
-
                 remote = True
                 run_tests(api_obj, remote)
                 self._api_install(api_obj, ["pfoo"])
@@ -2063,6 +2072,12 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
         def setUp(self):
                 self.debug_features = ["headers"]
                 TestApiSearchBasics.setUp(self)
+
+        def pkgsend_bulk(self, durl, pkg):
+                # Ensures indexing is done for every pkgsend.
+                TestApiSearchBasics.pkgsend_bulk(self, durl, pkg,
+                    refresh_index=True)
+                self.wait_repo(self.dc.get_repodir())
 
         def test_local_image_update(self):
                 """Test that the index gets updated by image-update and
@@ -2086,50 +2101,10 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
 
                 self._run_local_tests_example11_installed(api_obj)
 
-        def test_bug_4048_1(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                api_obj = self.image_create(durl)
-                self._run_remote_empty_tests(api_obj)
-                os.rmdir(tmp_dir)
-                offset = 2
-                depot_logfile = os.path.join(self.test_root,
-                    "depot_logfile%d" % offset)
-                tmp_dc = self.prep_depot(12000 + offset, depotpath,
-                    depot_logfile, refresh_index=True, start=True)
-                time.sleep(1)
-                # This should do something other than sleep for 1 sec
-                self._run_remote_tests(api_obj)
-                tmp_dc.kill()
-
-        def test_bug_4048_2(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                api_obj = self.image_create(durl)
-                self._run_remote_empty_tests(api_obj)
-                os.rmdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(2)
-                self._run_remote_tests(api_obj)
-                self._search_op(api_obj, True, "unique_dir",
-                    self.res_space_unique)
-                self._search_op(api_obj, True, "with*",
-                    self.res_space_with_star)
-
         def test_bug_6177(self):
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg11)
-                self.pkgsend_bulk(durl, self.incorp_pkg10)
-                self.pkgsend_bulk(durl, self.incorp_pkg11)
+                self.pkgsend_bulk(durl, (self.example_pkg10, self.example_pkg11,
+                    self.incorp_pkg10, self.incorp_pkg11))
                 api_obj = self.image_create(durl)
 
                 res_both_actions = set([
@@ -2239,20 +2214,17 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self._search_op(api_obj, True, "</bin>", res_both_packages,
                     return_actions=False, prune_versions=False)
 
-        def __corrupt_depot(self, ind_dir):
+        def __corrupt_depot(self, root):
                 self.dc.stop()
-                if os.path.exists(os.path.join(ind_dir, ss.MAIN_FILE)):
-                        shutil.move(os.path.join(ind_dir, ss.MAIN_FILE),
-                            os.path.join(ind_dir, "main_dict.ascii.v1"))
+                for entry in os.walk(root):
+                        dirpath, dirnames, fnames = entry
+                        if ss.MAIN_FILE in fnames:
+                                src = os.path.join(dirpath, ss.MAIN_FILE)
+                                dest = os.path.join(dirpath,
+                                    "main_dict.ascii.v1")
+                                self.debug("moving %s to %s" % (src, dest))
+                                shutil.move(src, dest)
                 self.dc.start()
-
-        def __wait_for_indexing(self, d):
-                init_time = time.time()
-                there = True
-                while there and ((time.time() - init_time) < 10):
-                        there = os.path.exists(d)
-                self.assert_(not there)
-                time.sleep(1)
 
         def test_bug_7358_1(self):
                 """Move files so that an inconsistent index is created and
@@ -2260,22 +2232,26 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 doesn't stack trace when it can't write to the directory."""
 
                 durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                ind_dir = os.path.join(depotpath, "index")
+                repo_path = self.dc.get_repodir()
+
                 api_obj = self.image_create(durl)
                 # Check when depot is empty.
-                self.__corrupt_depot(ind_dir)
-                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                self.__corrupt_depot(repo_path)
+                repo = self.dc.get_repo() # Every time to ensure current state.
+                repo.refresh_index()
                 # Since the depot is empty, should return no results but
                 # not error.
                 self._search_op(api_obj, True, 'e*', set())
 
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                repo = self.dc.get_repo() # Every time to ensure current state.
+                repo.refresh_index()
+                self.dc.refresh()
 
                 # Check when depot contains a package.
-                self.__corrupt_depot(ind_dir)
-                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                self.__corrupt_depot(repo_path)
+                repo = self.dc.get_repo() # Every time to ensure current state.
+                repo.refresh_index()
                 self._run_remote_tests(api_obj)
 
         def test_bug_7358_2(self):
@@ -2283,30 +2259,28 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 with writable root."""
 
                 durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                ind_dir = os.path.join(depotpath, "index")
-                shutil.rmtree(ind_dir)
+                repo_path = self.dc.get_repodir()
+                ind_dir = self._get_repo_index_dir()
+                if os.path.exists(ind_dir):
+                        shutil.rmtree(ind_dir)
                 writable_root = os.path.join(self.test_root,
                     "writ_root")
-                writ_dir = os.path.join(writable_root, "index")
                 self.dc.set_writable_root(writable_root)
 
                 api_obj = self.image_create(durl)
 
                 # Check when depot is empty.
+                writ_dir = self._get_repo_writ_dir()
                 self.__corrupt_depot(writ_dir)
                 # Since the depot is empty, should return no results but
                 # not error.
                 self.assert_(not os.path.isdir(ind_dir))
-                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
                 self._search_op(api_obj, True, 'e*', set())
 
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
 
                 # Check when depot contains a package.
                 self.__corrupt_depot(writ_dir)
-                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
                 self.assert_(not os.path.isdir(ind_dir))
                 self._run_remote_tests(api_obj)
 
@@ -2317,9 +2291,6 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 uuids = []
                 for p in api_obj.img.gen_publishers():
                         uuids.append(p.client_uuid)
-
-                # XXX wait for depot to be ready.
-                time.sleep(1)
 
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
@@ -2427,37 +2398,36 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 frequently than they should."""
 
                 durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                ind_dir = os.path.join(depotpath, "index")
-                repo = srepo.Repository(repo_root=depotpath, read_only=True,
-                    fork_allowed=False, refresh_index=False)
+                ind_dir = self._get_repo_index_dir()
 
                 # Check that an empty index works correctly.
-                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                fmris = indexer.Indexer.check_for_updates(ind_dir,
+                    self._get_repo_catalog())
                 self.assertEqual(set(), fmris)
 
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
-                repo = srepo.Repository(repo_root=depotpath, fork_allowed=False)
-                self.assertEqual(len(set(repo.catalog.fmris())), 1)
+                cat = self._get_repo_catalog()
+                self.assertEqual(len(set(cat.fmris())), 1)
                 # Check that after publishing one package, no packages need
                 # indexing.
-                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                fmris = indexer.Indexer.check_for_updates(ind_dir,
+                    self._get_repo_catalog())
                 self.assertEqual(set(), fmris)
                 
                 back_dir = ind_dir + ".BACKUP"
                 shutil.copytree(ind_dir, back_dir)
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                repo = srepo.Repository(repo_root=depotpath, fork_allowed=False)
-                self.assertEqual(len(set(repo.catalog.fmris())), 2)
+                cat = self._get_repo_catalog()
+                self.assertEqual(len(set(cat.fmris())), 2)
                 # Check that publishing a second package also works.
-                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                fmris = indexer.Indexer.check_for_updates(ind_dir,
+                    self._get_repo_catalog())
                 self.assertEqual(set(), fmris)
 
                 # Check that a package that was publisher but not index is
                 # reported.
                 fmris = indexer.Indexer.check_for_updates(back_dir,
-                    repo.catalog)
+                    self._get_repo_catalog())
                 self.assertEqual(len(fmris), 1)
 
 
@@ -2480,7 +2450,9 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
-                self.pkgsend_bulk(self.durl2, self.example_pkg10)
+                self.pkgsend_bulk(self.durl2, self.example_pkg10,
+                    refresh_index=True)
+                self.wait_repo(self.dcs[2].get_repodir())
 
                 self.image_create(self.durl1, prefix="test1")
                 self.pkg("set-publisher -O " + self.durl2 + " test2")
