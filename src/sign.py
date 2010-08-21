@@ -289,8 +289,7 @@ def main_func():
                         else:
                                 return EXIT_OOPS
                 return EXIT_OK
-        except (api_errors.TransportError,
-            api_errors.UnsupportedRepositoryURI),e:
+        except api_errors.ApiException, e:
                 error(e)
                 return EXIT_OOPS
         finally:

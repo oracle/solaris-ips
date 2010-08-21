@@ -629,6 +629,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "name": plist[0]
                     }, exit=2)
 
+                # Test that passing a repo that doesn't exist doesn't cause
+                # a traceback.
+                self.pkgsign("http://foobar.baz",
+                    "%(name)s" % { "name": plist[0] }, exit=1)
+
                 # Test that passing neither sign-all nor a fmri results in an
                 # error.
                 self.pkgsign(self.durl1, "", exit=2)
