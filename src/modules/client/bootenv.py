@@ -33,12 +33,17 @@ import pkg.pkgsubprocess as subprocess
 
 # Since pkg(1) may be installed without libbe installed
 # check for libbe and import it if it exists.
-
 try:
-        import libbe as be
+        # First try importing using the new name (b147+)...
+        import libbe_py as be
 except ImportError:
-        # All recovery actions are disabled when libbe can't be imported.
-        pass
+        try:
+                # ...then try importing using the old name (pre 147).
+                import libbe as be
+        except ImportError:
+                # All recovery actions are disabled when libbe can't be
+                # imported.
+                pass
 
 class BootEnv(object):
 
@@ -49,12 +54,12 @@ class BootEnv(object):
         Recovery is only enabled for ZFS filesystems. Any operation
         attempted on UFS will not be handled by BootEnv.
 
-        This class makes use of usr/lib/python*/vendor-packages/libbe.so
-        as the python wrapper for interfacing with usr/lib/libbe. Both
-        libraries are delivered by the SUNWinstall-libs package. This
-        package is not required for pkg(1) to operate successfully. It is
-        soft required, meaning if it exists the bootenv class will attempt
-        to provide recovery support."""
+        This class makes use of usr/lib/python*/vendor-packages/libbe_py.so as
+        the python wrapper for interfacing with usr/lib/libbe.  Both libraries
+        are delivered by the SUNWinstall-libs package (or by the install/beadm
+        package in newer builds).  This package is not required for pkg(1) to
+        operate successfully.  It is soft required, meaning if it exists the
+        bootenv class will attempt to provide recovery support."""
 
         def __init__(self, root):
                 self.be_name = None
