@@ -1353,11 +1353,20 @@ class ImageInterface(object):
                     ordered=True, pubs=pubs):
                         pub, stem, ver = t
 
-                        pkg_stem = "!".join((pub, stem))
-                        nlist[pkg_stem] += 1
-
                         omit_ver = False
                         omit_package = None
+
+                        pkg_stem = "!".join((pub, stem))
+                        if newest and pat_versioned and pkg_stem in nlist:
+                                # A newer version has already been listed and
+                                # because a pattern with a version was specified
+                                # any additional entries need to be marked for
+                                # omission before continuing.
+                                omit_package = True
+                                omit_ver = True
+                        else:
+                                nlist[pkg_stem] += 1
+
                         if raise_unmatched:
                                 pkg_matching_pats = set()
                         if not omit_package:
@@ -1430,7 +1439,8 @@ class ImageInterface(object):
 
                         if omit_package:
                                 # Package didn't match critera; skip it.
-                                if filter_cb is not None and omit_ver and \
+                                if (filter_cb is not None or (newest and
+                                    pat_versioned)) and omit_ver and \
                                     nlist[pkg_stem] == 1:
                                         # If omitting because of version, and
                                         # no other versions have been returned

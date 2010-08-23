@@ -498,16 +498,16 @@ add set name=pkg.description value="%(desc)s"
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
-                    api_obj=api_obj, patterns=["apple@1.1", "bat/bar",
+                    api_obj=api_obj, patterns=["baz@1.0", "bat/bar",
                         "corge@1.0"], variants=True)
 
                 expected = [
-                    self.__get_exp_pub_entry("test1", 2, "apple", "1.1,5.11-0"),
-                    self.__get_exp_pub_entry("test2", 2, "apple", "1.1,5.11-0"),
                     self.__get_exp_pub_entry("test1", 7, "bat/bar",
                         "1.2,5.11-0"),
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
+                    self.__get_exp_pub_entry("test1", 9, "baz", "1.0.1,5.11"),
+                    self.__get_exp_pub_entry("test2", 9, "baz", "1.0.1,5.11"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11"),
                 ]
