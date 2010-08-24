@@ -8,10 +8,14 @@ SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
      /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-index]
-         [--no-refresh] pkg_fmri_pattern ...
-     /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
+         [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
+         pkg_fmri_pattern ...
+     /usr/bin/pkg uninstall [-nrvq] [--no-index] 
+         [--deny-new-be | --require-new-be] [--be-name name] 
+         pkg_fmri_pattern ...
 
      /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
+         [--deny-new-be | --require-new-be]
          [--licenses] [--no-index] [--no-refresh]
 
      /usr/bin/pkg refresh [--full] [publisher ...]
@@ -35,11 +39,13 @@ SYNOPSIS
          (-p|--publisher) [<name>=]<repo_uri> dir
 
      /usr/bin/pkg variant [-H] [<variant_spec>]
-     /usr/bin/pkg change-variant [-nvq] [--accept] [--be-name name]
+     /usr/bin/pkg change-variant [-nvq] [--accept]
+         [--deny-new-be | --require-new-be] [--be-name name]
          [--licenses] <variant_spec>=<instance> ...
 
      /usr/bin/pkg facet [-H] [<facet_spec>]
      /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name]
+         [--deny-new-be | --require-new-be]
          [--licenses] <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg set-property propname propvalue
@@ -167,7 +173,7 @@ SUBCOMMANDS
           With --facet, set the specified facet to the indicated value.
 
      image-update [-fnvq] [--accept] [--be-name name] [--licenses]
-       [--no-index] [--no-refresh]
+       [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
           Update all installed packages in the current image to the
           latest available version.
 
@@ -188,6 +194,12 @@ SUBCOMMANDS
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
+          With --require-new-be, always create a new boot environment.
+          
+          With --deny-new-be, disallow creation of a new boot environment;
+          the upgrade will not be performed if a new boot environment is
+          required.
+
           With --licenses, display all of the licenses for the packages that
           will be installed or updated as part of this operation.
 
@@ -207,8 +219,9 @@ SUBCOMMANDS
           incremental update.
 
      install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-       pkg_fmri_pattern ...
-     uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
+       [--deny-new-be | --require-new-be] [--be-name] pkg_fmri_pattern ...
+     uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be] 
+       [--be-name name ] be-name pkg_fmri_pattern ...
           Install or remove the package specified by pkg_fmri_pattern or
           matching it as a substring.  With the -n option, execute the
           requested operation but make no persistent changes to the
@@ -235,6 +248,17 @@ SUBCOMMANDS
           With --no-refresh, do not attempt to contact the repositories for
           the image's publishers to retrieve publisher metadata (e.g.
           catalogs).
+
+          With --be-name, rename the newly created boot environment to be the
+          argument given.  This option is only valid if a new boot environment
+          is created during image update.  See also beadm(1m).
+
+          With --require-new-be, always create a new boot environment.  Without
+          this option, a boot environment is created automatically if needed.
+          
+          With --deny-new-be, disallow creation of a new boot environment;
+          the operation will not be performed if a new boot environment is
+          required.
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -511,6 +535,13 @@ SUBCOMMANDS
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
+          With --require-new-be, always create a new boot environment.  Without
+          this option, a new boot environment is only created if needed.
+          
+          With --deny-new-be, disallow creation of a new boot environment;
+          the operation will not be performed if a new boot environment is
+          required.
+
      facet [-H] [<facet_spec> ...]
           Without arguments, displays the current values of all facets.  With
           argument(s), evaluate if each facet would be true or false and print
@@ -540,6 +571,13 @@ SUBCOMMANDS
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
           is created during the operation. See also beadm(1m).
+
+          With --require-new-be, always create a new boot environment.  Without
+          this option, a new boot environment is only created if needed.
+          
+          With --deny-new-be, disallow creation of a new boot environment;
+          the operation will not be performed if a new boot environment is
+          required.
 
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.

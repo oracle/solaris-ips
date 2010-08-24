@@ -1150,13 +1150,13 @@ class Image(object):
                         if errors or warnings or info:
                                 yield act, errors, warnings, info
 
-        def __call_imageplan_evaluate(self, ip, verbose=False):
+        def __call_imageplan_evaluate(self, ip):
                 # A plan can be requested without actually performing an
                 # operation on the image.
                 if self.history.operation_name:
                         self.history.operation_start_state = ip.get_plan()
 
-                ip.evaluate(verbose)
+                ip.evaluate()
 
                 self.imageplan = ip
 
@@ -1164,11 +1164,8 @@ class Image(object):
                         self.history.operation_end_state = \
                             ip.get_plan(full=False)
 
-                if verbose:
-                        ip.display()
-
         def image_change_varcets(self, variants, facets, progtrack, check_cancelation,
-            noexecute, verbose=False):
+            noexecute):
 
                 # Allow garbage collection of previous plan.
                 self.imageplan = None
@@ -1189,7 +1186,7 @@ class Image(object):
 
                 try:
                         ip.plan_change_varcets(variants, facets)
-                        self.__call_imageplan_evaluate(ip, verbose)
+                        self.__call_imageplan_evaluate(ip)
                 except api_errors.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
@@ -2539,7 +2536,7 @@ class Image(object):
                 return olist, onames
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute, verbose=False):
+            noexecute):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
@@ -2563,18 +2560,17 @@ class Image(object):
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
                 except api_errors.ApiException:
-                        ip.show_failure(verbose)
                         raise
 
                 try:
-                        self.__call_imageplan_evaluate(ip, verbose)
+                        self.__call_imageplan_evaluate(ip)
                 except api_errors.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
         def make_update_plan(self, progtrack, check_cancelation,
-            noexecute, verbose=False):
+            noexecute):
                 """Create a plan to update all packages as far as
                 possible."""
 
@@ -2591,14 +2587,14 @@ class Image(object):
 
                 try:
                         ip.plan_update()
-                        self.__call_imageplan_evaluate(ip, verbose)
+                        self.__call_imageplan_evaluate(ip)
                 except api_errors.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
                         raise api_errors.InvalidPackageErrors([e])
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
-            progtrack, check_cancelation, noexecute, verbose=False):
+            progtrack, check_cancelation, noexecute):
                 """Create uninstall plan to remove the specified packages;
                 do so recursively iff recursive_removal is set"""
 
@@ -2615,7 +2611,7 @@ class Image(object):
 
                 try:
                         ip.plan_uninstall(fmri_list, recursive_removal)
-                        self.__call_imageplan_evaluate(ip, verbose)
+                        self.__call_imageplan_evaluate(ip)
                 except api_errors.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:

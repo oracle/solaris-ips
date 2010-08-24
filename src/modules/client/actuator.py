@@ -136,7 +136,8 @@ class Actuator(GenericActuator):
                 self.do_nothing = True
                 self.cmd_path = ""
 
-        def __str__(self):
+        def get_list(self):
+                """Returns a list of actuator value pairs, suitable for printing"""
                 def check_val(dfmri):
                         # For actuators which are a single, global function that
                         # needs to get executed, simply print true.
@@ -155,12 +156,19 @@ class Actuator(GenericActuator):
                         merge["reboot-needed"] = set(["true"])
                 else:
                         merge["reboot-needed"] = set(["false"])
+                return [(fmri, smf)
+                        for fmri in merge
+                        for smf in merge[fmri]
+                        ]
 
-                return "\n".join([
-                    "  %16s: %s" % (fmri, smf)
-                    for fmri in merge
-                    for smf in merge[fmri]
-                ])
+        def get_services_list(self):
+                """Returns a list of services that would be restarted"""
+                return [(fmri, smf) for fmri, smf in self.get_list() 
+                    if smf not in ["true", "false"]]
+
+        def __str__(self):
+                return "\n".join("  %16s: %s" % (fmri, smf) 
+                    for fmri, smf in self.get_list())
 
         def reboot_needed(self):
                 return bool("true" in self.update.get("reboot-needed", [])) or \

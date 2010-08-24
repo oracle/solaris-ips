@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 42
+CLIENT_API_VERSION = 43
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -144,11 +144,13 @@ Usage:
 
 Basic subcommands:
         pkg install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+            [--deny-new-be | --require-new-be] [--be-name name]
             pkg_fmri_pattern ...
-        pkg uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
+        pkg uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be] 
+            [--be-name name] pkg_fmri_pattern ...
         pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
         pkg image-update [-fnvq] [--accept] [--be-name name] [--licenses]
-            [--no-index] [--no-refresh]
+            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
         pkg refresh [--full] [publisher ...]
         pkg version
 
@@ -156,7 +158,7 @@ Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
         pkg search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
-        pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
+        pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...] 
         pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
             [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
         pkg image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
@@ -166,9 +168,9 @@ Advanced subcommands:
             [--facet <facet_spec>=[True|False] ...]
             (-p|--publisher) [<name>=]<repo_uri> dir
         pkg change-variant [-nvq] [--accept] [--be-name name] [--licenses]
-            <variant_spec>=<instance> ...
+            [--deny-new-be | --require-new-be] <variant_spec>=<instance> ...
         pkg change-facet [-nvq] [--accept] [--be-name name] [--licenses]
-            <facet_spec>=[True|False|None] ...
+            [--deny-new-be | --require-new-be] <facet_spec>=[True|False|None] ...
         pkg variant [-H] [<variant_spec>]
         pkg facet [-H] [<facet_spec>]
         pkg set-property propname propvalue
@@ -250,7 +252,7 @@ def list_inventory(img, args):
         refresh_catalogs = True
         pkg_list = api.ImageInterface.LIST_INSTALLED
         summary = False
-        verbose = False
+        verbose = 0
         variants = False
 
         ltypes = set()
@@ -269,7 +271,7 @@ def list_inventory(img, args):
                 elif opt == "-u":
                         ltypes.add(opt)
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
 
@@ -642,7 +644,8 @@ def fix_image(img, args):
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
 
-        quiet = verbose = False
+        quiet = False 
+        verbose = 0
         # for now, always check contents of files
         forever = display_headers = True
 
@@ -650,16 +653,16 @@ def verify_image(img, args):
                 if opt == "-H":
                         display_headers = False
                 if opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-f":
                         forever = True
                 elif opt == "-q":
-                        quiet = True
+                        quiet = True                        
                         display_headers = False
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="verify")
-
+        
         api_inst = __api_alloc(img, quiet=quiet)
         if api_inst == None:
                 return EXIT_OOPS
@@ -768,6 +771,90 @@ def accept_plan_licenses(api_inst):
                         continue
                 api_inst.set_plan_license_status(pfmri, dest.license,
                     accepted=True)
+
+display_plan_options = ["basic", "fmris", "variants/facets", "services", "actions"]
+
+def display_plan(api_inst, verbose):
+        """Helper function to display plan to the desired degree.
+        Verbose can either be a numerical value, or a list of
+        items to display"""
+
+        if isinstance(verbose, int):
+                disp = ["basic"]
+                if verbose > 0:
+                        disp.extend(["fmris", "services", "variants/facets"])
+                if verbose > 1:
+                        disp.extend(["actions"])
+        else:
+                disp = verbose
+
+        plan = api_inst.describe()
+        
+        a, r, i, c = [], [], [], []
+
+        for src, dest in plan.get_changes():
+                if dest is None:
+                        r.append((src, dest))
+                elif src is None:
+                        i.append((src, dest))
+                elif str(src) != str(dest):
+                        c.append((src, dest))
+                else:
+                        a.append((src, dest))
+        v = plan.get_varcets()
+
+        if "basic" in disp:
+                def cond_show(s, v):
+                        if v:
+                                logger.info(s % v)
+                
+                cond_show(_("                Packages to remove: %5d"), len(r))
+                cond_show(_("               Packages to install: %5d"), len(i))
+                cond_show(_("                Packages to update: %5d"), len(c))
+                cond_show(_("         Variants/facets to change: %5d"), len(v))
+                if len(v):
+                        s = "                Packages to change: %5d"
+                else:
+                        s = "                   Packages to fix: %5d"
+                cond_show(s, len(a))
+                if plan.new_be:
+                        s = _("Yes")
+                else:
+                        s = _("No")
+
+                logger.info(_("           Create boot environment: %5s") % s)
+
+                if not plan.new_be:
+                        cond_show(_("               Services to restart: %5d"), len(plan.get_services()))
+
+        if "variants/facets" in disp and v:
+                logger.info(_("Changed variants/facets:"))
+                for x in v:
+                        logger.info("  %s" % x)
+
+        if "fmris" in disp:
+                if len(c) + len(r) + len(i) > 0:
+                        logger.info(_("Changed fmris:"))
+                        for src, dest in r + i + c:
+                                logger.info("  %s -> %s", src, dest)
+                if len(a):
+                        logger.info(_("Affected fmris:"))
+                        for src, dest in a:
+                                logger.info("  %s", src)
+                                        
+        if "services" in disp:
+                if not plan.new_be:
+                        logger.info(_("Services:"))
+                        l = plan.get_services()
+                        if l:
+                                for a in l:
+                                        logger.info("  %s" % a)
+                        else:
+                                logger.info(_("  None"))
+        if "actions" in disp:
+                logger.info("Actions")
+                for a in plan.get_actions():
+                        logger.info("  %s" % a)
 
 def display_plan_licenses(api_inst, show_all=False):
         """Helper function to display licenses for the current plan.
@@ -899,59 +986,70 @@ def __api_alloc(img, quiet=False):
                 return None
         return api_inst
 
-def __api_plan_exception(op, noexecute):
+def __api_plan_exception(op, api_inst, noexecute, verbose):
         e_type, e, e_traceback = sys.exc_info()
 
         if e_type == api_errors.ImageNotFoundException:
                 error(_("No image rooted at '%s'") % e.user_dir)
-                return False
+                return EXIT_OOPS
         if e_type == api_errors.InventoryException:
                 error(_("%s failed (inventory exception):\n%s") % (op, e))
-                return False
+                return EXIT_OOPS
         if e_type == api_errors.IpkgOutOfDateException:
                 msg(_("""\
 WARNING: pkg(5) appears to be out of date, and should be updated before
 running %(op)s.  Please update pkg(5) using 'pfexec pkg install
 pkg:/package/pkg' and then retry the %(op)s."""
                     ) % locals())
-                return False
+                return EXIT_OOPS
         if e_type == api_errors.NonLeafPackageException:
                 error(_("""\
 Cannot remove '%s' due to the following packages that depend on it:"""
-                    ) % e[0])
-                for d in e[1]:
+                    ) % e.fmri)
+                for d in e.dependents:
                         logger.error("  %s" % d)
-                return False
+                return EXIT_OOPS
         if e_type == api_errors.CatalogRefreshException:
                 if display_catalog_failures(e) != 0:
-                        return False
+                        return EXIT_OOPS
                 if noexecute:
-                        return True
-                return False
+                        return EXIT_OK
+                return EXIT_OOPS
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors):
                 error("\n" + str(e))
-                return False
+                return EXIT_OOPS
+
+        if e_type == api_errors.ImageUpdateOnLiveImageException:
+                logger.error("The proposed operation cannot be performed on a live image.")
+                return EXIT_NOTLIVE
+
         if issubclass(e_type, api_errors.BEException):
                 error(_(e))
-                return False
+                return EXIT_OOPS
+
+        if e_type == api_errors.PlanCreationException:
+                error(_(e))
+                if verbose:
+                        logger.error("\n".join(e.verbose_info))
+                return EXIT_OOPS
+
         if e_type in (api_errors.CertificateError,
             api_errors.UnknownErrors,
-            api_errors.PlanCreationException,
             api_errors.PermissionsException,
             api_errors.InvalidPropertyValue,
             api_errors.InvalidResourceLocation):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return False
+                return EXIT_OOPS
         if e_type == fmri.IllegalFmri:
                 error(e, cmd=op)
-                return False
+                return EXIT_OOPS
         if isinstance(e, api_errors.SigningException):
                 error(e)
-                return False
+                return EXIT_OOPS
 
         # if we didn't deal with the exception above, pass it on.
         raise
@@ -963,15 +1061,17 @@ def change_variant(img, args):
 
         op = "change-variant"
         opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
-            "licenses"])
+            "licenses", "deny-new-be", "require-new-be"])
 
-        accept = quiet = noexecute = show_licenses = verbose = False
+        accept = quiet = noexecute = show_licenses = False
+        verbose = 0
         be_name = None
+        new_be = None
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-q":
                         quiet = True
                 elif opt == "--accept":
@@ -980,6 +1080,10 @@ def change_variant(img, args):
                         be_name = arg
                 elif opt == "--licenses":
                         show_licenses = True
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
@@ -1012,15 +1116,20 @@ def change_variant(img, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants,
-                    facets=None, noexecute=noexecute, verbose=verbose,
-                    be_name=be_name)
+                    facets=None, noexecute=noexecute, be_name=be_name, 
+                    new_be=new_be)
         except:
-                if not __api_plan_exception(op, noexecute=noexecute):
-                        return EXIT_OOPS
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
 
         if not stuff_to_do:
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
 
         if noexecute:
                 if show_licenses:
@@ -1044,15 +1153,17 @@ def change_facet(img, args):
 
         op = "change-facet"
         opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
-            "licenses"])
+            "licenses", "deny-new-be", "require-new-be"])
 
-        accept = quiet = noexecute = show_licenses = verbose = False
+        accept = quiet = noexecute = show_licenses = False
+        verbose = 0
         be_name = None
+        new_be = None
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-q":
                         quiet = True
                 elif opt == "--accept":
@@ -1061,6 +1172,10 @@ def change_facet(img, args):
                         be_name = arg
                 elif opt == "--licenses":
                         show_licenses = True
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
@@ -1105,15 +1220,20 @@ def change_facet(img, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants=None,
-                    facets=facets, noexecute=noexecute, verbose=verbose,
-                    be_name=be_name)
+                    facets=facets, noexecute=noexecute, be_name=be_name, 
+                    new_be=new_be)
         except:
-                if not __api_plan_exception(op, noexecute=noexecute):
-                        return EXIT_OOPS
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
 
         if not stuff_to_do:
                 msg(_("Facet change has no effect on image"))
                 return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
 
         if noexecute:
                 if show_licenses:
@@ -1140,16 +1260,19 @@ def image_update(img, args):
 
         op = "image-update"
         opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=",
-            "licenses", "no-refresh", "no-index"])
+            "licenses", "no-refresh", "no-index", "deny-new-be", "require-new-be"])
 
-        accept = force = quiet = noexecute = show_licenses = verbose = False
+        accept = force = quiet = noexecute = show_licenses = False
+        verbose = 0
         refresh_catalogs = update_index = True
         be_name = None
+        new_be = None
+
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-q":
                         quiet = True
                 elif opt == "-f":
@@ -1164,6 +1287,10 @@ def image_update(img, args):
                         refresh_catalogs = False
                 elif opt == "--no-index":
                         update_index = False
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
@@ -1180,15 +1307,20 @@ def image_update(img, args):
         try:
                 stuff_to_do, opensolaris_image = \
                     api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
-                        noexecute, force=force, verbose=verbose,
-                        update_index=update_index, be_name=be_name)
+                        noexecute, force=force, update_index=update_index, 
+                        be_name=be_name, new_be=new_be)
         except:
-                if not __api_plan_exception(op, noexecute=noexecute):
-                        return EXIT_OOPS
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
 
         if not stuff_to_do:
                 msg(_("No updates available for this image."))
                 return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
 
         if noexecute:
                 if show_licenses:
@@ -1217,16 +1349,18 @@ def install(img, args):
         # XXX Publisher-catalog issues.
         op = "install"
         opts, pargs = getopt.getopt(args, "nvq", ["accept", "licenses",
-            "no-refresh", "no-index"])
+            "no-refresh", "no-index", "deny-new-be", "require-new-be", "be-name"])
 
-        accept = quiet = noexecute = show_licenses = verbose = False
+        accept = quiet = noexecute = show_licenses = False
+        verbose = 0
         refresh_catalogs = update_index = True
-
+        new_be = None
+        be_name = None
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-q":
                         quiet = True
                 elif opt == "--accept":
@@ -1237,6 +1371,12 @@ def install(img, args):
                         refresh_catalogs = False
                 elif opt == "--no-index":
                         update_index = False
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
+                elif opt == "--be-name":
+                        be_name = arg
 
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
@@ -1255,15 +1395,20 @@ def install(img, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_install(pargs,
-                    refresh_catalogs, noexecute, verbose=verbose,
-                    update_index=update_index)
+                    refresh_catalogs, noexecute, update_index=update_index, 
+                    be_name=be_name, new_be=new_be)
         except:
-                if not __api_plan_exception(op, noexecute=noexecute):
-                        return EXIT_OOPS
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
 
         if not stuff_to_do:
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
 
         if noexecute:
                 if show_licenses:
@@ -1286,21 +1431,32 @@ def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
         op = "uninstall"
-        opts, pargs = getopt.getopt(args, "nrvq", ["no-index"])
+        opts, pargs = getopt.getopt(args, "nrvq", ["no-index", 
+            "deny-new-be", "require-new-be", "be-name"])
 
-        quiet = noexecute = recursive_removal = verbose = False
+        quiet = noexecute = recursive_removal = False
+        verbose = 0
         update_index = True
+        be_name = None
+        new_be = None
+
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-r":
                         recursive_removal = True
                 elif opt == "-v":
-                        verbose = True
+                        verbose = verbose + 1
                 elif opt == "-q":
-                        quiet = True
+                        quiet = True                        
                 elif opt == "--no-index":
                         update_index = False
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
+                elif opt == "--be-name":
+                        be_name = arg
 
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
@@ -1318,11 +1474,18 @@ def uninstall(img, args):
 
         try:
                 if not api_inst.plan_uninstall(pargs, recursive_removal,
-                    noexecute, verbose=verbose, update_index=update_index):
+                    noexecute, update_index=update_index, be_name=be_name, 
+                    new_be=new_be):
                         assert 0
         except:
-                if not __api_plan_exception(op, noexecute=noexecute):
-                        return EXIT_OOPS
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
+
+        if not quiet:
+                display_plan(api_inst, verbose)
+
         if noexecute:
                 return EXIT_OK
 

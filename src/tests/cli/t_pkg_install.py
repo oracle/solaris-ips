@@ -1467,9 +1467,9 @@ adm
 
                 self.pkg("--debug simulate_live_root=True install liveroot@1.0")
                 self.pkg("verify -v")
-                self.pkg("--debug simulate_live_root=True install liveroot@2.0",
+                self.pkg("--debug simulate_live_root=True install --deny-new-be liveroot@2.0",
                     exit=5)
-                self.pkg("--debug simulate_live_root=True uninstall liveroot",
+                self.pkg("--debug simulate_live_root=True uninstall --deny-new-be liveroot",
                     exit=5)
                 # "break" liveroot@1
                 self.file_append("etc/liveroot", "this file has been changed")

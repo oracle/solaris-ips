@@ -40,7 +40,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 42
+API_VERSION = 43
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):

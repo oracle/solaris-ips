@@ -33,6 +33,9 @@ import urlparse
 EmptyI = tuple()
 
 class ApiException(Exception):
+        def __init__(self, *args):
+                Exception.__init__(self)
+                self.__verbose_info = []
 
         def __unicode__(self):
                 # To workaround python issues 6108 and 2517, this provides a
@@ -40,6 +43,12 @@ class ApiException(Exception):
                 # have a chance of being stringified correctly.
                 return unicode(str(self))
 
+        def add_verbose_info(self, info):
+                self.__verbose_info.extend(info)
+        
+        @property
+        def verbose_info(self):
+                return self.__verbose_info
 
 class ImageLockedError(ApiException):
         """Used to indicate that the image is currently locked by another thread

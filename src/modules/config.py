@@ -71,7 +71,7 @@ class PropertyConfigError(api_errors.ApiException):
         """Base exception class for property errors."""
 
         def __init__(self, section=None, prop=None):
-                ConfigError.__init__(self)
+                api_errors.ApiException.__init__(self)
                 assert section is not None or prop is not None
                 self.section = section
                 self.prop = prop

@@ -89,7 +89,6 @@ class PkgSolver(object):
                 self.__variables   = 0
                 self.__timings = []
                 self.__start_time = 0
-                self.__failure_info = ""
                 self.__dep_dict = {}
                 self.__inc_list = []
                 self.__dependents = None
@@ -155,13 +154,6 @@ class PkgSolver(object):
                         now = time.time()
                         self.__timings.append((phase, now - self.__start_time))
                         self.__start_time = now
-
-        def gen_failure_report(self, verbose):
-                """grab saved failure list"""
-                if not verbose:
-                        return "\nUse -v option for more details"
-                else:
-                        return "\n".join(self.__failure_info)
 
         def solve_install(self, existing_freezes, proposed_dict, excludes=EmptyI):
                 """Existing_freezes is a list of incorp. style
@@ -328,7 +320,7 @@ class PkgSolver(object):
                 saved_solver = self.__save_solver()
                 try:
                         saved_solution = self.__solve()
-                except api_errors.PlanCreationException:
+                except api_errors.PlanCreationException, exp:
                         # no solution can be found.  Check to make sure
                         # our currently installed packages are coherent.
                         # this may not be the case if we upgraded to here
@@ -365,12 +357,6 @@ class PkgSolver(object):
                         info = []
                         info.append("package solver error")
                         info.append("attempted operation: install")
-                        info.append("already installed packages:")
-                        for name in sorted(self.__installed_fmris):
-                                f = self.__installed_fmris[name]
-                                info.append("    %s" % f)
-                                for s in self.__print_dependencies(f, excludes=excludes):
-                                        info.append("        %s" % s)
                         info.append("proposed pkgs:")
                         for name in proposed_dict:
                                 info.append("    %s" % name)
@@ -387,13 +373,8 @@ class PkgSolver(object):
                         else:
                                 info.append("maintained incorporations: None")
 
-                        s = "Performance: ["
-                        s += ", ".join(["%s: %6.3f" % a for a in self.__timings])
-                        s += "]"
-                        info.append(s)
-
-                        self.__failure_info = info
-                        raise
+                        exp.add_verbose_info(info)
+                        raise exp
 
                 self.__timeit("phase 11")
 

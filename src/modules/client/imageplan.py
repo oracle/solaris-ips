@@ -153,6 +153,25 @@ class ImagePlan(object):
 
                 return s
 
+        @property
+        def services(self):
+                """Returns a list of strings describing affected services"""
+                return ["%s: %s" % (fmri, smf) 
+                    for fmri, smf in self.__actuators.get_services_list()]
+
+        @property
+        def varcets(self):
+                """Returns list of variant/facet changes"""
+                ret = []
+                if self.__new_variants:
+                        ret += ["variant %s: %s" % a 
+                            for a in self.__new_variants.iteritems()]
+                if self.__new_facets:
+                        ret += ["  facet %s: %s" % a 
+                            for a in self.__new_facets.iteritems()]
+
+                return ret
+
         def __verbose_str(self):
                 s = str(self)
 
@@ -181,13 +200,6 @@ class ImagePlan(object):
                 planned."""
 
                 return self._planned_op
-
-        def show_failure(self, verbose):
-                """Here's where extensive messaging needs to go"""
-
-                if self.__pkg_solver:
-                        logger.info(_("Planning for %s failed: %s\n") % 
-                            (self._planned_op, self.__pkg_solver.gen_failure_report(verbose)))
 
         def __plan_op(self, op):
                 """Private helper method used to mark the start of a planned
@@ -562,7 +574,7 @@ class ImagePlan(object):
                 else:
                         d.setdefault(name, []).append(value)
 
-        def evaluate(self, verbose=False):
+        def evaluate(self):
                 """Given already determined fmri changes, 
                 build pkg plans and figure out exact impact of
                 proposed changes"""
@@ -937,12 +949,13 @@ class ImagePlan(object):
 
         def nothingtodo(self):
                 """ Test whether this image plan contains any work to do """
-
                 # handle case w/ -n no verbose
                 if self.state == EVALUATED_PKGS:
-                        return not self.__fmri_changes
+                        return not (self.__fmri_changes or self.__new_variants 
+                            or self.__new_facets)
                 elif self.state >= EVALUATED_OK:
-                        return not self.pkg_plans
+                        return not (self.pkg_plans or self.__new_variants or 
+                            self.__new_facets)
 
         def preexecute(self):
                 """Invoke the evaluated image plan
