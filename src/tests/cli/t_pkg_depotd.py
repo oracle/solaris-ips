@@ -403,6 +403,27 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend(durl, "add dir path=tmp/foo mode=0755 "
                     "owner=root group=bin", exit=1)
 
+        def test_root_link(self):
+                """Verify that the depot server accepts a link to a
+                directory as a repository root."""
+
+                if self.dc.started:
+                        self.dc.stop()
+
+                # Create a link to the repository and verify that
+                # the depot server allows it.
+                lsrc = self.dc.get_repodir()
+                ltarget = os.path.join(self.test_root, "depot_link")
+                os.symlink(lsrc, ltarget)
+                self.dc.set_repodir(ltarget)
+                self.dc.start()
+
+                # Reset for any tests that might execute afterwards.
+                os.unlink(ltarget)
+                self.dc.stop()
+                self.dc.set_repodir(lsrc)
+                self.dc.start()
+
 
 class TestDepotController(pkg5unittest.CliTestCase):
 

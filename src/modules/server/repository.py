@@ -973,7 +973,7 @@ class _RepoStore(object):
                 except file_manager.NeedToModifyReadOnlyFileManager:
                         if self.root:
                                 try:
-                                        os.lstat(self.root)
+                                        os.stat(self.root)
                                 except OSError, e:
                                         # If the stat failed due to this, then
                                         # assume the repository is possibly
@@ -1790,7 +1790,7 @@ class Repository(object):
                         return
 
                 try:
-                        fs = os.lstat(self.root)
+                        fs = os.stat(self.root)
                 except OSError, e:
                         # If the stat failed due to this, then assume the
                         # repository is possibly valid but that there is a
