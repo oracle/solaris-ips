@@ -3362,11 +3362,12 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 # Add a new publisher, using the installed package publisher's
                 # repository.  After that, attempt to install the package again,
-                # which should succeed even though the fmri is only in a
-                # different publisher's catalog.
+                # which should simply result in a 'no updates necessary' exit
+                # code since the removed publisher's package is already the
+                # newest version available.
                 #
                 self.pkg("set-publisher -O %s test3" % self.rurl7)
-                self.pkg("install quux@1.0", exit=1) # no viable publisher
+                self.pkg("install quux@1.0", exit=4)
                 self.pkg("unset-publisher test3")
 
                 # Change the image metadata back to where it was, in preparation

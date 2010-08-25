@@ -42,6 +42,8 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
 import shutil
+import urllib
+import urlparse
 
 
 PKG_CLIENT_NAME = "pkg"
@@ -503,6 +505,42 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj,
                     ["foo@1.0", "release/name@1.0", "package/pkg@1.0"])
+                api_obj.reset()
+                api_obj.plan_update_all(argv0)
+
+                # Verify that if the installed version of pkg is from an
+                # unconfigured publisher and is newer than what is available
+                # that the update check will not fail.
+
+                # First, install package/pkg again.
+                self.__do_install(api_obj,
+                    ["foo@1.0", "SUNWcs", "package/pkg@1.0"])
+
+                # Next, create a repository with an older version of pkg,
+                # and a newer version of foo.
+                new_repo_dir = os.path.join(self.test_root, "test2")
+                new_repo_uri = urlparse.urlunparse(("file", "",
+                    urllib.pathname2url(new_repo_dir), "", "", ""))
+
+                self.create_repo(new_repo_dir,
+                    properties={ "publisher": { "prefix": "test2" } })
+                self.pkgsend_bulk(new_repo_uri, ("""
+                    open package/pkg@1.0,5.11-0
+                    close""", self.foo11))
+
+                # Now add the new publisher and remove the old one.
+                api_obj.reset()
+                npub = publisher.Publisher("test2",
+                    repositories=[publisher.Repository(origins=[new_repo_uri])])
+                api_obj.add_publisher(npub)
+                api_obj.reset()
+                api_obj.set_preferred_publisher(prefix="test2")
+                api_obj.reset()
+                api_obj.remove_publisher(prefix="test")
+
+                # Now verify that plan_update_all succeeds still since the
+                # version of pkg installed is newer than the versions that
+                # are offered by the current publishers.
                 api_obj.reset()
                 api_obj.plan_update_all(argv0)
 
