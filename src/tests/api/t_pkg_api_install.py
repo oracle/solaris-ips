@@ -38,6 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.client.progress as progress
+import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
 import shutil
@@ -219,12 +220,18 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11),
+                plist = self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11),
                     refresh_index=True)
                 api_obj = self.image_create(self.rurl)
 
                 self.pkg("list -a")
                 self.__do_install(api_obj, ["foo"])
+
+                # Check that manifest cache file exists after install.
+                pfmri = fmri.PkgFmri(plist[1])
+                mdir = os.path.dirname(self.get_img_manifest_path(pfmri))
+                mcpath = os.path.join(mdir, "manifest.set")
+                assert os.path.exists(mcpath)
 
                 self.pkg("verify")
                 self.pkg("list")
@@ -248,9 +255,22 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["foo"])
 
+                # Check that manifest cache file does not exist after uninstall.
+                assert not os.path.exists(mcpath)
+
                 self.pkg("verify")
                 self.pkg("list -a")
                 self.pkg("verify")
+
+                # Reinstall foo, then remove manifest cache files and then
+                # verify uninstall doesn't fail.
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo"])
+                pkg_dir = os.path.join(mdir, "..", "..")
+                manifest.CachedManifest.clear_cache(pfmri, pkg_dir)
+                assert not os.path.exists(mcpath)
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["foo"])
 
         def test_basics_3(self):
                 """ Install foo@1.0, upgrade to foo@1.1, uninstall. """

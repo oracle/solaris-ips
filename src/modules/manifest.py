@@ -672,8 +672,7 @@ class CachedManifest(Manifest):
                 return os.path.join(self.__file_dir(), name)
 
         def __file_dir(self):
-                return os.path.join(self.__pkgdir,
-                    self.fmri.get_dir_path())
+                return os.path.join(self.__pkgdir, self.fmri.get_dir_path())
 
         def __init__(self, fmri, pkgdir, excludes=EmptyI, contents=None):
                 """Raises KeyError exception if cached manifest
@@ -824,6 +823,26 @@ class CachedManifest(Manifest):
                                 continue
                         # could collapse dirs where all variants are present
                 return dirs
+
+        @staticmethod
+        def clear_cache(pfmri, pkgdir):
+                """Remove any cache files that exist for the manifest (but not
+                the manifest itself)."""
+
+                cache_dir = os.path.join(pkgdir, pfmri.get_dir_path())
+                try:
+                        for cname in os.listdir(cache_dir):
+                                if not cname.startswith("manifest."):
+                                        continue
+                                try:
+                                        portable.remove(os.path.join(
+                                            cache_dir, cname))
+                                except EnvironmentError, e:
+                                        if e.errno != errno.ENOENT:
+                                                raise
+                except EnvironmentError, e:
+                        api_errors.convert_environment_error(e,
+                            ignored_errors=[errno.ENOENT])
 
         def get_directories(self, excludes):
                 """ return a list of directories implicitly or

@@ -1346,7 +1346,7 @@ class Image(object):
 
                 return m
 
-        def update_pkg_installed_state(self, pkg_pairs):
+        def update_pkg_installed_state(self, pkg_pairs, progtrack):
                 """Sets the recorded installed state of each package pair in
                 'pkg_pairs'.  'pkg_pair' should be an iterable of tuples of
                 the format (added, removed) where 'removed' is the FMRI of the
@@ -1366,7 +1366,11 @@ class Image(object):
                         if rem_pkg:
                                 removed.add(rem_pkg)
 
-                for pfmri in added.union(removed):
+                combo = added.union(removed)
+                progtrack.item_set_goal(_("Package State Update Phase"),
+                    len(combo))
+
+                for pfmri in combo:
                         entry = kcat.get_entry(pfmri)
                         mdata = entry.get("metadata", {})
                         states = set(mdata.get("states", set()))
@@ -1381,6 +1385,7 @@ class Image(object):
                                 # meaningful state information, so should be
                                 # discarded.
                                 kcat.remove_package(pfmri)
+                                progtrack.item_add_progress()
                                 continue
 
                         if (self.PKG_STATE_INSTALLED in states and
@@ -1403,6 +1408,15 @@ class Image(object):
                                 icat.append(kcat, pfmri=pfmri)
 
                         entry = mdata = states = None
+                        progtrack.item_add_progress()
+                progtrack.item_done()
+
+                progtrack.item_set_goal(_("Package Cache Update Phase"),
+                    len(removed))
+                for pfmri in removed:
+                        manifest.CachedManifest.clear_cache(pfmri, self.pkgdir)
+                        progtrack.item_add_progress()
+                progtrack.item_done()
 
                 # Cleanup temporary variables.
                 del pfmri, removed
@@ -1412,6 +1426,7 @@ class Image(object):
                 # with invalid state, and then save them.
                 tmp_state_root = self.temporary_dir()
 
+                progtrack.item_set_goal(_("Image State Update Phase"), 2)
                 try:
                         for cat, name in ((kcat, self.IMG_CATALOG_KNOWN),
                             (icat, self.IMG_CATALOG_INSTALLED)):
@@ -1424,6 +1439,7 @@ class Image(object):
                                 cat.meta_root = cpath
                                 cat.finalize(pfmris=added)
                                 cat.save()
+                                progtrack.item_add_progress()
 
                         del cat, name
                         self.__init_catalogs()
@@ -1461,6 +1477,7 @@ class Image(object):
                         self.__init_catalogs()
                         if os.path.exists(tmp_state_root):
                                 shutil.rmtree(tmp_state_root, True)
+                progtrack.item_done()
 
         def get_catalog(self, name):
                 """Returns the requested image catalog.

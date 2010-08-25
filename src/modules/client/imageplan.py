@@ -1197,7 +1197,7 @@ class ImagePlan(object):
 
                                 # save package state
                                 self.image.update_pkg_installed_state(
-                                    executed_pp)
+                                    executed_pp, self.__progtrack)
 
                                 # write out variant changes to the image config
                                 if self.__variant_change:

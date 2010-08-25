@@ -97,6 +97,11 @@ class ProgressTracker(object):
                 self.ind_phase = "None"
                 self.ind_phase_last = "None"
 
+                self.item_cur_nitems = 0
+                self.item_goal_nitems = 0
+                self.item_phase = "None"
+                self.item_phase_last = "None"
+
                 self.last_printed = 0 # when did we last emit status?
 
         def catalog_start(self, catalog):
@@ -246,6 +251,21 @@ class ProgressTracker(object):
         def index_optimize(self):
                 return
 
+        def item_set_goal(self, phase, nitems):
+                self.item_phase = phase
+                self.item_goal_nitems = nitems
+                self.item_cur_nitems = 0
+
+        def item_add_progress(self):
+                self.item_cur_nitems += 1
+                if self.item_goal_nitems > 0:
+                        self.item_output()
+
+        def item_done(self):
+                if self.item_goal_nitems > 0:
+                        self.item_output_done()
+                assert self.item_goal_nitems == self.item_cur_nitems
+
         #
         # This set of methods should be regarded as abstract *and* protected.
         # If you aren't in this class hierarchy, these should not be
@@ -340,6 +360,14 @@ class ProgressTracker(object):
                 raise NotImplementedError("ind_output_done() not implemented "
                     "in superclass")
 
+        def item_output(self, force=False):
+                raise NotImplementedError("item_output() not implemented in "
+                    "superclass")
+
+        def item_output_done(self):
+                raise NotImplementedError("item_output_done() not implemented "
+                    "in superclass")
+
 
 class ProgressTrackerException(Exception):
         """ This exception is currently thrown if a ProgressTracker determines
@@ -349,7 +377,6 @@ class ProgressTrackerException(Exception):
 
         def __init__(self):
                 Exception.__init__(self)
-
 
 
 class QuietProgressTracker(ProgressTracker):
@@ -417,6 +444,12 @@ class QuietProgressTracker(ProgressTracker):
                 return
 
         def ind_output_done(self):
+                return
+
+        def item_output(self, force=False):
+                return
+
+        def item_output_done(self):
                 return
 
 
@@ -489,8 +522,8 @@ class CommandLineProgressTracker(ProgressTracker):
                         # The first time, emit header.
                         if self.dl_cur_pkg != self.dl_last_printed_pkg:
                                 if self.dl_last_printed_pkg != None:
-                                        print "Done"
-                                print "Download: %s ... " % (self.dl_cur_pkg),
+                                        print _("Done")
+                                print _("Download: %s ... ") % (self.dl_cur_pkg),
                                 self.dl_last_printed_pkg = self.dl_cur_pkg
                         sys.stdout.flush()
                 except IOError, e:
@@ -498,55 +531,50 @@ class CommandLineProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
-        def dl_output_done(self):
+        def __generic_done(self):
                 try:
-                        print "Done"
+                        print _("Done")
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
+
+        def dl_output_done(self):
+                self.__generic_done()
+
+        def __generic_output(self, phase_attr, last_phase_attr, force=False):
+                pattr = getattr(self, phase_attr)
+                last_pattr = getattr(self, last_phase_attr)
+                if pattr != last_pattr:
+                        try:
+                                print "%s ... " % pattr,
+                        except IOError, e:
+                                if e.errno == errno.EPIPE:
+                                        raise PipeError, e
+                                raise
+                        setattr(self, last_phase_attr, pattr)
 
         def act_output(self, force=False):
-                if self.act_phase != self.act_phase_last:
-                        try:
-                                print "%s ... " % self.act_phase,
-                        except IOError, e:
-                                if e.errno == errno.EPIPE:
-                                        raise PipeError, e
-                                raise
-                        self.act_phase_last = self.act_phase
-                return
+                self.__generic_output("act_phase", "act_phase_last",
+                    force=force)
 
         def act_output_done(self):
-                try:
-                        print "Done"
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_done()
 
         def ind_output(self, force=False):
-                if self.ind_phase != self.ind_phase_last:
-                        try:
-                                print "%s ... " % self.ind_phase,
-                        except IOError, e:
-                                if e.errno == errno.EPIPE:
-                                        raise PipeError, e
-                                raise
-                        self.ind_phase_last = self.ind_phase
-                return
+                self.__generic_output("ind_phase", "ind_phase_last",
+                    force=force)
 
         def ind_output_done(self):
-                try:
-                        print "Done"
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_done()
 
+        def item_output(self, force=False):
+                self.__generic_output("item_phase", "item_phase_last",
+                    force=force)
+
+        def item_output_done(self):
+                self.__generic_done()
 
 
 class FancyUNIXProgressTracker(ProgressTracker):
@@ -568,6 +596,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                 self.act_started = False
                 self.ind_started = False
+                self.item_started = False
                 self.last_print_time = 0
                 self.clear_eol = ""
 
@@ -643,9 +672,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print self.cr,
                         print " " * self.curstrlen,
                         print self.cr,
-                        s = "Refreshing catalog %d/%d %s" % \
-                            (self.refresh_cur_pub_cnt, self.refresh_pub_cnt,
-                            self.refresh_cur_pub)
+                        s = _("Refreshing catalog %(current)d/%(total)d "
+                            "%(publisher)s") % {
+                            "current": self.refresh_cur_pub_cnt,
+                            "total": self.refresh_pub_cnt,
+                            "publisher": self.refresh_cur_pub }
                         self.curstrlen = len(s)
                         print "%s" % s,
                         sys.stdout.flush()
@@ -662,7 +693,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # corresponding operation did not complete successfully.
                 self.__generic_done()
 
-                s = "Creating Plan"
+                s = _("Creating Plan")
                 self.curstrlen = len(s)
                 try:
                         print "%s" % s,
@@ -680,7 +711,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.spinner = (self.spinner + 1) % len(self.spinner_chars)
                 try:
                         print self.cr,
-                        s = "Creating Plan %c" % self.spinner_chars[
+                        s = _("Creating Plan %c") % self.spinner_chars[
                             self.spinner]
                         self.curstrlen = len(s)
                         print "%s" % s,
@@ -765,8 +796,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         # The first time, emit header.
                         if not self.dl_started:
                                 self.dl_started = True
-                                print "%-38s %7s %11s %12s" % ("DOWNLOAD", \
-                                    "PKGS", "FILES", "XFER (MB)")
+                                print "%-38s %7s %11s %12s" % (_("DOWNLOAD"),
+                                    _("PKGS"), _("FILES"), _("XFER (MB)"))
                         else:
                                 print self.cr,
 
@@ -806,6 +837,15 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
+        def __generic_simple_done(self):
+                try:
+                        print
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
         def act_output(self, force=False):
                 if not force and \
                     (time.time() - self.last_print_time) < self.TERM_DELAY:
@@ -816,7 +856,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         # The first time, emit header.
                         if not self.act_started:
                                 self.act_started = True
-                                print "%-40s %11s" % ("PHASE", "ACTIONS")
+                                print "%-40s %11s" % (_("PHASE"), _("ACTIONS"))
                         else:
                                 print self.cr,
 
@@ -835,20 +875,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
         def act_output_done(self):
                 self.act_output(force=True)
-                try:
-                        print
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_simple_done()
 
         def index_optimize(self):
                 self.ind_output_done()
                 self.ind_started = False
                 self.last_print_time = 0
                 try:
-                        print "Optimizing Index..."
+                        print _("Optimizing Index...")
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -865,7 +899,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         # The first time, emit header.
                         if not self.ind_started:
                                 self.ind_started = True
-                                print "%-40s %11s" % ("PHASE", "ITEMS")
+                                if self.last_print_time:
+                                        print
+                                print "%-40s %11s" % (_("PHASE"), _("ITEMS"))
                         else:
                                 print self.cr,
 
@@ -884,10 +920,37 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
         def ind_output_done(self):
                 self.ind_output(force=True)
+                self.__generic_simple_done()
+
+        def item_output(self, force=False):
+                if self.item_started and not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
+                        return
+
+                self.last_print_time = time.time()
                 try:
-                        print
+                        # The first time, emit header.
+                        if not self.item_started:
+                                self.item_started = True
+                                if self.last_print_time:
+                                        print
+                                print "%-40s %11s" % (_("PHASE"), _("ITEMS"))
+                        else:
+                                print self.cr,
+
+                        print "%-40s %11s" % \
+                            (
+                                self.item_phase,
+                                "%d/%d" % (self.item_cur_nitems,
+                                    self.item_goal_nitems)
+                             ),
+
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
+
+        def item_output_done(self):
+                self.item_output(force=True)
+                self.__generic_simple_done()
