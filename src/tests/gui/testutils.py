@@ -59,3 +59,10 @@ def check_if_a11y_enabled():
         if window.get_accessible().get_n_accessible_children() != 0:
                 a11y_enabled = True
         return a11y_enabled
+
+if not check_for_gtk():
+        # If gtk isn't imported, this must be done to
+        # ensure that locale is setup properly.
+        # (This is necessary due to GNOME bug 132040).
+        import locale
+        locale.setlocale(locale.LC_ALL, "")
