@@ -36,8 +36,9 @@ import unittest
 from stat import *
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
-import pkg.fmri as fmri
 import pkg.client.progress as progress
+import pkg.client.publisher as publisher
+import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
