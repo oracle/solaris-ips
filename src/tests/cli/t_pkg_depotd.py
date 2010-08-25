@@ -934,6 +934,8 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 rinfo = urllib2.urlopen(urlparse.urljoin(durl,
                                     req_path)).info()
                                 return rinfo.items()
+                        except urllib2.HTTPError, e:
+                                return e.info().items()
                         except Exception, e:
                                 raise RuntimeError("retrieval of %s "
                                     "failed: %s" % (req_path, str(e)))
@@ -961,6 +963,15 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                                 self.assertNotEqual(exp, None)
                                 self.assert_(exp.endswith(" GMT"))
 
+                for req_path in ("catalog/1/catalog.hatters",
+                    "file/0/3aad0bca6f3a6f502c175700ebe90ef36e312d7f"):
+
+                        hdrs = dict(get_headers(req_path))
+                        cc = hdrs.get("cache-control", None)
+                        prg = hdrs.get("pragma", None)
+                        self.assertEqual(cc, None)
+                        self.assertEqual(prg, None)
+ 
         def test_bug_15482(self):
                 """Test to make sure BUI search doesn't trigger a traceback."""
 

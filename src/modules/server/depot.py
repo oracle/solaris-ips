@@ -28,6 +28,7 @@ import cherrypy
 from cherrypy.lib.static import serve_file
 from email.utils import formatdate
 from cherrypy.process.plugins import SimplePlugin
+from cherrypy._cperror import _HTTPErrorTemplate
 
 try:
         import pybonjour
@@ -299,6 +300,9 @@ class DepotHTTP(_Depot):
                         opattr = getattr(self, op)
                         setattr(opattr, ver, func)
 
+                cherrypy.config.update({'error_page.default':
+                    self.default_error_page})
+
                 if hasattr(cherrypy.engine, "signal_handler"):
                         # This handles SIGUSR1
                         cherrypy.engine.subscribe("graceful", self.refresh)
@@ -306,6 +310,20 @@ class DepotHTTP(_Depot):
                 # Setup background task execution handler.
                 self.__bgtask = BackgroundTaskPlugin(cherrypy.engine)
                 self.__bgtask.subscribe()
+
+        @staticmethod
+        def default_error_page(**kwargs):
+                """This function is registered as the default error page
+                for CherryPy errors.  This sets the response headers to
+                be uncacheable, and then returns a HTTP response that is
+                identical to the default CherryPy message format."""
+
+                response = cherrypy.response
+                for key in ('Cache-Control', 'Pragma'):
+                        if key in response.headers:
+                                del response.headers[key]
+
+                return _HTTPErrorTemplate % kwargs
 
         def _get_req_pub(self):
                 """Private helper function to retrieve the publisher prefix
@@ -580,10 +598,6 @@ class DepotHTTP(_Depot):
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
-                response = cherrypy.response
-                response.headers["Content-type"] = "text/plain; charset=utf-8"
-                self.__set_response_expires("search", 86400, 86400)
-
                 # In order to be able to have a return code distinguish between
                 # no results and search unavailable, we need to use a different
                 # http code.  Check and see if there's at least one item in
@@ -598,6 +612,10 @@ class DepotHTTP(_Depot):
                         except StopIteration:
                                 cherrypy.response.status = httplib.NO_CONTENT
                                 return
+
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain; charset=utf-8"
+                self.__set_response_expires("search", 86400, 86400)
 
                 def output():
                         # Yield the string used to let the client know it's
