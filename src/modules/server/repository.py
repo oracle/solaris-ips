@@ -135,7 +135,7 @@ class RepositoryLockedError(RepositoryError):
         thread or process and cannot be modified."""
 
         def __init__(self, hostname=None, pid=None):
-                ApiException.__init__(self)
+                RepositoryError.__init__(self)
                 self.hostname = hostname
                 self.pid = pid
 

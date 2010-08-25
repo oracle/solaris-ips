@@ -230,7 +230,7 @@ class TransportTransaction(object):
                         except sr.RepositoryExistsError:
                                 # Already exists, nothing to do.
                                 pass
-                        except (apx.ApiException, sr.RepositoryError), _e:
+                        except (apx.ApiException, sr.RepositoryError), e:
                                 raise TransactionOperationError(None,
                                     msg=str(e))
 
