@@ -34,7 +34,6 @@ dir path=usr
 dir path=usr/bin
 file path=usr/bin/packagemanager
 dir path=usr/lib
-file path=usr/lib/pm-checkforupdates mode=0755
 file path=usr/lib/pm-launch mode=0755
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)

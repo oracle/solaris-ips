@@ -23,36 +23,33 @@
 #
 
 import getopt
-import os
-import subprocess
-import sys
-import locale
 import gettext
-import pango
-from threading import Thread
+import locale
+import os
+import sys
+import time
 
 try:
         import gobject
-        gobject.threads_init()        
+        gobject.threads_init()
         import gtk
-        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
         sys.exit(1)
 
-import pkg.portable as portable
-import pkg.client.progress as progress
-import pkg.client.api as api
-import pkg.fmri as fmri
-import pkg.gui.beadmin as beadm
-import pkg.gui.installupdate as installupdate
-import pkg.gui.enumerations as enumerations
-import pkg.gui.misc as gui_misc
 import pkg.client.api_errors as api_errors
+import pkg.client.progress as progress
+import pkg.gui.enumerations as enumerations
+import pkg.gui.installupdate as installupdate
+import pkg.gui.misc as gui_misc
+import pkg.gui.misc_non_gui as nongui_misc
+import pkg.gui.pmgconf as pmgconf
 import pkg.misc as misc
 import pkg.nrlock as nrlock
+from cPickle import UnpicklingError
 from pkg.client import global_settings
+
 logger = global_settings.logger
 
 # Put _() in the global namespace
@@ -62,285 +59,80 @@ __builtin__._ = gettext.gettext
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
+PKG_CLIENT_NAME = "updatemanager"
+CACHE_VERSION =  3
+CACHE_NAME = ".last_refresh_cache"
 PKG_ICON_LOCATION = "usr/share/package-manager/icons"
 ICON_LOCATION = "usr/share/update-manager/icons"
-CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
-SHOW_INFO_DELAY = 500           # Delay in milliseconds before showing selected
-                                # package information
-
-#UM Row Model
-(
-UM_ID,
-UM_INSTALL_MARK,
-UM_STATUS,
-UM_NAME,
-UM_REBOOT,
-UM_LATEST_VER,
-UM_SIZE,
-UM_STEM,
-) = range(8)
 
 class Updatemanager:
-        def __init__(self):
+        def __init__(self, image_directory, application_path, nice, check_all,
+            check_cache):
                 global_settings.client_name = gui_misc.get_um_name()
                 self.api_lock = nrlock.NRLock()
-                    
+                self.image_dir_arg = image_directory
+                if self.image_dir_arg == None:
+                        self.image_dir_arg = self.__get_image_path()
+                self.application_path = application_path
+                self.nice = nice
+                self.check_all = check_all
+                self.check_cache_only = check_cache
+                self.gconf = pmgconf.PMGConf()
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
                 except KeyError:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
-                for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", os.path.join(
-                            self.application_dir,
-                            "usr/share/locale"))
-                        module.textdomain("pkg")
-                gui_misc.init_for_help(self.application_dir)
-                # Duplicate ListStore setup in get_updates_to_list()
-                self.um_list = self.__get_um_liststore()
-                self.progress_stop_thread = False
-                self.last_select_time = 0
-                self.user_rights = portable.is_admin()
-                self.image_dir_arg = None
-                self.initial_selection = False
-                self.toggle_counter = 0
-                self.last_show_info_id = 0
-                self.show_info_id = 0
-                self.package_selection = None
-                self.update_all_proceed = False
-                self.application_path = None
+                gettext.bindtextdomain("pkg", os.path.join(self.application_dir,
+                    "usr/share/locale"))
+                gettext.textdomain("pkg")
+
                 self.icon_theme = gtk.icon_theme_get_default()
                 pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
                 self.icon_theme.append_search_path(pkg_icon_location)
-                self.pkg_installed_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_installed')
-                self.pkg_not_installed_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_installed')
-                self.pkg_update_available_icon = gui_misc.get_icon(self.icon_theme,
-                    'status_newupdate')
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
-                self.pylintstub = None
+                self.progress_tracker = progress.NullProgressTracker()
                 self.api_obj = None
-
-                # Progress Dialog
-                builder = gtk.Builder()
-                self.gladefile = os.path.join(self.application_dir,
-                    "usr/share/update-manager/updatemanager.ui")
-                builder.add_from_file(self.gladefile)
-                self.w_progress_dialog = builder.get_object("progressdialog")
-                self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
+                self.return_status = enumerations.UPDATES_UNDETERMINED
+                self.pylintstub = None
                 
-                self.w_progressinfo_label = builder.get_object("progressinfo")
-                self.w_progressinfo_separator = builder.get_object(
-                    "progressinfo_separator")                
-                self.w_progressinfo_expander = \
-                    builder.get_object("progressinfo_expander")
-                self.w_progressinfo_textview = \
-                    builder.get_object("progressinfo_textview")
-                infobuffer = self.w_progressinfo_textview.get_buffer()
-                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-
-                self.w_progress_install_vbox = \
-                    builder.get_object("progress_install_vbox")
-                
-                self.w_progress_closeon_finish_chk = \
-                    builder.get_object("closeon_finish_checkbutton")
-
-                self.w_progress_cancel = builder.get_object("progresscancel")
-                self.w_progress_ok = builder.get_object("progressok")
-                self.w_progressbar = builder.get_object("progressbar")
-                
-                # UM Dialog
-                self.w_um_dialog = builder.get_object("um_dialog")
-                self.w_um_dialog.connect("destroy", self.__on_um_dialog_close)
-                self.w_um_intro_label = builder.get_object("um_intro_label")
-                self.w_um_intro2_label = builder.get_object("um_intro2_label")
-                self.w_um_install_button = builder.get_object("um_install_button")
-                self.w_um_updateall_button = \
-                    builder.get_object("um_updateall_button")
-                self.pm_image = \
-                    builder.get_object("pm_image")
-                self.pm_image.set_from_pixbuf(self.__get_icon_pixbuf('updatemanager', 48))
-                self.w_um_expander = builder.get_object("um_expander")
-                self.w_um_expander.set_expanded(True)
-
-                self.w_progress_dialog.set_transient_for(self.w_um_dialog)
-
-                self.w_um_treeview = builder.get_object("um_treeview")  
-                self.w_um_treeview_frame = builder.get_object("um_treeview_frame")  
-                self.w_um_textview = builder.get_object("um_textview")  
-                infobuffer = self.w_um_textview.get_buffer()
-                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-                self.w_select_checkbox = builder.get_object("selectall_checkbutton")
-                self.w_um_help_button = builder.get_object("help_button")
-                self.w_um_cancel_button = builder.get_object("cancel_button")
-                self.w_um_close_button = builder.get_object("close_button")
-
-                self.__setup_signals()
-
-                self.pr = progress.NullProgressTracker()
- 
-                self.w_um_dialog.show_all()
-                self.w_um_dialog.resize(620, 500)
+                # Check Updates
+                if self.check_all:
+                        self.api_obj = self.__get_api_obj()
+                        self.__check_for_updates()
+                        return
+                elif self.check_cache_only:
+                        self.api_obj = self.__get_api_obj()
+                        ret = self.__check_for_updates_cache_only()
+                        if ret == enumerations.UPDATES_UNDETERMINED:
+                                self.__send_return(enumerations.UPDATES_UNDETERMINED)
+                        return
+                #If not checking for updates then launch Updatemanager to do image update
                 gui_misc.setup_logging()
+                gobject.idle_add(self.__do_image_update)
 
-        def __setup_signals(self):
-                signals_table = [
-                    (self.w_progress_dialog, "close",
-                     self.__on_um_dialog_close),
-                    (self.w_um_cancel_button, "clicked",
-                     self.__on_cancel_button_clicked),
-                    (self.w_um_close_button, "clicked",
-                     self.__on_cancel_button_clicked),
-                    (self.w_um_help_button, "clicked",
-                     self.__on_help_button_clicked),
-                    (self.w_um_updateall_button, "clicked",
-                     self.__on_updateall_button_clicked),
-                    (self.w_um_expander, "activate",
-                     self.__on_um_expander_activate),
-                    (self.w_select_checkbox, "toggled",
-                     self.__on_selectall_checkbutton_toggled),
-                    ]
-                for widget, signal_name, callback in signals_table:
-                        widget.connect(signal_name, callback)
+        def __get_api_obj(self):
+                if self.api_obj == None:
+                        api_obj = gui_misc.get_api_object(self.image_dir_arg,
+                            self.progress_tracker, None)
+                return api_obj
+
+        def __do_image_update(self):
+                installupdate.InstallUpdate([], self,
+                    self.image_dir_arg, action = enumerations.IMAGE_UPDATE,
+                    parent_name = _("Update Manager"),
+                    pkg_list = [gui_misc.package_name["SUNWipkg"],
+                        gui_misc.package_name["SUNWipkg-gui"],
+                        gui_misc.package_name["SUNWipkg-um"]],
+                    main_window = None,
+                    icon_confirm_dialog = gui_misc.get_icon(self.icon_theme,
+                    "updatemanager", 36),
+                    show_confirmation = self.gconf.show_image_update,
+                    api_lock = self.api_lock, gconf = self.gconf)
 
         @staticmethod
-        def __get_um_liststore():
-                return gtk.ListStore(
-                        gobject.TYPE_INT,         # UM_ID
-                        gobject.TYPE_BOOLEAN,     # UM_INSTALL_MARK
-                        gtk.gdk.Pixbuf,           # UM_STATUS
-                        gobject.TYPE_STRING,      # UM_NAME
-                        gtk.gdk.Pixbuf,           # UM_REBOOT
-                        gobject.TYPE_STRING,      # UM_LATEST_VER
-                        gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_STEM
-                        )
-        
-        def __set_cancel_state(self, status):
-                if status:
-                        gobject.idle_add(self.w_progress_cancel.grab_focus)
-                gobject.idle_add(self.w_progress_cancel.set_sensitive, status)
-                
-        def __set_initial_selection(self):
-                self.__selectall_toggle(True)
-                if len(self.um_list) == 0:
-                        # Handle the case where there are no packages to be
-                        # updated but plan for image update indicates something
-                        # needs to be done; most likely some package removal.
-                        self.__do_image_update(um_special = True)
-                else:
-                        self.initial_selection = True
-                        self.w_um_treeview.set_cursor(0, None)
-                        self.initial_selection = False
-                        if self.update_all_proceed:
-                                self.__on_updateall_button_clicked(None)
-                                self.update_all_proceed = False
-                        
-        def __mark_cell_data_default_function(self, column, renderer, model, itr, data):
-                if itr:
-                        if model.get_value(itr, UM_STATUS) != None:
-                                self.__set_renderer_active(renderer, False)
-                        else:
-                                self.__set_renderer_active(renderer, True)
-                                
-        @staticmethod
-        def __set_renderer_active(renderer, active):
-                if active:
-                        renderer.set_property("sensitive", True)
-                        renderer.set_property("mode", gtk.CELL_RENDERER_MODE_ACTIVATABLE)
-                else:
-                        renderer.set_property("sensitive", False)
-                        renderer.set_property("mode", gtk.CELL_RENDERER_MODE_INERT)
-                
-        def __get_icon_pixbuf(self, icon_name, size=16):
-                return gui_misc.get_icon(self.icon_theme, icon_name, size)
-
-        def __get_selected_fmris(self):
-                model = self.w_um_treeview.get_model()
-                iter_next = model.get_iter_first()
-                list_of_selected_fmris = []
-                while iter_next != None:
-                        if model.get_value(iter_next, UM_INSTALL_MARK):
-                                list_of_selected_fmris.append(model.get_value(iter_next,
-                                    UM_NAME))
-                        iter_next = model.iter_next(iter_next)
-                return list_of_selected_fmris
-
-        def init_tree_views(self):
-                model = self.w_um_treeview.get_model()
-                toggle_renderer = gtk.CellRendererToggle()
-                toggle_renderer.connect('toggled', self.__active_pane_toggle, model)
-                column = gtk.TreeViewColumn("", toggle_renderer,
-                    active = UM_INSTALL_MARK)
-                column.set_cell_data_func(toggle_renderer,
-                    self.__mark_cell_data_default_function, None)                    
-                toggle_renderer.set_property("activatable", True)
-                column.set_expand(False)
-
-                # Show Cancel, Update All only
-                self.w_select_checkbox.hide()
-                self.w_um_install_button.hide()
-                self.w_um_intro_label.set_markup(_(
-                    "<b>Updates are available for the following packages</b>"))
-                self.w_um_intro2_label.set_markup(_(
-                    "Click Update All to update all these packages."))
-                        
-                render_pixbuf = gtk.CellRendererPixbuf()
-                column = gtk.TreeViewColumn()
-                column.pack_start(render_pixbuf, expand = False)
-                column.add_attribute(render_pixbuf, "pixbuf", UM_STATUS)
-                column.set_title("   ")
-                # Hiding Status column for now
-                #self.w_um_treeview.append_column(column)
-                
-                name_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(_("Name"), name_renderer,
-                    text = UM_NAME)
-                column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
-                column.set_expand(True)
-                self.w_um_treeview.append_column(column)
-
-                column = gtk.TreeViewColumn()
-                render_pixbuf = gtk.CellRendererPixbuf()
-                column.pack_start(render_pixbuf, expand = True)
-                column.add_attribute(render_pixbuf, "pixbuf", UM_REBOOT)
-                # Hiding Reboot required column for now
-                # self.w_um_treeview.append_column(column)
-
-                version_renderer = gtk.CellRendererText()
-                version_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(_("Current Version"), version_renderer,
-                    text = UM_LATEST_VER) 
-                column.set_cell_data_func(version_renderer,
-                    self.__cell_data_function, None)
-                column.set_expand(True)
-                self.w_um_treeview.append_column(column)
-
-                size_renderer = gtk.CellRendererText()
-                size_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(_("Size (Meg)"), size_renderer,
-                    text = UM_SIZE)
-                column.set_cell_data_func(size_renderer, self.__cell_data_function, None)
-                column.set_expand(True)
-                # XXX Hiding Size as it takes too long to fetch at the minute
-                #self.w_um_treeview.append_column(column)
-
-                #Added selection listener
-                self.package_selection = self.w_um_treeview.get_selection()
-                self.package_selection.set_mode(gtk.SELECTION_SINGLE)
-                self.package_selection.connect("changed",
-                    self.__on_package_selection_changed, None)
-
-                # Setup Icons
-                self.w_um_dialog.set_icon(self.__get_icon_pixbuf("updatemanager", 36))
-
-        def __get_image_path(self):
-                '''This function gets the image path or the default'''
-                if self.image_dir_arg != None:
-                        return self.image_dir_arg
-
+        def __get_image_path():
                 try:
                         image_directory = os.environ["PKG_IMAGE"]
                 except KeyError:
@@ -349,319 +141,28 @@ class Updatemanager:
                         if len(image_directory) == 0:
                                 image_directory = IMAGE_DIRECTORY_DEFAULT
                 return image_directory
-                
-        def get_updates_to_list(self):
-                '''This function fetches a list of the updates
-                        that are available to list'''
-                um_list = self.__get_um_liststore()
-
-                # Use check_for_updates to determine whether updates
-                # are available
-                return_code = subprocess.call([CHECK_FOR_UPDATES,
-                    self.__get_image_path()])
-                if return_code == enumerations.NO_UPDATES_AVAILABLE:
-                        self.progress_stop_thread = True
-                        gobject.idle_add(self.__display_noupdates)
-                        return
-
-                self.api_obj = self.__get_api_obj()
-
-                count = 0
-                list_option = api.ImageInterface.LIST_UPGRADABLE
-                if list_uninstalled:
-                        list_option = api.ImageInterface.LIST_INSTALLED_NEWEST
-                try:
-                        pkgs_from_api = self.api_obj.get_pkg_list(pkg_list = list_option)
-                except api_errors.ApiException, ex:
-                        gobject.idle_add(gui_misc.error_occurred, 
-                            self.w_um_dialog, 
-                            str(ex), _("Update Manager"))
-                        return
-                for entry in pkgs_from_api:
-                        (pkg_pub, pkg_name, ver) = entry[0]
-                        states = entry[3]
-                        pkg_fmri = fmri.PkgFmri("%s@%s" % (pkg_name, ver),
-                            publisher = pkg_pub)
-                        add_package = True
-                        if list_uninstalled:
-                                if api.PackageInfo.INSTALLED in states:
-                                        add_package = False
-
-                        if add_package:
-                                count += 1
-                                um_list.insert(count, [count, False, None, pkg_name, 
-                                    None, pkg_fmri.get_version(), None, 
-                                    pkg_fmri.get_pkg_stem()])
-
-                if debug:
-                        print _("count: %d") % count
-
-                self.progress_stop_thread = True
-                gobject.idle_add(self.w_um_treeview.set_model, um_list)
-                self.um_list = um_list                
-                gobject.idle_add(self.__set_initial_selection)
-
-                # XXX: Currently this will fetch the sizes but it really slows down the
-                # app responsiveness - until we get caching I think we should just hide
-                # the size column
-                # gobject.timeout_add(1000, self.__setup_sizes)
-                
-        def __get_api_obj(self):
-                if self.api_obj == None:
-                        self.api_obj = gui_misc.get_api_object(self.__get_image_path(),
-                            progress.NullProgressTracker(), self.w_um_dialog)
-                return self.api_obj
-
-        def __display_nopermissions(self):
-                self.w_um_intro_label.set_markup(
-                    _("<b>You do not have sufficient permissions</b>"))
-                self.w_um_intro2_label.set_markup(
-                    _("Please restart pm-updatemanager using pfexec."))
-                self.__setup_display()
-
-        def __display_noupdates(self):
-                self.w_um_intro_label.set_markup(_("<b>No Updates available</b>"))
-                self.w_um_intro2_label.hide()
-                self.__setup_display()
-
-        def __setup_display(self):
-                self.w_um_treeview_frame.hide()
-                self.w_um_expander.hide()
-                self.w_um_install_button.set_sensitive(False)
-                self.w_um_updateall_button.hide()
-                self.w_um_cancel_button.hide()
-                self.w_um_close_button.show()
-                self.w_select_checkbox.set_active(False)
-                self.w_select_checkbox.set_sensitive(False)
-                self.w_um_dialog.present()
-                self.w_um_dialog.resize(420, 100)
-                
-        @staticmethod
-        def __removed_filter(model, itr):
-                '''This function filters category in the main application view'''
-                return True
-                
-        def __on_package_selection_changed(self, selection, widget):
-                '''This function is for handling package selection changes'''
-                model, itr = selection.get_selected()
-                if self.show_info_id != 0:
-                        gobject.source_remove(self.show_info_id)
-                        self.show_info_id = 0
-                if itr:                        
-                        pkg_name =  model.get_value(itr, UM_NAME)
-                        infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text(
-                            _("\nFetching details for %s ...") % pkg_name)
-                        if self.initial_selection:
-                                self.last_show_info_id = self.show_info_id = \
-                                    gobject.idle_add(self.__show_info, model,
-                                    model.get_path(itr))
-                        else:
-                                self.last_show_info_id = self.show_info_id = \
-                                    gobject.timeout_add(SHOW_INFO_DELAY,
-                                    self.__show_info, model, model.get_path(itr))
-
-        def __show_info(self, model, path):
-                self.show_info_id = 0
-
-                itr = model.get_iter(path)
-                stem = model.get_value(itr, UM_STEM)
-                pkg_name =  model.get_value(itr, UM_NAME)
-                Thread(target = self.__show_package_info,
-                    args=(stem, pkg_name, self.last_show_info_id)).start()
-
-        def __show_package_info(self, stem, pkg_name, info_id):
-                self.api_lock.acquire()
-                self.__show_package_info_without_lock(stem, pkg_name, info_id)
-                gui_misc.release_lock(self.api_lock)
-
-        def __show_package_info_without_lock(self, stem, pkg_name, info_id):
-                local_info = None
-                remote_info = None
-                if info_id == self.last_show_info_id:
-                        local_info = gui_misc.get_pkg_info(self, self.__get_api_obj(),
-                            stem, True) 
-                if info_id == self.last_show_info_id:
-                        remote_info = gui_misc.get_pkg_info(self, self.__get_api_obj(),
-                            stem, False) 
-                if info_id == self.last_show_info_id:
-                        gobject.idle_add(self.__update_package_info, stem,
-                            pkg_name, local_info, remote_info, info_id)
-                return 
- 
-        def  __update_package_info(self, stem, pkg_name, local_info, remote_info,
-            info_id):
-                if info_id != self.last_show_info_id:
-                        return
-
-                if not local_info and not remote_info:
-                        infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text("")
-                        textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter,
-                            _("\nNo details available"), "bold")
-                        return
-                gui_misc.set_package_details(pkg_name, local_info,
-                    remote_info, self.w_um_textview, self.pkg_installed_icon,
-                    self.pkg_not_installed_icon, self.pkg_update_available_icon)
-
-        def __on_um_dialog_close(self, widget):
-                self.__exit_app()
-
-        def __on_cancel_button_clicked(self, widget):
-                self.__exit_app()
-                
-        @staticmethod
-        def __on_help_button_clicked(widget):
-                gui_misc.display_help("um_info")
 
         def __exit_app(self, restart = False):
                 gui_misc.shutdown_logging()
                 if restart:
-                        if self.image_dir_arg:
-                                gobject.spawn_async([self.application_path, "-R",
-                                    self.image_dir_arg, "-U"])
-                        else:
-                                gobject.spawn_async([self.application_path, "-U"])
-                self.w_um_dialog.hide()
+                        try:
+                                if self.image_dir_arg:
+                                        gobject.spawn_async([self.application_path,
+                                            "--nice", "--image-dir",
+                                            self.image_dir_arg])
+                                else:
+                                        gobject.spawn_async([self.application_path,
+                                            "--nice"])
+                        except gobject.GError, ex:
+                                if debug:
+                                        print >> sys.stderr, "Exception occurred: %s" % ex
+                                logger.error(ex)
                 gtk.main_quit()
                 sys.exit(0)
                 return True
-        
+
         def restart_after_ips_update(self):
                 self.__exit_app(restart = True)
-
-        def __on_updateall_button_clicked(self, widget):
-                self.__selectall_toggle(True)
-                self.__do_image_update()
-
-        def __do_image_update(self, um_special = False):
-                try:
-                        self.__get_api_obj().reset()
-                except api_errors.ApiException, ex:
-                        gobject.idle_add(gui_misc.error_occurred, 
-                            self.w_um_dialog, 
-                            str(ex), _("Update Manager"))
-                        return
-                installupdate.InstallUpdate([], self,
-                    self.__get_image_path(), action = enumerations.IMAGE_UPDATE,
-                    parent_name = _("Update Manager"),
-                    pkg_list = [gui_misc.package_name["SUNWipkg"],
-                    gui_misc.package_name["SUNWipkg-gui"],
-                    gui_misc.package_name["SUNWipkg-um"]],
-                    main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36),
-                    um_special = um_special,
-                    api_lock = self.api_lock)
-                return
-               
-        def __on_selectall_checkbutton_toggled(self, widget):
-                self.__selectall_toggle(widget.get_active())
-                
-        def __prompt_to_load_beadm(self):
-                msgbox = gtk.MessageDialog(parent = self.w_progress_dialog,
-                    buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
-                    type = gtk.MESSAGE_ERROR,
-                    message_format = _(
-                    "Not enough disc space, the Update All action cannot "
-                    "be performed.\n\n"
-                    "Click OK to manage your existing BEs and free up disk space or "
-                    "Cancel to cancel Update All."))
-                msgbox.set_title(_("Not Enough Disc Space"))
-                result = msgbox.run()
-                msgbox.destroy()
-                if result == gtk.RESPONSE_OK:
-                        gobject.idle_add(self.__create_beadm)
-                        
-        def __create_beadm(self):
-                self.gladefile = \
-                        "/usr/share/package-manager/packagemanager.glade"
-                beadm.Beadmin(self)
-                return False
-                
-        @staticmethod
-        def __unique(list1, list2):
-                """Return a list containing all items
-                        in 'list1' that are not in 'list2'"""
-                list2 = dict([(k, None) for k in list2])
-                return [item for item in list1 if item not in list2]
-                
-        @staticmethod
-        def __on_um_expander_activate(widget):
-                return
-
-        def __selectall_toggle(self, select):
-                for row in self.um_list:
-                        row[UM_INSTALL_MARK] = select
-                if select:
-                        self.toggle_counter += len(self.um_list)
-                        self.w_um_install_button.set_sensitive(True)
-                else:
-                        self.toggle_counter = 0
-                        self.w_um_install_button.set_sensitive(False)
-
-        def __active_pane_toggle(self, cell, filtered_path, filtered_model):
-                model = self.w_um_treeview.get_model()
-                itr = model.get_iter(filtered_path)
-                if itr:
-                        installed = model.get_value(itr, UM_STATUS)
-                        if installed is None:
-                                modified = model.get_value(itr, UM_INSTALL_MARK)
-                                model.set_value(itr, UM_INSTALL_MARK, not modified)
-                        if not modified:
-                                self.toggle_counter += 1
-                        else:
-                                self.toggle_counter -= 1
-
-                        if self.toggle_counter > 0:
-                                self.w_um_install_button.set_sensitive(True)
-                        else:
-                                self.toggle_counter = 0
-                                self.w_um_install_button.set_sensitive(False)
-                                
-        @staticmethod
-        def __cell_data_function(column, renderer, model, itr, data):
-                '''Function which sets the background colour to black if package is 
-                selected'''
-                if itr:
-                        if model.get_value(itr, 1):
-                                #XXX Setting BOLD looks too noisy - disable for now
-                                # renderer.set_property("weight", pango.WEIGHT_BOLD)
-                                renderer.set_property("weight", pango.WEIGHT_NORMAL)
-                        else:
-                                renderer.set_property("weight", pango.WEIGHT_NORMAL)
-        
-        def __on_progressdialog_progress(self):
-                if not self.progress_stop_thread:
-                        self.w_progressbar.pulse()
-                        return True
-                else:
-                        self.w_progress_dialog.hide()
-                return False
-
-        def setup_progressdialog_show(self, title):
-                infobuffer = self.w_progressinfo_textview.get_buffer()
-                infobuffer.set_text("")
-                self.w_progressinfo_label.hide()                        
-                self.w_progressinfo_expander.hide()    
-                self.w_progressinfo_separator.hide()                            
-                self.w_progress_cancel.hide() 
-                self.w_progress_ok.hide()
-                self.w_progress_install_vbox.hide()   
-                self.w_progress_closeon_finish_chk.hide()
-                self.w_progress_ok.hide()                        
-                self.w_progress_dialog.set_title(title)                
-                self.w_progress_dialog.show()
-                self.progress_stop_thread = False
-                gobject.timeout_add(100, self.__on_progressdialog_progress)
-
-        def setup_updates(self):
-                if self.user_rights:
-                        Thread(target = self.get_updates_to_list, args = ()).start()
-                else:
-                        self.progress_stop_thread = True
-                        self.__display_nopermissions()
-                return False
 
         def update_package_list(self, update_list):
                 self.pylintstub = update_list
@@ -674,46 +175,233 @@ class Updatemanager:
         def install_terminated(self):
                 self.__exit_app()
 
-#-------------------- remove those
+        def __check_for_updates_cache_only(self):
+                if self.nice:
+                        os.nice(20)
+
+                if self.api_obj == None:
+                        return enumerations.UPDATES_UNDETERMINED
+
+                ret = self.__check_last_refresh()
+                if ret == enumerations.UPDATES_AVAILABLE:
+                        if debug:
+                                print >> sys.stderr, "From cache: Updates Available"
+                        self.__send_return(ret)
+                elif ret == enumerations.NO_UPDATES_AVAILABLE:
+                        if debug:
+                                print >> sys.stderr, \
+                                        "From cache: No Updates Available"
+                        self.__send_return(ret)
+                elif debug:
+                        print >> sys.stderr, "From cache: Updates Undetermined"
+                return ret
+
+        def __check_for_updates(self):
+                ret = self.__check_for_updates_cache_only()
+                if ret != enumerations.UPDATES_UNDETERMINED:
+                        return
+                if debug:
+                        print >> sys.stderr, \
+                                "Checking image for updates..."
+                if self.api_obj == None:
+                        self.__send_return(enumerations.UPDATES_UNDETERMINED)
+                        return
+                try:
+                        plan_ret = \
+                            self.api_obj.plan_update_all(sys.argv[0],
+                            refresh_catalogs = True,
+                            noexecute = True, force = True, verbose = False)
+                        stuff_to_do = plan_ret[0]
+                except api_errors.CatalogRefreshException, cre:
+                        crerr = nongui_misc.get_catalogrefresh_exception_msg(cre)
+                        if debug:
+                                print >> sys.stderr, "Exception occurred: %s" % crerr
+                        logger.error(crerr)
+                        self.__send_return(enumerations.UPDATES_UNDETERMINED)
+                        return
+                except api_errors.ApiException, e:
+                        err = str(e)
+                        if debug:
+                                print >> sys.stderr, "Exception occurred: %s" % err
+                        logger.error(err)
+                        self.__send_return(enumerations.UPDATES_UNDETERMINED)
+                        return
+
+                self.__dump_updates_available(stuff_to_do)
+                if stuff_to_do:
+                        if debug:
+                                print >> sys.stderr, "From image: Updates Available"
+                        self.__send_return(enumerations.UPDATES_AVAILABLE)
+                else:
+                        if debug:
+                                print >> sys.stderr, "From image: No Updates Available"
+                        self.__send_return(enumerations.NO_UPDATES_AVAILABLE)
+
+        def __send_return(self, status):
+                self.return_status = status
+
+        def __check_last_refresh(self):
+                cache_dir = nongui_misc.get_cache_dir(self.api_obj)
+                if not cache_dir:
+                        return enumerations.UPDATES_UNDETERMINED
+                try:
+                        info = nongui_misc.read_cache_file(os.path.join(
+                            cache_dir, CACHE_NAME + '.cpl'))
+                        if len(info) == 0:
+                                if debug:
+                                        print >> sys.stderr, "No cache"
+                                return enumerations.UPDATES_UNDETERMINED
+                        # pylint: disable-msg=E1103
+                        if info.get("version") != CACHE_VERSION:
+                                if debug:
+                                        print >> sys.stderr, "Cache version mismatch: %s"\
+                                            % (info.get("version") + " " + CACHE_VERSION)
+                                return enumerations.UPDATES_UNDETERMINED
+                        if info.get("os_release") != os.uname()[2]:
+                                if debug:
+                                        print >> sys.stderr, "OS release mismatch: %s"\
+                                            % (info.get("os_release") + " " + \
+                                            os.uname()[2])
+                                return enumerations.UPDATES_UNDETERMINED
+                        if info.get("os_version") != os.uname()[3]:
+                                if debug:
+                                        print >> sys.stderr, "OS version mismatch: %s"\
+                                            % (info.get("os_version") + " " + \
+                                            os.uname()[3])
+                                return enumerations.UPDATES_UNDETERMINED
+                        old_publishers = info.get("publishers")
+                        count = 0
+                        for p in self.api_obj.get_publishers():
+                                if p.disabled:
+                                        continue
+                                try:
+                                        if old_publishers[p.prefix] != p.last_refreshed:
+                                                return enumerations.UPDATES_UNDETERMINED
+                                except KeyError:
+                                        return enumerations.UPDATES_UNDETERMINED
+                                count += 1
+
+                        if count != len(old_publishers):
+                                return enumerations.UPDATES_UNDETERMINED
+                        n_updates = 0
+                        n_installs = 0
+                        n_removes = 0
+                        if info.get("updates_available"):
+                                n_updates = info.get("updates")
+                                n_installs = info.get("installs")
+                                n_removes = info.get("removes")
+                        # pylint: enable-msg=E1103
+                        if self.check_cache_only:
+                                print "n_updates: %d\nn_installs: %d\nn_removes: %d" % \
+                                        (n_updates, n_installs, n_removes)
+                        if (n_updates + n_installs + n_removes) > 0:
+                                return enumerations.UPDATES_AVAILABLE
+                        else:
+                                return enumerations.NO_UPDATES_AVAILABLE
+
+                except (UnpicklingError, IOError):
+                        return enumerations.UPDATES_UNDETERMINED
+
+        def __dump_updates_available(self, stuff_to_do):
+                cache_dir = nongui_misc.get_cache_dir(self.api_obj)
+                if not cache_dir:
+                        return
+                publisher_list = {}
+                for p in self.api_obj.get_publishers():
+                        if p.disabled:
+                                continue
+                        publisher_list[p.prefix] = p.last_refreshed
+                n_installs = 0
+                n_removes = 0
+                n_updates = 0
+                plan_desc = self.api_obj.describe()
+                if plan_desc:
+                        plan = plan_desc.get_changes()
+                        for pkg_plan in plan:
+                                orig = pkg_plan[0]
+                                dest = pkg_plan[1]
+                                if orig and dest:
+                                        n_updates += 1
+                                elif not orig and dest:
+                                        n_installs += 1
+                                elif orig and not dest:
+                                        n_removes += 1
+                dump_info = {}
+                dump_info["version"] = CACHE_VERSION
+                dump_info["os_release"] = os.uname()[2]
+                dump_info["os_version"] = os.uname()[3]
+                dump_info["updates_available"] = stuff_to_do
+                dump_info["publishers"] = publisher_list
+                dump_info["updates"] = n_updates
+                dump_info["installs"] = n_installs
+                dump_info["removes"] = n_removes
+
+                try:
+                        nongui_misc.dump_cache_file(os.path.join(
+                            cache_dir, CACHE_NAME + '.cpl'), dump_info)
+                except IOError, e:
+                        err = str(e)
+                        if debug:
+                                print >> sys.stderr, "Failed to dump cache: %s" % err
+                        logger.error(err)
+                return
+
+###############################################################################
+#-----------------------------------------------------------------------------#
+# Main
+#-----------------------------------------------------------------------------#
+
 def main():
+        if set_check_all or set_check_cache:
+                sys.exit(updatemanager.return_status)
         gtk.main()
         return 0
-        
-if __name__ == "__main__":
-        um = Updatemanager()
-        list_uninstalled = False
-        debug = False
 
+if __name__ == '__main__':
+        misc.setlocale(locale.LC_ALL, "")
+        gettext.install("pkg", "/usr/share/locale")
+        debug = False
+        set_nice = False
+        set_check_all = False
+        set_check_cache = False
+        image_dir = "/"
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "huR:U",
-                    ["help", "uninstalled", "image-dir=", "update-all"])
-        except getopt.error, msg:
-                print "%s, for help use --help" % msg
-                sys.exit(2)
+                opts, pargs = getopt.getopt(sys.argv[1:], "hdnacR:",
+                    ["help", "debug", "nice", "checkupdates-all", "checkupdates-cache",
+                    "image-dir="])
+        except getopt.GetoptError, oex:
+                print >> sys.stderr, \
+                        ("Usage: illegal option -- %s, for help use -h or --help" %
+                            oex.opt )
+                sys.exit(enumerations.UPDATES_UNDETERMINED)
+        for opt, arg in opts:
+                if opt in ("-h", "--help"):
+                        print >> sys.stderr, """\n\
+Use -h (--help) to print out help.
+Use -d (--debug) to run in debug mode.
+Use -n (--nice) to run at nice level 20.
+Use -a (--checkupdates-all) to check for updates from cache and image (no output to stdout).
+Use -c (--checkupdates-cache) to check for updates from cache only (output results to stdout).
+Use -R (--image-dir) to specify image directory (defaults to '/')"""
+                        sys.exit(0)
+                elif opt in ( "-n", "--nice"):
+                        set_nice = True
+                elif opt in ("-d", "--debug"):
+                        debug = True
+                elif opt in ( "-a", "--checkupdates-all"):
+                        set_check_all = True
+                elif opt in ( "-c", "--checkupdates-cache"):
+                        set_check_cache = True
+                elif opt in ("-R", "--image-dir"):
+                        image_dir = arg
 
         if os.path.isabs(sys.argv[0]):
-                um.application_path = sys.argv[0]
+                app_path = sys.argv[0]
         else:
                 cmd = os.path.join(os.getcwd(), sys.argv[0])
-                um.application_path = os.path.realpath(cmd)
+                app_path = os.path.realpath(cmd)
 
-        for option, argument in opts:
-                if option in ("-h", "--help"):
-                        print """\
-Use -r (--refresh) to force a refresh before checking for updates.
-Use -R (--image-dir) to specify image directory.
-Use -U (--update-all) to proceed with Update All"""
-                        sys.exit(0)
-                if option in ("-u", "--uninstalled"):
-                        list_uninstalled = True
-                if option in ("-R", "--image-dir"):
-                        um.image_dir_arg = argument
-                if option in ("-U", "--update-all"):
-                        um.update_all_proceed = True
+        updatemanager = Updatemanager(image_dir, app_path, set_nice,
+            set_check_all, set_check_cache)
 
-        um.init_tree_views()
-
-        um.setup_progressdialog_show(_("Checking for new software"))
-        gobject.idle_add(um.setup_updates)
         main()
-

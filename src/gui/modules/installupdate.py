@@ -75,12 +75,14 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
             action = -1, parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
-            confirmation_list = None, api_lock = None, gconf = pmgconf.PMGConf(),
-            um_special = False):
+            confirmation_list = None, show_confirmation = False, api_lock = None,
+            gconf = None):
                 if action == -1:
                         return
-                progress.GuiProgressTracker.__init__(self)
                 self.gconf = gconf
+                progress.GuiProgressTracker.__init__(self, indent=True)
+                if self.gconf == None:
+                        self.gconf = pmgconf.PMGConf()
                 self.retry = False
                 self.web_install = web_install
                 self.web_updates_list = None
@@ -93,13 +95,40 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 self.parent_name = parent_name
                 self.confirmation_list = confirmation_list
-                self.um_special = um_special
+                if confirmation_list == None:
+                        self.confirmation_list = []
+                self.show_confirmation = show_confirmation
+                if main_window == None:
+                        self.top_level = True
+                else:
+                        self.top_level = False
                 self.ipkg_ipkgui_list = pkg_list
                 self.icon_confirm_dialog = icon_confirm_dialog
                 self.title = title
                 self.w_main_window = main_window
                 if self.icon_confirm_dialog == None and self.w_main_window != None:
                         self.icon_confirm_dialog = self.w_main_window.get_icon()
+
+                gladefile = os.path.join(self.parent.application_dir,
+                    "usr/share/package-manager/packagemanager.ui")
+                builder = gtk.Builder()
+                builder.add_from_file(gladefile)
+                self.w_dialog = builder.get_object("createplandialog")
+                self.original_title = None
+                if self.w_main_window:
+                        self.original_title = self.w_main_window.get_title()
+                if self.top_level:
+                        globals()["DIALOG_INSTALL_COLLAPSED_HEIGHT"] = 292
+                        self.w_dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_NORMAL)
+                        self.w_dialog.set_icon(self.icon_confirm_dialog)
+                        self.w_main_window = self.w_dialog
+                        self.original_title = _("Update Manager")
+                        w_icon_um = builder.get_object("icon_um")
+                        w_icon_um.set_from_pixbuf(self.icon_confirm_dialog)
+                else:
+                        um_vbox = builder.get_object("um_title_vbox")
+                        um_vbox.set_property("visible", False)
+
                 self.license_cv = Condition()
                 self.list_of_packages = list_of_packages
                 self.accept_license_done = False
@@ -119,13 +148,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.prog = 0
                 self.progress_stop_timer_running = False
                 self.pylint_stub = None
-                self.original_title = None
                 self.reset_id = 0
                 self.reset_window_id = 0
                 self.display_download_id = 0
                 self.update_progress_id = 0
-                if self.w_main_window:
-                        self.original_title = self.w_main_window.get_title()
                 self.stages = {
                           1:[_("Preparing..."), _("Preparation")],
                           2:[_("Downloading..."), _("Download")],
@@ -135,10 +161,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
                 self.update_list = {}
-                gladefile = os.path.join(self.parent.application_dir,
-                    "usr/share/package-manager/packagemanager.ui")
-                builder = gtk.Builder()
-                builder.add_from_file(gladefile)
 
                 self.w_confirm_dialog = builder.get_object("confirmdialog")
                 self.w_install_expander = \
@@ -167,14 +189,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                     builder.get_object("confirmdialog_confirm_label")
                 self.w_confirm_donotshow =  \
                     builder.get_object("confirm_donotshow")
-                if self.um_special:
-                        self.w_confirm_donotshow.hide()
 
                 self.w_confirm_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_confirm_dialog,
                     self.w_main_window)
 
-                self.w_dialog = builder.get_object("createplandialog")
                 self.w_expander = builder.get_object("details_expander")
                 self.w_cancel_button = builder.get_object("cancelcreateplan")
                 self.w_close_button = builder.get_object("closecreateplan")
@@ -246,7 +265,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.dlg_done_collapsed_h = DIALOG_DONE_COLLAPSED_HEIGHT
 
                 self.__setup_signals()
-                gui_misc.set_modal_and_transient(self.w_dialog, self.w_main_window)
+                if not self.top_level:
+                        gui_misc.set_modal_and_transient(self.w_dialog,
+                            self.w_main_window)
                 self.w_license_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_license_dialog,
                     self.w_dialog)
@@ -360,7 +381,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.w_stage2.hide()
                         self.w_dialog.set_title(_("Remove"))
 
-                        if self.confirmation_list != None:
+                        if self.show_confirmation and len(self.confirmation_list) > 0:
                                 self.w_confirm_dialog.set_title(_("Remove Confirmation"))
                                 pkgs_no = len(self.confirmation_list)
                                 remove_text = ngettext(
@@ -388,10 +409,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         else:
                                 self.__proceed_with_stages()
                 elif self.action == enumerations.IMAGE_UPDATE:
-                        if global_settings.client_name == gui_misc.get_pm_name():
+                        if not self.top_level:
                                 self.w_dialog.set_title(_("Updates"))
-                        else:
-                                self.w_dialog.set_title(_("Update All"))
                         self.__proceed_with_stages()
                 else:
                         if self.title != None:
@@ -399,7 +418,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         else:
                                 self.w_dialog.set_title(_("Install/Update"))
 
-                        if self.confirmation_list != None:
+                        if self.show_confirmation and len(self.confirmation_list) > 0:
                                 self.w_remove_expander.hide()
                                 to_install = gtk.ListStore(str, str, str)
                                 to_update = gtk.ListStore(str, str, str)
@@ -503,6 +522,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.action == enumerations.INSTALL_UPDATE or \
                     self.action == enumerations.REMOVE:
                         self.__on_confirm_cancel_button_clicked(None)
+                        if self.top_level:
+                                self.w_main_window = self.w_dialog
                         self.__proceed_with_stages()
                 else:
                         self.w_expander.set_expanded(self.gconf.details_expanded)
@@ -511,11 +532,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__proceed_with_stages(continue_operation = True)
 
         def __on_confirmdialog_delete_event(self, widget, event):
-                self.__on_confirm_cancel_button_clicked(None)
+                self.__on_confirm_cancel_button_clicked(widget)
                 return True
 
         def __on_confirm_cancel_button_clicked(self, widget):
                 self.w_confirm_dialog.hide()
+                if self.top_level and widget: # User clicked cacnel, widget != None
+                        gobject.idle_add(self.parent.install_terminated)
 
         def __on_createplandialog_delete(self, widget, event):
                 self.__on_cancelcreateplan_clicked(None)
@@ -557,6 +580,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                             gtk.STOCK_CANCEL, gtk.ICON_SIZE_MENU)
                         gobject.idle_add(self.w_stages_label.set_markup, cancel_txt)
                         self.w_cancel_button.set_sensitive(False)
+                        if self.top_level:
+                                gobject.idle_add(self.parent.install_terminated)
                 if self.operations_done or self.operations_done_ex:
                         self.w_dialog.hide()
                         if self.web_install:
@@ -568,8 +593,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         gobject.idle_add(self.parent.update_package_list,
                                             self.web_updates_list)
                                 return
-                        if self.um_special:
-                                self.parent.install_terminated()
+                        if self.top_level:
+                                gobject.idle_add(self.parent.install_terminated)
                         gobject.idle_add(self.parent.update_package_list, None)
 
         def __on_closecreateplan_clicked(self, widget):
@@ -585,8 +610,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:
                         return True
-                upgrade_needed = self.api_o.plan_install(
-                    self.ipkg_ipkgui_list)
+                upgrade_needed = self.api_o.plan_install(self.ipkg_ipkgui_list)
                 return not upgrade_needed
 
         def __proceed_with_stages(self, continue_operation = False):
@@ -859,7 +883,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if stuff_todo:
 
                         if (self.action == enumerations.IMAGE_UPDATE and
-                            (self.confirmation_list != None or self.um_special)):
+                            self.show_confirmation):
                                 gobject.idle_add(self.__show_image_update_confirmation)
                         else:
                                 self.__continue_with_stages_thread()
@@ -909,6 +933,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 len_to_install = len(to_install)
                 len_to_remove = len(to_remove)
 
+                if len_to_update == 0 and len_to_install == 0 and len_to_remove == 0:
+                        # Never show an empty confirmation dialog just proceed
+                        self.__on_confirm_ok_button_clicked(None)
+                        return
+
                 self.__resize_confirm_frames(len_to_update,
                     len_to_install, len_to_remove)
 
@@ -943,19 +972,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.w_remove_expander.hide()
 
                 no_pkgs = len(to_update) + len(to_install) + len(to_remove)
-                if global_settings.client_name == gui_misc.get_pm_name():
-                        operation_txt = _("Updates Confirmation")
-                        install_text = ngettext(
-                            "Review the package which will be affected by Updates",
-		            "Review the packages which will be affected by Updates", no_pkgs)
-                else:
-                        if self.um_special:
-                                operation_txt = _("Update All - Removal Only")
-                        else:
-                                operation_txt = _("Update All Confirmation")
-                        install_text = ngettext(
-                            "Review the package which will be affected by Update All",
-		            "Review the packages which will be affected by Update All", no_pkgs)
+                operation_txt = _("Updates Confirmation")
+                install_text = ngettext(
+                    "Review the package which will be affected by Updates",
+                    "Review the packages which will be affected by Updates", no_pkgs)
 
                 self.w_confirm_dialog.set_title(operation_txt)
                 self.w_confirm_label.set_markup("<b>"+install_text+"</b>")
@@ -963,7 +983,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_confirm_ok_button.grab_focus()
                 self.__start_substage(None,
                             bounce_progress=False)
-                self.w_dialog.hide()
+                if self.top_level:
+                        self.__reset_window_title()
+                else:
+                        self.w_dialog.hide()
                 self.w_confirm_dialog.show()
 
 
@@ -1017,7 +1040,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.api_o.prepare()
                 except api_errors.PlanLicenseErrors:
                         gobject.idle_add(self.__do_dialog_hide)
-                        if self.um_special:
+                        if self.top_level:
                                 gobject.idle_add(self.parent.install_terminated)
                         self.stop_bouncing_progress()
                         return
@@ -1040,27 +1063,26 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.__operations_done)
 
         def __start_stage_one(self):
-                self.current_stage_label = self.w_stage1_label
-                self.current_stage_icon = self.w_stage1_icon
-                self.__start_stage(self.stages.get(1))
+                self.__start_stage(self.stages.get(1), self.w_stage1_label,
+                    self.w_stage1_icon)
                 self.update_details_text(self.stages.get(1)[0]+"\n", "bold")
 
         def __start_stage_two(self):
                 # End previous stage
                 self.__end_stage()
-                self.current_stage_label = self.w_stage2_label
-                self.current_stage_icon = self.w_stage2_icon
-                self.__start_stage(self.stages.get(2))
+                self.__start_stage(self.stages.get(2), self.w_stage2_label,
+                    self.w_stage2_icon)
                 self.update_details_text(self.stages.get(2)[0]+"\n", "bold")
 
         def __start_stage_three(self):
                 self.__end_stage()
-                self.current_stage_label = self.w_stage3_label
-                self.current_stage_icon = self.w_stage3_icon
-                self.__start_stage(self.stages.get(3))
+                self.__start_stage(self.stages.get(3),  self.w_stage3_label,
+                    self.w_stage3_icon)
                 self.update_details_text(self.stages.get(3)[0]+"\n", "bold")
 
-        def __do_start_stage(self, stage_text):
+        def __do_start_stage(self, stage_text, current_stage_label, current_stage_icon):
+                self.current_stage_label = current_stage_label
+                self.current_stage_icon = current_stage_icon
                 self.current_stage_label_done = stage_text[1]
                 if self.w_main_window:
                         new_title = stage_text[0]
@@ -1069,8 +1091,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.current_stage_icon.set_from_stock(gtk.STOCK_GO_FORWARD,
                     gtk.ICON_SIZE_MENU)
 
-        def __start_stage(self, stage_text):
-                gobject.idle_add(self.__do_start_stage, stage_text)
+        def __start_stage(self, stage_text, current_stage_label, current_stage_icon):
+                gobject.idle_add(self.__do_start_stage, stage_text, current_stage_label,
+                    current_stage_icon)
 
         def __do_end_stage(self):
                 self.current_stage_label.set_text(self.current_stage_label_done)
@@ -1159,7 +1182,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __start_substage(self, text, bounce_progress=True):
                 if text:
                         self.update_label_text(text)
-                        self.update_details_text(text + "\n")
+                        self.update_details_text(text + "\n", "level1")
                 if bounce_progress:
                         if self.stopped_bouncing_progress:
                                 self.start_bouncing_progress()
@@ -1305,6 +1328,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __operations_done(self, alternate_done_txt = None):
                 self.__reset_window_title()
+                self.label_text = None
                 done_txt = _("Installation completed successfully")
                 if self.action == enumerations.REMOVE:
                         done_txt = _("Packages removed successfully")
@@ -1345,7 +1369,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 be_rename_dialog = \
                                     self.uarenamebe_o.show_rename_dialog(
                                     self.update_list)
-                                if be_rename_dialog == True:
+                                if be_rename_dialog == True and not self.top_level:
                                         self.w_dialog.hide()
 
         def __prompt_to_load_beadm(self):

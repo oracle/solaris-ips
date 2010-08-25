@@ -63,12 +63,12 @@ SHOW_NOTIFY_ICON_DEFAULT = True
 IMAGE_DIRECTORY_DEFAULT = "/"
 LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
+UPDATEMANAGER_FULLPATH = "/usr/bin/pm-updatemanager"
+UPDATEMANAGER = "pm-updatemanager"
 
 ICON_LOCATION = "/usr/share/update-manager/icons"
 NOTIFY_ICON_NAME = "updatemanager"
 GKSU_PATH = "/usr/bin/gksu"
-UPDATEMANAGER = "pm-updatemanager"
 
 UPDATEMANAGER_PREFERENCES = "/apps/updatemanager/preferences"
 START_DELAY_PREFERENCES = "/apps/updatemanager/preferences/start_delay"
@@ -321,8 +321,11 @@ class UpdateManagerNotifier:
                         print "image_directory: %s" % image_directory
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
-                proc = subprocess.Popen([CHECK_FOR_UPDATES,
-                    '--nice', image_directory], stdout=subprocess.PIPE)
+                proc = subprocess.Popen([UPDATEMANAGER_FULLPATH,
+                            '--nice', '--checkupdates-cache',
+                            '--image-dir', image_directory],
+                            stdout=subprocess.PIPE)
+
                 output = proc.communicate()[0].strip()
                 lines = output.splitlines()
                 n_updates = 0
@@ -337,7 +340,7 @@ class UpdateManagerNotifier:
                                 n_installs = int(installs[1]) 
                         if line.startswith("n_removes"):
                                 removes = line.split(":", 1)
-                                n_removes = int(removes[1]) 
+                                n_removes = int(removes[1])
                 return_code = proc.wait()
                 if debug:
                         print "return from subprocess is %d" % return_code

@@ -118,9 +118,6 @@ ICONS36 = \
 ICONS48 = \
    data/icons/48x48/updatemanager.png
 
-PYGLADE = \
-   data/updatemanager.ui
-
 SCRIPTS = \
    update-refresh.sh
 
@@ -152,8 +149,6 @@ ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
 ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
 
-ROOTPYGLADE = $(PYGLADE:data/%=$(ROOTSHARE)/%)
-
 ROOTSCRIPTS = $(SCRIPTS:%=$(ROOTSCRIPTSSHARE)/%)
 
 ROOTSVC = $(SVC:%=$(ROOTSVCSHARE)/%)
@@ -174,7 +169,6 @@ ROOTCOMPONENTS = \
    $(ROOTICONS24) \
    $(ROOTICONS36) \
    $(ROOTICONS48) \
-   $(ROOTPYGLADE) \
    $(ROOTSCRIPTS) \
    $(ROOTSVC)
 
@@ -212,7 +206,6 @@ PWD:sh = pwd
 #This will not link l10n files
 link:
 	ln -sf $(PWD)/../updatemanagernotifier.py /usr/lib/updatemanagernotifier
-	ln -sf $(PWD)/data/updatemanager.ui /usr/share/update-manager/updatemanager.ui
 	ln -sf $(PWD)/update-refresh.sh /usr/lib/update-manager/update-refresh.sh
 	ln -sf $(PWD)/pkg-update /lib/svc/method/pkg-update
 	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop

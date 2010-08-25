@@ -19,8 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -104,8 +103,11 @@ def setup_logging(client_name):
         global_settings.error_log_handler = err_h
 
 def shutdown_logging():
-        global_settings.reset_logging()
-        logging.shutdown()
+        try:
+                global_settings.reset_logging()
+                logging.shutdown()
+        except IOError:
+                pass
 
 def get_cache_dir(api_object):
         img = api_object.img
@@ -133,6 +135,8 @@ def read_cache_file(file_path):
                 fh = open(file_path, 'r')
                 data = cPickle.load(fh)
                 fh.close()
+        except IOError:
+                pass
         except:
                 pass
         return data
@@ -142,6 +146,8 @@ def dump_cache_file(file_path, data):
                 fh = open(file_path,"w")
                 cPickle.dump(data, fh, True)
                 fh.close()
+        except IOError:
+                pass
         except:
                 pass
 

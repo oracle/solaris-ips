@@ -19,15 +19,15 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 # ##########################################################################
 # This script is run as part of a cron job at 0:30, 9:30, 12:30, 18:30, 21:30
 # 1. Refresh the IPS catalog
 #
-# 2. Call /usr/lib/pm-checkforupdates to check and cache whether updates
-#    are available
+# 2. Call /usr/lib/pm-updatemanager --checkupdates-all to check and cache whether updates
+#    are available. The generated cache is checked by /usr/lib/updatemanagernotifier,
+#    which in turn notifies the user via a popup and notification panel icon.
 #
 # 3. Fetch updates to Packagemanager's Start Page files:
 #    startpagebase-<locale prefix>.tar.gz
@@ -95,7 +95,7 @@ cd $image_dir
 pkg refresh 2>/dev/null
 
 # Check and cache whether updates are available
-/usr/lib/pm-checkforupdates --silent --nice $image_dir
+/usr/bin/pm-updatemanager --nice --checkupdates-all --image-dir $image_dir
 
 # Fetch updates to Packagemanager's Start Page files
 TAR="/usr/gnu/bin/tar"

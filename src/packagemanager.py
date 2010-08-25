@@ -2908,13 +2908,10 @@ class PackageManager:
                 if not self.__do_api_reset():
                         return
                 install_update = []
-                confirmation_list = None
-                if self.gconf.show_install:
-                        confirmation_list = []
-
+                install_confirmation_list = []
                 if self.all_selected > 0:
                         self.__add_install_update_pkgs_for_publishers(
-                                    install_update, confirmation_list)
+                                    install_update, install_confirmation_list)
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
@@ -2922,15 +2919,14 @@ class PackageManager:
                 self.installupdate = installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list, api_lock = self.api_lock,
+                    confirmation_list = install_confirmation_list,
+                    show_confirmation = self.gconf.show_install,
+                    api_lock = self.api_lock,
                     gconf = self.gconf)
 
         def __on_update_all(self, widget):
                 if not self.__do_api_reset():
                         return
-                confirmation = None
-                if self.gconf.show_image_update:
-                        confirmation = []
                 installupdate.InstallUpdate([], self,
                     self.image_directory, action = enumerations.IMAGE_UPDATE,
                     parent_name = self.program_title,
@@ -2938,7 +2934,8 @@ class PackageManager:
                     gui_misc.package_name["SUNWipkg-gui"]],
                     main_window = self.w_main_window,
                     icon_confirm_dialog = self.window_icon,
-                    confirmation_list = confirmation, api_lock = self.api_lock,
+                    show_confirmation = self.gconf.show_image_update,
+                    api_lock = self.api_lock,
                     gconf = self.gconf)
                 return
 
@@ -2977,12 +2974,10 @@ class PackageManager:
                 if not self.__do_api_reset():
                         return
                 remove_list = []
-                confirmation_list = None
-                if self.gconf.show_remove:
-                        confirmation_list = []
+                remove_confirmation_list = []
                 if self.all_selected > 0:
                         self.__add_remove_pkgs_for_publishers(remove_list, 
-                            confirmation_list)
+                            remove_confirmation_list)
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
@@ -2990,7 +2985,9 @@ class PackageManager:
                 self.installupdate = installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
                     main_window = self.w_main_window,
-                    confirmation_list = confirmation_list, api_lock = self.api_lock,
+                    confirmation_list = remove_confirmation_list,
+                    show_confirmation = self.gconf.show_remove,
+                    api_lock = self.api_lock,
                     gconf = self.gconf)
 
         def __on_reload(self, widget):
@@ -4808,15 +4805,13 @@ class PackageManager:
                         return
                 to_install = "%s@%s" % (self.selected_pkgstem, version)
                 install_update = [to_install]
-                confirmation_list = None
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
 
                 installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
-                    main_window = self.w_main_window,
-                    confirmation_list = confirmation_list, api_lock = self.api_lock)
+                    main_window = self.w_main_window, api_lock = self.api_lock)
 
         def get_current_repos_with_search_errors(self):
                 return self.current_repos_with_search_errors

@@ -32,29 +32,41 @@ from pkg.client.progress import NullProgressTracker
 
 class GuiProgressTracker(NullProgressTracker):
 
-        def __init__(self):
+        def __init__(self, indent = False):
                 NullProgressTracker.__init__(self)
                 self.prev_pkg = None
                 self.act_phase_last = None
                 self.ind_started = None
+                self.indent = indent
 
         def cat_output_start(self):
-                self.update_details_text(_("Retrieving catalog '%s'...\n") % \
-                    self.cat_cur_catalog)
+                if self.indent:
+                        self.update_details_text(_("Retrieving catalog '%s'...\n") % \
+                            self.cat_cur_catalog, "level1")
+                else:
+                        self.update_details_text(_("Retrieving catalog '%s'...\n") % \
+                            self.cat_cur_catalog)
                 return
 
         def cat_output_done(self):
                 return
 
         def cache_cats_output_start(self):
-                self.update_details_text(_("Caching catalogs ...\n"))
+                if self.indent:
+                        self.update_details_text(_("Caching catalogs ...\n"), "level1")
+                else:
+                        self.update_details_text(_("Caching catalogs ...\n"))
                 return
 
         def cache_cats_output_done(self):
                 return
 
         def load_cat_cache_output_start(self):
-                self.update_details_text(_("Loading catalog cache ...\n"))
+                if self.indent:
+                        self.update_details_text(_("Loading catalog cache ...\n"),
+                            "level1")
+                else:
+                        self.update_details_text(_("Loading catalog cache ...\n"))
                 return
 
         def load_cat_cache_output_done(self):
@@ -64,13 +76,22 @@ class GuiProgressTracker(NullProgressTracker):
                 return
 
         def refresh_output_progress(self):
-                self.update_details_text(
-                    _("Refreshing catalog %s\n") % self.refresh_cur_pub)
+                if self.indent:
+                        self.update_details_text(
+                            _("Refreshing catalog %s\n") % self.refresh_cur_pub, "level1")
+                else:
+                        self.update_details_text(
+                            _("Refreshing catalog %s\n") % self.refresh_cur_pub)
                 return
 
         def refresh_output_done(self):
-                self.update_details_text(
-                    _("Finished refreshing catalog %s\n") % self.refresh_cur_pub)
+                if self.indent:
+                        self.update_details_text(
+                            _("Finished refreshing catalog %s\n") % self.refresh_cur_pub,
+                            "level1")
+                else:
+                        self.update_details_text(
+                            _("Finished refreshing catalog %s\n") % self.refresh_cur_pub)
                 return
 
         def eval_output_start(self):

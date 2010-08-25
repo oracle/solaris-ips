@@ -1325,6 +1325,94 @@
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
+              <object class="GtkVBox" id="um_title_vbox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkHBox" id="um_title_hbox">
+                    <property name="visible">True</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkImage" id="icon_um">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-missing-image</property>
+                        <property name="icon-size">2</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkVBox" id="vbox_um_labels">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="label_um">
+                            <property name="visible">True</property>
+                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="ypad">2</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Update Manager&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label_um1">
+                            <property name="visible">True</property>
+                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="ypad">2</property>
+                            <property name="label" translatable="yes">Check for and install all available Updates.</property>
+                            <property name="use_markup">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkAlignment" id="alignment_um_sep">
+                    <property name="visible">True</property>
+                    <property name="top_padding">10</property>
+                    <child>
+                      <object class="GtkHSeparator" id="hseparator1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkVBox" id="stages_box">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
@@ -1441,7 +1529,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="padding">5</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -1496,7 +1584,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -1544,7 +1632,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -1579,7 +1667,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -2942,7 +3030,7 @@
   </object>
   <object class="GtkDialog" id="ua_completed_dialog">
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Update All Complete</property>
+    <property name="title" translatable="yes">Updates Complete</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
@@ -2979,7 +3067,7 @@
                   <object class="GtkLabel" id="ua_info_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Update All completed successfully&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Updates completed successfully&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                   </object>
                   <packing>
