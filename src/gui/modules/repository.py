@@ -1288,7 +1288,7 @@ class Repository(progress.GuiProgressTracker):
                 if self.no_changes > 0:
                         self.parent.reload_packages()
                         if self.action == enumerations.MANAGE_PUBLISHERS:
-                                self.__prepare_publisher_list()
+                                self.__prepare_publisher_list(True)
                                 self.w_publishers_treeview.get_selection().select_path(0)
                 self.__delete_widget_handler_hide(widget, event)
                 return True
@@ -1452,7 +1452,6 @@ class Repository(progress.GuiProgressTracker):
         def __on_manage_add_clicked(self, widget):
                 self.w_add_publisher_name.grab_focus()
                 self.w_registration_box.hide()
-                self.w_add_publisher_dialog.set_title(_("Add Publisher"))
                 self.w_add_publisher_dialog.show_all()
 
         def __on_manage_modify_clicked(self, widget):
