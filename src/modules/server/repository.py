@@ -25,7 +25,6 @@ import cStringIO
 import codecs
 import datetime
 import errno
-import fcntl
 import logging
 import os
 import os.path
@@ -44,6 +43,7 @@ import pkg.config as cfg
 import pkg.file_layout.file_manager as file_manager
 import pkg.fmri as fmri
 import pkg.indexer as indexer
+import pkg.lockfile as lockfile
 import pkg.manifest
 import pkg.p5i as p5i
 import pkg.portable as portable
@@ -270,11 +270,6 @@ class _RepoStore(object):
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
-                # This lock is used to protect the repository from multiple
-                # threads modifying it at the same time.
-                self.__lock = pkg.nrlock.NRLock()
-                self.__lockf = None
-
                 self.__catalog = None
                 self.__catalog_root = None
                 self.__file_root = None
@@ -310,6 +305,17 @@ class _RepoStore(object):
 
                 self.__search_available = False
                 self.__refresh_again = False
+
+                self.__lock = pkg.nrlock.NRLock()
+                if self.__tmp_root:
+                        self.__lockfile = lockfile.LockFile(os.path.join(
+                            self.__tmp_root, "lock"),
+                            set_lockstr=lockfile.generic_lock_set_str,
+                            get_lockstr=lockfile.generic_lock_get_str,
+                            failure_exc=RepositoryLockedError,
+                            provide_mutex=False)
+                else:
+                        self.__lockfile = None
 
                 # Initialize.
                 self.__lock_rstore()
@@ -544,68 +550,22 @@ class _RepoStore(object):
 
                 try:
                         # Attempt to obtain a file lock.
-                        self.__lockf = self.__lock_process(self.__tmp_root,
-                            blocking=blocking)
-                except:
-                        # If process lock fails, ensure thread lock is released.
-                        self.__lock.release()
-                        raise
-
-        @staticmethod
-        def __lock_process(lock_dir, blocking=True):
-                """Locks the repository to prevent modification by other
-                processes."""
-
-                # Attempt to obtain a file lock for the repository.
-                lfpath = os.path.join(lock_dir, "lock")
-
-                lock_type = fcntl.LOCK_EX
-                if not blocking:
-                        lock_type |= fcntl.LOCK_NB
-
-                # Attempt an initial open of the lock file.
-                lf = None
-                try:
-                        lf = open(lfpath, "ab+")
+                        self.__lockfile.lock(blocking=blocking)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise apx.PermissionsException(e.filename)
-                        if e.errno == errno.EROFS:
-                                raise apx.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
-
-                # Attempt to lock the file.
-                try:
-                        fcntl.lockf(lf, lock_type)
-                except IOError, e:
-                        if e.errno not in (errno.EAGAIN, errno.EACCES):
-                                raise
-
-                        # If the lock failed (because it is likely contended),
-                        # then extract the information about the lock acquirer
-                        # and raise an exception.
-                        pid_data = lf.read().strip()
-                        pid, hostname, lock_ts = pid_data.split("\n", 3)
-                        raise RepositoryLockedError(pid=pid, hostname=hostname)
-
-                # Store lock time as ISO-8601 basic UTC timestamp in lock file.
-                lock_ts = catalog.now_to_basic_ts()
-
-                # Store information about the lock acquirer and write it.
-                try:
-                        lf.truncate(0)
-                        lf.write("\n".join((str(os.getpid()),
-                            platform.node(), lock_ts, "\n")))
-                        lf.flush()
-                        return lf
-                except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
+                                self.__lock.release()
                                 raise apx.PermissionsException(
                                     e.filename)
                         if e.errno == errno.EROFS:
+                                self.__lock.release()
                                 raise apx.ReadOnlyFileSystemException(
                                     e.filename)
+
+                        self.__lock.release()
+                        raise
+                except:
+                        # If process lock fails, ensure thread lock is released.
+                        self.__lock.release()
                         raise
 
         def __log(self, msg, context="", severity=logging.INFO):
@@ -1053,13 +1013,8 @@ class _RepoStore(object):
                 """Unlocks the repository so other consumers may modify it."""
 
                 try:
-                        if self.__lockf:
-                                # To avoid race conditions with the next caller
-                                # waiting for the lock file, it is simply
-                                # truncated instead of removed.
-                                self.__lockf.truncate(0)
-                                self.__lockf.close()
-                                self.__lockf = None
+                        if self.__lockfile:
+                                self.__lockfile.unlock()
                 finally:
                         self.__lock.release()
 
@@ -1360,7 +1315,7 @@ class _RepoStore(object):
                 """A boolean value indicating whether the repository is locked.
                 """
 
-                return self.__lock and self.__lock.locked
+                return self.__lockfile and self.__lockfile.locked
 
         def manifest(self, pfmri):
                 """Returns the absolute pathname of the manifest file for the
@@ -1421,6 +1376,9 @@ class _RepoStore(object):
                 if not self.index_root:
                         raise RepositoryUnsupportedOperationError()
 
+                # Acquire only the thread-lock.  The Indexer has its own
+                # process lock.  This allows indexing and publication to occur
+                # simultaneously.
                 self.__lock_rstore(process=False)
                 try:
                         try:

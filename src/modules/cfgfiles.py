@@ -29,13 +29,14 @@
 
 import datetime
 import errno
-import fcntl
 import os
 import re
 import stat
 import sys
 import tempfile
 import time
+
+import pkg.lockfile as lockfile
 
 class CfgFile(object):
     """ Solaris configuration file editor... make it easier to
@@ -112,8 +113,6 @@ class CfgFile(object):
                     dic = dict(zip(self.column_names, cols))
                     self.index[tuple(dic[k] for k in self.keys)] = \
                         (line, dic, lineno)
-#                for k, v in dic.iteritems():
-#                    self.max_lengths[k] = max(len(v), self.max_lengths[k])
                 lineno += linecnt
             file.close()
             self.needswriting = False
@@ -233,9 +232,10 @@ class PasswordFile(CfgFile):
                      },
                     "username", comment_match="[-+]")
         self.path_prefix = path_prefix
-        self.lockfd = None
+        self.lockfile = lockfile.LockFile(os.path.join(self.path_prefix,
+            "etc/.pwd.lock"))
         if lock:
-            self.lockfile()
+            self.lock()
         self.readfile()
         self.password_file.default_values["uid"] = self.getnextuid()
 
@@ -299,23 +299,11 @@ class PasswordFile(CfgFile):
         a.update(self.shadow_file.getdefaultvalues())
         return a
 
-    def lockfile(self):
-        fn = os.path.join(self.path_prefix, "etc/.pwd.lock")
-        try:
-            self.lockfd = file(fn, 'w')
-        except IOError, e:
-            if e.errno == errno.ENOENT:
-                self.lockfd = None
-                return
-            raise
-        os.chmod(fn, stat.S_IRUSR|stat.S_IWUSR)
-        fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
+    def lock(self):
+        self.lockfile.lock()
 
-    def unlockfile(self):
-        if self.lockfd is not None:
-            fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
-            self.lockfd.close()
-            self.lockfd = None
+    def unlock(self):
+        self.lockfile.unlock()
 
 class GroupFile(CfgFile):
     """ manage the group file"""

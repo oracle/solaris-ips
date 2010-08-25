@@ -180,7 +180,7 @@ class UserAction(generic.Action):
                             int(self.attrs["uid"])
                 finally:
                         if "pw" in locals():
-                                pw.unlockfile()
+                                pw.unlock()
 
         def postinstall(self, pkgplan, orig):
                 users = pkgplan.image._users
@@ -276,7 +276,7 @@ class UserAction(generic.Action):
                         gr.writefile()
                         ftp.writefile()
                 finally:
-                        pw.unlockfile()
+                        pw.unlock()
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

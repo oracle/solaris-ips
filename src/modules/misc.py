@@ -787,6 +787,33 @@ def makedirs(pathname):
                 elif e.errno != errno.EEXIST or e.filename != pathname:
                         raise
 
+class DummyLock(object):
+        """This has the same external interface as threading.Lock,
+        but performs no locking.  This is a placeholder object for situations
+        where we want to be able to do locking, but don't always need a
+        lock object present.  The object has a held value, that is used
+        for _is_owned.  This is informational and doesn't actually
+        provide mutual exclusion in any way whatsoever."""
+
+        def __init__(self):
+                self.held = False
+
+        def acquire(self, blocking=1):
+                self.held = True
+                return True
+
+        def release(self):
+                self.held = False
+                return
+
+        def _is_owned(self):
+                return self.held
+
+        @property
+        def locked(self):
+                return self.held
+
+
 class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.
         See http://en.wikipedia.org/wiki/Singleton_pattern """

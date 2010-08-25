@@ -46,15 +46,12 @@ class _NRLock(threading._RLock):
         def acquire(self, blocking=1):
                 if self._is_owned():
                         raise NRLockException("Recursive NRLock acquire")
-                rval = threading._RLock.acquire(self, blocking)
-                if rval:
-                        self.__locked = True
-                return rval
+                return threading._RLock.acquire(self, blocking)
 
         @property
         def locked(self):
                 """A boolean indicating whether the lock is currently locked."""
-                return self.__locked
+                return self._is_owned()
 
         def _debug_lock_release(self):
                 errbuf = ""
@@ -80,8 +77,6 @@ class _NRLock(threading._RLock):
 
         def release(self):
                 try:
-                        if self._is_owned():
-                                self.__locked = False
                         threading._RLock.release(self)
                 except RuntimeError:
                         errbuf = "Release of unacquired lock\n"

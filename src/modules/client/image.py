@@ -27,7 +27,6 @@
 import atexit
 import datetime
 import errno
-import fcntl
 import os
 import platform
 import shutil
@@ -52,6 +51,7 @@ import pkg.client.publisher             as publisher
 import pkg.client.sigpolicy             as sigpolicy
 import pkg.client.transport.transport   as transport
 import pkg.fmri
+import pkg.lockfile                     as lockfile
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
 import pkg.nrlock
@@ -210,7 +210,7 @@ class Image(object):
                 self.pkgdir = None
                 self.root = root
                 self.__lock = pkg.nrlock.NRLock()
-                self.__lockf = None
+                self.__lockfile = None
                 self.__sig_policy = None
                 self.__trust_anchors = None
 
@@ -336,12 +336,19 @@ class Image(object):
                 try:
                         self.history.log_operation_start(op)
                         yield
-                except Exception, e:
+                except api_errors.ImageLockedError, e:
+                        # Don't unlock the image if the call failed to
+                        # get the lock.
                         error = e
                         raise
+                except Exception, e:
+                        error = e
+                        self.unlock()
+                        raise
+                else:
+                        self.unlock()
                 finally:
                         self.history.log_operation_end(error=error)
-                        self.unlock()
 
         def lock(self, allow_unprivileged=False):
                 """Locks the image in preparation for an image-modifying
@@ -364,98 +371,36 @@ class Image(object):
 
                 try:
                         # Attempt to obtain a file lock.
-                        self.__lock_process()
-                except api_errors.PermissionsException:
-                        if not allow_unprivileged:
+                        self.__lockfile.lock(blocking=blocking)
+                except EnvironmentError, e:
+                        apx = None
+                        if e.errno == errno.ENOENT:
+                                return
+                        if e.errno == errno.EACCES:
+                                apx = api_errors.PermissionsException(
+                                    e.filename)
+                        elif e.errno == errno.EROFS:
+                                apx = api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        else:
                                 self.__lock.release()
                                 raise
+
+                        if apx and not allow_unprivileged:
+                                self.__lock.release()
+                                raise apx
                 except:
                         # If process lock fails, ensure thread lock is released.
                         self.__lock.release()
-                        raise
-
-        def __lock_process(self):
-                """Locks the image to prevent modification by other
-                processes."""
-
-                if not os.path.exists(self.imgdir):
-                        # Image structure doesn't exist yet so a file lock
-                        # cannot be obtained.  This path should only happen
-                        # during image-create.
-                        return
-
-                # Attempt to obtain a file lock for the image.
-                lfpath = os.path.join(self.imgdir, "lock")
-
-                lock_type = fcntl.LOCK_EX
-                if not self.blocking_locks:
-                        lock_type |= fcntl.LOCK_NB
-
-                # Attempt an initial open of the lock file.
-                lf = None
-                try:
-                        lf = open(lfpath, "ab+")
-                except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
-
-                # Attempt to lock the file.
-                try:
-                        fcntl.lockf(lf, lock_type)
-                except IOError, e:
-                        if e.errno not in (errno.EAGAIN, errno.EACCES):
-                                raise
-
-                        # If the lock failed (because it is likely contended),
-                        # then extract the information about the lock acquirer
-                        # and raise an exception.
-                        pid_data = lf.read().strip()
-                        pid, pid_name, hostname, lock_ts = \
-                            pid_data.split("\n", 4)
-                        raise api_errors.ImageLockedError(pid=pid,
-                            pid_name=pid_name, hostname=hostname)
-
-                # Store lock time as ISO-8601 basic UTC timestamp in lock file.
-                lock_ts = pkg.catalog.now_to_basic_ts()
-
-                # Store information about the lock acquirer and write it.
-                try:
-                        lf.truncate(0)
-                        lf.write("\n".join((str(os.getpid()),
-                            global_settings.client_name,
-                            platform.node(), lock_ts, "\n")))
-                        lf.flush()
-                        self.__lockf = lf
-                except EnvironmentError, e:
-                        lf.close()
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
-                except:
-                        lf.close()
                         raise
 
         def unlock(self):
                 """Unlocks the image."""
 
                 try:
-                        if self.__lockf:
-                                # To avoid race conditions with the next caller
-                                # waiting for the lock file, it is simply
-                                # truncated instead of removed.
-                                self.__lockf.truncate(0)
-                                self.__lockf.close()
+                        if self.__lockfile:
+                                self.__lockfile.unlock()
                 finally:
-                        self.__lockf = None
                         self.__lock.release()
 
         def image_type(self, d):
@@ -596,7 +541,12 @@ class Image(object):
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.pkgdir = os.path.join(self.imgdir, "pkg")
                 self.history.root_dir = self.imgdir
-
+                self.__lockfile = lockfile.LockFile(os.path.join(self.imgdir,
+                    "lock"), set_lockstr=lockfile.client_lock_set_str,
+                    get_lockstr=lockfile.client_lock_get_str,
+                    failure_exc=api_errors.ImageLockedError, 
+                    provide_mutex=False)
+ 
                 if relock:
                         self.lock()
 

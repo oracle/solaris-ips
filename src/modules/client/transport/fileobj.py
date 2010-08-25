@@ -28,6 +28,8 @@
 import uuid as uuidm
 import pkg.client.transport.exception as tx
 
+from pkg.misc import DummyLock
+
 class StreamingFileObj(object):
 
         def __init__(self, url, engine, ccancel=None):
@@ -382,25 +384,3 @@ class StreamingFileObj(object):
                         k, v = data.split(":", 1)
                         if v:
                                 self.__headers[k.lower()] = v.strip()
-
-class DummyLock(object):
-        """This has the same external interface as threading.Lock,
-        but performs no locking.  This is a placeholder object for situations
-        where we want to be able to do locking, but don't always need a
-        lock object present.  The object has a held value, that is used
-        for _is_owned.  This is informational and doesn't actually
-        provide mutual exclusion in any way whatsoever."""
-
-        def __init__(self):
-                self.held = False
-
-        def acquire(self, blocking=1):
-                self.held = True
-                return True
-
-        def release(self):
-                self.held = False
-                return
-
-        def _is_owned(self):
-                return self.held

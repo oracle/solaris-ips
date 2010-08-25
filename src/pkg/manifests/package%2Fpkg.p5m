@@ -135,6 +135,7 @@ file path=$(PYDIRVP)/pkg/flavor/script.py
 file path=$(PYDIRVP)/pkg/flavor/smf_manifest.py
 file path=$(PYDIRVP)/pkg/fmri.py
 file path=$(PYDIRVP)/pkg/indexer.py
+file path=$(PYDIRVP)/pkg/lockfile.py
 file path=$(PYDIRVP)/pkg/manifest.py
 file path=$(PYDIRVP)/pkg/misc.py
 file path=$(PYDIRVP)/pkg/nrlock.py
