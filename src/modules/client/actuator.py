@@ -244,6 +244,21 @@ class Actuator(GenericActuator):
                 if self.do_nothing:
                         return
 
+                # handle callables first
+
+                for act in self.removal.itervalues():
+                        if callable(act):
+                                act()
+
+                for act in self.install.itervalues():
+                        if callable(act):
+                                act()
+
+                for act in self.update.itervalues():
+                        if callable(act):
+                                act()
+
+
                 refresh_fmris = self.removal.get("refresh_fmri", set()) | \
                     self.update.get("refresh_fmri", set()) | \
                     self.install.get("refresh_fmri", set())
@@ -291,10 +306,6 @@ class Actuator(GenericActuator):
                 params = tuple(self.tmp_suspend_fmris)
                 if params:
                         self.__call(args + params)
-
-                for act in self.install.itervalues():
-                        if callable(act):
-                                act()
 
         def __smf_svc_get_state(self, fmri):
                 """ return state of smf service """
