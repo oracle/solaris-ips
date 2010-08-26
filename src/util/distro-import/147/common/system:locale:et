@@ -1,0 +1,24 @@
+package system/locale/et
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-et
+depend system/locale
+end package
+
+package system/locale/et_ee
+consolidation "l10n"
+renamed 147
+depend system/locale/et
+end package
+
+package system/locale/et_EE
+consolidation "l10n"
+renamed 134
+depend system/locale/et_ee
+end package
+
+package SUNWlang-et
+consolidation "l10n"
+renamed 133
+depend system/locale/et_EE
+end package

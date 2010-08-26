@@ -1,16 +1,18 @@
 package print/cups
 consolidation "sfw"
 classification "System/Printing"
-import SUNWcupsu
-drop usr/lib/$(ARCH64)/libcups.so
-drop usr/lib/$(ARCH64)/libcups.so.2
-drop usr/lib/$(ARCH64)/libcupsimage.so
-drop usr/lib/$(ARCH64)/libcupsimage.so.2
-drop usr/lib/libcups.so
-drop usr/lib/libcups.so.2
-drop usr/lib/libcupsimage.so
-drop usr/lib/libcupsimage.so.2
+import SUNWcupsu exclude \
+    usr/lib/$(ARCH64)/libcups.so \
+    usr/lib/$(ARCH64)/libcups.so.2 \
+    usr/lib/$(ARCH64)/libcupsimage.so \
+    usr/lib/$(ARCH64)/libcupsimage.so.2 \
+    usr/lib/libcups.so \
+    usr/lib/libcups.so.2 \
+    usr/lib/libcupsimage.so \
+    usr/lib/libcupsimage.so.2
+end import
 import SUNWcupsr
+depend print/lp/print-client-commands
 version 1.4.2
 
 chattr etc/cups/command.types \

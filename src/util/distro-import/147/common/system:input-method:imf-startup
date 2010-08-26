@@ -1,0 +1,6 @@
+package system/input-method/imf-startup
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWimf-startup
+import SUNWimf-startup-root
+end package

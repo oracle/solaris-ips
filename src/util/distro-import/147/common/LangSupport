@@ -1,0 +1,1594 @@
+package system/locale/support/afrikaans
+consolidation "l10n"
+cluster lang-support-afrikaans
+classification "System/Localizations"
+summary "Language Support cluster - Afrikaans"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/af
+depend system/locale/support/common
+end package
+
+package system/locale/support/albanian
+consolidation "l10n"
+cluster lang-support-albanian
+classification "System/Localizations"
+summary "Language Support cluster - Albanian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/locale/sq
+depend system/locale/sq-extra
+depend system/locale/support/common
+end package
+
+package lang-support-albanian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/albanian
+version 0.1
+end package
+
+package system/locale/support/all
+consolidation "l10n"
+cluster lang-support-all
+classification "System/Localizations"
+summary "Language Support cluster - all"
+version 0.1
+depend system/locale/support/afrikaans
+depend system/locale/support/albanian
+depend system/locale/support/arabic
+depend system/locale/support/armenian
+depend system/locale/support/assamese
+depend system/locale/support/azerbaijani
+depend system/locale/support/belarusian
+depend system/locale/support/bengali
+depend system/locale/support/bosnian
+depend system/locale/support/bulgarian
+depend system/locale/support/catalan
+depend system/locale/support/chinese-cn
+depend system/locale/support/chinese-hk
+depend system/locale/support/chinese-sg
+depend system/locale/support/chinese-tw
+depend system/locale/support/croatian
+depend system/locale/support/czech
+depend system/locale/support/danish
+depend system/locale/support/dutch
+depend system/locale/support/english
+depend system/locale/support/estonian
+depend system/locale/support/finnish
+depend system/locale/support/french
+depend system/locale/support/georgian
+depend system/locale/support/german
+depend system/locale/support/greek
+depend system/locale/support/gujarati
+depend system/locale/support/hebrew
+depend system/locale/support/hungarian
+depend system/locale/support/icelandic
+depend system/locale/support/indic
+depend system/locale/support/indonesian
+depend system/locale/support/italian
+depend system/locale/support/japanese
+depend system/locale/support/kannada
+depend system/locale/support/kashmiri
+depend system/locale/support/kazakh
+depend system/locale/support/kirghiz
+depend system/locale/support/korean
+depend system/locale/support/kurdish
+depend system/locale/support/latvian
+depend system/locale/support/lithuanian
+depend system/locale/support/macedonian
+depend system/locale/support/malay
+depend system/locale/support/malayalam
+depend system/locale/support/maltese
+depend system/locale/support/marathi
+depend system/locale/support/norwegian
+depend system/locale/support/norwegian-bokmal
+depend system/locale/support/norwegian-nynorsk
+depend system/locale/support/oriya
+depend system/locale/support/polish
+depend system/locale/support/portuguese
+depend system/locale/support/portuguese-br
+depend system/locale/support/punjabi
+depend system/locale/support/romanian
+depend system/locale/support/russian
+depend system/locale/support/sanskrit
+depend system/locale/support/serbian
+depend system/locale/support/serbo-croatian
+depend system/locale/support/slovak
+depend system/locale/support/slovenian
+depend system/locale/support/spanish
+depend system/locale/support/swedish
+depend system/locale/support/tamil
+depend system/locale/support/telugu
+depend system/locale/support/thai
+depend system/locale/support/turkish
+depend system/locale/support/ukrainian
+depend system/locale/support/vietnamese
+end package
+
+package lang-support-all
+consolidation "l10n"
+renamed 133
+depend system/locale/support/all
+version 0.1
+end package
+
+package system/locale/support/arabic
+consolidation "l10n"
+cluster lang-support-arabic
+classification "System/Localizations"
+summary "Language Support cluster - Arabic"
+version 0.1
+depend gnome/documentation/locale/rtl
+depend gnome/locale/rtl
+depend system/desktop/locale/rtl
+depend system/font/truetype/arabeyes
+depend system/font/truetype/kacst
+depend system/locale/ar
+depend system/locale/ar-extra
+depend system/locale/ar_eg
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-arabic
+consolidation "l10n"
+renamed 133
+depend system/locale/support/arabic
+version 0.1
+end package
+
+package system/locale/support/armenian
+consolidation "l10n"
+cluster lang-support-armenian
+classification "System/Localizations"
+summary "Language Support cluster - Armenian"
+version 0.1
+depend gnome/locale/extra
+depend system/locale/hy
+depend system/locale/support/common
+end package
+
+package system/locale/support/assamese
+consolidation "l10n"
+cluster lang-support-assamese
+classification "System/Localizations"
+summary "Language Support cluster - Assamese"
+version 0.1
+depend gnome/locale/extra
+depend system/locale/as
+depend system/locale/support/common
+end package
+
+package system/locale/support/azerbaijani
+consolidation "l10n"
+cluster lang-support-azerbaijani
+classification "System/Localizations"
+summary "Language Support cluster - Azerbaijani"
+version 0.1
+depend gnome/locale/rtl
+depend system/desktop/locale/rtl
+depend system/locale/az
+depend system/locale/support/common
+end package
+
+package system/locale/support/belarusian
+consolidation "l10n"
+cluster lang-support-belarusian
+classification "System/Localizations"
+summary "Language Support cluster - Belarusian"
+version 0.1
+depend system/locale/be
+depend system/locale/support/common
+end package
+
+package lang-support-belarusian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/belarusian
+version 0.1
+end package
+
+package system/locale/support/bengali
+consolidation "l10n"
+cluster lang-support-bengali
+classification "System/Localizations"
+summary "Language Support cluster - Bengali"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/bn
+depend system/locale/support/common
+end package
+
+package system/locale/support/bosnian
+consolidation "l10n"
+cluster lang-support-bosnian
+classification "System/Localizations"
+summary "Language Support cluster - Bosnian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/bs
+depend system/locale/bs-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package system/locale/support/bulgarian
+consolidation "l10n"
+cluster lang-support-bulgarian
+classification "System/Localizations"
+summary "Language Support cluster - Bulgarian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/bg
+depend system/locale/bg-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-bulgarian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/bulgarian
+version 0.1
+end package
+
+package system/locale/support/catalan
+consolidation "l10n"
+cluster lang-support-catalan
+classification "System/Localizations"
+summary "Language Support cluster - Catalan"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/ca
+depend system/locale/ca-extra
+depend system/locale/support/common
+depend system/manual/locale/ca
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-catalan
+consolidation "l10n"
+renamed 133
+depend system/locale/support/catalan
+version 0.1
+end package
+
+package system/locale/support/chinese-cn
+consolidation "l10n"
+cluster lang-support-chinese-CN
+classification "System/Localizations"
+summary "Language Support cluster - Chinese (Simplified)"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/zh_cn
+depend gnome/locale/zh_cn
+depend gnome/trusted/locale/zh_cn
+depend image/editor/gimp/locale/zh_cn
+depend mail/thunderbird/locale/zh_cn
+depend network/dhcp/dhcpmgr/locale/zh_cn
+depend release/getting-started/locale/zh_cn
+depend system/desktop/locale/zh_cn
+depend system/desktop/stardict
+depend system/font/truetype/arphic-ukai
+depend system/font/truetype/arphic-uming
+depend system/font/truetype/wqy-zenhei
+depend system/input-method/iiim/zh_cn-cle-core
+depend system/input-method/iiim/zh_cn-cle-open
+depend system/input-method/iiim/zh_cn-cle-sunpinyin
+depend system/library/iconv/extra
+depend system/locale/support/common
+depend system/locale/zh_cn
+depend system/locale/zh_cn-extra
+depend system/osnet/locale/zh
+depend web/browser/firefox/locale/zh_cn
+end package
+
+package lang-support-chinese-CN
+consolidation "l10n"
+renamed 133
+depend system/locale/support/chinese-cn
+version 0.1
+end package
+
+package system/locale/support/chinese-hk
+consolidation "l10n"
+cluster lang-support-chinese-HK
+classification "System/Localizations"
+summary "Language Support cluster - Chinese (Traditional; Hong Kong)"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/zh_hk
+depend gnome/locale/zh_hk
+depend gnome/trusted/locale/zh_hk
+depend mail/thunderbird/locale/zh_tw
+depend network/dhcp/dhcpmgr/locale/zh_hk_tw
+depend release/getting-started/locale/zh_hk
+depend system/desktop/locale/zh_hk
+depend system/font/truetype/arphic-ukai
+depend system/font/truetype/arphic-uming
+depend system/font/truetype/wqy-zenhei
+depend system/input-method/iiim/zh_hk-hkle-core
+depend system/input-method/iiim/zh_hk-hkle-open
+depend system/library/iconv/extra
+depend system/locale/support/common
+depend system/locale/zh_hk
+depend system/locale/zh_hk-extra
+depend system/osnet/locale/zh_tw
+depend web/browser/firefox/locale/zh_tw
+end package
+
+package lang-support-chinese-HK
+consolidation "l10n"
+renamed 133
+depend system/locale/support/chinese-hk
+version 0.1
+end package
+
+package system/locale/support/chinese-sg
+consolidation "l10n"
+cluster lang-support-chinese-SG
+classification "System/Localizations"
+summary "Language Support cluster - Chinese (Simplified; Singapore)"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/locale/zh_cn
+depend network/dhcp/dhcpmgr/locale/zh_cn
+depend system/desktop/stardict
+depend system/font/truetype/arphic-ukai
+depend system/font/truetype/arphic-uming
+depend system/font/truetype/wqy-zenhei
+depend system/input-method/iiim/zh_cn-cle-core
+depend system/input-method/iiim/zh_cn-cle-open
+depend system/input-method/iiim/zh_cn-cle-sunpinyin
+depend system/library/iconv/extra
+depend system/locale/support/common
+depend system/locale/zh_sg
+depend system/osnet/locale/zh
+end package
+
+package system/locale/support/chinese-tw
+consolidation "l10n"
+cluster lang-support-chinese-TW
+classification "System/Localizations"
+summary "Language Support cluster - Chinese (Traditional; Taiwan)"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/zh_tw
+depend gnome/locale/zh_tw
+depend gnome/trusted/locale/zh_tw
+depend mail/thunderbird/locale/zh_tw
+depend network/dhcp/dhcpmgr/locale/zh_hk_tw
+depend release/getting-started/locale/zh_tw
+depend system/desktop/locale/zh_tw
+depend system/font/truetype/arphic-ukai
+depend system/font/truetype/arphic-uming
+depend system/font/truetype/wqy-zenhei
+depend system/input-method/iiim/zh_tw-twle-chewing
+depend system/input-method/iiim/zh_tw-twle-core
+depend system/input-method/iiim/zh_tw-twle-open
+depend system/input-method/library/libchewing
+depend system/library/iconv/extra
+depend system/locale/support/common
+depend system/locale/zh_tw
+depend system/locale/zh_tw-extra
+depend system/osnet/locale/zh_tw
+depend web/browser/firefox/locale/zh_tw
+end package
+
+package lang-support-chinese-TW
+consolidation "l10n"
+renamed 133
+depend system/locale/support/chinese-tw
+version 0.1
+end package
+
+package system/locale/support/common
+consolidation "l10n"
+cluster lang-support-common
+classification "System/Localizations"
+summary "Language Support cluster - common"
+version 0.1
+depend print/mp
+depend system/input-method/iiim
+depend system/library/iconv/unicode
+depend system/library/iconv/utf-8
+depend system/library/iconv/utf-8/manual
+depend system/library/iconv/xsh4/latin
+depend system/library/liblayout
+depend system/locale
+depend system/locale/extra
+end package
+
+package lang-support-common
+consolidation "l10n"
+renamed 133
+depend system/locale/support/common
+version 0.1
+end package
+
+package system/locale/support/croatian
+consolidation "l10n"
+cluster lang-support-croatian
+classification "System/Localizations"
+summary "Language Support cluster - Croatian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend image/editor/gimp/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/hr
+depend system/locale/hr-extra
+depend system/locale/support/common
+end package
+
+package lang-support-croatian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/croatian
+version 0.1
+end package
+
+package system/locale/support/czech
+consolidation "l10n"
+cluster lang-support-czech
+classification "System/Localizations"
+summary "Language Support cluster - Czech"
+version 0.1
+depend gnome/documentation/locale/cs
+depend gnome/locale/cs
+depend image/editor/gimp/locale/cs
+depend library/myspell/dictionary/cs
+depend mail/thunderbird/locale/extra
+depend network/dhcp/dhcpmgr/locale/cs
+depend system/desktop/locale/cs
+depend system/locale/cs
+depend system/locale/cs-extra
+depend system/locale/support/common
+depend system/osnet/locale/cs
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-czech
+consolidation "l10n"
+renamed 133
+depend system/locale/support/czech
+version 0.1
+end package
+
+package system/locale/support/danish
+consolidation "l10n"
+cluster lang-support-danish
+classification "System/Localizations"
+summary "Language Support cluster - Danish"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/da
+depend system/locale/da-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-danish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/danish
+version 0.1
+end package
+
+package system/locale/support/dutch
+consolidation "l10n"
+cluster lang-support-dutch
+classification "System/Localizations"
+summary "Language Support cluster - Dutch"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend image/editor/gimp/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/nl
+depend system/locale/nl-extra
+depend system/locale/nl_nl
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-dutch
+consolidation "l10n"
+renamed 133
+depend system/locale/support/dutch
+version 0.1
+end package
+
+package system/locale/support/english
+consolidation "l10n"
+cluster lang-support-english
+classification "System/Localizations"
+summary "Language Support cluster - English"
+version 0.1
+depend system/library/iconv/extra
+depend system/locale/en
+depend system/locale/en-extra
+depend system/locale/en_us
+depend system/locale/support/common
+end package
+
+package lang-support-english
+consolidation "l10n"
+renamed 133
+depend system/locale/support/english
+version 0.1
+end package
+
+package system/locale/support/estonian
+consolidation "l10n"
+cluster lang-support-estonian
+classification "System/Localizations"
+summary "Language Support cluster - Estonian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/et
+depend system/locale/et-extra
+depend system/locale/support/common
+end package
+
+package lang-support-estonian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/estonian
+version 0.1
+end package
+
+package system/locale/support/finnish
+consolidation "l10n"
+cluster lang-support-finnish
+classification "System/Localizations"
+summary "Language Support cluster - Finnish"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/fi
+depend system/locale/fi-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-finnish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/finnish
+version 0.1
+end package
+
+package system/locale/support/french
+consolidation "l10n"
+cluster lang-support-french
+classification "System/Localizations"
+summary "Language Support cluster - French"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/fr
+depend gnome/locale/fr
+depend gnome/trusted/locale/fr
+depend image/editor/gimp/locale/fr
+depend library/myspell/dictionary/fr
+depend mail/thunderbird/locale/fr
+depend network/dhcp/dhcpmgr/locale/fr
+depend release/getting-started/locale/fr
+depend system/desktop/locale/fr
+depend system/locale/fr
+depend system/locale/fr-extra
+depend system/locale/fr_fr
+depend system/locale/support/common
+depend system/osnet/locale/fr
+depend web/browser/firefox/locale/fr_fr
+end package
+
+package lang-support-french
+consolidation "l10n"
+renamed 133
+depend system/locale/support/french
+version 0.1
+end package
+
+package system/locale/support/georgian
+consolidation "l10n"
+cluster lang-support-georgian
+classification "System/Localizations"
+summary "Language Support cluster - Georgian"
+version 0.1
+depend gnome/locale/extra
+depend system/font/truetype/bpg-georgian
+depend system/locale/ka
+depend system/locale/support/common
+end package
+
+package lang-support-georgian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/georgian
+version 0.1
+end package
+
+package system/locale/support/german
+consolidation "l10n"
+cluster lang-support-german
+classification "System/Localizations"
+summary "Language Support cluster - German"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/de
+depend gnome/locale/de
+depend gnome/trusted/locale/de
+depend image/editor/gimp/locale/de
+depend library/myspell/dictionary/de
+depend mail/thunderbird/locale/de
+depend network/dhcp/dhcpmgr/locale/de
+depend release/getting-started/locale/de
+depend system/desktop/locale/de
+depend system/locale/de
+depend system/locale/de-extra
+depend system/locale/de_de
+depend system/locale/support/common
+depend system/osnet/locale/de
+depend web/browser/firefox/locale/de_de
+end package
+
+package lang-support-german
+consolidation "l10n"
+renamed 133
+depend system/locale/support/german
+version 0.1
+end package
+
+package system/locale/support/greek
+consolidation "l10n"
+cluster lang-support-greek
+classification "System/Localizations"
+summary "Language Support cluster - Greek"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/font/truetype/mgopen
+depend system/locale/el
+depend system/locale/el-extra
+depend system/locale/el_gr
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-greek
+consolidation "l10n"
+renamed 133
+depend system/locale/support/greek
+version 0.1
+end package
+
+package system/locale/support/gujarati
+consolidation "l10n"
+cluster lang-support-gujarati
+classification "System/Localizations"
+summary "Language Support cluster - Gujarati"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/gu
+depend system/locale/support/common
+end package
+
+package system/locale/support/hebrew
+consolidation "l10n"
+cluster lang-support-hebrew
+classification "System/Localizations"
+summary "Language Support cluster - Hebrew"
+version 0.1
+depend gnome/documentation/locale/rtl
+depend gnome/locale/rtl
+depend library/myspell/dictionary/extra
+depend system/desktop/locale/rtl
+depend system/locale/he
+depend system/locale/he-extra
+depend system/locale/support/common
+end package
+
+package lang-support-hebrew
+consolidation "l10n"
+renamed 133
+depend system/locale/support/hebrew
+version 0.1
+end package
+
+package system/locale/support/hungarian
+consolidation "l10n"
+cluster lang-support-hungarian
+classification "System/Localizations"
+summary "Language Support cluster - Hungarian"
+version 0.1
+depend gnome/documentation/locale/hu
+depend gnome/locale/hg
+depend library/myspell/dictionary/hu
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/hu
+depend system/locale/hu
+depend system/locale/hu-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-hungarian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/hungarian
+version 0.1
+end package
+
+package system/locale/support/icelandic
+consolidation "l10n"
+cluster lang-support-icelandic
+classification "System/Localizations"
+summary "Language Support cluster - Icelandic"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/is
+depend system/locale/is-extra
+depend system/locale/support/common
+end package
+
+package lang-support-icelandic
+consolidation "l10n"
+renamed 133
+depend system/locale/support/icelandic
+version 0.1
+end package
+
+package system/locale/support/indic
+consolidation "l10n"
+cluster lang-support-indic
+classification "System/Localizations"
+summary "Language Support cluster - Indic"
+version 0.1
+depend gnome/documentation/locale/hi
+depend gnome/locale/hi
+depend system/desktop/locale/extra
+depend system/font/truetype/indic-fonts-core
+depend system/library/iconv/extra
+depend system/locale/hi
+depend system/locale/support/common
+depend web/browser/firefox/locale/hi_in
+end package
+
+package lang-support-indic
+consolidation "l10n"
+renamed 133
+depend system/locale/support/indic
+version 0.1
+end package
+
+package system/locale/support/indonesian
+consolidation "l10n"
+cluster lang-support-indonesian
+classification "System/Localizations"
+summary "Language Support cluster - Indonesian"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/id
+depend system/locale/support/common
+end package
+
+package lang-support-indonesian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/indonesian
+version 0.1
+end package
+
+package system/locale/support/italian
+consolidation "l10n"
+cluster lang-support-italian
+classification "System/Localizations"
+summary "Language Support cluster - Italian"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/it
+depend gnome/locale/it
+depend gnome/trusted/locale/it
+depend image/editor/gimp/locale/it
+depend library/myspell/dictionary/it
+depend mail/thunderbird/locale/it
+depend network/dhcp/dhcpmgr/locale/it
+depend release/getting-started/locale/it
+depend system/desktop/locale/it
+depend system/locale/it
+depend system/locale/it-extra
+depend system/locale/it_it
+depend system/locale/support/common
+depend system/osnet/locale/it
+depend web/browser/firefox/locale/it_it
+end package
+
+package lang-support-italian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/italian
+version 0.1
+end package
+
+package system/locale/support/japanese
+consolidation "l10n"
+cluster lang-support-japanese
+classification "System/Localizations"
+summary "Language Support cluster - Japanese"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/ja
+depend gnome/locale/ja
+depend gnome/trusted/locale/ja
+depend mail/thunderbird/locale/ja
+depend network/dhcp/dhcpmgr/locale/ja
+depend release/getting-started/locale/ja
+depend system/desktop/locale/ja
+depend system/font/truetype/ipafont
+depend system/font/truetype/ipafont-mincho
+depend system/input-method/iiim/ja-anthy
+depend system/input-method/library/libanthy
+depend system/library/iconv/extra
+depend system/locale/ja
+depend system/locale/ja-extra
+depend system/locale/support/common
+depend system/manual/locale/ja
+depend system/osnet/locale/ja
+depend text/doctools/ja
+depend web/browser/firefox/locale/ja_jp
+end package
+
+package lang-support-japanese
+consolidation "l10n"
+renamed 133
+depend system/locale/support/japanese
+version 0.1
+end package
+
+package system/locale/support/kannada
+consolidation "l10n"
+cluster lang-support-kannada
+classification "System/Localizations"
+summary "Language Support cluster - Kannada"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/kn
+depend system/locale/support/common
+end package
+
+package system/locale/support/kashmiri
+consolidation "l10n"
+cluster lang-support-kashmiri
+classification "System/Localizations"
+summary "Language Support cluster - Kashmiri"
+version 0.1
+depend gnome/locale/extra
+depend system/locale/ks
+depend system/locale/support/common
+end package
+
+package system/locale/support/kazakh
+consolidation "l10n"
+cluster lang-support-kazakh
+classification "System/Localizations"
+summary "Language Support cluster - Kazakh"
+version 0.1
+depend gnome/locale/extra
+depend system/locale/kk
+depend system/locale/support/common
+end package
+
+package lang-support-kazakh
+consolidation "l10n"
+renamed 133
+depend system/locale/support/kazakh
+version 0.1
+end package
+
+package system/locale/support/kirghiz
+consolidation "l10n"
+cluster lang-support-kirghiz
+classification "System/Localizations"
+summary "Language Support cluster - Kirghiz"
+version 0.1
+depend gnome/locale/extra
+depend system/locale/ky
+depend system/locale/support/common
+end package
+
+package system/locale/support/korean
+consolidation "l10n"
+cluster lang-support-korean
+classification "System/Localizations"
+summary "Language Support cluster - Korean"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/ko
+depend gnome/locale/ko
+depend gnome/trusted/locale/ko
+depend image/editor/gimp/locale/ko
+depend mail/thunderbird/locale/ko
+depend network/dhcp/dhcpmgr/locale/ko
+depend release/getting-started/locale/ko
+depend system/desktop/locale/ko
+depend system/font/truetype/hanyang-ko
+depend system/font/truetype/hanyang-ko-core
+depend system/font/truetype/unfonts-ko-core
+depend system/font/truetype/unfonts-ko-extra
+depend system/input-method/iiim/ko-hangul
+depend system/input-method/library/libhangul
+depend system/library/iconv/extra
+depend system/locale/ko
+depend system/locale/ko-extra
+depend system/locale/support/common
+depend system/osnet/locale/ko
+depend web/browser/firefox/locale/ko_kr
+end package
+
+package lang-support-korean
+consolidation "l10n"
+renamed 133
+depend system/locale/support/korean
+version 0.1
+end package
+
+package system/locale/support/kurdish
+consolidation "l10n"
+cluster lang-support-kurdish
+classification "System/Localizations"
+summary "Language Support cluster - Kurdish"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/ku
+depend system/locale/support/common
+end package
+
+package system/locale/support/latvian
+consolidation "l10n"
+cluster lang-support-latvian
+classification "System/Localizations"
+summary "Language Support cluster - Latvian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/lv
+depend system/locale/lv-extra
+depend system/locale/support/common
+end package
+
+package lang-support-latvian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/latvian
+version 0.1
+end package
+
+package system/locale/support/lithuanian
+consolidation "l10n"
+cluster lang-support-lithuanian
+classification "System/Localizations"
+summary "Language Support cluster - Lithuanian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/lt
+depend system/locale/lt-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-lithuanian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/lithuanian
+version 0.1
+end package
+
+package system/locale/support/macedonian
+consolidation "l10n"
+cluster lang-support-macedonian
+classification "System/Localizations"
+summary "Language Support cluster - Macedonian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/mk
+depend system/locale/mk-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-macedonian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/macedonian
+version 0.1
+end package
+
+package system/locale/support/malay
+consolidation "l10n"
+cluster lang-support-malay
+classification "System/Localizations"
+summary "Language Support cluster - Malay"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/ms
+depend system/locale/support/common
+end package
+
+package lang-support-malay
+consolidation "l10n"
+renamed 133
+depend system/locale/support/malay
+version 0.1
+end package
+
+package system/locale/support/malayalam
+consolidation "l10n"
+cluster lang-support-malayalam
+classification "System/Localizations"
+summary "Language Support cluster - Malayalam"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/ml
+depend system/locale/support/common
+end package
+
+package system/locale/support/maltese
+consolidation "l10n"
+cluster lang-support-maltese
+classification "System/Localizations"
+summary "Language Support cluster - Maltese"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/mt
+depend system/locale/support/common
+end package
+
+package lang-support-maltese
+consolidation "l10n"
+renamed 133
+depend system/locale/support/maltese
+version 0.1
+end package
+
+package system/locale/support/marathi
+consolidation "l10n"
+cluster lang-support-marathi
+classification "System/Localizations"
+summary "Language Support cluster - Marathi"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/mr
+depend system/locale/support/common
+end package
+
+package system/locale/support/norwegian
+consolidation "l10n"
+cluster lang-support-norwegian
+classification "System/Localizations"
+summary "Language Support cluster - Norwegian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend image/editor/gimp/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/support/common
+end package
+
+package lang-support-norwegian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/norwegian
+version 0.1
+end package
+
+package system/locale/support/norwegian-bokmal
+consolidation "l10n"
+cluster lang-support-norwegian-bokmal
+classification "System/Localizations"
+summary "Language Support cluster - Norwegian Bokmal"
+version 0.1
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/nb
+depend system/locale/nb-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-norwegian-bokmal
+consolidation "l10n"
+renamed 133
+depend system/locale/support/norwegian-bokmal
+version 0.1
+end package
+
+package system/locale/support/norwegian-nynorsk
+consolidation "l10n"
+cluster lang-support-norwegian-nynorsk
+classification "System/Localizations"
+summary "Language Support cluster - Norwegian Nynorsk"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/nn
+depend system/locale/nn-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-norwegian-nynorsk
+consolidation "l10n"
+renamed 133
+depend system/locale/support/norwegian-nynorsk
+version 0.1
+end package
+
+package system/locale/support/oriya
+consolidation "l10n"
+cluster lang-support-oriya
+classification "System/Localizations"
+summary "Language Support cluster - Oriya"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/or
+depend system/locale/support/common
+end package
+
+package system/locale/support/polish
+consolidation "l10n"
+cluster lang-support-polish
+classification "System/Localizations"
+summary "Language Support cluster - Polish"
+version 0.1
+depend gnome/documentation/locale/pl
+depend gnome/locale/pl
+depend library/myspell/dictionary/pl
+depend mail/thunderbird/locale/pl
+depend system/desktop/locale/pl
+depend system/locale/pl
+depend system/locale/pl-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/pl_pl
+end package
+
+package lang-support-polish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/polish
+version 0.1
+end package
+
+package system/locale/support/portuguese
+consolidation "l10n"
+cluster lang-support-portuguese
+classification "System/Localizations"
+summary "Language Support cluster - Portugese"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/pt
+depend system/locale/pt-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-portuguese
+consolidation "l10n"
+renamed 133
+depend system/locale/support/portuguese
+version 0.1
+end package
+
+package system/locale/support/portuguese-br
+consolidation "l10n"
+cluster lang-support-portuguese-BR
+classification "System/Localizations"
+summary "Language Support cluster - Portugese (Brazil)"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/pt_br
+depend gnome/locale/pt_br
+depend gnome/trusted/locale/pt_br
+depend library/myspell/dictionary/pt_br
+depend mail/thunderbird/locale/pt_br
+depend release/getting-started/locale/pt_br
+depend system/desktop/locale/pt_br
+depend system/locale/pt_br
+depend system/locale/pt_br-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/pt_br
+end package
+
+package lang-support-portuguese-BR
+consolidation "l10n"
+renamed 133
+depend system/locale/support/portuguese-br
+version 0.1
+end package
+
+package system/locale/support/punjabi
+consolidation "l10n"
+cluster lang-support-punjabi
+classification "System/Localizations"
+summary "Language Support cluster - Punjabi"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/pa
+depend system/locale/support/common
+end package
+
+package system/locale/support/romanian
+consolidation "l10n"
+cluster lang-support-romanian
+classification "System/Localizations"
+summary "Language Support cluster - Romanian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/ro
+depend system/locale/ro-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-romanian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/romanian
+version 0.1
+end package
+
+package system/locale/support/russian
+consolidation "l10n"
+cluster lang-support-russian
+classification "System/Localizations"
+summary "Language Support cluster - Russian"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/locale/ru
+depend gnome/trusted/locale/ru
+depend image/editor/gimp/locale/ru
+depend library/myspell/dictionary/ru
+depend mail/thunderbird/locale/ru
+depend release/getting-started/locale/ru
+depend system/desktop/locale/ru
+depend system/locale/ru
+depend system/locale/ru-extra
+depend system/locale/ru_ru
+depend system/locale/support/common
+depend web/browser/firefox/locale/ru_ru
+end package
+
+package lang-support-russian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/russian
+version 0.1
+end package
+
+package system/locale/support/sanskrit
+consolidation "l10n"
+cluster lang-support-sanskrit
+classification "System/Localizations"
+summary "Language Support cluster - Sanskrit"
+version 0.1
+depend system/locale/sa
+depend system/locale/support/common
+end package
+
+package system/locale/support/serbian
+consolidation "l10n"
+cluster lang-support-serbian
+classification "System/Localizations"
+summary "Language Support cluster - Serbian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/sr
+depend system/locale/sr-extra
+depend system/locale/sr_rs
+depend system/locale/support/common
+end package
+
+package lang-support-serbian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/serbian
+version 0.1
+end package
+
+package system/locale/support/serbo-croatian
+consolidation "l10n"
+cluster lang-support-serbo-croatian
+classification "System/Localizations"
+summary "Language Support cluster - Serbo-Croatian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/locale/support/common
+end package
+
+package lang-support-serbo-croatian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/serbo-croatian
+version 0.1
+end package
+
+package system/locale/support/slovak
+consolidation "l10n"
+cluster lang-support-slovak
+classification "System/Localizations"
+summary "Language Support cluster - Slovak"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/sk
+depend system/locale/sk-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-slovak
+consolidation "l10n"
+renamed 133
+depend system/locale/support/slovak
+version 0.1
+end package
+
+package lang-support-slovakian
+consolidation "l10n"
+depend system/locale/support/slovak
+renamed 133
+end package
+
+package system/locale/support/slovenian
+consolidation "l10n"
+cluster lang-support-slovenian
+classification "System/Localizations"
+summary "Language Support cluster - Slovenian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend library/myspell/dictionary/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/sl
+depend system/locale/sl-extra
+depend system/locale/support/common
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-slovenian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/slovenian
+version 0.1
+end package
+
+package system/locale/support/spanish
+consolidation "l10n"
+cluster lang-support-spanish
+classification "System/Localizations"
+summary "Language Support cluster - Spanish"
+version 0.1
+depend diagnostic/ddu/locale
+depend gnome/documentation/locale/es
+depend gnome/locale/es
+depend gnome/trusted/locale/es
+depend image/editor/gimp/locale/es
+depend library/myspell/dictionary/es
+depend mail/thunderbird/locale/es
+depend network/dhcp/dhcpmgr/locale/es
+depend release/getting-started/locale/es
+depend system/desktop/locale/es
+depend system/locale/es
+depend system/locale/es-extra
+depend system/locale/es_es
+depend system/locale/support/common
+depend system/osnet/locale/es
+depend web/browser/firefox/locale/es_es
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-spanish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/spanish
+version 0.1
+end package
+
+package system/locale/support/swedish
+consolidation "l10n"
+cluster lang-support-swedish
+classification "System/Localizations"
+summary "Language Support cluster - Swedish"
+version 0.1
+depend gnome/documentation/locale/sv
+depend gnome/locale/sv
+depend gnome/trusted/locale/sv
+depend image/editor/gimp/locale/sv
+depend library/myspell/dictionary/sv
+depend mail/thunderbird/locale/sv
+depend network/dhcp/dhcpmgr/locale/sv
+depend release/getting-started/locale/sv
+depend system/desktop/locale/sv
+depend system/locale/support/common
+depend system/locale/sv
+depend system/locale/sv-extra
+depend system/osnet/locale/sv
+depend web/browser/firefox/locale/sv_se
+end package
+
+package lang-support-swedish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/swedish
+version 0.1
+end package
+
+package system/locale/support/tamil
+consolidation "l10n"
+cluster lang-support-tamil
+classification "System/Localizations"
+summary "Language Support cluster - Tamil"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/support/common
+depend system/locale/ta
+end package
+
+package system/locale/support/telugu
+consolidation "l10n"
+cluster lang-support-telugu
+classification "System/Localizations"
+summary "Language Support cluster - Telugu"
+version 0.1
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/support/common
+depend system/locale/te
+end package
+
+package system/locale/support/thai
+consolidation "l10n"
+cluster lang-support-thai
+classification "System/Localizations"
+summary "Language Support cluster - Thai"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/font/truetype/thai-scalable
+depend system/input-method/iiim/th-thaile
+depend system/locale/support/common
+depend system/locale/th
+depend system/locale/th-extra
+end package
+
+package lang-support-thai
+consolidation "l10n"
+renamed 133
+depend system/locale/support/thai
+version 0.1
+end package
+
+package system/locale/support/turkish
+consolidation "l10n"
+cluster lang-support-turkish
+classification "System/Localizations"
+summary "Language Support cluster - Turkish"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend mail/thunderbird/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/support/common
+depend system/locale/tr
+depend system/locale/tr-extra
+depend web/browser/firefox/locale/extra
+end package
+
+package lang-support-turkish
+consolidation "l10n"
+renamed 133
+depend system/locale/support/turkish
+version 0.1
+end package
+
+package system/locale/support/ukrainian
+consolidation "l10n"
+cluster lang-support-ukrainian
+classification "System/Localizations"
+summary "Language Support cluster - Ukrainian"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/locale/support/common
+depend system/locale/uk
+end package
+
+package lang-support-ukrainian
+consolidation "l10n"
+renamed 133
+depend system/locale/support/ukrainian
+version 0.1
+end package
+
+package system/locale/support/vietnamese
+consolidation "l10n"
+cluster lang-support-vietnamese
+classification "System/Localizations"
+summary "Language Support cluster - Vietnamese"
+version 0.1
+depend gnome/documentation/locale/extra
+depend gnome/locale/extra
+depend system/desktop/locale/extra
+depend system/library/iconv/extra
+depend system/locale/support/common
+depend system/locale/vi
+end package
+
+package lang-support-vietnamese
+consolidation "l10n"
+renamed 133
+depend system/locale/support/vietnamese
+version 0.1
+end package
