@@ -684,10 +684,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CatalogRefreshException, e:
-                        msg = _("Please check the network "
-                            "connection.\nIs the repository accessible?")
-                        if e.errmessage and len(e.errmessage) > 0:
-                                msg = e.errmessage
+                        msg = gui_misc.get_catalogrefresh_exception_msg(e)
                         self.__g_error_stage(msg)
                         return
                 except api_errors.TransportError, ex:
@@ -1322,7 +1319,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                             self.api_o.plan_update_all(sys.argv[0],
                             refresh_catalogs = False,
                             noexecute = False, force = True,
-                            be_name = None)
+                            be_name = None, new_be = False)
                         self.pylint_stub = opensolaris_image
                 return stuff_to_do
 
