@@ -67,7 +67,7 @@ class Repository(progress.GuiProgressTracker):
                 self.repository_selection = None
                 self.cancel_progress_thread = False
                 self.cancel_function = None
-                self.is_name_valid = False
+                self.is_alias_valid = True
                 self.is_url_valid = False
                 self.priority_changes = []
                 self.url_err = None
@@ -108,8 +108,8 @@ class Repository(progress.GuiProgressTracker):
                     builder.get_object("add_publisher_cancel_button")
                 self.w_ssl_box = \
                     builder.get_object("ssl_box")
-                self.w_add_publisher_name = \
-                    builder.get_object("add_publisher_name")
+                self.w_add_publisher_alias = \
+                    builder.get_object("add_publisher_alias")
                 self.w_add_pub_label = \
                     builder.get_object("add_pub_label")
                 self.w_add_pub_instr_label = \
@@ -134,10 +134,14 @@ class Repository(progress.GuiProgressTracker):
                 self.w_add_publisher_comp_dialog.set_icon(self.parent.window_icon)
                 self.w_add_publisher_c_name = \
                     builder.get_object("add_publisher_name_c")
+                self.w_add_publisher_c_alias = \
+                    builder.get_object("add_publisher_alias_c")
+                self.w_add_publisher_c_alias_l = \
+                    builder.get_object("add_publisher_alias_l")
                 self.w_add_publisher_c_url = \
                     builder.get_object("add_publisher_url_c")
                 self.w_add_publisher_c_desc = \
-                    builder.get_object("add_publisher_desc")
+                    builder.get_object("add_publisher_desc_c")
                 self.w_add_publisher_c_desc_l = \
                     builder.get_object("add_publisher_desc_l")
                 self.w_add_publisher_c_close = \
@@ -285,9 +289,9 @@ class Repository(progress.GuiProgressTracker):
                      self.__on_publisherurl_changed),
                     (self.w_add_publisher_url, "activate",
                      self.__on_add_publisher_add_clicked),
-                    (self.w_add_publisher_name, "changed",
-                     self.__on_publishername_changed),
-                    (self.w_add_publisher_name, "activate",
+                    (self.w_add_publisher_alias, "changed",
+                     self.__on_publisheralias_changed),
+                    (self.w_add_publisher_alias, "activate",
                      self.__on_add_publisher_add_clicked),
                     (self.w_publisher_add_button, "clicked",
                      self.__on_add_publisher_add_clicked),
@@ -478,12 +482,12 @@ class Repository(progress.GuiProgressTracker):
 
         def __validate_url(self, url_widget, w_ssl_key = None, w_ssl_cert = None):
                 self.__validate_url_generic(url_widget, self.w_add_error_label, 
-                    self.w_publisher_add_button, self.is_name_valid,
+                    self.w_publisher_add_button, self.is_alias_valid,
                     w_ssl_label=self.w_add_sslerror_label,
                     w_ssl_key=w_ssl_key, w_ssl_cert=w_ssl_cert)
 
         def __validate_url_generic(self, w_url_text, w_error_label, w_action_button,
-                name_valid = False, function = None, w_ssl_label = None, 
+                alias_valid = False, function = None, w_ssl_label = None, 
                 w_ssl_key = None, w_ssl_cert = None):
                 ssl_key = None
                 ssl_cert = None
@@ -492,16 +496,14 @@ class Repository(progress.GuiProgressTracker):
                 url = w_url_text.get_text()
                 self.is_url_valid, self.url_err = self.__is_url_valid(url)
                 if not self.webinstall_new:
-                        w_error_label.set_markup(self.publisher_info)
-                        w_error_label.set_sensitive(False)
-                        w_error_label.show()
+                        self.__reset_error_label()
                 if w_ssl_label:
                         w_ssl_label.set_sensitive(False)
                         w_ssl_label.show()
                 valid_url = False
                 valid_func = True
                 if self.is_url_valid:
-                        if name_valid:
+                        if alias_valid:
                                 valid_url = True
                         else:
                                 if self.name_error != None:
@@ -528,16 +530,14 @@ class Repository(progress.GuiProgressTracker):
                         valid_func = function()
                 w_action_button.set_sensitive(valid_url and valid_func and ssl_valid)
 
-        def __validate_name_addpub(self, ok_btn, name_widget, url_widget, error_label,
+        def __validate_alias_addpub(self, ok_btn, name_widget, url_widget, error_label,
             function = None):
                 valid_btn = False
                 valid_func = True
                 name = name_widget.get_text() 
-                self.is_name_valid = self.__is_name_valid(name)
-                error_label.set_markup(self.publisher_info)
-                error_label.set_sensitive(False)
-                error_label.show()
-                if self.is_name_valid:
+                self.is_alias_valid = self.__is_alias_valid(name)
+                self.__reset_error_label()
+                if self.is_alias_valid:
                         if (self.is_url_valid):
                                 valid_btn = True
                         else:
@@ -556,18 +556,18 @@ class Repository(progress.GuiProgressTracker):
                         valid_func = function()
                 ok_btn.set_sensitive(valid_btn and valid_func)
 
-        def __is_name_valid(self, name):
+        def __is_alias_valid(self, name):
                 self.name_error = None
                 if len(name) == 0:
-                        return False
+                        return True
                 try:
                         publisher.Publisher(prefix=name)
                 except api_errors.BadPublisherPrefix, e:
-                        self.name_error = _("Name contains invalid characters")
+                        self.name_error = _("Alias contains invalid characters")
                         return False
                 try:
                         self.api_o.get_publisher(prefix=name)
-                        self.name_error = _("Name already in use")
+                        self.name_error = _("Alias already in use")
                         return False
                 except api_errors.UnknownPublisher, e:
                         return True
@@ -838,7 +838,7 @@ class Repository(progress.GuiProgressTracker):
                 self.w_manage_up_btn.set_sensitive(up_enabled)
                 self.w_manage_down_btn.set_sensitive(down_enabled)
 
-        def __do_add_repository(self, name=None, url=None, ssl_key=None, ssl_cert=None,
+        def __do_add_repository(self, alias=None, url=None, ssl_key=None, ssl_cert=None,
             pub=None):
                 self.publishers_apply.set_title(_("Adding Publisher"))
                 if self.webinstall_new:
@@ -849,7 +849,7 @@ class Repository(progress.GuiProgressTracker):
                         repo = publisher.Repository()
                         repo.add_origin(url)
                         self.__run_with_prog_in_thread(self.__add_repository,
-                            self.w_add_publisher_dialog, self.__stop, name,
+                            self.w_add_publisher_dialog, self.__stop, alias,
                             url, ssl_key, ssl_cert, pub)
 
         def __stop(self):
@@ -858,12 +858,13 @@ class Repository(progress.GuiProgressTracker):
                         self.cancel_progress_thread = True
                         self.publishers_apply_cancel.set_sensitive(False)
 
-        def __add_repository(self, name=None, origin_url=None, ssl_key=None, 
+        def __add_repository(self, alias=None, origin_url=None, ssl_key=None, 
             ssl_cert=None, pub=None):
                 errors = []
                 if pub == None:
                         pub, repo, new_pub = self.__get_or_create_pub_with_url(self.api_o,
-                            name, origin_url)
+                            alias, origin_url)
+                        name = alias
                 else:
                         repo = pub.selected_repository
                         new_pub = True
@@ -946,11 +947,12 @@ class Repository(progress.GuiProgressTracker):
                 # Descriptions not available at the moment
                 self.w_add_publisher_c_desc.hide()
                 self.w_add_publisher_c_desc_l.hide()
+                self.w_add_publisher_c_name.set_text(pub.prefix)
                 if pub.alias and len(pub.alias) > 0:
-                        self.w_add_publisher_c_name.set_text(
-                                pub.alias + " ("+ pub.prefix +")")
+                        self.w_add_publisher_c_alias.set_text(pub.alias)
                 else:
-                        self.w_add_publisher_c_name.set_text(pub.prefix)
+                        self.w_add_publisher_c_alias.hide()
+                        self.w_add_publisher_c_alias_l.hide()
                 self.w_add_publisher_c_url.set_text(origin.uri)
                 self.w_add_publisher_comp_dialog.show()
 
@@ -1280,7 +1282,7 @@ class Repository(progress.GuiProgressTracker):
                 
         def __on_add_publisher_delete_event(self, widget, event):
                 self.w_add_publisher_url.set_text("")
-                self.w_add_publisher_name.set_text("")
+                self.w_add_publisher_alias.set_text("")
                 self.__delete_widget_handler_hide(widget, event)
                 return True
 
@@ -1305,13 +1307,13 @@ class Repository(progress.GuiProgressTracker):
         def __on_certentry_changed(self, widget):
                 self.__validate_url_generic(self.w_add_publisher_url,
                     self.w_add_error_label, self.w_publisher_add_button,
-                    self.is_name_valid, w_ssl_label=self.w_add_sslerror_label,
+                    self.is_alias_valid, w_ssl_label=self.w_add_sslerror_label,
                     w_ssl_key=self.w_key_entry, w_ssl_cert=widget)
 
         def __on_keyentry_changed(self, widget):
                 self.__validate_url_generic(self.w_add_publisher_url,
                     self.w_add_error_label, self.w_publisher_add_button,
-                    self.is_name_valid, w_ssl_label=self.w_add_sslerror_label,
+                    self.is_alias_valid, w_ssl_label=self.w_add_sslerror_label,
                     w_ssl_key=widget, w_ssl_cert=self.w_cert_entry)
 
         def __on_modcertkeyentry_changed(self, widget):
@@ -1390,16 +1392,18 @@ class Repository(progress.GuiProgressTracker):
                         return True
                 return False
 
-        def __on_publishername_changed(self, widget):
+        def __on_publisheralias_changed(self, widget):
                 error_label = self.w_add_error_label
                 url_widget = self.w_add_publisher_url
                 ok_btn = self.w_publisher_add_button
-                self.__validate_name_addpub(ok_btn, widget, url_widget, error_label)
+                self.__validate_alias_addpub(ok_btn, widget, url_widget, error_label)
 
         def __on_add_publisher_add_clicked(self, widget):
                 if self.w_publisher_add_button.get_property('sensitive') == 0:
                         return
-                name = self.w_add_publisher_name.get_text()
+                alias = self.w_add_publisher_alias.get_text()
+                if len(alias) == 0:
+                        alias = None
                 url = self.w_add_publisher_url.get_text()
                 ssl_key = self.w_key_entry.get_text()
                 ssl_cert = self.w_cert_entry.get_text()
@@ -1408,7 +1412,7 @@ class Repository(progress.GuiProgressTracker):
                     os.path.isfile(ssl_key)):
                         ssl_key = None
                         ssl_cert = None
-                self.__do_add_repository(name, url, ssl_key, ssl_cert)
+                self.__do_add_repository(alias, url, ssl_key, ssl_cert)
 
         def __on_apply_cancel_clicked(self, widget):
                 if self.cancel_function:
@@ -1450,9 +1454,15 @@ class Repository(progress.GuiProgressTracker):
                 return False
 
         def __on_manage_add_clicked(self, widget):
-                self.w_add_publisher_name.grab_focus()
+                self.w_add_publisher_url.grab_focus()
                 self.w_registration_box.hide()
+                self.__reset_error_label()
                 self.w_add_publisher_dialog.show_all()
+
+        def __reset_error_label(self):
+                self.w_add_error_label.set_markup(self.publisher_info)
+                self.w_add_error_label.set_sensitive(False)
+                self.w_add_error_label.show()
 
         def __on_manage_modify_clicked(self, widget):
                 itr, model = self.__get_selected_publisher_itr_model()
@@ -1695,6 +1705,12 @@ class Repository(progress.GuiProgressTracker):
                         repo = pub.selected_repository
                 except api_errors.UnknownPublisher:
                         repo = publisher.Repository()
+                        # We need to specify a name when creating a publisher
+                        # object. It does not matter if it is wrong as the
+                        # __update_publisher() call in __add_repository() will
+                        # fail and it is dealt with there.
+                        if name == None:
+                                name = "None"
                         pub = publisher.Publisher(name, repositories=[repo])
                         new_pub = True
                         # This part is copied from "def publisher_set(img, args)"
@@ -1886,11 +1902,11 @@ class Repository(progress.GuiProgressTracker):
                         self.main_window = self.w_add_publisher_dialog
                         self.__on_manage_add_clicked(None)
                         self.w_add_publisher_url.set_text(origin_uri)
-                        self.w_add_publisher_name.set_text(pub.prefix)
+                        self.w_add_publisher_alias.set_text(pub.alias)
                         self.w_add_pub_label.hide()
                         self.w_add_pub_instr_label.hide()
                         self.w_add_publisher_url.set_sensitive(False)
-                        self.w_add_publisher_name.set_sensitive(False)
+                        self.w_add_publisher_alias.set_sensitive(False)
                         reg_uri = self.__get_registration_uri(repo)
                         if reg_uri == None or len(reg_uri) == 0:
                                 reg_uri = origin_uri

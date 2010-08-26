@@ -3313,7 +3313,7 @@ following name.</property>
                 <property name="yalign">0</property>
                 <property name="xpad">4</property>
                 <property name="ypad">4</property>
-                <property name="label" translatable="yes">Specify the publisher name and URI</property>
+                <property name="label" translatable="yes">Specify the publisher URI and optional alias</property>
                 <property name="use_markup">True</property>
               </object>
               <packing>
@@ -3331,21 +3331,21 @@ following name.</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">10</property>
                     <child>
-                      <object class="GtkLabel" id="name_label">
+                      <object class="GtkLabel" id="alias_label">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
                         <property name="xpad">4</property>
                         <property name="ypad">4</property>
-                        <property name="label" translatable="yes">_Name:</property>
+                        <property name="label" translatable="yes">_Alias:</property>
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">add_publisher_name</property>
+                        <property name="mnemonic_widget">add_publisher_alias</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -3363,7 +3363,7 @@ following name.</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="position">1</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </object>
@@ -3378,11 +3378,11 @@ following name.</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">10</property>
                     <child>
-                      <object class="GtkEntry" id="add_publisher_name">
+                      <object class="GtkEntry" id="add_publisher_url">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">&#x25CF;</property>
-                        <signal name="changed" handler="on_publishername_changed"/>
+                        <signal name="changed" handler="on_publisherurl_changed"/>
                         <signal name="activate" handler="on_add_publisher_add_clicked"/>
                       </object>
                       <packing>
@@ -3394,11 +3394,11 @@ following name.</property>
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkEntry" id="add_publisher_url">
+                          <object class="GtkEntry" id="add_publisher_alias">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">&#x25CF;</property>
-                            <signal name="changed" handler="on_publisherurl_changed"/>
+                            <signal name="changed" handler="on_publisheralias_changed"/>
                             <signal name="activate" handler="on_add_publisher_add_clicked"/>
                           </object>
                           <packing>
@@ -3413,7 +3413,7 @@ following name.</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="ypad">2</property>
-                            <property name="label" translatable="yes">e.g. http://pkg.opensolaris.org/release</property>
+                            <property name="label" translatable="no"></property>
                             <property name="use_markup">True</property>
                           </object>
                           <packing>
@@ -5607,6 +5607,22 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkLabel" id="add_publisher_alias_l">
+                        <property name="visible">True</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <property name="xpad">4</property>
+                        <property name="ypad">4</property>
+                        <property name="label" translatable="yes">Publisher Alias:</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="add_publisher_url_l">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -5619,7 +5635,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -5635,7 +5651,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
@@ -5666,7 +5682,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="add_publisher_url_c">
+                      <object class="GtkLabel" id="add_publisher_alias_c">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="xalign">0</property>
@@ -5682,7 +5698,23 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="add_publisher_desc">
+                      <object class="GtkLabel" id="add_publisher_url_c">
+                        <property name="visible">True</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <property name="xpad">4</property>
+                        <property name="ypad">4</property>
+                        <property name="use_markup">True</property>
+                        <property name="single_line_mode">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="add_publisher_desc_c">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="xalign">0</property>
@@ -5693,7 +5725,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
