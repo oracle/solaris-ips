@@ -154,10 +154,14 @@ def init_for_help(application_dir="/"):
         gnome.program_init('package-manager', '0.1', properties=props)
 
 def display_help(help_id=None):
-        if help_id != None:
-                gnome.help_display('package-manager', link_id=help_id)
-        else:
-                gnome.help_display('package-manager')
+        try:
+                if help_id != None:
+                        gnome.help_display('package-manager', link_id=help_id)
+                else:
+                        gnome.help_display('package-manager')
+        except gobject.GError, ex:
+                msg = str(ex)
+                logger.error(msg)
 
 def add_pkgname_to_dic(dic, name, special_table):
         """Adds the original name of the package to the

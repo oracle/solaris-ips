@@ -196,6 +196,12 @@ class InstallUpdate(progress.GuiProgressTracker):
 
                 self.w_expander = builder.get_object("details_expander")
                 self.w_cancel_button = builder.get_object("cancelcreateplan")
+                self.w_help_button = builder.get_object("helpcreateplan")
+                if self.top_level:
+                        self.w_help_button.set_property("visible", True)
+                else:
+                        self.w_help_button.set_property("visible", False)
+
                 self.w_close_button = builder.get_object("closecreateplan")
                 self.w_release_notes = builder.get_object("release_notes")
                 self.w_release_notes_link = \
@@ -284,6 +290,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                      self.__on_createplandialog_delete),
                     (self.w_expander, "activate",
                      self.__on_details_expander_activate),
+                    (self.w_help_button, "clicked",
+                     self.__on_help_button_clicked),
 
                     (self.w_license_reject_button, "clicked",
                      self.__on_license_reject_button_clicked),
@@ -606,6 +614,16 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_action()
                 self.retry = False
                 return
+
+        def __on_help_button_clicked(self, widget):
+                if self.top_level:
+                        gui_misc.display_help("um_info")
+                elif self.action == enumerations.INSTALL_UPDATE:
+                        gui_misc.display_help("install-pkg")
+                elif self.action == enumerations.REMOVE:
+                        gui_misc.display_help("remove-pkg")
+                else:
+                        gui_misc.display_help("update-pkg")
 
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:

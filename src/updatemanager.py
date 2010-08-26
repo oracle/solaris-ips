@@ -27,12 +27,12 @@ import gettext
 import locale
 import os
 import sys
-import time
 
 try:
         import gobject
         gobject.threads_init()
         import gtk
+        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
@@ -79,13 +79,16 @@ class Updatemanager:
                 self.check_cache_only = check_cache
                 self.gconf = pmgconf.PMGConf()
                 try:
-                        self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
+                        self.application_dir = os.environ["PACKAGE_MANAGER_ROOT"]
                 except KeyError:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
-                gettext.bindtextdomain("pkg", os.path.join(self.application_dir,
-                    "usr/share/locale"))
-                gettext.textdomain("pkg")
+                for module in (gettext, gtk.glade):
+                        module.bindtextdomain("pkg", os.path.join(
+                            self.application_dir,
+                            "usr/share/locale"))
+                        module.textdomain("pkg")
+                gui_misc.init_for_help(self.application_dir)
 
                 self.icon_theme = gtk.icon_theme_get_default()
                 pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
