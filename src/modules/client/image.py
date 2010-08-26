@@ -1257,7 +1257,7 @@ class Image(object):
                 object.... grab from server if needed"""
 
                 try:
-                        ret = manifest.CachedManifest(fmri, self.pkgdir,
+                        ret = manifest.FactoredManifest(fmri, self.pkgdir,
                             excludes)
                         # if we have a intent string, let depot
                         # know for what we're using the cached manifest
@@ -1364,7 +1364,7 @@ class Image(object):
                 progtrack.item_set_goal(_("Package Cache Update Phase"),
                     len(removed))
                 for pfmri in removed:
-                        manifest.CachedManifest.clear_cache(pfmri, self.pkgdir)
+                        manifest.FactoredManifest.clear_cache(pfmri, self.pkgdir)
                         progtrack.item_add_progress()
                 progtrack.item_done()
 

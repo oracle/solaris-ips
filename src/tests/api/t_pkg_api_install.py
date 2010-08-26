@@ -270,7 +270,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo"])
                 pkg_dir = os.path.join(mdir, "..", "..")
-                manifest.CachedManifest.clear_cache(pfmri, pkg_dir)
+                manifest.FactoredManifest.clear_cache(pfmri, pkg_dir)
                 assert not os.path.exists(mcpath)
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["foo"])

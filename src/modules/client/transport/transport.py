@@ -1052,7 +1052,7 @@ class Transport(object):
                                 if content_only:
                                         return mcontent
 
-                                m = manifest.CachedManifest(fmri,
+                                m = manifest.FactoredManifest(fmri,
                                     self.__tcfg.pkgdir, excludes, mcontent)
 
                                 return m
@@ -1252,7 +1252,7 @@ class Transport(object):
                                         mf = file(dl_path)
                                         mcontent = mf.read()
                                         mf.close()
-                                        manifest.CachedManifest(fmri,
+                                        manifest.FactoredManifest(fmri,
                                             self.__tcfg.pkgdir,
                                             excludes, mcontent)
                                 except (apx.InvalidPackageErrors,

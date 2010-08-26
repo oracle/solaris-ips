@@ -123,7 +123,7 @@ class Manifest(object):
                 # XXX Do we need to find some way to assert that the keys are
                 # all unique?
 
-                if isinstance(origin, EmptyCachedManifest):
+                if isinstance(origin, EmptyFactoredManifest):
                         # No origin was provided, so nothing has been changed or
                         # removed; only added.  In addition, this doesn't need
                         # to be sorted since the caller likely already does
@@ -661,12 +661,13 @@ class Manifest(object):
 
 null = Manifest()
 
-class CachedManifest(Manifest):
-        """This class handles a cache of manifests for the client;
-        it partitions the manifest into multiple files (one per
-        action type) and also builds an on-disk cache of the
-        directories explictly and implicitly referenced by the
-        manifest, tagging each one w/ the appropriate variants/facets."""
+class FactoredManifest(Manifest):
+        """This class serves as a wrapper for the Manifest class for callers
+        that need efficient access to package data on a per-action type basis.
+        It achieves this by partitioning the manifest into multiple files (one
+        per action type) and then storing an on-disk cache of the directories
+        explictly and implicitly referenced by the manifest each tagged with
+        the appropriate variants/facets."""
 
         def __file_path(self, name):
                 return os.path.join(self.__file_dir(), name)
@@ -675,7 +676,7 @@ class CachedManifest(Manifest):
                 return os.path.join(self.__pkgdir, self.fmri.get_dir_path())
 
         def __init__(self, fmri, pkgdir, excludes=EmptyI, contents=None):
-                """Raises KeyError exception if cached manifest
+                """Raises KeyError exception if factored manifest
                 is not present and contents are None; delays
                 reading of manifest until required if cache file
                 is present"""
@@ -931,8 +932,8 @@ class CachedManifest(Manifest):
                 return Manifest.__getitem__(self, key)
 
         def __setitem__(self, key, value):
-                """No assignments to cached manifests allowed."""
-                assert "CachedManifests are not dicts"
+                """No assignments to factored manifests allowed."""
+                assert "FactoredManifests are not dicts"
 
         def __contains__(self, key):
                 if not self.loaded and not self.__load_attributes():
@@ -984,10 +985,10 @@ class CachedManifest(Manifest):
                     self_exclude=self_exclude)
 
 
-class EmptyCachedManifest(Manifest):
+class EmptyFactoredManifest(Manifest):
         """Special class for pkgplan's need for a empty manifest;
         the regular null manifest doesn't support get_directories
-        and making the cached manifest code handle this case is
+        and making the factored manifest code handle this case is
         too ugly..."""
         def __init__(self):
                 Manifest.__init__(self)
@@ -1011,4 +1012,4 @@ class EmptyCachedManifest(Manifest):
         def get_directories(excludes):
                 return []
 
-NullCachedManifest = EmptyCachedManifest()
+NullFactoredManifest = EmptyFactoredManifest()

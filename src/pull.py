@@ -178,7 +178,7 @@ def get_manifest(pfmri, basedir, contents=False):
                 m = xport.get_manifest(pfmri)
         else:
                 try:
-                        m = manifest.CachedManifest(pfmri, basedir)
+                        m = manifest.FactoredManifest(pfmri, basedir)
                 except:
                         abort(err=_("Unable to parse manifest '%(mpath)s' for "
                             "package '%(pfmri)s'") % locals())

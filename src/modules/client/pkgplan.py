@@ -53,10 +53,10 @@ class PkgPlan(object):
 
         def __init__(self, image, progtrack, check_cancelation):
                 self.destination_fmri = None
-                self.__destination_mfst = manifest.NullCachedManifest
+                self.__destination_mfst = manifest.NullFactoredManifest
 
                 self.origin_fmri = None
-                self.__origin_mfst = manifest.NullCachedManifest
+                self.__origin_mfst = manifest.NullFactoredManifest
 
                 self.actions = manifest.ManifestDifference([], [], [])
                 self.check_cancelation = check_cancelation

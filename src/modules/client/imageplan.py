@@ -504,7 +504,7 @@ class ImagePlan(object):
                             all_variants=all_variants or self.__variant_change,
                             intent=intent)
                 else:
-                        return manifest.NullCachedManifest
+                        return manifest.NullFactoredManifest
 
         def __create_intent(self, old_fmri, new_fmri, enabled_publishers):
                 """Return intent strings (or None).  Given a pair
