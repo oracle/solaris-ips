@@ -198,6 +198,7 @@ scripts_sunos = {
                 ['pkgrepo.py', 'pkgrepo'],
                 ['util/publish/pkgdiff.py', 'pkgdiff'],
                 ['util/publish/pkgfmt.py', 'pkgfmt'],
+                ['util/publish/pkglint.py', 'pkglint'],
                 ['util/publish/pkgmogrify.py', 'pkgmogrify'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
@@ -267,6 +268,7 @@ man1_files = [
         'man/pkgdepend.1',
         'man/pkgdiff.1',
         'man/pkgfmt.1',
+        'man/pkglint.1',
         'man/pkgmogrify.1',
         'man/pkgsend.1',
         'man/pkgsign.1',
@@ -288,6 +290,7 @@ packages = [
         'pkg.client.transport',
         'pkg.file_layout',
         'pkg.flavor',
+        'pkg.lint',
         'pkg.portable',
         'pkg.publish',
         'pkg.server'
@@ -324,6 +327,9 @@ smf_files = [
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
         'svc/pkg-update.xml',
+        ]
+resource_files = [
+        'util/pkglintrc',
         ]
 execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']
 authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
@@ -851,6 +857,7 @@ data_files += [
         (man1_dir, man1_files),
         (man1m_dir, man1m_files),
         (man5_dir, man5_files),
+        (resource_dir, resource_files),
         ]
 
 if osname == 'sunos':

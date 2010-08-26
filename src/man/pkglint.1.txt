@@ -1,0 +1,331 @@
+                                                         
+
+
+User Commands                                          pkglint(1)
+
+
+
+NAME
+     pkglint - image packaging system package lint
+
+SYNOPSIS
+     /usr/bin/pkglint [ -c dir ] [ -r uri ] [ -p regexp ]
+                      [ -f rcfile ] [ -b build_no ]
+                      [ -l uri ] | manifest ...
+     /usr/bin/pkglint -L
+
+
+DESCRIPTION
+     pkglint(1) runs a series of checks on one  or  more  package
+     manifests, optionally referencing another repository.
+
+     pkglint should be used during the package authoring process,
+     prior  to  invoking pkgsend(1) on a set of manifests to per-
+     form exhaustive testing on the  packages  that  may  be  too
+     expensive  to  perform during normal operation of pkgsend(1)
+     or pkg.depotd(1M).  The checks include tests  for  duplicate
+     actions, missing attributes and unusual file permissions.
+
+     Manifests for linting can be  passed  as  a  space-separated
+     list of local files on the command line, or can be retrieved
+     from a repository.
+
+     If using repositories, on first-run, pkglint will create and
+     populate pkg(5) user-images in the supplied cache directory,
+     one for the reference repository, if the -r option  is  sup-
+     plied,  and one for the lint repository, if the -l option is
+     supplied.  No content is installed in these images, they are
+     only used by pkglint(1) to retrieve manifests from the repo-
+     sitories.   The  reference  and  lint   images   are   named
+     <cache_dir>/ref_image  and  <cache_dir>/lint_image,  respec-
+     tively.
+
+     Subsequent invocations of pkglint(1) can  re-use  the  cache
+     directory and can omit any -r or -l arguments.
+
+     Limited support is provided in  pkglint(1)  for  configuring
+     publishers  in  the  cache  directory.   It  is assumed that
+     pkg(1) will be used on these images to perform more  complex
+     publisher configuration.
+
+     pkglint(1) allows package authors to  bypass  checks  for  a
+     given manifest or action. Manifests or actions containing an
+     attribute "pkg.linted" set to "True" will  not  produce  any
+     lint output for that manifest or action.
+
+     The behavior of pkglint can  be  changed  using  a  supplied
+     pkglintrc   file.    By   default,   the  tool  searches  in
+     /usr/share/lib/pkg/pkglintrc and $HOME/.pkglintrc for confi-
+     guration  options. The command line option -f can be used to
+
+
+
+SunOS 5.11          Last change: 20 Aug 2010                    1
+
+
+
+
+
+
+User Commands                                          pkglint(1)
+
+
+
+     specify a different configuration file.
+
+     During the lint run, any errors or warnings encountered  are
+     printed to stderr.
+
+OPTIONS
+     The following options are supported:
+
+     -b build_no          A build number used to narrow the  list
+                          of  packages  used  during linting from
+                          lint and reference repositories.  If no
+                          -b option is specified, the latest ver-
+                          sions of packages are  used.  See  also
+                          the   "version.pattern"   configuration
+                          property.
+
+
+     -c cache_dir         A  local  directory  used  for  caching
+                          package  metadata  from  the  lint  and
+                          reference repositories.
+
+
+     -l lint_uri          A URI representing the location of  the
+                          lint    repository.   Both   HTTP   and
+                          filesystem-based publication  are  sup-
+                          ported.
+
+
+     -L                   List  the  known  and   excluded   lint
+                          checks, then exit.
+
+
+     -f config_file       Configure the pkglint session using the
+                          config file provided.
+
+
+     -p regexp            A regular expression used to narrow the
+                          list  of packages from the lint reposi-
+                          tory that are to be checked.  Note that
+                          all  manifests from the reference repo-
+                          sitory are loaded (assuming they  match
+                          the value for -b, if supplied) ignoring
+                          this pattern.
+
+
+     -r repo_uri          A URI representing the location of  the
+                          reference repository.
+
+
+     -v                   Run the tool in a verbose  mode,  over-
+                          riding  any  log_level  settings in the
+                          config file.  This option  also  causes
+
+
+
+SunOS 5.11          Last change: 20 Aug 2010                    2
+
+
+
+
+
+
+User Commands                                          pkglint(1)
+
+
+
+                          progress information on the lint run to
+                          be printed when using repositories.
+
+
+     --help or -?         Displays a usage message.
+
+
+CONFIGURATION FILE
+     The pkglintrc config file takes a number of key/value  argu-
+     ments, which are listed below:
+
+     log_level            The minimum level at which to emit lint
+                          messages. Lint messages lower than this
+                          level are discarded.
+
+                          By default, this is set  to  INFO.  Log
+                          levels in order of least to most severe
+                          are:
+
+                          DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+     do_pub_checks        Whether to  perform  checks  which  may
+                          only make sense for published packages.
+                          Set to True by default.
+
+
+     pkglint.ext.*        The plugin mechanism of pkglint  allows
+                          for additional lint modules to be added
+                          at  runtime.  Any  key  starting   with
+                          "pkglintext" takes a value that must be
+                          a fully-specified Python module. (  See
+                          section "Developers", below )
+
+
+     pkglint.exclude      A space-separated list of fully  speci-
+                          fied  Python  modules, classes or func-
+                          tion names which should be omitted from
+                          the set of checks performed.
+
+
+     use_progress_tracker Whether to use a progress tracker  when
+                          iterating  over  manifests  during lint
+                          runs, set to True by default.
+
+
+     version.pattern      A version pattern, used when specifying
+                          a build number to lint against (-b). If
+                          not specified in the rcfile, this  pat-
+                          tern  is "*,5.11-0.", matching all com-
+                          ponents of the  '5.11'  build,  with  a
+                          branch prefix of '0.'
+
+
+
+
+SunOS 5.11          Last change: 20 Aug 2010                    3
+
+
+
+
+
+
+User Commands                                          pkglint(1)
+
+
+
+DEVELOPERS
+     Developers wishing to extend the  set  of  checks  performed
+     should  subclass  pkg.lint.base.Checker  and its subclasses,
+     ManifestChecker,  ActionChecker  and   ContentChecker.   The
+     Python  module name containing those classes should be added
+     to a new "pkglint.ext." key in the configuration file.
+
+     Instances of those new subclasses are created by  pkglint(1)
+     on  startup,  and methods inside each subclass with the spe-
+     cial keyword argument, "pkglint_id" are invoked  during  the
+     course  of  the lint session.  Those methods should have the
+     same signature as the corresponding check(..) method in  the
+     super class.
+
+EXAMPLES
+     Example 1:  Running a pkglint session for the first time.
+
+
+       $ pkglint -c /space/cache -r http://localhost:10000 mymanifest.mf
+
+
+     Example 2:  A subsequent run  against  the  same  repository
+     used in Example 1.
+
+          $ pkglint -c /space/cache mymanifest-fixed.mf
+
+
+     Example 3:  Running a pkglint session with  a  lint  reposi-
+     tory, specifying a subset of packages to run checks on.
+
+            $ pkglint -c /space/othercache -l http://localhost:10000 -p '.*firefox.*'
+
+
+     Example 4:  Running a pkglint session against a given  build
+     in verbose mode.
+
+           $ pkglint -c /space/cache -r http://localhost:10000 -l http://localhost:12000 -b 147
+
+
+     Example 5:  A configuration file with  a  new  lint  module,
+     excluding some checks.
+
+            $ cat ~/.pkglintrc
+     [pkglint]
+
+     log_level = DEBUG
+     # log_level = INFO
+
+     pkglint.ext.mycheck = org.timf.mychecks
+     pkglint.ext.opensolaris = pkg.lint.opensolaris
+
+     pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker pkg.lint.pkglint.PkgActionChecker.unusual_perms
+
+
+
+SunOS 5.11          Last change: 20 Aug 2010                    4
+
+
+
+
+
+
+User Commands                                          pkglint(1)
+
+
+
+          pkg.lint.pkglint.PkgManifestChecker pkg.lint.opensolaris.OpenSolarisManifestChecker
+
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0
+
+         Command succeeded.
+
+
+     1
+
+         One or more lint checks emitted output.
+
+
+     2
+
+         Invalid command line options were specified.
+
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+
+  /usr/bin/pkglint
+          ____________________________________________________________
+         |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+         |_____________________________|_____________________________|
+         | Availability                | pkg:/package/pkg            |
+         |_____________________________|_____________________________|
+         | Interface Stability         | None / Under Development    |
+         |_____________________________|_____________________________|
+
+
+SEE ALSO
+     pkg(1), pkg.depotd(1M), pkgsend(1), pkg(5)
+
+
+NOTES
+     The image packaging system is an under-development  feature.
+     Command  names,  invocation, formats, and operations are all
+     subject to change.  Development is hosted in the OpenSolaris
+     community at:
+
+
+     http://hub.opensolaris.org/bin/view/Project+pkg/
+
+
+
+
+
+SunOS 5.11          Last change: 20 Aug 2010                    5
+
+
+
+
+
+
+

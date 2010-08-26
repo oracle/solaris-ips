@@ -102,6 +102,14 @@ class ProgressTracker(object):
                 self.item_phase = "None"
                 self.item_phase_last = "None"
 
+                # The tracker sets this to True whenever it has emitted
+                # output, but not yet written a newline. ProgressTracker
+                # users should call flush() when wanting to interrupt
+                # the tracker to write their own output.
+                # When the tracker writes a newline, we automatically reset
+                # this flag to False.
+                self.needs_cr = False
+
                 self.last_printed = 0 # when did we last emit status?
 
         def catalog_start(self, catalog):
@@ -368,6 +376,10 @@ class ProgressTracker(object):
                 raise NotImplementedError("item_output_done() not implemented "
                     "in superclass")
 
+        def flush(self):
+                raise NotImplementedError("flush() not implemented in "
+                    "superclass")
+
 
 class ProgressTrackerException(Exception):
         """ This exception is currently thrown if a ProgressTracker determines
@@ -452,6 +464,8 @@ class QuietProgressTracker(ProgressTracker):
         def item_output_done(self):
                 return
 
+        def flush(self):
+                return
 
 class NullProgressTracker(QuietProgressTracker):
         """ This ProgressTracker is a subclass of QuietProgressTracker
@@ -525,6 +539,7 @@ class CommandLineProgressTracker(ProgressTracker):
                                         print _("Done")
                                 print _("Download: %s ... ") % (self.dl_cur_pkg),
                                 self.dl_last_printed_pkg = self.dl_cur_pkg
+                                self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -534,6 +549,7 @@ class CommandLineProgressTracker(ProgressTracker):
         def __generic_done(self):
                 try:
                         print _("Done")
+                        self.needs_cr = False
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -549,6 +565,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 if pattr != last_pattr:
                         try:
                                 print "%s ... " % pattr,
+                                self.needs_cr = True
                         except IOError, e:
                                 if e.errno == errno.EPIPE:
                                         raise PipeError, e
@@ -575,6 +592,17 @@ class CommandLineProgressTracker(ProgressTracker):
 
         def item_output_done(self):
                 self.__generic_done()
+
+        def flush(self):
+                try:
+                        if self.needs_cr:
+                                print "\n",
+                                self.needs_cr = False
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
 
 class FancyUNIXProgressTracker(ProgressTracker):
@@ -628,6 +656,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.curstrlen = len(msg)
                 try:
                         print "%s" % msg,
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -639,6 +668,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print self.cr,
                         print " " * self.curstrlen,
                         print self.cr,
+                        self.needs_cr = False
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -679,6 +709,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             "publisher": self.refresh_cur_pub }
                         self.curstrlen = len(s)
                         print "%s" % s,
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -697,6 +728,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.curstrlen = len(s)
                 try:
                         print "%s" % s,
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -715,6 +747,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                             self.spinner]
                         self.curstrlen = len(s)
                         print "%s" % s,
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -752,6 +785,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # thingy out of the way.
                 try:
                         print " " * self.curstrlen, self.cr,
+                        self.needs_cr = False
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -778,6 +812,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         # here because more output may happen after
                         # this.
                         print " " * self.curstrlen, self.cr,
+                        self.needs_cr = False
                         sys.stdout.flush()
                         self.last_print_time = 0
                 except IOError, e:
@@ -800,6 +835,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                     _("PKGS"), _("FILES"), _("XFER (MB)"))
                         else:
                                 print self.cr,
+                                self.needs_cr = True
 
                         pkg_name = self.dl_cur_pkg
                         if len(pkg_name) > 38:
@@ -813,6 +849,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 ((self.dl_cur_nbytes / 1024.0 / 1024.0),
                                 (self.dl_goal_nbytes / 1024.0 / 1024.0)))
                         sys.stdout.write(s + self.clear_eol)
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -831,6 +868,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 try:
                         print
                         print
+                        self.needs_cr = False
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -866,6 +904,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 "%d/%d" % (self.act_cur_nactions,
                                     self.act_goal_nactions)
                              ),
+                        self.needs_cr = True
 
                         sys.stdout.flush()
                 except IOError, e:
@@ -912,6 +951,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                     self.ind_goal_nitems)
                              ),
 
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -945,6 +985,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                     self.item_goal_nitems)
                              ),
 
+                        self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -954,3 +995,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def item_output_done(self):
                 self.item_output(force=True)
                 self.__generic_simple_done()
+
+        def flush(self):
+                try:
+                        if self.needs_cr:
+                                print "\n",
+                                self.needs_cr = False
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise

@@ -48,7 +48,8 @@ import textwrap
 EmptyI = tuple()
 EmptyDict = dict()
 
-path_to_pub_util = "../util/publish"
+# relative to our proto area
+path_to_pub_util = "../../src/util/publish"
 
 #
 # These are initialized by pkg5testenv.setup_environment.
@@ -220,7 +221,8 @@ class Pkg5TestCase(unittest.TestCase):
         ro_data_root = property(fget=__get_ro_data_root)
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
-            handle=False, out=False, prefix="", raise_error=True, su_wrap=None):
+            handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
+            stderr=False):
                 wrapper = ""
                 if coverage:
                         wrapper = self.coverage_cmd
@@ -262,6 +264,8 @@ class Pkg5TestCase(unittest.TestCase):
                             comment)
 
                 if out:
+                        if stderr:
+                                return retcode, self.output, self.errout
                         return retcode, self.output
                 return retcode
 
@@ -333,7 +337,9 @@ class Pkg5TestCase(unittest.TestCase):
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e
-                shutil.copytree(os.path.join(self.__pwd, "ro_data"),
+                test_relative = os.path.sep.join(["..", "..", "src", "tests"])
+                test_src = os.path.join(g_proto_area, test_relative)
+                shutil.copytree(os.path.join(test_src, "ro_data"),
                     self.ro_data_root)
                 #
                 # TMPDIR affects the behavior of mkdtemp and mkstemp.
@@ -1383,6 +1389,11 @@ class CliTestCase(Pkg5TestCase):
                     args)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment)
 
+        def pkglint(self, args, exit=0, comment=""):
+                cmdline = "%s/usr/bin/pkglint %s" % (g_proto_area, args)
+                return self.cmdline_run(cmdline, exit=exit, out=True,
+                    comment=comment, stderr=True)
+
         def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
             comment=""):
                 args = []
@@ -1485,6 +1496,7 @@ class CliTestCase(Pkg5TestCase):
                 try:
                         accumulate = []
                         current_fmri = None
+                        retcode = None
 
                         for line in commands.split("\n"):
                                 line = line.strip()
@@ -1541,8 +1553,8 @@ class CliTestCase(Pkg5TestCase):
                 return plist
 
         def merge(self, args=EmptyI, exit=0):
-                prog = os.path.realpath(os.path.join(path_to_pub_util,
-                    "merge.py"))
+                pub_utils = os.path.join(g_proto_area, path_to_pub_util)
+                prog = os.path.join(pub_utils, "merge.py")
                 cmd = "%s %s" % (prog, " ".join(args))
                 self.cmdline_run(cmd, exit=exit)
 
