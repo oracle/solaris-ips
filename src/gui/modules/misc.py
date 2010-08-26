@@ -641,9 +641,9 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i += 1
         __add_line_to_generalinfo(infobuffer, i, labs["repository"],
             text["repository"])
-        i += 1
-        __add_label_to_generalinfo(infobuffer, i, labs["desc"] + '\n')
         if len(text["desc"]) > 0:
+                i += 1
+                __add_label_to_generalinfo(infobuffer, i, labs["desc"] + '\n')
                 i += 1
                 itr = infobuffer.get_iter_at_line(i)
                 infobuffer.insert(itr, text["desc"])

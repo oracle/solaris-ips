@@ -396,8 +396,7 @@ class PackageManager:
                 self.__init_repository_tree_view()
                 self.w_main_window.set_title(self.program_title)
 
-                if self.gconf.show_startpage:
-                        self.__setup_startpage(self.gconf.show_startpage)
+                self.__setup_startpage(self.gconf.show_startpage)
 
                 self.__setup_signals()
 
@@ -4858,8 +4857,6 @@ class PackageManager:
                 return self.api_o
 
         def start(self):
-                if not self.gconf.show_startpage:
-                        self.__setup_startpage(self.gconf.show_startpage)
                 self.set_busy_cursor()
                 Thread(target = self.__get_api_object).start() 
         
