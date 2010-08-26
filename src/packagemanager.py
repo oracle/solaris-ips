@@ -380,7 +380,6 @@ class PackageManager:
                 self.saved_application_list_sort = None
                 self.saved_category_list = None
                 self.saved_section_list = None
-                self.saved_selected_application_path = None
                 self.section_categories_list = {}
                 self.statusbar_message_id = 0
                 toolbar =  self.builder.get_object("toolbutton2")
@@ -397,7 +396,8 @@ class PackageManager:
                 self.__init_repository_tree_view()
                 self.w_main_window.set_title(self.program_title)
 
-                self.__setup_startpage(self.gconf.show_startpage)
+                if self.gconf.show_startpage:
+                        self.__setup_startpage(self.gconf.show_startpage)
 
                 self.__setup_signals()
 
@@ -4621,12 +4621,6 @@ class PackageManager:
                                    
                         self.first_run = False
 
-        def get_icon_pixbuf_from_glade_dir(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(
-                    os.path.join(self.application_dir, 
-                    "usr/share/package-manager/"),
-                    icon_name)
-
         def __count_selected_packages(self):
                 self.all_selected = 0
                 for pub_name in self.selected_pkgs:
@@ -4864,6 +4858,8 @@ class PackageManager:
                 return self.api_o
 
         def start(self):
+                if not self.gconf.show_startpage:
+                        self.__setup_startpage(self.gconf.show_startpage)
                 self.set_busy_cursor()
                 Thread(target = self.__get_api_object).start() 
         
@@ -4945,14 +4941,13 @@ Use -U (--update-all) to proceed with Updates"""
         # Setup packagemanager
         packagemanager = PackageManager(program_title)
         gblexcepthandler.set_parent(packagemanager)
+
+        while gtk.events_pending():
+                gtk.main_iteration(False)
         packagemanager.application_path = app_path
         packagemanager.image_directory = image_dir
         packagemanager.allow_links = allow_links
         packagemanager.update_all_proceed = update_all_proceed
-
-        while gtk.events_pending():
-                gtk.main_iteration(False)
-
         packagemanager.init_show_filter()
 
         gobject.idle_add(packagemanager.start)

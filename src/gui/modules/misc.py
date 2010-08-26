@@ -142,30 +142,6 @@ def setup_logging():
 def shutdown_logging():
         sd_logging()
         
-def get_icon_pixbuf(application_dir, icon_name):
-        return get_pixbuf_from_path(os.path.join(application_dir,
-            "usr/share/icons/package-manager"), icon_name)
-
-def get_pixbuf_from_path(path, icon_name):
-        icon = icon_name.replace(' ', '_')
-
-        # Performance: Faster to check if files exist rather than catching
-        # exceptions when they do not. Picked up open failures using dtrace
-        png_path = os.path.join(path, icon + ".png")
-        png_exists = os.path.exists(png_path)
-        svg_path = os.path.join(path, icon + ".png")
-        svg_exists = os.path.exists(png_path)
-
-        if not png_exists and not svg_exists:
-                return None
-        try:
-                return gtk.gdk.pixbuf_new_from_file(png_path)
-        except gobject.GError:
-                try:
-                        return gtk.gdk.pixbuf_new_from_file(svg_path)
-                except gobject.GError:
-                        return None
-
 def get_icon(icon_theme, name, size=16):
         try:
                 return icon_theme.load_icon(name, size, 0)
