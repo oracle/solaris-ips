@@ -133,7 +133,120 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         if usage_error:
                 error(usage_error, cmd=cmd)
 
-        if not full:
+        basic_usage = {}
+        adv_usage = {}
+
+        basic_cmds = ["install", "uninstall", "list", "image-update",
+            "refresh", "version"]
+
+        basic_usage["install"] = _(
+            "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            pkg_fmri_pattern ...")
+        basic_usage["uninstall"] = _(
+            "[-nrvq] [--no-index] [--deny-new-be | --require-new-be]\n"
+            "            [--be-name name] pkg_fmri_pattern ...")
+        basic_usage["list"] = _(
+            "[-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]")
+        basic_usage["image-update"] = _(
+            "[-fnvq] [--accept] [--be-name name] [--licenses]\n"
+            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]")
+        basic_usage["refresh"] = _("[--full] [publisher ...]")
+        basic_usage["version"] = ""
+
+        advanced_cmds = ["info", "search", "verify", "fix", "contents",
+            "image-create", "change-variant", "change-facet", "variant",
+            "facet", "set-property", "add-property-value",
+            "remove-property-value", "unset-property", "property", "",
+            "set-publisher", "unset-publisher", "publisher", "history",
+            "purge-history", "rebuild-index"]
+
+        adv_usage["info"] = _("[-lr] [--license] [pkg_fmri_pattern ...]")
+        adv_usage["search"] = _(
+            "[-HIaflpr] [-o attribute ...] [-s repo_uri] query")
+
+        adv_usage["verify"] = _("[-Hqv] [pkg_fmri_pattern ...]")
+        adv_usage["fix"] = _("[--accept] [--licenses] [pkg_fmri_pattern ...]")
+
+        adv_usage["contents"] = _(
+            "[-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
+            "            [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]")
+
+        adv_usage["image-create"] = _(
+            "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
+            "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
+            "            [--variant <variant_spec>=<instance> ...]\n"
+            "            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n"
+            "            [--facet <facet_spec>=[True|False] ...]\n"
+            "            (-p|--publisher) [<name>=]<repo_uri> dir")
+        adv_usage["change-variant"] = _(
+            "[-nvq] [--accept] [--be-name name] [--licenses]\n"
+            "            [--deny-new-be | --require-new-be] <variant_spec>=<instance> ...")
+
+        adv_usage["change-facet"] = _(
+            "[-nvq] [--accept] [--be-name name] [--licenses]\n"
+            "            [--deny-new-be | --require-new-be] <facet_spec>=[True|False|None] ...")
+
+        adv_usage["variant"] = _("[-H] [<variant_spec>]")
+        adv_usage["facet"] = ("[-H] [<facet_spec>]")
+        adv_usage["set-property"] = _("propname propvalue")
+        adv_usage["add-property-value"] = _("propname propvalue")
+        adv_usage["remove-property-value"] = _("propname propvalue")
+        adv_usage["unset-property"] = _("propname ...")
+        adv_usage["property"] = _("[-H] [propname ...]")
+
+        adv_usage["set-publisher"] = _("[-Ped] [-k ssl_key] [-c ssl_cert]\n"
+            "            [-g origin_to_add|--add-origin=origin_to_add ...]\n"
+            "            [-G origin_to_remove|--remove-origin=origin_to_remove ...]\n"
+            "            [-m mirror_to_add|--add-mirror=mirror_to_add ...]\n"
+            "            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]\n"
+            "            [-p repo_uri] [--enable] [--disable] [--no-refresh]\n"
+            "            [--reset-uuid] [--non-sticky] [--sticky]\n"
+            "            [--search-after=publisher]\n"
+            "            [--search-before=publisher]\n"
+            "            [--approve-ca-cert=path_to_CA]\n"
+            "            [--revoke-ca-cert=hash_of_CA_to_revoke]\n"
+            "            [--unset-ca-cert=hash_of_CA_to_unset]\n"
+            "            [--set-property name_of_property=value]\n"
+            "            [--add-property-value name_of_property=value_to_add]\n"
+            "            [--remove-property-value name_of_property=value_to_remove]\n"
+            "            [--unset-property name_of_property_to_delete]\n"
+            "            [publisher]")
+
+        adv_usage["unset-publisher"] = _("publisher ...")
+        adv_usage["publisher"] = _("[-HPn] [publisher ...]")
+        adv_usage["history"] = _("[-Hl] [-n number]")
+        adv_usage["purge-history"] = ""
+        adv_usage["rebuild-index"] = ""
+
+        def print_cmds(cmd_list, cmd_dic):
+                for cmd in cmd_list:
+                        if cmd is "":
+                                logger.error("")
+                        else:
+                                if cmd not in cmd_dic:
+                                        # this should never happen - callers
+                                        # should check for valid subcommands
+                                        # before calling usage(..)
+                                        raise ValueError(
+                                            "Unable to find usage str for %s" %
+                                            cmd)
+                                usage = cmd_dic[cmd]
+                                if usage is not "":
+                                        logger.error(
+                                            "        pkg %(cmd)s %(usage)s" %
+                                            locals())
+                                else:
+                                        logger.error("        pkg %s" % cmd)
+        if not full and cmd:
+                logger.error("Usage:")
+                combined = {}
+                combined.update(basic_usage)
+                combined.update(adv_usage)
+                print_cmds([cmd], combined)
+                sys.exit(retcode)
+
+        elif not full:
                 # The full usage message isn't desired.
                 logger.error(_("Try `pkg --help or -?' for more information."))
                 sys.exit(retcode)
@@ -141,67 +254,14 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         logger.error(_("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
+"""))
+        logger.error(_("Basic subcommands:"))
+        print_cmds(basic_cmds, basic_usage)
 
-Basic subcommands:
-        pkg install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-            [--deny-new-be | --require-new-be] [--be-name name]
-            pkg_fmri_pattern ...
-        pkg uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be] 
-            [--be-name name] pkg_fmri_pattern ...
-        pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
-        pkg image-update [-fnvq] [--accept] [--be-name name] [--licenses]
-            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
-        pkg refresh [--full] [publisher ...]
-        pkg version
+        logger.error(_("\nAdvanced subcommands:"))
+        print_cmds(advanced_cmds, adv_usage)
 
-Advanced subcommands:
-        pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
-        pkg verify [-Hqv] [pkg_fmri_pattern ...]
-        pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...] 
-        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
-            [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
-        pkg image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
-            [-k ssl_key] [-c ssl_cert] [--no-refresh]
-            [--variant <variant_spec>=<instance> ...]
-            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
-            [--facet <facet_spec>=[True|False] ...]
-            (-p|--publisher) [<name>=]<repo_uri> dir
-        pkg change-variant [-nvq] [--accept] [--be-name name] [--licenses]
-            [--deny-new-be | --require-new-be] <variant_spec>=<instance> ...
-        pkg change-facet [-nvq] [--accept] [--be-name name] [--licenses]
-            [--deny-new-be | --require-new-be] <facet_spec>=[True|False|None] ...
-        pkg variant [-H] [<variant_spec>]
-        pkg facet [-H] [<facet_spec>]
-        pkg set-property propname propvalue
-        pkg add-property-value propname propvalue
-        pkg remove-property-value propname propvalue
-        pkg unset-property propname ...
-        pkg property [-H] [propname ...]
-
-        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-            [-g origin_to_add|--add-origin=origin_to_add ...]
-            [-G origin_to_remove|--remove-origin=origin_to_remove ...]
-            [-m mirror_to_add|--add-mirror=mirror_to_add ...]
-            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]
-            [-p repo_uri] [--enable] [--disable] [--no-refresh]
-            [--reset-uuid] [--non-sticky] [--sticky]
-            [--search-after=publisher]
-            [--search-before=publisher]
-            [--approve-ca-cert=path_to_CA]
-            [--revoke-ca-cert=hash_of_CA_to_revoke]
-            [--unset-ca-cert=hash_of_CA_to_unset]
-            [--set-property name_of_property=value]
-            [--add-property-value name_of_property=value_to_add]
-            [--remove-property-value name_of_property=value_to_remove]
-            [--unset-property name_of_property_to_delete]
-            [publisher]
-        pkg unset-publisher publisher ...
-        pkg publisher [-HPn] [publisher ...]
-        pkg history [-Hl] [-n number]
-        pkg purge-history
-        pkg rebuild-index
-
+        logger.error(_("""
 Options:
         -R dir
         --help or -?
@@ -662,7 +722,7 @@ def verify_image(img, args):
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="verify")
-        
+
         api_inst = __api_alloc(img, quiet=quiet)
         if api_inst == None:
                 return EXIT_OOPS
@@ -789,7 +849,7 @@ def display_plan(api_inst, verbose):
                 disp = verbose
 
         plan = api_inst.describe()
-        
+
         a, r, i, c = [], [], [], []
 
         for src, dest in plan.get_changes():
@@ -807,7 +867,7 @@ def display_plan(api_inst, verbose):
                 def cond_show(s, v):
                         if v:
                                 logger.info(s % v)
-                
+
                 cond_show(_("                Packages to remove: %5d"), len(r))
                 cond_show(_("               Packages to install: %5d"), len(i))
                 cond_show(_("                Packages to update: %5d"), len(c))
@@ -841,7 +901,7 @@ def display_plan(api_inst, verbose):
                         logger.info(_("Affected fmris:"))
                         for src, dest in a:
                                 logger.info("  %s", src)
-                                        
+
         if "services" in disp:
                 if not plan.new_be:
                         logger.info(_("Services:"))
@@ -3454,11 +3514,11 @@ def property_add_value(img, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(_("requires a property name and value"),
-                    cmd="property-add-value")
+                    cmd="add-property-value")
 
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd="property-add-value")
+                    "publisher"), cmd="add-property-value")
                 return EXIT_OOPS
 
         try:
@@ -3467,7 +3527,7 @@ def property_add_value(img, args):
             api_errors.InvalidPropertyValue), e:
                 # Prepend a newline because otherwise the exception
                 # will be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="property-add-value")
+                error("\n" + str(e), cmd="add-property-value")
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3480,11 +3540,11 @@ def property_remove_value(img, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(_("requires a property name and value"),
-                    cmd="property-remove-value")
+                    cmd="remove-property-value")
 
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd="property-remove-value")
+                    "publisher"), cmd="remove-property-value")
                 return EXIT_OOPS
 
         try:
@@ -3493,7 +3553,7 @@ def property_remove_value(img, args):
             api_errors.InvalidPropertyValue), e:
                 # Prepend a newline because otherwise the exception
                 # will be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="property-remove-value")
+                error("\n" + str(e), cmd="remove-property-value")
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3765,7 +3825,7 @@ def image_create(args):
                     "'<prefix>=<uri> or '<uri>''."), cmd=cmd_name)
         elif not pub_name and not refresh_allowed:
                 usage(_("--no-refresh cannot be used with -p unless a "
-                    "publisher prefix is provided."))
+                    "publisher prefix is provided."), cmd=cmd_name)
 
         if sys_repo and sock_path:
                 repo_uri = None
@@ -4029,16 +4089,74 @@ def main_func():
                 elif opt in ("--help", "-?"):
                         show_usage = True
 
+        # placeholders in this lookup table for image-create, help and version
+        # which don't have dedicated methods
+        cmds = {
+            "add-property-value"       : property_add_value,
+            "authority"        : publisher_list,
+            "change-facet"     : change_facet,
+            "change-variant"   : change_variant,
+            "contents"         : list_contents,
+            "facet"            : facet_list,
+            "fix"              : fix_image,
+            "freeze"           : freeze,
+            "help"             : None,
+            "history"          : history_list,
+            "image-create"     : None,
+            "image-update"     : image_update,
+            "info"             : info,
+            "install"          : install,
+            "list"             : list_inventory,
+            "property"         : property_list,
+            "publisher"        : publisher_list,
+            "purge-history"    : history_purge,
+            "rebuild-index"    : rebuild_index,
+            "refresh"          : publisher_refresh,
+            "remove-property-value"    : property_remove_value,
+            "search"           : search,
+            "set-authority"    : publisher_set,
+            "set-property"     : property_set,
+            "set-publisher"    : publisher_set,
+            "unfreeze"         : unfreeze,
+            "uninstall"        : uninstall,
+            "unset-authority"  : publisher_unset,
+            "unset-property"   : property_unset,
+            "unset-publisher"  : publisher_unset,
+            "variant"          : variant_list,
+            "verify"           : verify_image,
+            "version"          : None
+        }
+
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)
                 if subcommand == "help":
-                        show_usage = True
+                        if pargs:
+                                sub = pargs.pop(0)
+                                if sub in cmds and \
+                                    sub not in ["help", "-?", "--help"]:
+                                        usage(retcode=0, full=False, cmd=sub)
+                                elif sub not in ["help", "-?", "--help"]:
+                                        usage(_("unknown subcommand '%s'") %
+                                            sub, full=True)
+                                else:
+                                        usage(retcode=0, full=True)
+                        else:
+                                usage(retcode=0, full=True)
 
+        # A gauntlet of tests to see if we need to print usage information
+        if subcommand in cmds and show_usage:
+                usage(retcode=0, cmd=subcommand, full=False)
+        if subcommand and subcommand not in cmds:
+                usage(_("unknown subcommand '%s'") % subcommand, full=True)
         if show_usage:
                 usage(retcode=0, full=True)
-        elif not subcommand:
+        if not subcommand:
                 usage(_("no subcommand specified"))
+
+        for str in ["--help", "-?"]:
+                if str in pargs:
+                        usage(retcode=0, full=False, cmd=subcommand)
 
         # This call only affects sockets created by Python.  The transport
         # framework uses the defaults in global_settings, which may be
@@ -4050,21 +4168,19 @@ def main_func():
         if subcommand == "image-create":
                 if "mydir" in locals():
                         usage(_("-R not allowed for %s subcommand") %
-                              subcommand)
+                              subcommand, cmd=subcommand)
                 try:
                         ret = image_create(pargs)
                 except getopt.GetoptError, e:
-                        if e.opt in ("help", "?"):
-                                usage(full=True)
                         usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
                 return ret
         elif subcommand == "version":
                 if "mydir" in locals():
                         usage(_("-R not allowed for %s subcommand") %
-                              subcommand)
+                              subcommand, cmd=subcommand)
                 if pargs:
                         usage(_("version: command does not take operands " \
-                            "('%s')") % " ".join(pargs))
+                            "('%s')") % " ".join(pargs), cmd=subcommand)
                 msg(pkg.VERSION)
                 return EXIT_OK
 
@@ -4100,48 +4216,11 @@ def main_func():
                 error(e)
                 return EXIT_OOPS
 
-        cmds = {
-                "add-property-value"     : property_add_value,
-                "authority"        : publisher_list,
-                "change-facet"     : change_facet,
-                "change-variant"   : change_variant,
-                "contents"         : list_contents,
-                "facet"            : facet_list,
-                "fix"              : fix_image,
-                "freeze"           : freeze,
-                "history"          : history_list,
-                "image-update"     : image_update,
-                "info"             : info,
-                "install"          : install,
-                "list"             : list_inventory,
-                "property"         : property_list,
-                "publisher"        : publisher_list,
-                "purge-history"    : history_purge,
-                "rebuild-index"    : rebuild_index,
-                "refresh"          : publisher_refresh,
-                "remove-property-value"  : property_remove_value,
-                "search"           : search,
-                "set-authority"    : publisher_set,
-                "set-property"     : property_set,
-                "set-publisher"    : publisher_set,
-                "unfreeze"         : unfreeze,
-                "uninstall"        : uninstall,
-                "unset-authority"  : publisher_unset,
-                "unset-property"   : property_unset,
-                "unset-publisher"  : publisher_unset,
-                "variant"          : variant_list,
-                "verify"           : verify_image
-               }
-
         func = cmds.get(subcommand, None)
-        if not func:
-                usage(_("unknown subcommand '%s'") % subcommand)
         try:
                 return func(img, pargs)
 
         except getopt.GetoptError, e:
-                if e.opt in ("help", "?"):
-                        usage(full=True)
                 usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
 
 #

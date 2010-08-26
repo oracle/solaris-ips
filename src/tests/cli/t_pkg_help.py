@@ -20,10 +20,7 @@
 # CDDL HEADER END
 #
 
-#
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -38,17 +35,53 @@ class TestPkgHelp(pkg5unittest.CliTestCase):
                 """Verify that usage message works regardless of how it is
                 triggered."""
 
-                self.pkg("-\?")
-                self.pkg("--help")
-                self.pkg("help")
+                def verify_help(msg, expected, unexpected=[]):
+                        """Verify a usage message contains output for each of
+                        the elements of a given array 'expected', and none
+                        of the items in the array 'unexpected'."""
 
-                self.pkg("-\? bobcat")
-                self.pkg("--help bobcat")
-                self.pkg("help bobcat")
+                        for str in expected:
+                                if str not in msg:
+                                        self.assert_(False, "%s not in %s" %
+                                            (str, msg))
+                        for str in unexpected:
+                                if str in msg:
+                                        self.assert_(False, "%s in %s" %
+                                            (str, msg))
 
-                # Unrequested usage.
-                self.pkg("", exit=2)
+                # Full usage text, ensuring we exit 0
+                for option in ["-\?", "--help", "help"]:
+                        ret, out, err = self.pkg(option, out=True, stderr=True)
+                        verify_help(err,
+                            ["pkg [options] command [cmd_options] [operands]",
+                            "pkg verify [-Hqv] [pkg_fmri_pattern ...]",
+                            "PKG_IMAGE", "Usage:"])
 
+                # Invalid subcommands, ensuring we exit 2
+                for option in ["-\? bobcat", "--help bobcat", "help bobcat",
+                    "bobcat --help"]:
+                        ret, out, err = self.pkg("-\? bobcat", exit=2, out=True,
+                            stderr=True)
+                        verify_help(err,
+                            ["pkg [options] command [cmd_options] [operands]",
+                            "pkg: unknown subcommand",
+                            "PKG_IMAGE", "Usage:"])
+
+                # Unrequested usage
+                ret, out, err = self.pkg("", exit=2, out=True, stderr=True)
+                verify_help(err,
+                    ["pkg: no subcommand specified",
+                    "Try `pkg --help or -?' for more information."],
+                    unexpected = ["PKG_IMAGE", "Usage:"])
+
+                # help for a subcommand should only print that subcommand usage
+                for option in ["property --help", "--help property",
+                    "help property"]:
+                        ret, out, err = self.pkg(option, out=True, stderr=True)
+                        verify_help(err, ["pkg property [-H] [propname ...]",
+                            "Usage:"], unexpected=[
+                            "pkg [options] command [cmd_options] [operands]",
+                            "PKG_IMAGE"])
 
 if __name__ == "__main__":
         unittest.main()

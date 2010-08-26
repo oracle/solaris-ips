@@ -1374,10 +1374,11 @@ class CliTestCase(Pkg5TestCase):
                         os.chdir(self.test_root)
                         shutil.rmtree(self.img_path)
 
-        def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
+        def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
+            out=False, stderr=False):
                 cmdline = "%s/usr/bin/pkg %s" % (g_proto_area, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
-                    prefix=prefix, su_wrap=su_wrap)
+                    prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
 
         def pkgdepend_resolve(self, args, exit=0, comment=""):
                 cmdline = "%s/usr/bin/pkgdepend resolve %s" % (g_proto_area,
