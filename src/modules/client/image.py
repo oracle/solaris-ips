@@ -909,9 +909,9 @@ class Image(object):
                         if not isinstance(t, list):
                                 raise api_errors.InvalidPropertyValue(_(
                                     "Cannot add a value to a single valued "
-                                    "property. The property name is:%(name)s "
-                                    "and the current value is:%(value)s") %
-                                    {"name":prop_name, "value":t})
+                                    "property.  The property name is: %(name)s "
+                                    "and the current value is: %(value)s") %
+                                    { "name": prop_name, "value": t })
                         self.cfg_cache.properties[prop_name].append(prop_value)
                         self.save_config()
 
@@ -922,10 +922,10 @@ class Image(object):
                         if not isinstance(t, list):
                                 raise api_errors.InvalidPropertyValue(_(
                                     "Cannot remove a value from a single "
-                                    "valued property, unset must be used. The "
-                                    "property name is:%(name)s and the current "
-                                    "value is:%(value)s") %
-                                    {"name":prop_name, "value":t})
+                                    "valued property, unset must be used.  "
+                                    "The property name is: %(name)s and the "
+                                    "current value is: %(value)s") %
+                                    { "name": prop_name, "value": t })
                         try:
                                 self.cfg_cache.properties[prop_name].remove(
                                     prop_value)
@@ -934,7 +934,7 @@ class Image(object):
                                     "Cannot remove the value %(value)s from "
                                     "the property %(name)s because the value "
                                     "is not in the property's list.") %
-                                    {"value":prop_value, "name":prop_name})
+                                    { "value": prop_value, "name": prop_name })
                         self.save_config()
 
         def destroy(self):

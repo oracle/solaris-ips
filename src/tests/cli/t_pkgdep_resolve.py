@@ -38,9 +38,6 @@ import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 from pkg.fmri import PkgFmri
 
-API_VERSION = 42
-PKG_CLIENT_NAME = "pkg"
-
 
 class TestApiDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

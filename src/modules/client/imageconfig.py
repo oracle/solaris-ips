@@ -282,11 +282,11 @@ class ImageConfig(object):
                                 pass
 
                 try:
-                        self.properties["ca-path"] = str(
-                            self.properties["ca-path"])
+                        self.properties[CA_PATH] = str(
+                            self.properties[CA_PATH])
                 except KeyError:
-                        self.properties["ca-path"] = \
-                            self.default_properties["ca-path"]
+                        self.properties[CA_PATH] = \
+                            default_properties[CA_PATH]
 
                 # read disabled publisher file
                 # XXX when compatility with the old code is no longer needed,
@@ -775,7 +775,7 @@ class ImageConfig(object):
                         if policy_name not in sigpolicy.Policy.policies():
                                 raise api_errors.InvalidPropertyValue(_(
                                     "%(val)s is not a valid value for this "
-                                    "property:%(prop)s") % {"val": policy_name,
+                                    "property: %(prop)s") % {"val": policy_name,
                                     "prop": SIGNATURE_POLICY})
                         self.__properties[SIGNATURE_POLICY] = policy_name
                         if policy_name == "require-names":
@@ -808,12 +808,32 @@ class ImageConfig(object):
                                 if len(values) > 1:
                                         raise api_errors.InvalidPropertyValue(
                                             _("%(name)s is not a multivalued "
-                                            "property. Values are:%(value)r") %
-                                            {"name":name, "value":values})
+                                            "property.  Values are: %(value)r") %
+                                            { "name": name, "value": values })
                                 values = values[0]
                         self.__properties[name] = values
-                else:
+                elif name == "publisher-search-order":
                         self.__properties[name] = values
+                else:
+                        # No other properties are expected to be a list, so
+                        # forcibly convert to a single value.
+                        if values:
+                                if isinstance(values, basestring) and \
+                                    values[0] == "[" and values[-1] == "]":
+                                        values = self.read_list(values)
+                                if isinstance(values, list):
+                                        if len(values) > 1:
+                                                raise api_errors.InvalidPropertyValue(
+                                                    _("%(name)s is not a "
+                                                    "multivalued property.  "
+                                                    "Values are: %(value)r") %
+                                                    { "name": name,
+                                                    "value": values })
+                                        self.__properties[name] = values[0]
+                                else:
+                                        self.__properties[name] = values
+                        else:
+                                self.__properties[name] = ""
                 if not self.__delay_validation:
                         self.__validate_properties()
 

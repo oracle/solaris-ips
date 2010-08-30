@@ -33,7 +33,7 @@ import os
 import unittest
 
 
-class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
+class TestPkgPropertyBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
 
@@ -82,6 +82,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-property trust-anchor-directory %s %s" %
                     (self.test_root, self.test_root), exit=1)
+
+                # Verify that properties with single values can be set and
+                # retrieved as expected.
+                self.pkg("set-property flush-content-cache-on-success False")
+                self.pkg("property -H flush-content-cache-on-success |"
+                    "grep -i flush-content-cache-on-success.*false$")
 
         def test_missing_permssions(self):
                 """Bug 2393"""

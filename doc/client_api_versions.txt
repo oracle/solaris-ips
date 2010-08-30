@@ -1,3 +1,29 @@
+Version 43:
+Incompatible with clients using versions 0-42.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new boot environment will now only be created if required
+          for image-modifying operations (except for plan_update_all
+          which continues to always create one by default).
+
+        * The verbose parameter has been removed from the plan_*
+          functions.
+
+        * All plan_* functions now accept an additional boolean named
+          'new_be' that indicates whether a new boot environment should
+          be created for the operation.  This overrides the deafult
+          behaviour that only creates one if needed.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * get_services(), get_varcets(), and get_actions() were added
+          to allow clients more access to plan information.
+
+        * A boolean property named new_be was added that indicates
+          whether the planned operation will requires a new boot
+          environment.
+
 Version 42:
 Incompatible with clients using versions 0-41.
 

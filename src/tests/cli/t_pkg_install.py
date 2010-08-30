@@ -221,8 +221,19 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     refresh_index=True)
                 self.image_create(self.rurl)
 
+                # Set content cache to be flushed on success.
+                self.pkg("set-property flush-content-cache-on-success True")
+
                 self.pkg("list -a")
                 self.pkg("install foo")
+
+                # Verify that content cache is empty after successful install.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                self.assertEqual(cache_dirs, [])
+                self.pkg("set-property flush-content-cache-on-success False")
+
                 self.pkg("verify")
                 self.pkg("list")
 
@@ -253,11 +264,24 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
                 self.image_create(self.rurl)
 
+                # Verify that content cache is empty before install.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                self.assertEqual(cache_dirs, [])
+
                 self.pkg("install foo@1.0")
                 self.pkg("list foo@1.0")
                 self.pkg("list foo@1.1", exit=1)
 
                 self.pkg("install foo@1.1")
+
+                # Verify that content cache is not empty after successful
+                # install (since flush-content-cache-on-success is False
+                # by default) for packages that have content.
+                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                self.assertNotEqual(cache_dirs, [])
+
                 self.pkg("list foo@1.1")
                 self.pkg("list foo@1.0", exit=1)
                 self.pkg("list foo@1")
@@ -274,8 +298,24 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     self.bar10))
                 self.image_create(self.rurl)
 
+                # Set content cache to not be flushed on success.
+                self.pkg("set-property flush-content-cache-on-success False")
+
+                # Verify that content cache is empty before install.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                self.assertEqual(cache_dirs, [])
+
                 self.pkg("list -a")
                 self.pkg("install bar@1.0")
+
+                # Verify that content cache is not empty after successful
+                # install (since flush-content-cache-on-success is False)
+                # for packages that have content.
+                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                self.assertNotEqual(cache_dirs, [])
+
                 self.pkg("list")
                 self.pkg("verify")
                 self.pkg("uninstall -v bar foo")
