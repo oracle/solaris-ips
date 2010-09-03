@@ -348,7 +348,7 @@ def list_newest_fmris(fmri_list):
         for e in fm_list:
                 msg(e.get_fmri(anarchy=True))
 
-def fetch_catalog(src_pub, tracker):
+def fetch_catalog(src_pub, tracker, txport):
         """Fetch the catalog from src_uri."""
         global complete_catalog
 
@@ -361,7 +361,7 @@ def fetch_catalog(src_pub, tracker):
                 tmpdirs.append(cat_dir)
                 src_pub.meta_root = cat_dir
 
-        src_pub.transport = xport
+        src_pub.transport = txport
         src_pub.refresh(True, True)
 
         cat = src_pub.catalog
@@ -444,6 +444,14 @@ def main_func():
         xport_cfg.cached_download_dir = cache_dir
         xport_cfg.incoming_download_dir = incoming_dir
 
+        # Since publication destionations may only have one repository
+        # configured per publisher, create destination as separate transport
+        # in case source and destination have identical publisher configuration
+        # but different repository endpoints.
+        dest_xport, dest_xport_cfg = transport.setup_transport()
+        dest_xport_cfg.cached_download_dir = cache_dir
+        dest_xport_cfg.incoming_download_dir = incoming_dir
+
         # Configure src publisher
         src_pub = transport.setup_publisher(src_uri, "source", xport, xport_cfg,
             remote_publishers=True)
@@ -453,7 +461,7 @@ def main_func():
                 if pargs or len(pargs) > 0:
                         usage(_("-n takes no options"))
 
-                fmri_list = fetch_catalog(src_pub, tracker)
+                fmri_list = fetch_catalog(src_pub, tracker, xport)
                 list_newest_fmris(fmri_list)
                 return 0
 
@@ -470,14 +478,14 @@ def main_func():
                 republish = True
 
                 targ_pub = transport.setup_publisher(target, "target",
-                    xport, xport_cfg)
+                    dest_xport, dest_xport_cfg, remote_publishers=True)
 
                 # Files have to be decompressed for republishing.
                 keep_compressed = False
                 if target.startswith("file://"):
                         # Check to see if the repository exists first.
                         try:
-                                t = trans.Transaction(target, xport=xport,
+                                t = trans.Transaction(target, xport=dest_xport,
                                     pub=targ_pub)
                         except trans.TransactionRepositoryInvalidError, e:
                                 txt = str(e) + "\n\n"
@@ -507,7 +515,10 @@ def main_func():
 
         xport_cfg.pkgdir = basedir
 
-        all_fmris = fetch_catalog(src_pub, tracker)
+        if republish:
+                targ_fmris = fetch_catalog(targ_pub, tracker, dest_xport)
+
+        all_fmris = fetch_catalog(src_pub, tracker, xport)
         fmri_arguments = pargs
         fmri_list = prune(list(set(expand_matching_fmris(all_fmris,
             fmri_arguments))), all_versions, all_timestamps)
@@ -537,6 +548,12 @@ def main_func():
         retrieve_list = []
         while fmri_list:
                 f = fmri_list.pop()
+
+                if republish and f in targ_fmris:
+                        msg(_("Skipping %s: already present "
+                            "at destination") % f)
+                        continue
+
                 m = get_manifest(f, basedir)
                 pkgdir = os.path.join(basedir, f.get_dir_path())
                 mfile = xport.multi_file_ni(src_pub, pkgdir,
@@ -594,11 +611,11 @@ def main_func():
 
                 if not targ_pub:
                         targ_pub = transport.setup_publisher(target, "target",
-                            xport, xport_cfg)
+                            dest_xport, dest_xport_cfg, remote_publishers=True)
 
                 try:
                         t = trans.Transaction(target, pkg_name=pkg_name,
-                            trans_id=trans_id, xport=xport, pub=targ_pub)
+                            trans_id=trans_id, xport=dest_xport, pub=targ_pub)
 
                         # Remove any previous failed attempt to
                         # to republish this package.

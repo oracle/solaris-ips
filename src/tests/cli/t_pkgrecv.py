@@ -468,6 +468,20 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 for var in ("PKG_SRC", "PKG_DEST"):
                         del os.environ[var]
 
+        def test_6_recv_republish_preexisting(self):
+                f = fmri.PkgFmri(self.published[5], None)
+                f2 = fmri.PkgFmri(self.published[4], None)
+
+                # First, pkgrecv tree into a file repository
+                npath = tempfile.mkdtemp(dir=self.test_root)
+                self.pkgsend("file://%s" % npath,
+                    "create-repository --set-property publisher.prefix=test1")
+                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+
+                # Next, recursively pkgrecv bronze2.0 into a file repository
+                # This would fail before behavior fixed to skip existing pkgs.
+                self.pkgrecv(self.durl1, "-r -d file://%s %s" % (npath, f2))
+
 
 if __name__ == "__main__":
         unittest.main()
