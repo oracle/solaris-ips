@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import re
 import unittest
 import sys
 
@@ -1651,5 +1652,57 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(self.rurl1,
                     additional_args="--set-property signature-policy=require-signatures")
                 self.pkg("set-publisher --approve-ca-cert %s test" % ca_path)
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_higher_signature_version(self):
+                
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
+                }
+                
+                self.pkgsign(self.rurl1, sign_args)
+                mp = r.manifest(plist[0])
+                with open(mp, "r") as fh:
+                        ls = fh.readlines()
+                s = []
+                old_ver = action.generic.Action.sig_version
+                new_ver = old_ver + 1
+                # Replace the published manifest with one whose signature
+                # action has a version one higher than what the current
+                # supported version is.
+                for l in ls:
+                        if not l.startswith("signature"):
+                                s.append(l)
+                                continue
+                        tmp = l.replace("version=%s" % old_ver,
+                            "version=%s" % new_ver)
+                        s.append(tmp)
+                with open(mp, "wb") as fh:
+                        for l in s:
+                                fh.write(l)
+                # Rebuild the repository catalog so that hash verification for
+                # the manifest won't cause problems.
+                r.rebuild()
+
+                self.pkg_image_create(self.rurl1,
+                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+
+                self.pkg("set-property signature-policy require-signatures")
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.RequiredSignaturePolicyException,
+                    self._api_install, api_obj, ["example_pkg"])
+                # This passes because it ignores the signature with a version
+                # it doesn't understand.
+                self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
