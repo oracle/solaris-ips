@@ -454,7 +454,7 @@ def main_func():
 
         # Configure src publisher
         src_pub = transport.setup_publisher(src_uri, "source", xport, xport_cfg,
-            remote_publishers=True)
+            remote_prefix=True)
 
         tracker = get_tracker()
         if list_newest:
@@ -478,7 +478,7 @@ def main_func():
                 republish = True
 
                 targ_pub = transport.setup_publisher(target, "target",
-                    dest_xport, dest_xport_cfg, remote_publishers=True)
+                    dest_xport, dest_xport_cfg, remote_prefix=True)
 
                 # Files have to be decompressed for republishing.
                 keep_compressed = False
@@ -611,7 +611,7 @@ def main_func():
 
                 if not targ_pub:
                         targ_pub = transport.setup_publisher(target, "target",
-                            dest_xport, dest_xport_cfg, remote_publishers=True)
+                            dest_xport, dest_xport_cfg, remote_prefix=True)
 
                 try:
                         t = trans.Transaction(target, pkg_name=pkg_name,
