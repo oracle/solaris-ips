@@ -351,8 +351,10 @@ class BootEnv(object):
                         self.img.history.log_operation_end()
 
                         if be.beUnmount(self.be_name_clone) != 0:
-                                logger.error(_("pkg: unable to unmount %s") \
-                                    % self.clone_dir)
+                                logger.error(_("unable to unmount BE "
+                                    "%(be_name)s mounted at %(be_path)s") % {
+                                    "be_name": self.be_name_clone,
+                                    "be_path": self.clone_dir })
                                 return
 
                         os.rmdir(self.clone_dir)
