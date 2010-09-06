@@ -396,7 +396,8 @@ class PackageManager:
                 self.__init_repository_tree_view()
                 self.w_main_window.set_title(self.program_title)
 
-                self.__setup_startpage(self.gconf.show_startpage)
+                if self.gconf.show_startpage:
+                        self.__setup_startpage(self.gconf.show_startpage)
 
                 self.__setup_signals()
 
@@ -765,7 +766,7 @@ class PackageManager:
                 self.__setup_before_all_publishers_search_mode()
 
         def __setup_startpage(self, show_startpage):
-                self.startpage.setup_startpage()
+                self.startpage.setup_startpage(show_startpage)
                 if show_startpage or self.gconf.start_insearch:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_START_PAGE)
@@ -4857,6 +4858,8 @@ class PackageManager:
                 return self.api_o
 
         def start(self):
+                if not self.gconf.show_startpage:
+                        self.__setup_startpage(self.gconf.show_startpage)
                 self.set_busy_cursor()
                 Thread(target = self.__get_api_object).start() 
         

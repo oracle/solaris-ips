@@ -114,8 +114,9 @@ class StartPage:
                 self.font_scale = 1.0
                 self.h3_fontsize = FONTSIZE_H3_DEFAULT
                 self.body_fontsize = FONTSIZE_BODY_DEFAULT
+                self.show_start_page = False
 
-        def setup_startpage(self):
+        def setup_startpage(self, show_page = True):
                 self.opener = urllib.FancyURLopener()
                 self.document = gtkhtml2.Document()
                 self.document.connect('request_url', self.__request_url)
@@ -136,7 +137,7 @@ class StartPage:
                         self.lang = "C"
                 self.lang_root = self.lang.split('_')[0]
                 # Load Start Page to setup base URL to allow loading images in other pages
-                self.load_startpage()
+                self.load_startpage(show_page)
 
         # Theme: on Theme change setup bg and fg colours and prefix for loading pages
         def __style_set(self, widget, style, data=None):
@@ -167,7 +168,10 @@ class StartPage:
 
                 self.handle_resize()
 
-        def load_startpage(self):
+        def load_startpage(self, show = True):
+                self.show_start_page = show
+                if not show:
+                        return
                 self.cached_internal_stream = ""
                 if self.__load_startpage_locale(START_PAGE_CACHE_LANG_BASE):
                         return
@@ -439,6 +443,7 @@ class StartPage:
         def __load_internal_page(self, text =""):
                 self.cached_internal_stream = text
                 self.document.clear()
+                self.view.show()
                 self.document.open_stream('text/html')
                 # Theme: use Theme's bg and fg colours in loaded internal page
 
@@ -458,7 +463,8 @@ class StartPage:
 
         def handle_resize(self):
                 if self.cached_internal_stream == "":
-                        self.load_startpage()
+                        if self.show_start_page:
+                                self.load_startpage()
                         return
                 # Theme: setup images for current Theme in self.cached_internal_stream
                 # before reloading
