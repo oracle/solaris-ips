@@ -94,7 +94,6 @@ class Beadmin:
                     "usr/share/package-manager/packagemanager.ui")
                 builder = gtk.Builder()
                 builder.add_from_file(gladefile)
-                # Dialog reused in the repository.py
                 self.w_beadmin_dialog = builder.get_object("beadmin")
                 self.w_beadmin_dialog.set_icon(self.parent.window_icon)
                 self.w_be_treeview = builder.get_object("betreeview")
@@ -108,6 +107,7 @@ class Beadmin:
                 self.w_progressinfo_label = builder.get_object("progressinfo")
                 progress_button = builder.get_object("progresscancel")
                 self.w_progressbar = builder.get_object("progressbar")
+                # Dialog reused in the repository.py
                 self.w_beconfirmation_dialog =  \
                     builder.get_object("confirmationdialog")
                 self.w_beconfirmation_dialog.set_icon(self.parent.window_icon)
@@ -129,8 +129,6 @@ class Beadmin:
                 bebuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
                 self.__setup_signals()
-                Thread(target = self.__progress_pulse).start()
-                Thread(target = self.__prepare_beadmin_list).start()
                 sel = self.w_be_treeview.get_selection()
                 self.w_cancel_button.grab_focus()
                 sel.set_mode(gtk.SELECTION_SINGLE)
@@ -145,6 +143,8 @@ class Beadmin:
                 self.w_progressinfo_label.set_text(
                     _("Fetching BE entries..."))
                 self.w_progress_dialog.show()
+                Thread(target = self.__progress_pulse).start()
+                Thread(target = self.__prepare_beadmin_list).start()
 
         def __setup_signals(self):
                 signals_table = [
