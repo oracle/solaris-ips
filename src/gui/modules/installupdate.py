@@ -36,6 +36,8 @@ DIALOG_INSTALL_COLLAPSED_HEIGHT = 232   # Heights of progress dialog when Detail
                                         # collapsed for install, remove and done stages
 DIALOG_REMOVE_COLLAPSED_HEIGHT = 210
 DIALOG_DONE_COLLAPSED_HEIGHT = 126
+
+DIALOG_UM_EXTRA_HEIGHT = 60             # Extra height needed when in UM mode
 DIALOG_RELEASE_NOTE_OFFSET = 34         # Additional space required if displaying
                                         # Release notes link below Details
 import errno
@@ -118,7 +120,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.w_main_window:
                         self.original_title = self.w_main_window.get_title()
                 if self.top_level:
-                        globals()["DIALOG_INSTALL_COLLAPSED_HEIGHT"] = 292
+                        globals()["DIALOG_INSTALL_COLLAPSED_HEIGHT"] = \
+                                DIALOG_INSTALL_COLLAPSED_HEIGHT + DIALOG_UM_EXTRA_HEIGHT
+                        globals()["DIALOG_DONE_COLLAPSED_HEIGHT"] = \
+                                DIALOG_DONE_COLLAPSED_HEIGHT + DIALOG_UM_EXTRA_HEIGHT
                         self.w_dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_NORMAL)
                         self.w_dialog.set_icon(self.icon_confirm_dialog)
                         self.w_main_window = self.w_dialog
