@@ -51,6 +51,7 @@ import pkg.misc as misc
 import pkg.nrlock as nrlock
 import pkg.p5i as p5i
 import pkg.portable as portable
+import pkg.server.repository as sr
 import pkg.updatelog as updatelog
 
 from pkg.actions import ActionError
@@ -274,19 +275,20 @@ class Transport(object):
                                 continue
 
                         for ruri in repo.origins + repo.mirrors:
-                                scheme, netloc, path, params, query, fragment = \
-                                    urlparse.urlparse(ruri.uri, "file",
-                                    allow_fragments=0)
-
-                                if scheme != "file":
+                                if ruri.scheme != "file":
                                         continue
 
-                                path = urllib.url2pathname(path)
-                                path = os.path.join(path, "file")
+                                path = ruri.get_pathname()
                                 try:
-                                        self.add_cache(path, pub=pub.prefix,
-                                            readonly=True)
-                                except apx.ApiException:
+                                        frepo = sr.Repository(root=path,
+                                            read_only=True)
+                                        for rstore in frepo.rstores:
+                                                if not rstore.file_root:
+                                                        continue
+                                                self.add_cache(rstore.file_root,
+                                                    pub=rstore.publisher,
+                                                    readonly=True)
+                                except (sr.RepositoryError, apx.ApiException):
                                         # Cache isn't currently valid, so skip
                                         # it for now.  This essentially defers
                                         # any errors that might be encountered

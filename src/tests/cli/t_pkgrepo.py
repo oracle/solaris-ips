@@ -154,6 +154,15 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 self.get_repo(repo_path)
                 shutil.rmtree(repo_path)
 
+                # Verify create works for an empty, pre-existing directory.
+                os.mkdir(repo_path)
+                self.pkgrepo("create %s" % repo_path)
+                # This will fail if a repository wasn't created.
+                self.get_repo(repo_path)
+
+                # Verify create fails for a non-empty, pre-existing directory.
+                self.pkgrepo("create %s" % repo_path, exit=1)
+
         def test_02_get_set_property(self):
                 """Verify pkgrepo get and set works as expected."""
 

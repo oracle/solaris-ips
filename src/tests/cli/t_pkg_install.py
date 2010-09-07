@@ -217,9 +217,13 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11),
+                # This test needs to use the depot to be able to test the
+                # download cache.
+                self.dc.start()
+
+                self.pkgsend_bulk(self.durl, (self.foo10, self.foo11),
                     refresh_index=True)
-                self.image_create(self.rurl)
+                self.image_create(self.durl)
 
                 # Set content cache to be flushed on success.
                 self.pkg("set-property flush-content-cache-on-success True")
@@ -257,12 +261,17 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("list -a")
                 self.pkg("verify")
+                self.dc.stop()
 
         def test_basics_3(self):
                 """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
-                self.image_create(self.rurl)
+                # This test needs to use the depot to be able to test the
+                # download cache.
+                self.dc.start()
+
+                self.pkgsend_bulk(self.durl, (self.foo10, self.foo11))
+                self.image_create(self.durl)
 
                 # Verify that content cache is empty before install.
                 api_inst = self.get_img_api_obj()
@@ -290,13 +299,18 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall foo")
                 self.pkg("list -a")
                 self.pkg("verify")
+                self.dc.stop()
 
         def test_basics_4(self):
                 """ Add bar@1.0, dependent on foo@1.0, install, uninstall. """
 
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
+                # This test needs to use the depot to be able to test the
+                # download cache.
+                self.dc.start()
+
+                self.pkgsend_bulk(self.durl, (self.foo10, self.foo11,
                     self.bar10))
-                self.image_create(self.rurl)
+                self.image_create(self.durl)
 
                 # Set content cache to not be flushed on success.
                 self.pkg("set-property flush-content-cache-on-success False")
@@ -324,6 +338,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list bar", exit=1)
                 self.pkg("list foo", exit=1)
                 self.pkg("verify")
+                self.dc.stop()
 
         def test_basics_5(self):
                 """ Add bar@1.1, install bar@1.0. """

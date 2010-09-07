@@ -83,8 +83,8 @@ class RepositoryExistsError(RepositoryError):
         """
 
         def __str__(self):
-                return _("A package repository (or directory) already exists "
-                    "at '%s'.") % self.data
+                return _("A package repository (or a directory with content) "
+                    "already exists at '%s'.") % self.data
 
 
 class RepositoryFileNotFoundError(RepositoryError):
@@ -1609,10 +1609,10 @@ class Repository(object):
         """A Repository object is a representation of data contained within a
         pkg(5) repository and an interface to manipulate it."""
 
-        def __init__(self, cfgpathname=None, file_root=None, log_obj=None,
-            mirror=False, properties=misc.EmptyDict, read_only=False,
-            root=None, sort_file_max_size=indexer.SORT_FILE_MAX_SIZE,
-            writable_root=None):
+        def __init__(self, cfgpathname=None, create=False, file_root=None,
+            log_obj=None, mirror=False, properties=misc.EmptyDict,
+            read_only=False, root=None,
+            sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
                 # This lock is used to protect the repository from multiple
@@ -1651,11 +1651,11 @@ class Repository(object):
 
                 self.__lock_repository()
                 try:
-                        self.__init_state(properties=properties)
+                        self.__init_state(create=create, properties=properties)
                 finally:
                         self.__unlock_repository()
 
-        def __init_format(self, properties=misc.EmptyI):
+        def __init_format(self, create=False, properties=misc.EmptyI):
                 """Private helper function to determine repository format and
                 validity.
                 """
@@ -1751,6 +1751,13 @@ class Repository(object):
                                 self.__pub_root = os.path.join(self.root,
                                     "publisher")
 
+                        if not create and cfgpathname and \
+                            not os.path.exists(cfgpathname):
+                                # If this isn't a repository creation operation,
+                                # and the base configuration file doesn't exist,
+                                # this isn't a valid repository.
+                                raise RepositoryInvalidError(self.root)
+
                 # Setup repository stores.
                 def_pub = self.cfg.get_property("publisher", "prefix")
                 if self.version == 4:
@@ -1817,14 +1824,14 @@ class Repository(object):
                                         # matter.
                                         continue
 
-        def __init_state(self, properties=misc.EmptyDict):
+        def __init_state(self, create=False, properties=misc.EmptyDict):
                 """Private helper function to initialize state."""
 
                 # Discard current repository storage state data.
                 self.__rstores = {}
 
                 # Determine format, configuration location, and validity.
-                self.__init_format(properties=properties)
+                self.__init_format(create=create, properties=properties)
 
                 # Ensure default configuration is written.
                 self.__write_config()
@@ -2700,7 +2707,12 @@ def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
         except EnvironmentError, e:
                 if e.filename == path and (e.errno == errno.EEXIST or
                     os.path.exists(e.filename)):
-                        raise RepositoryExistsError(e.filename)
+                        entries = os.listdir(e.filename)
+                        # If the directory isn't empty (excluding the
+                        # special .zfs snapshot directory) don't allow
+                        # a repository to be created here.
+                        if entries and not entries == [".zfs"]:
+                                raise RepositoryExistsError(e.filename)
                 elif e.errno == errno.EACCES:
                         raise apx.PermissionsException(e.filename)
                 elif e.errno == errno.EROFS:
@@ -2728,4 +2740,5 @@ def repository_create(repo_uri, properties=misc.EmptyDict, version=None):
                         elif e.errno != errno.EEXIST:
                                 raise
 
-        return Repository(read_only=False, properties=properties, root=path)
+        return Repository(create=True, read_only=False, properties=properties,
+            root=path)
