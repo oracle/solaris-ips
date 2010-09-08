@@ -18,9 +18,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
 #
+# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+#
+
 ARCH:sh=	uname -p
 REPO=http://localhost:10000
 ON_REPO=http://localhost:20000
@@ -50,19 +52,22 @@ $(SETPUBLISHERDIR):
 # and followed by a single publish
 
 merge:
-	PYTHONPATH=$(PYTHONPATH) ./merge.py $(EXTRA_ARGS) -r -d $(MERGEDIR) -v sparc,$(SPARC_REPO) -v i386,$(i386_REPO) arch $(JUST_THESE_PKGS)
+	PYTHONPATH=$(PYTHONPATH) ./merge.py $(EXTRA_ARGS) -r -d $(MERGEDIR) \
+	    -v sparc,$(SPARC_REPO) -v i386,$(i386_REPO) arch $(JUST_THESE_PKGS)
 
 publish: $(MERGEDIR)
-	for var in `(cd $(MERGEDIR); echo * )` ;\
-	do PYTHONPATH=$(PYTHONPATH) ./pkg_publish $(MERGEDIR)/$$var $(REPO); done
+	for var in `(cd $(MERGEDIR); echo * )`; do \
+		PYTHONPATH=$(PYTHONPATH)
+		    ./pkg_publish $(MERGEDIR)/$$var $(REPO); \
+	done
 
 publish_setpublisher: $(SETPUBLISHERDIR)
-	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh -b $(BUILDID) \
-		-d $(SETPUBLISHERDIR) -p $(REPO) \
-		$(ON_REPO) \
-		$(INSTALL_REPO) \
-		$(X_REPO) \
-		$(IPS_REPO)
+	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh $(BUILDID:%= -b %) \
+	    -d $(SETPUBLISHERDIR) -p $(REPO) \
+	    $(ON_REPO) \
+	    $(INSTALL_REPO) \
+	    $(X_REPO) \
+	    $(IPS_REPO)
 
 clean:
 

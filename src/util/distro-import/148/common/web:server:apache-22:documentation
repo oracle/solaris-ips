@@ -1,0 +1,13 @@
+package web/server/apache-22/documentation
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22d
+version 2.2.16
+end package
+
+package SUNWapch22d
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/documentation
+version 2.2.14
+end package

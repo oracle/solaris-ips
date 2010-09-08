@@ -1,0 +1,17 @@
+package gnome/theme/background/os-backgrounds-extra
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWopensolaris-backgrounds-xtra
+end package
+
+package gnome/theme/background/opensolaris-backgrounds-extra
+consolidation "gnome"
+renamed 148
+depend gnome/theme/background/os-backgrounds-extra
+end package
+
+package SUNWopensolaris-backgrounds-xtra
+consolidation "gnome"
+renamed 133
+depend gnome/theme/background/opensolaris-backgrounds-extra
+end package

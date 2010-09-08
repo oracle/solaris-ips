@@ -19,30 +19,32 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 # set-publisher.sh takes a set of repositories and uses the rules
 # in set-publisher.transforms to change the consolidation-specific
 # publisher names to opensolaris.org.
 #
-# It requires 3 options:
+# There are 3 options:
 #   -b <build>
 #     e.g. -b 136, to make sure to publish only packages from the
 #     specified build.  Packages from any other builds contained in the
 #     repository are simply discarded.  This allows us to ignore
 #     packages obsoleted in a previous build without requiring that
-#     the consolidations strip them.
+#     the consolidations strip them.  This option is optional.
 #
 #   -d recv_dir
 #     A scratch directory to use for pkgrecv.  If it's not initially
 #     empty other packages there will be published at publication time.
+#     This option is required.
 #
 #   -p repository
 #     A file: or http: repository path to publish the results.  This
 #     repository should have already been created with opensolaris.org
-#     as its publisher.
+#     as its publisher.  This option is required.
 
 recv_dir=
 publish_repo=
@@ -53,15 +55,16 @@ do
 	b)	only_this_build="$OPTARG";;
 	d)	recv_dir="$OPTARG";;
 	p)	publish_repo="$OPTARG";;
-	?)	print "Usage: $0: -b build -d directory -p publish_repo input_repos" 
+	?)	print "Usage: $0: [-b build] -d directory -p publish_repo "
+		    "input_repos" 
 		exit 2;;
 	esac
 done
 shift $(expr $OPTIND - 1)
 
-if [[ -z $only_this_build || -z $recv_dir || -z $publish_repo ]]; then
+if [[ -z $recv_dir || -z $publish_repo ]]; then
 	echo "one of the options not specified."
-	print "Usage: $0: -b build -d directory -p publish_repo input_repos" 
+	print "Usage: $0: [-b build] -d directory -p publish_repo input_repos" 
 	exit 2
 fi
 if [ ! -d $recv_dir ]; then
@@ -100,13 +103,15 @@ for repo in $*; do
 	echo "pkgrecv -s $repo -d $recv_dir $modified_pkglist"
 	pkgrecv -s $repo -d $recv_dir $modified_pkglist
 	if [ $? -ne 0 ]; then
-		echo "error from pkgrecv -s $repo -d $recv_dir $modified_pkglist"
+		echo "error from pkgrecv -s $repo -d $recv_dir " \
+		    "$modified_pkglist"
 		exit 1
 	fi
 done
 
 # Replace the publisher name with opensolaris.org and publish.
 for pkg in $(echo $recv_dir/*/*); do
-	./pkgmogrify.py -O $pkg/manifest $pkg/manifest ./set-publisher.transforms
+	./pkgmogrify.py -O $pkg/manifest $pkg/manifest \
+	    ./set-publisher.transforms
 	./pkg_publish $pkg $publish_repo
 done

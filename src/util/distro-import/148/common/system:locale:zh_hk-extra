@@ -1,0 +1,13 @@
+package system/locale/zh_hk-extra
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-zhHK-extra
+depend system/library/iconv/extra
+depend system/library/iconv/unicode
+end package
+
+package SUNWlang-zhHK-extra
+consolidation "l10n"
+renamed 133
+depend system/locale/zh_hk-extra
+end package
