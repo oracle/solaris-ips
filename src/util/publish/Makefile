@@ -57,7 +57,7 @@ merge:
 
 publish: $(MERGEDIR)
 	for var in `(cd $(MERGEDIR); echo * )`; do \
-		PYTHONPATH=$(PYTHONPATH)
+		PYTHONPATH=$(PYTHONPATH) \
 		    ./pkg_publish $(MERGEDIR)/$$var $(REPO); \
 	done
 
