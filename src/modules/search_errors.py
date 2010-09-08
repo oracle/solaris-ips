@@ -65,7 +65,7 @@ class IndexLockedException(IndexingException):
         def __str__(self):
                 if self.pid is not None:
                         # Used even if hostname is undefined.
-                        return _("The search indexe cannot be modified as it "
+                        return _("The search index cannot be modified as it "
                             "is currently in use by another process: "
                             "pid %(pid)s on %(host)s.") % {
                             "pid": self.pid, "host": self.hostname }

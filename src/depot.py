@@ -775,7 +775,10 @@ if __name__ == "__main__":
 
         if reindex:
                 try:
-                        if repo.root:
+                        # Only execute a index refresh here if --exit-ready was
+                        # requested; it will be handled later in the setup
+                        # process for other cases.
+                        if repo.root and exit_ready:
                                 repo.refresh_index()
                 except (sr.RepositoryError, search_errors.IndexingException,
                     api_errors.ApiException), e:
@@ -852,6 +855,13 @@ if __name__ == "__main__":
 
         if ll_mirror:
                 ds.DNSSD_Plugin(cherrypy.engine, conf, gconf).subscribe()
+
+        if reindex:
+                # Tell depot to update search indexes when possible;
+                # this is done as a background task so that packages
+                # can be served immediately while search indexes are
+                # still being updated.
+                depot._queue_refresh_index()
 
         try:
                 root = cherrypy.Application(depot)

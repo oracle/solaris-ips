@@ -311,6 +311,18 @@ class DepotHTTP(_Depot):
                 self.__bgtask = BackgroundTaskPlugin(cherrypy.engine)
                 self.__bgtask.subscribe()
 
+        def _queue_refresh_index(self):
+                """Queues a background task to update search indexes.  This
+                method is a protected helper function for depot consumers."""
+
+                try:
+                        self.__bgtask.put(self.repo.refresh_index)
+                except Queue.Full:
+                        # If another operation is already in progress, just
+                        # log a warning and drive on.
+                        cherrypy.log("Skipping indexing; another operation is "
+                            "already in progress.", "INDEX")
+
         @staticmethod
         def default_error_page(**kwargs):
                 """This function is registered as the default error page
@@ -2174,7 +2186,6 @@ class DepotConfig(object):
                     cfg.PropDefined("cfg_file", allowed=["", "<pathname>"]),
                     cfg.Property("content_root"),
                     cfg.PropList("debug", allowed=["", "headers"]),
-                    cfg.PropPublisher("default_publisher"),
                     cfg.PropList("disable_ops"),
                     cfg.PropDefined("file_root", allowed=["", "<pathname>"]),
                     cfg.PropDefined("inst_root", allowed=["", "<pathname>"]),

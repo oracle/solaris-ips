@@ -14,21 +14,32 @@ SYNOPSIS
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
-     It provides clients network access to the data contained within a
-     package repository.  pkg(1), the retrieval client, makes requests
-     to the depot server for catalogs and packages.  pkgsend(1), the
-     publication client, sends new versions of packages to the depot
-     server.  pkgrepo(1) provides creation, management, and summary
-     functionality for repositories.  pkg.depotd is typically run as
-     a service on the system.  Package and software developers may
-     wish to run private copies for various testing purposes.
+     It provides network access to the data contained within a package
+     repository.  Clients that do not support direct access to a
+     repository through the filesystem, or are in situations where
+     networkaccess may be the only available or preferred method of
+     transport typically use the package depot.
+
+     Clients such as pkg(1), the retrieval client, can retrieve a list
+     of packages and package metadata from a repository directly or
+     through the depot server.  pkgsend(1), the publication client,
+     can send new versions of packages to a repository directly or
+     through the depot server.  pkgrepo(1) can be used to create
+     repositories for use with the depot server, or to manage them
+     both directly and through the depot server.  See the man pages
+     of each program for more information about supported operations.
+
+     pkg.depotd is typically run as a service on the system.  Package
+     and software developers may wish to run private copies for
+     testing.
 
      The depot currently does not provide any access control methods
-     of its own.  By default, all clients able to connect are able to
-     read all data publish new package versions (when running under
-     SMF, the default is to run in a read-only mode).  The NOTES
-     section below describes some best practices for maintaining
-     a public depot with evolving content.
+     of its own.  By default, all of the clients that are able to
+     connect are able to read all package data and publish new
+     package versions (with the exception that when running under SMF,
+     the default is to run in read-only mode).  The NOTES section
+     below describes some best practices for maintaining a public
+     depot server with evolving content.
 
      The pkg.depot server is generally configured via the smf(5)
      properties associated with its service.  The following
@@ -47,13 +58,6 @@ DESCRIPTION
                                   headers
                                         Logs the headers of every
                                         request to the error log.
-
-     pkg/default_publisher      (astring) The name of the default
-                                publisher for packages.  This value
-                                is used when an operation is requested
-                                that requires publisher identity and
-                                one has not been provided.  Required
-                                unless mirror mode is active.
 
      pkg/disable_ops            (astring) A comma-separated list of
                                 operations that should be disabled for
@@ -261,8 +265,6 @@ OPTIONS
      --disable-ops op_list      See pkg/disable_ops above.
 
      --debug features           See pkg/debug above.
-
-     --default-publisher name   See pkg/default_publisher above.
 
      --file-root path           See pkg/file_root above.
 

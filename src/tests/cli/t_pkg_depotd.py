@@ -929,6 +929,9 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 pfmri = fmri.PkgFmri(self.pkgsend_bulk(durl, self.file10,
                     refresh_index=True)[0], "5.11")
 
+                # Wait for search indexing to complete.
+                self.wait_repo(self.dc.get_repodir())
+
                 def get_headers(req_path):
                         try:
                                 rinfo = urllib2.urlopen(urlparse.urljoin(durl,

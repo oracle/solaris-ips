@@ -318,7 +318,7 @@ class _RepoStore(object):
                         self.__lockfile = None
 
                 # Initialize.
-                self.__lock_rstore()
+                self.__lock_rstore(blocking=True)
                 try:
                         self.__init_state()
                 finally:
@@ -470,7 +470,7 @@ class _RepoStore(object):
 
                 storage_locked = False
                 try:
-                        self.__lock_rstore(blocking=False)
+                        self.__lock_rstore()
                 except RepositoryLockedError:
                         storage_locked = True
                 except:
@@ -486,7 +486,7 @@ class _RepoStore(object):
                                     self._get_manifest, self.manifest,
                                     log=self.__index_log,
                                     sort_file_max_size=self.__sort_file_max_size)
-                                ind.lock()
+                                ind.lock(blocking=False)
                         except se.IndexLockedException:
                                 index_locked = True
                         except:
@@ -532,7 +532,7 @@ class _RepoStore(object):
                     "status": rstatus,
                 }
 
-        def __lock_rstore(self, blocking=True, process=True):
+        def __lock_rstore(self, blocking=False, process=True):
                 """Locks the repository preventing multiple consumers from
                 modifying it during operations."""
 
@@ -1126,7 +1126,7 @@ class _RepoStore(object):
                 if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_rstore()
+                self.__lock_rstore(blocking=True)
                 try:
                         self.__add_package(pfmri)
                         self.__save_catalog()
@@ -1144,7 +1144,7 @@ class _RepoStore(object):
                 if not self.catalog_root or self.catalog_version < 1:
                         raise RepositoryUnsupportedOperationError()
 
-                self.__lock_rstore()
+                self.__lock_rstore(blocking=True)
                 try:
                         self.__replace_package(pfmri)
                         self.__save_catalog()

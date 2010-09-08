@@ -943,7 +943,7 @@ class Indexer(object):
                                     os.path.join(dest_dir, "__st_" + st))
                 shutil.rmtree(source_dir)
 
-        def lock(self, blocking=True):
+        def lock(self, blocking=False):
                 """Locks the index in preparation for an index-modifying
                 operation.  Raises an IndexLockedException exception on
                 failure.
@@ -954,12 +954,17 @@ class Indexer(object):
 
                 try:
                         # Attempt to obtain a file lock.
-                        self.__lockfile.lock()
+                        self.__lockfile.lock(blocking=blocking)
                 except EnvironmentError, e:
                         if e.errno == errno.ENOENT:
-                                # If lockfile's path doesn't exist, don't
-                                # bother getting the lock.
-                                return
+                                # If a lock was requested, and the only
+                                # reason for failure was because the
+                                # index directory doesn't exist yet,
+                                # then create it and try once more.
+                                if not os.path.exists(self._index_dir):
+                                        makedirs(self._index_dir)
+                                        return self.lock(blocking=blocking)
+                                raise
                         if e.errno in (errno.EACCES, errno.EROFS):
                                 raise search_errors.\
                                     ProblematicPermissionsIndexException(
