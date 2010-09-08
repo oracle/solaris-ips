@@ -733,11 +733,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except api_errors.NonLeafPackageException, nlpe:
                         msg = _("Cannot remove:\n\t%s\n"
                                 "Due to the following packages that "
-                                "depend on it:\n") % nlpe[0].get_name()
-                        for pkg_a in nlpe[1]:
+                                "depend on it:\n") % nlpe.fmri.get_name()
+                        for pkg_a in nlpe.dependents:
                                 msg += "\t" + pkg_a.get_name() + "\n"
 
-                        stem = nlpe[0].get_pkg_stem()
+                        stem = nlpe.fmri.get_pkg_stem()
                         self.list_of_packages.remove(stem)
                         if self.confirmation_list:
                                 for item in self.confirmation_list:
