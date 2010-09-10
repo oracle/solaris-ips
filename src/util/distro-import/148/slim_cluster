@@ -395,9 +395,6 @@ include common/system:management:service-tag
 include common/system:management:snmp:net-snmp
 include common/system:management:snmp:net-snmp:documentation
 include common/system:management:sysidtool
-include common/system:management:visual-panels
-include common/system:management:visual-panels:panel-firewall
-include common/system:management:visual-panels:panel-sharemgr
 include common/system:manual
 include common/system:manual:locale:ca
 include common/system:manual:locale:ja

@@ -558,8 +558,6 @@ include common/system:management:cim:pegasus
 include common/system:management:freeipmi
 include common/system:management:powerman
 include common/system:management:snmp:net-snmp:addons
-include common/system:management:visual-panels:panel-apache
-include common/system:management:visual-panels:panel-sysid
 include common/system:management:wbem:cimple
 include common/system:management:wbem:sblim-cim-client
 include common/system:management:wbem:wbemcli
@@ -640,7 +638,6 @@ $(i386_ONLY)include i386/desktop:virt-manager
 $(i386_ONLY)include i386/editor:blog:drivel
 $(i386_ONLY)include i386/image:nvidia:cg-toolkit
 $(i386_ONLY)include i386/system:library:libvirt
-$(i386_ONLY)include i386/system:management:visual-panels:panel-hypervisor
 $(i386_ONLY)include i386/system:storage:vdiskadm
 $(i386_ONLY)include i386/system:virtinst
 $(i386_ONLY)include i386/system:xvm:header-xvm
@@ -649,7 +646,6 @@ $(i386_ONLY)include i386/web:urlgrabber
 $(i386_ONLY)include common/FSWfontconfig-devel-docs
 $(i386_ONLY)include common/FSWxorg-devel-docs
 $(i386_ONLY)include common/FSWxwpft
-include common/OSOLvpanels-mysql
 $(i386_ONLY)include common/SUNWadmc
 $(i386_ONLY)include common/SUNWaspell
 $(i386_ONLY)include common/SUNWaspell-en

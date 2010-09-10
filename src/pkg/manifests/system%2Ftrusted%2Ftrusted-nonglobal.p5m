@@ -44,8 +44,8 @@ depend fmri=pkg:/gnome/gnome-search-tool type=require
 depend fmri=pkg:/gnome/help-viewer/yelp type=require
 depend fmri=pkg:/gnome/media/gnome-media type=require
 depend fmri=pkg:/gnome/media/gnome-media-player type=require
-depend fmri=pkg:/gnome/theme/background/opensolaris-backgrounds type=require
-depend fmri=pkg:/gnome/theme/background/opensolaris-backgrounds-extra type=require
+depend fmri=pkg:/gnome/theme/background/os-backgrounds type=require
+depend fmri=pkg:/gnome/theme/background/os-backgrounds-extra type=require
 depend fmri=pkg:/gnome/theme/blueprint type=require
 depend fmri=pkg:/gnome/theme/cursor/dmz-cursor type=require
 depend fmri=pkg:/gnome/theme/cursor/dmz-cursor-aa type=require
@@ -71,7 +71,6 @@ depend fmri=pkg:/mail/thunderbird type=require
 depend fmri=pkg:/mail/thunderbird/plugin/thunderbird-lightning type=require
 depend fmri=pkg:/package/pkg/package-manager type=require
 depend fmri=pkg:/package/svr4 type=require
-depend fmri=pkg:/system/display-manager/opensolaris-gdm-themes type=require
 depend fmri=pkg:/system/font/isas-misc type=require
 depend fmri=pkg:/system/font/truetype/bh-luxi type=require
 depend fmri=pkg:/system/font/truetype/dejavu type=require
