@@ -56,7 +56,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 rurl1 = self.dcs[1].get_repo_url()
-                self.pkgsend_bulk(rurl1, self.foo1)
+                self.pkgsend_bulk(rurl1, (self.foo1, self.foo2))
 
                 # Ensure that the second repo's packages are exactly the same
                 # as those in the first ... by duplicating the repo.
@@ -87,9 +87,9 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 rurl2 = self.dcs[2].get_repo_url()
                 commands = [
-                    ("install foo", 0),
+                    ("install foo@1", 0),
+                    ("image-update", 0),
                     ("uninstall foo", 0),
-                    ("image-update", 4),
                     ("set-publisher -O " + rurl2 + " test2", 0),
                     ("set-publisher -P test1", 0),
                     ("set-publisher -m " + rurl2 + " test1", 0),
@@ -100,8 +100,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 operations = [
                     "install",
-                    "uninstall",
                     "image-update",
+                    "uninstall",
                     "add-publisher",
                     "update-publisher",
                     "set-preferred-publisher",
@@ -132,6 +132,17 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         if o.find(" %s" % cmd) == -1:
                                 raise RuntimeError("Command: %s wasn't recorded,"
                                     " o:%s" % (cmd, o))
+
+                # Verify that a successful operation with no effect won't
+                # be recorded.
+                self.pkg("purge-history")
+                self.pkg("refresh")
+                self.pkg("history -l")
+                self.assert_(" refresh" not in self.output)
+
+                self.pkg("refresh --full")
+                self.pkg("history -l")
+                self.assert_(" refresh" in self.output)
 
         def test_3_purge_history(self):
                 """Verify that the purge-history command works as expected.

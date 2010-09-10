@@ -1910,7 +1910,8 @@ class Image(object):
                         pubs_to_refresh.append(p)
 
                 if not pubs_to_refresh:
-                        self.history.log_operation_end()
+                        self.history.log_operation_end(
+                            result=history.RESULT_NOTHING_TO_DO)
                         return
 
                 try:
@@ -1952,6 +1953,11 @@ class Image(object):
                             len(succeeded))
                         self.history.log_operation_end(error=e)
                         raise e
+
+                if not updated:
+                        self.history.log_operation_end(
+                            result=history.RESULT_NOTHING_TO_DO)
+                        return
                 self.history.log_operation_end()
 
         def _get_publisher_meta_dir(self):

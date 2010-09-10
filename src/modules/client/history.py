@@ -331,7 +331,8 @@ class History(object):
                         # Some operations shouldn't be saved -- they're merely
                         # included in the stack for completeness or to support
                         # client functionality.
-                        if op.name not in DISCARDED_OPERATIONS:
+                        if op.name not in DISCARDED_OPERATIONS and \
+                            value != RESULT_NOTHING_TO_DO:
                                 # Write current history and last operation to a
                                 # file.
                                 self.__save()
