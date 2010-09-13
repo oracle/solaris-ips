@@ -442,7 +442,7 @@ class Transport(object):
                 ]
 
         @LockedTransport()
-        def do_search(self, pub, data, ccancel=None):
+        def do_search(self, pub, data, ccancel=None, alt_repo=None):
                 """Perform a search request.  Returns a file-like object or an
                 iterable that contains the search results.  Callers need to
                 catch transport exceptions that this object may generate."""
@@ -469,7 +469,7 @@ class Transport(object):
                 # overhead of performing file-based search unless the network-
                 # based resource is unavailable.
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    prefer_remote=True):
+                    prefer_remote=True, alt_repo=alt_repo):
 
                         try:
                                 fobj = d.do_search(data, header,
@@ -630,7 +630,8 @@ class Transport(object):
 
         @LockedTransport()
         def get_catalog1(self, pub, flist, ts=None, path=None,
-            progtrack=None, ccancel=None, revalidate=False, redownload=False):
+            progtrack=None, ccancel=None, revalidate=False, redownload=False,
+            alt_repo=None):
                 """Get the catalog1 files from publisher 'pub' that
                 are given as a list in 'flist'.  If the caller supplies
                 an optional timestamp argument, only get the files that
@@ -718,7 +719,8 @@ class Transport(object):
                         pass
 
                 for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
-                    operation="catalog", versions=[1], ccancel=ccancel):
+                    operation="catalog", versions=[1], ccancel=ccancel,
+                    alt_repo=alt_repo):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -969,7 +971,8 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
-        def touch_manifest(self, fmri, intent=None, ccancel=None):
+        def touch_manifest(self, fmri, intent=None, ccancel=None,
+            alt_repo=None):
                 """Touch a manifest.  This operation does not
                 return the manifest's content.  The FMRI is given
                 as fmri.  An optional intent string may be supplied
@@ -983,7 +986,8 @@ class Transport(object):
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
-                for d in self.__gen_repo(pub, retry_count, origin_only=True):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    alt_repo=alt_repo):
 
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
@@ -1009,7 +1013,7 @@ class Transport(object):
 
         @LockedTransport()
         def get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
-            ccancel=None, pub=None, content_only=False):
+            ccancel=None, pub=None, content_only=False, alt_repo=None):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
 
@@ -1039,7 +1043,8 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
 
-                for d in self.__gen_repo(pub, retry_count, origin_only=True):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    alt_repo=alt_repo):
 
                         repostats = self.stats[d.get_url()]
                         verified = False
@@ -1085,7 +1090,7 @@ class Transport(object):
 
         @LockedTransport()
         def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
-            progtrack=None, ccancel=None):
+            progtrack=None, ccancel=None, alt_repo=None):
                 """Given a list of tuples [(fmri, intent), ...], prefetch
                 the manifests specified by the fmris in argument
                 fetchlist.  Caller may supply a progress tracker in
@@ -1164,11 +1169,13 @@ class Transport(object):
 
                                 try:
                                         self._prefetch_manifests_list(mxfr,
-                                            mfstlist, excludes)
+                                            mfstlist, excludes,
+                                            alt_repo=alt_repo)
                                 except apx.PermissionsException:
                                         return
 
-        def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI):
+        def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI,
+            alt_repo=None):
                 """Perform bulk manifest prefetch.  This is the routine
                 that downloads initiates the downloads in chunks
                 determined by its caller _prefetch_manifests.  The mxfr
@@ -1184,7 +1191,8 @@ class Transport(object):
                 # download_dir is temporary download path.
                 download_dir = self.__tcfg.incoming_download_dir
 
-                for d in self.__gen_repo(pub, retry_count, origin_only=True):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    alt_repo=alt_repo):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -1423,7 +1431,7 @@ class Transport(object):
                         cache = cache[0]
 
                 for d, v in self.__gen_repo(pub, retry_count, operation="file",
-                    versions=[0, 1]):
+                    versions=[0, 1], alt_repo=mfile.get_alt_repo()):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -1564,19 +1572,20 @@ class Transport(object):
 
                         self._get_files_list(mfile, filelist)
 
-        def get_versions(self, pub, ccancel=None):
+        def get_versions(self, pub, ccancel=None, alt_repo=None):
                 """Query the publisher's origin servers for versions
                 information.  Return a dictionary of "name":"versions" """
 
                 self._lock.acquire()
                 try:
-                        v = self._get_versions(pub, ccancel=ccancel)
+                        v = self._get_versions(pub, ccancel=ccancel,
+                            alt_repo=alt_repo)
                 finally:
                         self._lock.release()
 
                 return v
 
-        def _get_versions(self, pub, ccancel=None):
+        def _get_versions(self, pub, ccancel=None, alt_repo=None):
                 """Implementation of get_versions"""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -1591,7 +1600,8 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test(ccancel=ccancel)
 
-                for d in self.__gen_repo(pub, retry_count, origin_only=True):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    alt_repo=alt_repo):
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
@@ -1672,7 +1682,7 @@ class Transport(object):
 
         def __gen_repo(self, pub, count, prefer_remote=False, origin_only=False,
             single_repository=False, operation=None, versions=None,
-            ccancel=None, alt_repository=None):
+            ccancel=None, alt_repo=None):
                 """An internal method tha returns the list of Repo objects
                 for a given Publisher.  Callers use this method to generate
                 lists of endpoints for transport operations, and to retry
@@ -1713,7 +1723,7 @@ class Transport(object):
                 By default, this routine looks at a Publisher's
                 selected_repository.  If the caller would like to use a
                 different Repository object, it should pass one in
-                'alt_repository.'
+                'alt_repo.'
 
                 This function returns a Repo object by default.  If
                 versions and operation are specified, it returns a tuple
@@ -1722,12 +1732,12 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                # If alt_repository supplied, use that as the Repository.
+                # If alt_repo supplied, use that as the Repository.
                 # Otherwise, check that a Publisher was passed, and use
                 # its selected_repository.
                 repo = None
-                if alt_repository:
-                        repo = alt_repository
+                if alt_repo:
+                        repo = alt_repo
                 elif isinstance(pub, publisher.Publisher):
                         repo = pub.selected_repository
 
@@ -1963,7 +1973,7 @@ class Transport(object):
                 # Some other error encountered. Fail.
                 return False
 
-        def multi_file(self, fmri, progtrack, ccancel):
+        def multi_file(self, fmri, progtrack, ccancel, alt_repo=None):
                 """Creates a MultiFile object for this transport.
                 The caller may add actions to the multifile object
                 and wait for the download to complete."""
@@ -1976,12 +1986,13 @@ class Transport(object):
                         self.__setup()
                 
                 publisher = self.__tcfg.get_publisher(fmri.get_publisher())
-                mfile = MultiFile(publisher, self, progtrack, ccancel)
+                mfile = MultiFile(publisher, self, progtrack, ccancel,
+                    alt_repo=alt_repo)
 
                 return mfile
 
         def multi_file_ni(self, publisher, final_dir, decompress=False,
-            progtrack=None, ccancel=None):
+            progtrack=None, ccancel=None, alt_repo=None):
                 """Creates a MultiFileNI object for this transport.
                 The caller may add actions to the multifile object
                 and wait for the download to complete.
@@ -1994,7 +2005,8 @@ class Transport(object):
                         self.__setup()
                 
                 mfile = MultiFileNI(publisher, self, final_dir,
-                    decompress=decompress, progtrack=progtrack, ccancel=ccancel)
+                    decompress=decompress, progtrack=progtrack, ccancel=ccancel,
+                    alt_repo=alt_repo)
 
                 return mfile
 
@@ -2455,12 +2467,13 @@ class MultiXfr(object):
         requests.  This object matches publisher to list of requests, and
         allows the caller to associate a piece of data with the request key."""
 
-        def __init__(self, pub, progtrack=None, ccancel=None):
+        def __init__(self, pub, progtrack=None, ccancel=None, alt_repo=None):
                 """Supply the publisher as argument 'pub'."""
 
                 self._publisher = pub
                 self._hash = {}
                 self._progtrack = progtrack
+                self._alt_repo = alt_repo
                 # Add the check_cancelation to the progress tracker
                 if progtrack and ccancel:
                         self._progtrack.check_cancelation = ccancel
@@ -2492,6 +2505,12 @@ class MultiXfr(object):
 
                 self._hash.pop(hashval, None)
 
+        def get_alt_repo(self):
+                """Return the alternate Repository object, if one has
+                been selected.  Otherwise, return None."""
+
+                return self._alt_repo
+
         def get_ccancel(self):
                 """If the progress tracker has an associated ccancel,
                 return it.  Otherwise, return None."""
@@ -2522,12 +2541,12 @@ class MultiFile(MultiXfr):
         with the actions, and performs the download and content
         verification necessary to assure correct content installation."""
 
-        def __init__(self, pub, xport, progtrack, ccancel):
+        def __init__(self, pub, xport, progtrack, ccancel, alt_repo=None):
                 """Supply the destination publisher in the pub argument.
                 The transport object should be passed in xport."""
 
                 MultiXfr.__init__(self, pub, progtrack=progtrack,
-                    ccancel=ccancel)
+                    ccancel=ccancel, alt_repo=alt_repo)
 
                 self._transport = xport
 
@@ -2628,12 +2647,12 @@ class MultiFileNI(MultiFile):
         define what happens when download finishes successfully."""
 
         def __init__(self, pub, xport, final_dir, decompress=False,
-            progtrack=None, ccancel=None):
+            progtrack=None, ccancel=None, alt_repo=None):
                 """Supply the destination publisher in the pub argument.
                 The transport object should be passed in xport."""
 
                 MultiFile.__init__(self, pub, xport, progtrack=progtrack,
-                    ccancel=ccancel)
+                    ccancel=ccancel, alt_repo=alt_repo)
 
                 self._final_dir = final_dir
                 self._decompress = decompress
