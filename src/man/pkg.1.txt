@@ -805,7 +805,7 @@ IMAGE PROPERTIES
 	  link-local content mirrors using mDNS and DNS-SD.  If this is
 	  set to True, the client will attempt to download package content
 	  from mirrors it dynamically discovers.  To run a mirror that
-	  advertises its content via mDNS, see pkg.mdnsd(1m).
+	  advertises its content via mDNS, see pkg.depotd(1m).
 
 	  Default value: False
 
@@ -1085,7 +1085,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), pkg.mdnsd(1M), glob(3C), attributes(5), pkg(5)
+     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
