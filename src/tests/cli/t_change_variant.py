@@ -32,8 +32,6 @@ import os
 import re
 import unittest
 
-# needed to get variant settings
-import pkg.client.imageconfig as imageconfig
 
 class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -153,7 +151,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 found = False
                 for line in f:
                         if token_re.search(line):
-                                found=True
+                                found = True
                                 break
                 f.close()
 
@@ -241,9 +239,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         pl = []
 
                 # verify the variant settings
-                ic = imageconfig.ImageConfig(self.get_img_path(), "publisher")
-                ic.read(os.path.join(self.get_img_path(), "var/pkg"))
-
+                ic = self.get_img_api_obj().img.cfg_cache
                 if "variant.arch" not in ic.variants:
                         self.assert_(False,
                             "unable to determine image arch variant")
@@ -306,7 +302,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone))
 
                 # install the specified packages into the image
-                ii_args = "";
+                ii_args = ""
                 for p in pl:
                         ii_args += " %s " % p
                 self.pkg("install %s" % ii_args)
@@ -315,8 +311,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 if self.verify_install:
                         self.i_verify(v_arch, v_zone, pl)
                 # change the specified variant
-                cv_args = "";
-                cv_args += " -v";
+                cv_args = ""
+                cv_args += " -v"
                 cv_args += " variant.arch=%s" % v_arch2
                 cv_args += " variant.opensolaris.zone=%s" % v_zone2
                 self.pkg("change-variant -v" + cv_args)

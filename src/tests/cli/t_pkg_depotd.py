@@ -40,7 +40,6 @@ import urllib2
 import urlparse
 
 import pkg.client.publisher as publisher
-import pkg.config as cfg
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -338,7 +337,8 @@ class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
                 if self.dc.is_alive():
                         self.dc.stop()
 
-                fpath = "/var/pkg/download"
+                fpath = os.path.join(self.test_root, "var/pkg/download")
+                os.makedirs(fpath, misc.PKG_DIR_MODE)
                 opath = self.dc.get_repodir()
                 self.dc.set_repodir(None)
                 self.dc.set_file_root(fpath)
@@ -987,7 +987,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 # Then, publish some packages we can abuse for testing.
                 durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.quux10, refresh_index=True)
+                self.pkgsend_bulk(durl, self.quux10, refresh_index=True)
 
                 surl = urlparse.urljoin(durl,
                     "en/search.shtml?action=Search&token=*")

@@ -27,7 +27,6 @@
 import calendar
 import datetime
 import errno
-import hashlib
 import os
 import re
 import shutil
@@ -38,7 +37,6 @@ import pkg.actions as actions
 import pkg.fmri as fmri
 import pkg.manifest
 import pkg.misc as misc
-from pkg.pkggzip import PkgGzipFile
 import pkg.portable as portable
 
 try:
@@ -362,7 +360,7 @@ class Transaction(object):
                         open_time_str, self.esc_pkg_name = \
                             os.path.basename(trans_dir).split("_", 1)
                 except ValueError:
-                        raise TransactionUnknownIDError(os.path.baseame(
+                        raise TransactionUnknownIDError(os.path.basename(
                             trans_dir))
 
                 self.open_time = \
@@ -380,6 +378,9 @@ class Transaction(object):
 
                 tmode = "rb"
                 if not rstore.read_only:
+                        # The mode is important especially when dealing with
+                        # NFS because of problems with opening a file as
+                        # read/write or readonly multiple times.
                         tmode += "+"
 
                 # Find out if the package is renamed or obsolete.
@@ -391,7 +392,7 @@ class Transaction(object):
                                 return
                         raise
                 m = pkg.manifest.Manifest()
-                m.set_content(tfile.read())
+                m.set_content(content=tfile.read())
                 tfile.close()
                 if os.path.exists(os.path.join(self.dir, "append")):
                         self.append_trans = True

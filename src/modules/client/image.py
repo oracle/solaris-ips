@@ -41,7 +41,7 @@ logger = global_settings.logger
 
 import pkg.actions
 import pkg.catalog
-import pkg.client.api_errors            as api_errors
+import pkg.client.api_errors            as apx
 import pkg.client.history               as history
 import pkg.client.imageconfig           as imageconfig
 import pkg.client.imageplan             as imageplan
@@ -199,16 +199,22 @@ class Image(object):
                 }
                 self.blocking_locks = False
                 self.cfg_cache = None
-                self.dl_cache_dir = None
-                self.dl_cache_incoming = None
                 self.history = history.History()
                 self.imageplan = None # valid after evaluation succeeds
                 self.img_prefix = None
                 self.imgdir = None
                 self.index_dir = None
-                self.is_user_cache_dir = False
                 self.pkgdir = None
                 self.root = root
+
+                # Can have multiple read cache dirs...
+                self.__read_cache_dirs = None
+
+                # ...but only one global write cache dir and incoming write dir.
+                self.__write_cache_dir = None
+                self.__user_cache_dir = None
+                self._incoming_cache_dir = None
+
                 self.__lock = pkg.nrlock.NRLock()
                 self.__lockfile = None
                 self.__sig_policy = None
@@ -231,11 +237,10 @@ class Image(object):
                             progtrack)
                 else:
                         if not force and self.image_type(self.root) != None:
-                                raise api_errors.ImageAlreadyExists(self.root)
+                                raise apx.ImageAlreadyExists(self.root)
                         if not force and os.path.exists(self.root) and \
                             len(os.listdir(self.root)) > 0:
-                                raise api_errors.CreatingImageInNonEmptyDir(
-                                    self.root)
+                                raise apx.CreatingImageInNonEmptyDir(self.root)
                         self.__set_dirs(root=self.root, imgtype=imgtype,
                             progtrack=progtrack)
 
@@ -291,8 +296,8 @@ class Image(object):
                 trust_anchor_loc = self.cfg_cache.properties.get(
                     "trust-anchor-directory", "/etc/certs/CA/")
                 if not os.path.isdir(trust_anchor_loc):
-                        raise api_errors.InvalidPropertyValue(_("The trust "
-                            "anchor for the image were expected to be found "
+                        raise apx.InvalidPropertyValue(_("The trust "
+                            "anchor for the image was expected to be found "
                             "in %s, but that is not a directory.  Please set "
                             "the image property 'trust-anchor-directory' to "
                             "the correct path.") % trust_anchor_loc)
@@ -336,7 +341,7 @@ class Image(object):
                 try:
                         self.history.log_operation_start(op)
                         yield
-                except api_errors.ImageLockedError, e:
+                except apx.ImageLockedError, e:
                         # Don't unlock the image if the call failed to
                         # get the lock.
                         error = e
@@ -367,28 +372,27 @@ class Image(object):
 
                 # First, attempt to obtain a thread lock.
                 if not self.__lock.acquire(blocking=blocking):
-                        raise api_errors.ImageLockedError()
+                        raise apx.ImageLockedError()
 
                 try:
                         # Attempt to obtain a file lock.
                         self.__lockfile.lock(blocking=blocking)
                 except EnvironmentError, e:
-                        apx = None
+                        exc = None
                         if e.errno == errno.ENOENT:
                                 return
                         if e.errno == errno.EACCES:
-                                apx = api_errors.PermissionsException(
-                                    e.filename)
+                                exc = apx.PermissionsException(e.filename)
                         elif e.errno == errno.EROFS:
-                                apx = api_errors.ReadOnlyFileSystemException(
+                                exc = apx.ReadOnlyFileSystemException(
                                     e.filename)
                         else:
                                 self.__lock.release()
                                 raise
 
-                        if apx and not allow_unprivileged:
+                        if exc and not allow_unprivileged:
                                 self.__lock.release()
-                                raise apx
+                                raise exc
                 except:
                         # If process lock fails, ensure thread lock is released.
                         self.__lock.release()
@@ -435,7 +439,7 @@ class Image(object):
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
-                                        raise api_errors.ImageNotFoundException(
+                                        raise apx.ImageNotFoundException(
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     progtrack=progtrack)
@@ -448,7 +452,7 @@ class Image(object):
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
-                                        raise api_errors.ImageNotFoundException(
+                                        raise apx.ImageNotFoundException(
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     progtrack=progtrack)
@@ -463,7 +467,7 @@ class Image(object):
                         #
                         # (XXX - Need to deal with symlinks here too)
                         if d == oldpath:
-                                raise api_errors.ImageNotFoundException(
+                                raise apx.ImageNotFoundException(
                                     exact_match, startd, d)
 
         def __load_config(self):
@@ -481,7 +485,7 @@ class Image(object):
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
 
-                self.transport._reset_caches()
+                self.transport.cfg.reset_caches()
                 for pub in self.gen_publishers(inc_disabled=True):
                         pub.transport = self.transport
 
@@ -490,7 +494,7 @@ class Image(object):
                 # the cfg_cache can be written.
                 self.mkdirs()
                 self.cfg_cache.write(self.imgdir)
-                self.transport._reset_caches()
+                self.transport.cfg.reset_caches()
 
         # XXX mkdirs and set_attrs() need to be combined into a create
         # operation.
@@ -502,13 +506,7 @@ class Image(object):
                         try:
                                 os.makedirs(os.path.join(self.imgdir, sd))
                         except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                if e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(
-                                            e.filename)
-                                raise
+                                raise apx._convert_error(e)
 
         def __set_dirs(self, imgtype, root, progtrack=None):
                 self.type = imgtype
@@ -538,47 +536,68 @@ class Image(object):
                 if relock:
                         self.unlock()
 
+                # Must set imgdir first.
                 self.imgdir = os.path.join(self.root, self.img_prefix)
+
+                # Remaining dirs may now be set.
+                self.__tmpdir = os.path.join(self.imgdir, "tmp")
+                self._statedir = os.path.join(self.imgdir, "state")
                 self.pkgdir = os.path.join(self.imgdir, "pkg")
+                self.update_index_dir()
+
                 self.history.root_dir = self.imgdir
                 self.__lockfile = lockfile.LockFile(os.path.join(self.imgdir,
                     "lock"), set_lockstr=lockfile.client_lock_set_str,
                     get_lockstr=lockfile.client_lock_get_str,
-                    failure_exc=api_errors.ImageLockedError, 
+                    failure_exc=apx.ImageLockedError, 
                     provide_mutex=False)
  
                 if relock:
                         self.lock()
 
+                # This is always the default cache dir.
+                self.__read_cache_dirs = []
+                self.__read_cache_dirs.append(os.path.normpath(
+                    os.path.join(self.imgdir, "download")))
+
                 if "PKG_CACHEDIR" in os.environ:
-                        self.dl_cache_dir = os.path.normpath( \
+                        # The user specified cache is used as an additional
+                        # place to read cache data from, but as the only
+                        # place to store new cache data.
+                        self.__user_cache_dir = os.path.normpath(
                             os.environ["PKG_CACHEDIR"])
-                        self.is_user_cache_dir = True
+                        self.__read_cache_dirs.append(self.__user_cache_dir)
+                        self.__write_cache_dir = self.__user_cache_dir
                 else:
-                        self.dl_cache_dir = os.path.normpath( \
-                            os.path.join(self.imgdir, "download"))
-                self.dl_cache_incoming = os.path.normpath(os.path.join(
-                    self.dl_cache_dir, "incoming-%d" % os.getpid()))
+                        # If no user specified cache directory exists, then
+                        # store data in default cache.
+                        self.__user_cache_dir = None
+                        self.__write_cache_dir = self.__read_cache_dirs[0]
+
+                self._incoming_cache_dir = os.path.normpath(
+                    os.path.join(self.__write_cache_dir,
+                    "incoming-%d" % os.getpid()))
 
                 # Test if we have the permissions to create the cache
-                # incoming directory in this hiearachy.  If not, we'll need to
+                # incoming directory in this hierarchy.  If not, we'll need to
                 # move it somewhere else.
                 try:
-                        os.makedirs(self.dl_cache_incoming)
+                        os.makedirs(self._incoming_cache_dir)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
-                                self.dl_cache_dir = tempfile.mkdtemp(
+                                self.__write_cache_dir = tempfile.mkdtemp(
                                     prefix="download-%d-" % os.getpid())
-                                self.dl_cache_incoming = os.path.normpath(
-                                    os.path.join(self.dl_cache_dir,
+                                self._incoming_cache_dir = os.path.normpath(
+                                    os.path.join(self.__write_cache_dir,
                                     "incoming-%d" % os.getpid()))
-                                self.is_user_cache_dir = False
+                                self.__read_cache_dirs.append(
+                                    self.__write_cache_dir)
                                 # There's no image cleanup hook, so we'll just
                                 # remove this directory on process exit.
                                 atexit.register(shutil.rmtree,
-                                    self.dl_cache_dir, ignore_errors=True)
+                                    self.__write_cache_dir, ignore_errors=True)
                 else:
-                        os.removedirs(self.dl_cache_incoming)
+                        os.removedirs(self._incoming_cache_dir)
 
                 # Forcibly discard image catalogs so they can be re-loaded
                 # from the new location if they are already loaded.  This
@@ -615,7 +634,7 @@ class Image(object):
                 for pub in self.gen_publishers():
                         try:
                                 pub.create_meta_root()
-                        except api_errors.PermissionsException:
+                        except apx.PermissionsException:
                                 # Assume that an unprivileged user is attempting
                                 # to use the image after a publisher's metadata
                                 # was removed.
@@ -623,11 +642,9 @@ class Image(object):
 
                 # Once its structure is valid, then ensure state information
                 # is intact.
-                kdir = os.path.join(self.imgdir, "state",
-                    self.IMG_CATALOG_KNOWN)
+                kdir = os.path.join(self._statedir, self.IMG_CATALOG_KNOWN)
                 kcattrs = os.path.join(kdir, "catalog.attrs")
-                idir = os.path.join(self.imgdir, "state",
-                    self.IMG_CATALOG_INSTALLED)
+                idir = os.path.join(self._statedir, self.IMG_CATALOG_INSTALLED)
                 icattrs = os.path.join(idir, "catalog.attrs")
                 if not os.path.isfile(kcattrs) and os.path.isfile(icattrs):
                         # If the known catalog doesn't exist, but the installed
@@ -722,6 +739,26 @@ class Image(object):
         def get_arch(self):
                 return self.cfg_cache.variants["variant.arch"]
 
+        def get_cachedirs(self):
+                """Returns a list of tuples of the form (dir, readonly, pub)
+                where 'dir' is the absolute path of the cache directory,
+                'readonly' is a boolean indicating whether the cache can
+                be written to, and 'pub' is the prefix of the publisher that
+                the cache directory should be used for.  If 'pub' is None, the
+                cache directory is intended for all publishers.
+                """
+
+                # Get all readonly cache directories.
+                cdirs = [
+                    (cdir, True, None)
+                    for cdir in self.__read_cache_dirs
+                ]
+
+                # Get write cache directory.
+                cdirs.append((self.__write_cache_dir, False, None))
+
+                return cdirs
+
         def get_root(self):
                 return self.root
 
@@ -801,7 +838,7 @@ class Image(object):
                             alias=alias)
 
                         if pub.prefix == self.cfg_cache.preferred_publisher:
-                                raise api_errors.RemovePreferredPublisher()
+                                raise apx.RemovePreferredPublisher()
 
                         self.cfg_cache.remove_publisher(pub.prefix)
                         self.remove_publisher_metadata(pub, progtrack=progtrack)
@@ -820,7 +857,7 @@ class Image(object):
                         elif origin and \
                             pub.selected_repository.has_origin(origin):
                                 return pub
-                raise api_errors.UnknownPublisher(max(prefix, alias, origin))
+                raise apx.UnknownPublisher(max(prefix, alias, origin))
 
         def pub_search_before(self, being_moved, staying_put):
                 """Moves publisher "being_moved" to before "staying_put"
@@ -843,7 +880,7 @@ class Image(object):
                 sp = self.get_publisher(staying_put).prefix
 
                 if bm == sp:
-                        raise api_errors.MoveRelativeToSelf()
+                        raise apx.MoveRelativeToSelf()
 
                 # compute new order and set it
                 so = self.cfg_cache.publisher_search_order
@@ -879,7 +916,7 @@ class Image(object):
                                     alias=alias)
 
                                 if pub.disabled:
-                                        raise api_errors.SetDisabledPublisherPreferred(
+                                        raise apx.SetDisabledPublisherPreferred(
                                             pub)
                                 self.cfg_cache.preferred_publisher = pub.prefix
                                 self.save_config()
@@ -907,7 +944,7 @@ class Image(object):
                 with self.locked_op("add-property-value"):
                         t = self.cfg_cache.properties.setdefault(prop_name, [])
                         if not isinstance(t, list):
-                                raise api_errors.InvalidPropertyValue(_(
+                                raise apx.InvalidPropertyValue(_(
                                     "Cannot add a value to a single valued "
                                     "property.  The property name is: %(name)s "
                                     "and the current value is: %(value)s") %
@@ -920,7 +957,7 @@ class Image(object):
                 with self.locked_op("remove-property-value"):
                         t = self.cfg_cache.properties.get(prop_name, None)
                         if not isinstance(t, list):
-                                raise api_errors.InvalidPropertyValue(_(
+                                raise apx.InvalidPropertyValue(_(
                                     "Cannot remove a value from a single "
                                     "valued property, unset must be used.  "
                                     "The property name is: %(name)s and the "
@@ -930,7 +967,7 @@ class Image(object):
                                 self.cfg_cache.properties[prop_name].remove(
                                     prop_value)
                         except ValueError:
-                                raise api_errors.InvalidPropertyValue(_(
+                                raise apx.InvalidPropertyValue(_(
                                     "Cannot remove the value %(value)s from "
                                     "the property %(name)s because the value "
                                     "is not in the property's list.") %
@@ -951,13 +988,7 @@ class Image(object):
                 try:
                         shutil.rmtree(self.imgdir)
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
+                        raise apx._convert_error(e)
 
         def properties(self):
                 for p in self.cfg_cache.properties:
@@ -984,7 +1015,7 @@ class Image(object):
                                     pub.prefix == p.alias or \
                                     pub.alias and (pub.alias == p.alias or
                                     pub.alias == p.prefix):
-                                        raise api_errors.DuplicatePublisher(pub)
+                                        raise apx.DuplicatePublisher(pub)
 
                         if not progtrack:
                                 progtrack = progress.QuietProgressTracker()
@@ -1034,11 +1065,9 @@ class Image(object):
                                         fh.close()
                                 except EnvironmentError, e:
                                         if e.errno == errno.ENOENT:
-                                                raise api_errors.MissingFileArgumentException(
+                                                raise apx.MissingFileArgumentException(
                                                     ca)
-                                        elif e.errno == errno.EACCES:
-                                                raise api_errors.PermissionsException(ca)
-                                        raise
+                                        raise apx._convert_error(e)
                                 pub.approve_ca_cert(s, manual=True)
 
                         for hsh in revoked_cas:
@@ -1076,15 +1105,15 @@ class Image(object):
                             manf.gen_actions_by_type(
                                 "signature", self.list_excludes()),
                             manf.gen_actions(), pub)
-                except api_errors.SigningException, e:
+                except apx.SigningException, e:
                         e.pfmri = fmri
                         yield e.sig, [e], [], []
-                except api_errors.InvalidResourceLocation, e:
+                except apx.InvalidResourceLocation, e:
                         yield [], [e], [], []
 
                 for act in manf.gen_actions(
                     self.list_excludes()):
-                        errors, warnings, info = act.verify(self, pkg_fmri=fmri,
+                        errors, warnings, info = act.verify(self, pfmri=fmri,
                             **args)
                         progresstracker.verify_add_progress(fmri)
                         actname = act.distinguished_name()
@@ -1137,10 +1166,10 @@ class Image(object):
                 try:
                         ip.plan_change_varcets(variants, facets)
                         self.__call_imageplan_evaluate(ip)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
+                        raise apx.InvalidPackageErrors([e])
 
         def image_config_update(self, new_variants, new_facets):
                 """update variants in image config"""
@@ -1163,10 +1192,10 @@ class Image(object):
                 with self.locked_op("fix"):
                         try:
                                 return self.__repair(*args, **kwargs)
-                        except api_errors.ActionExecutionError, e:
+                        except apx.ActionExecutionError, e:
                                 raise
                         except pkg.actions.ActionError, e:
-                                raise api_errors.InvalidPackageErrors([e])
+                                raise apx.InvalidPackageErrors([e])
 
         def __repair(self, repairs, progtrack, accept=False,
             show_licenses=False):
@@ -1205,7 +1234,7 @@ class Image(object):
 
                 ip.evaluate()
                 if ip.reboot_needed() and self.is_liveroot():
-                        raise api_errors.RebootNeededOnLiveImageException()
+                        raise apx.RebootNeededOnLiveImageException()
 
                 logger.info("\n")
                 for pp in ip.pkg_plans:
@@ -1237,35 +1266,38 @@ class Image(object):
                 return True
 
         def has_manifest(self, fmri):
-                mpath = fmri.get_dir_path()
+                return os.path.exists(self.get_manifest_path(fmri))
 
-                local_mpath = "%s/pkg/%s/manifest" % (self.imgdir, mpath)
+        def get_license_dir(self, fmri):
+                """Return path to package license directory."""
+                # For now, this is identical to manifest cache directory.
+                return self.get_manifest_dir(fmri)
 
-                if (os.path.exists(local_mpath)):
-                        return True
-
-                return False
+        def get_manifest_dir(self, fmri):
+                """Return path to on-disk manifest cache directory."""
+                return os.path.join(self.pkgdir, fmri.get_dir_path())
 
         def get_manifest_path(self, fmri):
-                """Return path to on-disk manifest"""
-                mpath = os.path.join(self.imgdir, "pkg",
-                    fmri.get_dir_path(), "manifest")
-                return mpath
+                """Return path to on-disk manifest file."""
+                return os.path.join(self.get_manifest_dir(fmri), "manifest")
 
         def __get_manifest(self, fmri, excludes=EmptyI, intent=None):
                 """Find on-disk manifest and create in-memory Manifest
                 object.... grab from server if needed"""
 
                 try:
-                        ret = manifest.FactoredManifest(fmri, self.pkgdir,
-                            excludes)
+                        mdir = self.get_manifest_dir(fmri)
+                        ret = manifest.FactoredManifest(fmri, mdir,
+                            excludes=excludes)
+
                         # if we have a intent string, let depot
                         # know for what we're using the cached manifest
                         if intent:
                                 try:
-                                        self.transport.touch_manifest(fmri, intent)
-                                except (api_errors.UnknownPublisher,
-                                    api_errors.TransportError):
+                                        self.transport.touch_manifest(fmri,
+                                            intent)
+                                except (apx.UnknownPublisher,
+                                    apx.TransportError):
                                         # It's not fatal if we can't find
                                         # or reach the publisher.
                                         pass
@@ -1289,10 +1321,10 @@ class Image(object):
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
                             intent=intent)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
+                        raise apx.InvalidPackageErrors([e])
 
                 return m
 
@@ -1342,7 +1374,7 @@ class Image(object):
                             self.PKG_STATE_UNINSTALLED in states) or (
                             self.PKG_STATE_KNOWN in states and
                             self.PKG_STATE_UNKNOWN in states):
-                                raise api_errors.ImagePkgStateError(pfmri,
+                                raise apx.ImagePkgStateError(pfmri,
                                     states)
 
                         # Catalog format only supports lists.
@@ -1364,7 +1396,8 @@ class Image(object):
                 progtrack.item_set_goal(_("Package Cache Update Phase"),
                     len(removed))
                 for pfmri in removed:
-                        manifest.FactoredManifest.clear_cache(pfmri, self.pkgdir)
+                        manifest.FactoredManifest.clear_cache(
+                            self.get_manifest_dir(pfmri))
                         progtrack.item_add_progress()
                 progtrack.item_done()
 
@@ -1396,9 +1429,8 @@ class Image(object):
 
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
-                        state_root = os.path.join(self.imgdir, "state")
-                        orig_state_root = self.__salvage(state_root)
-                        portable.rename(tmp_state_root, state_root)
+                        orig_state_root = self.__salvage(self._statedir)
+                        portable.rename(tmp_state_root, self._statedir)
                         shutil.rmtree(orig_state_root, True)
                 except EnvironmentError, e:
                         # shutil.Error can contains a tuple of lists of errors.
@@ -1414,14 +1446,8 @@ class Image(object):
                                                             entry[-1]
                                                 else:
                                                         msg += "%s\n" % entry
-                                raise api_errors.UnknownErrors(msg)
-                        elif e.errno == errno.EACCES or e.errno == errno.EPERM:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        elif e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
+                                raise apx.UnknownErrors(msg)
+                        raise apx._convert_error(e)
                 finally:
                         # Regardless of success, the following must happen.
                         self.__init_catalogs()
@@ -1457,7 +1483,7 @@ class Image(object):
                 """Private method to retrieve catalog; this bypasses the
                 normal automatic caching."""
 
-                croot = os.path.join(self.imgdir, "state", name)
+                croot = os.path.join(self._statedir, name)
                 try:
                         os.makedirs(croot)
                 except EnvironmentError, e:
@@ -1495,7 +1521,7 @@ class Image(object):
                 self.__init_catalogs()
                 for name in (self.IMG_CATALOG_KNOWN,
                     self.IMG_CATALOG_INSTALLED):
-                        shutil.rmtree(os.path.join(self.imgdir, "state", name))
+                        shutil.rmtree(os.path.join(self._statedir, name))
 
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
@@ -1851,9 +1877,8 @@ class Image(object):
 
                 # Next, preserve the old installed state dir, rename the
                 # new one into place, and then remove the old one.
-                state_root = os.path.join(self.imgdir, "state")
-                orig_state_root = self.__salvage(state_root)
-                portable.rename(tmp_state_root, state_root)
+                orig_state_root = self.__salvage(self._statedir)
+                portable.rename(tmp_state_root, self._statedir)
                 shutil.rmtree(orig_state_root, True)
 
                 # Ensure in-memory catalogs get reloaded.
@@ -1891,7 +1916,7 @@ class Image(object):
                 # operations.
                 try:
                         self.check_cert_validity()
-                except api_errors.ExpiringCertificate, e:
+                except apx.ExpiringCertificate, e:
                         logger.error(str(e))
 
                 pubs_to_refresh = []
@@ -1904,7 +1929,7 @@ class Image(object):
                         if not isinstance(p, publisher.Publisher):
                                 p = self.get_publisher(prefix=p)
                         if p.disabled:
-                                e = api_errors.DisabledPublisher(p)
+                                e = apx.DisabledPublisher(p)
                                 self.history.log_operation_end(error=e)
                                 raise e
                         pubs_to_refresh.append(p)
@@ -1934,12 +1959,12 @@ class Image(object):
                                 if pub.refresh(full_refresh=full_refresh,
                                     immediate=immediate):
                                         updated += 1
-                        except api_errors.PermissionsException, e:
+                        except apx.PermissionsException, e:
                                 failed.append((pub, e))
                                 # No point in continuing since no data can
                                 # be written.
                                 break
-                        except api_errors.ApiException, e:
+                        except apx.ApiException, e:
                                 failed.append((pub, e))
                                 continue
                         succeeded.add(pub.prefix)
@@ -1949,7 +1974,7 @@ class Image(object):
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
                 if failed:
-                        e = api_errors.CatalogRefreshException(failed, total,
+                        e = apx.CatalogRefreshException(failed, total,
                             len(succeeded))
                         self.history.log_operation_end(error=e)
                         raise e
@@ -2076,8 +2101,8 @@ class Image(object):
                         for pd in sorted(os.listdir(proot)):
                                 for vd in sorted(os.listdir("%s/%s" % \
                                     (proot, pd))):
-                                        path = "%s/pkg/%s/installed" % \
-                                            (self.imgdir, pd, vd)
+                                        path = os.path.join(proot, pd, vd,
+                                            "installed")
                                         if not os.path.exists(path):
                                                 continue
 
@@ -2197,7 +2222,7 @@ class Image(object):
                 try:
                         # Ensure Image directory structure is valid.
                         self.mkdirs()
-                except api_errors.PermissionsException, e:
+                except apx.PermissionsException, e:
                         progtrack.cache_catalogs_done()
 
                         # An unprivileged user is attempting to use the
@@ -2263,10 +2288,8 @@ class Image(object):
                 cat_root = os.path.join(self.imgdir, "catalog")
                 orig_cat_root = self.__salvage(cat_root)
 
-                state_root = os.path.join(self.imgdir, "state")
-                orig_state_root = self.__salvage(state_root)
-
-                portable.rename(tmp_state_root, state_root)
+                orig_state_root = self.__salvage(self._statedir)
+                portable.rename(tmp_state_root, self._statedir)
 
                 # Ensure in-memory catalogs get reloaded.
                 self.__init_catalogs()
@@ -2325,25 +2348,11 @@ class Image(object):
                 """
                 self.index_dir = os.path.join(self.imgdir, postfix)
 
-        def incoming_download_dir(self):
-                """Return the directory path for incoming downloads
-                that have yet to be completed.  Once a file has been
-                successfully downloaded, it is moved to the cached download
-                directory."""
-
-                return self.dl_cache_incoming
-
-        def cached_download_dir(self):
-                """Return the directory path for cached content.
-                Files that have been successfully downloaded live here."""
-
-                return self.dl_cache_dir
-
         def cleanup_downloads(self):
                 """Clean up any downloads that were in progress but that
                 did not successfully finish."""
 
-                shutil.rmtree(self.dl_cache_incoming, True)
+                shutil.rmtree(self._incoming_cache_dir, True)
 
         def cleanup_cached_content(self):
                 """Delete the directory that stores all of our cached
@@ -2351,10 +2360,12 @@ class Image(object):
                 directory hierarchy.  Don't clean up caches if the
                 user overrode the underlying setting using PKG_CACHEDIR. """
 
-                if not self.is_user_cache_dir and \
-                    self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
+                if self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
                         logger.info("Deleting content cache")
-                        shutil.rmtree(self.dl_cache_dir, True)
+                        for path, readonly, pub in self.get_cachedirs():
+                                if not readonly and \
+                                    path != self.__user_cache_dir:
+                                        shutil.rmtree(path, True)
 
         def __salvage(self, path):
                 # This ensures that if the path is already rooted in the image,
@@ -2390,10 +2401,7 @@ class Image(object):
                 try:
                         lstat = os.lstat(path)
                 except OSError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        raise
+                        raise apx._convert_error(e)
 
                 is_dir = stat.S_ISDIR(lstat.st_mode)
                 sdir = self.__salvage(path)
@@ -2408,41 +2416,27 @@ class Image(object):
         def temporary_dir(self):
                 """create a temp directory under image directory for various
                 purposes"""
-                tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
+
+                misc.makedirs(self.__tmpdir)
                 try:
-                        if not os.path.exists(tempdir):
-                                os.makedirs(tempdir)
-                        rval = tempfile.mkdtemp(dir=tempdir)
+                        rval = tempfile.mkdtemp(dir=self.__tmpdir)
 
                         # Force standard mode.
                         os.chmod(rval, misc.PKG_DIR_MODE)
                         return rval
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
+                        raise apx._convert_error(e)
 
         def temporary_file(self):
                 """create a temp file under image directory for various
                 purposes"""
-                tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
+
+                misc.makedirs(self.__tmpdir)
                 try:
-                        if not os.path.exists(tempdir):
-                                os.makedirs(tempdir)
-                        fd, name = tempfile.mkstemp(dir=tempdir)
+                        fd, name = tempfile.mkstemp(dir=self.__tmpdir)
                         os.close(fd)
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
-                                    e.filename)
-                        raise
+                        raise apx._convert_error(e)
                 return name
 
         def __filter_install_matches(self, matches):
@@ -2528,19 +2522,19 @@ class Image(object):
 
                 try:
                         ip.plan_install(pkg_list)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
-                except api_errors.ApiException:
+                        raise apx.InvalidPackageErrors([e])
+                except apx.ApiException:
                         raise
 
                 try:
                         self.__call_imageplan_evaluate(ip)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
+                        raise apx.InvalidPackageErrors([e])
 
         def make_update_plan(self, progtrack, check_cancelation,
             noexecute):
@@ -2561,10 +2555,10 @@ class Image(object):
                 try:
                         ip.plan_update()
                         self.__call_imageplan_evaluate(ip)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
+                        raise apx.InvalidPackageErrors([e])
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
             progtrack, check_cancelation, noexecute):
@@ -2585,10 +2579,10 @@ class Image(object):
                 try:
                         ip.plan_uninstall(fmri_list, recursive_removal)
                         self.__call_imageplan_evaluate(ip)
-                except api_errors.ActionExecutionError, e:
+                except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
-                        raise api_errors.InvalidPackageErrors([e])
+                        raise apx.InvalidPackageErrors([e])
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):
@@ -2641,7 +2635,7 @@ class Image(object):
                                 try:
                                         newimg.refresh_publishers(
                                             progtrack=progtrack)
-                                except api_errors.CatalogRefreshException, cre:
+                                except apx.CatalogRefreshException, cre:
                                         cre.errmessage = \
                                             _("pkg(5) update check failed.")
                                         raise

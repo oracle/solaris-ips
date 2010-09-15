@@ -446,8 +446,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("info -r foo")
 
                 # Now invalidate the existing image data.
-                state_path = os.path.join(self.get_img_path(),
-                    "var", "pkg", "state")
+                state_path = self.get_img_api_obj().img._statedir
                 kfile_path = os.path.join(state_path, "known", "catalog.attrs")
                 ifile_path = os.path.join(state_path, "installed",
                     "catalog.attrs")

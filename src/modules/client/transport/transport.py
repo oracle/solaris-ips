@@ -31,8 +31,6 @@ import os
 import simplejson as json
 import statvfs
 import tempfile
-import urllib
-import urlparse
 import zlib
 
 import pkg.catalog as catalog
@@ -62,284 +60,11 @@ class TransportCfg(object):
         """Contains configuration needed by the transport for proper
         operations.  Clients must create one of these objects, and then pass
         it to a transport instance when it is initialized.  This is the base
-        class."""
+        class.
+        """
 
-        def gen_publishers(self):
-                raise NotImplementedError
-
-        def get_policy(self, policy_name):
-                raise NotImplementedError
-
-        def get_property(self, property_name):
-                raise NotImplementedError
-
-        def get_publisher(self, publisher_name):
-                raise NotImplementedError
-
-        cached_download_dir = property(None, None, None, 
-            "Absolute pathname to directory of cached, completed downloads.")
-
-        incoming_download_dir = property(None, None, None,
-            "Absolute pathname to directory of in-progress downloads.")
-
-        pkgdir = property(None, None, None,
-            "Absolute pathname to pkgdir, where the manifest files live.")
-
-        user_agent = property(None, None, None,
-            "A string that identifies the user agent for the transport.")
-
-
-class ImageTransportCfg(TransportCfg):
-        """A subclass of TransportCfg that gets its configuration information
-        from an Image object."""
-
-        def __init__(self, image):
-                self.__img = image
-        
-        def gen_publishers(self):
-                return self.__img.gen_publishers()
-
-        def get_policy(self, policy_name):
-                if not self.__img.cfg_cache:
-                        return False
-                return self.__img.cfg_cache.get_policy(policy_name)
-
-        def get_property(self, property_name):
-                if not self.__img.cfg_cache:
-                        raise KeyError
-                return self.__img.get_property(property_name)
-
-        def get_publisher(self, publisher_name):
-                return self.__img.get_publisher(publisher_name)
-
-        def __get_user_agent(self):
-                return misc.user_agent_str(self.__img,
-                    global_settings.client_name)
-
-        cached_download_dir = property(
-            lambda self: self.__img.cached_download_dir(),
-            None, None, "Absolute pathname to directory of cached, "
-            "completed downloads.")
-
-        incoming_download_dir = property(
-            lambda self: self.__img.incoming_download_dir(),
-            None, None, "Absolute pathname to directory of in-progress "
-            "downloads.")
-
-        pkgdir = property(lambda self: self.__img.pkgdir, None, None,
-            "Absolute pathname to pkgdir, where the manifest files live.")
-
-        user_agent = property(__get_user_agent, None, None,
-            "A string that identifies the user agent for the transport.")
-
-
-class GenericTransportCfg(TransportCfg):
-        """A subclass of TransportCfg for use by transport clients that
-        do not have an image."""
-
-        def __init__(self, publishers=misc.EmptyI, c_download=None,
-            i_download=None, pkgdir=None, policy_map=misc.EmptyDict,
-            property_map=misc.EmptyDict):
-
-                self.__publishers = {}
-                self.__cached_download_dir = c_download
-                self.__incoming_download_dir = i_download
-                self.__pkgdir = pkgdir
-                self.__policy_map = policy_map
-                self.__property_map = property_map
-
-                for p in publishers:
-                        self.__publishers[p.prefix] = p
-
-        def add_publisher(self, pub):
-                self.__publishers[pub.prefix] = pub
-
-        def gen_publishers(self):
-                return (p for p in self.__publishers.values())
-
-        def get_policy(self, policy_name):
-                return self.__policy_map.get(policy_name, False)
-
-        def get_property(self, property_name):
-                return self.__property_map[property_name]
-
-        def get_publisher(self, publisher_name):
-                pub = self.__publishers.get(publisher_name)
-                if not pub:
-                        raise apx.UnknownPublisher(publisher_name)
-                return pub
-
-        def remove_publisher(self, publisher_name):
-                return self.__publishers.pop(publisher_name, None)
-
-        def __get_user_agent(self):
-                return misc.user_agent_str(None, global_settings.client_name)
-
-        def __set_c_dl_dir(self, dl_dir):
-                self.__cached_download_dir = dl_dir
-
-        def __set_i_dl_dir(self, dl_dir):
-                self.__incoming_download_dir = dl_dir
-
-        def __set_pkgdir(self, pkgdir):
-                self.__pkgdir = pkgdir
-
-        cached_download_dir = property(
-            lambda self: self.__cached_download_dir, __set_c_dl_dir, None,
-            "Absolute pathname to directory of cached, completed downloads.")
-
-        incoming_download_dir = property(
-            lambda self: self.__incoming_download_dir, __set_i_dl_dir, None,
-            "Absolute pathname to directory of in-progress downloads.")
-
-        pkgdir = property(lambda self: self.__pkgdir, __set_pkgdir, None,
-            "Absolute pathname to pkgdir, where the manifest files live.")
-
-        user_agent = property(__get_user_agent, None, None,
-            "A string that identifies the user agent for the transport.")
-
-class LockedTransport(object):
-        """A decorator class that wraps transport functions, calling
-        their lock and unlock methods.  Due to implementation differences
-        in the decorator protocol, the decorator must be used with
-        parenthesis in order for this to function correctly.  Always
-        decorate functions @LockedTransport()."""
-
-        def __init__(self, *d_args, **d_kwargs):
-                object.__init__(self)
-
-        def __call__(self, f):
-                def wrapper(*fargs, **f_kwargs):
-                        instance, fargs = fargs[0], fargs[1:]
-                        lock = instance._lock
-                        lock.acquire()
-                        try:
-                                return f(instance, *fargs, **f_kwargs)
-                        finally:
-                                lock.release()
-                return wrapper
-
-class Transport(object):
-        """The generic transport wrapper object.  Its public methods should
-        be used by all client code that wishes to perform file/network
-        packaging operations."""
-
-        def __init__(self, tcfg):
-                """Initialize the Transport object. Caller must supply
-                a TransportCfg object."""
-
-                self.__tcfg = tcfg
-                self.__engine = None
-                self.__cadir = None
-                self.__portal_test_executed = False
-                self.__repo_cache = None
-                self.__dynamic_mirrors = []
-                self._lock = nrlock.NRLock()
-                self._caches = None
-                self.stats = tstats.RepoChooser()
-
-        def __setup(self):
-                self.__engine = engine.CurlTransportEngine(self)
-
-                # Configure engine's user agent
-                self.__engine.set_user_agent(self.__tcfg.user_agent)
-
-                self.__repo_cache = trepo.RepoCache(self.__engine)
-
-                if not self._caches and self.__tcfg.cached_download_dir:
-                        self.add_cache(self.__tcfg.cached_download_dir,
-                            readonly=False)
-
-                if self.__tcfg.get_policy(imageconfig.MIRROR_DISCOVERY):
-                        self.__dynamic_mirrors = mdetect.MirrorDetector()
-                        try:
-                                self.__dynamic_mirrors.locate()
-                        except tx.mDNSException:
-                                # Not fatal.  Suppress.
-                                pass
-
-
-        def _reset_caches(self):
-                # For now, transport write caches all publisher data in one
-                # place regardless of publisher source.
-                self._caches = {}
-                if self.__tcfg.cached_download_dir:
-                        self.add_cache(self.__tcfg.cached_download_dir,
-                            readonly=False)
-
-                # Automatically add any publisher repository origins
-                # or mirrors that are filesystem-based as read-only caches.
-                for pub in self.__tcfg.gen_publishers():
-                        repo = pub.selected_repository
-                        if not repo:
-                                continue
-
-                        for ruri in repo.origins + repo.mirrors:
-                                if ruri.scheme != "file":
-                                        continue
-
-                                path = ruri.get_pathname()
-                                try:
-                                        frepo = sr.Repository(root=path,
-                                            read_only=True)
-                                        for rstore in frepo.rstores:
-                                                if not rstore.file_root:
-                                                        continue
-                                                self.add_cache(rstore.file_root,
-                                                    pub=rstore.publisher,
-                                                    readonly=True)
-                                except (sr.RepositoryError, apx.ApiException):
-                                        # Cache isn't currently valid, so skip
-                                        # it for now.  This essentially defers
-                                        # any errors that might be encountered
-                                        # accessing this repository until
-                                        # later when transport attempts to
-                                        # retrieve data through the engine.
-                                        continue
-
-        def reset(self):
-                """Resets the transport.  This needs to be done
-                if an install plan has been canceled and needs to
-                be restarted.  This clears the state of the
-                transport and its associated components."""
-
-                if not self.__engine:
-                        # Don't reset if not configured
-                        return
-
-                self._lock.acquire()
-                try:
-                        self.__engine.reset()
-                        self.__repo_cache.clear_cache()
-                        self._reset_caches()
-                        if self.__dynamic_mirrors:
-                                try:
-                                        self.__dynamic_mirrors.locate()
-                                except tx.mDNSException:
-                                        # Not fatal. Suppress.
-                                        pass
-                finally:
-                        self._lock.release()
-
-        def shutdown(self):
-                """Shuts down any portions of the transport that can
-                actively be connected to remote endpoints."""
-
-                if not self.__engine:
-                        # Already shut down
-                        return
-
-                self._lock.acquire()
-                try:
-                        self.__engine.shutdown()
-                        self.__engine = None
-                        if self.__repo_cache:
-                                self.__repo_cache.clear_cache()
-                        self.__repo_cache = None
-                        self._caches = None
-                        self.__dynamic_mirrors = []
-                finally:
-                        self._lock.release()
+        def __init__(self):
+                self.__caches = {}
 
         def add_cache(self, path, pub=None, readonly=True):
                 """Adds the directory specified by 'path' as a location to read
@@ -357,12 +82,9 @@ class Transport(object):
                 can exist for each 'pub' at a time."""
 
                 if not pub:
-                        pub = '__all'
+                        pub = "__all"
 
-                if self._caches is None:
-                        self._caches = {}
-
-                pub_caches = self._caches.setdefault(pub, [])
+                pub_caches = self.__caches.setdefault(pub, [])
 
                 write_caches = [
                     cache
@@ -399,14 +121,17 @@ class Transport(object):
                         # a new cache.
                         pub_caches.append(fm.FileManager(path, readonly))
 
-        def _get_caches(self, pub=None, readonly=True):
+        def gen_publishers(self):
+                raise NotImplementedError
+
+        def get_caches(self, pub=None, readonly=True):
                 """Returns the file_manager cache objects for the specified
                 publisher in order of preference.  That is, caches should
                 be checked for file content in the order returned.
 
                 'pub' is an optional publisher prefix.  If provided, caches
                 designated for use with the given publisher will be returned
-                first in addition to any caches designed for all publishers.
+                first followed by any caches applicable to all publishers.
 
                 'readonly' is an optional boolean value indicating whether
                 a cache for storing file data should be returned.  By default,
@@ -417,12 +142,9 @@ class Transport(object):
                 elif not pub or not isinstance(pub, basestring):
                         pub = None
 
-                if self._caches is None:
-                        self._caches = {}
-
                 caches = [
                     cache
-                    for cache in self._caches.get(pub, [])
+                    for cache in self.__caches.get(pub, [])
                     if readonly or not cache.readonly
                 ]
 
@@ -437,9 +159,319 @@ class Transport(object):
                 # ones after.
                 return caches + [
                     cache
-                    for cache in self._caches.get("__all", [])
+                    for cache in self.__caches.get("__all", [])
                     if readonly or not cache.readonly
                 ]
+
+        def get_policy(self, policy_name):
+                raise NotImplementedError
+
+        def get_property(self, property_name):
+                raise NotImplementedError
+
+        def get_pkg_dir(self, pfmri):
+                """Returns the absolute path of the directory that should be
+                used to store and load manifest data.
+                """
+                raise NotImplementedError
+
+        def get_pkg_pathname(self, pfmri):
+                """Returns the absolute pathname of the file that manifest data
+                should be stored in and loaded from.
+                """
+                raise NotImplementedError
+
+        def get_publisher(self, publisher_name):
+                raise NotImplementedError
+
+        def reset_caches(self):
+                """Discard any publisher specific cache information and
+                reconfigure based on current publisher configuration data.
+                """
+
+                for pub in self.__caches.keys():
+                        if pub != "__all":
+                                # Remove any publisher specific caches so that
+                                # the most current publisher information can be
+                                # used.
+                                del self.__caches[pub]
+
+                # Automatically add any publisher repository origins
+                # or mirrors that are filesystem-based as read-only caches.
+                for pub in self.gen_publishers():
+                        repo = pub.selected_repository
+                        if not repo:
+                                continue
+
+                        for ruri in repo.origins + repo.mirrors:
+                                if ruri.scheme != "file":
+                                        continue
+
+                                path = ruri.get_pathname()
+                                try:
+                                        frepo = sr.Repository(root=path,
+                                            read_only=True)
+                                        for rstore in frepo.rstores:
+                                                if not rstore.file_root:
+                                                        continue
+                                                self.add_cache(rstore.file_root,
+                                                    pub=rstore.publisher,
+                                                    readonly=True)
+                                except (sr.RepositoryError, apx.ApiException):
+                                        # Cache isn't currently valid, so skip
+                                        # it for now.  This essentially defers
+                                        # any errors that might be encountered
+                                        # accessing this repository until
+                                        # later when transport attempts to
+                                        # retrieve data through the engine.
+                                        continue
+
+        incoming_root = property(doc="The absolute pathname of the "
+            "directory where in-progress downloads should be stored.")
+
+        pkg_root = property(doc="The absolute pathname of the directory "
+            "where manifest files should be stored to and loaded from.")
+
+        user_agent = property(doc="A string that identifies the user agent for "
+            "the transport.")
+
+
+class ImageTransportCfg(TransportCfg):
+        """A subclass of TransportCfg that gets its configuration information
+        from an Image object.
+        """
+
+        def __init__(self, image):
+                TransportCfg.__init__(self)
+                self.__img = image
+
+        def gen_publishers(self):
+                return self.__img.gen_publishers()
+
+        def get_policy(self, policy_name):
+                if not self.__img.cfg_cache:
+                        return False
+                return self.__img.cfg_cache.get_policy(policy_name)
+
+        def get_pkg_dir(self, pfmri):
+                """Returns the absolute path of the directory that should be
+                used to store and load manifest data.
+                """
+
+                return self.__img.get_manifest_dir(pfmri)
+
+        def get_pkg_pathname(self, pfmri):
+                """Returns the absolute pathname of the file that the manifest
+                should be stored in and loaded from."""
+
+                return self.__img.get_manifest_path(pfmri)
+
+        def get_property(self, property_name):
+                if not self.__img.cfg_cache:
+                        raise KeyError
+                return self.__img.get_property(property_name)
+
+        def get_publisher(self, publisher_name):
+                return self.__img.get_publisher(publisher_name)
+
+        def reset_caches(self):
+                """Discard any publisher specific cache information and
+                reconfigure based on current publisher configuration data.
+                """
+
+                # Call base class method to perform initial reset.
+                TransportCfg.reset_caches(self)
+
+                # Then add image-specific cache data after.
+                for path, readonly, pub in self.__img.get_cachedirs():
+                        self.add_cache(path, pub=pub, readonly=readonly)
+
+        def __get_user_agent(self):
+                return misc.user_agent_str(self.__img,
+                    global_settings.client_name)
+
+        incoming_root = property(lambda self: self.__img._incoming_cache_dir,
+            doc="The absolute pathname of the directory where in-progress "
+            "downloads should be stored.")
+
+        pkg_root = property(lambda self: self.__img.pkgdir, doc="The absolute "
+            "pathname of the directory where manifest files should be stored "
+            "to and loaded from.")
+
+        user_agent = property(__get_user_agent, doc="A string that identifies "
+            "the user agent for the transport.")
+
+
+class GenericTransportCfg(TransportCfg):
+        """A subclass of TransportCfg for use by transport clients that
+        do not have an image."""
+
+        def __init__(self, publishers=misc.EmptyI, incoming_root=None,
+            pkg_root=None, policy_map=misc.EmptyDict,
+            property_map=misc.EmptyDict):
+
+                TransportCfg.__init__(self)
+                self.__publishers = {}
+                self.__incoming_root = incoming_root
+                self.__pkg_root = pkg_root
+                self.__policy_map = policy_map
+                self.__property_map = property_map
+
+                for p in publishers:
+                        self.__publishers[p.prefix] = p
+
+        def add_publisher(self, pub):
+                self.__publishers[pub.prefix] = pub
+
+        def gen_publishers(self):
+                return (p for p in self.__publishers.values())
+
+        def get_pkg_dir(self, pfmri):
+                """Returns the absolute pathname of the directory that should be
+                used to store and load manifest data."""
+
+                return os.path.join(self.pkg_root, pfmri.get_dir_path())
+
+        def get_pkg_pathname(self, pfmri):
+                """Returns the absolute pathname of the file that manifest data
+                should be stored in and loaded from."""
+
+                return os.path.join(self.get_pkg_dir(pfmri), "manifest")
+
+        def get_policy(self, policy_name):
+                return self.__policy_map.get(policy_name, False)
+
+        def get_property(self, property_name):
+                return self.__property_map[property_name]
+
+        def get_publisher(self, publisher_name):
+                pub = self.__publishers.get(publisher_name)
+                if not pub:
+                        raise apx.UnknownPublisher(publisher_name)
+                return pub
+
+        def remove_publisher(self, publisher_name):
+                return self.__publishers.pop(publisher_name, None)
+
+        def __get_user_agent(self):
+                return misc.user_agent_str(None, global_settings.client_name)
+
+        def __set_inc_root(self, inc_root):
+                self.__incoming_root = inc_root
+
+        def __set_pkg_root(self, pkg_root):
+                self.__pkg_root = pkg_root
+
+        incoming_root = property(
+            lambda self: self.__incoming_root, __set_inc_root,
+            doc="Absolute pathname to directory of in-progress downloads.")
+
+        pkg_root = property(lambda self: self.__pkg_root, __set_pkg_root,
+            doc="The absolute pathname of the directory where in-progress "
+            "downloads should be stored.")
+
+        user_agent = property(__get_user_agent,
+            doc="A string that identifies the user agent for the transport.")
+
+
+class LockedTransport(object):
+        """A decorator class that wraps transport functions, calling
+        their lock and unlock methods.  Due to implementation differences
+        in the decorator protocol, the decorator must be used with
+        parenthesis in order for this to function correctly.  Always
+        decorate functions @LockedTransport()."""
+
+        def __init__(self, *d_args, **d_kwargs):
+                object.__init__(self)
+
+        def __call__(self, f):
+                def wrapper(*fargs, **f_kwargs):
+                        instance, fargs = fargs[0], fargs[1:]
+                        lock = instance._lock
+                        lock.acquire()
+                        try:
+                                return f(instance, *fargs, **f_kwargs)
+                        finally:
+                                lock.release()
+                return wrapper
+
+class Transport(object):
+        """The generic transport wrapper object.  Its public methods should
+        be used by all client code that wishes to perform file/network
+        packaging operations."""
+
+        def __init__(self, tcfg):
+                """Initialize the Transport object. Caller must supply
+                a TransportCfg object."""
+
+                self.__engine = None
+                self.__cadir = None
+                self.__portal_test_executed = False
+                self.__repo_cache = None
+                self.__dynamic_mirrors = []
+                self._lock = nrlock.NRLock()
+                self.cfg = tcfg
+                self.stats = tstats.RepoChooser()
+
+        def __setup(self):
+                self.__engine = engine.CurlTransportEngine(self)
+
+                # Configure engine's user agent
+                self.__engine.set_user_agent(self.cfg.user_agent)
+
+                self.__repo_cache = trepo.RepoCache(self.__engine)
+
+                if self.cfg.get_policy(imageconfig.MIRROR_DISCOVERY):
+                        self.__dynamic_mirrors = mdetect.MirrorDetector()
+                        try:
+                                self.__dynamic_mirrors.locate()
+                        except tx.mDNSException:
+                                # Not fatal.  Suppress.
+                                pass
+
+
+        def reset(self):
+                """Resets the transport.  This needs to be done
+                if an install plan has been canceled and needs to
+                be restarted.  This clears the state of the
+                transport and its associated components."""
+
+                if not self.__engine:
+                        # Don't reset if not configured
+                        return
+
+                self._lock.acquire()
+                try:
+                        self.__engine.reset()
+                        self.__repo_cache.clear_cache()
+                        self.cfg.reset_caches()
+                        if self.__dynamic_mirrors:
+                                try:
+                                        self.__dynamic_mirrors.locate()
+                                except tx.mDNSException:
+                                        # Not fatal. Suppress.
+                                        pass
+                finally:
+                        self._lock.release()
+
+        def shutdown(self):
+                """Shuts down any portions of the transport that can
+                actively be connected to remote endpoints."""
+
+                if not self.__engine:
+                        # Already shut down
+                        return
+
+                self._lock.acquire()
+                try:
+                        self.__engine.shutdown()
+                        self.__engine = None
+                        if self.__repo_cache:
+                                self.__repo_cache.clear_cache()
+                        self.__repo_cache = None
+                        self.__dynamic_mirrors = []
+                finally:
+                        self._lock.release()
 
         @LockedTransport()
         def do_search(self, pub, data, ccancel=None, alt_repo=None):
@@ -526,7 +558,7 @@ class Transport(object):
                             "openssl", "certs")
 
                         try:
-                                cadir = self.__tcfg.get_property("ca-path")
+                                cadir = self.cfg.get_property("ca-path")
                                 cadir = os.path.normpath(cadir)
                         except KeyError:
                                 cadir = fb_cadir
@@ -606,7 +638,7 @@ class Transport(object):
                                     "Could not retrieve catalog from '%s'\n"
                                     " Exception: str:%s repr:%r" % (pub.prefix,
                                     e, e))
-                 
+
                 raise failures
 
         @staticmethod
@@ -686,7 +718,7 @@ class Transport(object):
                         completed_dir = path
                 else:
                         completed_dir = pub.catalog_root
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -795,7 +827,7 @@ class Transport(object):
 
                                 final_path = os.path.normpath(
                                     os.path.join(completed_dir, s))
-                                    
+
                                 finaldir = os.path.dirname(final_path)
 
                                 self._makedirs(finaldir)
@@ -871,7 +903,7 @@ class Transport(object):
                 from the remote object.  This is similar to get_datstream,
                 except that the transport handles retrieving and decompressing
                 the content."""
-               
+
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
@@ -980,7 +1012,7 @@ class Transport(object):
 
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
-                pub = self.__tcfg.get_publisher(pub_prefix)
+                pub = self.cfg.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(intent=intent,
@@ -1020,12 +1052,12 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
                 mcontent = None
                 header = None
 
                 if not pub:
-                        pub = self.__tcfg.get_publisher(pub_prefix)
+                        pub = self.cfg.get_publisher(pub_prefix)
 
                 if isinstance(pub, publisher.Publisher):
                         header = self.__build_header(intent=intent,
@@ -1060,7 +1092,8 @@ class Transport(object):
                                         return mcontent
 
                                 m = manifest.FactoredManifest(fmri,
-                                    self.__tcfg.pkgdir, excludes, mcontent)
+                                    self.cfg.get_pkg_dir(fmri),
+                                    contents=mcontent, excludes=excludes)
 
                                 return m
 
@@ -1077,7 +1110,7 @@ class Transport(object):
                                         mcontent = None
                                 else:
                                         raise
- 
+
                         except (apx.InvalidPackageErrors, ActionError), e:
                                 if verified:
                                         raise
@@ -1101,7 +1134,7 @@ class Transport(object):
                 but it should raise any that would cause an immediate
                 failure."""
 
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
 
                 if not fetchlist:
                         return
@@ -1144,7 +1177,7 @@ class Transport(object):
                 mx_pub = {}
                 for fmri, intent in fetchlist:
                         pub_prefix = fmri.get_publisher()
-                        pub = self.__tcfg.get_publisher(pub_prefix)
+                        pub = self.cfg.get_publisher(pub_prefix)
                         header = self.__build_header(intent=intent,
                             uuid=self.__get_uuid(pub))
                         if pub_prefix not in mx_pub:
@@ -1189,7 +1222,7 @@ class Transport(object):
                 progtrack = mxfr.get_progtrack()
 
                 # download_dir is temporary download path.
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -1263,8 +1296,8 @@ class Transport(object):
                                         mcontent = mf.read()
                                         mf.close()
                                         manifest.FactoredManifest(fmri,
-                                            self.__tcfg.pkgdir,
-                                            excludes, mcontent)
+                                            self.cfg.get_pkg_dir(fmri),
+                                            contents=mcontent, excludes=excludes)
                                 except (apx.InvalidPackageErrors,
                                     ActionError), e:
                                         if verified:
@@ -1280,7 +1313,7 @@ class Transport(object):
                                         failedreqs.append(s)
                                         os.remove(dl_path)
                                         continue
-        
+
                                 os.remove(dl_path)
                                 progtrack.evaluate_progress(fmri)
                                 mxfr.del_hash(s)
@@ -1297,7 +1330,7 @@ class Transport(object):
                         # Return if everything was successful
                         else:
                                 return
- 
+
         def _verify_manifest(self, fmri, mfstpath=None, content=None):
                 """Verify a manifest.  The caller must supply the FMRI
                 for the package in 'fmri', as well as the path to the
@@ -1314,7 +1347,7 @@ class Transport(object):
 
                 # Get publisher information from FMRI.
                 try:
-                        pub = self.__tcfg.get_publisher(fmri.get_publisher())
+                        pub = self.cfg.get_publisher(fmri.get_publisher())
                 except apx.UnknownPublisher:
                         return False
 
@@ -1352,7 +1385,7 @@ class Transport(object):
                                 sz = None
                         raise tx.InvalidContentException(mfstpath,
                             "manifest hash failure: fmri: %s \n"
-                            "expected: %s computed: %s" % 
+                            "expected: %s computed: %s" %
                             (fmri, chash, newhash), size=sz)
 
                 return True
@@ -1378,7 +1411,7 @@ class Transport(object):
                 return header
 
         def __get_uuid(self, pub):
-                if not self.__tcfg.get_policy(imageconfig.SEND_UUID):
+                if not self.cfg.get_policy(imageconfig.SEND_UUID):
                         return None
 
                 try:
@@ -1422,9 +1455,9 @@ class Transport(object):
                         header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # download_dir is temporary download path.
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
 
-                cache = self._get_caches(pub, readonly=False)
+                cache = self.cfg.get_caches(pub, readonly=False)
                 if cache:
                         # For now, pick first cache in list, if any are
                         # present.
@@ -1528,7 +1561,7 @@ class Transport(object):
                 A mfile object contains information about the multiple-file
                 request that will be performed."""
 
-                download_dir = self.__tcfg.incoming_download_dir
+                download_dir = self.cfg.incoming_root
                 pub = mfile.get_publisher()
 
                 # Call setup if the transport isn't configured or was shutdown.
@@ -1610,7 +1643,7 @@ class Transport(object):
                                     ccancel=ccancel)
                                 # Save this information for later use, too.
                                 self.__fill_repo_vers(d, vers)
-                                return vers 
+                                return vers
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
@@ -1650,7 +1683,7 @@ class Transport(object):
 
                 # Call __get_version to get the version dictionary
                 # from the repo.
-                
+
                 if not vers:
                         try:
                                 vers = self.__get_version(repo, ccancel=ccancel)
@@ -1900,7 +1933,7 @@ class Transport(object):
                 self.__portal_test_executed = True
                 vd = None
 
-                for pub in self.__tcfg.gen_publishers():
+                for pub in self.cfg.gen_publishers():
                         try:
                                 vd = self._get_versions(pub, ccancel=ccancel)
                         except tx.TransportException, ex:
@@ -1984,10 +2017,9 @@ class Transport(object):
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
-                
-                publisher = self.__tcfg.get_publisher(fmri.get_publisher())
-                mfile = MultiFile(publisher, self, progtrack, ccancel,
-                    alt_repo=alt_repo)
+
+                publisher = self.cfg.get_publisher(fmri.get_publisher())
+                mfile = MultiFile(publisher, self, progtrack, ccancel)
 
                 return mfile
 
@@ -2003,7 +2035,7 @@ class Transport(object):
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
-                
+
                 mfile = MultiFileNI(publisher, self, final_dir,
                     decompress=decompress, progtrack=progtrack, ccancel=ccancel,
                     alt_repo=alt_repo)
@@ -2017,7 +2049,7 @@ class Transport(object):
                 be found, return None."""
 
                 hashval = action.hash
-                for cache in self._get_caches(pub=pub, readonly=True):
+                for cache in self.cfg.get_caches(pub=pub, readonly=True):
                         cache_path = cache.lookup(hashval)
                         try:
                                 if cache_path:
@@ -2026,7 +2058,7 @@ class Transport(object):
                         except tx.InvalidContentException:
                                 # If the content in the cache doesn't match the
                                 # hash of the action, verify will have already
-                                # purged the item from the cache. 
+                                # purged the item from the cache.
                                 pass
 
                 return None
@@ -2516,7 +2548,7 @@ class MultiXfr(object):
                 return it.  Otherwise, return None."""
 
                 return getattr(self._progtrack, "check_cancelation", None)
-                
+
         def get_progtrack(self):
                 """Return the progress tracker object for this MFile,
                 if it has one."""
@@ -2759,7 +2791,7 @@ class MultiFileNI(MultiFile):
                                     e.filename)
                         raise
 
-# The following two methods are to be used by clients without an Image that 
+# The following two methods are to be used by clients without an Image that
 # need to configure a transport and or publishers.
 
 def setup_publisher(repo_uri, prefix, xport, xport_cfg,
@@ -2773,7 +2805,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
 
         If remote_publishers is True, the caller will obtain the prefix and
         repository information from the repo's publisher info."""
-        
+
 
         if isinstance(repo_uri, list):
                 repo = publisher.Repository(origins=repo_uri)
@@ -2789,7 +2821,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                 return pub
 
         try:
-                newpubs = xport.get_publisherdata(pub) 
+                newpubs = xport.get_publisherdata(pub)
         except apx.UnsupportedRepositoryOperation:
                 newpubs = None
 

@@ -34,7 +34,6 @@ import pprint
 import shutil
 import signal
 import stat
-import string
 import subprocess
 import sys
 import tempfile
@@ -67,24 +66,24 @@ if "DEBUG" in os.environ:
 #
 gettext.install("pkg", "/usr/share/locale")
 
-OUTPUT_DOTS=0           # Dots ...
-OUTPUT_VERBOSE=1        # Verbose
-OUTPUT_PARSEABLE=2      # Machine readable
+OUTPUT_DOTS = 0         # Dots ...
+OUTPUT_VERBOSE = 1      # Verbose
+OUTPUT_PARSEABLE = 2    # Machine readable
 
 class TestStopException(Exception):
         """An exception used to signal that all testing should cease.
-	This is a framework-internal exception that tests should not
-	raise"""
+        This is a framework-internal exception that tests should not
+        raise"""
         pass
 
 class TestSkippedException(Exception):
         """An exception used to signal that a test was skipped.
         Should be initialized with a string giving a more detailed
         reason.  Test cases can raise this to the framework
-	that some prerequisite of the test is unsatisfied.  A string
-	explaining the error should be passed at construction.  """
-	def __str__(self):
-		return "Test Skipped: " + " ".join(self.args)
+        that some prerequisite of the test is unsatisfied.  A string
+        explaining the error should be passed at construction.  """
+        def __str__(self):
+                return "Test Skipped: " + " ".join(self.args)
 
 
 
@@ -98,7 +97,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 43
+CLIENT_API_VERSION = 44
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -458,8 +457,14 @@ class Pkg5TestCase(unittest.TestCase):
                                 result.addSuccess(self)
                 finally:
                         result.stopTest(self)
-                        # make sure we restore our directory
-                        os.chdir(pwd)
+                        # make sure we restore our directory if it still exists.
+                        try:
+                                os.chdir(pwd)
+                        except OSError, e:
+                                # If directory doesn't exist anymore it doesn't
+                                # matter.
+                                if e.errno != errno.ENOENT:
+                                        raise
 
         #
         # The following are utility functions for use by testcases.
@@ -638,8 +643,8 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 self.show_on_expected_fail = show_on_expected_fail
                 self.archive_dir = archive_dir
 
-	def getDescription(self, test):
-		return str(test)
+        def getDescription(self, test):
+                return str(test)
 
         # Override the unittest version of this so that success is
         # considered "matching the baseline"
@@ -774,14 +779,14 @@ class _Pkg5TestResult(unittest._TextTestResult):
 
         def addError(self, test, err):
                 errtype, errval = err[:2]
-		# for a few special exceptions, we delete the traceback so
-		# as to elide it.  use only when the traceback itself
-		# is not likely to be useful.
-		if errtype in ELIDABLE_ERRORS:
-			unittest.TestResult.addError(self, test,
-			    (err[0], err[1], None))
-		else:
-			unittest.TestResult.addError(self, test, err)
+                # for a few special exceptions, we delete the traceback so
+                # as to elide it.  use only when the traceback itself
+                # is not likely to be useful.
+                if errtype in ELIDABLE_ERRORS:
+                        unittest.TestResult.addError(self, test,
+                            (err[0], err[1], None))
+                else:
+                        unittest.TestResult.addError(self, test, err)
 
                 # If we're debugging, we'll have had output since we
                 # announced the name of the test, so restate it.
@@ -852,7 +857,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 return res
 
         def addFailure(self, test, err):
-		unittest.TestResult.addFailure(self, test, err)
+                unittest.TestResult.addFailure(self, test, err)
 
                 bresult = self.baseline.handleresult(str(test), "fail")
                 expected = self.baseline.expectedresult(str(test))
@@ -936,7 +941,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
         def statename(self, test, prefix=""):
                 name = self.getDescription(test)
                 if self.output == OUTPUT_VERBOSE:
-                        name = string.ljust(name, 65) + "  "
+                        name = name.ljust(65) + "  "
                 elif self.output == OUTPUT_PARSEABLE:
                         name += "|"
                 elif self.output == OUTPUT_DOTS:
@@ -1529,7 +1534,8 @@ class CliTestCase(Pkg5TestCase):
                                                     current_fmri, f_path)
                                                 current_fmri = None
                                                 accumulate = []
-                                                retcode, published = self.pkgsend(depot_url, cmd)
+                                                retcode, published = \
+                                                    self.pkgsend(depot_url, cmd)
                                                 if retcode == 0 and published:
                                                         plist.append(published)
                                         except:
@@ -1580,8 +1586,8 @@ class CliTestCase(Pkg5TestCase):
 
                 # Ensure config is written back out.
                 if dest_cfg_data:
-                    with open(dest_cfg, "wb") as f:
-                            f.write(dest_cfg_data)
+                        with open(dest_cfg, "wb") as f:
+                                f.write(dest_cfg_data)
 
                 def copy_manifests(src_root, dest_root):
                         # Now copy each manifest and replace any references to
@@ -1643,7 +1649,7 @@ class CliTestCase(Pkg5TestCase):
                                         copy_manifests(src_root, dest_root)
 
         def get_img_manifest_path(self, pfmri, img_path=None):
-                """Returns the path to the manifest for the fiven fmri."""
+                """Returns the path to the manifest for the given fmri."""
 
                 if not img_path:
                         img_path = self.get_img_path()
@@ -1668,9 +1674,8 @@ class CliTestCase(Pkg5TestCase):
                 if not img_path:
                         img_path = self.get_img_path()
 
-                mdir = os.path.join(img_path, "var", "pkg", "pkg",
-                    pfmri.get_dir_path())
-                mpath = os.path.join(mdir, "manifest")
+                mpath = self.get_img_manifest_path(pfmri, img_path=img_path)
+                mdir = os.path.dirname(mpath)
 
                 # Dump the manifest directory for the package to ensure any
                 # cached information related to it is gone.

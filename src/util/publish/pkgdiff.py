@@ -26,13 +26,11 @@
 
 import getopt
 import gettext
-import os
-import re
-import shlex
 import sys
 import traceback
 
 import pkg.actions
+import pkg.client.api_errors as apx
 import pkg.manifest as manifest
 from pkg.misc import PipeError
 
@@ -85,20 +83,18 @@ def main_func():
         onlyattrs = set(onlyattrs)
 
         try:
-                file1 = file(pargs[0]).read()
-                file2 = file(pargs[1]).read()
-        except IOError, e:
-                error(_("Cannot open or read file: %s") % e)
-
-        try:
                 manifest1 = manifest.Manifest()
-                manifest1.set_content(file1)
+                manifest1.set_content(pathname=pargs[0])
+        except (EnvironmentError, apx.ApiException), e:
+                error(e)
         except pkg.actions.ActionError, e:
                 error(_("Action error in file %s: %s") % (pargs[0], e))
 
         try:
                 manifest2 = manifest.Manifest()
-                manifest2.set_content(file2)
+                manifest2.set_content(pathname=pargs[1])
+        except (EnvironmentError, apx.ApiException), e:
+                error(e)
         except pkg.actions.ActionError, e:
                 error(_("Action error in file %s: %s") % (pargs[1], e))
 

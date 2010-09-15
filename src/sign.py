@@ -224,8 +224,8 @@ def main_func():
 
         try:
                 xport, xport_cfg = transport.setup_transport()
-                xport_cfg.cached_download_dir = cache_dir
-                xport_cfg.incoming_download_dir = incoming_dir
+                xport_cfg.add_cache(cache_dir, readonly=False)
+                xport_cfg.incoming_root = incoming_dir
 
                 # Configure src publisher
                 src_pub = transport.setup_publisher(repo_uri, "source", xport,
@@ -246,7 +246,7 @@ def main_func():
                                 m_str = xport.get_manifest(pfmri,
                                     content_only=True, pub=src_pub)
                                 m = manifest.Manifest()
-                                m.set_content(m_str)
+                                m.set_content(content=m_str)
 
                                 # Construct the base signature action.
                                 attrs = { "algorithm": sig_alg }

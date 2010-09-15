@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 43
+CURRENT_API_VERSION = 44
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -125,7 +125,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([43, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -203,6 +203,13 @@ class ImageInterface(object):
         def is_zone(self):
                 """A boolean value indicating whether the image is a zone."""
                 return self.__img.is_zone()
+
+        @property
+        def last_modified(self):
+                """A datetime object representing when the image's metadata was
+                last updated."""
+
+                return self.__img.get_last_modified()
 
         @property
         def root(self):
@@ -2300,11 +2307,6 @@ class ImageInterface(object):
                 except search_errors.ProblematicPermissionsIndexException, e:
                         error = apx.ProblematicPermissionsIndexException(e)
                         self.log_operation_end(error=error)
-                        raise error
-                except search_errors.MainDictParsingException, e:
-                        error = apx.MainDictParsingException(e)
-                        self.log_operation_end(error=error)
-                        self.__img.cleanup_downloads()
                         raise error
                 else:
                         self.log_operation_end()

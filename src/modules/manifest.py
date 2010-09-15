@@ -33,7 +33,7 @@ import tempfile
 from itertools import groupby, chain, repeat
 
 import pkg.actions as actions
-import pkg.client.api_errors as api_errors
+import pkg.client.api_errors as apx
 import pkg.portable as portable
 import pkg.variant as variant
 
@@ -79,9 +79,8 @@ class Manifest(object):
         present in the image (which may be the null manifest).
         """
 
-        def __init__(self):
-                self.img = None
-                self.fmri = None
+        def __init__(self, pfmri=None):
+                self.fmri = pfmri
 
                 self.actions = []
                 self.actions_bytype = {}
@@ -287,15 +286,16 @@ class Manifest(object):
                                 alldups.append((k, dups))
                 return alldups
 
-        def set_fmri(self, img, fmri):
-                self.img = img
-                self.fmri = fmri
-
         def __content_to_actions(self, content):
                 accumulate = ""
                 lineno = 0
                 errors = []
-                for l in content.splitlines():
+
+                if isinstance(content, basestring):
+                        # Get an iterable for the string.
+                        content = content.splitlines()
+
+                for l in content:
                         lineno += 1
                         l = l.lstrip()
                         if l.endswith("\\"):          # allow continuation chars
@@ -319,21 +319,29 @@ class Manifest(object):
                                 errors.append(e)
 
                 if errors:
-                        raise api_errors.InvalidPackageErrors(errors)
+                        raise apx.InvalidPackageErrors(errors)
 
-        def set_content(self, content, excludes=EmptyI, signatures=False):
+        def set_content(self, content=None, excludes=EmptyI, pathname=None,
+            signatures=False):
                 """Populate the manifest with actions.
 
-                The "content" parameter can be either the text representation of
-                the manifest, or it can be an iterable generating actions.
+                'content' is an optional value containing either the text
+                representation of the manifest or an iterable of
+                action objects.
 
-                The "excludes" parameter names the variants to exclude from the
+                'excludes' is an optional list of variants to exclude from the
                 manifest.
+        
+                'pathname' is an optional filename containing the location of
+                the manifest content.
 
-                The "signatures" parameter specifies whether or not a manifest
-                signature should be generated.  This is only possible when
-                "content" is a string.
+                'signatures' is an optional boolean value that indicates whether
+                a manifest signature should be generated.  This is only possible
+                when 'content' is a string or 'pathname' is provided.
                 """
+
+                assert content is not None or pathname is not None
+                assert not (content and pathname)
 
                 self.actions = []
                 self.actions_bytype = {}
@@ -348,11 +356,17 @@ class Manifest(object):
                 # can't be in a manifest twice.  (The problem of having the same
                 # action more than once in packages that can be installed
                 # together has to be solved somewhere else, though.)
+                if pathname:
+                        try:
+                                with open(pathname, "rb") as mfile:
+                                        content = mfile.read()
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
                 if isinstance(content, basestring):
                         if signatures:
-                                # Generate manifest signature based upon input
-                                # content, but only if signatures were
-                                # requested.
+                                # Generate manifest signature based upon
+                                # input content, but only if signatures
+                                # were requested.
                                 self.signatures = {
                                     "sha-1": self.hash_create(content)
                                 }
@@ -360,13 +374,12 @@ class Manifest(object):
 
                 for action in content:
                         self.add_action(action, excludes)
-                return
 
         def exclude_content(self, excludes):
                 """Remove any actions from the manifest which should be
                 excluded."""
 
-                self.set_content(self.actions, excludes)
+                self.set_content(content=self.actions, excludes=excludes)
 
         def add_action(self, action, excludes):
                 """Performs any needed transformations on the action then adds
@@ -539,7 +552,7 @@ class Manifest(object):
                 the 'BadManifestSignatures' exception on failure."""
 
                 if signatures != self.signatures:
-                        raise api_errors.BadManifestSignatures(self.fmri)
+                        raise apx.BadManifestSignatures(self.fmri)
 
         def store(self, mfst_path):
                 """Store the manifest contents to disk."""
@@ -551,10 +564,9 @@ class Manifest(object):
                         os.makedirs(t_dir, mode=PKG_DIR_MODE)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
+                                raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
+                                raise apx.ReadOnlyFileSystemException(
                                     e.filename)
                         if e.errno != errno.EEXIST:
                                 raise
@@ -563,10 +575,9 @@ class Manifest(object):
                         fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
+                                raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
+                                raise apx.ReadOnlyFileSystemException( 
                                     e.filename)
                         raise
 
@@ -585,10 +596,9 @@ class Manifest(object):
                         portable.rename(fn, mfst_path)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
+                                raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
-                                raise api_errors.ReadOnlyFileSystemException(
+                                raise apx.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
 
@@ -669,43 +679,55 @@ class FactoredManifest(Manifest):
         explictly and implicitly referenced by the manifest each tagged with
         the appropriate variants/facets."""
 
-        def __file_path(self, name):
-                return os.path.join(self.__file_dir(), name)
+        def __init__(self, fmri, cache_root, contents=None, excludes=EmptyI,
+            pathname=None):
+                """Raises KeyError exception if factored manifest is not present
+                and contents are None; delays reading of manifest until required
+                if cache file is present.
 
-        def __file_dir(self):
-                return os.path.join(self.__pkgdir, self.fmri.get_dir_path())
+                'fmri' is a PkgFmri object representing the identity of the
+                package.
 
-        def __init__(self, fmri, pkgdir, excludes=EmptyI, contents=None):
-                """Raises KeyError exception if factored manifest
-                is not present and contents are None; delays
-                reading of manifest until required if cache file
-                is present"""
+                'cache_root' is the pathname of the directory where the manifest
+                and cache files should be stored or loaded from.
 
-                Manifest.__init__(self)
-                self.__pkgdir = pkgdir
-                self.loaded   = False
-                self.set_fmri(None, fmri)
+                'contents' is an optional string to use as the contents of the
+                manifest if a cached copy does not already exist.
+
+                'excludes' is an optional list of excludes to apply to the
+                manifest after loading.
+
+                'pathname' is an optional string containing the pathname of a
+                manifest.  If not provided, it is assumed that the manifest is
+                stored in a file named 'manifest' in the directory indicated by
+                'cache_root'.
+                """
+
+                assert not (contents and pathname)
+
+                Manifest.__init__(self, fmri)
+                self.__cache_root = cache_root
+                self.__pathname = pathname
                 self.excludes = excludes
-
-                mpath = self.__file_path("manifest")
+                self.loaded = False
 
                 # Do we have a cached copy?
-                if not os.path.exists(mpath):
+                if not os.path.exists(self.pathname):
                         if not contents:
                                 raise KeyError, fmri
                         # we have no cached copy; save one
                         # don't specify excludes so on-disk copy has
                         # all variants
-                        self.set_content(contents)
+                        self.set_content(content=contents)
                         self.__finiload()
                         if self.__storeback():
                                 self.__unload()
                         elif excludes:
-                                self.set_content(contents, excludes)
+                                self.exclude_content(excludes)
                         return
 
                 # we have a cached copy of the manifest
-                mdpath = self.__file_path("manifest.dircache")
+                mdpath = self.__cache_path("manifest.dircache")
 
                 # have we computed the dircache?
                 if not os.path.exists(mdpath): # we're adding cache
@@ -717,12 +739,12 @@ class FactoredManifest(Manifest):
                                 self.excludes = excludes
                                 self.__load()
 
+        def __cache_path(self, name):
+                return os.path.join(self.__cache_root, name)
+
         def __load(self):
                 """Load all manifest contents from on-disk copy of manifest"""
-                f = file(self.__file_path("manifest"))
-                data = f.read()
-                f.close()
-                self.set_content(data, self.excludes)
+                self.set_content(excludes=self.excludes, pathname=self.pathname)
                 self.__finiload()
 
         def __unload(self):
@@ -745,10 +767,10 @@ class FactoredManifest(Manifest):
                 caches.  Return True if data was saved, False if not"""
                 assert self.loaded
                 try:
-                        self.store(self.__file_path("manifest"))
+                        self.store(self.pathname)
                         self.__storebytype()
                         return True
-                except api_errors.PermissionsException:
+                except apx.PermissionsException:
                         # this allows us to try to cache new manifests
                         # when non-root w/o failures.
                         return False
@@ -760,7 +782,7 @@ class FactoredManifest(Manifest):
 
                 assert self.loaded
 
-                t_dir = self.__file_dir()
+                t_dir = self.__cache_root
 
                 # create per-action type cache; use rename to avoid
                 # corrupt files if ^C'd in the middle
@@ -774,7 +796,7 @@ class FactoredManifest(Manifest):
                                 f.write("%s\n" % a)
                         f.close()
                         os.chmod(fn, PKG_FILE_MODE)
-                        portable.rename(fn, self.__file_path("manifest.%s" % n))
+                        portable.rename(fn, self.__cache_path("manifest.%s" % n))
 
                 # create dircache
                 fd, fn = tempfile.mkstemp(dir=t_dir,
@@ -787,7 +809,7 @@ class FactoredManifest(Manifest):
 
                 f.close()
                 os.chmod(fn, PKG_FILE_MODE)
-                portable.rename(fn, self.__file_path("manifest.dircache"))
+                portable.rename(fn, self.__cache_path("manifest.dircache"))
 
         @staticmethod
         def __gen_dirs_to_str(dirs):
@@ -826,30 +848,29 @@ class FactoredManifest(Manifest):
                 return dirs
 
         @staticmethod
-        def clear_cache(pfmri, pkgdir):
-                """Remove any cache files that exist for the manifest (but not
-                the manifest itself)."""
+        def clear_cache(cache_root):
+                """Remove all manifest cache files found in the given directory
+                (excluding the manifest itself).
+                """
 
-                cache_dir = os.path.join(pkgdir, pfmri.get_dir_path())
                 try:
-                        for cname in os.listdir(cache_dir):
+                        for cname in os.listdir(cache_root):
                                 if not cname.startswith("manifest."):
                                         continue
                                 try:
                                         portable.remove(os.path.join(
-                                            cache_dir, cname))
+                                            cache_root, cname))
                                 except EnvironmentError, e:
                                         if e.errno != errno.ENOENT:
                                                 raise
                 except EnvironmentError, e:
-                        api_errors.convert_environment_error(e,
-                            ignored_errors=[errno.ENOENT])
+                        apx._convert_error(e, ignored_errors=[errno.ENOENT])
 
         def get_directories(self, excludes):
                 """ return a list of directories implicitly or
                 explicitly referenced by this object"""
 
-                mpath = self.__file_path("manifest.dircache")
+                mpath = self.__cache_path("manifest.dircache")
 
                 if not os.path.exists(mpath):
                         # no cached copy
@@ -886,7 +907,7 @@ class FactoredManifest(Manifest):
                                 yield a
                         return
 
-                mpath = self.__file_path("manifest.dircache")
+                mpath = self.__cache_path("manifest.dircache")
 
                 if not os.path.exists(mpath):
                         # no cached copy :-(
@@ -899,7 +920,7 @@ class FactoredManifest(Manifest):
                                 yield a
                 else:
                         # we have a cached copy - use it
-                        mpath = self.__file_path("manifest.%s" % atype)
+                        mpath = self.__cache_path("manifest.%s" % atype)
 
                         if not os.path.exists(mpath):
                                 return # no such action in this manifest
@@ -915,7 +936,7 @@ class FactoredManifest(Manifest):
                 """Load attributes dictionary from cached set actions;
                 this speeds up pkg info a lot"""
 
-                mpath = self.__file_path("manifest.set")
+                mpath = self.__cache_path("manifest.set")
                 if not os.path.exists(mpath):
                         return False
                 f = file(mpath)
@@ -957,8 +978,8 @@ class FactoredManifest(Manifest):
                 return Manifest.get_all_variants(self)
 
         @staticmethod
-        def search_dict(file_path, excludes, return_line=False):
-                return Manifest.search_dict(file_path, excludes,
+        def search_dict(cache_path, excludes, return_line=False):
+                return Manifest.search_dict(cache_path, excludes,
                     return_line=return_line)
 
         def gen_actions(self, excludes=EmptyI):
@@ -984,12 +1005,21 @@ class FactoredManifest(Manifest):
                     origin_exclude=origin_exclude,
                     self_exclude=self_exclude)
 
+        @property
+        def pathname(self):
+                """The absolute pathname of the file containing the manifest."""
+
+                if self.__pathname:
+                        return self.__pathname
+                return os.path.join(self.__cache_root, "manifest")
+
 
 class EmptyFactoredManifest(Manifest):
         """Special class for pkgplan's need for a empty manifest;
         the regular null manifest doesn't support get_directories
         and making the factored manifest code handle this case is
         too ugly..."""
+
         def __init__(self):
                 Manifest.__init__(self)
 

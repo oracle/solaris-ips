@@ -24,7 +24,7 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -80,7 +80,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                     close
                 """
                 self.pkgsend_bulk(self.rurl, pkg1)
-		self.image_create(self.rurl)
+                self.image_create(self.rurl)
 
                 self.pkg("info foo@x.y", exit=1)
                 self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129",
@@ -98,7 +98,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info /usr/bin/stunnel", exit=1)
 
 		# bad version
-		self.pkg("install jade")
+                self.pkg("install jade")
                 self.pkg("info pkg:/foo@bar.baz", exit=1)
                 self.pkg("info pkg:/foo@bar.baz jade", exit=1)
                 self.pkg("info -r pkg:/foo@bar.baz", exit=1)
@@ -142,7 +142,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 # This unit test needs an actual depot due to unprivileged user
                 # testing.
                 self.dc.start()
-                self.pkgsend_bulk(self.durl, (pkg1, pkg2, pkg3))
+                plist = self.pkgsend_bulk(self.durl, (pkg1, pkg2, pkg3))
                 self.image_create(self.durl)
 
                 # Install one package and verify
@@ -171,12 +171,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info -r turquoise | grep '   Description: Short desc'")
                 self.pkg("info -r turquoise")
 
-                # Now remove the manifest for turquoise and retry the info -r for
-                # an unprivileged user.
-                mpath = os.path.join(self.get_img_path(), "var", "pkg", "pkg",
-                    "turquoise")
-                shutil.rmtree(mpath)
-                self.assertFalse(os.path.exists(mpath))
+                # Now remove the manifest for turquoise and retry the info -r
+                # for an unprivileged user.
+                mdir = os.path.dirname(self.get_img_manifest_path(
+                    fmri.PkgFmri(plist[1])))
+                shutil.rmtree(mdir)
+                self.assertFalse(os.path.exists(mdir))
                 self.pkg("info -r turquoise", su_wrap=True)
 
                 # Verify output.

@@ -417,18 +417,14 @@ class _RepoStore(object):
                 to its usage as a callback."""
 
                 mpath = self.manifest(pfmri)
-                m = pkg.manifest.Manifest()
+                m = pkg.manifest.Manifest(pfmri)
                 try:
-                        f = open(mpath, "rb")
-                        content = f.read()
-                        f.close()
+                        m.set_content(pathname=mpath, signatures=sig)
                 except EnvironmentError, e:
                         if e.errno == errno.ENOENT:
                                 raise RepositoryManifestNotFoundError(
                                     e.filename)
                         raise
-                m.set_fmri(None, pfmri)
-                m.set_content(content, misc.EmptyI, signatures=sig)
                 return m
 
         def __index_log(self, msg):
@@ -967,33 +963,8 @@ class _RepoStore(object):
                         self.cache_store = None
                         return
 
-                try:
-                        self.cache_store = file_manager.FileManager(root,
-                            self.read_only)
-                except file_manager.NeedToModifyReadOnlyFileManager:
-                        if self.root:
-                                try:
-                                        os.stat(self.root)
-                                except OSError, e:
-                                        # If the stat failed due to this, then
-                                        # assume the repository is possibly
-                                        # valid but that there is a permissions
-                                        # issue.
-                                        if e.errno == errno.EACCES:
-                                                raise apx.\
-                                                    PermissionsException(
-                                                    e.filename)
-                                        if e.errno == errno.ENOENT:
-                                                raise RepositoryInvalidError(
-                                                    self.root)
-                                        raise
-                                # If the stat succeeded, then regardless of
-                                # whether root is really a directory, the
-                                # repository is invalid.
-                                raise RepositoryInvalidError(self.root)
-                        # If repository root hasn't been specified yet,
-                        # just raise the error with the path that is available.
-                        raise RepositoryInvalidError(root)
+                self.cache_store = file_manager.FileManager(root,
+                    self.read_only)
 
         def __set_writable_root(self, root):
                 if root:

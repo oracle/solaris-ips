@@ -46,7 +46,6 @@ import gettext
 import locale
 import logging
 import os
-import pipes
 import shlex
 import shutil
 import sys
@@ -60,7 +59,6 @@ import pkg
 import pkg.catalog
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
-import pkg.client.progress as progress
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.server.repository as sr
@@ -438,7 +436,7 @@ def get_repo(conf, read_only=True, subcommand=None):
         return sr.Repository(read_only=read_only, root=path)
 
 
-def setup_transport(conf):
+def setup_transport(conf, subcommand=None):
         repo_uri = conf.get("repo_uri", None)
         if not repo_uri:
                 usage(_("No repository location specified."), cmd=subcommand)
@@ -456,8 +454,8 @@ def setup_transport(conf):
 
         # Create transport and transport config.
         xport, xport_cfg = transport.setup_transport()
-        xport_cfg.cached_download_dir = cache_dir
-        xport_cfg.incoming_download_dir = incoming_dir
+        xport_cfg.add_cache(cache_dir, readonly=False)
+        xport_cfg.incoming_root = incoming_dir
 
         # Configure target publisher.
         src_pub = transport.setup_publisher(str(repo_uri), "target", xport,
@@ -535,7 +533,7 @@ def subcmd_get(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
         # Get properties.
         if pubs:
@@ -648,7 +646,6 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
         max_pname_len = len(_("PROPERTY"))
 
         # For each requested publisher, retrieve the requested property data.
-        failed = set()
         pub_idx = {}
         for pub in pub_data:
                 if pub.prefix not in found:
@@ -690,11 +687,11 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
         # Determine possible set of properties and lengths.
         props = set()
         for pub in pub_idx:
-            for sname in pub_idx[pub]:
-                    max_sname_len = max(max_sname_len, len(sname))
-                    for pname in pub_idx[pub][sname]:
-                            max_pname_len = max(max_pname_len, len(pname))
-                            props.add("/".join((sname, pname)))
+                for sname in pub_idx[pub]:
+                        max_sname_len = max(max_sname_len, len(sname))
+                        for pname in pub_idx[pub][sname]:
+                                max_pname_len = max(max_pname_len, len(pname))
+                                props.add("/".join((sname, pname)))
 
         # Determine properties to display.
         req_props = set(pargs)
@@ -784,7 +781,7 @@ def subcmd_info(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, xpub, tmp_dir = setup_transport(conf)
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
         # Retrieve repository status information.
         stat_idx = xport.get_status(xpub)
@@ -878,7 +875,7 @@ def subcmd_rebuild(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, src_pub, tmp_dir = setup_transport(conf)
+        xport, src_pub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
         logger.info("Repository rebuild initiated.")
         if build_catalog and build_index:
@@ -918,7 +915,7 @@ def subcmd_refresh(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, src_pub, tmp_dir = setup_transport(conf)
+        xport, src_pub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
         logger.info("Repository refresh initiated.")
         if add_content and refresh_index:
@@ -1011,7 +1008,7 @@ def _set_pub(conf, subcommand, omit_headers, props, pubs, repo):
                         usage(_("unknown property section "
                             "'%s'") % sname, cmd=subcommand)
                 for pname in sprops:
-                        if sname == "publisher" and pname =="prefix":
+                        if sname == "publisher" and pname == "prefix":
                                 usage(_("'%s' may not be set using "
                                     "this command" % pname))
                         attrname = pname.replace("-", "_")

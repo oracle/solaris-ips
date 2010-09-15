@@ -29,7 +29,6 @@ import gettext
 import os
 import pkg
 import pkg.client
-import pkg.client.publisher             as publisher
 import pkg.client.transport.transport   as transport
 import pkg.client.api_errors            as apx
 import pkg.client.api
@@ -57,7 +56,7 @@ from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.misc import emsg
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
-CLIENT_API_VERSION = 43
+CLIENT_API_VERSION = 44
 PKG_CLIENT_NAME = "importer.py"
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
@@ -1536,7 +1535,7 @@ def main_func():
         tmpdirs.append(local_smf_manifests)
 
         xport, xport_cfg = transport.setup_transport()
-        xport_cfg.incoming_download_dir = incoming_dir
+        xport_cfg.incoming_root = incoming_dir
 
         def_pub = transport.setup_publisher(def_repo, "default", xport,
             xport_cfg, remote_prefix=True)

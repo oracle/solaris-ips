@@ -1232,7 +1232,7 @@ class DepotHTTP(_Depot):
 
                 try:
                         self.repo.add_file(trans_id, data, size)
-                except repo.RepositoryError, e:
+                except srepo.RepositoryError, e:
                         # Assume a bad request was made.  A 404 can't be
                         # returned here as misc.versioned_urlopen will interpret
                         # that to mean that the server doesn't support this
@@ -1266,10 +1266,9 @@ class DepotHTTP(_Depot):
                                 self.__bgtask.put(self.repo.refresh_index,
                                     pub=self._get_req_pub())
                         else:
-                                cherrypy.log("Unknown index subcommand: %s" %
-                                    cmd)
-                                raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                                    str(e))
+                                err = "Unknown index subcommand: %s" % cmd
+                                cherrypy.log(err)
+                                raise cherrypy.HTTPError(httplib.NOT_FOUND, err)
                 except Queue.Full:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                            "Another operation is already in progress; try "
@@ -1326,9 +1325,8 @@ class DepotHTTP(_Depot):
                 if not os.path.exists(fpath):
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
-                m = manifest.Manifest()
-                m.set_fmri(None, pfmri)
-                m.set_content(file(fpath).read())
+                m = manifest.Manifest(pfmri)
+                m.set_content(pathname=fpath)
 
                 pub, name, ver = pfmri.tuple()
                 summary = m.get("pkg.summary", m.get("description", ""))

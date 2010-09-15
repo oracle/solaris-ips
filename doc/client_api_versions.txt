@@ -1,3 +1,12 @@
+Version 44:
+Compatible with clients using version 43.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new property 'last_modified' was added that returns a UTC
+          datetime object representing the time the image's metadata
+          was last changed.
+
 Version 43:
 Incompatible with clients using versions 0-42.
 

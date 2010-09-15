@@ -28,14 +28,10 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import datetime
 import errno
 import os
 import shutil
 import stat
-import sys
-import tempfile
-import time
 import unittest
 
 import pkg.actions
@@ -908,22 +904,19 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # is populated as expected:
                 p1_fmri = fmri.PkgFmri("pkg://opensolaris.org/"
                         "base@1.0,5.11-1:20000101T120000Z")
-                p1_man = manifest.Manifest()
-                p1_man.set_fmri(None, p1_fmri)
+                p1_man = manifest.Manifest(p1_fmri)
                 p1_man.set_content("", signatures=True)
 
                 p2_fmri = fmri.PkgFmri("pkg://opensolaris.org/"
                         "dependency@1.0,5.11-1:20000101T130000Z")
-                p2_man = manifest.Manifest()
-                p2_man.set_fmri(None, p2_fmri)
+                p2_man = manifest.Manifest(p2_fmri)
                 p2_man.set_content("set name=fmri value=%s\n"
                     "depend type=require fmri=base@1.0\n" % p2_fmri.get_fmri(),
                     signatures=True)
 
                 p3_fmri = fmri.PkgFmri("pkg://opensolaris.org/"
                         "summary@1.0,5.11-1:20000101T140000Z")
-                p3_man = manifest.Manifest()
-                p3_man.set_fmri(None, p2_fmri)
+                p3_man = manifest.Manifest(p3_fmri)
                 p3_man.set_content("set name=fmri value=%s\n"
                     "set description=\"Example Description\"\n"
                     "set pkg.description=\"Example pkg.Description\"\n"

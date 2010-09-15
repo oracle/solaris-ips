@@ -204,15 +204,9 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 exit abnormally.
                 """
                 # Overwrite first entry with bad data.
-                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
-                if not os.path.exists(pkg_path):
-                        pkg_path = os.path.join(self.get_img_path(),
-                            ".org.opensolaris,pkg")
-                        self.assertTrue(os.path.exists(pkg_path))
-
-                hist_path = os.path.join(pkg_path, "history")
+                hist_path = self.get_img_api_obj().img.history.path
                 entry = sorted(os.listdir(hist_path))[0]
-                f = open(os.path.join(pkg_path, entry), "w")
+                f = open(os.path.join(hist_path, entry), "w")
                 f.write("<Invalid>")
                 f.close()
                 self.pkg("history")
@@ -221,13 +215,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 """Verify that an absent History directory will not cause the
                 the client to exit with an error or traceback.
                 """
-                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
-                if not os.path.exists(pkg_path):
-                        pkg_path = os.path.join(self.get_img_path(),
-                            ".org.opensolaris,pkg")
-                        self.assertTrue(os.path.exists(pkg_path))
-
-                hist_path = os.path.join(pkg_path, "history")
+                hist_path = self.get_img_api_obj().img.history.path
                 shutil.rmtree(hist_path)
                 self.pkg("history")
 
@@ -307,8 +295,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 nentries = len([l for l in lines if l.find("Operation:") >= 0])
                 self.assertEqual(nentries, 3)
 
-                count = len(os.listdir(
-                    os.path.join(self.get_img_path(), "var", "pkg", "history")))
+                hist_path = self.get_img_api_obj().img.history.path
+                count = len(os.listdir(hist_path))
 
                 # Asking for too many objects should return the full set
                 self.pkg("history -Hn %d" % (count + 5))

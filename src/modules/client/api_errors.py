@@ -459,7 +459,7 @@ class ActionExecutionError(ApiException):
                         details = _("Requested operation failed for action "
                             "%(action)s:\n%(details)s") % {
                             "action": self.action,
-                            "details": msg }
+                            "details": details }
                 elif details:
                         details = _("Requested operation failed for package "
                             "%(fmri)s:\n%(details)s") % { "fmri": self.fmri,
@@ -1857,7 +1857,17 @@ class CreatingImageInNonEmptyDir(ImageCreationException):
                     "override, use the -f (force) option.") % self.path
 
 
-def convert_environment_error(e, ignored_errors=EmptyI):
+def _convert_error(e, ignored_errors=EmptyI):
+        """Converts the provided exception into an ApiException equivalent if
+        possible.  Returns a new exception object if converted or the original
+        if not.
+
+        'ignored_errors' is an optional list of errno values for which None
+        should be returned.
+        """
+
+        if not hasattr(e, "errno"):
+                return e
         if e.errno in ignored_errors:
                 return None
         if e.errno in (errno.EACCES, errno.EPERM):

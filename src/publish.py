@@ -307,7 +307,7 @@ def trans_publish(repo_uri, fargs):
 
         m = pkg.manifest.Manifest()
         try:
-                m.set_content(lines)
+                m.set_content(content=lines)
         except apx.InvalidPackageErrors, err:
                 e = err.errors[0]
                 lineno = e.lineno
@@ -419,7 +419,7 @@ def trans_include(repo_uri, fargs, transaction=None):
 
         m = pkg.manifest.Manifest()
         try:
-                m.set_content("\n".join(lines))
+                m.set_content(content="\n".join(lines))
         except apx.InvalidPackageErrors, err:
                 e = err.errors[0]
                 lineno = e.lineno

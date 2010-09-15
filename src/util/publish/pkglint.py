@@ -227,7 +227,7 @@ def read_manifests(names, lint_logger):
                 linecnts = []   # tuples of starting line no., ending line no
                 linecounter = 0 # running total
                 try:
-                        f = codecs.open(filename, "r", "utf-8")
+                        f = codecs.open(filename, "rb", "utf-8")
                         data = f.read()
                 except UnicodeDecodeError, e:
                         lint_logger.critical(_("Invalid file %s: "
@@ -245,13 +245,13 @@ def read_manifests(names, lint_logger):
 
                 manifest = pkg.manifest.Manifest()
                 try:
-                        manifest.set_content("\n".join(lines))
+                        manifest.set_content(content="\n".join(lines))
                 except pkg.actions.ActionError, e:
                         lineno = e.lineno
                         for i, tup in enumerate(linecnts):
                                 if lineno > tup[0] and lineno <= tup[1]:
                                         lineno -= tup[0]
-                                        break;
+                                        break
                         else:
                                 lineno = "???"
 

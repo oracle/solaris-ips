@@ -113,25 +113,6 @@ class FileManager(object):
                         self.layouts = layouts
                 else:
                         self.layouts = layout.get_default_layouts()
-                if not os.path.exists(self.root):
-                        if self.readonly:
-                                raise NeedToModifyReadOnlyFileManager(self.root)
-                        try:
-                                os.makedirs(self.root)
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES or \
-                                    e.errno == errno.EROFS:
-                                        raise FMPermissionsException(e.filename)
-                                # If the parent directory already exists at this
-                                # point (due to a race between the check for
-                                # existence), then it doesn't matter.  If for
-                                # some reason the error was from creating one
-                                # of the parents of the immediate parent, then
-                                # a traceback is believed to be the best course
-                                # of action for analysis purposes.
-                                if not (e.errno == errno.EEXIST and
-                                        e.filename == self.root):
-                                        raise
 
         def set_read_only(self):
                 """Make the FileManager read only."""

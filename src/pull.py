@@ -41,8 +41,7 @@ import pkg.client.progress as progress
 import pkg.config as cfg
 import pkg.fmri
 import pkg.manifest as manifest
-import pkg.client.api_errors as api_errors
-import pkg.client.publisher as publisher
+import pkg.client.api_errors as apx
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
 import pkg.publish.transaction as trans
@@ -51,7 +50,7 @@ import pkg.server.repository as sr
 import pkg.version as version
 
 from pkg.client import global_settings
-from pkg.misc import (config_temp_root, emsg, get_pkg_otw_size, msg, PipeError)
+from pkg.misc import emsg, get_pkg_otw_size, msg, PipeError
 
 # Globals
 cache_dir = None
@@ -177,15 +176,16 @@ def get_manifest(pfmri, basedir, contents=False):
         if not os.path.exists(mpath):
                 m = xport.get_manifest(pfmri)
         else:
+                # A FactoredManifest is used here to reduce peak memory
+                # usage (notably when -r was specified).
                 try:
-                        m = manifest.FactoredManifest(pfmri, basedir)
+                        m = manifest.FactoredManifest(pfmri, pkgdir)
                 except:
                         abort(err=_("Unable to parse manifest '%(mpath)s' for "
                             "package '%(pfmri)s'") % locals())
 
         if contents:
                 return m.tostr_unsorted()
-
         return m
 
 def get_repo(uri):
@@ -208,8 +208,7 @@ def get_repo(uri):
         except cfg.ConfigError, _e:
                 error("repository configuration error: %s" % _e)
                 sys.exit(1)
-        except (search_errors.IndexingException,
-            api_errors.PermissionsException), _e:
+        except (search_errors.IndexingException, apx.PermissionsException), _e:
                 emsg(str(_e), "INDEX")
                 sys.exit(1)
         repo_cache[uri] = repo
@@ -253,7 +252,7 @@ def expand_matching_fmris(fmri_list, pfmri_strings):
             matcher=pkg.fmri.glob_match)
 
         if unmatched:
-                match_err = api_errors.InventoryException(**unmatched)
+                match_err = apx.InventoryException(**unmatched)
                 emsg(match_err)
                 abort()
 
@@ -441,16 +440,16 @@ def main_func():
 
         # Create transport and transport config
         xport, xport_cfg = transport.setup_transport()
-        xport_cfg.cached_download_dir = cache_dir
-        xport_cfg.incoming_download_dir = incoming_dir
+        xport_cfg.add_cache(cache_dir, readonly=False)
+        xport_cfg.incoming_root = incoming_dir
 
         # Since publication destionations may only have one repository
         # configured per publisher, create destination as separate transport
         # in case source and destination have identical publisher configuration
         # but different repository endpoints.
         dest_xport, dest_xport_cfg = transport.setup_transport()
-        dest_xport_cfg.cached_download_dir = cache_dir
-        dest_xport_cfg.incoming_download_dir = incoming_dir
+        dest_xport_cfg.add_cache(cache_dir, readonly=False)
+        dest_xport_cfg.incoming_root = incoming_dir
 
         # Configure src publisher
         src_pub = transport.setup_publisher(src_uri, "source", xport, xport_cfg,
@@ -513,7 +512,8 @@ def main_func():
                                     basedir)
                                 return 1
 
-        xport_cfg.pkgdir = basedir
+        xport_cfg.pkg_root = basedir
+        dest_xport_cfg.pkg_root = basedir
 
         if republish:
                 targ_fmris = fetch_catalog(targ_pub, tracker, dest_xport)
@@ -555,7 +555,7 @@ def main_func():
                         continue
 
                 m = get_manifest(f, basedir)
-                pkgdir = os.path.join(basedir, f.get_dir_path())
+                pkgdir = xport_cfg.get_pkg_dir(f)
                 mfile = xport.multi_file_ni(src_pub, pkgdir,
                     not keep_compressed, tracker)
  
@@ -603,7 +603,7 @@ def main_func():
                         use_scheme = False
 
                 pkg_name = f.get_fmri(include_scheme=use_scheme)
-                pkgdir = os.path.join(basedir, f.get_dir_path())
+                pkgdir = xport_cfg.get_pkg_dir(f)
 
                 # This is needed so any previous failures for a package
                 # can be aborted.
@@ -658,9 +658,8 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError, api_errors.TransportError,
-            api_errors.BadRepositoryURI,
-            api_errors.UnsupportedRepositoryURI), _e:
+            RuntimeError, apx.TransportError, apx.BadRepositoryURI,
+            apx.UnsupportedRepositoryURI), _e:
                 error(_e)
                 cleanup(True)
                 __ret = 1
@@ -669,7 +668,7 @@ if __name__ == "__main__":
                 # possible further broken pipe (EPIPE) errors.
                 cleanup(False)
                 __ret = 1
-        except (KeyboardInterrupt, api_errors.CanceledException):
+        except (KeyboardInterrupt, apx.CanceledException):
                 cleanup(True)
                 __ret = 1
         except SystemExit, _e:

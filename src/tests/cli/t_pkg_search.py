@@ -37,10 +37,7 @@ import unittest
 import urllib2
 
 import pkg.catalog as catalog
-import pkg.client.query_parser as query_parser
 import pkg.fmri as fmri
-import pkg.portable as portable
-import pkg.search_storage as ss
 
 
 class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -372,10 +369,14 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 # Verify that search will work for an unprivileged user even if
                 # the download directory doesn't exist.
-                cache_dir = os.path.join(self.img_path, "var", "pkg",
-                    "download")
-                shutil.rmtree(cache_dir, ignore_errors=True)
-                self.assertFalse(os.path.exists(cache_dir))
+                img = self.get_img_api_obj().img
+                cache_dirs = [
+                    path
+                    for path, readonly, pub in img.get_cachedirs()
+                ]
+                for path in cache_dirs:
+                        shutil.rmtree(path, ignore_errors=True)
+                        self.assertFalse(os.path.exists(path))
                 self._search_op(True, "fo*", self.res_remote_foo, su_wrap=True)
 
                 # These tests are included because a specific bug
@@ -478,8 +479,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -a -r *unique*", exit=1)
 
         def _get_index_dirs(self):
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-                index_dir_tmp = index_dir + "TMP"
+                index_dir = self.get_img_api_obj().img.index_dir
+                index_dir_tmp = os.path.join(index_dir, "TMP")
                 return index_dir, index_dir_tmp
 
         def pkgsend_bulk(self, durl, pkg):
@@ -488,14 +489,14 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     refresh_index=True)
                 self.wait_repo(self.dc.get_repodir())
 
-	def test_pkg_search_cli(self):
-		"""Test search cli options."""
+        def test_pkg_search_cli(self):
+                """Test search cli options."""
 
-		durl = self.dc.get_depot_url()
+                durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.image_create(durl)
 
-		self.pkg("search", exit=2)
+                self.pkg("search", exit=2)
 
                 # Bug 1541
                 self.pkg("search -s %s bin" % ("httP" + durl[4:]))
@@ -552,8 +553,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 # tracebacks
                 durl = self.dc.get_depot_url()
                 depotpath = self.dc.get_repodir()
-                server_manifest_path = os.path.join(depotpath, "pkg",
-                    self.bogus_fmri.get_dir_path())
+                server_manifest_path = os.path.join(depotpath, "publisher",
+                    "test", "pkg", self.bogus_fmri.get_dir_path())
                 os.makedirs(os.path.dirname(server_manifest_path))
                 tmp_ind_dir = os.path.join(depotpath, "index", "TMP")
 
@@ -574,10 +575,9 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 # Should fail since the bogus_pkg isn't even in the catalog.
                 self.pkg("install bogus_pkg", exit=1)
 
-                client_pkg_dir = os.path.join(self.img_path, "var", "pkg",
-                    "pkg", self.bogus_fmri.get_dir_path())
-                os.makedirs(client_pkg_dir)
-                client_manifest_file = os.path.join(client_pkg_dir, "manifest")
+                client_manifest_file = self.get_img_manifest_path(
+                    self.bogus_fmri)
+                os.makedirs(os.path.dirname(client_manifest_file))
 
                 fh = open(client_manifest_file, "wb")
                 fh.write(self.bogus_pkg10)
@@ -585,8 +585,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 # Load the 'installed' catalog and add an entry for the
                 # new package version.
-                istate_dir = os.path.join(self.img_path, "var", "pkg", "state",
-                    "installed")
+                img = self.get_img_api_obj().img
+                istate_dir = os.path.join(img._statedir, "installed")
                 cat = catalog.Catalog(meta_root=istate_dir)
                 # Value of PKG_STATE_INSTALLED in image.py is 2.
                 # Value of __PKG_STATE_PREFERRED in image.py is 5.

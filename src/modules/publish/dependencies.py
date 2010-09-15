@@ -283,7 +283,7 @@ def __make_manifest(fp, basedirs=None, load_data=True):
                                         path = new_a.attrs["path"]
                                 missing_files.append(base.MissingFile(path))
         fh.close()
-        m.set_content(acts)
+        m.set_content(content=acts)
         return m, missing_files
 
 def choose_name(fp, mfst):

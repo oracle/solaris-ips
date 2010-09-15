@@ -207,11 +207,10 @@ class CatalogInterface(_Interface):
 
                         if (frozenset([PackageInfo.SIZE,
                             PackageInfo.LICENSES]) | act_opts) & info_needed:
-                                mfst = manifest.Manifest()
-                                mfst.set_fmri(None, f)
+                                mfst = manifest.Manifest(f)
                                 try:
                                         mpath = self._depot.repo.manifest(f)
-                                except sr.RepositoryError, e:
+                                except srepo.RepositoryError, e:
                                         notfound.append(f)
                                         continue
 
@@ -219,7 +218,7 @@ class CatalogInterface(_Interface):
                                         notfound.append(f)
                                         continue
 
-                                mfst.set_content(file(mpath).read())
+                                mfst.set_content(pathname=mpath)
 
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst)

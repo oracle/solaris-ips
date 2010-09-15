@@ -430,11 +430,10 @@ class ImagePlan(object):
 
         def get_directories(self):
                 """ return set of all directories in target image """
-                # always consider var and var/pkg fixed in image....
-                # XXX should be fixed for user images
+                # always consider var and the image directory fixed in image...
                 if self.__directories == None:
-                        dirs = set(["var",
-                                    "var/pkg",
+                        dirs = set([self.image.imgdir.rstrip("/"),
+                                    "var",
                                     "var/sadm",
                                     "var/sadm/install"])
                         for pfmri in self.gen_new_installed_pkgs():
@@ -857,11 +856,11 @@ class ImagePlan(object):
                 # We want to cull out actions where they've not changed at all,
                 # leaving only the changed ones to put into self.update_actions.
                 nu_src = manifest.Manifest()
-                nu_src.set_content((a[0] for a in new_updates),
+                nu_src.set_content(content=(a[0] for a in new_updates),
                     excludes=self.__old_excludes)
                 nu_dst = manifest.Manifest()
                 self.__progtrack.evaluate_progress()
-                nu_dst.set_content((a[1] for a in new_updates),
+                nu_dst.set_content(content=(a[1] for a in new_updates),
                     excludes=self.__new_excludes)
                 del new_updates
                 self.__progtrack.evaluate_progress()

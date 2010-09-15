@@ -33,7 +33,6 @@ installed on the system in the package's directory."""
 
 import errno
 import os
-import StringIO
 from stat import S_IWRITE, S_IREAD
 
 import generic
@@ -56,13 +55,11 @@ class LicenseAction(generic.Action):
                 self.hash = "NOHASH"
 
         def preinstall(self, pkgplan, orig):
-                # set attrs["path"] so filelist can handle this action
-                # No leading / chars allowed
-                self.attrs["path"] = os.path.normpath(os.path.join(
-                    pkgplan.image.img_prefix,
-                    "pkg",
-                    pkgplan.destination_fmri.get_dir_path(),
-                    "license." + self.attrs["license"]))
+                # Set attrs["path"] so filelist can handle this action;
+                # the path must be relative to the root of the image.
+                self.attrs["path"] = os.path.relpath(os.path.join(
+                    pkgplan.image.get_license_dir(pkgplan.destination_fmri),
+                    "license." + self.attrs["license"]), pkgplan.image.root)
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs the license."""
@@ -104,7 +101,7 @@ class LicenseAction(generic.Action):
                 # We always want to download the license
                 return True
 
-        def verify(self, img, pkg_fmri, **args):
+        def verify(self, img, pfmri, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
                 info).  The error list will be empty if the action has been
                 correctly installed in the given image."""
@@ -113,9 +110,8 @@ class LicenseAction(generic.Action):
                 warnings = []
                 info = []
 
-                path = os.path.normpath(os.path.join(img.imgdir,
-                    "pkg", pkg_fmri.get_dir_path(),
-                    "license." + self.attrs["license"]))
+                path = os.path.join(img.get_license_dir(pfmri),
+                    "license." + self.attrs["license"])
 
                 if args["forever"] == True:
                         try:
@@ -134,15 +130,15 @@ class LicenseAction(generic.Action):
                 return errors, warnings, info
 
         def remove(self, pkgplan):
-                path = os.path.normpath(os.path.join(pkgplan.image.imgdir,
-                    "pkg", pkgplan.origin_fmri.get_dir_path(),
-                    "license." + self.attrs["license"]))
+                path = os.path.join(
+                    pkgplan.image.get_license_dir(pkgplan.origin_fmri),
+                    "license." + self.attrs["license"])
 
                 try:
                         # Make file writable so it can be deleted
                         os.chmod(path, S_IWRITE|S_IREAD)
                         os.unlink(path)
-                except OSError,e:
+                except OSError, e:
                         if e.errno != errno.ENOENT:
                                 raise
 
@@ -157,29 +153,29 @@ class LicenseAction(generic.Action):
 
                 return indices
 
-        def get_text(self, img, fmri):
+        def get_text(self, img, pfmri):
                 """Retrieves and returns the payload of the license (which
                 should be text).  This may require remote retrieval of
                 resources and so this could raise a TransportError or other
                 ApiException."""
 
-                opener = self.get_local_opener(img, fmri)
+                opener = self.get_local_opener(img, pfmri)
                 if opener:
                         # License installed already; return its content.
                         return opener().read()
 
                 try:
-                        pub = img.get_publisher(fmri.get_publisher())
+                        pub = img.get_publisher(pfmri.publisher)
                         return img.transport.get_content(pub, self.hash)
                 finally:
                         img.cleanup_downloads()
 
-        def get_local_opener(self, img, fmri):
+        def get_local_opener(self, img, pfmri):
                 """Return an opener for the license text from the local disk or
                 None if the data for the text is not on-disk."""
 
-                path = os.path.normpath(os.path.join(img.imgdir, "pkg",
-                    fmri.get_dir_path(), "license." + self.attrs["license"]))
+                path = os.path.join(img.get_license_dir(pfmri),
+                    "license." + self.attrs["license"])
 
                 if not os.path.exists(path):
                         return None

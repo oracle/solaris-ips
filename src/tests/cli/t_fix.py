@@ -141,8 +141,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
                 self.pkg("install amber@1.0")
 
-                index_file = os.path.join(self.img_path, "var","pkg","index",
-                    "main_dict.ascii.v2")
+                index_dir = self.get_img_api_obj().img.index_dir
+                index_file = os.path.join(index_dir, "main_dict.ascii.v2")
                 orig_mtime = os.stat(index_file).st_mtime
                 time.sleep(1)
 

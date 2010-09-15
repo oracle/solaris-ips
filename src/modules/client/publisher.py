@@ -53,7 +53,6 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 import pkg.catalog
-import pkg.actions.signature as signature
 import pkg.client.api_errors as api_errors
 import pkg.client.sigpolicy as sigpolicy
 import pkg.misc as misc
@@ -61,8 +60,7 @@ import pkg.portable as portable
 import pkg.server.catalog as old_catalog
 import M2Crypto as m2
 
-from pkg.misc import EmptyI, SIGNATURE_POLICY, DictProperty
-from pkg.pkggzip import PkgGzipFile
+from pkg.misc import EmptyDict, EmptyI, SIGNATURE_POLICY, DictProperty
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -1881,7 +1879,7 @@ pkg unset-publisher %s
                         with open(pkg_hash_pth, "wb") as fh:
                                 fh.write(s)
                 except EnvironmentError, e:
-                        raise api_errors.convert_environment_error(e)
+                        raise api_errors._convert_error(e)
                 try:
                         c = m2.X509.load_cert_string(s)
                 except m2.X509.X509Error, e:
@@ -1910,7 +1908,7 @@ pkg unset-publisher %s
                                 try:
                                         portable.link(pkg_hash_pth, fn)
                                 except EnvironmentError, e:
-                                        raise api_errors.convert_environment_error(e)
+                                        raise api_errors._convert_error(e)
                                 made_link = True
                 return pkg_hash
 
@@ -1963,7 +1961,7 @@ pkg unset-publisher %s
                                 res.append(cert)
                                 c += 1
                 except EnvironmentError, e:
-                        t = api_errors.convert_environment_error(e,
+                        t = api_errors._convert_error(e,
                             [errno.ENOENT])
                         if t:
                                 raise t
@@ -1997,8 +1995,8 @@ pkg unset-publisher %s
                 for c in self.intermediate_certs:
                         self.get_cert_by_hash(c, verify_hash=True)
 
-        def update_props(self, set_props=EmptyI, add_prop_values=EmptyI,
-            remove_prop_values=EmptyI, unset_props=EmptyI):
+        def update_props(self, set_props=EmptyI, add_prop_values=EmptyDict,
+            remove_prop_values=EmptyDict, unset_props=EmptyI):
                 """Update the properties set for this publisher with the ones
                 provided as arguments.  The order of application is that any
                 existing properties are unset, then properties are set to their
@@ -2058,7 +2056,7 @@ pkg unset-publisher %s
                         cert = self.get_cert_by_hash(c, verify_hash=True)
                         try:
                                 self.verify_chain(cert, trust_anchors)
-                        except api_errors.CertificateException, e:
+                        except api_errors.CertificateException:
                                 # If the cert couldn't be verified, add it to
                                 # the certs to ignore for this operation but
                                 # don't treat it as if the user had declared
@@ -2084,11 +2082,11 @@ pkg unset-publisher %s
 
                 try:
                         return m2.X509.load_crl(pth)
-                except m2.X509.X509Error, e:
+                except m2.X509.X509Error:
                         try:
                                 return m2.X509.load_crl(pth,
                                     format=m2.X509.FORMAT_DER)
-                        except m2.X509.X509Error, e:
+                        except m2.X509.X509Error:
                                 raise api_errors.BadFileFormat(_("The CRL file "
                                     "%s is not in a recognized format.") %
                                     pth)
@@ -2130,7 +2128,7 @@ pkg unset-publisher %s
                         hdl.setopt(pycurl.FAILONERROR, 1)
                         try:
                                 hdl.perform()
-                        except pycurl.error, e:
+                        except pycurl.error:
                                 # If we should treat failure to get a new CRL
                                 # as a failure, raise an exception here. If not,
                                 # if we should use an old CRL if it exists,
@@ -2140,7 +2138,7 @@ pkg unset-publisher %s
                                 return crl
                 try:
                         ncrl = self.__format_safe_read_crl(tmp_pth)
-                except api_errors.BadFileFormat, e:
+                except api_errors.BadFileFormat:
                         portable.remove(tmp_pth)
                         return crl
                 portable.rename(tmp_pth, fpath)
@@ -2231,7 +2229,6 @@ pkg unset-publisher %s
                 if required_names is None:
                         required_names = set()
                 verified = False
-                found_req_name = not required_names
                 continue_loop = True
                 certs_with_problems = []
 

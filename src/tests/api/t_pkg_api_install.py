@@ -26,15 +26,13 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
 import time
 import sys
 import unittest
-from stat import *
-import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
@@ -42,6 +40,7 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
+import stat
 import shutil
 import urllib
 import urlparse
@@ -246,9 +245,9 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 # check to make sure timestamp was set to correct value
                 libc_path = os.path.join(self.get_img_path(), "lib/libc.so.1")
-                stat = os.stat(libc_path)
+                fstat = os.stat(libc_path)
 
-                self.assert_(stat[ST_MTIME] == self.foo11_timestamp)
+                self.assert_(fstat[stat.ST_MTIME] == self.foo11_timestamp)
 
                 # check that verify finds changes
                 now = time.time()
@@ -270,7 +269,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo"])
                 pkg_dir = os.path.join(mdir, "..", "..")
-                manifest.FactoredManifest.clear_cache(pfmri, pkg_dir)
+                manifest.FactoredManifest.clear_cache(
+                    api_obj.img.get_manifest_dir(pfmri))
                 assert not os.path.exists(mcpath)
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["foo"])

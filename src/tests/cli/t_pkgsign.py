@@ -30,9 +30,6 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import re
-import unittest
-import sys
 
 import pkg.actions as action
 import pkg.actions.signature as signature
@@ -1069,9 +1066,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_uninstall(api_obj, ["example_pkg"])
 
                 # Replace the client CS cert.
+                pub = api_obj.get_publisher("test")
+
                 hsh = self.calc_file_hash(cs_path)
-                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
-                    "test", "certs", hsh)
+                pth = os.path.join(pub.cert_root, hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.ModifiedCertificateException,
@@ -1091,8 +1089,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Replace the client CA cert.
                 hsh = self.calc_file_hash(ca_path)
-                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
-                    "test", "certs", hsh)
+                pth = os.path.join(pub.cert_root, hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.ModifiedCertificateException,
@@ -1170,11 +1167,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r = self.get_repo(self.dcs[1].get_repodir())
                 r.add_signing_certs([ca_path], ca=True)
 
-                os.makedirs(os.path.join(r.file_root, "pu"))
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "pu"))
                 portable.copyfile(os.path.join(self.crl_dir,
                     "pubCA1_ta4_crl.pem"),
-                    os.path.join(r.file_root, "pu", "pubCA1_ta4_crl.pem"))
-                
+                    os.path.join(rstore.file_root, "pu", "pubCA1_ta4_crl.pem"))
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
@@ -1205,10 +1203,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r = self.get_repo(self.dcs[1].get_repodir())
                 r.add_signing_certs([ca_path], ca=True)
 
-                os.makedirs(os.path.join(r.file_root, "ta"))
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "ta"))
                 portable.copyfile(os.path.join(self.crl_dir,
                     "ta5_crl.pem"),
-                    os.path.join(r.file_root, "ta", "ta5_crl.pem"))
+                    os.path.join(rstore.file_root, "ta", "ta5_crl.pem"))
                 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
@@ -1238,10 +1237,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r = self.get_repo(self.dcs[1].get_repodir())
                 r.add_signing_certs([ca_path], ca=True)
 
-                os.makedirs(os.path.join(r.file_root, "ex"))
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "ex"))
                 portable.copyfile(os.path.join(self.test_root,
                     "tmp/example_file"),
-                    os.path.join(r.file_root, "ex", "example_file"))
+                    os.path.join(rstore.file_root, "ex", "example_file"))
                 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
@@ -1300,10 +1300,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r.add_signing_certs([os.path.join(self.inter_certs_dir,
                     "i2_ta1_cert.pem")], ca=False)
 
-                os.makedirs(os.path.join(r.file_root, "pu"))
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "pu"))
                 portable.copyfile(os.path.join(self.crl_dir,
                     "pubCA1_ta1_crl.pem"),
-                    os.path.join(r.file_root, "pu", "pubCA1_ta1_crl.pem"))
+                    os.path.join(rstore.file_root, "pu", "pubCA1_ta1_crl.pem"))
 
                 self.dcs[1].start()
                 
@@ -1342,10 +1343,11 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 r.add_signing_certs([os.path.join(self.inter_certs_dir,
                     "i2_ta1_cert.pem")], ca=False)
 
-                os.makedirs(os.path.join(r.file_root, "ch"))
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "ch"))
                 portable.copyfile(os.path.join(self.crl_dir,
                     "ch1_pubCA1_crl.pem"),
-                    os.path.join(r.file_root, "ch", "ch1_pubCA1_crl.pem"))
+                    os.path.join(rstore.file_root, "ch", "ch1_pubCA1_crl.pem"))
 
                 self.dcs[1].start()
                 

@@ -30,7 +30,6 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
-import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
@@ -234,7 +233,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Verify that content cache is empty after successful install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
-                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                cache_dirs = []
+                for path, readonly, pub in img_inst.get_cachedirs():
+                        if os.path.exists(path):
+                                cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
                 self.pkg("set-property flush-content-cache-on-success False")
 
@@ -276,7 +278,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Verify that content cache is empty before install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
-                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                cache_dirs = []
+                for path, readonly, pub in img_inst.get_cachedirs():
+                        if os.path.exists(path):
+                                cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
 
                 self.pkg("install foo@1.0")
@@ -288,7 +293,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Verify that content cache is not empty after successful
                 # install (since flush-content-cache-on-success is False
                 # by default) for packages that have content.
-                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                cache_dirs = []
+                for path, readonly, pub in img_inst.get_cachedirs():
+                        if os.path.exists(path):
+                                cache_dirs.extend(os.listdir(path))
                 self.assertNotEqual(cache_dirs, [])
 
                 self.pkg("list foo@1.1")
@@ -318,7 +326,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Verify that content cache is empty before install.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
-                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                cache_dirs = []
+                for path, readonly, pub in img_inst.get_cachedirs():
+                        if os.path.exists(path):
+                                cache_dirs.extend(os.listdir(path))
                 self.assertEqual(cache_dirs, [])
 
                 self.pkg("list -a")
@@ -327,7 +338,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Verify that content cache is not empty after successful
                 # install (since flush-content-cache-on-success is False)
                 # for packages that have content.
-                cache_dirs = os.listdir(img_inst.cached_download_dir())
+                cache_dirs = []
+                for path, readonly, pub in img_inst.get_cachedirs():
+                        if os.path.exists(path):
+                                cache_dirs.extend(os.listdir(path))
                 self.assertNotEqual(cache_dirs, [])
 
                 self.pkg("list")
@@ -626,9 +640,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -O %s test" % self.durl)
 
                 self.pkg("uninstall foo")
-                lr_path = os.path.join(self.img_path, "var","pkg","publisher",
-                    "test", "last_refreshed")
-                os.unlink(lr_path)
+
+                api_inst = self.get_img_api_obj()
+                pub = api_inst.get_publisher("test")
+                os.remove(os.path.join(pub.meta_root, "last_refreshed"))
                 self.pkg("install --no-refresh foo")
 
         def test_bug_16189(self):
@@ -1123,13 +1138,13 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
-	liveroot10 = """
+        liveroot10 = """
             open liveroot@1.0
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/liveroot1 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
             close
         """
-	liveroot20 = """
+        liveroot20 = """
             open liveroot@2.0
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
@@ -1405,7 +1420,7 @@ adm
                 self.pkg("verify -v")
 
                 # modify config file
-                test_str= "this file has been modified 1"
+                test_str = "this file has been modified 1"
                 file_path = "etc/passwd"
                 self.file_append(file_path, test_str)
 
@@ -1427,7 +1442,7 @@ adm
                 self.pkg("verify -v")
 
                 # modify config file
-                test_str= "this file has been modified test 2"
+                test_str = "this file has been modified test 2"
                 file_path = "etc/passwd"
                 self.file_append(file_path, test_str)
 
@@ -1448,7 +1463,7 @@ adm
 
                 # modify config file
                 file_path = "etc/passwd"
-                test_str= "this file has been modified test 3"
+                test_str = "this file has been modified test 3"
                 self.file_append(file_path, test_str)
 
                 self.file_contains(file_path, test_str)
@@ -2642,7 +2657,7 @@ adm:NP:6445::::::
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
-                        __manually_check_deps(pname, exit=[0,4])
+                        __manually_check_deps(pname, exit=[0, 4])
                         self.pkg("install --no-refresh %s" % pname,
                             su_wrap=True, exit=1)
                         self.pkg("install %s" % pname, su_wrap=True,
@@ -2656,7 +2671,7 @@ adm:NP:6445::::::
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
-                        __manually_check_deps(pname, exit=[0,4])
+                        __manually_check_deps(pname, exit=[0, 4])
                         self.pkg("install --no-refresh %s" % pname)
 
                 for p in pkg_list:

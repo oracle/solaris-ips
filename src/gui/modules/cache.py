@@ -42,12 +42,7 @@ class CacheListStores:
                 return nongui_misc.get_cache_dir(self.api_o)
 
         def get_index_timestamp(self):
-                img = self.api_o.img
-                index_path = os.path.join(img.imgdir, "state/installed")
-                try:
-                        return os.path.getmtime(index_path)
-                except (OSError, IOError):
-                        return None
+                return self.api_o.last_modified
 
         def __dump_categories_expanded_dict(self, cat_exp_dict):
                 #CED entry: {('opensolaris.org', (6,)): True}

@@ -102,9 +102,8 @@ def fetch_manifest(repouri, fmri):
         in 'server_url'... return as Manifest object."""
 
         mfst_str = xport.get_manifest(fmri, pub=repouri, content_only=True)
-        m = manifest.Manifest()
-        m.set_content(mfst_str)
-
+        m = manifest.Manifest(fmri)
+        m.set_content(content=mfst_str)
         return m
 
 def fetch_catalog(repouri):
@@ -228,7 +227,7 @@ def main_func():
         ]
 
         xport, xport_cfg = transport.setup_transport()
-        xport_cfg.incoming_download_dir = incomingdir
+        xport_cfg.incoming_root = incomingdir
         pub = transport.setup_publisher(server_list, "merge", xport, xport_cfg,
             remote_prefix=True)
 
@@ -365,16 +364,15 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir,
         allactions.sort()
 
         m = manifest.Manifest()
-        m.actions = allactions
+        m.set_content(content=allactions)
 
         # urlquote to avoid problems w/ fmris w/ '/' character in name
         basedir = os.path.join(basedir, urllib.quote(basename, ""))
         if not os.path.exists(basedir):
                 os.makedirs(basedir)
 
-        m_file = file(os.path.join(basedir, "manifest"), "w")
-        m_file.write(m.tostr_unsorted())
-        m_file.close()
+        m_path = os.path.join(basedir, "manifest")
+        m.store(m_path)
 
         for f in fmri_list:
                 if f:

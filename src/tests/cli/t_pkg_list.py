@@ -322,14 +322,9 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 # Remove the last_refreshed file for one of the publishers so
                 # that it will be seen as needing refresh.
-                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
-                if not os.path.exists(pkg_path):
-                        pkg_path = os.path.join(self.get_img_path(),
-                            ".org.opensolaris,pkg")
-                        self.assertTrue(os.path.exists(pkg_path))
-
-                os.remove(os.path.join(pkg_path, "publisher", "test1",
-                    "last_refreshed"))
+                api_inst = self.get_img_api_obj()
+                pub = api_inst.get_publisher("test1")
+                os.remove(os.path.join(pub.meta_root, "last_refreshed"))
 
                 # Package should not exist as an unprivileged user since the
                 # metadata for the publisher has not yet been refreshed and
