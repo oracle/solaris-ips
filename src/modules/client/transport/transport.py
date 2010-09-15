@@ -184,13 +184,18 @@ class TransportCfg(object):
         def get_publisher(self, publisher_name):
                 raise NotImplementedError
 
-        def reset_caches(self):
-                """Discard any publisher specific cache information and
-                reconfigure based on current publisher configuration data.
+        def reset_caches(self, shared=False):
+                """Discard any cache information and reconfigure based on
+                current publisher configuration data.
+
+                'shared' is an optional boolean value indicating that any
+                shared cache information (caches not specific to any publisher)
+                should also be discarded.  If True, callers are responsible for
+                ensuring a new set of shared cache information is added again.
                 """
 
                 for pub in self.__caches.keys():
-                        if pub != "__all":
+                        if shared or pub != "__all":
                                 # Remove any publisher specific caches so that
                                 # the most current publisher information can be
                                 # used.
@@ -279,8 +284,9 @@ class ImageTransportCfg(TransportCfg):
                 reconfigure based on current publisher configuration data.
                 """
 
-                # Call base class method to perform initial reset.
-                TransportCfg.reset_caches(self)
+                # Call base class method to perform initial reset of all
+                # cache information.
+                TransportCfg.reset_caches(self, shared=True)
 
                 # Then add image-specific cache data after.
                 for path, readonly, pub in self.__img.get_cachedirs():
