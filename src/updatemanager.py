@@ -97,6 +97,7 @@ class Updatemanager:
                 self.icon_theme.append_search_path(icon_location)
                 self.progress_tracker = progress.NullProgressTracker()
                 self.api_obj = None
+                self.installupdate = None
                 self.return_status = enumerations.UPDATES_UNDETERMINED
                 self.pylintstub = None
                 
@@ -122,7 +123,7 @@ class Updatemanager:
                 return api_obj
 
         def __do_image_update(self):
-                installupdate.InstallUpdate([], self,
+                self.installupdate = installupdate.InstallUpdate([], self,
                     self.image_dir_arg, action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Update Manager"),
                     pkg_list = [gui_misc.package_name["SUNWipkg"],

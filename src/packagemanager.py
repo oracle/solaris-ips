@@ -2927,7 +2927,7 @@ class PackageManager:
         def __on_update_all(self, widget):
                 if not self.__do_api_reset():
                         return
-                installupdate.InstallUpdate([], self,
+                self.installupdate = installupdate.InstallUpdate([], self,
                     self.image_directory, action = enumerations.IMAGE_UPDATE,
                     parent_name = self.program_title,
                     pkg_list = [gui_misc.package_name["SUNWipkg"],
