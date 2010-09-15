@@ -34,6 +34,7 @@ import os
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
+import pkg.facet as facet
 import pkg.fmri as fmri
 import sys
 import tempfile
@@ -223,6 +224,10 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.image_create(self.rurl, prefix="bobcat")
 
                 recursive_removal = False
+
+                facets = facet.Facets({ "facet.devel": True })
+                api_obj.plan_change_varcets(facets=facets)
+                self._api_finish(api_obj)
 
                 api_obj.plan_install(["foo"])
                 self.assert_(api_obj.describe() is not None)

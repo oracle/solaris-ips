@@ -1401,9 +1401,6 @@ class Image(object):
                         progtrack.item_add_progress()
                 progtrack.item_done()
 
-                # Cleanup temporary variables.
-                del pfmri, removed
-
                 # Temporarily redirect the catalogs to a different location,
                 # so that if the save is interrupted, the image won't be left
                 # with invalid state, and then save them.
