@@ -88,12 +88,12 @@ POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
 
 COV = 'coveragepy'
 COVIDIR = 'coverage'
-COVVER = 'coverage-3.2b2'
-COVARC = '%s-%s.tar.bz2' % (COV, COVVER)
-COVDIR = '%s' % COV
-COVURL = 'http://bitbucket.org/ned/%s/get/%s.tar.bz2' % (COV, COVVER)
+COVVER = '3.2b2'
+COVARC = '%s-%s.tar.gz' % (COVIDIR, COVVER)
+COVDIR = '%s-%s' % (COVIDIR, COVVER)
+COVURL = 'http://pypi.python.org/packages/source/c/coverage/%s' % COVARC
 # No hash, since we always fetch the latest
-COVHASH = None
+COVHASH = '4710d033b8c6de1efaa562243e5b29e0a31fb8b9'
 
 LDTP = 'ldtp'
 LDTPIDIR = 'ldtp'
