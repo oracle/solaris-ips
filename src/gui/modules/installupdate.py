@@ -778,7 +778,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ImageUpdateOnLiveImageException:
-                        msg = _("This is an Live Image. The install "
+                        msg = _("This is a Live Image. The install "
                             "operation can't be performed.")
                         self.__g_error_stage(msg)
                         return
@@ -1342,7 +1342,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                             self.api_o.plan_update_all(sys.argv[0],
                             refresh_catalogs = False,
                             noexecute = False, force = True,
-                            be_name = None, new_be = False)
+                            be_name = None, new_be = None) # Create BE if required
                         self.pylint_stub = opensolaris_image
                 return stuff_to_do
 
