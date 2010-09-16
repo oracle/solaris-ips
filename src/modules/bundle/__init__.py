@@ -36,17 +36,20 @@ __all__ = [
 
 import os
 import sys
-from pkg.bundle import *
 
 def make_bundle(filename, targetpaths=()):
         """Determines what kind of bundle is at the given filename, and returns
         the appropriate bundle object.
         """
 
-        for type in __all__:
-                if eval("%s.test('%s')" % (type, filename)):
-                        return eval("%s.%s('%s', targetpaths=%s)" %
-                            (type, type, filename, targetpaths))
+        for btype in __all__:
+                bname = "pkg.bundle.%s" % btype
+                bmodule = __import__(bname)
+
+                bmodule = sys.modules[bname]
+                if bmodule.test(filename):
+                        bundle_create = getattr(bmodule, btype)
+                        return bundle_create(filename, targetpaths=targetpaths)
 
         raise TypeError("Unknown bundle type for '%s'" % filename)
 
