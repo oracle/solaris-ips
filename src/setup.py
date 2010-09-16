@@ -208,6 +208,7 @@ scripts_sunos = {
                 ],
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
+                ['checkforupdates.py', 'pm-checkforupdates'],
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ['launch.py', 'pm-launch'],
                 ],

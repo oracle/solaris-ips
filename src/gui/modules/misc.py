@@ -56,12 +56,13 @@ from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
 from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
 from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
 from pkg.gui.misc_non_gui import get_catalogrefresh_exception_msg as get_msg
+from pkg.gui.misc_non_gui import get_um_name as get_um
+from pkg.gui.misc_non_gui import get_image_path as g_image_path
 
 from pkg.client import global_settings
 
 PKG_CLIENT_NAME_PM = "packagemanager"
 PKG_CLIENT_NAME_WI = "packagemanager-webinstall"
-PKG_CLIENT_NAME_UM = "updatemanager"
 
 logger = global_settings.logger
 
@@ -72,9 +73,12 @@ package_name = { 'SUNWcs' : 'SUNWcs',
     'SUNWipkg-um' : 'package/pkg/update-manager',
     'SUNWpython26-notify' : 'library/python-2/python-notify-26' }
 
-def get_version():
-        return g_version()        
+def get_image_path():
+        return g_image_path()
                 
+def get_version():
+        return g_version()
+
 def get_os_version_and_build():
         return g_os_version_and_build()
 
@@ -125,7 +129,7 @@ def get_wi_name():
         return PKG_CLIENT_NAME_WI
 
 def get_um_name():
-        return PKG_CLIENT_NAME_UM
+        return get_um()
 
 def notify_log_error(app):
         if global_settings.client_name == PKG_CLIENT_NAME_PM:

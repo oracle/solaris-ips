@@ -7,8 +7,7 @@ NAME
 SYNOPSIS
      /usr/bin/pm-updatemanager [options]
 
-     /usr/bin/pm-updatemanager [-hdnacR]  [--help] [--debug] [--nice] 
-         [--checkupdates-all][--checkupdates-cache] [--image-dir dir]
+     /usr/bin/pm-updatemanager [-hdR]  [--help] [--debug] [--image-dir dir]
 
 DESCRIPTION
      pm-updatemanager is a program which you can use to check for and install available
@@ -27,16 +26,6 @@ OPTIONS
      --debug or -d
           Run pm-updatemanger in debug mode.
 
-     --nice or -n
-          Run pm-updatemanger at nice level 20.
-
-     --checkupdates-all or -a
-          Check for updates from cache and image, writing the result to the cache
-          (no output to stdout).
-
-     --checkupdates-cache or -c
-          Check for updates from cache outputing results to stdout.
-
      ---image-dir or -R dir
           Operate on the image rooted at dir, rather than the one discovered
           automatically.
@@ -51,19 +40,6 @@ EXAMPLES
      Example 2:  Invoke pm-updatemanager on image stored at /aux0/example_root.
 
      $ /usr/lib/pm-launch pm-updatemanager -R /aux0/example_root
-
-     Example 3:  Check for available updates in the current image and cache. This is
-     how it is invoked in the script /usr/lib/update-manager/update-refresh.sh which is
-     called by a cron job and is used to cache if updates are available.
-
-     $ /usr/lib/pm-launch /usr/bin/pm-updatemanager --nice -a -d
-
-     Example 4:  Check for available updates in the current cache only. The is how
-     it is invoked by /usr/lib/updatemanagernotifier which is used to check for updates
-     and if any are available notify the user with a popup notification and icon in the
-     notification panel.
-
-     $ /usr/bin/pm-updatemanager --nice -c -d
 
 EXIT STATUS
      The following exit values are returned:

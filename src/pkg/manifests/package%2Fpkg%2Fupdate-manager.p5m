@@ -44,6 +44,7 @@ file path=usr/bin/pm-updatemanager
 dir path=usr/lib
 dir path=usr/lib/update-manager
 file path=usr/lib/update-manager/update-refresh.sh mode=0755
+file path=usr/lib/pm-checkforupdates mode=0755
 file path=usr/lib/updatemanagernotifier mode=0755
 dir path=usr/share
 dir path=usr/share/applications
