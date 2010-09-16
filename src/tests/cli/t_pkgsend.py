@@ -35,6 +35,7 @@ import stat
 import tempfile
 import unittest
 import urllib
+import urllib2
 
 from pkg import misc
 from pkg.actions import fromstr
@@ -275,6 +276,27 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         # Should fail because we never publish unknown actions.
                         self.pkgsend(url,
                              "add unknown path=foo", exit=1)
+
+                # Simulate bad action data being sent by client via HTTP; this
+                # should be rejected by the server.
+                trx_id = os.environ["PKG_TRANS_ID"]
+                headers = {
+                    "X-IPKG-SETATTR0": "name=multiple_value",
+                    "X-IPKG-SETATTR1": 'value=[__import__("sys").exit(99)]'
+                }
+
+                try:
+                        url = "%s/%s/0/%s" % (dhurl, "add", "/".join((trx_id,
+                            "set")))
+                        req = urllib2.Request(url=url, headers=headers)
+                        urllib2.urlopen(req)
+                except urllib2.HTTPError, e:
+                        err_txt = e.read()
+                        self.assert_("The specified Action attribute "
+                            "value" in err_txt)
+                        self.assert_("is not valid." in err_txt)
+                else:
+                        raise RuntimeError("Test failed!")
 
         def test_5_bad_open(self):
                 """Verify that a bad open is handled properly.  This could be

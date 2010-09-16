@@ -38,6 +38,7 @@ else:
         import select
 
 import atexit
+import ast
 import cStringIO
 import errno
 import httplib
@@ -1164,8 +1165,18 @@ class DepotHTTP(_Depot):
                 # If any attributes appear to be lists, make them lists.
                 for a in attrs:
                         if attrs[a].startswith("[") and attrs[a].endswith("]"):
-                                # XXX there must be a better way than eval
-                                attrs[a] = eval(attrs[a])
+                                # Ensure input is valid; only a list will be
+                                # accepted.
+                                try:
+                                        val = ast.literal_eval(attrs[a])
+                                        if not isinstance(val, list):
+                                                raise ValueError()
+                                        attrs[a] = val
+                                except ValueError:
+                                        raise cherrypy.HTTPError(
+                                            httplib.BAD_REQUEST, _("The "
+                                            "specified Action attribute value, "
+                                            "'%s', is not valid.") % attrs[a])
 
                 data = None
                 size = int(request.headers.get("Content-Length", 0))
