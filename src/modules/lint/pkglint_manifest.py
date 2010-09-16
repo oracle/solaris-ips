@@ -26,6 +26,7 @@
 
 # Some pkg(5) specific lint manifest checks
 
+from pkg.lint.engine import lint_fmri_successor
 import pkg.fmri as fmri
 import pkg.lint.base as base
 import os.path
@@ -130,7 +131,8 @@ class PkgManifestChecker(base.ManifestChecker):
                 """Checks for correct use of variant tags.
                 * if variant tags present, matching variant descriptions
                   exist and are correctly specified
-                * All packages contain a variant.arch tag
+                * All manifests that deliver file actions of a given\
+                  architecture declare variant.arch
 
                 These checks are only performed on published packages."""
 
@@ -139,10 +141,16 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 unknown_variants = set()
                 undefined_variants = set()
+                has_arch_file = False
 
                 for action in manifest.gen_actions():
                         if linted(action):
                                 continue
+
+                        if action.name == "file" and \
+                            "elfarch" in action.attrs:
+                                has_arch_file = True
+
                         for key in action.attrs:
                                 if not key.startswith("variant"):
                                         continue
@@ -168,7 +176,7 @@ class PkgManifestChecker(base.ManifestChecker):
                             "pkg": manifest.fmri},
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
-                if "variant.arch" not in manifest:
+                if has_arch_file and "variant.arch" not in manifest:
                         engine.error(_("variant.arch not declared in %s") %
                             manifest.fmri,
                             msgid="%s%s.3" % (self.name, pkglint_id))
@@ -258,7 +266,7 @@ class PkgManifestChecker(base.ManifestChecker):
                                         duplicates.append(key)
 
                 if duplicates:
-                        engine.warning(dup_set_msg %
+                        engine.error(dup_set_msg %
                             {"names": " ".join([str(a) for a in duplicates]),
                             "pkg": manifest.fmri},
                             msgid="%s%s" % (self.name, pkglint_id))
@@ -276,20 +284,12 @@ class PkgManifestChecker(base.ManifestChecker):
 
                         def remove_ancestors(pfmri, targ_list):
                                 """Removes older versions of pfmri from
-                                targ_list.  We use a slightly different
-                                algorithm than pkg.fmri.is_successor to do
-                                this, largely because manifests for linting
-                                may not have timestamps attached yet. If
-                                they do have timestamps, we ignore them
-                                """
+                                targ_list."""
                                 removals = []
                                 sname = pfmri.get_name()
                                 for old in targ_list:
                                         tname = old.get_name()
-                                        if pfmri.is_successor(old) or \
-                                            pfmri.get_short_fmri() == old.get_short_fmri() or \
-                                            (pfmri.version is None and
-                                            sname == tname):
+                                        if lint_fmri_successor(pfmri, old):
                                              removals.append(old)
                                 for i in removals:
                                         targ_list.remove(i)

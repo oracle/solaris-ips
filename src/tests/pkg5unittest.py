@@ -1395,8 +1395,13 @@ class CliTestCase(Pkg5TestCase):
                     args)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment)
 
-        def pkglint(self, args, exit=0, comment=""):
-                cmdline = "%s/usr/bin/pkglint %s" % (g_proto_area, args)
+        def pkglint(self, args, exit=0, comment="", protorc=True):
+                if protorc:
+                        rcpath = "%s/usr/share/lib/pkg/pkglintrc" % g_proto_area
+                        cmdline = "%s/usr/bin/pkglint -f %s %s" % \
+                            (g_proto_area, rcpath, args)
+                else:
+                        cmdline = "%s/usr/bin/pkglint %s" % (g_proto_area, args)
                 return self.cmdline_run(cmdline, exit=exit, out=True,
                     comment=comment, stderr=True)
 

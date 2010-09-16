@@ -25,6 +25,7 @@ set name=pkg.fmri value=pkg:/library/python-2/pycurl@7.19.0.1,$(PKGVERS_BUILTON)
 set name=pkg.summary value="Python bindings for libcurl"
 set name=pkg.description value="PycURL provides a thin layer of Python bindings on top of libcurl."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=variant.arch value=$(ARCH)
 
 # PycURL installs one of its subtrees in an odd place, so we want to move
 # it.  However, because the files are actually found in their original

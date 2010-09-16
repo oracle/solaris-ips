@@ -26,6 +26,7 @@ set name=pkg.summary value="Image Packaging System"
 set name=pkg.description value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=opensolaris.smf.fmri value=svc:/application/pkg/server:default value=svc:/application/pkg/dynamic-mirror:default
+set name=variant.arch value=$(ARCH)
 
 dir path=etc
 dir path=etc/security

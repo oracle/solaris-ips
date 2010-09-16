@@ -75,5 +75,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 <transform legacy -> default hotline "Please contact your local service provider">
 <transform legacy -> default category system>
 <transform legacy -> default arch $(ARCH)>
+# add a ,REV= string to any version attributes that don't have a REV=
+<transform legacy -> edit version (^(?!.*?,REV=).*) \\1,REV=$(REV)>
 
 # vim: ft=pkg5manifest

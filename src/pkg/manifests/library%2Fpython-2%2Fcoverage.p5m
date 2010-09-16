@@ -25,6 +25,7 @@ set name=pkg.fmri value=pkg:/library/python-2/coverage@3.2,$(PKGVERS_BUILTON)-$(
 set name=pkg.summary value="The coverage.py Python code coverage tool"
 set name=pkg.description value="Coverage measures Python code coverage, typically during test execution."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=variant.arch value=$(ARCH)
 
 dir path=usr
 dir path=usr/bin

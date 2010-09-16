@@ -159,6 +159,8 @@ class LintEngine(object):
                 if use_tracker is not None:
                         self.use_tracker = use_tracker
 
+                self.tracker_phase = 0
+                self.in_setup = False
                 formatter.tracker = self.get_tracker()
 
                 self.ref_image = None
@@ -288,6 +290,7 @@ class LintEngine(object):
                 self.lint_manifests = lint_manifests
                 self.pattern = pattern
                 self.release = release
+                self.in_setup = True
 
                 if not cache and not lint_manifests:
                         raise LintEngineException(
@@ -358,6 +361,9 @@ class LintEngine(object):
 
                 for checker in self.checkers:
                         checker.startup(self)
+                self.get_tracker().index_done()
+                self.in_setup = False
+                
 
         def execute(self):
                 """Run the checks that have been configured for this engine.
@@ -443,59 +449,112 @@ class LintEngine(object):
                 keys.sort()
 
                 tracker = self.get_tracker()
-                tracker.index_set_goal(0, len(packages))
+                if self.in_setup:
+                        self.tracker_phase = self.tracker_phase + 1
+                else:
+                        self.tracker_phase = 0
+                tracker.index_set_goal(self.tracker_phase, len(packages))
 
                 for key in keys:
                         fmri = packages[key]
                         tracker.index_add_progress()
                         yield api_inst.get_manifest(fmri)
-                tracker.index_done()
 
-        def get_manifest(self, pkg_name):
+                if not self.in_setup:
+                        tracker.index_done()
+
+        EXACT = 0
+        LATEST_SUCCESSOR = 1
+
+        def get_manifest(self, pkg_name, search_type=EXACT):
                 """Returns the first available manifest for a given package
                 name, searching hierarchically in the lint manifests,
-                the lint_repo or the ref_repo for that package name."""
+                the lint_repo or the ref_repo for that single package.
+
+                By default, we search for an exact match on the provided
+                pkg_name, throwing a LintEngineException if we get more than
+                one match for the supplied pkg_name.
+                When search_type is LintEngine.LATEST_SUCCESSOR, we return the
+                most recent successor of the provided package, using the
+                lint_fmri_successor() method defined in this module.
+                """
+
+                def build_fmri(pkg_name):
+                        """builds a pkg.fmri.PkgFmri from a string."""
+                        try:
+                                fmri = pkg.fmri.PkgFmri(pkg_name)
+                                return fmri
+                        except pkg.fmri.IllegalFmri:
+                                try:
+                                        # FMRIs listed as dependencies often
+                                        # omit build_release, use a dummy one
+                                        # for now
+                                        fmri = pkg.fmri.PkgFmri(pkg_name,
+                                            build_release="5.11")
+                                        return fmri
+                                except:
+                                        msg = _("unable to construct fmri from %s") % \
+                                            pkg_name
+                                        raise base.LintException(msg)
 
                 def get_fmri(api_inst, pkg_name):
-
                         name = pkg_name
+
                         if not name.startswith("pkg:/"):
                                 name = "pkg:/%s" % name
+                        search_fmri = build_fmri(name)
+
+                        if search_type == self.LATEST_SUCCESSOR and "@" in name:
+                                name = search_fmri.get_pkg_stem()
 
                         # Make sure we've been given something sane to look up
                         if "*" in name or "?" in name:
-                                raise LintException(_("invalid pkg name"))
+                                raise base.LintException(
+                                    _("invalid pkg name %s") % name)
 
-                        res = api_inst.info([name], False,
-                            frozenset([PackageInfo.IDENTITY]))
-                        identity = res[PackageInfo.IDENTITY]
+                        fmris = []
+                        for item in api_inst.get_pkg_list(
+                            pkg.client.api.ImageInterface.LIST_ALL,
+                            patterns=[name], variants=True, return_fmris=True):
+                                fmris.append(item[0])
 
-                        if len(identity) == 1:
-                                return identity[0].fmri
-                        elif len(identity) == 0:
+                        fmri_list = []
+                        for item in fmris:
+                                if (search_type == self.LATEST_SUCCESSOR and
+                                    lint_fmri_successor(item, search_fmri)):
+                                        fmri_list.append(item.get_fmri())
+
+                                elif search_type == self.EXACT:
+                                        fmri_list.append(item.get_fmri())
+
+                        if len(fmri_list) == 1:
+                                return fmri_list[0]
+
+                        elif len(fmri_list) == 0:
                                 return None
                         else:
-                                # workaround for 16811: if we have multiple
-                                # results, we should ensure that these results
-                                # do in fact all point to the same package
-                                # version, if so, return the first one, which
-                                # will be the most recent.
-                                packages = set()
-                                for ident in identity:
-                                        packages.add(pkg.fmri.PkgFmri(ident.fmri).get_short_fmri())
-                                if len(packages) == 1:
-                                        return identity[0].fmri
-
-                                # this should never happen.
-                                raise LintEngineException(
-                                    _("get_fmri(pattern) %(pattern)s matched "
-                                    "%(count)s packages: %(pkgs)s") %
-                                    {"pattern": pkg_name,
-                                    "count": len(identity),
-                                    "pkgs": " ".join([i.fmri for i in identity])
-                                    })
+                                if search_type == self.LATEST_SUCCESSOR:
+                                        # get_pkg_list generates most recent
+                                        # package first
+                                        return fmri_list[0]
+                                else:
+                                        # we expected to get only 1 hit, so
+                                        # something has gone wrong
+                                        raise LintEngineException(
+                                            _("get_fmri(pattern) %(pattern)s "
+                                                "matched %(count)s packages: "
+                                                "%(pkgs)s") %
+                                                {"pattern": pkg_name,
+                                                "count": len(fmri_list),
+                                                "pkgs": " ".join(fmri_list)
+                                                })
 
                 for mf in self.lint_manifests:
+                        search_fmri = build_fmri(pkg_name)
+                        if search_type == self.LATEST_SUCCESSOR and \
+                            lint_fmri_successor(mf.fmri, search_fmri):
+                                return mf
+
                         if str(mf.fmri) == pkg_name:
                                 return mf
                         if mf.fmri.get_name() == pkg_name:
@@ -526,7 +585,7 @@ class LintEngine(object):
                 api_inst = None
                 try:
                         api_inst = pkg.client.api.ImageInterface(
-                            image_dir, pkg.client.api.CURRENT_API_VERSION,
+                            image_dir, CLIENT_API_VERSION,
                             tracker, None, PKG_CLIENT_NAME)
 
                         if api_inst.root != image_dir:
@@ -580,7 +639,7 @@ class LintEngine(object):
                         try:
                                 checker.check(manifest, self)
                         except base.LintException, err:
-                                self.error(err)
+                                self.error(err, msgid="lint.error")
 
                 if action_checks:
                         for action in manifest.gen_actions():
@@ -588,7 +647,7 @@ class LintEngine(object):
                                         self._check_action(action, manifest,
                                             action_checks)
                                 except base.LintException, err:
-                                        self.error(err)
+                                        self.error(err, msgid="lint.error")
 
         def _check_action(self, action, manifest, action_checks):
                 if "pkg.linted" in action.attrs and \
@@ -601,7 +660,7 @@ class LintEngine(object):
                         try:
                                 checker.check(action, manifest, self)
                         except base.LintException, err:
-                                self.error(err)
+                                self.error(err, msgid="lint.error")
 
         # convenience methods to log lint messages to all loggers
         # configured for this engine
@@ -642,6 +701,8 @@ class LintEngine(object):
                 """Creates a ProgressTracker if we don't already have one,
                 otherwise resetting our current tracker and returning it"""
 
+                if self.tracker and self.in_setup:
+                        return self.tracker
                 if self.tracker:
                         self.tracker.reset()
                         return self.tracker
@@ -653,3 +714,27 @@ class LintEngine(object):
                         except progress.ProgressTrackerException:
                                 self.tracker = progress.CommandLineProgressTracker()
                 return self.tracker
+
+def lint_fmri_successor(new, old):
+        """Given two FMRIs, determine if new_fmri is a successor of old_fmri.
+
+        This differs from pkg.fmri.is_successor() in that it treats un-versioned
+        FMRIs as being newer than versioned FMRIs of the same package name,
+        and un-timestamped packages as being newer than versioned FMRIs of the
+        same package name and version.
+
+        We use this when looking for dependencies, or when comparing
+        FMRIs presented in manifests for linting against those present in an
+        existing repository (where, eg. a new timestamp would be supplied to a
+        package during the import process and the timestamp would not
+        necessarily be in the manifest file presented for linting)
+        """
+        new_name = new.get_name()
+        old_name = old.get_name()
+        return new.is_successor(old) or \
+            (not new.has_version() and
+            new_name == old_name) or \
+            (not new.get_timestamp() and
+            new.has_version() and old.has_version() and
+            new.get_version() == old.get_version() and
+            new_name == old_name)

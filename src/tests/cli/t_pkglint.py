@@ -142,19 +142,19 @@ log_level = CRITICAL
 
                 # now we should succeed
                 self.pkglint("-f %s/rcfile %s" % (self.test_root,  mpath1),
-                    exit=0)
+                    protorc=False, exit=0)
                 self.pkglint("-f %s/rcfile1 %s" % (self.test_root, mpath1),
                     exit=0)
 
                 ret, output, err = self.pkglint("-f %s/rcfile -L" %
-                    self.test_root, exit=0)
+                    self.test_root, protorc=False, exit=0)
                 self.assert_(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"
                     in output, "List output missing excluded checker")
                 self.assert_("Excluded checks:" in output)
 
                 ret, output, err = self.pkglint("-f %s/rcfile1 -L" %
-                    self.test_root, exit=0)
+                    self.test_root, protorc=False, exit=0)
                 self.assert_(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"
                     in output, "List output missing excluded checker")

@@ -24,10 +24,15 @@
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+from pkg.lint.engine import lint_fmri_successor
+
+import collections
 import pkg.fmri
 import pkg.lint.base as base
 import stat
 import string
+
+ObsoleteFmri = collections.namedtuple("ObsoleteFmri", "is_obsolete, fmri")
 
 class PkgDupActionChecker(base.ActionChecker):
         """A class to check duplicate actions/attributes."""
@@ -429,20 +434,11 @@ class PkgDupActionChecker(base.ActionChecker):
 
                         for src_pfmri in src_dic:
                                 # we want to remove entries deemed older than
-                                # src_pfmri from targ_dic.  For this we use
-                                # pkg.fmri.is_successor() with the addition that
-                                # timestamps are ignored, since manifests
-                                # presented for linting may not have timestamps
-                                # yet. Also, packages without version
-                                # information are deemed newer than packages
-                                # with versions
+                                # src_pfmri from targ_dic.
                                 for targ_pfmri in targ_dic.copy():
                                         sname = src_pfmri.get_name()
                                         tname = targ_pfmri.get_name()
-                                        if ((sname == tname and
-                                            src_pfmri.version is None) or
-                                            src_pfmri.get_short_fmri() == targ_pfmri.get_short_fmri() or \
-                                            src_pfmri.is_successor(targ_pfmri)):
+                                        if lint_fmri_successor(src_pfmri, targ_pfmri):
                                                 targ_dic.pop(targ_pfmri)
                         targ_dic.update(src_dic)
                         l = []
@@ -458,8 +454,48 @@ class PkgActionChecker(base.ActionChecker):
 
         def __init__(self, config):
                 self.description = _("Various checks on actions")
+
+                # a list of fmris which were declared as dependencies, but
+                # which we weren't able to locate a manifest for.
+                self.missing_deps = []
+
+                # maps package names to tuples of (obsolete, fmri) values where
+                # 'obsolete' is a boolean, True if the package is obsolete
+                self.obsolete_pkgs = {}
                 super(PkgActionChecker, self).__init__(config)
 
+        def startup(self, engine):
+                """Cache all manifest FMRIs, tracking whether they're
+                obsolete or not."""
+
+
+                def seed_obsolete_dict(mf, dic):
+                        """Updates a dictionary of { pkg_name: ObsoleteFmri }
+                        items, tracking which were marked as obsolete."""
+
+                        name = mf.fmri.get_name()
+
+                        if "pkg.obsolete" in mf and \
+                            mf["pkg.obsolete"].lower() == "true":
+                                dic[name] = ObsoleteFmri(True, mf.fmri)
+                        else:
+                                dic[name] = ObsoleteFmri(False, mf.fmri)
+
+                engine.logger.debug(_("Seeding reference action dictionaries."))
+                for manifest in engine.gen_manifests(engine.ref_api_inst,
+                    release=engine.release):
+                        seed_obsolete_dict(manifest, self.obsolete_pkgs)
+
+                engine.logger.debug(_("Seeding lint action dictionaries."))
+                # we provide a search pattern, to allow users to lint a
+                # subset of the packages in the lint_repository
+                for manifest in engine.gen_manifests(engine.lint_api_inst,
+                    release=engine.release, pattern=engine.pattern):
+                        seed_obsolete_dict(manifest, self.obsolete_pkgs)
+
+                engine.logger.debug(_("Seeding local action dictionaries."))
+                for manifest in engine.lint_manifests:
+                        seed_obsolete_dict(manifest, self.obsolete_pkgs)
 
         def underscores(self, action, manifest, engine, pkglint_id="001"):
                 """In general, pkg(5) discourages the use of underscores in
@@ -551,7 +587,17 @@ class PkgActionChecker(base.ActionChecker):
                                         (self.name, pkglint_id))
 
                 if "pkg" in action.attrs:
-                        mf = engine.get_manifest(action.attrs["pkg"])
+                        mf = None
+                        try:
+                                mf = engine.get_manifest(action.attrs["pkg"],
+                                    search_type=engine.LATEST_SUCCESSOR)
+                        except base.LintException:
+                                # it's common to find a legacy package that
+                                # simply never existed as an IPS package eg.
+                                # arch-specific SVR4 packages combined into a
+                                # single IPS package.
+                                # We don't care about these.
+                                pass
                         if mf:
                                 found_depend = False
                                 # check that the manifest we found depends on
@@ -576,7 +622,7 @@ class PkgActionChecker(base.ActionChecker):
                 if "version" in action.attrs:
                         # this could be refined
                         if "REV=" not in action.attrs["version"]:
-                                engine.error(
+                                engine.warning(
                                     _("legacy action in %s does not "
                                     "contain a REV= string") % manifest.fmri,
                                     msgid="%s%s.3" % (self.name, pkglint_id))
@@ -602,19 +648,82 @@ class PkgActionChecker(base.ActionChecker):
 
         def dep_obsolete(self, action, manifest, engine, pkglint_id="005"):
                 """We should not have a require dependency on a package that has
-                been marked as obsolete."""
+                been marked as obsolete.
+
+                This check also produces warnings when it is unable to find
+                manifests marked as dependencies for a given package in order
+                to check for their obsoletion.  This can help to detect errors
+                in the fmri attribute field of the depend action, though can be
+                noisy if all dependencies are intentionally not present in the
+                repository being linted or referenced."""
 
                 msg = _("dependency in %(pkg)s on obsolete pkg %(obs)s")
 
-                if action.name is "depend" and \
-                    action.attrs["type"] == "require":
-                        mf = engine.get_manifest(action.attrs["fmri"])
-                        if mf and "pkg.obsolete" in mf:
-                                engine.error(
-                                    msg %
-                                    {"pkg": manifest.fmri,
-                                    "obs": mf["pkg.fmri"]},
-                                    msgid="%s%s" % (self.name, pkglint_id))
+                if action.name != "depend":
+                        return
+
+                if action.attrs["type"] != "require":
+                        return
+
+                # There's a good chance that dependencies can be satisfied from
+                # the manifests we cached during startup() Check there before
+                # doing the more expensive engine.get_manifest() call.
+                name = None
+                declared_fmri = None
+                dep_fmri = action.attrs["fmri"]
+
+                # normalize the fmri
+                if not dep_fmri.startswith("pkg:/"):
+                        dep_fmri = "pkg:/%s" % dep_fmri
+
+                try:
+                        declared_fmri = pkg.fmri.PkgFmri(dep_fmri)
+                        name = declared_fmri.get_name()
+                except pkg.fmri.IllegalFmri:
+                        try:
+                                declared_fmri = pkg.fmri.PkgFmri(dep_fmri,
+                                    build_release="5.11")
+                                name = declared_fmri.get_name()
+                        except:
+                                # A very broken fmri value - we'll give up now.
+                                # valid_fmri() will pick up the trail from here.
+                                return
+
+                # if we've been unable to find a dependency for a given
+                # fmri in the past, no need to keep complaining about it
+                if dep_fmri in self.missing_deps:
+                        return
+
+                if name and name in self.obsolete_pkgs:
+
+                        if not self.obsolete_pkgs[name].is_obsolete:
+                                # the cached package is not obsolete, but we'll
+                                # verify the version is valid
+                                found_fmri = self.obsolete_pkgs[name].fmri
+                                if not declared_fmri.has_version():
+                                        return
+                                elif lint_fmri_successor(found_fmri,
+                                    declared_fmri):
+                                        return
+
+                # A non-obsolete dependency wasn't found in the local cache,
+                # or the one in the cache was found not to be a successor of
+                # the fmri in the depend action.
+                lint_id = "%s%s" % (self.name, pkglint_id)
+
+                mf = engine.get_manifest(dep_fmri,
+                    search_type=engine.LATEST_SUCCESSOR)
+                if mf and "pkg.obsolete" in mf:
+                        engine.error(msg %  {"pkg": manifest.fmri,
+                            "obs": mf["pkg.fmri"]}, msgid=lint_id)
+                elif not mf:
+                        self.missing_deps.append(dep_fmri)
+                        engine.warning(_("obsolete dependency check "
+                            "skipped: unable to find dependency %(dep)s"
+                            " for %(pkg)s") %
+                            {"dep": dep_fmri,
+                            "pkg": manifest.fmri},
+                            msgid="%s.1" % lint_id)
 
         def valid_fmri(self, action, manifest, engine, pkglint_id="006"):
                 """We should be given a valid FMRI as a dependency, allowing

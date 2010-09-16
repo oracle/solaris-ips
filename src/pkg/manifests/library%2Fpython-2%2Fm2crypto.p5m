@@ -25,6 +25,7 @@ set name=pkg.fmri value=pkg:/library/python-2/m2crypto@0.20.0,$(PKGVERS_BUILTON)
 set name=pkg.summary value="Python interface for openssl"
 set name=pkg.description value="M2Crypto provides a python interface to the openssl library."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=variant.arch value=$(ARCH)
 
 dir path=usr
 dir path=usr/lib

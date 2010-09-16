@@ -25,6 +25,7 @@ set name=pkg.fmri value=pkg:/system/desktop/ldtp@1.7.1,$(PKGVERS_BUILTON)-$(PKGV
 set name=pkg.summary value="Linux Desktop Testing Project"
 set name=pkg.description value="LDTP is a test automation framework that can be used to test and improve desktops and desktop applications."
 set name=info.classification value="org.opensolaris.category.2008:Development/Distribution Tools"
+set name=variant.arch value=$(ARCH)
 
 dir path=usr
 dir path=usr/bin

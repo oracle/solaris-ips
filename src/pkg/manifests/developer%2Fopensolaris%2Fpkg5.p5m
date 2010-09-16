@@ -24,6 +24,7 @@
 set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
 set name=pkg.summary value="Dependencies required to build the pkg(5) project"
 set name=info.classification value="org.opensolaris.category.2008:Development/Distribution Tools"
+set name=pkg.description value="This package should be installed on systems used for development of the pkg(5) project"
 depend fmri=pkg:/developer/build/make type=require
 depend fmri=pkg:/developer/build/onbld type=require
 depend fmri=pkg:/developer/gnome/gettext type=require

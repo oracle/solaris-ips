@@ -178,10 +178,10 @@ class PlainLogFormatter(LogFormatter):
                                 self.logger.warning("%s%s" % (info_str.ljust(34),
                                     msg.msg))
 
-                                # We only treat warnings, errors, and criticals
+                                # We only treat errors, and criticals
                                 # as being worthy of a flag
                                 # (pkglint returns non-zero if self.emitted)
-                                if msg.level > INFO:
+                                if msg.level > WARNING:
                                         self.emitted = True
                 else:
                         self.logger.warning(msg)

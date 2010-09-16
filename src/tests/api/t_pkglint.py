@@ -49,7 +49,7 @@ if not logger.handlers:
         ch.setLevel(logging.WARNING)
         logger.addHandler(ch)
 
-
+rcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_proto_area
 broken_manifests = {}
 expected_failures = {}
 
@@ -130,7 +130,9 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
-expected_failures["dup-depend-vars.mf"] = ["pkglint.manifest005.2"]
+expected_failures["dup-depend-vars.mf"] = ["pkglint.manifest005.2",
+    "pkglint.action005.1", "pkglint.action005.1",
+    "pkglint.action005.1"]
 broken_manifests["dup-depend-vars.mf"] = \
 """
 #
@@ -151,12 +153,13 @@ depend fmri=shell/zsh@4.3.9-0.133 type=require variant.foo=bar
 depend fmri=shell/zsh/redherring@4.3.9-0.133 type=require variant.foo=bar
 """
 
-expected_failures["dup-depend-incorp.mf"] = []
+expected_failures["dup-depend-incorp.mf"] = ["pkglint.action005.1"]
 broken_manifests["dup-depend-incorp.mf"] = \
 """
 #
 # There are 2 dependencies on sfw-incorporation, but only one is a require
-# incorporation, so this should not generate errors.
+# incorporation, so this should not generate errors, other than us not being
+# able to find the dependency warning.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/entire@0.5.11,5.11-0.145:20100730T013044Z
 set name=pkg.depend.install-hold value=core-os
@@ -170,11 +173,13 @@ depend fmri=consolidation/sfw/sfw-incorporation type=require
 depend fmri=consolidation/sfw/sfw-incorporation@0.5.11-0.145 type=incorporate
 """
 
-expected_failures["dup-depend-versions.mf"] = []
+expected_failures["dup-depend-versions.mf"] = ["pkglint.action005.1",
+    "pkglint.action005.1", "pkglint.action005.1"]
 broken_manifests["dup-depend-versions.mf"] = \
 """
 #
-# as we're declaring complimentary variants, we shouldn't report errors
+# as we're declaring complimentary variants, we shouldn't report errors,
+# other than the 3 lint warnings for the missing dependencies
 #
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
 set name=org.opensolaris.consolidation value=sfw
@@ -445,15 +450,18 @@ broken_manifests["no_desc-legacy.mf"] = \
 # We deliver a legacy actions without a required attribute, "desc". Since we
 # can't find the package pointed to by the legacy 'pkg' attribute, we should
 # not complain about those.
+# This package also has no variant.arch attribute, which should be fine since
+# we're not delivering any content with an elfarch attribute, and we're
+# omitting the variant.arch from the legacy actions.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
-set name=variant.arch value=i386 value=sparc
+# set name=variant.arch value=i386 value=sparc
 set name=org.opensolaris.consolidation value=osnet
-legacy arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr variant.arch=i386 vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
-legacy arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr variant.arch=sparc vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
+legacy arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
+legacy arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
 
 expected_failures["no_dup-allowed-vars.mf"] = []
@@ -508,7 +516,10 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
-expected_failures["nodup-depend-okvars.mf"] = []
+# our obsolete depend lint check should complain about not being able to find
+# manifests, but we shouldn't trigger the duplicate dependency error
+expected_failures["nodup-depend-okvars.mf"] = ["pkglint.action005.1",
+    "pkglint.action005.1", "pkglint.action005.1"]
 broken_manifests["nodup-depend-okvars.mf"] = \
 """
 #
@@ -527,6 +538,28 @@ set name=variant.foo value=bar value=baz
 depend fmri=shell/zsh@4.3.9-0.133 type=require variant.foo=bar
 depend fmri=consolidation/sfw/sfw-incorporation type=require
 depend fmri=shell/zsh@4.3.9-0.134 type=require variant.foo=baz
+"""
+
+expected_failures["novariant_arch.mf"] = ["pkglint.manifest003.3",
+    "pkglint.action005.1", "pkglint.action005.1"]
+broken_manifests["novariant_arch.mf"] = \
+"""
+#
+# we don't have a variant.arch attribute set, and are delivering a file with
+# an elfarch attribute
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
+set name=org.opensolaris.consolidation value=sfw
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Pkglint test package"
+set name=variant.other value=other value=thing
+set name=variant.foo value=bar value=baz
+depend fmri=shell/zsh@4.3.9-0.133 type=require variant.foo=bar
+depend fmri=consolidation/sfw/sfw-incorporation type=require
+file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700
 """
 
 expected_failures["obsolete-has-description.mf"] = ["pkglint.manifest001.1"]
@@ -569,7 +602,8 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002"]
+expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002",
+    "pkglint.action005.1", "pkglint.action005.1"]
 broken_manifests["renamed-more-actions.mf"] = \
 """
 #
@@ -588,7 +622,8 @@ dir mode=0555 owner=root group=sys path=/usr/bin
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
-expected_failures["renamed.mf"] = []
+expected_failures["renamed.mf"] = ["pkglint.action005.1",
+    "pkglint.action005.1"]
 broken_manifests["renamed.mf"] = \
 """
 #
@@ -712,7 +747,7 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False)
+                            config_file=rcfile, use_tracker=False)
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(lint_manifests=manifests)
@@ -820,6 +855,26 @@ set name=variant.arch value=i386 value=sparc
 file /etc/group group=sys mode=0644 owner=root path=etc/group
 dir group=sys mode=0755 owner=root path=etc
 """
+
+        ref_mf["ref-sample4-not-obsolete"] = """
+#
+# This is not an obsolete package - used to check versioning
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.140
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=variant.arch value=i386
+"""
+
+        ref_mf["ref-sample4-obsolete"] = """
+#
+# This is a perfectly valid example of an obsolete package
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.141
+set name=pkg.obsolete value=true variant.arch=i386
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=variant.arch value=i386
+"""
+
         ref_mf["dummy-ancestor.mf"] = """
 #
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
@@ -852,7 +907,7 @@ set name=variant.arch value=i386 value=sparc
 # duplicate of the 0.141 package)
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.140
-set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
@@ -867,7 +922,7 @@ dir group=sys mode=0755 owner=root path=etc
 # We deliver a newer version than our reference repo has
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
-set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
@@ -876,14 +931,15 @@ file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
 dir group=sys mode=0755 owner=root path=etc
 """
 
-        expected_failures["deliver-new-sample1-duplicate.mf"] = ["pkglint.dupaction001.1"]
+        expected_failures["deliver-new-sample1-duplicate.mf"] = \
+            ["pkglint.dupaction001.1"]
         lint_mf["deliver-new-sample1-duplicate.mf"] = """
 #
 # We deliver a newer version than our reference repo has, intentionally
-# duplicating a file our reference repository has in sample2
+# duplicating a file our reference repository has in sample3
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
-set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.142
+set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
@@ -901,8 +957,8 @@ dir group=sys mode=0755 owner=root path=etc
 # field from the ref repo which doesn't depend on us.  Only one failure,
 # because the 2nd legacy action below points to a non-existent package.
 #
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
-set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.description value="core kernel"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
@@ -910,6 +966,52 @@ set name=org.opensolaris.consolidation value=osnet
 legacy arch=i386 category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWckr variant.arch=i386 vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 legacy arch=sparc category=system desc="core kernel software for a specific instruction-set architecture" hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" pkg=SUNWthisdoesnotexist variant.arch=sparc vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
 """
+
+        expected_failures["unversioned-dep-obsolete.mf"] = ["pkglint.action005"]
+        lint_mf["unversioned-dep-obsolete.mf"] = """
+#
+# We declare a dependency without a version number, on an obsolete package
+# this should result in a lint error
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.description value="core kernel"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+depend fmri=pkg:/system/obsolete type=require
+        """
+
+        expected_failures["versioned-dep-obsolete.mf"] = ["pkglint.action005"]
+        lint_mf["versioned-dep-obsolete.mf"] = """
+#
+# We declare a dependency on a version known to be obsolete
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.description value="core kernel"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+depend fmri=pkg://opensolaris.org/system/obsolete@0.5.11,5.11-0.141 type=require
+        """
+
+        expected_failures["versioned-older-obsolete.mf"] = ["pkglint.action005"]
+        lint_mf["versioned-older-obsolete.mf"] = """
+#
+# We have dependency on an older version of the packages which was recently
+# made obsolete. Even though we declared the dependency on the non-obsolete
+# version, because we published a later, obsoleted version of that package,
+# we should get the lint warning.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
+set name=pkg.description value="core kernel"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+depend fmri=system/obsolete@0.5.11-0.140 type=require
+        """
 
         def setUp(self):
 
@@ -933,9 +1035,9 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
 
                 paths = self.make_misc_files(self.lint_mf)
                 for item in paths:
-                        self.pkgsend(depot_url=self.ref_uri,
+                        self.pkgsend(depot_url=self.lint_uri,
                             command="publish --fmri-in-manifest %s" % item)
-                self.pkgsend(depot_url=self.ref_uri,
+                self.pkgsend(depot_url=self.lint_uri,
                             command="refresh-index")
 
         def test_lint_repo_basics(self):
@@ -946,7 +1048,8 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                         os.makedirs(self.cache_dir)
 
                 lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
 
                 lint_engine.setup(cache=self.cache_dir,
                     lint_uris=[self.ref_uri])
@@ -981,13 +1084,20 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                         os.makedirs(self.cache_dir)
 
                 lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
 
                 lint_engine.setup(cache=self.cache_dir,
                     lint_uris=[self.ref_uri])
                 lint_engine.execute()
 
-                self.assertFalse(lint_logger.messages,
+                lint_msgs = []
+                # prune out the missing dependency warnings
+                for msg in lint_logger.messages:
+                        if "pkglint.action005.1" not in msg:
+                                lint_msgs.append(msg)
+
+                self.assertFalse(lint_msgs,
                     "Lint messages reported from a clean reference repository.")
                 lint_engine.teardown(clear_cache=True)
 
@@ -1015,7 +1125,7 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False)
+                            use_tracker=False, config_file=rcfile)
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(cache=self.cache_dir,
@@ -1040,7 +1150,7 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                                 known.sort()
                                 for i in range(0, len(reported)):
                                         self.assert_(reported[i] == known[i],
-                                            "Differences in reported vs. actual"
+                                            "Differences in reported vs. expected"
                                             " lint ids for %s: %s vs. %s" %
                                             (basename, str(reported),
                                             str(known)))
@@ -1053,7 +1163,8 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                 # above - this time, we lint against 0.140 and expect
                 # no errors.
                 lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
 
                 path = os.path.join(self.test_root, "deliver-old-sample1.mf")
                 manifests = read_manifests([path], lint_logger)
@@ -1072,7 +1183,8 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                 # ensure we detect the error when linting against the reference
                 # 0.139 repository
                 lint_logger = TestLogFormatter()
-                lint_engine = engine.LintEngine(lint_logger, use_tracker=False)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
                 lint_engine.setup(cache=self.cache_dir,
                     ref_uris=[self.ref_uri],
                     lint_uris=[self.ref_uri], release="139")
@@ -1107,17 +1219,24 @@ legacy arch=sparc category=system desc="core kernel software for a specific inst
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False)
+                            use_tracker=False, config_file=rcfile)
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(lint_manifests=manifests)
 
                         lint_engine.execute()
                         lint_engine.teardown()
-                        self.assertFalse(lint_logger.messages,
+
+                        # prune missing dependency warnings
+                        lint_msgs = []
+                        for msg in lint_logger.messages:
+                                if "pkglint.action005.1" not in msg:
+                                        lint_msgs.append(msg)
+
+                        self.assertFalse(lint_msgs,
                             "Unexpected lint messages when linting individual "
-                            "manifests that should contain no errors: %s" %
-                            "\n".join(lint_logger.messages))
+                            "manifests that should contain no errors: %s %s" %
+                            (basename, "\n".join(lint_msgs)))
 
 def read_manifests(names, lint_logger):
         "Read a list of filenames, return a list of Manifest objects"

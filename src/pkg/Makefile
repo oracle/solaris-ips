@@ -31,11 +31,14 @@ PKGVERS_BRANCH    = 0.$(BUILDNUM)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 ARCH.cmd          = uname -p
 ARCH              = $(ARCH.cmd:sh)
+REV.cmd           = date +%Y.%m.%d.%H.%M.%S
+REV               = $(REV.cmd:sh)
 
 PDIR              = pkgtmp
 PWD:sh            = pwd
 PKGDEST           = $(PWD)/../../packages/$(ARCH)
 PKGROOT           = ../../proto/root_$(ARCH)
+PKGLINT           = $(PKGROOT)/usr/bin/pkglint -f $(PKGROOT)/usr/share/lib/pkg/pkglintrc
 
 PKGPUBLISHER      = pkg5-nightly
 
@@ -66,13 +69,14 @@ PKGMOG_DEFVALS    = \
 	PKGVERS_BUILTON=$(PKGVERS_BUILTON) \
 	PKGVERS_BRANCH=$(PKGVERS_BRANCH) \
 	PKGVERS=$(PKGVERS) \
+	REV=$(REV) \
 	CURBUILD_BRANCH=0.$(CURBUILD) \
 	PYDIR=usr/lib/python2.6 \
 	PYDIRVP=usr/lib/python2.6/vendor-packages
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)
 
 all: $(MOGRIFESTS)
-install: repository-metadata
+install: lint
 
 clean:
 	rm -rf $(PDIR)
@@ -121,6 +125,58 @@ $(PDIR)/%.pub: $(PDIR)/%.mog $(PKGDEST)/repo
 # filesets, complain
 check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 	pkgdiff $(PDIR)/protomanifest $(PDIR)/pkgmanifest
+
+# We either lint against a reference repository, provided in
+# $(PKGLINT_REF_REPO) or just with the repository we built.
+# If the latter, we expect a number of pkglint warnings, due
+# to being unable to lookup dependencies.
+# Rather than using the pkglint return code, we collect the
+# output, remove versioning information then diff against
+# a list of those expected warnings.
+#
+# From this diff, we produce two files:
+# 1) a list of fixed pkglint errors/warnings previously
+#    recorded in the whitelist
+# 2) a list of new pkglint errors/warnings
+#
+# If new warnings/errors appear in the lint output, we return an error.
+#
+lint: repository-metadata
+	@echo "Running pkglint"
+	@rm -rf $(PDIR)/pkglint-cache
+	@rm -f $(PDIR)/pkglint-out*
+	@if [ -n "$(PKGLINT_REF_REPO)" ]; then				\
+		$(PKGLINT) -c $(PDIR)/pkglint-cache 			\
+			-r $(PKGLINT_REF_REPO) -l file://$(PKGDEST)/repo; \
+	fi
+	-@if [ -z "$(PKGLINT_REF_REPO)" ]; then 			\
+		( $(PKGLINT) -c $(PDIR)/pkglint-cache 			\
+			-l file://$(PKGDEST)/repo > /dev/null ) 2>&1 |	\
+			sed -e 's/@[0-9TZ.:,-]*//g' |			\
+			sort | 						\
+			diff pkglint_whitelist.txt -			\
+			> $(PDIR)/pkglint-out-diff.txt; 		\
+									\
+		egrep "^< WARNING |^< ERROR |^< CRITICAL " 		\
+			$(PDIR)/pkglint-out-diff.txt 			\
+			> $(PDIR)/pkglint-out-fixes.txt; 		\
+ 		egrep -v "^< WARNING |^< ERROR |^< CRITICAL "		\
+			$(PDIR)/pkglint-out-diff.txt 			\
+			| sed -e '/^[0-9,]*[ad][0-9,]*$$/d' 		\
+			> $(PDIR)/pkglint-out-breakage.txt; 		\
+	fi
+	@if [ -s $(PDIR)/pkglint-out-fixes.txt ]; then 			\
+		echo "";						\
+		echo "The following pkglint errors are now fixed:"; 	\
+		cat $(PDIR)/pkglint-out-fixes.txt; 			\
+		echo "pkglint-whitelist.txt should be updated";		\
+	fi
+	@if [ -s $(PDIR)/pkglint-out-breakage.txt ]; then 		\
+		echo "";						\
+		echo "New pkglint errors detected:";			\
+		cat $(PDIR)/pkglint-out-breakage.txt; 			\
+		exit 1; 						\
+	fi
 
 # A little bit of Python is the easiest way to generate the commandline options
 # to pkgsend generate.

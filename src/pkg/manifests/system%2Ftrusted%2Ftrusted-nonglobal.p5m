@@ -24,6 +24,7 @@
 set name=pkg.fmri value=pkg:/system/trusted/trusted-nonglobal@$(PKGVERS)
 set name=info.classification value=org.opensolaris.category.2008:System/Trusted
 set name=pkg.summary value="Trusted Extensions labeled zone"
+set name=pkg.description value="This package delivers the dependencies needed to install a Trusted Extensions labeled zone"
 depend fmri=pkg:/communication/im/pidgin type=require
 depend fmri=pkg:/desktop/administration/gnome-system-tools type=require
 depend fmri=pkg:/desktop/archive-manager/file-roller type=require
