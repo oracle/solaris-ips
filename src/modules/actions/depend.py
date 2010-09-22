@@ -21,9 +21,9 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
+
 
 """Action describing a package dependency.
 
@@ -35,7 +35,8 @@ import generic
 import pkg.fmri as fmri
 import pkg.version
 
-known_types = ("optional", "require", "exclude", "incorporate")
+known_types = ("optional", "require", "exclude", "incorporate", 
+    "conditional", "require-any", "origin")
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -48,6 +49,16 @@ class DependencyAction(generic.Action):
 
         require -  dependency on minimum version of other package is needed 
         for correct function of this package.
+
+        conditional - dependency on minimum version of specified package
+        if predicate package is installed at specified version or newer.
+
+        require-any - dependency on minimum version of any of the specified
+        packages.
+
+        origin - specified package must be at this version or newer
+        in order to install this package; if root-image=true, dependency is
+        on version installed in / rather than image being modified.
 
         incorporate - optional dependency on precise version of other package; 
         non-specified portion of version is free to float.
@@ -70,11 +81,21 @@ class DependencyAction(generic.Action):
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing fmri attribute"))
 
+                if len(self.attrlist("fmri")) > 1 and \
+                    self.attrs["type"] != "require-any":
+                        raise pkg.actions.InvalidActionError(str(self), 
+                            _("Multiple fmris specifed for %s dependency type") % 
+                            self.attrs["type"])
+
                 if self.attrs["type"] not in known_types:
                         raise pkg.actions.InvalidActionError(str(self),
                             _("Unknown type (%s) in depend action") %
                             self.attrs["type"])
 
+                if "type" == "conditional" and \
+                    "predicate" not in self.attrs:
+                        raise pkg.actions.InvalidActionError(str(self),
+                            _("No predicate specified for conditional dependency"))
                 try:
                         if "fmri" in self.attrs:
                                 self.clean_fmri()
@@ -107,7 +128,8 @@ class DependencyAction(generic.Action):
                 # catch ValueError.
                 #
                 fmri_string = self.attrs["fmri"]
-
+                if not isinstance(fmri_string, basestring):
+                        return 
                 #
                 # First, try to eliminate fmris that don't need cleaning since
                 # this process is relatively expensive (when considering tens
@@ -176,6 +198,40 @@ class DependencyAction(generic.Action):
                 #           (fmri_string, cleanfmri)
                 self.attrs["fmri"] = cleanfmri
 
+        def __check_installed(self, image, installed_version, min_fmri,
+            max_fmri, required, ctype):
+                errors = []
+                if not installed_version:
+                        return errors
+                vi = installed_version.version
+                if min_fmri and min_fmri.version and \
+                    min_fmri.version.is_successor(vi,
+                    pkg.version.CONSTRAINT_NONE):
+                        errors.append(
+                            _("%(dep_type)s dependency %(dep_val)s "
+                            "is downrev (%(inst_ver)s)") % {
+                            "dep_type": ctype, "dep_val": min_fmri,
+                            "inst_ver": installed_version })
+                        return errors
+                if max_fmri and max_fmri.version and  \
+                    vi > max_fmri.version and \
+                    not vi.is_successor(max_fmri.version,
+                    pkg.version.CONSTRAINT_AUTO):
+                        errors.append(
+                            _("%(dep_type)s dependency %(dep_val)s "
+                            "is uprev (%(inst_ver)s)") % {
+                            "dep_type": ctype, "dep_val": max_fmri,
+                            "inst_ver": installed_version })
+                        return errors
+                if required and image.PKG_STATE_OBSOLETE in \
+                    image.get_pkg_state(installed_version):
+                        errors.append(
+                            _("%s dependency on an obsolete package (%s);"
+                            "this package must be uninstalled manually") % 
+                            (ctype, installed_version))                                  
+                        return errors
+                return errors
+
         def verify(self, image, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
                 info).  The error list will be empty if the action has been
@@ -191,18 +247,28 @@ class DependencyAction(generic.Action):
                             image.attrs["Build-Release"])
 
                 ctype = self.attrs["type"]
-                pfmri = fmri.PkgFmri(self.attrs["fmri"],
-                    image.attrs["Build-Release"])
 
                 if ctype not in known_types:
                         errors.append(
                             _("Unknown type (%s) in depend action") % ctype)
                         return errors, warnings, info
 
-                installed_version = image.get_version_installed(pfmri)
+                pfmris = [
+                    fmri.PkgFmri(f, image.attrs["Build-Release"]) 
+                    for f in self.attrlist("fmri")
+                ]
+
+                installed_versions = [
+                    image.get_version_installed(f) 
+                    for f in pfmris
+                ]
+
+                installed_version = installed_versions[0]
+                pfmri = pfmris[0]
 
                 min_fmri = None
                 max_fmri = None
+                required = False
 
                 if ctype == "require":
                         required = True
@@ -210,48 +276,47 @@ class DependencyAction(generic.Action):
                 elif ctype == "incorporate":
                         max_fmri = pfmri
                         min_fmri = pfmri
-                        required = False
                 elif ctype == "optional":
-                        required = False
                         min_fmri = pfmri
                 elif ctype == "exclude":
-                        required = False
                         max_fmri = pfmri
                         min_fmri = pfmri.copy()
                         min_fmri.version = __min_version()
+                elif ctype == "conditional":
+                        cfmri = fmri.PkgFmri(self.attrs["predicate"],
+                            image.attrs["Build-Release"])
+                        installed_cversion = image.get_version_installed(cfmri)
+                        if installed_cversion is not None and \
+                            installed_cversion.is_successor(cfmri):
+                                min_fmri = pfmri
+                                required = True
+                elif ctype == "require-any":
+                        for ifmri, pfmri in zip(installed_versions, pfmris):
+                                e = self.__check_installed(image, ifmri, pfmri, None, True, ctype)
+                                if ifmri and not e: # this one is present and happy
+                                        return [], [], []
+                                else:
+                                        errors.extend(e)
 
-                if installed_version:
-                        vi = installed_version.version
-                        if min_fmri and min_fmri.version and \
-                            min_fmri.version.is_successor(vi,
-                            pkg.version.CONSTRAINT_NONE):
-                                errors.append(
-                                    _("%(dep_type)s dependency %(dep_val)s "
-                                    "is downrev (%(inst_ver)s)") % {
-                                    "dep_type": ctype, "dep_val": min_fmri,
-                                    "inst_ver": installed_version })
-                                return errors, warnings, info
+                        if not errors: # none was installed
+                                errors.append(_("Required dependency on one of %s not met"),
+                                    ", ".join(pfmris))
+                        return errors, warnings, info
 
-                        if max_fmri and max_fmri.version and  \
-                            vi > max_fmri.version and \
-                            not vi.is_successor(max_fmri.version,
-                            pkg.version.CONSTRAINT_AUTO):
-                                errors.append(
-                                    _("%(dep_type)s dependency %(dep_val)s "
-                                    "is uprev (%(inst_ver)s)") % {
-                                    "dep_type": ctype, "dep_val": max_fmri,
-                                    "inst_ver": installed_version })
-                        if required and image.PKG_STATE_OBSOLETE in \
-                            image.get_pkg_state(installed_version):
-                                errors.append(
-                                    _("%s dependency on an obsolete package (%s);"
-                                    "this package must be uninstalled manually") % 
-                                    (ctype, installed_version))                                  
-                elif required:
+                # do checking for other dependency types
+
+                errors.extend(self.__check_installed(image, installed_version,
+                    min_fmri, max_fmri, required, ctype))
+
+                if required and not installed_version:
                         errors.append(_("Required dependency %s is not "
                             "installed") % pfmri)
 
+                # cannot verify origin since it applys to upgrade
+                # operation, not final state
+
                 return errors, warnings, info
+            
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

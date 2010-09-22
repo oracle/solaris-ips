@@ -131,12 +131,19 @@ class Manifest(object):
                             [(None, a) for a in self.gen_actions(self_exclude)],
                             [], [])
 
+                def hashify(v):
+                        """handle key values that may be lists"""
+                        if isinstance(v, list):
+                                return frozenset(v)
+                        else:
+                                return v
+
                 sdict = dict(
-                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
+                    ((a.name, hashify(a.attrs.get(a.key_attr, id(a)))), a)
                     for a in self.gen_actions(self_exclude)
                 )
                 odict = dict(
-                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
+                    ((a.name, hashify(a.attrs.get(a.key_attr, id(a)))), a)
                     for a in origin.gen_actions(origin_exclude)
                 )
 

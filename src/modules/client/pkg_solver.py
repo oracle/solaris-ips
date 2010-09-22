@@ -21,12 +21,12 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api_errors as api_errors
 import pkg.catalog           as catalog
+import pkg.client.image 
 import pkg.solver
 import pkg.version           as version
 import time
@@ -92,7 +92,8 @@ class PkgSolver(object):
                 self.__dep_dict = {}
                 self.__inc_list = []
                 self.__dependents = None
-
+                self.__root_fmris = None        # set of fmris installed in root image;
+                                                # used for origin dependencies
         def __str__(self):
 
                 s = "Solver: ["
@@ -259,6 +260,11 @@ class PkgSolver(object):
                 possible_set.update(self.__generate_dependency_closure(possible_set,
                     excludes=excludes))
 
+                # remove any that cannot be installed due to origin dependencies
+                for f in possible_set.copy():
+                        if not self.__trim_nonmatching_origins(f, excludes):
+                                possible_set.remove(f)
+                
                 # remove any versions from proposed_dict that are in trim_dict as
                 # trim dict has been updated w/ missing dependencies
                 self.__timeit("phase 8")
@@ -462,6 +468,11 @@ class PkgSolver(object):
                 possible_set.update(self.__generate_dependency_closure(possible_set,
                     excludes=excludes))
 
+                # remove any possibles that must be excluded because of origin dependencies
+                for f in possible_set.copy():
+                        if not self.__trim_nonmatching_origins(f, excludes):
+                                possible_set.remove(f)
+ 
                 self.__timeit("phase 3")
 
                 # generate ids, possible_dict for clause generation
@@ -766,16 +777,27 @@ class PkgSolver(object):
                         self.__fmri_loadstate(fmri, excludes)
                 return self.__fmri_state[fmri][1]
 
-        def __get_dependency_actions(self, fmri, excludes=EmptyI):
+        def __get_dependency_actions(self, fmri, excludes=EmptyI, trim_invalid=True):
                 """Return list of all dependency actions for this fmri"""
-
-                return [
-                        a
-                        for a in self.__catalog.get_entry_actions(fmri,
+                
+                try:
+                        return [
+                            a
+                            for a in self.__catalog.get_entry_actions(fmri,
                             [catalog.Catalog.DEPENDENCY], excludes=excludes)
-                        if a.name == "depend"
+                            if a.name == "depend"
                         ]
 
+                except api_errors.InvalidPackageErrors:
+                        if trim_invalid:
+                                # Trim package entries that have unparseable action data
+                                # so that they can be filtered out later.
+                                self.__fmri_state[fmri] = ("false", "false")
+                                self.__trim(fmri, _("Package contains invalid or unsupported actions"))
+                                return []
+                        else:
+                                raise
+                        
         def __get_variant_dict(self, fmri, excludes=EmptyI):
                 """Return dictionary of variants suppported by fmri"""
                 try:
@@ -804,20 +826,17 @@ class PkgSolver(object):
                 return already_processed
 
         def __generate_dependencies(self, fmri, excludes=EmptyI, dotrim=True):
-                """return set of direct dependencies of this pkg"""
+                """return set of direct (possible) dependencies of this pkg"""
                 try:
                         return set([
                              f
                              for da in self.__get_dependency_actions(fmri, excludes)
                              for f in self.__parse_dependency(da, dotrim, check_req=True)[1]
-                             if da.attrs["type"] == "require"
+                             if da.attrs["type"] == "require" or 
+                             da.attrs["type"] == "conditional" or 
+                             da.attrs["type"] == "require-any"
                              ])
 
-                except api_errors.InvalidPackageErrors:
-                        # Trim package entries that have unparseable action data
-                        # so that they can be filtered out later.
-                        self.__trim(fmri, _("Package contains invalid or unsupported actions"))
-                        return set([])
                 except RuntimeError, e:
                         self.__trim(fmri, str(e))
                         return set([])
@@ -874,27 +893,57 @@ class PkgSolver(object):
                 return self.__dependents.get(pfmri, set())
 
         def __parse_dependency(self, dependency_action, dotrim=True, check_req=False):
-                """Return tuple of (disallowed fmri list, allowed fmri list,
+                """Return tuple of (disallowed fmri list, allowed fmri list, conditional_list,
                     dependency_type)"""
                 dtype = dependency_action.attrs["type"]
-                fmri =  pkg.fmri.PkgFmri(dependency_action.attrs["fmri"], "5.11")
+                fmris = [pkg.fmri.PkgFmri(f, "5.11") for f in dependency_action.attrlist("fmri")] 
+                fmri = fmris[0]
+
+                required = False
+                conditional = None
 
                 if dtype == "require":
+                        required = True
                         matching, nonmatching = \
                             self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=False)
+
                 elif dtype == "optional":
                         matching, nonmatching = \
                             self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=True)
+
                 elif dtype == "exclude":
                         matching, nonmatching = \
                             self.__comb_older_fmris(fmri, dotrim, obsolete_ok=True)
+
                 elif dtype == "incorporate":
                         matching, nonmatching = \
                             self.__comb_auto_fmris(fmri, dotrim, obsolete_ok=True)
+
+                elif dtype == "conditional":
+                        cond_fmri = pkg.fmri.PkgFmri(dependency_action.attrs["predicate"], 
+                            "5.11")
+                        conditional, nonmatching = self.__comb_newer_fmris(cond_fmri, dotrim, 
+                            obsolete_ok=False)
+                        matching, nonmatching = \
+                            self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=False)
+                        required = True
+
+                elif dtype == "require-any":
+                        matching = []
+                        nonmatching = []
+                        for f in fmris:
+                                m, nm = self.__comb_newer_fmris(f, dotrim, obsolete_ok=False)
+                                matching.extend(m)
+                                nonmatching.extend(nm)                        
+                        required = True
+
+                elif dtype == "origin":
+                        matching, nonmatching = \
+                            self.__comb_newer_fmris(fmri, dotrim=False, obsolete_ok=False)                        
                 else:
                         matching, nonmatching = [], [] # no idea what this dependency is
 
-                if check_req and not matching and dtype == "require":
+                if check_req and not matching and required and len(fmris) == 1:
                         matching, nonmatching = \
                             self.__comb_newer_fmris(fmri, dotrim, obsolete_ok=True)
                         if not matching:
@@ -904,7 +953,7 @@ class PkgSolver(object):
                                 raise RuntimeError, \
                                     "Required dependency %s is obsolete" % fmri
 
-                return nonmatching, matching, dtype
+                return nonmatching, matching, conditional, dtype
 
         def __disp_fmri(self, f, excludes=EmptyI):
                 """annotate fmris if they're obsolete, renamed or installed"""
@@ -936,13 +985,12 @@ class PkgSolver(object):
 
                 for a in self.__get_dependency_actions(fmri, excludes):
                         ms = []
-                        unmatch, match, dtype = self.__parse_dependency(a)
+                        unmatch, match, conditional, dtype = self.__parse_dependency(a)
                         if not match:
                                 untrimmed_match = self.__parse_dependency(a, dotrim=False)[1]
 
-                        dfmri =  pkg.fmri.PkgFmri(a.attrs["fmri"], "5.11")
-
-                        if dtype == "require":
+                        
+                        if dtype == "require" or dtype == "require-any":
                                 if not match:
                                         ms.append("FAIL: No matching packages found")
 
@@ -955,7 +1003,7 @@ class PkgSolver(object):
                                             [self.__disp_fmri(f, excludes) for f in match]))
 
                         elif dtype == "incorporate":
-                                pkg_name = dfmri.pkg_name
+                                pkg_name = pkg.fmri.PkgFmri(a.attrs["fmri"], "5.11").pkg_name
 
                                 if not match:
                                         if pkg_name in self.__installed_fmris:
@@ -988,9 +1036,13 @@ class PkgSolver(object):
 
         def __gen_dependency_clauses(self, fmri, da, dotrim=True):
                 """Return clauses to implement this dependency"""
-                nm, m, dtype = self.__parse_dependency(da, dotrim)
-                if dtype == "require":
+                nm, m, cond, dtype = self.__parse_dependency(da, dotrim)
+                if dtype == "require" or dtype == "require-any":
                         return self.__gen_require_clauses(fmri, m)
+                elif dtype == "conditional":
+                        return self.__gen_require_conditional_clauses(fmri, m, cond)
+                elif dtype == "origin":
+                        return [] # handled by trimming proposed set, not by solver
                 else:
                         return self.__gen_negation_clauses(fmri, nm)
 
@@ -1034,6 +1086,21 @@ class PkgSolver(object):
                 return [
                         [-self.__getid(fmri)] +
                         [self.__getid(fmri) for fmri in matching_fmri_list]
+                        ]
+
+        def __gen_require_conditional_clauses(self, fmri, matching_fmri_list, 
+            conditional_fmri_list):
+                """Generate clauses for conditional dependency: if
+                fmri is installed and one of conditional_fmri_list is installed,
+                one of fmri list is required"""
+                # if a.1 requires c.2, c.3, c.4 if b.2 or newer is installed:
+                # !a.1 | !b.2 | c.2 | c.3 | c.4
+                # !a.1 | !b.3 | c.2 | c.3 | c.4
+                mlist = [self.__getid(f) for f in matching_fmri_list]
+
+                return [
+                        [-self.__getid(fmri)] + [-self.__getid(c)] + mlist
+                        for c in conditional_fmri_list
                         ]
 
         def __gen_negation_clauses(self, fmri, non_matching_fmri_list):
@@ -1086,12 +1153,14 @@ class PkgSolver(object):
                             [catalog.Catalog.DEPENDENCY],
                             excludes=excludes):
                                 if d.name == "depend":
-                                        fmri = pkg.fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                                        fmris = [pkg.fmri.PkgFmri(fl, "5.11") for fl in 
+                                            d.attrlist("fmri")]
                                         if d.attrs["type"] == "incorporate":
                                                 incorps.add(f.pkg_name)
-                                                pkg_cons.setdefault(f, []).append(fmri)
-                                        if "@" in d.attrs["fmri"]:
-                                                versioned_dependents.add(fmri.pkg_name)
+                                                pkg_cons.setdefault(f, []).append(fmris[0])
+                                        for fmri in fmris:
+                                                if fmri.version is not None:
+                                                        versioned_dependents.add(fmri.pkg_name)
                                 elif d.name == "set" and d.attrs["name"] == "pkg.depend.install-hold":
                                         install_holds[f.pkg_name] = d.attrs["value"]
 
@@ -1217,6 +1286,45 @@ class PkgSolver(object):
                                         reason = _("Package doesn't support image variant %s") % v
 
                                 self.__trim(fmri, reason)
+
+        def __trim_nonmatching_origins(self, fmri, excludes):
+                """Trim any fmri that contains a origin dependency that is
+                not satisfied by the current image or root-image"""
+                for da in self.__get_dependency_actions(fmri, excludes):
+                        
+                        if da.attrs["type"] != "origin":
+                                continue
+
+                        req_fmri = pkg.fmri.PkgFmri(da.attrs["fmri"], "5.11")
+
+                        if da.attrs.get("root-image", "").lower() == "true":
+                                if self.__root_fmris is None:
+                                        self.__root_fmris = dict(
+                                            [
+                                            (f.pkg_name, f) 
+                                            for f in pkg.client.image.Image("/").gen_installed_pkgs()
+                                            ])                
+
+                                installed = self.__root_fmris.get(req_fmri.pkg_name, None)
+                                dep_str = _("root image")
+                        else:
+                                installed = self.__installed_fmris.get(req_fmri.pkg_name, None)
+                                dep_str = _("image being modified")
+
+                        # assumption is that for root-image, publishers align; otherwise
+                        # these sorts of cross-environment dependencies don't work well
+
+                        if not installed or \
+                            not req_fmri.version or \
+                            req_fmri.version == installed.version or \
+                            installed.version.is_successor(req_fmri.version, version.CONSTRAINT_NONE):
+                                continue
+
+                        self.__trim(fmri, 
+                            _("Installed version %(installed)s in %(dep_str)s is too old for origin dependency %(req_fmri)s") 
+                            % locals())
+                        return False
+                return True
 
         def __dotrim(self, fmri_list):
                 """Return fmri_list trimmed of any fmris in self.__trim_dict"""

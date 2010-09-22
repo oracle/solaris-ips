@@ -2813,6 +2813,61 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg70 = """
+            open pkg7@1.0,5.11-0
+            add depend type=conditional predicate=pkg:/pkg2@1.1 fmri=pkg:/pkg6@1.1
+            close
+        """
+
+        pkg80 = """
+            open pkg8@1.0,5.11-0
+            add depend type=require-any fmri=pkg:/pkg9@1.0 fmri=pkg:/pkg2@1.1
+            close
+        """
+
+        pkg81 = """
+            open pkg8@1.1,5.11-0
+            add depend type=require-any fmri=pkg:/pkg9@1.1 fmri=pkg:/pkg2@1.1
+            close
+        """
+
+        pkg90 = """
+            open pkg9@1.0,5.11-0
+            close
+        """
+
+        pkg91 = """
+            open pkg9@1.1,5.11-0
+            close
+        """
+
+        pkg100 = """
+            open pkg10@1.0,5.11-0
+            close
+        """
+
+        pkg101 = """
+            open pkg10@1.1,5.11-0
+            close
+        """
+
+        pkg102 = """
+            open pkg10@1.2,5.11-0
+            add depend type=origin fmri=pkg10@1.1,5.11-0
+            close
+        """
+
+        pkg110 = """
+            open pkg11@1.0,5.11-0
+            add depend type=origin root-image=true fmri=SUNWcs@0.5.11-0.75
+            close
+        """
+        pkg111 = """
+            open pkg11@1.1,5.11-0
+            add depend type=origin root-image=true fmri=SUNWcs@0.5.11-1.0
+            close
+        """
+
         leaf_template = """
             open pkg%s%s@%s,5.11-0
             add depend type=require fmri=pkg:/%s_incorp%s
@@ -2983,7 +3038,10 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
                     self.pkg505, self.pkg51, self.pkg60, self.pkg61,
-                    self.bug_7394_incorp))
+                    self.pkg70, self.pkg80, self.pkg81, self.pkg90, 
+                    self.pkg91, self.bug_7394_incorp,
+                    self.pkg100, self.pkg101, self.pkg102,
+                    self.pkg110, self.pkg111))
 
                 for t in self.leaf_expansion:
                         self.pkgsend_bulk(self.rurl, self.leaf_template % t)
@@ -3067,8 +3125,6 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 """ shake out incorporation dependencies """
 
                 self.image_create(self.rurl)
-                self.pkg("list -a") # help w/ debugging
-
                 # simple pkg requiring controlling incorp
                 # should control pkgA_1 as well
                 self.pkg("install -v pkgA_0@1.0 pkgA_1")
@@ -3118,6 +3174,86 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install incorp@1.3")
                 self.pkg("list pkgA_1@1.3")
                 self.pkg("list A_incorp@1.3")
+
+        def test_conditional_dependencies(self):
+                """Get conditional dependencies working"""
+                self.image_create(self.rurl)
+                self.pkg("install pkg7@1.0")
+                self.pkg("verify")
+                self.pkg("list pkg6@1.1", exit=1) # should not be here
+                self.pkg("install -v pkg2@1.0")      # older version...
+                self.pkg("verify")
+                self.pkg("list pkg6@1.1", exit=1)
+                self.pkg("install -v pkg2@1.1")      # this triggers conditional dependency
+                self.pkg("verify")
+                self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # everyone is present
+                self.pkg("uninstall '*'")
+                
+                self.pkg("install pkg2@1.1")  # install trigger
+                self.pkg("verify")
+                self.pkg("install pkg7@1.0")  # install pkg
+                self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # all here again 
+                self.pkg("verify")
+
+        def test_require_any_dependencies(self):
+                """Get require-any dependencies working"""
+                self.image_create(self.rurl)
+
+                # test to see if solver will pick one
+                self.pkg("install pkg8@1.0")  # install pkg
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg9@1.0 pkg2@1.1", exit=3)
+                self.pkg("uninstall '*'")
+
+                # test to see if solver will install new verion of existing 
+                # package rather than add new package
+                self.pkg("install pkg8@1.0 pkg9@1.0")  # install pkg
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg9@1.0")
+                self.pkg("list pkg2@1.1", exit=1)
+                self.pkg("install pkg8 pkg9") # will fail w/o pkg9 on list
+                self.pkg("verify")
+                self.pkg("list pkg8@1.1 pkg9@1.1")
+                self.pkg("uninstall '*'")
+
+                # see if update works the same way
+                self.pkg("install pkg8@1.0 pkg9@1.0")  # install pkg
+                self.pkg("image-update")
+                self.pkg("list pkg8@1.1 pkg9@1.1")
+                self.pkg("uninstall '*'")
+
+        def test_origin_dependencies(self):
+                """Get origin dependencies working"""
+                self.image_create(self.rurl)
+                # check install behavior
+                self.pkg("install pkg10@1.0")
+                self.pkg("install pkg10")
+                self.pkg("list pkg10@1.1")
+                self.pkg("install pkg10")
+                self.pkg("list pkg10@1.2")
+                self.pkg("uninstall '*'")
+                # check image-update behavior
+                self.pkg("install pkg10@1.0")
+                self.pkg("image-update")
+                self.pkg("list pkg10@1.1")
+                self.pkg("image-update")
+                self.pkg("list pkg10@1.2")
+                self.pkg("uninstall '*'")
+                # check that dependencies are ignored if 
+                # dependency not present
+                self.pkg("install pkg10@1.2")
+                self.pkg("uninstall '*'")
+                # make sure attempts to force install don't work
+                self.pkg("install pkg10@1.0")
+                self.pkg("install pkg10@1.2", exit=1)
+                self.pkg("install pkg10@1.1")
+                self.pkg("install pkg10@1.2")
+                self.pkg("uninstall '*'")
+                # check origin root-image=true dependencies
+                # relies on SUNWcs in root image; may need to change
+                self.pkg("install pkg11@1.0")
+                self.pkg("install pkg11@1.1", exit=1)
+                self.pkg("uninstall '*'")
 
 
 class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):

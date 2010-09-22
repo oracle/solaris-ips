@@ -714,6 +714,14 @@ class ImagePlan(object):
                 # paths.
                 cons_named = {}
                 cons_generic = {}
+
+                def hashify(v):
+                        """handle key values that may be lists"""
+                        if isinstance(v, list):
+                                return frozenset(v)
+                        else:
+                                return v
+
                 for i, ap in enumerate(self.removal_actions):
                         self.__progtrack.evaluate_progress()
                         # remove dir removals if dir is still in final image
@@ -744,7 +752,7 @@ class ImagePlan(object):
                                 # Store the index into removal_actions and the
                                 # id of the action object in that slot.
                                 re = ConsolidationEntry(i, id(ap.src))
-                                cons_generic[(ap.src.name, attrs[ap.src.key_attr])] = re
+                                cons_generic[(ap.src.name, hashify(attrs[ap.src.key_attr]))] = re
                                 if ap.src.name == "file":
                                         fname = attrs.get("original_name",
                                             "%s:%s" % (ap.p.origin_fmri.get_name(),
@@ -818,7 +826,7 @@ class ImagePlan(object):
                         # from unnecessarily being deleted and re-created if
                         # they're simply moving between packages, but only if
                         # they keep their paths (or key-attribute values).
-                        keyval = ap.dst.attrs.get(ap.dst.key_attr, None)
+                        keyval = hashify(ap.dst.attrs.get(ap.dst.key_attr, None))
                         if (ap.dst.name, keyval) in cons_generic:
                                 nkv = ap.dst.name, keyval
                                 index = cons_generic[nkv].idx

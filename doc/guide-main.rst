@@ -283,6 +283,25 @@ include
     restrict the set of package versions to a known and, presumably,
     tested subset of all available versions.
 
+``require-any``
+    A require-any dependency acts as a require dependency, except that 
+    multiple fmris may be specified, and any one being present will satisfy
+    the dependency.
+
+``conditional``
+    A conditional dependency states that the package mentioned by the
+    ``fmri`` attribute of the ``depend`` action must also be installed
+    into the image, with version at or above the specified version if the
+    package named by the ``predicate`` attribute is present on the system
+    at the specified level or higher.
+
+``origin``
+    A origin dependency states that the the package mentioned by
+    the ``fmri`` attribute must be at the specified level or higher (if present)
+    prior to installation of the containing package.  If the attribute ``root-image``
+    is present and has the value ``true``, the image that is checked is the
+    image rooted at '/'.
+
 |OS_Name|-specific concepts
 -----------------------------
 
