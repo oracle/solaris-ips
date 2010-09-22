@@ -23,6 +23,7 @@
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
 import baseline
+import ConfigParser
 import copy
 import difflib
 import errno
@@ -350,6 +351,12 @@ class Pkg5TestCase(unittest.TestCase):
                 tempfile.tempdir = self.__test_root
                 setup_logging(self)
 
+                self.configure_rcfile( "%s/usr/share/lib/pkg/pkglintrc" %
+                    g_proto_area,
+                    {"info_classification_path":
+                    "%s/usr/share/package-manager/data/opensolaris.org.sections" %
+                    g_proto_area}, self.test_root, section="pkglint")
+
         def impl_tearDown(self):
                 # impl_tearDown exists so that we can ensure that this class's
                 # teardown is actually called.  Sometimes, subclasses will
@@ -625,6 +632,30 @@ class Pkg5TestCase(unittest.TestCase):
                     "\n".join(difflib.unified_diff(
                         expected.splitlines(), actual.splitlines(),
                         "Expected output", "Actual output", lineterm="")))
+
+        def configure_rcfile(self, rcfile, config, test_root, section="DEFAULT",
+            suffix=""):
+                """Reads the provided rcfile file, setting key/value
+                pairs in the provided section those from the 'config'
+                dictionary. The new config file is written to the supplied
+                test_root, returning the name of that new file.
+
+                Used to set keys to point to paths beneath our test_root,
+                which would otherwise be shipped as hard-coded paths, relative
+                to /.
+                """
+
+                new_rcfile = file("%s/%s%s" % (test_root, os.path.basename(rcfile),
+                    suffix), "w")
+
+                conf = ConfigParser.SafeConfigParser()
+                conf.readfp(open(rcfile))
+
+                for key in config:
+                        conf.set(section, key, config[key])
+
+                conf.write(new_rcfile)
+                return new_rcfile.name
 
 
 class _Pkg5TestResult(unittest._TextTestResult):
@@ -1395,9 +1426,9 @@ class CliTestCase(Pkg5TestCase):
                     args)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment)
 
-        def pkglint(self, args, exit=0, comment="", protorc=True):
-                if protorc:
-                        rcpath = "%s/usr/share/lib/pkg/pkglintrc" % g_proto_area
+        def pkglint(self, args, exit=0, comment="", testrc=True):
+                if testrc:
+                        rcpath = "%s/pkglintrc" % self.test_root
                         cmdline = "%s/usr/bin/pkglint -f %s %s" % \
                             (g_proto_area, rcpath, args)
                 else:

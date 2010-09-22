@@ -27,6 +27,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import ConfigParser
 import os.path
 import shutil
 import unittest
@@ -49,7 +50,7 @@ if not logger.handlers:
         ch.setLevel(logging.WARNING)
         logger.addHandler(ch)
 
-rcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_proto_area
+pkglintrcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_proto_area
 broken_manifests = {}
 expected_failures = {}
 
@@ -344,6 +345,103 @@ set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 set name=test value=i386 variant.arch=sparc
 set name=test value=i386 variant.arch=sparc
+"""
+
+expected_failures["info_class_valid.mf"] = []
+broken_manifests["info_class_valid.mf"] = \
+"""
+#
+# A perfectly valid manifest with a correct info.classification key
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=description value="Pkglint test package"
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_missing.mf"] = ["opensolaris.manifest001.1"]
+broken_manifests["info_class_missing.mf"] = \
+"""
+#
+# we deliver package with no info.classification key
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_many_values.mf"] = ["opensolaris.manifest003.6"]
+broken_manifests["info_class_many_values.mf"] = \
+"""
+#
+# we deliver a directory with multiple info.classification keys, one of which
+# is wrong
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_wrong_prefix.mf"] = ["opensolaris.manifest003.2"]
+broken_manifests["info_class_wrong_prefix.mf"] = \
+"""
+#
+# we deliver a directory with an incorrect info.classification key
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2010:System/Core
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_no_category.mf"] = ["opensolaris.manifest003.3"]
+broken_manifests["info_class_no_category.mf"] = \
+"""
+#
+# we deliver a directory with an incorrect info.classification key,
+# with no category value
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["info_class_wrong_category.mf"] = ["opensolaris.manifest003.4"]
+broken_manifests["info_class_wrong_category.mf"] = \
+"""
+#
+# we deliver a directory with incorrect info.classification section/category
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:Rubbish/Packaging
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
 """
 
 expected_failures["invalid_usernames.mf"] = ["opensolaris.action001.2",
@@ -747,7 +845,8 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            config_file=rcfile, use_tracker=False)
+                            config_file=os.path.join(self.test_root,
+                            "pkglintrc"), use_tracker=False)
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(lint_manifests=manifests)
@@ -770,10 +869,51 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                                 known.sort()
                                 for i in range(0, len(reported)):
                                         self.assert_(reported[i] == known[i],
-                                            "Differences in reported vs. actual"
-                                            " lint ids for %s: %s vs. %s" %
+                                            "Differences in reported vs. "
+                                            "expected lint ids for %s: "
+                                            "%s vs. %s" %
                                             (basename, str(reported),
                                             str(known)))
+                        lint_logger.close()
+
+        def test_info_classification_data(self):
+                """info.classification check can deal with bad data files."""
+
+                paths = self.make_misc_files(
+                    {"info_class_valid.mf":
+                    broken_manifests["info_class_valid.mf"]})
+
+                empty_file = "%s/empty_file" % self.test_root
+                open(empty_file, "w").close()
+
+                bad_file = "%s/bad_file" % self.test_root
+                f = open(bad_file, "w")
+                f.write("nothing here")
+                f.close()
+
+                mf_path = paths.pop()
+
+                lint_logger = TestLogFormatter()
+                manifests = read_manifests([mf_path], lint_logger)
+
+                for classification_path in ["/dev/null", "/", empty_file,
+                    bad_file]:
+
+                        rcfile = self.configure_rcfile(
+                            os.path.join(self.test_root, "pkglintrc"),
+                            {"info_classification_path": classification_path},
+                            self.test_root, section="pkglint", suffix=".tmp")
+
+                        lint_engine = engine.LintEngine(lint_logger,
+                            config_file=rcfile,
+                            use_tracker=False)
+
+                        lint_engine.setup(lint_manifests=manifests)
+                        lint_engine.execute()
+                        self.assert_(
+                            lint_logger.ids == ["opensolaris.manifest003.1"],
+                            "Unexpected errors encountered: %s" %
+                            lint_logger.messages)
                         lint_logger.close()
 
 class TestLintEngineDepot(pkg5unittest.ManyDepotTestCase):
@@ -1049,7 +1189,7 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
 
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
+                    config_file=os.path.join(self.test_root, "pkglintrc"))
 
                 lint_engine.setup(cache=self.cache_dir,
                     lint_uris=[self.ref_uri])
@@ -1085,7 +1225,7 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
 
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
+                        config_file=os.path.join(self.test_root, "pkglintrc"))
 
                 lint_engine.setup(cache=self.cache_dir,
                     lint_uris=[self.ref_uri])
@@ -1125,7 +1265,9 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False, config_file=rcfile)
+                            use_tracker=False,
+                            config_file=os.path.join(self.test_root,
+                            "pkglintrc"))
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(cache=self.cache_dir,
@@ -1164,7 +1306,7 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
                 # no errors.
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
+                    config_file=os.path.join(self.test_root, "pkglintrc"))
 
                 path = os.path.join(self.test_root, "deliver-old-sample1.mf")
                 manifests = read_manifests([path], lint_logger)
@@ -1184,7 +1326,7 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
                 # 0.139 repository
                 lint_logger = TestLogFormatter()
                 lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
-                    config_file=rcfile)
+                    config_file=os.path.join(self.test_root, "pkglintrc"))
                 lint_engine.setup(cache=self.cache_dir,
                     ref_uris=[self.ref_uri],
                     lint_uris=[self.ref_uri], release="139")
@@ -1219,7 +1361,9 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
-                            use_tracker=False, config_file=rcfile)
+                            use_tracker=False,
+                            config_file=os.path.join(self.test_root,
+                            "pkglintrc"))
 
                         manifests = read_manifests([manifest], lint_logger)
                         lint_engine.setup(lint_manifests=manifests)

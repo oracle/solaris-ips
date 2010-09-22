@@ -80,13 +80,36 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
         def __init__(self, config):
                 self.description = _(
                     "checks OpenSolaris packages for common errors")
-                self.conf = None
+                self.classification_data = None
 
-                classifications = \
-                    "/usr/share/package-manager/data/opensolaris.org.sections"
-                if os.path.exists(classifications):
-                        self.conf = ConfigParser.SafeConfigParser()
-                        self.conf.readfp(open(classifications))
+                self.classification_path = config.get(
+                    "pkglint", "info_classification_path")
+                self.skip_classification_check = False
+
+                # a default error message used if we've parsed the
+                # data file, but haven't thrown any exceptions
+                self.bad_classification_data = _("no sections found in data "
+                    "file %s") % self.classification_path
+
+                if os.path.exists(self.classification_path):
+                        try:
+                                self.classification_data = \
+                                    ConfigParser.SafeConfigParser()
+                                self.classification_data.readfp(
+                                    open(self.classification_path))
+                        except Exception, err:
+                                # any exception thrown here results in a null
+                                # classification_data object.  We deal with that
+                                # later.
+                                self.bad_classification_data = _(
+                                    "unable to parse data file %(path)s: "
+                                    "%(err)s") % \
+                                    {"path": self.classification_path,
+                                    "err": err}
+                                pass
+                else:
+                        self.bad_classification_data = _("missing file %s") % \
+                            self.classification_path
 
                 super(OpenSolarisManifestChecker, self).__init__(config)
 
@@ -126,3 +149,100 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 # and isn't a source of lint messages (which would otherwise
                 # cause a non-zero exit from pkglint)
                 engine.logger.info(" %s" % manifest.fmri)
+
+        def info_classification(self, manifest, engine, pkglint_id="003"):
+                """Checks that the info.classification attribute is valid."""
+
+                if (not "info.classification" in manifest) or \
+                    self.skip_classification_check:
+                        return
+
+                if not self.classification_data or \
+                    not self.classification_data.sections():
+                        engine.error(_("Unable to perform manifest checks "
+                            "for info.classification attribute: %s") %
+                            self.bad_classification_data,
+                            msgid="%s%s.1" % (self.name, pkglint_id))
+                        self.skip_classification_check = True
+                        return
+
+                value = manifest["info.classification"]
+
+                # we allow multiple values for info.classification
+                if isinstance(value, list):
+                        for item in value:
+                                self._check_info_classification_value(
+                                    engine, item, manifest.fmri,
+                                    "%s%s" % (self.name, pkglint_id))
+                else:
+                        self._check_info_classification_value(engine, value,
+                            manifest.fmri, "%s%s" % (self.name, pkglint_id))
+
+        def _check_info_classification_value(self, engine, value, fmri, msgid):
+
+                prefix = "org.opensolaris.category.2008:"
+
+                if not prefix in value:
+                        engine.error(_("info.classification attribute "
+                            "does not contain '%(prefix)s' for %(fmri)s") %
+                            locals(), msgid="%s.2" % msgid)
+                        return
+
+                classification = value.replace(prefix, "")
+
+                components = classification.split("/", 1)
+                if len(components) != 2:
+                        engine.error(_("info.classification value %(value)s "
+                            "does not match "
+                            "%(prefix)s<Section>/<Category> for %(fmri)s") %
+                            locals(), msgid="%s.3" % msgid)
+                        return
+
+                # the data file looks like:
+                # [Section]
+                # categtory = Cat1,Cat2,Cat3
+                #
+                # We expect the info.classification action to look like:
+                # org.opensolaris.category.2008:Section/Cat2
+                #
+                section, category = components
+                valid_value = True
+                ref_categories = []
+                try:
+                        ref_categories = self.classification_data.get(section,
+                            "category").split(",")
+                        if category not in ref_categories:
+                                valid_value = False
+                except ConfigParser.NoSectionError:
+                        engine.error(_("info.classification value %(value)s "
+                            "does not contain one of the valid sections "
+                            "%(ref_sections)s for %(fmri)s.") %
+                            {"value": value,
+                            "ref_sections":
+                            ", ".join(self.classification_data.sections()),
+                            "fmri": fmri},
+                            msgid="%s.4" % msgid)
+                        return
+
+                except ConfigParser.NoOptionError:
+                        engine.error(_("Invalid info.classification value for "
+                            "%(fmri)s: data file %(file)s does not have a "
+                            "'category' key for section %(section)s.") %
+                            {"file": self.classification_path,
+                            "section": section,
+                            "fmri": fmri},
+                             msgid="%s.5" % msgid)
+                        return
+
+                if valid_value:
+                        return
+
+                ref_cats = self.classification_data.get(section,"category")
+                engine.error(_("info.classification attribute in %(fmri)s "
+                    "does not contain one of the values defined for the "
+                    "section %(section)s: %(ref_cats)s from %(path)s") %
+                    {"section": section,
+                    "fmri": fmri,
+                    "path": self.classification_path,
+                    "ref_cats": ref_cats },
+                    msgid="%s.6" % msgid)

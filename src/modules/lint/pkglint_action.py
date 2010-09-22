@@ -503,8 +503,9 @@ class PkgActionChecker(base.ActionChecker):
 
                 for key in action.attrs.keys():
                         if "_" in key:
-                                if key in ['original_name', 'restart_fmri',
-                                    'clone_perms']:
+                                if key in ["original_name", "refresh_fmri",
+                                    "restart_fmri", "suspend_fmri",
+                                    "disable_fmri", "clone_perms"]:
                                         continue
                                 engine.warning(
                                     _("underscore in attribute name %(key)s in "

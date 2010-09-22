@@ -26,3 +26,7 @@ pkglint.ext.opensolaris = pkg.lint.opensolaris
 # The version pattern we use when searching for manifests
 # for a given build (only when using the -b flag to pkglint)
 version.pattern = *,5.11-0.
+
+# The path used for info.classification attribute checks
+info_classification_path = /usr/share/package-manager/data/opensolaris.org.sections
+
