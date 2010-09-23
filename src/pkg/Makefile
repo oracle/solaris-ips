@@ -142,6 +142,11 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 # If new warnings/errors appear in the lint output, we return an error.
 #
 lint: repository-metadata
+	# Ensure that the shipped pkglint_whitelist.txt is self-consistent.
+	# That is, when sorting it in the C locale and diffing the output
+	# against itself, we should see no differences.
+	# (This catches whitelist putbacks that aren't correctly sorted)
+	env LC_ALL=C sort pkglint_whitelist.txt | diff - pkglint_whitelist.txt
 	@echo "Running pkglint"
 	@rm -rf $(PDIR)/pkglint-cache
 	@rm -f $(PDIR)/pkglint-out*
@@ -153,7 +158,7 @@ lint: repository-metadata
 		( $(PKGLINT) -c $(PDIR)/pkglint-cache 			\
 			-l file://$(PKGDEST)/repo > /dev/null ) 2>&1 |	\
 			sed -e 's/@[0-9TZ.:,-]*//g' |			\
-			sort | 						\
+			env LC_ALL=C sort |				\
 			diff pkglint_whitelist.txt -			\
 			> $(PDIR)/pkglint-out-diff.txt; 		\
 									\
