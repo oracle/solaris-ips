@@ -1,0 +1,12 @@
+package gnome/theme/nimbus
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWnimbus
+version 0.1.5
+end package
+
+package SUNWnimbus
+consolidation "gnome"
+renamed 133
+depend gnome/theme/nimbus
+end package

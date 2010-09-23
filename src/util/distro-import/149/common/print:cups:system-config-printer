@@ -1,0 +1,14 @@
+package print/cups/system-config-printer
+consolidation "gnome"
+classification "System/Administration and Configuration"
+import SUNWcups-manager
+import SUNWcups-manager-root
+depend library/python-2/pycups
+depend print/cups
+end package
+
+package SUNWcups-manager
+consolidation "gnome"
+renamed 133
+depend print/cups/system-config-printer
+end package

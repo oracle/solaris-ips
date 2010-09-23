@@ -36,4 +36,4 @@ depend fmri=pkg:/package/svr4 type=require
 depend fmri=pkg:/runtime/perl-584/extra type=require
 depend fmri=pkg:/system/zones/internal type=require
 depend fmri=pkg:/text/tidy type=require
-depend fmri=pkg:/x11/header type=require
+depend fmri=pkg:/x11/library/libx11 type=require

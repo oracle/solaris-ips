@@ -1,0 +1,13 @@
+package library/liboil
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWliboil
+import SUNWliboil-devel
+version 0.3.17
+end package
+
+package SUNWliboil
+consolidation "gnome"
+renamed 133
+depend library/liboil
+end package
