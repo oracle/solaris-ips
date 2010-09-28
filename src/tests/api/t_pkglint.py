@@ -108,7 +108,7 @@ hardlink path=usr/sbin/prtdiag target=../../usr/lib/platexec variant.arch=sparc
 file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=sparc
 """
 
-expected_failures["dup-clashing-vars.mf"] = ["pkglint.dupaction001.2"]
+expected_failures["dup-clashing-vars.mf"] = ["pkglint.dupaction001.1"]
 broken_manifests["dup-clashing-vars.mf"] = \
 """
 #
@@ -249,11 +249,12 @@ dir group=sys mode=0755 owner=root path=/usr/lib/X11
 # usr/sbin/fsadmin is ref-counted but has different attributes across duplicates in [<pkg.fmri.PkgFmri 'pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z' at 0x8733e2c>]
 # usr/sbin/fsadmin delivered by [<pkg.fmri.PkgFmri 'pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z' at 0x8733e2c>] is a duplicate, declaring overlapping variants ['variant.other']
 expected_failures["dup-types-clashing-vars.mf"] = ["pkglint.dupaction008",
-    "pkglint.dupaction007", "pkglint.dupaction001.2"]
+    "pkglint.dupaction007", "pkglint.dupaction001.1"]
 broken_manifests["dup-types-clashing-vars.mf"] = \
 """
 #
-# we try to deliver usr/sbin/fsadmin with different action types, declaring a variant on one.
+# we try to deliver usr/sbin/fsadmin with different action types, declaring a
+# variant on both.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
@@ -486,14 +487,14 @@ license license="Foo" path=usr/share/lib/legalese.txt
 # 2 for the "linted"-handling code, saying that we're not linting these actions
 #
 expected_failures["linted-action.mf"] = ["pkglint001.2", "pkglint001.2",
-    "pkglint.action002.2", "pkglint.dupaction003.2"]
+    "pkglint.action002.2", "pkglint.dupaction003.1"]
 broken_manifests["linted-action.mf"] = \
 """
 #
-# we deliver some duplicate ref-counted actions (dir, link, hardlink) with differing
-# attributes, but since they're marked as linted, we should get no output, we should
-# still get the duplicate user though, as well as the unusual mode check for the
-# version of the path that's 0751
+# we deliver some duplicate ref-counted actions (dir, link, hardlink) with
+# differing attributes, but since they're marked as linted, we should get no
+# output, we should still get the duplicate user though, as well as the unusual
+# mode check for the version of the path that's 0751
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
@@ -815,6 +816,30 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
+# There are four expected failures because of the combinations of variant.arch
+# and variant.opensolaris.zone.
+expected_failures["dup-action-variant-subset.mf"] = \
+    ["pkglint.dupaction001.2"] * 4
+broken_manifests["dup-action-variant-subset.mf"] = \
+"""
+set name=pkg.fmri value=pkg://opensolaris.org/developer/build/make@0.5.11,5.11-0.147:20100827T060516Z
+set name=pkg.summary value="Solaris Bundled tools"
+set name=description value="Solaris Bundled tools"
+set name=pkg.description value="Solaris Bundled tools"
+set name=variant.arch value=sparc value=i386
+#
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.fish value=else value=other
+set name=variant.carrots value=foo
+#
+set name=org.opensolaris.consolidation value=sunpro
+set name=info.classification value="org.opensolaris.category.2008:Development/Source Code Management"
+dir group=sys mode=0755 owner=root path=usr
+dir group=bin mode=0755 owner=root path=usr/bin
+file /usr/bin/make elfarch=i386 variant.carrots=foo elfbits=32 group=bin mode=0755 owner=root path=usr/bin/make pkg.csize=93425 pkg.size=219296 
+file /usr/bin/make elfarch=i386 variant.fish=else elfbits=32 group=bin mode=0755 owner=root path=usr/bin/make pkg.csize=93425 pkg.size=219296
+"""
+
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
         def __init__(self):
@@ -1028,6 +1053,22 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
 """
 
+        ref_mf["twovar.mf"] = """
+#
+# This package shares the kernel/strmod path with onevar.mf but has a different
+# set of variants for both the action and the package.  This should not cause
+# an assertion to be raised.
+#
+set name=variant.arch value=sparc value=i386
+set name=pkg.summary value="A packge with two variant values"
+set name=pkg.description value="A package with two values for variant.arch."
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.fmri value=pkg://opensolaris.org/variant/twovar@0.5.11,5.11-0.148:20100910T211706Z
+dir group=sys mode=0755 owner=root path=kernel/strmod variant.opensolaris.zone=global
+"""
+
         # A set of manifests to be linted. Note that these are all self
         # consistent, passing all lint checks on their own.
         # Errors are designed to show up when linted against the ref_*
@@ -1152,6 +1193,24 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.arch value=i386 value=sparc
 depend fmri=system/obsolete@0.5.11-0.140 type=require
         """
+
+        expected_failures["onevar.mf"] = []
+        lint_mf["onevar.mf"] = """
+#
+# Test that a package which is only published against one variant value doesn't
+# cause an assertion failure when it shares an action with another package.
+# In this case, ketnel/strmod is shared between this package and the reference
+# package twovar.
+#
+set name=pkg.summary value="A package with one variant" variant.arch=i386
+set name=org.opensolaris.consolidation value=osnet variant.arch=i386
+set name=info.classification value="org.opensolaris.category.2008:Drivers/Other Peripherals" variant.arch=i386
+set name=variant.arch value=i386
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=pkg.fmri value=pkg://opensolaris.org/variants/onevar@0.5.11,5.11-0.148:20100910T195826Z
+set name=pkg.description value="A package published against only one variant value" variant.arch=i386
+dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.opensolaris.zone=global
+"""
 
         def setUp(self):
 

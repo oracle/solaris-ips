@@ -26,6 +26,8 @@
 
 import inspect
 
+import pkg.variant as variant
+
 class LintException(Exception):
         """An exception thrown when something fatal has gone wrong during
         the linting."""
@@ -92,7 +94,7 @@ class Checker(object):
         def shutdown(self, engine):
                 pass
 
-        def conflicting_variants(self, actions):
+        def conflicting_variants(self, actions, pkg_vars):
                 """Given a set of actions, determine that none of the actions
                 have matching variant values for any variant."""
 
@@ -108,19 +110,23 @@ class Checker(object):
                 # The comparison is commutative.
                 for i in range(0, len(action_list)):
                         action = action_list[i]
-                        var = action.get_variants()
+                        var = action.get_variant_template()
                         # if we don't declare any variants on a given
                         # action, then it's automatically a conflict
                         if len(var) == 0:
                                 conflicts = True
+                        vc = variant.VariantCombinations(var, True)
                         for j in range(i + 1, len(action_list)):
                                 cmp_action = action_list[j]
-                                cmp_var = cmp_action.get_variants()
-                                if var.intersects(cmp_var):
-                                        intersection = var.intersection(cmp_var)
-                                        for k in intersection:
-                                                if len(var[k]) != 0:
-                                                        conflicts = True
+                                cmp_var = variant.VariantCombinations(
+                                    cmp_action.get_variant_template(), True)
+                                if vc.intersects(cmp_var):
+                                        intersection = vc.intersection(cmp_var)
+                                        intersection.simplify(pkg_vars,
+                                            assert_on_different_domains=False)
+                                        conflicts = True
+                                        for k in intersection.sat_set:
+                                                if len(k) != 0:
                                                         conflict_vars.add(k)
                 return conflicts, conflict_vars
 

@@ -745,10 +745,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                                             d.action.attrs["path"], "baz")
                 t_path = self.make_manifest(self.ext_hardlink_manf)
                 _check_results(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_results(dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [],
-                    remove_internal_deps=False))
+                    remove_internal_deps=False, convert=False))
 
         def test_int_hardlink(self):
                 """Check that a hardlink with a target inside the package is
@@ -759,7 +759,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["syslog_path"])
                 ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
-                        {}, [])
+                        {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -768,7 +768,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -803,9 +804,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_int_script(self):
                 """Check that a file that starts with #! and references a file
@@ -817,7 +819,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["script_path"],
                     self.script_text)
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -832,7 +834,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 self.assertEqual(len(ds), 2)
                 for d in ds:
                         self.assert_(d.is_error())
@@ -875,9 +878,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 t_path = self.make_manifest(self.ext_elf_manf)
                 self.make_elf(self.paths["curses_path"])
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_int_elf(self):
                 """Check that an elf file that requires a library inside its
@@ -905,8 +909,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 t_path = self.make_manifest(self.int_elf_manf)
                 self.make_elf(self.paths["curses_path"])
                 self.make_elf(self.paths["libc_path"], static=True)
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -915,7 +919,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # Check that internal dependencies are as expected.
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_ext_python_dep(self):
                 """Check that a python file that imports a module outside its
@@ -961,9 +966,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_ext_python_abs_import_dep(self):
                 """Check that a python file that uses absolute imports a module
@@ -1012,9 +1018,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_abs_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_ext_python_pkg_dep(self):
                 """Check that a python file that is the __init__.py file for a
@@ -1060,9 +1067,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(self.paths["pkg_path"],
                     self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, []))
+                    [self.proto_dir], {}, [], convert=False))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False))
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False))
 
         def test_variants_1(self):
                 """Test that a file which satisfies a dependency only under a
@@ -1074,7 +1082,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1086,24 +1094,27 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                             self.paths["ksh_path"]):
                                 self.assertEqual(d.action.attrs["path"],
                                     self.paths["script_path"])
-                                self.assertEqual(len(d.dep_vars), 1)
-                                self.assert_("variant.arch" in d.dep_vars)
-                                expected_vars = set([("bar",), ("baz",)])
-                                for v in d.dep_vars.not_sat_set:
-                                        if v not in expected_vars:
-                                                raise RuntimeError("Variant %s "
-                                                    "was not in %s" %
-                                                     (v, expected_vars))
-                                        expected_vars.remove(v)
-                                self.assertEqual(expected_vars, set())
+                                expected_not_sat = set([
+                                    frozenset([("variant.arch", "bar")]),
+                                    frozenset([("variant.arch", "baz")])])
+                                expected_sat = set([
+                                    frozenset([("variant.arch", "foo")])])
+                                self.assertEqual(expected_sat,
+                                    d.dep_vars.sat_set)
+                                self.assertEqual(expected_not_sat,
+                                    d.dep_vars.not_sat_set)
                         elif d.dep_key() == self.__path_to_key(
                             self.paths["libc_path"]):
                                 self.assertEqual(
                                     d.action.attrs["path"],
                                     self.paths["ksh_path"])
-                                self.assertEqual(
-                                    set(d.dep_vars["variant.arch"]),
-                                    set(["foo"]))
+                                expected_not_sat = set([
+                                    frozenset([("variant.arch", "foo")])])
+                                expected_sat = set()
+                                self.assertEqual(expected_sat,
+                                    d.dep_vars.sat_set)
+                                self.assertEqual(expected_not_sat,
+                                    d.dep_vars.not_sat_set)
                         else:
                                 raise RuntimeError("Unexpected "
                                     "dependency path:%s" % (d.dep_key(),))
@@ -1114,10 +1125,11 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 dependency, an external dependency is not reported."""
 
                 t_path = self.make_manifest(self.variant_manf_2)
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1125,14 +1137,17 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.assert_(len(ds) == 1)
                 d = ds[0]
                 self.assert_(d.is_error())
-                self.assertEqual(set(d.dep_vars.keys()), set(["variant.arch"]))
-                self.assertEqual(set(d.dep_vars["variant.arch"]), set(["foo"]))
+                expected_not_sat = set([frozenset([("variant.arch", "foo")])])
+                expected_sat = set()
+                self.assertEqual(expected_sat, d.dep_vars.sat_set)
+                self.assertEqual(expected_not_sat, d.dep_vars.not_sat_set)
                 self.assertEqual(d.base_names[0], "libc.so.1")
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1140,10 +1155,15 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.assert_(len(ds) == 2)
                 for d in ds:
                         self.assert_(d.is_error())
-                        self.assertEqual(set(d.dep_vars.keys()),
-                           set(["variant.arch"]))
-                        self.assertEqual(set(d.dep_vars["variant.arch"]),
-                            set(["foo"]))
+                        # Because not removing internal dependencies means that
+                        # no resolution of their variants happens, both
+                        # dependencies have their variants as unsatisfied.
+                        expected_not_sat = set([
+                            frozenset([("variant.arch", "foo")])])
+                        expected_sat = set()
+                        self.assertEqual(expected_sat, d.dep_vars.sat_set)
+                        self.assertEqual(expected_not_sat,
+                            d.dep_vars.not_sat_set)
                         if d.dep_key() == self.__path_to_key(
                             self.paths["ksh_path"]):
                                 self.assertEqual(d.action.attrs["path"],
@@ -1167,7 +1187,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                     self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1179,36 +1199,42 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                             self.paths["ksh_path"]):
                                 self.assertEqual(d.action.attrs["path"],
                                     self.paths["script_path"])
-                                self.assertEqual(set(d.dep_vars.keys()),
-                                    set(["variant.arch"]))
-                                self.assertEqual(
-                                    set(d.dep_vars["variant.arch"]),
-                                    set(["bar"]))
+                                expected_not_sat = set([
+                                    frozenset([("variant.arch", "bar")])])
+                                expected_sat = set()
+                                self.assertEqual(expected_sat,
+                                    d.dep_vars.sat_set)
+                                self.assertEqual(expected_not_sat,
+                                    d.dep_vars.not_sat_set)
                         elif d.dep_key() == self.__path_to_key(
                             self.paths["libc_path"]):
                                 self.assertEqual(d.action.attrs["path"],
                                     self.paths["ksh_path"])
-                                self.assertEqual(set(d.dep_vars.keys()),
-                                    set(["variant.arch"]))
-                                self.assertEqual(
-                                    set(d.dep_vars["variant.arch"]),
-                                    set(["foo"]))
+                                expected_not_sat = set([
+                                    frozenset([("variant.arch", "foo")])])
+                                expected_sat = set()
+                                self.assertEqual(expected_sat,
+                                    d.dep_vars.sat_set)
+                                self.assertEqual(expected_not_sat,
+                                    d.dep_vars.not_sat_set)
                         else:
                                 raise RuntimeError("Unexpected "
                                     "dependency path:%s" % (d.dep_key(),))
 
         def test_variants_4(self):
-                """Test that an action with a variant that depends on a delivered action
-                also tagged with that variant, but not with a package-level variant is
-                reported as an internal dependency, not an external one."""
+                """Test that an action with a variant that depends on a
+                delivered action also tagged with that variant, but not with a
+                package-level variant is reported as an internal dependency, not
+                an external one."""
 
                 t_path = self.make_manifest(self.variant_manf_4)
-                self.make_proto_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
                 self.make_elf(self.paths["ksh_path"])
 
                 # Check that we only report a single external dependency
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1217,18 +1243,20 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 d = ds[0]
 
                 self.assert_(d.is_error())
-                self.assertEqual(set(d.dep_vars.keys()), set(["variant.arch",
-                    "variant.opensolaris.zone"]))
-                self.assertEqual(set(d.dep_vars["variant.arch"]), set(["foo"]))
-                self.assertEqual(set(d.dep_vars["variant.opensolaris.zone"]),
-                    set(["global"]))
+                expected_not_sat = set([frozenset([
+                    ("variant.arch", "foo"),
+                    ("variant.opensolaris.zone", "global")])])
+                expected_sat = set()
+                self.assertEqual(expected_sat, d.dep_vars.sat_set)
+                self.assertEqual(expected_not_sat, d.dep_vars.not_sat_set)
 
                 self.assertEqual(d.base_names[0], "libc.so.1")
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))
 
                 # Check that internal dependencies are as expected.
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1237,10 +1265,16 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.assert_(len(ds) == 2)
                 for d in ds:
                         self.assert_(d.is_error())
-                        self.assertEqual(set(d.dep_vars.keys()),
-                            set(["variant.opensolaris.zone"]))
-                        self.assertEqual(set(d.dep_vars["variant.opensolaris.zone"]),
-                            set(["global"]))
+                        # Because not removing internal dependencies means that
+                        # no resolution of their variants happens, both
+                        # dependencies have their variants as unsatisfied.
+                        expected_not_sat = set([frozenset([
+                            ("variant.arch", "foo"),
+                            ("variant.opensolaris.zone", "global")])])
+                        expected_sat = set()
+                        self.assertEqual(expected_sat, d.dep_vars.sat_set)
+                        self.assertEqual(expected_not_sat,
+                            d.dep_vars.not_sat_set)
 
                         if d.dep_key() == self.__path_to_key(
                             self.paths["ksh_path"]):
@@ -1252,7 +1286,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                                     self.paths["ksh_path"])
                         else:
                                 raise RuntimeError(
-                                    "Unexpected dependency path:%s" % (d.dep_key(),))
+                                    "Unexpected dependency path:%s" % \
+                                    (d.dep_key(),))
 
         def test_symlinks(self):
                 """Test that a file is recognized as delivered when a symlink
@@ -1277,7 +1312,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 t_path = self.make_manifest(
                     self.int_hardlink_manf_test_symlink)
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
 
         def test_str_methods(self):
                 """Test the str methods of objects in the flavor space."""
@@ -1323,8 +1358,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # This should fail because the "foo" directory is not given
                 # as a proto_dir.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir], {}, [], convert=False)
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1337,9 +1372,9 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # This should work since the "foo" directory has been added to
                 # the list of proto_dirs to use.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir, os.path.join(self.proto_dir, "foo")],
-                    {}, [])
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir,
+                    os.path.join(self.proto_dir, "foo")], {}, [], convert=False)
                 if es:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1349,9 +1384,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 # This should be different because the empty text file
                 # is found before the binary file.
                 self.make_proto_text_file(self.paths["curses_path"])
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir, os.path.join(self.proto_dir, "foo")],
-                    {}, [], remove_internal_deps=False)
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [self.proto_dir,
+                    os.path.join(self.proto_dir, "foo")], {}, [],
+                    remove_internal_deps=False, convert=False)
                 if es:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1363,9 +1399,10 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # This should find the binary file first and thus produce
                 # a depend action.
-                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [os.path.join(self.proto_dir, "foo"), self.proto_dir],
-                    {}, [], remove_internal_deps=False)
+                d_map, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    t_path, [os.path.join(self.proto_dir, "foo"),
+                    self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1380,7 +1417,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 # list of proto_dirs.
                 ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path, [self.proto_dir],
-                        {}, [])
+                        {}, [], convert=False)
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1396,7 +1433,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 ds, es, ms, pkg_attrs = \
                     dependencies.list_implicit_deps(t_path,
                         [self.proto_dir, os.path.join(self.proto_dir, "foo")],
-                        {}, [])
+                        {}, [], convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1449,7 +1486,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 # This should have an error because it cannot find the file
                 # needed.
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [])
+                    [self.proto_dir], {}, [], convert=False)
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1464,7 +1501,7 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 # normally.
                 _py_check_all_res(dependencies.list_implicit_deps(t_path,
                     [self.proto_dir, os.path.join(self.proto_dir, "d5")], {},
-                    []))
+                    [], convert=False))
 
 
         def test_smf_manifest_parse(self):
@@ -1535,7 +1572,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_smf_test_files()
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1557,7 +1595,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
 
                 # verify that removing internal dependencies works as expected
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=True)
+                    [self.proto_dir], {}, [], remove_internal_deps=True,
+                    convert=False)
                 self.assert_(len(ds) == 0, "Expected 0 dependencies, got %s" %
                     len(ds))
 
@@ -1570,7 +1609,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_smf_test_files()
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
                 if es != []:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
@@ -1601,7 +1641,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_smf_test_files()
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
 
                 self.assertEqual(len(ms), 1, "No unknown files reported during "
                     "analysis")
@@ -1650,7 +1691,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_smf_test_files()
 
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
-                    [self.proto_dir], {}, [], remove_internal_deps=False)
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
 
                 self.assert_(len(es) == 3,
                     "Detected %s error(s), expected 3" % len(es))

@@ -164,7 +164,7 @@ def main_func():
                         if res:
                                 return res
                         # sort by variant
-                        res = cmp(sorted(list(a.get_variants())), sorted(list(b.get_variants())))
+                        res = cmp(sorted(list(a.get_variant_template())), sorted(list(b.get_variant_template())))
                         if res:
                                 return res
                 else:

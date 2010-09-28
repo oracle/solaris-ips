@@ -20,8 +20,11 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
+import copy
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
@@ -37,64 +40,121 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 for k in v1:
                         self.assertEqual(sorted(v1[k]), sorted(v2[k]))
 
-        def test_1(self):
-                """Test basic functionality of variants."""
-                v1 = variant.VariantSets(dict([(1, ["a"]), (3, ["b"])]))
-                v2 = variant.VariantSets(dict([(1, ["a"]), (4, ["b"])]))
-                v3 = variant.VariantSets(dict([(1, ["a"]), (3, ["c"])]))
-                v4 = variant.VariantSets(dict([(1, ["b"]), (4, ["v"])]))
-                v5 = variant.VariantSets(dict([(1, ["a"]), (3, ["b"])]))
-                v1_v2_merge = variant.VariantSets(dict([(1, ["a"]), (3, ["b"]),
-                    (4, ["b"])]))
-                v1_v3_merge = variant.VariantSets(dict([(1, ["a"]),
-                    (3, ["b", "c"])]))
-                v4_v1_merge_unknown = variant.VariantSets(dict([(1, ["b"]),
-                    (3, ["b"]), (4, ["v"])]))
 
-                self.assertEqual(v1.issubset(v2), False)
-                self.assertEqual(v1.issubset(v1_v2_merge), True)
-                self.assertEqual(v1.issubset(v1_v3_merge), True)
-                self.assertEqual(v1.difference(v3), dict([(3, set(["b"]))]))
-                # Test for bug 11507, computing a difference when the sets
-                # are not totally overlapping.
-                self.assertEqual(v1.difference(v4),
-                    dict([(1, set(["a"])), (3, set(["b"]))]))
-                self.assertEqual(v1.difference(v1_v3_merge), {})
+        def test_vct(self):
+                """Test functionality of VariantCombinationTemplates."""
 
-                self.assertEqual(v1.intersects(v2), False)
-                self.assertEqual(v1.intersects(v1_v2_merge), True)
-                self.assertEqual(v1_v2_merge.intersects(v1), False)
-                self.assertEqual(v1.intersects(v1_v3_merge), True)
-                self.assertEqual(v1_v3_merge.intersects(v1), True)
+                vct_1 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b", "c"]), (2, ["z", "y", "x"])]))
+                self.assertEqual(vct_1[1], set(["a", "b", "c"]))
+                self.assert_(vct_1.issubset(vct_1))
+                self.assertEqual(str(vct_1), ' 1="a","b","c" 2="x","y","z"')
 
-                v4.merge_unknown(v1)
-                self.__check_equal(v4, v4_v1_merge_unknown)
+                vct_2 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b"]), (2, ["z", "y"])]))
+                self.assert_(vct_2.issubset(vct_1))
+                self.assert_(not vct_1.issubset(vct_2))
+                vct_2.merge_unknown(vct_1)
+                self.assertEqual(vct_2[1], set(["a", "b"]))
 
-                v2.merge(v1)
-                self.__check_equal(v2, v1_v2_merge)
-                v1.merge(v3)
-                self.__check_equal(v1, v1_v3_merge)
+                vct_3 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b", "c"])]))
+                self.assert_(vct_3.issubset(vct_1))
+                self.assert_(not vct_1.issubset(vct_3))
+                vct_3.merge_unknown(vct_1)
+                self.assertEqual(vct_1, vct_3)
 
-                v1.remove_identical(v5)
-                self.__check_equal(v1, dict([(3, ["b", "c"])]))
+        def test_variant_combinations(self):
+                """Test functionality of VariantCombinations."""
 
-        def test_get_sat_unset(self):
-                """Verify that get_satisfied() and get_unsatisfied() behave as
-                expected.
-                """
+                vct_1 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b", "c"]), (2, ["z", "y", "x"])]))
+                vct_2 = variant.VariantCombinationTemplate(
+                    dict([(10, ["l", "m", "n"]), (20, ["p", "q", "r"])]))
+                vct_3 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a"]), (2, ["z"])]))
+                vct_4 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b", "d"]), (2, ["z", "y", "x"])]))
+                set_combo = set([
+                    frozenset([(1, "a"), (2, "z")]),
+                    frozenset([(1, "a"), (2, "y")]),
+                    frozenset([(1, "a"), (2, "x")]),
+                    frozenset([(1, "b"), (2, "z")]),
+                    frozenset([(1, "b"), (2, "y")]),
+                    frozenset([(1, "b"), (2, "x")]),
+                    frozenset([(1, "c"), (2, "z")]),
+                    frozenset([(1, "c"), (2, "y")]),
+                    frozenset([(1, "c"), (2, "x")])])
+                vc1_s = variant.VariantCombinations(vct_1, True)
+                self.assertEqual(vc1_s.sat_set, set_combo)
+                self.assertEqual(vc1_s.not_sat_set, set())
+                self.assert_(not vc1_s.is_empty())
+                
+                vc1_ns = variant.VariantCombinations(vct_1, False)
+                self.assertEqual(vc1_ns.not_sat_set, set_combo)
+                self.assertEqual(vc1_ns.sat_set, set())
+                self.assert_(not vc1_ns.is_empty())
 
-                v1 = variant.VariantSets(dict([(1, set(["a", "b"])),
-                            (2, set(["c", "d"]))]))
-                self.__check_equal(v1, v1.get_unsatisfied())
-                self.__check_equal(v1.get_satisfied(), dict())
+                self.assertRaises(AssertionError, vc1_ns.simplify, vct_2)
+                self.assertEqual(vc1_ns.not_sat_set, set_combo)
+                self.assertEqual(vc1_ns.sat_set, set())
+                self.assert_(not vc1_ns.is_empty())
 
-                v2 = variant.VariantSets(dict([(1, ["b"]), (2, ["d", "c"])]))
-                v1.mark_as_satisfied(v2)
-                self.__check_equal(v1.get_satisfied(), v2)
+                self.assertRaises(AssertionError, vc1_ns.simplify, vct_4)
+                self.assertEqual(vc1_ns.not_sat_set, set_combo)
+                self.assertEqual(vc1_ns.sat_set, set())
+                self.assert_(not vc1_ns.is_empty())
 
-                # neither 2:C nor 2:D satisfied with 1:A
-                self.__check_equal(v1.get_unsatisfied(),
-                    variant.VariantSets(dict([(1, ["a"]), (2, ["c", "d"])])))
+                vc1_tmp = copy.copy(vc1_ns)
+                self.assert_(not vc1_tmp.is_satisfied())
+                vc1_tmp.mark_all_as_satisfied()
+                self.assert_(vc1_tmp.is_satisfied())
+                self.assertEqual(vc1_tmp.sat_set, set_combo)
+
+                vct3_set_combo = set([frozenset([(1, "a"), (2, "z")])])
+                vc3_ns = variant.VariantCombinations(vct_3, False)
+                self.assertEqual(vc3_ns.not_sat_set, vct3_set_combo)
+                self.assert_(vc3_ns.issubset(vc1_ns, False))
+                self.assert_(not vc1_ns.issubset(vc3_ns, False))
+                self.assert_(vc1_ns.issubset(vc3_ns, True))
+                self.assert_(not vc1_s.issubset(vc3_ns, True))
+
+                vc3_s = variant.VariantCombinations(vct_3, True)
+                vc2_s = variant.VariantCombinations(vct_2, True)
+                self.assert_(vc3_s.intersects(vc1_s))
+                self.assert_(vc3_ns.intersects(vc1_s))
+                self.assert_(not vc3_ns.intersects(vc2_s))
+                self.assert_(not vc3_s.intersects(vc2_s))
+                self.assert_(vc1_s.intersects(vc3_s))
+                intersect = vc3_s.intersection(vc1_s)
+                self.assertEqual(intersect.sat_set, vct3_set_combo)
+                self.assertEqual(intersect.not_sat_set, set())
+
+                # Test that modifing the original does not modify the copy.
+                vc3_ns_copy = copy.copy(vc3_ns)
+                vc3_ns.mark_all_as_satisfied()
+                self.assertEqual(vc3_ns_copy.not_sat_set, vct3_set_combo)
+                self.assertEqual(vc3_ns.not_sat_set, set())
+                self.assertEqual(vc3_ns.sat_set, vct3_set_combo)
+                
+                vct_empty = variant.VariantCombinationTemplate(dict([]))
+                vc_empty = variant.VariantCombinations(vct_empty, True)
+                self.assert_(vc_empty.is_empty())
+                self.assert_(vc_empty.intersects(vc1_ns))
+                self.assert_(vc1_ns.intersects(vc_empty))
+
+                vc1_ns.mark_as_satisfied(vc3_s)
+                self.assertEqual(vc1_ns.sat_set, vct3_set_combo)
+                self.assertEqual(vc1_ns.not_sat_set, set_combo - vct3_set_combo)
+
+                vc1_s.simplify(vct_1)
+                self.assertEqual(vc1_s.sat_set, set())
+                self.assertEqual(vc1_s.not_sat_set, set())
+
+                vc1_ns_simp = variant.VariantCombinations(vct_1, False)
+                vc1_ns_simp.simplify(vct_1)
+                self.assertEqual(vc1_ns_simp.sat_set, set())
+                self.assertEqual(vc1_ns_simp.not_sat_set, set())
 
 
 if __name__ == "__main__":

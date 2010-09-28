@@ -206,7 +206,7 @@ class SignatureAction(generic.Action):
                 actions are not handled yet, it also returns False in that
                 case."""
 
-                return self.hash is not None and not self.get_variants()
+                return self.hash is not None and not self.get_variant_template()
 
         @staticmethod
         def decompose_sig_alg(val):
@@ -241,8 +241,8 @@ class SignatureAction(generic.Action):
                 # If this signature is tagged with variants, if the version is
                 # higher than one we know about, or it uses an unrecognized
                 # hash algorithm, we can't handle it yet.
-                if self.get_variants() or ver > generic.Action.sig_version or \
-                    not self.hash_alg:
+                if self.get_variant_template() or \
+                    ver > generic.Action.sig_version or not self.hash_alg:
                         return None
                 # Turning this into a list makes debugging vastly more
                 # tractable.

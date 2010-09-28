@@ -79,7 +79,7 @@ class Dependency(depend.DependencyAction):
                 self.action = action
                 self.pkg_vars = pkg_vars
                 self.proto_dir = proto_dir
-                self.dep_vars = variant.VariantSets(action.get_variants())
+                self.dep_vars = self.get_variant_combinations()
 
                 attrs.update([
                     ("fmri", self.DUMMY_FMRI),
@@ -87,9 +87,7 @@ class Dependency(depend.DependencyAction):
                     ("%s.reason" % self.DEPEND_DEBUG_PREFIX, self.action_path())
                 ])
 
-                if self.dep_vars is not None:
-                        attrs.update(self.dep_vars)
-
+                attrs.update(action.get_variant_template())
                 depend.DependencyAction.__init__(self, **attrs)
 
         def is_error(self):
@@ -106,23 +104,17 @@ class Dependency(depend.DependencyAction):
                     "implement dep_key. Current class is %s") %
                     self.__class__.__name__)
 
-        def get_var_diff(self, ext_vars):
-                """Find the difference of the set of variants declared for the
-                action that produced this dependency, and another set of
-                variants."""
+        def get_variant_combinations(self, satisfied=False):
+                """Create the combinations of variants that this action
+                satisfies or needs satisfied.
 
-                vars = variant.VariantSets(self.action.get_variants())
-                for k in self.pkg_vars:
-                        if k not in vars:
-                                vars[k] = self.pkg_vars[k]
-                return vars.difference(ext_vars)
+                'satisfied' determines whether the combination produced is
+                satisfied or unsatisfied."""
 
-        def get_var_set(self):
-                vars = variant.VariantSets(self.action.get_variants())
-                for k in self.pkg_vars:
-                        if k not in vars:
-                                vars[k] = self.pkg_vars[k]
-                return vars
+                variants = self.action.get_variant_template()
+                variants.merge_unknown(self.pkg_vars)
+                return variant.VariantCombinations(variants,
+                    satisfied=satisfied)
 
         def action_path(self):
                 """Return the path to the file that generated this dependency.
@@ -169,7 +161,7 @@ class PublishingDependency(Dependency):
         def __init__(self, action, base_names, run_paths, pkg_vars, proto_dir,
             kind):
                 """Construct a PublishingDependency object.
-  
+
                 'action' is the action which produced this dependency.
 
                 'base_names' is the list of files of the dependency.
@@ -261,7 +253,7 @@ class PublishingDependency(Dependency):
                 more information for their implementations. See pkg.flavor.elf
                 for an example of this."""
 
-                missing_vars = self.get_var_set()
+                missing_vars = self.get_variant_combinations()
                 for p in self.possibly_delivered(delivered_files):
                         missing_vars.mark_as_satisfied(delivered_files[p])
                         if missing_vars.is_satisfied():

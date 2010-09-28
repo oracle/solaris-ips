@@ -98,8 +98,10 @@ class ElfDependency(base.PublishingDependency):
                         self.err_type = self.WARNING
                         self.attrs["%s.severity" % self.DEPEND_DEBUG_PREFIX] =\
                             "warning"
-                        return self.WARNING, self.get_var_diff(
+                        missing_vars = self.get_variant_combinations()
+                        missing_vars.mark_as_satisfied(
                             delivered_base_names[self.base_names[0]])
+                        return self.WARNING, missing_vars
                 else:
                         return err, vars
 

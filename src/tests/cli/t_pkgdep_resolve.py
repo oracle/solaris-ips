@@ -34,9 +34,9 @@ import unittest
 import pkg.client.api as api
 import pkg.client.progress as progress
 import pkg.flavor.base as base
+from pkg.fmri import PkgFmri
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
-from pkg.fmri import PkgFmri
 
 
 class TestApiDependencies(pkg5unittest.SingleDepotTestCase):
@@ -325,28 +325,6 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                         else:
                                 raise RuntimeError("Unexpected error:%s" % e)
 
-        def test_bug_15647(self):
-                """Verify that in cases where both the provided manifests and
-                installed image provide a resolution for a given dependency
-                that the dependency is only resolved once for a given variant
-                and that the resolution provided by the manifests is used."""
-
-                self.pkgsend_bulk(self.rurl, self.installed_double_provides)
-                self.api_obj.refresh(immediate=True)
-                self._api_install(self.api_obj, ["double_provides"])
-
-                manifests = [self.make_manifest(x) for x in
-                    (self.newer_double_provides, self.double_deps)]
-
-                pkg_deps, errs = dependencies.resolve_deps(manifests,
-                    self.api_obj)
-
-                self.assertEqual(len(pkg_deps[manifests[1]]), 1)
-                for d in pkg_deps[manifests[1]]:
-                        fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
-                        if str(fmri).startswith("pkg:/double_provides"):
-                                self.assertEqual(str(fmri.version.branch), "1")
-
         def test_simple_variants_1(self):
                 """Test that variants declared on the actions work correctly
                 when resolving dependencies."""
@@ -362,11 +340,11 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                         if d.attrs["fmri"] == "pkg:/s-v-bar":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["bar"]))
+                                    "bar")
                         elif d.attrs["fmri"] == "pkg:/s-v-baz":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["baz"]))
+                                    "baz")
                         else:
                                 raise RuntimeError("Unexpected fmri %s "
                                     "for dependency %s" %
@@ -399,11 +377,11 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                         if d.attrs["fmri"] == "pkg:/s-v-bar":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["bar"]))
+                                    "bar")
                         elif d.attrs["fmri"] == "pkg:/s-v-baz":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["baz"]))
+                                    "baz")
                         else:
                                 raise RuntimeError("Unexpected fmri %s "
                                     "for dependency %s" %
@@ -423,36 +401,39 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                 pkg_deps, errs = dependencies.resolve_deps(
                     [m1_path, m2_path, m3_path, m4_path], self.api_obj)
                 self.assertEqual(len(pkg_deps), 4)
-                self.assertEqual(len(pkg_deps[m1_path]), 3)
+                # This is 5 because the variant.num values are not collapsed
+                # like they could be.
+                self.assertEqual(len(pkg_deps[m1_path]), 5)
                 self.assertEqual(len(pkg_deps[m2_path]), 0)
                 self.assertEqual(len(pkg_deps[m3_path]), 0)
                 self.assertEqual(len(pkg_deps[m4_path]), 0)
                 self.assertEqual(len(errs), 1)
+                vnums = set(["one", "two", "three"])
                 for d in pkg_deps[m1_path]:
                         if d.attrs["fmri"] == "pkg:/s-v-bar":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["bar"]))
-                                self.assertEqual(
-                                    "variant.num" in d.attrs, False)
+                                    "bar")
+                                vnums.remove(d.attrs["variant.num"])
                         elif d.attrs["fmri"] == "pkg:/s-v-baz-one":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["baz"]))
+                                    "baz")
                                 self.assertEqual(
                                     d.attrs["variant.num"],
-                                    set(["one"]))
+                                    "one")
                         elif d.attrs["fmri"] == "pkg:/s-v-baz-two":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
-                                    set(["baz"]))
+                                    "baz")
                                 self.assertEqual(
                                     d.attrs["variant.num"],
-                                    set(["two"]))
+                                    "two")
                         else:
                                 raise RuntimeError("Unexpected fmri %s "
                                     "for dependency %s" %
                                     (d.attrs["fmri"], d))
+                self.assertEqual(vnums, set())
 
         def test_multi_file_dependencies(self):
                 def __check_results(pkg_deps, errs, exp_pkg, no_deps, one_dep):
@@ -769,6 +750,28 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                                     "no_such_named_file")
                         else:
                                 raise RuntimeError("Unexpected error:%s" % e)
+
+        def test_bug_15647(self):
+                """Verify that in cases where both the provided manifests and
+                installed image provide a resolution for a given dependency
+                that the dependency is only resolved once for a given variant
+                and that the resolution provided by the manifests is used."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_double_provides)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["double_provides"])
+
+                manifests = [self.make_manifest(x) for x in
+                    (self.newer_double_provides, self.double_deps)]
+
+                pkg_deps, errs = dependencies.resolve_deps(manifests,
+                    self.api_obj)
+
+                self.assertEqual(len(pkg_deps[manifests[1]]), 1)
+                for d in pkg_deps[manifests[1]]:
+                        fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
+                        if str(fmri).startswith("pkg:/double_provides"):
+                                self.assertEqual(str(fmri.version.branch), "1")
 
 if __name__ == "__main__":
         unittest.main()

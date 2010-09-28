@@ -121,14 +121,9 @@ class PkgDupActionChecker(base.ActionChecker):
                                     action.attrs["pkg.linted"].lower() == "true":
                                         continue
 
-                                variants = action.get_variants()
+                                variants = action.get_variant_template()
                                 variants.merge_unknown(pkg_vars)
-                                for v in variants:
-                                        # we're only interested in variants with
-                                        # 1 value, so using pop() is safe.
-                                        if len(variants[v]) == 1:
-                                                action.attrs[v] = \
-                                                    variants[v].pop()
+                                action.attrs.update(variants)
 
                                 p = action.attrs[attr]
                                 if p not in dic:
@@ -203,7 +198,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate paths on non-ref-counted actions."""
 
                 self.dup_attr_check(["file", "license"], "path", self.ref_paths,
-                    self.processed_paths, action, engine, msgid=pkglint_id)
+                    self.processed_paths, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_paths.pkglint_desc = _(
             "Paths should be unique.")
@@ -212,7 +208,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate driver names."""
 
                 self.dup_attr_check(["driver"], "name", self.ref_drivers,
-                    self.processed_drivers, action, engine, msgid=pkglint_id)
+                    self.processed_drivers, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_drivers.pkglint_desc = _("Driver names should be unique.")
 
@@ -221,7 +218,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate user names."""
 
                 self.dup_attr_check(["user"], "username", self.ref_usernames,
-                    self.processed_usernames, action, engine, msgid=pkglint_id)
+                    self.processed_usernames, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_usernames.pkglint_desc = _("User names should be unique.")
 
@@ -229,7 +227,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate uids."""
 
                 self.dup_attr_check(["user"], "uid", self.ref_uids,
-                    self.processed_uids, action, engine, msgid=pkglint_id)
+                    self.processed_uids, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_uids.pkglint_desc = _("UIDs should be unique.")
 
@@ -238,7 +237,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate group names."""
 
                 self.dup_attr_check(["group"], "groupname", self.ref_groupnames,
-                    self.processed_groupnames, action, engine, msgid=pkglint_id)
+                    self.processed_groupnames, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_groupnames.pkglint_desc = _(
             "Group names should be unique.")
@@ -247,7 +247,8 @@ class PkgDupActionChecker(base.ActionChecker):
                 """Checks for duplicate gids."""
 
                 self.dup_attr_check(["group"], "name", self.ref_gids,
-                    self.processed_gids, action, engine, msgid=pkglint_id)
+                    self.processed_gids, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id)
 
         duplicate_gids.pkglint_desc = _("GIDs should be unique.")
 
@@ -274,20 +275,18 @@ class PkgDupActionChecker(base.ActionChecker):
                 for (pfmri, a) in self.ref_paths[p]:
                         fmris.add(pfmri)
                         for key in a.differences(target):
-
-                                conflicting_vars, variants = \
-                                    self.conflicting_variants([a, target])
-                                if not conflicting_vars:
-                                        continue
-
-                                if (key.startswith("variant") or \
-                                    key.startswith("facet")):
-                                        pass
-
                                 # target, used in link actions often differs
                                 # between variants of those actions.
-                                elif not key.startswith("target"):
-                                        differences.add(key)
+                                if key.startswith("variant") or \
+                                    key.startswith("facet") or \
+                                    key.startswith("target"):
+                                        continue
+                                conflicting_vars, variants = \
+                                    self.conflicting_variants([a, target],
+                                        manifest.get_all_variants())
+                                if not conflicting_vars:
+                                        continue
+                                differences.add(key)
                 suspects = []
                 if differences:
                         for key in differences:
@@ -320,7 +319,7 @@ class PkgDupActionChecker(base.ActionChecker):
             "Duplicated reference counted actions should have the same attrs.")
 
         def dup_attr_check(self, action_names, attr_name, ref_dic,
-            processed_dic, action, engine, msgid=""):
+            processed_dic, action, engine, pkg_vars, msgid=""):
                 """This method does generic duplicate action checking where
                 we know the type of action and name of an action attributes
                 across actions/manifests that should not be duplicated.
@@ -362,28 +361,34 @@ class PkgDupActionChecker(base.ActionChecker):
                         actions.add(a)
                         fmris.add(pfmri)
 
-                has_conflict, conflict_vars = self.conflicting_variants(actions)
+                has_conflict, conflict_vars = self.conflicting_variants(actions,
+                    pkg_vars)
                 if has_conflict:
                         if not conflict_vars:
                                 engine.error(_("%(attr_name)s %(name)s is "
                                     "a duplicate delivered by %(pkgs)s "
-                                    "declaring no variants") %
+                                    "under all variant combinations") %
                                     {"attr_name": attr_name,
                                     "name": name,
                                     "pkgs":
                                     " ".join([f.get_fmri() for f in fmris])},
                                     msgid="%s%s.1" % (self.name, msgid))
                         else:
-                                engine.error(_("%(attr_name)s %(name)s is "
-                                    "a duplicate delivered by %(pkgs)s "
-                                    "declaring overlapping variants %(vars)s") %
-                                    {"attr_name": attr_name,
-                                    "name": name,
-                                    "pkgs":
-                                    " ".join([f.get_fmri() for f in fmris]),
-                                    "vars":
-                                    " ".join([v for v in conflict_vars])},
-                                    msgid="%s%s.2" % (self.name, msgid))
+                                for fz in conflict_vars:
+                                        engine.error(_("%(attr_name)s %(name)s "
+                                            "is a duplicate delivered by "
+                                            "%(pkgs)s declaring overlapping "
+                                            "variants %(vars)s") %
+                                            {"attr_name": attr_name,
+                                            "name": name,
+                                            "pkgs":
+                                            " ".join([f.get_fmri() for f
+                                                in fmris]),
+                                            "vars":
+                                            " ".join(["%s=%s" % (k, v)
+                                                for (k, v)
+                                                in sorted(fz)])},
+                                            msgid="%s%s.2" % (self.name, msgid))
                 processed_dic[name] = True
 
         def duplicate_path_types(self, action, manifest, engine,
@@ -408,7 +413,8 @@ class PkgDupActionChecker(base.ActionChecker):
                         fmris.add(pfmri)
                 if len(types) > 1:
                         has_conflict, conflict_vars = \
-                            self.conflicting_variants(actions)
+                            self.conflicting_variants(actions,
+                                manifest.get_all_variants())
                         if has_conflict:
                                 engine.error(
                                     _("path %(path)s is delivered by multiple "

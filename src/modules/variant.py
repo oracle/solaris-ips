@@ -20,9 +20,15 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 # basic variant support
+
+import copy
+import itertools
+from collections import namedtuple
 
 from pkg.misc import EmptyI
 
@@ -91,61 +97,56 @@ class Variants(dict):
                                 return False
                 return True
 
-class VariantSets(Variants):
-        """Class for holding sets of variants. The parent class is designed to
-        hold one value per variant. This class is used when multiple values for
-        a variant need to be used. It ensures that the value each variant
-        maps to is a set of one or more variant values."""
+# The two classes which follow are used during dependency calculation when
+# actions have variants, or the packages they're contained in do.  The
+# VariantCombinationTemplate corresponds to information that is encoded in
+# the actions.  Specifically, it records what types of variants exist
+# (variant.arch or variant.debug) and what values are known to exist for them
+# (x86/sparc or debug/non-debug).  The variant types are the keys of the
+# dictionary while the variant values are what the keys map to.
+#
+# The VariantCombinations class serves a different purpose.  In order to
+# determine whether a dependency is satisfied under all combinations of
+# variants, it is necessary to track whether each combination has been
+# satisfied.  When a VariantCombinations is created, it is provided a
+# VariantCombinationTemplate which it uses to seed the combinations of variants.
+# To make a single combination instance, for each type of variant, it chooses
+# one value and adds it to the instance.  It creates all possible combination
+# instances and these are what it uses to track whether all combinations have
+# been satisfied.  The class also provides methods for manipulating the
+# instances while maintaining consistency between the satisfied set and the
+# unsatisfied set.
 
-        def __init__(self, init=EmptyI):
-                self.set_sats = False
-                self.not_sat_set = None
-                Variants.__init__(self, init)
+class VariantCombinationTemplate(Variants):
+        """Class for holding a template of variant types and their potential
+        values."""
 
-        def update(self, d):
-                for a in d:
-                        if isinstance(d[a], set):
-                                self[a] = d[a]
-                        elif isinstance(d[a], list):
-                                self[a] = set(d[a])
-                        else:
-                                self[a] = set([d[a]])
-
-        def copy(self):
-                return VariantSets(self)
+        def __copy__(self):
+                return VariantCombinationTemplate(self)
 
         def __setitem__(self, item, value):
-                assert(not self.set_sats)
+                """Overrides Variants.__setitem__ to ensure that all values are
+                sets."""
+
                 if isinstance(value, list):
                         value = set(value)
                 elif not isinstance(value, set):
                         value = set([value])
                 Variants.__setitem__(self, item, value)
 
-        def merge(self, var):
-                """Combine two sets of variants into one."""
-                for name in var:
-                        if name in self:
-                                self[name].update(var[name])
-                        else:
-                                self[name] = var[name]
-
         def issubset(self, var):
                 """Returns whether self is a subset of variant var."""
-                for k in self:
-                        if k not in var:
-                                return False
-                        if self[k] - var[k]:
-                                return False
-                return True
+                res = self.difference(var)
+                return not res.type_diffs and not res.value_diffs
 
         def difference(self, var):
-                """Returns the variants in self and not in var."""
-                res = VariantSets()
+                res = VCTDifference([], [])
                 for k in self:
-                        tmp = self[k] - var.get(k, set())
-                        if tmp:
-                                res[k] = tmp
+                        if k not in var:
+                                res.type_diffs.append(k)
+                        else:
+                                for v in self[k] - var[k]:
+                                        res.value_diffs.append((k, v))
                 return res
 
         def merge_unknown(self, var):
@@ -154,112 +155,218 @@ class VariantSets(Variants):
                         if name not in self:
                                 self[name] = var[name]
 
-        def intersects(self, var):
-                """Returns whether self and var share at least one value for
-                each variant in self."""
-                for k in self:
-                        if k not in var:
-                                return False
-                        found = False
-                        for v in self[k]:
-                                if v in var[k]:
-                                        found = True
-                                        break
-                        if not found:
-                                return False
-                return True
+        def __repr__(self):
+                return "VariantTemplate(%s)" % dict.__repr__(self)
 
-        def intersection(self, var):
+        def __str__(self):
+                s = ""
+                for k in sorted(self):
+                        t = ",".join(['"%s"' % v for v in sorted(self[k])])
+                        s += " %s=%s" % (k, t)
+                if s:
+                        return s
+                else:
+                        return " <none>"
+
+
+VCTDifference = namedtuple("VCTDifference", ["type_diffs", "value_diffs"])
+# Namedtuple used to store the results of VariantCombinationTemplate
+# differences.  The type_diffs field stores the variant types which are in the
+# caller and not in the argument to difference.  The value_diffs field stores
+# the values for particular types which are in the caller and not in the
+# argument to difference.
+
+
+class VariantCombinations(object):
+        """Class for keeping track of which combinations of variant values have
+        and have not been satisfied for a particular action."""
+
+        def __init__(self, vct, satisfied):
+                """Create an instance of VariantCombinations based on the
+                template provided.
+
+                The 'vct' parameter is the template from which to build the
+                combinations.
+
+                The 'satisfied' parameter is a boolean which determines whether
+                the combinations created from the template will be considered
+                satisfied or unsatisfied."""
+
+                assert(isinstance(vct, VariantCombinationTemplate))
+                self.__sat_set = set()
+                self.__not_sat_set = set()
+                tmp = []
+                # This builds all combinations of variant values presented in
+                # vct.
+                for k in sorted(vct):
+                        if not tmp:
+                                # Initialize tmp with the key-value pairs for
+                                # the first key in vct.
+                                tmp = [[(k, v)] for v in vct[k]]
+                                continue
+                        # For each subsequent key in vct, append each of its
+                        # key-value pairs to each of the existing combinations.
+                        new_tmp = [
+                            exist[:] + [(k, v)] for v in vct[k]
+                            for exist in tmp
+                        ]
+                        tmp = new_tmp
+                # Here is an example of how the loop above would handle a vct
+                # of { 1:["a", "b"], 2:["x", "y"], 3:["m", "n"] }
+                # First, tmp would be initialized as [[(1, "a")], [(1, "b")]]
+                # Next, a new list is created by adding (2, "x") to a copy
+                # of each item in tmp, and then (2, "y"). This produces
+                # [[(1, "a"), (2, "x")], [(1, "a"), (2, "y")],
+                #  [(1, "b"), (2, "x")], [(1, "b"), (2, "y")]]
+                # That process is repeated one more time for the 3 key,
+                # resulting in:
+                # [[(1, "a"), (2, "x"), (3, "m")],
+                #  [(1, "a"), (2, "x"), (3, "n")],
+                #  [(1, "a"), (2, "y"), (3, "m")],
+                #  [(1, "a"), (2, "y"), (3, "n")],
+                #  [(1, "b"), (2, "x"), (3, "m")],
+                #  [(1, "b"), (2, "x"), (3, "n")],
+                #  [(1, "b"), (2, "y"), (3, "m")],
+                #  [(1, "b"), (2, "y"), (3, "n")]]
+                res = set()
+                for lst in tmp:
+                        res.add(frozenset(lst))
+                if satisfied:
+                        self.__sat_set = res
+                else:
+                        self.__not_sat_set = res
+                self.__template = copy.copy(vct)
+                self.__simpl_template = None
+
+        @property
+        def template(self):
+                return self.__template
+
+        @property
+        def sat_set(self):
+                if not self.__simpl_template:
+                        return self.__sat_set
+                else:
+                        return self.__calc_simple(True)
+
+        @property
+        def not_sat_set(self):
+                if not self.__simpl_template:
+                        return self.__not_sat_set
+                else:
+                        return self.__calc_simple(False)
+
+        def __copy__(self):
+                vc = VariantCombinations(self.__template, True)
+                vc.__sat_set = copy.copy(self.__sat_set)
+                vc.__not_sat_set = copy.copy(self.__not_sat_set)
+                vc.__simpl_template = self.__simpl_template
+                return vc
+                
+        def is_empty(self):
+                """Returns whether self was created with any potential variant
+                values."""
+
+                return not self.__sat_set and not self.__not_sat_set
+                
+        def issubset(self, vc, satisfied):
+                """Returns whether the instances in self are a subset of the
+                instances in vc. 'satisfied' determines whether the instances
+                compared are drawn from the set of satisfied instances or the
+                set of unsatisfied instances."""
+
+                if satisfied:
+                        return self.__sat_set.issubset(vc.__sat_set)
+                else:
+                        return self.__not_sat_set.issubset(vc.__not_sat_set)
+
+        def intersects(self, vc, only_not_sat=False):
+                """Returns whether an action whose variants are vc could satisfy
+                dependencies whose variants are self.
+
+                'only_not_sat' determines whether only the unsatisfied set of
+                variants for self is used for comparision.  When only_not_sat
+                is True, then intersects returns wether vc would satisfy at
+                least one instance which is currently unsatisfied."""
+
+                if self.is_empty() or vc.is_empty():
+                        return True
+                tmp = self.intersection(vc)
+                if only_not_sat:
+                        return bool(tmp.__not_sat_set)
+                return not tmp.is_empty()
+                
+        def intersection(self, vc):
                 """Find those variant values in self that are also in var, and
                 return them."""
-
-                res = VariantSets()
-                for k in self:
-                        if k not in var:
-                                raise RuntimeError("%s cannot be intersected "
-                                    "with %s becuase %s is not a key in the "
-                                    "latter." % (self, var, k))
-                        res[k] = self[k] & var[k]
+                assert len(vc.not_sat_set) == 0
+                res = copy.copy(self)
+                res.__sat_set &= vc.__sat_set
+                res.__not_sat_set &= vc.__sat_set
                 return res
 
-        def __variant_cross_product(self):
-                """Generates the cross product of all the values for all the
-                variants in self."""
+        def mark_as_satisfied(self, vc):
+                """For all instances in vc, mark those instances as being
+                satisfied."""
 
-                tmp = []
-                for k in sorted(self):
-                        if tmp == []:
-                                tmp = [[v] for v in self[k]]
-                                continue
-                        new_tmp = []
-                        new_tmp.extend([
-                            exist[:] + [v] for v in self[k]
-                            for exist in tmp
-                        ])
-                        tmp = new_tmp
-                return set([tuple(v) for v in tmp])
+                for s in vc.__sat_set:
+                        if s in self.__not_sat_set:
+                                self.__not_sat_set.remove(s)
+                                self.__sat_set.add(s)
 
-        def mark_as_satisfied(self, var):
-                """Mark those variant combinations seen in var as being
-                satisfied in self."""
+        def mark_all_as_satisfied(self):
+                """Mark all instances as being satisfied."""
 
-                if not self.set_sats:
-                        self.set_sats = True
-                        self.not_sat_set = self.__variant_cross_product()
-                self.not_sat_set -= var.__variant_cross_product()
+                self.__sat_set |= self.__not_sat_set
+                self.__not_sat_set = set()
+                
 
         def is_satisfied(self):
                 """Returns whether all variant combinations for this package
                 have been satisfied."""
 
-                return (self.set_sats and not self.not_sat_set) or not self
+                return not self.__not_sat_set
 
-        def groups(self):
-                """Return a grouped list of the variant combinations in this
-                VariantSets object"""
+        def simplify(self, vct, assert_on_different_domains=True):
+                """Store the provided VariantCombinationTemplate as the template
+                to use when simplifying the combinations."""
 
-                var_names = sorted(self)
-                return [zip(var_names, tup)
-                    for tup in sorted(self.__variant_cross_product())]
+                if not self.__template.issubset(vct):
+                        self.__simpl_template = {}                
+                        if assert_on_different_domains:
+                                assert self.__template.issubset(vct), \
+                                    "template:%s\nvct:%s" % \
+                                    (self.__template, vct)
+                self.__simpl_template = vct
 
-        def get_satisfied(self):
-                """Returns the combinations of variants which have been
-                satisfied for this VariantSets."""
+        def __calc_simple(self, sat):
+                """Given VariantCombinationTemplate to be simplified against,
+                reduce the instances to the empty set if the instances cover all
+                possible combinations of the template provided.
 
-                if self == {} or not self.set_sats:
-                        return VariantSets()
+                A general approach to simplification is currently deemed to
+                difficult in the face of arbitrary numbers of variant types and
+                arbitrary numbers of variant."""
 
-                var_names = sorted(self)
-                satisfied = self.__variant_cross_product() - self.not_sat_set
-                f = {}
-                for tup in sorted(satisfied):
-                        for key, var in zip(var_names, tup):
-                                f.setdefault(key, set()).add(var)
-                return VariantSets(f)
+                if not self.__simpl_template:
+                        possibilities = 0
+                else:
+                        possibilities = 1
+                        for k in self.__simpl_template:
+                                possibilities *= len(self.__simpl_template[k])
 
-        def get_unsatisfied(self):
-                """Returns the variant combinations for self which have not
-                been satisfied."""
-                if not self.set_sats:
-                        self.set_sats = True
-                        self.not_sat_set = self.__variant_cross_product()
+                if sat:
+                        rel_set = self.__sat_set
+                else:
+                        rel_set = self.__not_sat_set
 
-                var_names = sorted(self)
-                f = {}
-                for tup in sorted(self.not_sat_set):
-                        for key, var in zip(var_names, tup):
-                                f.setdefault(key, set()).add(var)
-                return VariantSets(f)
-
-        def remove_identical(self, var):
-                """For each key in self, remove it from the dictionary if its
-                values are identical to the values that var maps k to."""
-
-                for k in self.keys():
-                        if k not in var:
-                                continue
-                        if self[k] == var[k]:
-                                del self[k]
+                # If the size of sat_set or not_sat_set matches the number of
+                # possibilities a template can produce, then it can be
+                # simplified.
+                if possibilities != len(rel_set):
+                        return rel_set
+                return set()
 
         def __repr__(self):
-                return "VariantSets(%s)" % dict.__repr__(self)
+                return "VC Sat:%s Unsat:%s" % (sorted(self.sat_set),
+                    sorted(self.not_sat_set))

@@ -307,17 +307,6 @@ def resolve_echo_line(l):
                 return not act.name == "depend" or \
                     act.attrs["type"] != "require"
 
-def explode(dep_with_variantsets):
-        sat_tups = dep_with_variantsets.get_variants().get_satisfied().groups()
-        if not sat_tups:
-                return dep_with_variantsets
-        res = []
-        for tup in sat_tups:
-                attrs = dep_with_variantsets.attrs.copy()
-                attrs.update(dict(tup))
-                res.append(str(actions.depend.DependencyAction(**attrs)))
-        return "\n".join(res).rstrip()
-
 def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         """Write the resolved package dependencies to stdout.
 
@@ -345,7 +334,7 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
                                     p)
                                 ret_code = 1
                 for d in pkg_deps[p]:
-                        msg(explode(d))
+                        msg(d)
                 msg(_("\n\n"))
         return ret_code
 
@@ -383,7 +372,7 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
                                 out_fh.write(l)
                 fh.close()
         for d in deps:
-                out_fh.write("%s\n" % explode(d))
+                out_fh.write("%s\n" % d)
         out_fh.close()
         return ret_code
 

@@ -147,6 +147,8 @@ class PkgManifestChecker(base.ManifestChecker):
                 undefined_variants = set()
                 has_arch_file = False
 
+                pkg_vars = manifest.get_all_variants()
+
                 for action in manifest.gen_actions():
                         if linted(action):
                                 continue
@@ -155,17 +157,13 @@ class PkgManifestChecker(base.ManifestChecker):
                             "elfarch" in action.attrs:
                                 has_arch_file = True
 
-                        for key in action.attrs:
-                                if not key.startswith("variant"):
-                                        continue
-                                val = action.attrs[key]
-                                if key not in manifest:
-                                        undefined_variants.add(key)
-                                else:
-                                        descr = manifest[key]
-                                        if val not in descr:
-                                                unknown_variants.add(
-                                                    "%s=%s" % (key, val))
+                        vct = action.get_variant_template()
+                        diff = vct.difference(pkg_vars)
+                        for k in diff.type_diffs:
+                                undefined_variants.add(k)
+                        for k, v in diff.value_diffs:
+                                unknown_variants.add("%s=%s" % (k, v))
+
                 if len(undefined_variants) > 0:
                         engine.error(_("variant(s) %(vars)s not defined by "
                             "%(pkg)s") %
@@ -243,7 +241,8 @@ class PkgManifestChecker(base.ManifestChecker):
                         actions = seen_deps[key]
                         if len(actions) > 1:
                                 has_conflict, conflict_vars = \
-                                    self.conflicting_variants(actions)
+                                    self.conflicting_variants(actions,
+                                        manifest.get_all_variants())
                                 if has_conflict:
                                         duplicates.append(key)
 
@@ -273,7 +272,8 @@ class PkgManifestChecker(base.ManifestChecker):
                         actions = seen_sets[key]
                         if len(actions) > 1:
                                 has_conflict, conflict_vars = \
-                                    self.conflicting_variants(actions)
+                                    self.conflicting_variants(actions,
+                                        manifest.get_all_variants())
                                 if has_conflict:
                                         duplicates.append(key)
 

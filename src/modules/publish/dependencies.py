@@ -24,6 +24,7 @@
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+import copy
 import itertools
 import os
 import urllib
@@ -42,6 +43,7 @@ import pkg.variant as variants
 
 paths_prefix = "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX
 files_prefix = "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX
+reason_prefix = "%s.reason" % base.Dependency.DEPEND_DEBUG_PREFIX
 
 class DependencyError(Exception):
         """The parent class for all dependency exceptions."""
@@ -56,9 +58,12 @@ class MultiplePackagesPathError(DependencyError):
                 self.source = source
 
         def __str__(self):
-                return _("The file dependency %s has paths which resolve "
-                    "to multiple packages. The actions are as follows:\n%s" %
-                    (self.source, "\n".join(["\t%s" % a for a in self.res])))
+                return _("The file dependency %(src)s has paths which resolve "
+                    "to multiple packages. The actions are as "
+                    "follows:\n%(acts)s") % {
+                        "src":self.source,
+                        "acts":"\n".join(["\t%s" % a for a in self.res])
+                    }
 
 class AmbiguousPathError(DependencyError):
         """This exception is used when multiple packages deliver a path which
@@ -69,9 +74,12 @@ class AmbiguousPathError(DependencyError):
                 self.source = source
 
         def __str__(self):
-                return _("The file dependency %s depends on a path delivered "
-                    "by multiple packages. Those packages are:%s" %
-                    (self.source, " ".join([str(p) for p in self.pkgs])))
+                return _("The file dependency %(src)s depends on a path "
+                    "delivered by multiple packages. Those packages "
+                    "are:%(pkgs)s") % {
+                        "src":self.source,
+                        "pkgs":" ".join([str(p) for p in self.pkgs])
+                    }
 
 class UnresolvedDependencyError(DependencyError):
         """This exception is used when no package delivers a file which is
@@ -83,16 +91,40 @@ class UnresolvedDependencyError(DependencyError):
                 self.pvars = pvars
 
         def __str__(self):
-                return _("%s has unresolved dependency '%s' under the "
-                    "following combinations of variants:\n%s") % \
-                    (self.path, self.file_dep,
-                    "\n".join([
-                        " ".join([("%s:%s" % (name, val)) for name, val in grp])
-                        for grp in self.pvars.get_unsatisfied().groups()
-                    ]))
+                return _("%(pth)s has unresolved dependency '%(dep)s' under "
+                    "the following combinations of variants:\n%(combo)s") % \
+                    {
+                        "pth":self.path,
+                        "dep":self.file_dep,
+                        "combo":"\n".join([
+                            " ".join([
+                                ("%s:%s" % (name, val)) for name, val in grp
+                            ])
+                            for grp in self.pvars.not_sat_set
+                    ])}
+
+class MissingPackageVariantError(DependencyError):
+        """This exception is used when an action is tagged with a variant or
+        variant value which the package is not tagged with."""
+
+        def __init__(self, act_vars, pkg_vars, pth):
+                self.act_vars = act_vars
+                self.pkg_vars = pkg_vars
+                self.path = pth
+
+        def __str__(self):
+                return _("The action delivering %(path)s is tagged with a "
+                    "variant type or value not tagged on the package. "
+                    "Dependencies on this file may fail to be reported.\n"
+                    "The action's variants are: %(act)s\nThe package's "
+                    "variants are: %(pkg)s") % {
+                        "path": self.path,
+                        "act": self.act_vars,
+                        "pkg": self.pkg_vars
+                    }
 
 def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, kernel_paths,
-    remove_internal_deps=True):
+    remove_internal_deps=True, convert=True):
         """Given the manifest provided in file_path, use the known dependency
         generators to produce a list of dependencies the files delivered by
         the manifest have.
@@ -106,15 +138,38 @@ def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, kernel_paths,
         $PLATFORM, to the values they should be expanded to.
 
         'kernel_paths' contains the run paths which kernel modules should use.
-        """
+
+        'convert' determines whether PublishingDependencies will be transformed
+        to DependencyActions prior to being returned.  This is primarily an
+        option to facilitate testing and debugging."""
 
         m, missing_manf_files = __make_manifest(file_path, proto_dirs)
         pkg_vars = m.get_all_variants()
         deps, elist, missing, pkg_attrs = list_implicit_deps_for_manifest(m,
             proto_dirs, pkg_vars, dyn_tok_conv, kernel_paths)
+        rid_errs = []
         if remove_internal_deps:
-                deps = resolve_internal_deps(deps, m, proto_dirs, pkg_vars)
-        return deps, missing_manf_files + elist, missing, pkg_attrs
+                deps, rid_errs = resolve_internal_deps(deps, m, proto_dirs,
+                    pkg_vars)
+        if convert:
+                deps = convert_to_standard_dep_actions(deps)
+        return deps, missing_manf_files + elist + rid_errs, missing, pkg_attrs
+
+def convert_to_standard_dep_actions(deps):
+        """Convert pkg.base.Dependency objects to
+        pkg.actions.dependency.Dependency objects."""
+
+        res = []
+        for d in deps:
+                tmp = []
+                for c in d.dep_vars.not_sat_set:
+                        attrs = d.attrs.copy()
+                        attrs.update(c)
+                        tmp.append(actions.depend.DependencyAction(**attrs))
+                if not tmp:
+                        tmp.append(actions.depend.DependencyAction(**d.attrs))
+                res.extend(tmp)
+        return res
 
 def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         """Given a list of dependencies, remove those which are satisfied by
@@ -131,34 +186,44 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         'pkg_vars' are the variants that this package was published against."""
 
         res = []
+        errs = []
         delivered = {}
         delivered_bn = {}
         for a in mfst.gen_actions_by_type("file"):
-                pvars = variants.VariantSets(a.get_variants())
+                pvars = a.get_variant_template()
                 if not pvars:
                         pvars = pkg_vars
                 else:
+                        if not pvars.issubset(pkg_vars):
+                                # This happens when an action in a package is
+                                # tagged with a variant type or value which the
+                                # package has not been tagged with.
+                                errs.append(
+                                    MissingPackageVariantError(pvars, pkg_vars,
+                                        a.attrs["path"]))
                         pvars.merge_unknown(pkg_vars)
+                pvc = variants.VariantCombinations(pvars, satisfied=True)
                 p = a.attrs["path"]
-                delivered.setdefault(p, variants.VariantSets()).merge(pvars)
+                delivered.setdefault(p, copy.copy(pvc))
                 p = os.path.join(a.attrs[portable.PD_PROTO_DIR], p)
                 np = os.path.normpath(p)
                 rp = os.path.realpath(p)
                 # adding the normalized path
-                delivered.setdefault(np, variants.VariantSets()).merge(pvars)
+                delivered.setdefault(np, copy.copy(pvc))
                 # adding the real path
-                delivered.setdefault(rp, variants.VariantSets()).merge(pvars)
+                delivered.setdefault(rp, copy.copy(pvc))
                 bn = os.path.basename(p)
-                delivered_bn.setdefault(bn, variants.VariantSets()).merge(pvars)
+                delivered_bn.setdefault(bn, copy.copy(pvc))
 
         for d in deps:
                 etype, pvars = d.resolve_internal(delivered_files=delivered,
                     delivered_base_names=delivered_bn)
                 if etype is None:
                         continue
+                pvars.simplify(pkg_vars)
                 d.dep_vars = pvars
                 res.append(d)
-        return res
+        return res, errs
 
 def no_such_file(action, **kwargs):
         """Function to handle dispatch of files not found on the system."""
@@ -229,7 +294,6 @@ def list_implicit_deps_for_manifest(mfst, proto_dirs, pkg_vars, dyn_tok_conv,
                                 deps.extend(ds)
                                 elist.extend(errs)
                                 __update_pkg_attrs(pkg_attrs, attrs)
-
                         except base.DependencyAnalysisError, e:
                                 elist.append(e)
         for a in mfst.gen_actions_by_type("hardlink"):
@@ -323,20 +387,22 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars):
         for pfmri, delivered_vars in lst:
                 # If the pfmri package isn't present under any of the variants
                 # where the dependency is, skip it.
-                if not orig_dep_vars.intersects(delivered_vars):
+                if not orig_dep_vars.intersects(delivered_vars,
+                    only_not_sat=True):
                         continue
+                vc = orig_dep_vars.intersection(delivered_vars)
+                vc.mark_all_as_satisfied()
                 for found_vars, found_fmri in vars:
                         # Because we don't have the concept of one-of
                         # dependencies, depending on a file which is delivered
                         # in multiple packages under a set of variants
                         # prevents automatic resolution of dependencies.
                         if found_fmri != pfmri and \
-                            (delivered_vars.intersects(found_vars) or
-                            found_vars.intersects(delivered_vars)):
+                            found_vars.intersects(delivered_vars):
                                 errs.add(found_fmri)
                                 errs.add(pfmri)
                 # Find the variants under which pfmri is relevant.
-                action_vars = orig_dep_vars.intersection(delivered_vars)
+                action_vars = vc
                 # Mark the variants as satisfied so it's possible to know if
                 # all variant combinations have been covered.
                 dep_vars.mark_as_satisfied(delivered_vars)
@@ -381,7 +447,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
         'orig_dep_vars' is the original set of variants under which the
         dependency must be satisfied."""
 
-        res = None
+        res = []
         errs = []
         multiple_path_errs = {}
         for p in make_paths(file_dep):
@@ -452,8 +518,7 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         'pkg_vars' is the variants against which the package was published."""
 
         file_dep, orig_dep_vars = split_off_variants(file_dep, pkg_vars)
-        dep_vars = orig_dep_vars.copy()
-
+        dep_vars = copy.copy(orig_dep_vars)
         # First try to resolve the dependency against the delivered files.
         res, dep_vars, errs = find_package_using_delivered_files(delivered,
                 file_dep, dep_vars, orig_dep_vars)
@@ -465,16 +530,17 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         #
         # We only need to resolve for the variants not already satisfied
         # above.
+        const_dep_vars = copy.copy(dep_vars)
         inst_res, dep_vars, inst_errs = find_package_using_delivered_files(
-            installed, file_dep, dep_vars, dep_vars.get_unsatisfied())
+            installed, file_dep, dep_vars, const_dep_vars)
         res.extend(inst_res)
         errs.extend(inst_errs)
         return res, dep_vars, errs
 
 def is_file_dependency(act):
-        return (act.name == "depend" and
-            act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI
-            and files_prefix in act.attrs)
+        return act.name == "depend" and \
+            act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
+            files_prefix in act.attrs
 
 def merge_deps(dest, src):
         """Add the information contained in src's attrs to dest."""
@@ -511,18 +577,26 @@ def combine(deps, pkg_vars):
                 so that the groups match the duplicate actions that the code
                 in pkg.manifest notices."""
 
-                # d[0] is the action.  d[1] is the VariantSet for this action.
+                # d[0] is the action.  d[1] is the VariantCombination for this
+                # action.
                 return d[0].name, d[0].attrs.get(d[0].key_attr, id(d[0]))
 
         def add_vars(d, d_vars, pkg_vars):
                 """Add the variants 'd_vars' to the dependency 'd', after
                 removing the variants matching those defined in 'pkg_vars'."""
 
-                d_vars.remove_identical(pkg_vars)
-                d.attrs.update(d_vars)
-                # Remove any duplicate values for any attributes.
-                d.consolidate_attrs()
-                return d
+                d_vars.simplify(pkg_vars)
+                res = []
+                for s in d_vars.sat_set:
+                        attrs = d.attrs.copy()
+                        attrs.update(s)
+                        t = actions.depend.DependencyAction(**attrs)
+                        t.consolidate_attrs()
+                        res.append(t)
+                if not res:
+                        d.consolidate_attrs()
+                        res = [d]
+                return res
 
         def key_on_variants(a):
                 """Return the key (the VariantSets) to sort the grouped tuples
@@ -535,9 +609,9 @@ def combine(deps, pkg_vars):
                 supersets of others are placed at the front of the list.  This
                 function assumes that a and b are both VariantSets."""
 
-                if a.issubset(b):
+                if a.issubset(b, satisfied=True):
                         return 1
-                elif b.issubset(a):
+                elif b.issubset(a, satisfied=True):
                         return -1
                 return 0
 
@@ -630,11 +704,12 @@ def combine(deps, pkg_vars):
                                 # If d_vars is a subset of any variant set
                                 # already in the results, then d should be
                                 # combined with that dependency.
-                                if d_vars.issubset(rel_vars):
+                                if d_vars.issubset(rel_vars, satisfied=True):
                                         found_subset = True
                                         merge_deps(rel_res, d)
                                         break
-                                assert(not rel_vars.issubset(d_vars))
+                                assert(not rel_vars.issubset(d_vars,
+                                    satisfied=True))
 
                         # If no subset was found, then d_vars is a new set of
                         # conditions under which the dependency d should apply
@@ -645,20 +720,20 @@ def combine(deps, pkg_vars):
                 # Add the variants to the dependency action and remove any
                 # variants that are identical to those defined by the package.
                 subres = [add_vars(d, d_vars, pkg_vars) for d, d_vars in subres]
-                res.extend(subres)
+                res.extend(itertools.chain.from_iterable(subres))
         return res
 
 def split_off_variants(dep, pkg_vars):
         """Take a dependency which may be tagged with variants and move those
         tags into a VariantSet."""
 
-        dep_vars = variants.VariantSets(dep.get_variants())
+        dep_vars = dep.get_variant_template()
         dep_vars.merge_unknown(pkg_vars)
         # Since all variant information is being kept in the above VariantSets,
         # remove the variant information from the action.  This prevents
         # confusion about which is the authoritative source of information.
         dep.strip_variants()
-        return dep, dep_vars
+        return dep, variants.VariantCombinations(dep_vars, satisfied=False)
 
 def prune_debug_attrs(action):
         """Given a dependency action with pkg.debug.depend attributes
@@ -695,10 +770,12 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 for f in itertools.chain(mfst.gen_actions_by_type("file"),
                      mfst.gen_actions_by_type("hardlink"),
                      mfst.gen_actions_by_type("link")):
-                        dep_vars = variants.VariantSets(f.get_variants())
+                        dep_vars = f.get_variant_template()
                         dep_vars.merge_unknown(pvariants)
+                        vc = variants.VariantCombinations(dep_vars,
+                            satisfied=True)
                         pathdict.setdefault(f.attrs["path"], []).append(
-                            (pfmri, dep_vars))
+                            (pfmri, vc))
 
 
         # The variable 'manifests' is a list of 5-tuples. The first element
@@ -755,8 +832,8 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 ]
                 for file_dep, (res, dep_vars, pkg_errs) in pkg_res:
                         errs.extend(pkg_errs)
+                        dep_vars.simplify(pkg_vars)
                         if not res:
-                                dep_vars.merge_unknown(pkg_vars)
                                 errs.append(UnresolvedDependencyError(mp,
                                     file_dep, dep_vars))
                         else:

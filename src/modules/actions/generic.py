@@ -530,8 +530,11 @@ class Action(object):
                                 facets.append(k)
                 return variants, facets
 
-        def get_variants(self):
-                return variant.VariantSets(dict((
+        def get_variant_template(self):
+                """Return the VariantCombinationTemplate that the variant tags
+                of this action define."""
+
+                return variant.VariantCombinationTemplate(dict((
                     (v, self.attrs[v]) for v in self.get_varcet_keys()[0]
                 )))
 

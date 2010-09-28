@@ -49,8 +49,14 @@ SH group=bin mode=0755 owner=root path=u\
 sr/xpg4/lib/libcurses.so.1
 """
         test_manf_2 = """\
+set name=variant.arch value=foo value=bar
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1 variant.arch=foo
 file NOHASH group=bin mode=0755 owner=root path=etc/pam.conf
+"""
+
+        test_elf_warning_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
+file NOHASH group=bin mode=0755 owner=root path=etc/libc.so.1
 """
 
         int_hardlink_manf = """\
@@ -320,8 +326,10 @@ depend fmri=pkg:/dup-prov pkg.debug.depend.file=var/log/f2 pkg.debug.depend.file
 depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar variant.num=one
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar variant.num=two
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
 depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.file=var/log/f5 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
 """
 
@@ -511,9 +519,14 @@ set name=variant.foo value=bar
 depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require
 """
 
-        unsatisfied_error = """\
+        unsatisfied_error_1 = """\
 %s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require' under the following combinations of variants:
-variant.foo:bar"""
+"""
+
+        unsatisfied_error_2 = """\
+%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require' under the following combinations of variants:
+variant.foo:bar
+"""
 
         partially_satisfied_manf = """\
 set name=fmri value=pkg:/partially_satisfied_manf
@@ -630,6 +643,29 @@ The file to be installed at usr/lib/python2.4/vendor-packages/pkg/client/indexer
 The file to be installed in usr/bin/pkg does not specify a specific version of python either in its installed path nor in its text.  Such a file cannot be analyzed for dependencies since the version of python it will be used with is unknown.  The text of the file is here: %s/usr/bin/pkg.
 """
 
+        bug_16808_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=var/log/syslog variant.opensolaris.zone=global
+hardlink path=var/log/foobar target=syslog
+"""
+        
+        bug_15958_manf = """\
+set name=variant.opensolaris.zone value=global value=nonglobal
+""" + bug_16808_manf
+
+        res_bug_15958 = """\
+depend fmri=__TBD pkg.debug.depend.file=syslog pkg.debug.depend.path=var/log pkg.debug.depend.reason=var/log/foobar pkg.debug.depend.type=hardlink type=require variant.opensolaris.zone=nonglobal
+"""
+
+        bug_16808_error = """\
+The action delivering var/log/syslog is tagged with a variant type or value not tagged on the package. Dependencies on this file may fail to be reported.
+The action's variants are: variant.opensolaris.zone="global"
+The package's variants are: <none>
+"""
+
+        res_elf_warning = """\
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/xpg4/lib/libcurses.so.1 pkg.debug.depend.severity=warning pkg.debug.depend.type=elf type=require
+"""
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 #
@@ -744,8 +780,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 tp = self.make_manifest(self.test_manf_2)
                 self.make_proto_text_file("etc/pam.conf", "text")
 
-                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
-                self.check_res(self.res_manf_2, self.output)
+                self.pkgdepend_generate("-m -d %s %s" %
+                    (self.test_proto_dir, tp))
+                self.check_res(self.res_manf_2 + self.test_manf_2, self.output)
                 self.check_res("", self.errout)
 
                 res_path = self.make_manifest(self.output)
@@ -1222,19 +1259,19 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 # Generally unsatisfied dependency
                 self.pkgdepend_resolve(" -o %s" % unsat, exit=1)
-                self.check_res(self.unsatisfied_error % unsat, self.errout)
+                self.check_res(self.unsatisfied_error_1 % unsat, self.errout)
 
                 # Dependency that would be satisfied were it not for
                 # mismatched variants
                 self.pkgdepend_resolve(" -o %s %s" % (unsat, satisfying),
                     exit=1)
-                self.check_res(self.unsatisfied_error % unsat, self.errout)
+                self.check_res(self.unsatisfied_error_1 % unsat, self.errout)
 
                 # Partially satisfied dependency (for one variant
                 # value, not another)
                 self.pkgdepend_resolve(" -o %s %s" % (partial, satisfying),
                     exit=1)
-                self.check_res(self.unsatisfied_error % partial, self.errout)
+                self.check_res(self.unsatisfied_error_2 % partial, self.errout)
                 self.check_res("%s\n\n%s\n%s" % (partial, satisfying,
                     self.satisfying_out), self.output)
 
@@ -1415,6 +1452,37 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     os.path.join(self.test_proto_dir, "d1"), tp))
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
+
+        def test_bug_15958(self):
+                """Test that a dependency which is not satisfied internally
+                under certain variants is reported correctly."""
+
+                tp = self.make_manifest(self.bug_15958_manf)
+                self.make_proto_text_file("var/log/syslog", "text")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res("", self.errout)
+                self.check_res(self.res_bug_15958, self.output)
+
+        def test_bug_16808(self):
+                """Test that if an action uses a variant not declared at the
+                package level, an error is reported."""
+
+                tp = self.make_manifest(self.bug_16808_manf)
+                self.make_proto_text_file("var/log/syslog", "text")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                    exit=1)
+                self.check_res(self.bug_16808_error, self.errout)
+
+        def test_elf_warning(self):
+                """Test that if an action uses a variant not declared at the
+                package level, an error is reported."""
+
+                tp = self.make_manifest(self.test_elf_warning_manf)
+                self.make_proto_text_file("etc/libc.so.1", "text")
+                self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
+                self.check_res("", self.errout)
+                self.check_res(self.res_elf_warning, self.output)
 
 
 if __name__ == "__main__":
