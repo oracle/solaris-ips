@@ -1,3 +1,11 @@
+Version 45:
+Compatible with clients using versions 43-44.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new planning function, plan_update, has been added which
+          allows in place downgrades of packages.
+
 Version 44:
 Compatible with clients using version 43.
 

@@ -664,7 +664,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._run_local_tests()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.assert_(len(os.listdir(id)) == 0)
 
         def test_bug_8098(self):

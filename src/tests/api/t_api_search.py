@@ -2080,7 +2080,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self.wait_repo(self.dc.get_repodir())
 
         def test_local_image_update(self):
-                """Test that the index gets updated by image-update and
+                """Test that the index gets updated by update and
                 that rebuilding the index works after updating the
                 image. Specifically, this tests that rebuilding indexes with
                 gaps in them works correctly."""

@@ -2499,11 +2499,10 @@ class Image(object):
 
                 return olist, onames
 
-        def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute):
-                """Take a list of packages, specified in pkg_list, and attempt
-                to assemble an appropriate image plan.  This is a helper
-                routine for some common operations in the client.
+        def __make_plan_common(self, plan_name, progtrack, check_cancelation,
+            noexecute, *args):
+                """Private helper function to perform base plan creation and
+                cleanup.
                 """
 
                 # Allow garbage collection of previous plan.
@@ -2518,7 +2517,8 @@ class Image(object):
                 self.__init_catalogs()
 
                 try:
-                        ip.plan_install(pkg_list)
+                        pfunc = getattr(ip, "plan_%s" % plan_name)
+                        pfunc(*args)
                 except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
@@ -2533,53 +2533,34 @@ class Image(object):
                 except pkg.actions.ActionError, e:
                         raise apx.InvalidPackageErrors([e])
 
-        def make_update_plan(self, progtrack, check_cancelation,
+        def make_install_plan(self, pkg_list, progtrack, check_cancelation,
             noexecute):
-                """Create a plan to update all packages as far as
-                possible."""
+                """Take a list of packages, specified in pkg_list, and attempt
+                to assemble an appropriate image plan.  This is a helper
+                routine for some common operations in the client.
+                """
 
-                progtrack.evaluate_start()
-
-                # Allow garbage collection of previous plan.
-                self.imageplan = None
-
-                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
-                    noexecute=noexecute)
-
-                # Always start with most current (on-disk) state information.
-                self.__init_catalogs()
-
-                try:
-                        ip.plan_update()
-                        self.__call_imageplan_evaluate(ip)
-                except apx.ActionExecutionError, e:
-                        raise
-                except pkg.actions.ActionError, e:
-                        raise apx.InvalidPackageErrors([e])
+                self.__make_plan_common("install", progtrack, check_cancelation,
+                    noexecute, pkg_list)
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
             progtrack, check_cancelation, noexecute):
                 """Create uninstall plan to remove the specified packages;
                 do so recursively iff recursive_removal is set"""
 
-                progtrack.evaluate_start()
+                self.__make_plan_common("uninstall", progtrack,
+                    check_cancelation, noexecute, fmri_list,
+                    recursive_removal)
 
-                # Allow garbage collection of previous plan.
-                self.imageplan = None
+        def make_update_plan(self, progtrack, check_cancelation, noexecute,
+            pkg_list=None):
+                """Create a plan to update all packages or the specific ones as
+                far as possible.  This is a helper routine for some common
+                operations in the client.
+                """
 
-                ip = imageplan.ImagePlan(self, progtrack,
-                    check_cancelation, noexecute=noexecute)
-
-                # Always start with most current (on-disk) state information.
-                self.__init_catalogs()
-
-                try:
-                        ip.plan_uninstall(fmri_list, recursive_removal)
-                        self.__call_imageplan_evaluate(ip)
-                except apx.ActionExecutionError, e:
-                        raise
-                except pkg.actions.ActionError, e:
-                        raise apx.InvalidPackageErrors([e])
+                self.__make_plan_common("update", progtrack,
+                    check_cancelation, noexecute, pkg_list)
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):
@@ -2596,10 +2577,10 @@ class Image(object):
                 #
                 # There are two relevant cases here:
                 #     1) Packaging code and image we're updating are the same
-                #        image.  (i.e. 'pkg image-update')
+                #        image.  (i.e. 'pkg update')
                 #
                 #     2) Packaging code's image and the image we're updating are
-                #        different (i.e. 'pkg image-update -R')
+                #        different (i.e. 'pkg update -R')
                 #
                 # In general, we care about getting the user to run the
                 # most recent packaging code available for their build.  So,

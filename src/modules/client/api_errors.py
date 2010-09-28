@@ -816,8 +816,8 @@ class ProblematicPermissionsIndexException(IndexingException):
 
 class WrapIndexingException(ApiException):
         """This exception is used to wrap an indexing exception during install,
-        uninstall, or image-update so that a more appropriate error message
-        can be displayed to the user."""
+        uninstall, or update so that a more appropriate error message can be
+        displayed to the user."""
 
         def __init__(self, e, tb, stack):
                 ApiException.__init__(self)
@@ -833,8 +833,8 @@ class WrapIndexingException(ApiException):
 
 class WrapSuccessfulIndexingException(WrapIndexingException):
         """This exception is used to wrap an indexing exception during install,
-        uninstall, or image-update which was recovered from by performing a
-        full reindex."""
+        uninstall, or update which was recovered from by performing a full
+        reindex."""
         pass
 
 
@@ -998,7 +998,7 @@ class BENamingNotSupported(BEException):
         def __str__(self):
                 return _("""\
 Boot environment naming during package install is not supported on this
-version of OpenSolaris. Please image-update without the --be-name option.""")
+version of OpenSolaris. Please update without the --be-name option.""")
 
 class UnableToCopyBE(BEException):
         def __str__(self):

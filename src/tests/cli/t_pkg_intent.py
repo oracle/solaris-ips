@@ -304,14 +304,14 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 entries = self.get_intent_entries()
                 # Verify that foo11 was installed when upgrading to foo12.
                 self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "image-update",
+                    "operation": "update",
                     "new_fmri" : fmris["foo12"],
                     "old_fmri" : fmris["foo11"]
                 }))
 
                 # Verify that bar10 was installed when upgrading to bar11.
                 self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "image-update",
+                    "operation": "update",
                     "new_fmri" : fmris["bar11"],
                     "old_fmri" : fmris["bar10"]
                 }))

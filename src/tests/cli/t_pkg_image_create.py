@@ -465,7 +465,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # file.
                 self.pkg("list -a", exit=1)
                 self.pkg("install -nv foo", exit=1)
-                self.pkg("image-update -nv", exit=1)
+                self.pkg("update -nv", exit=1)
                 self.pkg("info -r foo", exit=1)
 
                 with open(ifile_path, "w") as f:

@@ -88,7 +88,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 rurl2 = self.dcs[2].get_repo_url()
                 commands = [
                     ("install foo@1", 0),
-                    ("image-update", 0),
+                    ("update", 0),
                     ("uninstall foo", 0),
                     ("set-publisher -O " + rurl2 + " test2", 0),
                     ("set-publisher -P test1", 0),
@@ -100,7 +100,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
 
                 operations = [
                     "install",
-                    "image-update",
+                    "update",
                     "uninstall",
                     "add-publisher",
                     "update-publisher",

@@ -14,9 +14,9 @@ SYNOPSIS
          [--deny-new-be | --require-new-be] [--be-name name] 
          pkg_fmri_pattern ...
 
-     /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
-         [--deny-new-be | --require-new-be]
-         [--licenses] [--no-index] [--no-refresh]
+     /usr/bin/pkg update [-fnvq] [--accept] [--be-name name]
+         [--deny-new-be | --require-new-be] [--licenses] [--no-index]
+         [--no-refresh]
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -172,44 +172,6 @@ SUBCOMMANDS
 
           With --facet, set the specified facet to the indicated value.
 
-     image-update [-fnvq] [--accept] [--be-name name] [--licenses]
-       [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
-          Update all installed packages in the current image to the
-          latest available version.
-
-          With the -f option, skip safety checks.
-
-          With the -n option, execute the requested operation but make no
-          persistent changes to the image.
-
-          With the -v option, issue verbose progress messages during the
-          requested operation.  With the -q option, be completely silent.
-
-          With --accept, you indicate that you agree to and accept the
-          terms of the licenses of the packages that are updated or
-          installed.  If you do not provide this option, and any package
-          licenses require acceptance, the operation will fail.
-
-          With --be-name, rename the newly created boot environment to be the
-          argument given.  This option is only valid if a new boot environment
-          is created during image update. See also beadm(1m).
-
-          With --require-new-be, always create a new boot environment.
-          
-          With --deny-new-be, disallow creation of a new boot environment;
-          the upgrade will not be performed if a new boot environment is
-          required.
-
-          With --licenses, display all of the licenses for the packages that
-          will be installed or updated as part of this operation.
-
-          With --no-index, do not update the search indices after the operation
-          has completed successfully.
-
-          With --no-refresh, do not attempt to contact the repositories for
-          the image's publishers to retrieve publisher metadata (e.g.
-          catalogs).
-
      refresh [--full] [publisher ...]
           Retrieve updates to the metadata (e.g. catalogs) for each publisher
           specified.  When given no arguments, retrieves updates for each
@@ -220,45 +182,91 @@ SUBCOMMANDS
 
      install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
        [--deny-new-be | --require-new-be] [--be-name] pkg_fmri_pattern ...
-     uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be] 
-       [--be-name name ] be-name pkg_fmri_pattern ...
-          Install or remove the package specified by pkg_fmri_pattern or
-          matching it as a substring.  With the -n option, execute the
-          requested operation but make no persistent changes to the
-          image.  With the -v option, issue verbose progress messages
-          during the requested operation.  With the -q option, issue
-          no progress messages during the requested operation.
 
-          In the case of uninstall, the -r option will recursively
-          uninstall any packages that contain 'require' dependencies on
-          the initial package.  (Packages containing 'optional' or
-          'incorporate' dependencies are not included in the removal.)
+          Installs and updates packages to the newest version that match
+          pkg_fmri_pattern allowed by the packages installed in the
+          image.
+
+          With the -n option, execute the requested operation but make
+          no persistent changes to the image.
+
+          With the -v option, issue verbose progress messages during
+          the requested operation.  With the -q option, issue no
+          progress messages during the requested operation.
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or
-          installed.  If you do not provide this option, and any package
-          licenses require acceptance, the operation will fail.
+          installed.  If you do not provide this option, and any
+          package licenses require acceptance, the operation will
+          fail.
 
-          With --licenses, display all of the licenses for the packages that
-          will be installed or updated as part of this operation.
+          With --licenses, display all of the licenses for the
+          packages that will be installed or updated as part of this
+          operation.
 
-          With --no-index, do not update the search indices after the operation
-          has completed successfully.
+          With --no-index, do not update the search indices after the
+          operation has completed successfully.
 
-          With --no-refresh, do not attempt to contact the repositories for
-          the image's publishers to retrieve publisher metadata (e.g.
-          catalogs).
+          With --no-refresh, do not attempt to contact the
+          repositories for the image's publishers to retrieve
+          publisher metadata (e.g. catalogs).
 
-          With --be-name, rename the newly created boot environment to be the
-          argument given.  This option is only valid if a new boot environment
-          is created during image update.  See also beadm(1m).
+          With --be-name, rename the newly created boot environment to
+          be the argument given.  This option is only valid if a new
+          boot environment is created during the operation.  See also
+          beadm(1m).
 
-          With --require-new-be, always create a new boot environment.  Without
-          this option, a boot environment is created automatically if needed.
-          
-          With --deny-new-be, disallow creation of a new boot environment;
-          the operation will not be performed if a new boot environment is
-          required.
+          With --require-new-be, always create a new boot environment.
+          Without this option, a boot environment is created
+          automatically if needed.
+
+          With --deny-new-be, disallow creation of a new boot
+          environment; the operation will not be performed if
+          a new boot environment is required.
+
+     uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be]
+       [--be-name name] pkg_fmri_pattern ...
+
+          Removes installed packages that match pkg_fmri_pattern.
+
+          With -r, recursively uninstall any packages that contain
+          'require' dependencies on the initial package.  (Packages
+          containing 'optional' or 'incorporate' dependencies are
+          not included in the removal.)
+
+          For all other options, refer to the install command above
+          for usage and their effects.
+
+     update [-fnvq] [--accept] [--be-name name] [--licenses]
+       [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
+       [pkg_fmri_pattern ...]
+
+          With no arguments, or if '*' is one of the patterns provided,
+          update all installed packages in the current image to the newest
+          version allowed by the constraints imposed on the system by
+          installed packages and publisher configuration.
+
+          If pkg_fmri_pattern is provided, update will replace packages
+          that are installed, and that match pkg_fmri_pattern, with the
+          newest version allowed by the pattern(s) and the constraints
+          imposed on the system by installed packages and publisher
+          configuration.  Versions older or newer than what is already
+          installed may be specified to perform in place downgrades or
+          upgrades of specific packages.  Please note that updating
+          specific packages across package rename or obsolete boundaries
+          is not supported.
+
+          Any preserved configuration files that have been edited and have
+          changed between package versions will be renamed.  If the package
+          being replaced is newer than what is being installed, the
+          existing file will be renamed using the extension '.update';
+          otherwise '.old'.
+
+          With the -f option, don't execute the client up to date check
+          when updating all installed packages.
+
+          For all other options, refer to the install command above for
+          usage and their effects.
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -276,7 +284,7 @@ SUBCOMMANDS
           This may be combined with -l or -r.
 
      contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
-              [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
+       [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
           Display the contents (action attributes) of packages in the
           current image.  By default, only the path attribute is displayed,
           but the attribute set may be determined with the -o option.  The
@@ -1020,6 +1028,11 @@ EXAMPLES
      revoked by the user.
 
      $ pkg set-publisher --unset-ca-cert a12345
+
+     Example 21:  Downgrade the installed package foo@1.1 to an older
+     version:
+
+     $ pkg update foo@1.0
 
 EXIT STATUS
      The following exit values are returned:

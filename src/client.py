@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 44
+CLIENT_API_VERSION = 45
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -136,7 +136,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         basic_usage = {}
         adv_usage = {}
 
-        basic_cmds = ["install", "uninstall", "list", "image-update",
+        basic_cmds = ["install", "uninstall", "update", "list",
             "refresh", "version"]
 
         basic_usage["install"] = _(
@@ -146,11 +146,12 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         basic_usage["uninstall"] = _(
             "[-nrvq] [--no-index] [--deny-new-be | --require-new-be]\n"
             "            [--be-name name] pkg_fmri_pattern ...")
+        basic_usage["update"] = _(
+            "[-fnvq] [--accept] [--be-name name] [--licenses]\n"
+            "            [--deny-new-be | --require-new-be] [--no-index]\n"
+            "            [--no-refresh] [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
             "[-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]")
-        basic_usage["image-update"] = _(
-            "[-fnvq] [--accept] [--be-name name] [--licenses]\n"
-            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]")
         basic_usage["refresh"] = _("[--full] [publisher ...]")
         basic_usage["version"] = ""
 
@@ -1311,97 +1312,6 @@ def change_facet(img, args):
 
         return ret_code
 
-def image_update(img, args):
-        """Attempt to take all installed packages specified to latest
-        version."""
-
-        # XXX Publisher-catalog issues.
-        # XXX Leaf package refinements.
-
-        op = "image-update"
-        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=",
-            "licenses", "no-refresh", "no-index", "deny-new-be", "require-new-be"])
-
-        accept = force = quiet = noexecute = show_licenses = False
-        verbose = 0
-        refresh_catalogs = update_index = True
-        be_name = None
-        new_be = None
-
-        for opt, arg in opts:
-                if opt == "-n":
-                        noexecute = True
-                elif opt == "-v":
-                        verbose = verbose + 1
-                elif opt == "-q":
-                        quiet = True
-                elif opt == "-f":
-                        force = True
-                elif opt == "--accept":
-                        accept = True
-                elif opt == "--be-name":
-                        be_name = arg
-                elif opt == "--licenses":
-                        show_licenses = True
-                elif opt == "--no-refresh":
-                        refresh_catalogs = False
-                elif opt == "--no-index":
-                        update_index = False
-                elif opt == "--deny-new-be":
-                        new_be = False
-                elif opt == "--require-new-be":
-                        new_be = True
-
-        if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd=op)
-
-        if pargs:
-                usage(_("command does not take operands ('%s')") % \
-                    " ".join(pargs), cmd=op)
-
-        api_inst = __api_alloc(img, quiet)
-        if api_inst == None:
-                return EXIT_OOPS
-
-        stuff_to_do = opensolaris_image = None
-        try:
-                stuff_to_do, opensolaris_image = \
-                    api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
-                        noexecute, force=force, update_index=update_index, 
-                        be_name=be_name, new_be=new_be)
-        except:
-                ret_code = __api_plan_exception(op, api_inst, noexecute,
-                    verbose)
-                if ret_code != EXIT_OK:
-                        return ret_code
-
-        if not stuff_to_do:
-                msg(_("No updates available for this image."))
-                return EXIT_NOP
-
-        if not quiet:
-                display_plan(api_inst, verbose)
-
-        if noexecute:
-                if show_licenses:
-                        display_plan_licenses(api_inst, show_all=True)
-                return EXIT_OK
-
-        ret_code = __api_prepare(op, api_inst, accept=accept,
-            show_licenses=show_licenses)
-        if ret_code != EXIT_OK:
-                return ret_code
-
-        ret_code = __api_execute_plan(op, api_inst)
-
-        if ret_code == 0 and opensolaris_image:
-                msg("\n" + "-" * 75)
-                msg(_("NOTE: Please review release notes posted at:\n" ))
-                msg(misc.get_release_notes_url())
-                msg("-" * 75 + "\n")
-
-        return ret_code
-
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
@@ -1486,7 +1396,6 @@ def install(img, args):
 
         return ret_code
 
-
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
@@ -1556,6 +1465,109 @@ def uninstall(img, args):
                 return ret_code
 
         return __api_execute_plan(op, api_inst)
+
+def update(img, args):
+        """Attempt to take specified installed packages to a different version,
+        or all installed packages to latest version if none are specified.
+        The operands are interpreted as glob patterns."""
+
+        op = "update"
+        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=",
+            "licenses", "no-refresh", "no-index", "deny-new-be", "require-new-be"])
+
+        accept = force = quiet = noexecute = show_licenses = False
+        verbose = 0
+        refresh_catalogs = update_index = True
+        be_name = None
+        new_be = None
+
+        for opt, arg in opts:
+                if opt == "-f":
+                        force = True
+                elif opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = verbose + 1
+                elif opt == "-q":
+                        quiet = True
+                elif opt == "--accept":
+                        accept = True
+                elif opt == "--be-name":
+                        be_name = arg
+                elif opt == "--licenses":
+                        show_licenses = True
+                elif opt == "--no-refresh":
+                        refresh_catalogs = False
+                elif opt == "--no-index":
+                        update_index = False
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
+
+        if verbose and quiet:
+                usage(_("-v and -q may not be combined"), cmd=op)
+
+        api_inst = __api_alloc(img, quiet)
+        if api_inst == None:
+                return EXIT_OOPS
+
+        rval, res = get_fmri_args(api_inst, pargs, cmd=op)
+        if not rval:
+                return EXIT_OOPS
+
+        stuff_to_do = opensolaris_image = None
+        try:
+                if res and "*" not in pargs and "*@*" not in pargs:
+                        # If there are specific installed packages to update,
+                        # then take only those packages to the latest version
+                        # allowed by the patterns specified.  (The versions
+                        # specified can be older than what is installed.)
+                        stuff_to_do = api_inst.plan_update(pargs,
+                            refresh_catalogs, noexecute, be_name=be_name,
+                            new_be=new_be, update_index=update_index)
+                else:
+                        # If no packages were specified, or '*' was one of
+                        # the patterns provided, attempt to update all
+                        # installed packages.
+                        stuff_to_do, opensolaris_image = \
+                            api_inst.plan_update_all(sys.argv[0],
+                                refresh_catalogs, noexecute, force=force,
+                                be_name=be_name, new_be=new_be,
+                                update_index=update_index)
+        except:
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
+
+        if not stuff_to_do:
+                msg(_("No updates available for this image."))
+                return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
+
+        if noexecute:
+                if show_licenses:
+                        display_plan_licenses(api_inst, show_all=True)
+                return EXIT_OK
+
+        ret_code = __api_prepare(op, api_inst, accept=accept,
+            show_licenses=show_licenses)
+        if ret_code != EXIT_OK:
+                return ret_code
+
+        ret_code = __api_execute_plan(op, api_inst)
+
+        if ret_code == 0 and opensolaris_image:
+                msg("\n" + "-" * 75)
+                msg(_("NOTE: Please review release notes posted at:\n" ))
+                msg(misc.get_release_notes_url())
+                msg("-" * 75 + "\n")
+
+        return ret_code
+
 
 def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
@@ -4092,7 +4104,7 @@ def main_func():
         # placeholders in this lookup table for image-create, help and version
         # which don't have dedicated methods
         cmds = {
-            "add-property-value"       : property_add_value,
+            "add-property-value" : property_add_value,
             "authority"        : publisher_list,
             "change-facet"     : change_facet,
             "change-variant"   : change_variant,
@@ -4103,7 +4115,7 @@ def main_func():
             "help"             : None,
             "history"          : history_list,
             "image-create"     : None,
-            "image-update"     : image_update,
+            "image-update"     : update,
             "info"             : info,
             "install"          : install,
             "list"             : list_inventory,
@@ -4112,7 +4124,7 @@ def main_func():
             "purge-history"    : history_purge,
             "rebuild-index"    : rebuild_index,
             "refresh"          : publisher_refresh,
-            "remove-property-value"    : property_remove_value,
+            "remove-property-value" : property_remove_value,
             "search"           : search,
             "set-authority"    : publisher_set,
             "set-property"     : property_set,
@@ -4122,6 +4134,7 @@ def main_func():
             "unset-authority"  : publisher_unset,
             "unset-property"   : property_unset,
             "unset-publisher"  : publisher_unset,
+            "update"           : update,
             "variant"          : variant_list,
             "verify"           : verify_image,
             "version"          : None
@@ -4348,9 +4361,8 @@ to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 if __ret == 99:
                         s += _("\n%s%s") % (__e, traceback_str)
 
-                s += _("\n\nDespite the error while indexing, the "
-                    "image-update, install, or uninstall\nhas completed "
-                    "successfuly.")
+                s += _("\n\nDespite the error while indexing, the operation "
+                    "has completed successfuly.")
                 error(s)
         except api_errors.ReadOnlyFileSystemException, __e:
                 __ret = EXIT_OOPS

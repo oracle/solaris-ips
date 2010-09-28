@@ -35,14 +35,15 @@ logger = global_settings.logger
 
 import pkg.actions
 import pkg.catalog
-import pkg.client.actuator   as actuator
-import pkg.client.indexer    as indexer
+import pkg.client.actuator as actuator
+import pkg.client.indexer as indexer
 import pkg.client.api_errors as api_errors
-import pkg.client.pkgplan    as pkgplan
+import pkg.client.pkgplan as pkgplan
 import pkg.client.pkg_solver as pkg_solver
 import pkg.fmri
-import pkg.manifest          as manifest
-import pkg.search_errors     as se
+import pkg.manifest as manifest
+import pkg.misc as misc
+import pkg.search_errors as se
 import pkg.version
 import sys
 
@@ -66,9 +67,13 @@ class ImagePlan(object):
         PLANNED_NOTHING   = "no-plan"
         PLANNED_INSTALL   = "install"
         PLANNED_UNINSTALL = "uninstall"
-        PLANNED_UPDATE    = "image-update"
+        PLANNED_UPDATE    = "update"
         PLANNED_FIX       = "fix"
         PLANNED_VARIANT   = "change-variant"
+
+        MATCH_ALL           = 0
+        MATCH_INST_VERSIONS = 1
+        MATCH_INST_STEMS    = 2
 
         def __init__(self, image, progtrack, check_cancel, noexecute=False):
                 self.image = image
@@ -79,9 +84,8 @@ class ImagePlan(object):
                 self.__noexecute = noexecute
 
                 self.__fmri_changes = [] # install  (None, fmri)
-                                         # update   (oldfmri, newfmri)
                                          # remove   (oldfmri, None)
-                                         # reinstall(oldfmri, oldfmri)
+                                         # update   (oldfmri, newfmri|oldfmri)
 
                 # Used to track users and groups that are part of operation.
                 self.added_groups = {}
@@ -209,23 +213,27 @@ class ImagePlan(object):
                 self._image_lm = self.image.get_last_modified()
 
         def plan_install(self, pkgs_to_install):
-                """Determine the fmri changes needed to install the specified pkgs"""
+                """Determine the fmri changes needed to install the specified
+                pkgs"""
                 self.__plan_op(self.PLANNED_INSTALL)
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
 
                 # build installed dict
-                installed_dict = ImagePlan.__fmris2dict(self.image.gen_installed_pkgs())
+                installed_dict = ImagePlan.__fmris2dict(
+                    self.image.gen_installed_pkgs())
 
                 # build installed publisher dictionary
                 installed_pubs = dict((
-                                (f.pkg_name, f.get_publisher())
-                                for f in installed_dict.values()
-                                ))
+                    (f.pkg_name, f.get_publisher())
+                    for f in installed_dict.values()
+                ))
 
-                proposed_dict, self.__references = self.match_user_fmris(pkgs_to_install,
-                    True, pub_ranks, installed_pubs)
+                proposed_dict, self.__references = self.match_user_fmris(
+                    pkgs_to_install, self.MATCH_ALL, pub_ranks=pub_ranks,
+                    installed_pubs=installed_pubs,
+                    installed_pkgs=installed_dict)
 
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
@@ -240,30 +248,30 @@ class ImagePlan(object):
                     self.__new_excludes)
 
                 self.__fmri_changes = [
-                        (a, b)
-                        for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
-                            ImagePlan.__fmris2dict(new_vector))
-                        if a != b
-                        ]
+                    (a, b)
+                    for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
+                        ImagePlan.__fmris2dict(new_vector))
+                    if a != b
+                ]
 
                 self.state = EVALUATED_PKGS
 
         def plan_uninstall(self, pkgs_to_uninstall, recursive_removal=False):
                 self.__plan_op(self.PLANNED_UNINSTALL)
-                proposed_dict, self.__references = self.match_user_fmris(pkgs_to_uninstall,
-                    False, None, None)
+                proposed_dict, self.__references = self.match_user_fmris(
+                    pkgs_to_uninstall, self.MATCH_INST_VERSIONS)
                 # merge patterns together
                 proposed_removals = set([
-                                f
-                                for each in proposed_dict.values()
-                                for f in each
-                                ])
+                    f
+                    for each in proposed_dict.values()
+                    for f in each
+                ])
 
                 # build installed dict
                 installed_dict = dict([
-                        (f.pkg_name, f)
-                        for f in self.image.gen_installed_pkgs()
-                        ])
+                    (f.pkg_name, f)
+                    for f in self.image.gen_installed_pkgs()
+                ])
 
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
@@ -277,58 +285,81 @@ class ImagePlan(object):
                     proposed_removals, recursive_removal, self.__new_excludes)
 
                 self.__fmri_changes = [
-                        (a, b)
-                        for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
-                            ImagePlan.__fmris2dict(new_vector))
-                        if a != b
-                        ]
+                    (a, b)
+                    for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
+                        ImagePlan.__fmris2dict(new_vector))
+                    if a != b
+                ]
+
+                self.state = EVALUATED_PKGS
+
+        def plan_update(self, pkgs_to_update=None):
+                """Determine the fmri changes needed to update the specified
+                pkgs or all packages if none were specified."""
+                self.__plan_op(self.PLANNED_UPDATE)
+
+                # get ranking of publishers
+                pub_ranks = self.image.get_publisher_ranks()
+
+                # build installed dict
+                installed_dict = ImagePlan.__fmris2dict(
+                    self.image.gen_installed_pkgs())
+
+                # If specific packages or patterns were provided, then
+                # determine the proposed set to pass to the solver.
+                proposed_dict = None
+                if pkgs_to_update:
+                        # build installed publisher dictionary
+                        installed_pubs = dict((
+                            (f.pkg_name, f.get_publisher())
+                            for f in installed_dict.values()
+                        ))
+
+                        proposed_dict, self.__references = self.match_user_fmris(
+                            pkgs_to_update, self.MATCH_INST_STEMS, pub_ranks=pub_ranks,
+                            installed_pubs=installed_pubs,
+                            installed_pkgs=installed_dict)
+
+                # instantiate solver
+                self.__pkg_solver = pkg_solver.PkgSolver(
+                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
+                    installed_dict,
+                    pub_ranks,
+                    self.image.get_variants(),
+                    self.__progtrack)
+
+                # Solve... will raise exceptions if no solution is found
+                if pkgs_to_update:
+                        new_vector = self.__pkg_solver.solve_update([],
+                            proposed_dict, self.__new_excludes)
+                else:
+                        # Updating all installed packages requires a different
+                        # solution path.
+                        new_vector = self.__pkg_solver.solve_update_all([],
+                            self.__new_excludes)
+
+                self.__fmri_changes = [
+                    (a, b)
+                    for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
+                        ImagePlan.__fmris2dict(new_vector))
+                    if a != b
+                ]
 
                 self.state = EVALUATED_PKGS
 
         @staticmethod
         def __fmris2dict(fmri_list):
                 return  dict([
-                        (f.pkg_name, f)
-                        for f in fmri_list
-                        ])
+                    (f.pkg_name, f)
+                    for f in fmri_list
+                ])
 
         @staticmethod
         def __dicts2fmrichanges(olddict, newdict):
                 return [
-                        (olddict.get(k, None), newdict.get(k, None))
-                        for k in set(olddict.keys() + newdict.keys())
-                        ]
-
-        def plan_update(self):
-                """Determine the fmri changes needed to update all
-                pkgs"""
-                self.__plan_op(self.PLANNED_UPDATE)
-
-                # build installed dict
-                installed_dict = dict([
-                        (f.pkg_name, f)
-                        for f in self.image.gen_installed_pkgs()
-                        ])
-
-                # instantiate solver
-                self.__pkg_solver = pkg_solver.PkgSolver(
-                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
-                    installed_dict,
-                    self.image.get_publisher_ranks(),
-                    self.image.get_variants(),
-                    self.__progtrack)
-
-                new_vector = self.__pkg_solver.solve_update([],  self.__new_excludes)
-
-                self.__fmri_changes = [
-                        (a, b)
-                        for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
-                            ImagePlan.__fmris2dict(new_vector))
-                        if a != b
-                        ]
-
-                self.state = EVALUATED_PKGS
-
+                    (olddict.get(k, None), newdict.get(k, None))
+                    for k in set(olddict.keys() + newdict.keys())
+                ]
 
         def plan_fix(self, pkgs_to_fix):
                 """Create the list of pkgs to fix"""
@@ -348,9 +379,9 @@ class ImagePlan(object):
 
                 # build installed dict
                 installed_dict = dict([
-                        (f.pkg_name, f)
-                        for f in self.image.gen_installed_pkgs()
-                        ])
+                    (f.pkg_name, f)
+                    for f in self.image.gen_installed_pkgs()
+                ])
 
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
@@ -369,10 +400,10 @@ class ImagePlan(object):
                 self.__new_facets   = facets
 
                 self.__fmri_changes = [
-                        (a, b)
-                        for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
-                            ImagePlan.__fmris2dict(new_vector))
-                        ]
+                    (a, b)
+                    for a, b in ImagePlan.__dicts2fmrichanges(installed_dict,
+                        ImagePlan.__fmris2dict(new_vector))
+                ]
 
                 self.state = EVALUATED_PKGS
                 return
@@ -382,13 +413,11 @@ class ImagePlan(object):
                 assert self.state >= EVALUATED_OK
                 return self.__actuators.reboot_needed()
 
-
         def get_plan(self, full=True):
                 if full:
                         return str(self)
 
                 output = ""
-
                 for t in self.__fmri_changes:
                         output += "%s -> %s\n" % t
                 return output
@@ -398,7 +427,6 @@ class ImagePlan(object):
                         logger.info(self.__verbose_str())
                 else:
                         logger.info(str(self))
-
 
         def gen_new_installed_pkgs(self):
                 """ generates all the fmris in the new set of installed pkgs"""
@@ -447,18 +475,18 @@ class ImagePlan(object):
                 """ return a set of all symlinks in target image"""
                 if self.__symlinks == None:
                         self.__symlinks = set((
-                                        a.attrs["path"]
-                                        for a in self.gen_new_installed_actions_bytype("link")
-                                        ))
+                            a.attrs["path"]
+                            for a in self.gen_new_installed_actions_bytype("link")
+                        ))
                 return self.__symlinks
 
         def __get_hardlinks(self):
                 """ return a set of all hardlinks in target image"""
                 if self.__hardlinks == None:
                         self.__hardlinks = set((
-                                        a.attrs["path"]
-                                        for a in self.gen_new_installed_actions_bytype("hardlink")
-                                        ))
+                            a.attrs["path"]
+                            for a in self.gen_new_installed_actions_bytype("hardlink")
+                        ))
                 return self.__hardlinks
 
         @staticmethod
@@ -1331,7 +1359,9 @@ class ImagePlan(object):
                 except StopIteration:
                         return True
 
-        def match_user_fmris(self, patterns, all_known, pub_ranks, installed_pubs):
+        def match_user_fmris(self, patterns, match_type,
+            pub_ranks=misc.EmptyDict, installed_pubs=misc.EmptyDict,
+            installed_pkgs=misc.EmptyDict):
                 """Given a user-specified list of patterns, return a dictionary
                 of matching fmris:
 
@@ -1341,23 +1371,39 @@ class ImagePlan(object):
                 }
 
                 Constraint used is always AUTO as per expected UI behavior.
-                If all_known is true, matching is done against all known package,
-                otherwise just all installed pkgs.
 
-                Note that patterns starting w/ pkg:/ require an exact match; patterns
-                containing '*' will using fnmatch rules; the default trailing match
-                rules are used for remaining patterns.
+                'match_type' indicates how matching should be restricted.  The
+                possible values are:
+
+                    MATCH_ALL
+                        Matching is performed using all known package stems
+                        and versions.  In this case, 'installed_pkgs' must also
+                        be provided.
+
+                    MATCH_INST_VERSIONS
+                        Matching is performed using only installed package
+                        stems and versions.
+
+                    MATCH_INST_STEMS
+                        Matching is performed using all known package versions
+                        for stems matching installed packages.  In this case,
+                        'installed_pkgs' must also be provided.
+
+
+                Note that patterns starting w/ pkg:/ require an exact match;
+                patterns containing '*' will using fnmatch rules; the default
+                trailing match rules are used for remaining patterns.
 
                 Exactly duplicated patterns are ignored.
 
-                Routine raises PlanCreationException if errors occur:
-                it is illegal to specify multiple different pattens that match
-                the same pkg name.  Only patterns that contain wildcards are allowed
+                Routine raises PlanCreationException if errors occur: it is
+                illegal to specify multiple different patterns that match the
+                same pkg name.  Only patterns that contain wildcards are allowed
                 to match multiple packages.
 
-                Fmri lists are trimmed by publisher, either by pattern specification,
-                installed version or publisher ranking, in that order when all_known
-                is True.
+                FMRI lists are trimmed by publisher, either by pattern
+                specification, installed version or publisher ranking (in that
+                order) when match_type is not MATCH_INST_VERSIONS.
                 """
 
                 # problems we check for
@@ -1375,13 +1421,12 @@ class ImagePlan(object):
 
                 wildcard_patterns = []
 
-                installed_fmris = set()
                 renamed_fmris = {}
                 obsolete_fmris = []
 
                 # ignore dups
                 patterns = list(set(patterns))
-                # print patterns, all_known, pub_ranks, installed_pubs
+                # print patterns, match_type, pub_ranks, installed_pubs
 
                 # figure out which kind of matching rules to employ
                 try:
@@ -1408,19 +1453,21 @@ class ImagePlan(object):
                 except pkg.fmri.IllegalFmri, e:
                         illegals.append(e)
 
-                # Create a dictionary of patterns, with each value being
-                # a dictionary of pkg names & fmris that match that pattern.
+                # Create a dictionary of patterns, with each value being a
+                # dictionary of pkg names & fmris that match that pattern.
                 ret = dict(zip(patterns, [dict() for i in patterns]))
 
-                # keep track of publishers we reject due to implict selection of
-                # installed publisher to produce better error message.
+                # keep track of publishers we reject due to implict selection
+                # of installed publisher to produce better error message.
                 rejected_pubs = {}
 
-                if all_known:
-                        cat = self.image.get_catalog(self.image.IMG_CATALOG_KNOWN)
+                if match_type != self.MATCH_INST_VERSIONS:
+                        cat = self.image.get_catalog(
+                            self.image.IMG_CATALOG_KNOWN)
                         info_needed = [pkg.catalog.Catalog.DEPENDENCY]
                 else:
-                        cat = self.image.get_catalog(self.image.IMG_CATALOG_INSTALLED)
+                        cat = self.image.get_catalog(
+                            self.image.IMG_CATALOG_INSTALLED)
                         info_needed = []
 
                 for name in cat.names():
@@ -1437,7 +1484,7 @@ class ImagePlan(object):
                                                 fpub = f.get_publisher()
                                                 if pub and pub != fpub:
                                                         continue # specified pubs conflict
-                                                elif not pub and all_known and \
+                                                elif not pub and match_type != self.MATCH_INST_VERSIONS and \
                                                     name in installed_pubs and \
                                                     pub_ranks[installed_pubs[name]][1] \
                                                     == True and installed_pubs[name] != \
@@ -1445,6 +1492,12 @@ class ImagePlan(object):
                                                         rejected_pubs.setdefault(pat,
                                                             set()).add(fpub)
                                                         continue # installed sticky pub
+                                                elif match_type == self.MATCH_INST_STEMS and \
+                                                    f.pkg_name not in installed_pkgs:
+                                                        # Matched stem is not
+                                                        # in list of installed
+                                                        # stems.
+                                                        continue
                                                 ret[pat].setdefault(f.pkg_name,
                                                     []).append(f)
                                                 states = metadata["metadata"]["states"]
@@ -1453,19 +1506,19 @@ class ImagePlan(object):
                                                 if self.image.PKG_STATE_RENAMED in states and \
                                                     "actions" in metadata:
                                                         renamed_fmris[f] = metadata["actions"]
-                                                if self.image.PKG_STATE_INSTALLED in states:
-                                                        installed_fmris.add(f)
 
                 # remove multiple matches if all versions are obsolete
                 for p in patterns:
                         if len(ret[p]) > 1 and p not in wildcard_patterns:
-                                # create dictionary of obsolete status vs pkg_name
+                                # create dictionary of obsolete status vs
+                                # pkg_name
                                 obsolete = dict([
-                                        (pkg_name, reduce(operator.or_,
-                                        [f in obsolete_fmris for f in ret[p][pkg_name]]))
-                                        for pkg_name in ret[p]
-                                        ])
-                                # remove all obsolete match if non-obsolete match also exists
+                                    (pkg_name, reduce(operator.or_,
+                                    [f in obsolete_fmris for f in ret[p][pkg_name]]))
+                                    for pkg_name in ret[p]
+                                ])
+                                # remove all obsolete match if non-obsolete
+                                # match also exists
                                 if set([True, False]) == set(obsolete.values()):
                                         for pkg_name in obsolete:
                                                 if obsolete[pkg_name]:
@@ -1500,36 +1553,45 @@ class ImagePlan(object):
                 for p in patterns:
                         l = len(ret[p])
                         if l == 0: # no matches at all
-                                if not all_known or p not in rejected_pubs:
+                                if match_type != self.MATCH_INST_VERSIONS or \
+                                    p not in rejected_pubs:
                                         nonmatch.append(p)
                                 elif p in rejected_pubs:
                                         wrongpub.append((p, rejected_pubs[p]))
-                        elif l > 1 and p not in wildcard_patterns:  # multiple matches
+                        elif l > 1 and p not in wildcard_patterns:
+                                # multiple matches
                                 multimatch.append((p, [n for n in ret[p]]))
-                        else:      # single match or wildcard
-                                for k in ret[p].keys(): # for each matching package name
+                        else:
+                                # single match or wildcard
+                                for k in ret[p].keys():
+                                        # for each matching package name
                                         matchdict.setdefault(k, []).append(p)
 
                 for name in matchdict:
-                        if len(matchdict[name]) > 1: # different pats, same pkg
-                                multispec.append(tuple([name] + matchdict[name]))
+                        if len(matchdict[name]) > 1:
+                                # different pats, same pkg
+                                multispec.append(tuple([name] +
+                                    matchdict[name]))
 
-                if not all_known:
+                if match_type != self.MATCH_ALL:
                         not_installed, nonmatch = nonmatch, not_installed
 
                 if illegals or nonmatch or multimatch or not_installed or \
                     multispec or wrongpub:
-                        raise api_errors.PlanCreationException(unmatched_fmris=nonmatch,
+                        raise api_errors.PlanCreationException(
+                            unmatched_fmris=nonmatch,
                             multiple_matches=multimatch, illegal=illegals,
-                            missing_matches=not_installed, multispec=multispec, wrong_publishers=wrongpub)
+                            missing_matches=not_installed, multispec=multispec,
+                            wrong_publishers=wrongpub)
+
                 # merge patterns together now that there are no conflicts
                 proposed_dict = {}
                 for d in ret.values():
                         proposed_dict.update(d)
 
                 # eliminate lower ranked publishers
-
-                if all_known: # no point for installed pkgs....
+                if match_type != self.MATCH_INST_VERSIONS:
+                        # no point for installed pkgs....
                         for pkg_name in proposed_dict:
                                 pubs_found = set([
                                                 f.get_publisher()
@@ -1542,7 +1604,7 @@ class ImagePlan(object):
                                     for p in pubs_found
                                 ])[0][1]
 
-                                # Include any installed_fmris that were allowed
+                                # Include any installed FMRIs that were allowed
                                 # by all of the previous filtering, even if they
                                 # aren't from the "best" available publisher, to
                                 # account for the scenario where the installed
@@ -1550,7 +1612,7 @@ class ImagePlan(object):
                                 # plan solution.
                                 proposed_dict[pkg_name] = [
                                     f for f in proposed_dict[pkg_name]
-                                    if f.publisher == best_pub or f in installed_fmris
+                                    if f.publisher == best_pub or f == installed_pkgs.get(f.pkg_name, None)
                                 ]
 
                 # construct references so that we can know which pattern

@@ -41,7 +41,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 44
+API_VERSION = 45
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
@@ -836,7 +836,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj.execute_plan()
                 api_obj.reset()
 
-                # Next, check that an image-update produces expected license
+                # Next, check that an update produces expected license
                 # data.
                 api_obj.plan_update_all(sys.argv[0])
 

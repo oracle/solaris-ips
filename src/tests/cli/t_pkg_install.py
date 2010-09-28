@@ -415,7 +415,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("list")
                 self.pkg("verify")
-                self.pkg("image-update -v")
+                self.pkg("update -v")
                 self.pkg("verify")
 
                 self.pkg("list foo@1.2")
@@ -508,10 +508,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 b@1 that contains an optional dependency on package a@1
 
-                If a@1 and b@1 are installed in an image, the "pkg image-update" command
+                If a@1 and b@1 are installed in an image, the "pkg update" command
                 produces the following output:
 
-                $ pkg image-update
+                $ pkg update
                 No updates available for this image.
 
                 However, "pkg install a@2" works.
@@ -521,7 +521,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                     self.b6018_1))
                 self.image_create(self.rurl)
                 self.pkg("install b6018@1 a6018@1")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list b6018@1 a6018@2")
 
         def test_install_matching(self):
@@ -737,7 +737,7 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
         def test_bug_6874(self):
                 """Don't stack trace when printing a PlanCreationException with
-                "multiple_matches" populated (on install and image-update)."""
+                "multiple_matches" populated (on install and update)."""
 
                 self.pkgsend_bulk(self.rurl, (self.afoo10, self.bfoo10))
                 self.image_create(self.rurl)
@@ -745,7 +745,7 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo", exit=1)
 
         def test_ambiguous_pattern_install(self):
-                """An image-update should never get confused about an existing
+                """An update should never get confused about an existing
                 package being part of an ambiguous set of package names."""
 
                 self.pkgsend_bulk(self.rurl, self.foo10)
@@ -755,7 +755,7 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
                 self.pkgsend_bulk(self.rurl, self.anotherfoo11)
                 self.pkg("refresh")
-                self.pkg("image-update -v", exit=4)
+                self.pkg("update -v", exit=4)
 
         def test_ambiguous_pattern_depend(self):
                 """A dependency on a package should pull in an exact name
@@ -1318,7 +1318,7 @@ adm
                     should cause amber to also install.
                     Send 2.0 versions of packages which contains a lot of
                     complex transactions between amber and bronze, then do
-                    an image-update, and try to check the results.
+                    an update, and try to check the results.
                 """
 
                 # Send 1.0 versions of packages.
@@ -1351,8 +1351,8 @@ adm
                 # demonstrate that incorp@1.0 prevents package movement
                 self.pkg("install bronze@2.0 amber@2.0", exit=1)
 
-                # Now image-update to get new versions of amber and bronze
-                self.pkg("image-update")
+                # Now update to get new versions of amber and bronze
+                self.pkg("update")
 
                 # Try to verify that it worked.
                 self.pkg("list amber@2.0 bronze@2.0")
@@ -1402,7 +1402,7 @@ adm
 
                 # upgrade pkg that loses incorp. deps. in new version
                 self.pkg("install incorp@2.0")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list bronze@3.0")
 
         def test_upgrade3(self):
@@ -1599,7 +1599,7 @@ adm
 
         def test_file_preserve(self):
                 """Verify that file preserve=true works as expected during
-                package install, upgrade, and removal."""
+                package install, update, upgrade, and removal."""
 
                 self.pkgsend_bulk(self.rurl, (self.preserve1, self.preserve2,
                     self.preserve3))
@@ -1611,12 +1611,21 @@ adm
                 self.pkg("install preserve@2")
                 self.file_contains("testme", "preserve1")
                 self.pkg("verify preserve")
+
+                self.pkg("update preserve@1")
+                self.file_contains("testme", "preserve1")
+                self.pkg("verify preserve")
+
                 self.pkg("uninstall preserve")
 
                 # ... and again with content change.
                 self.pkg("install preserve@1")
                 self.pkg("install preserve@3")
                 self.file_contains("testme", "preserve3")
+
+                self.pkg("update preserve@1")
+                self.file_contains("testme", "preserve1")
+
                 self.pkg("verify preserve")
                 self.pkg("uninstall preserve")
 
@@ -1633,13 +1642,40 @@ adm
                 self.pkg("verify preserve")
                 self.pkg("uninstall preserve")
 
+                # Modify the file locally and downgrade to a version where
+                # the content changes.
+                self.pkg("install preserve@3")
+                self.file_append("testme", "junk")
+                self.file_contains("testme", "preserve3")
+                self.pkg("update preserve@1")
+                self.file_doesnt_contain("testme", "preserve3")
+                self.file_doesnt_contain("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_exists("testme.update")
+                self.file_remove("testme.update")
+                self.pkg("verify preserve")
+                self.pkg("uninstall preserve")
+
                 # Modify the file locally and update to a version where just the
                 # mode changes.
                 self.pkg("install preserve@1")
                 self.file_append("testme", "junk")
+
                 self.pkg("install preserve@2")
                 self.file_contains("testme", "preserve1")
                 self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+
+                self.pkg("update preserve@1")
+                self.file_contains("testme", "preserve1")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.update")
+
+                self.pkg("install preserve@2")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
 
@@ -1649,7 +1685,14 @@ adm
                 self.pkg("install preserve@3")
                 self.pkg("verify preserve")
                 self.file_exists("testme")
-                self.pkg("uninstall preserve@3")
+
+                # Remove the file locally and downgrade the package; this should
+                # simply replace the missing file.
+                self.file_remove("testme")
+                self.pkg("update preserve@2")
+                self.pkg("verify preserve")
+                self.file_exists("testme")
+                self.pkg("uninstall preserve@2")
 
                 # Preserved files don't get their mode changed, and verify will
                 # still balk, so fix up the mode.
@@ -2681,17 +2724,17 @@ adm:NP:6445::::::
 
                 # Modifying operations require permissions needed to create and
                 # manage lock files.
-                self.pkg("image-update --no-refresh", su_wrap=True, exit=1)
+                self.pkg("update --no-refresh", su_wrap=True, exit=1)
 
                 self.pkg("refresh")
-                self.pkg("image-update", su_wrap=True, exit=1)
+                self.pkg("update", su_wrap=True, exit=1)
                 # Should fail since user doesn't have permission to refresh
                 # publisher metadata.
                 self.pkg("refresh --full", su_wrap=True, exit=1)
                 self.pkg("refresh --full")
-                self.pkg("image-update --no-refresh", su_wrap=True,
+                self.pkg("update --no-refresh", su_wrap=True,
                     exit=1)
-                self.pkg("image-update")
+                self.pkg("update")
 
         def test_bug_3222(self):
                 """ Verify that a timestamp of '0' for a passwd file will not
@@ -3139,8 +3182,9 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list incorp@1.0 pkgA_0@1.0 pkgB_0@1.0 A_incorp@1.0 B_incorp@1.0")
                 # try to break incorporation
                 self.pkg("install -v A_incorp@1.1", exit=1) # fixed by incorp@1.0
-                # try image update
-                self.pkg("image-update -v")
+                # try update (using '*' which also checks that the update all
+                # path is used when '*' is specified)
+                self.pkg("update -v '*'")
                 self.pkg("list incorp@1.2")
                 self.pkg("list pkgA_0@1.2")
                 self.pkg("list pkgB_0@1.2")
@@ -3488,7 +3532,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Install v1.0 of upgrade-np from test2 to prepare for
-                # image-update.
+                # update.
                 self.pkg("install upgrade-np@1.0")
 
                 # Set test1 to point to an unreachable URI.
@@ -3499,14 +3543,14 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # even though test1's repository is not accessible.
                 self.pkg("set-publisher -O %s test2" % self.rurl4)
 
-                # Verify image-update does not work since test1 is unreachable
+                # Verify update does not work since test1 is unreachable
                 # even though upgrade-np@1.1 is available from test2.
-                self.pkg("image-update", exit=1)
+                self.pkg("update", exit=1)
 
-                # Verify image-update works even though test1 is unreachable
+                # Verify update works even though test1 is unreachable
                 # since upgrade-np@1.1 is available from test2 if --no-refresh
                 # is used.
-                self.pkg("image-update --no-refresh")
+                self.pkg("update --no-refresh")
 
                 # Now reset everything for the next test.
                 self.pkg("uninstall upgrade-np")
@@ -3537,9 +3581,9 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # exists.
                 self.pkg("install quux@1.0", exit=4)
 
-                # Image update should work if we don't see the optional
+                # Update should work if we don't see the optional
                 # dependency.
-                self.pkg("image-update", exit=4)
+                self.pkg("update", exit=4)
 
                 # Add back the installed package's publisher, but using a
                 # a repository with an empty catalog.  After that, attempt to
@@ -3709,17 +3753,17 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("uninstall '*'")
 
         def test_15_nonsticky_update(self):
-                """Test to make sure image-update follows the same
+                """Test to make sure update follows the same
                 publisher selection mechanisms as pkg install"""
 
-                # try image-update
+                # try update
                 self.pkg("install pkg://test2/upgrade-np@1.0")
-                self.pkg("image-update", exit=4)
+                self.pkg("update", exit=4)
                 self.pkg("list upgrade-np@1.0")
                 self.pkg("set-publisher --non-sticky test2")
                 self.pkg("publisher")
                 self.pkg("list -a upgrade-np")
-                self.pkg("image-update")
+                self.pkg("update '*@*'")
                 self.pkg("list upgrade-np@1.1")
                 self.pkg("set-publisher --sticky test2")
                 self.pkg("uninstall '*'")
@@ -4237,7 +4281,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t7ap1_2, t7ap2_1, t7ap3_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list -af")
                 self.pkg("list t7ap2 | grep -- --r--")
                 self.pkg("list t7ap3")
@@ -4285,7 +4329,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t7bp1_2, t7bp2_2, t7bp3_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list t7bp2 | grep -- --r--")
                 self.pkg("list t7bp3")
 
@@ -4326,7 +4370,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t7cp2_2, t7cp3_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
 
                 self.pkg("list t7cp2 | grep -- --r--")
                 self.pkg("list t7cp3")
@@ -4362,11 +4406,11 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t6ap1_2, t6ap2_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update", exit=4) # does nothing
+                self.pkg("update", exit=4) # does nothing
                 self.pkg("list t6ap1")
 
         def test_basic_6b(self):
-                """Install a package with a dependency, and image-update after
+                """Install a package with a dependency, and update after
                 publishing updated packages for both, but where the dependency
                 has become obsolete."""
 
@@ -4402,7 +4446,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t6ap1_2, t6ap2_2))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list t6ap1@2 t6ap2@1")
 
         def test_basic_8a(self):
@@ -4434,12 +4478,12 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, t8ap1_2)
 
                 self.pkg("refresh")
-                self.pkg("image-update", exit=4) # does nothing
+                self.pkg("update", exit=4) # does nothing
                 self.pkg("list  t8ap2@1")
 
         def test_basic_13a(self):
                 """Publish an package with a dependency, then publish both as
-                obsolete, image-update, and see that both packages have gotten
+                obsolete, update, and see that both packages have gotten
                 removed."""
 
                 t13ap1_1 = """
@@ -4473,7 +4517,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t13ap1_2, t13ap2_2))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list", exit=1)
 
         def test_basic_11(self):
@@ -4589,7 +4633,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (t12p1_2, t12p2_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update -v")
+                self.pkg("update -v")
                 self.pkg("list pkg:/developer/netbeenz | grep -- -----")
                 self.pkg("list pkg:/netbeenz", exit=1)
 
@@ -4628,7 +4672,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (p1_2, p2_1, p3_1))
 
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list remrenA", exit=1)
 
                 # But if there is something depending on the renamed package, it
@@ -4636,7 +4680,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall remrenB")
 
                 self.pkg("install remrenA@1 remrenC")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list remrenA")
 
         def test_chained_renames(self):
@@ -4691,7 +4735,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install chained_A@1 chained_X chained_Z")
                 for p in ["chained_A@1", "chained_X@1"]:
                         self.pkg("list %s" % p)
-                self.pkg("image-update")
+                self.pkg("update")
 
                 for p in ["chained_A@2", "chained_X@1", "chained_B@2",
                     "chained_C@2", "chained_Z"]:
@@ -4750,10 +4794,10 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 # Check installation of an unobsoleted package with no
                 # dependencies.
 
-                # Testing reintroA@1 -> reintroA@3 with image-update
+                # Testing reintroA@1 -> reintroA@3 with update
                 self.pkg("install reintroA@1")
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroA")
 
@@ -4778,10 +4822,10 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 # Check installation of a package with an unobsoleted
                 # dependency.
 
-                # Testing reintroB@1 -> reintroB@3 with image-update
+                # Testing reintroB@1 -> reintroB@3 with update
                 self.pkg("install reintroB@1")
                 self.pkg("refresh")
-                self.pkg("image-update")
+                self.pkg("update")
                 self.pkg("list reintroB@3")
                 self.pkg("list reintroA@3")
                 self.pkg("uninstall reintroB reintroA")
@@ -4866,7 +4910,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("refresh")
                 self.pkg("list -afv")
-                self.pkg("image-update -v")
+                self.pkg("update -v")
                 self.pkg("list inc2p2", exit=1)
 
 
@@ -4979,7 +5023,7 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                     self.licensed12, self.licensed13, self.baz10))
 
         def test_01_install_update(self):
-                """Verifies that install and image-update handle license
+                """Verifies that install and update handle license
                 acceptance and display."""
 
                 self.image_create(self.rurl, prefix="bobcat")
@@ -5003,21 +5047,21 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 # display and that the license will be displayed.
                 self.pkg("install licensed@1.2 | grep 'copyright.licensed'")
 
-                # Next, check that an image-update fails if the user has not
+                # Next, check that an update fails if the user has not
                 # specified --accept and a license requires acceptance.
-                self.pkg("image-update -v", exit=6)
+                self.pkg("update -v", exit=6)
 
                 # Verify that licenses are not included in -n output if
                 # --licenses is not provided.
-                self.pkg("image-update -n | grep 'copyright.licensed", exit=1)
+                self.pkg("update -n | grep 'copyright.licensed", exit=1)
 
                 # Verify that --licenses include the license in output.
-                self.pkg("image-update -n --licenses | "
+                self.pkg("update -n --licenses | "
                     "grep 'license.licensed'")
 
-                # Next, check that an image-update succeeds if the user has
+                # Next, check that an update succeeds if the user has
                 # specified --accept and a license requires acceptance.
-                self.pkg("image-update -v --accept")
+                self.pkg("update -v --accept")
                 self.pkg("info licensed@1.3")
 
 

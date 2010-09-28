@@ -48,8 +48,8 @@ except ImportError:
 class BootEnv(object):
 
         """A BootEnv object is an object containing the logic for
-        managing the recovery of image-update, install and uninstall
-        operations.
+        managing the recovery of image-modifying operations such
+        as install, uninstall, and update.
 
         Recovery is only enabled for ZFS filesystems. Any operation
         attempted on UFS will not be handled by BootEnv.
@@ -275,7 +275,7 @@ class BootEnv(object):
 
         def init_image_recovery(self, img, be_name=None):
 
-                """Initialize for an image-update.
+                """Initialize for an update.
                         If a be_name is given, validate it.
                         If we're operating on a live BE then clone the
                         live BE and operate on the clone.
@@ -416,8 +416,7 @@ Reboot when ready to switch to this updated BE.
                         raise caught_exception
 
         def restore_image(self):
-
-                """Restore a failed image-update attempt."""
+                """Restore a failed update attempt."""
 
                 self.__reset_image_state(failure=True)
 

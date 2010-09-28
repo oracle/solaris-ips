@@ -145,6 +145,8 @@ class FileAction(generic.Action):
                         # File is marked to be preserved and exists so don't
                         # reinstall content.
                         do_content = False
+                elif pres_type == "renameold.update":
+                        old_path = final_path + ".update"
                 elif pres_type == "renameold":
                         old_path = final_path + ".old"
                 elif pres_type == "renamenew":
@@ -201,7 +203,8 @@ class FileAction(generic.Action):
 
                 # XXX There's a window where final_path doesn't exist, but we
                 # probably don't care.
-                if do_content and pres_type == "renameold":
+                if do_content and pres_type in ("renameold",
+                    "renameold.update"):
                         portable.rename(final_path, old_path)
 
                 # This is safe even if temp == final_path.
@@ -335,8 +338,8 @@ class FileAction(generic.Action):
                 Returns None if preservation is not defined by the action.
                 Returns False if it is, but no preservation is necessary.
                 Returns True for the normal preservation form.  Returns one of
-                the strings 'renameold' or 'renamenew' for each of the
-                respective forms of preservation.
+                the strings 'renameold', 'renameold.update', or 'renamenew'
+                for each of the respective forms of preservation.
                 """
 
                 if not "preserve" in self.attrs:
@@ -346,6 +349,28 @@ class FileAction(generic.Action):
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
                 pres_type = False
+                # If action has been marked with a preserve attribute, the
+                # hash of the preserved file has changed between versions,
+                # and the package being installed is older than the package
+                # that was installed, and the version on disk is different
+                # than the installed package's original version, then preserve
+                # the installed file by renaming it.
+                if orig and pkgplan.destination_fmri and \
+                    self.hash != orig.hash and \
+                    pkgplan.destination_fmri.version < pkgplan.origin_fmri.version:
+                        # Installed, preserved file is for a package newer than
+                        # what will be installed.  So check if the version on
+                        # disk is different than what was originally delivered,
+                        # and if so, preserve it.
+                        if os.path.isfile(final_path):
+                                ihash, cdata = misc.get_data_digest(final_path)
+                                if ihash != orig.hash:
+                                        # .old is intentionally avoided here to
+                                        # avoid accidental collisions with the
+                                        # normal install process.
+                                        return "renameold.update"
+                        return False
+
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a content hash different from what the
                 # system expected it to be, then we preserve the original file
@@ -360,7 +385,6 @@ class FileAction(generic.Action):
                                 else:
                                         return True
                 return pres_type
-
 
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.

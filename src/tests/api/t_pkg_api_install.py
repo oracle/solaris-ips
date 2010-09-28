@@ -180,6 +180,22 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        carriage = """
+            open carriage@1.0
+            add depend type=require fmri=horse@1.0
+            add depend type=exclude fmri=horse@2.0
+            close
+            open carriage@2.0
+            add depend type=require fmri=horse@2.0
+            close
+            """
+
+        horse = """
+            open horse@1.0
+            close
+            open horse@2.0
+            close """
+
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
@@ -190,6 +206,13 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def __do_install(api_obj, fmris):
                 api_obj.reset()
                 api_obj.plan_install(fmris)
+                api_obj.prepare()
+                api_obj.execute_plan()
+
+        @staticmethod
+        def __do_update(api_obj, fmris):
+                api_obj.reset()
+                api_obj.plan_update(fmris)
                 api_obj.prepare()
                 api_obj.execute_plan()
 
@@ -264,7 +287,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list -a")
                 self.pkg("verify")
 
-                # Reinstall foo, then remove manifest cache files and then
+                # Install foo again, then remove manifest cache files and then
                 # verify uninstall doesn't fail.
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo"])
@@ -276,7 +299,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_uninstall(api_obj, ["foo"])
 
         def test_basics_3(self):
-                """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
+                """ Install foo@1.0, upgrade to foo@1.1, update foo@1.0,
+                and then uninstall. """
 
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11))
                 api_obj = self.image_create(self.rurl)
@@ -291,6 +315,18 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list foo@1.1")
                 self.pkg("list foo@1.0", exit=1)
                 self.pkg("list foo@1")
+                self.pkg("verify")
+
+                api_obj.reset()
+                self.__do_update(api_obj, ["foo@1.0"])
+                self.pkg("list foo@1.0")
+                self.pkg("list foo@1.1", exit=1)
+                self.pkg("verify")
+
+                api_obj.reset()
+                self.__do_update(api_obj, ["foo@1.1"])
+                self.pkg("list foo@1.1")
+                self.pkg("list foo@1.0", exit=1)
                 self.pkg("verify")
 
                 api_obj.reset()
@@ -318,6 +354,27 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list bar", exit=1)
                 self.pkg("list foo", exit=1)
                 self.pkg("verify")
+
+        def test_update_backwards(self):
+                """ Publish horse and carriage, verify update won't downgrade
+                packages not specified for operation. """
+
+                self.pkgsend_bulk(self.rurl, (self.carriage, self.horse))
+                api_obj = self.image_create(self.rurl)
+
+                self.__do_install(api_obj, ["carriage@2"])
+
+                # Downgrading to carriage@1.0 would force a downgrade to
+                # horse@1.0 ...
+                api_obj.reset()
+                self.assertRaises(api_errors.PlanCreationException,
+                    api_obj.plan_update, ["carriage@1"])
+
+                # ...but naming both should allow the downgrade to succeed.
+                api_obj.reset()
+                self.__do_update(api_obj, ["carriage@1", "horse@1"])
+
+                self.pkg("list carriage@1 horse@1")
 
         def test_multi_publisher(self):
                 """ Verify that package install works as expected when multiple
@@ -434,7 +491,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # the checking.
                 argv0 = os.path.join(self.get_img_path(), "usr/bin/pkg")
 
-                # Image-update when it doesn't appear to be an opensolaris image
+                # Update when it doesn't appear to be an opensolaris image
                 # shouldn't have any issues.
                 self.__do_install(api_obj, ["foo@1.0"])
                 api_obj.reset()
@@ -702,8 +759,18 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
                 api_obj.reset()
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
+                    check_missing, api_obj.plan_update, ["foo"])
+
+                api_obj.reset()
                 api_obj.refresh(True)
                 self.__do_install(api_obj, ["foo"])
+
+                # Verify update plan has nothing to do result for installed
+                # package that can't be updated.
+                api_obj.reset()
+                self.assertEqual(api_obj.plan_update(["foo"]), False)
+
                 self.__do_uninstall(api_obj, ["foo"])
 
                 api_obj.reset()

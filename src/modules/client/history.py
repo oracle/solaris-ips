@@ -187,7 +187,7 @@ Operation Errors:
     self.errors)
 
         # All "time" values should be in UTC, using ISO 8601 as the format.
-        # Name of the operation performed (e.g. install, image-update, etc.).
+        # Name of the operation performed (e.g. install, update, etc.).
         name = None
         # When the operation started.
         start_time = None

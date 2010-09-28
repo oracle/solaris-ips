@@ -99,6 +99,20 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             close """
 
+        incorp10 = """
+            open incorp@1.0,5.11-0
+            add depend type=incorporate fmri=foo@1.0
+            add depend type=incorporate fmri=bar@1.0
+            add set name=pkg.depend.install-hold value=test
+            close """
+
+        incorp11 = """
+            open incorp@1.1,5.11-0
+            add depend type=incorporate fmri=foo@1.1
+            add depend type=incorporate fmri=bar@1.1
+            add set name=pkg.depend.install-hold value=test
+            close """
+
         def setUp(self):
                 # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
@@ -110,7 +124,7 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.rurl5 = self.dcs[5].get_repo_url()
                 self.pkgsend_bulk(self.rurl1, (self.foo10, self.foo11,
                     self.baz11, self.qux10, self.qux11, self.quux10,
-                    self.quux11, self.corge11))
+                    self.quux11, self.corge11, self.incorp10, self.incorp11))
 
                 self.pkgsend_bulk(self.rurl2, (self.foo10, self.bar10,
                     self.bar11, self.baz10, self.qux10, self.qux11,
@@ -124,17 +138,16 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                         self.dcs[i].get_repo(auto_create=True).rebuild()
 
         def test_image_update_bad_opts(self):
-                """Test image-update with bad options."""
+                """Test update with bad options."""
 
                 self.image_create(self.rurl1, prefix="test1")
-                self.pkg("image-update -@", exit=2)
-                self.pkg("image-update -vq", exit=2)
-                self.pkg("image-update foo", exit=2)
+                self.pkg("update -@", exit=2)
+                self.pkg("update -vq", exit=2)
 
         def test_01_after_pub_removal(self):
                 """Install packages from multiple publishers, then verify that
                 removal of the second publisher will not prevent an
-                image-update."""
+                update."""
 
                 self.image_create(self.rurl1, prefix="test1")
 
@@ -146,44 +159,44 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install bar@1.0")
 
                 # Remove the publisher of an installed package, then add the
-                # publisher back, but with an empty repository.  An image-update
+                # publisher back, but with an empty repository.  An update
                 # should still be possible.
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test2" % self.rurl3)
-                self.pkg("image-update -nv")
+                self.pkg("update -nv")
 
                 # Add two publishers with the same packages as a removed one;
-                # an image-update should be possible despite the conflict (as
+                # an update should be possible despite the conflict (as
                 # the newer versions will simply be ignored).
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test4" % self.rurl4)
                 self.pkg("set-publisher -O %s test5" % self.rurl5)
-                self.pkg("image-update -nv")
+                self.pkg("update -nv")
 
-                # Remove one of the conflicting publishers. An image-update
+                # Remove one of the conflicting publishers. An update
                 # should still be possible even though the conflicts no longer
                 # exist and the original publisher is unknown (see bug 6856).
                 self.pkg("unset-publisher test4")
-                self.pkg("image-update -nv")
+                self.pkg("update -nv")
 
                 # Remove the remaining test publisher.
                 self.pkg("unset-publisher test5")
 
         def test_02_update_multi_publisher(self):
-                """Verify that image-updates work as expected when different
+                """Verify that updates work as expected when different
                 publishers offer the same package."""
 
                 self.image_create(self.rurl1, prefix="test1")
 
                 # First, verify that the preferred status of a publisher will
-                # not affect which source is used for image-update when two
+                # not affect which source is used for update when two
                 # publishers offer the same package and the package publisher
                 # was preferred at the time of install.
                 self.pkg("set-publisher -P -O %s test2" % self.rurl2)
                 self.pkg("install foo@1.0")
                 self.pkg("info foo@1.0 | grep test2")
                 self.pkg("set-publisher -P test1")
-                self.pkg("image-update -v", exit=4)
+                self.pkg("update -v", exit=4)
                 self.pkg("info foo@1.1 | grep test1", exit=1)
                 self.pkg("uninstall foo")
 
@@ -194,12 +207,51 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 # to install the package.
                 self.pkg("install baz@1.0")
                 self.pkg("info baz@1.0 | grep test2")
+                # Also verify that the client still accepts 'image-update'
+                # as a synonym for 'update' for compatibility.
                 self.pkg("image-update -v", exit=4)
                 self.pkg("info baz@1.0 | grep test2")
 
                 # Finally, cleanup and verify no packages are installed.
                 self.pkg("uninstall '*'")
                 self.pkg("list", exit=1)
+
+        def test_03_update_specific_packages(self):
+                """Verify that update only updates specified packages."""
+
+                self.image_create(self.rurl1, prefix="test1")
+
+                # Install a package from the preferred publisher.
+                self.pkg("install foo@1.0")
+
+                # Install a package from a second publisher.
+                self.pkg("set-publisher -O %s test2" % self.rurl2)
+                self.pkg("install bar@1.0")
+
+                # Update just bar, and then verify foo wasn't updated.
+                self.pkg("update bar")
+                self.pkg("info bar@1.1 foo@1.0")
+
+                # Now update bar back to 1.0 and then verify that update '*',
+                # update '*@*', or update without arguments will update all
+                # packages.
+                self.pkg("update bar@1.0")
+                self.pkg("install incorp@1.0")
+
+                self.pkg("update")
+                self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
+
+                self.pkg("update *@1.0")
+                self.pkg("info bar@1.0 foo@1.0 incorp@1.0")
+
+                self.pkg("update '*'")
+                self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
+
+                self.pkg("update bar@1.0 foo@1.0 incorp@1.0")
+                self.pkg("info bar@1.0 foo@1.0 incorp@1.0")
+
+                self.pkg("update '*@*'")
+                self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
 
 
 if __name__ == "__main__":

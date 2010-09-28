@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 44
+CLIENT_API_VERSION = 45
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -1874,7 +1874,7 @@ class CliTestCase(Pkg5TestCase):
                 self._api_finish(api_obj)
 
         def _api_image_update(self, api_obj, **kwargs):
-                self.debug("planning image-update")
+                self.debug("planning update")
                 api_obj.plan_update_all(sys.argv[0], **kwargs)
                 self._api_finish(api_obj)
 

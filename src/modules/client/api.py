@@ -27,7 +27,12 @@
 """This module provides the supported, documented interface for clients to
 interface with the pkg(5) system.
 
-Refer to pkg.api_common for additional core class documentation."""
+Refer to pkg.api_common for additional core class documentation.
+
+Consumers should catch ApiException when calling any API function, and
+may optionally catch any subclass of ApiException for further, specific
+error handling.
+"""
 
 import collections
 import copy
@@ -60,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 44
+CURRENT_API_VERSION = 45
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -101,7 +106,7 @@ class ImageInterface(object):
         # Private constants used for tracking which type of plan was made.
         __INSTALL = 1
         __UNINSTALL = 2
-        __IMAGE_UPDATE = 3
+        __UPDATE = 3
 
         def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name):
@@ -120,12 +125,9 @@ class ImageInterface(object):
                 changes.
 
                 'pkg_client_name' is a string containing the name of the client,
-                such as "pkg" or "packagemanager".
+                such as "pkg" or "packagemanager"."""
 
-                This function can raise VersionException and
-                ImageNotFoundException."""
-
-                compatible_versions = set([43, CURRENT_API_VERSION])
+                compatible_versions = set([43, 44, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -318,7 +320,7 @@ class ImageInterface(object):
                 given inputs and plan.  Toss cookies if we need a new be and 
                 can't have one."""
                 # decide whether or not to create new BE.
-                
+
                 if self.__img.is_liveroot():
                         if self.__new_be is None:
                                 self.__new_be = self.__img.imageplan.reboot_needed()
@@ -374,17 +376,34 @@ class ImageInterface(object):
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, update_index=True, be_name=None, new_be=False):
-                """Contructs a plan to install the packages provided
-                in pkg_list.  pkg_list is a list of packages to
-                install.  refresh_catalogs controls whether the
-                catalogs will automatically be refreshed. noexecute
-                determines whether the history will be recorded after
-                planning is finished.  It returns a boolean which
-                tells the client whether there is anything to do.  It
-                can raise PlanCreationException, PermissionsException
-                and InventoryException. The noexecute argument is
-                included for compatibility with operational history.
-                The hope is it can be removed in the future."""
+                """Constructs a plan to install the packages provided in
+                pkg_list.  Once an operation has been planned, it may be
+                executed by first calling prepare(), and then execute_plan().
+
+                'pkg_list' is a list of packages to install.
+
+                'refresh_catalogs' controls whether the catalogs will
+                automatically be refreshed.
+
+                'noexecute' determines whether the resulting plan can be
+                executed and whether history will be recorded after
+                planning is finished.
+
+                'update_index' determines whether client search indexes
+                will be updated after operation completion during plan
+                execution.
+
+                'be_name' is a string to use as the name of any new boot
+                environment created during the operation.
+
+                'new_be' indicates whether a new boot environment should be
+                created during the operation.  If True, a new boot environment
+                will be created.  If False, and a new boot environment is
+                needed, an ImageUpdateOnLiveImageException will be raised.
+                If None, a new boot environment will be created only if needed.
+
+                This function returns a boolean indicating whether there is
+                anything to do."""
 
                 self.__plan_common_start("install", noexecute, new_be, be_name)
                 try:
@@ -422,18 +441,23 @@ class ImageInterface(object):
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
             update_index=True, be_name=None, new_be=False):
-            
-                """Contructs a plan to uninstall the packages provided
-                in pkg_list. pkg_list is a list of packages to
-                install.  recursive_removal controls whether recursive
-                removal is allowed. noexecute determines whether the
-                history will be recorded after planning is finished.
-                If there are things to do to complete the uninstall,
-                it returns True, otherwise it returns False. It can
-                raise NonLeafPackageException and
-                PlanCreationException."""
+                """Constructs a plan to remove the packages provided in
+                pkg_list.  Once an operation has been planned, it may be
+                executed by first calling prepare(), and then execute_plan().
 
-                self.__plan_common_start("uninstall", noexecute, new_be, be_name)
+                'pkg_list' is a list of packages to install.
+
+                'recursive_removal' controls whether recursive removal is
+                allowed.
+
+                For all other parameters, refer to the 'plan_install' function
+                for an explanation of their usage and effects.
+
+                This function returns a boolean which indicates whether there
+                is anything to do."""
+
+                self.__plan_common_start("uninstall", noexecute, new_be,
+                    be_name)
 
                 try:
                         self.__img.make_uninstall_plan(pkg_list,
@@ -449,13 +473,64 @@ class ImageInterface(object):
 
                         self.__set_new_be()
 
-                        self.__plan_desc = PlanDescription(self.__img, self.__new_be)
+                        self.__plan_desc = PlanDescription(self.__img,
+                            self.__new_be)
                         if noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
                         self.__img.imageplan.update_index = update_index
                 except:
                         self.__plan_common_exception()
+                        # NOTREACHED
+
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
+                return res
+
+        def plan_update(self, pkg_list, refresh_catalogs=True,
+            noexecute=False, update_index=True, be_name=None, new_be=False):
+                """Constructs a plan to update the packages provided in
+                pkg_list.  Once an operation has been planned, it may be
+                executed by first calling prepare(), and then execute_plan().
+
+                'pkg_list' is a list of packages to update.
+
+                For all other parameters, refer to the 'plan_install' function
+                for an explanation of their usage and effects.
+
+                This function returns a boolean which indicates whether there
+                is anything to do."""
+
+                self.__plan_common_start("update", noexecute, new_be,
+                    be_name)
+                try:
+                        if refresh_catalogs:
+                                self.__refresh_publishers()
+
+                        self.__img.make_update_plan(self.__progresstracker,
+                            self.__check_cancelation, noexecute,
+                            pkg_list=pkg_list)
+
+                        assert self.__img.imageplan
+
+                        self.__disable_cancel()
+
+                        if not noexecute:
+                                self.__plan_type = self.__UPDATE
+
+                        self.__set_new_be()
+
+                        self.__plan_desc = PlanDescription(self.__img,
+                            self.__new_be)
+                        if self.__img.imageplan.nothingtodo() or noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+
+                        self.__img.imageplan.update_index = update_index
+                except:
+                        self.__plan_common_exception(log_op_end=[
+                            apx.CanceledException, fmri.IllegalFmri,
+                            Exception])
                         # NOTREACHED
 
                 self.__plan_common_finish()
@@ -494,23 +569,25 @@ class ImageInterface(object):
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
             noexecute=False, force=False, update_index=True,
             be_name=None, new_be=True):
-                """Creates a plan to update all packages on the system
-                to the latest known versions.  actual_cmd is the
-                command used to start the client.  It is used to
-                determine the image to check whether the packaging
-                system is up to date.  refresh_catalogs controls
-                whether the catalogs will automatically be refreshed.
-                noexecute determines whether the history will be
-                recorded after planning is finished.  force controls
-                whether update should proceed even if ipkg is not up
-                to date. It returns a tuple of two things.  The first
-                is a boolean which tells the client whether there is
-                anything to do.  The second tells whether the image is
-                an opensolaris image.  It can raise
-                CatalogRefreshException, IpkgOutOfDateException,
-                PlanCreationException and PermissionsException."""
+                """Constructs a plan to update all packages on the system
+                to the latest known versions.  Once an operation has been
+                planned, it may be executed by first calling prepare(), and
+                then execute_plan().
 
-                self.__plan_common_start("image-update", noexecute, new_be, be_name)
+                'actual_cmd' is the command used to start the client.  It
+                is used to determine the image to check when determining
+                whether the package system is up to date.
+
+                'force' indicates whether update should skip the package
+                system up to date check.
+
+                For all other parameters, refer to the 'plan_install' function
+                for an explanation of their usage and effects.
+
+                This function returns a tuple of booleans of the form
+                (stuff_to_do, solaris_image)."""
+
+                self.__plan_common_start("update", noexecute, new_be, be_name)
                 try:
                         if refresh_catalogs:
                                 self.__refresh_publishers()
@@ -541,10 +618,11 @@ class ImageInterface(object):
                         self.__disable_cancel()
 
                         if not noexecute:
-                                self.__plan_type = self.__IMAGE_UPDATE
+                                self.__plan_type = self.__UPDATE
                         self.__set_new_be()
 
-                        self.__plan_desc = PlanDescription(self.__img, self.__new_be)
+                        self.__plan_desc = PlanDescription(self.__img,
+                            self.__new_be)
 
                         if self.__img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
@@ -562,18 +640,22 @@ class ImageInterface(object):
 
         def plan_change_varcets(self, variants=None, facets=None,
             noexecute=False, be_name=None, new_be=None):
-                """Creates a plan to change the specified
-                variants/facets on an image.  This function has two
-                return values.  The first is a boolean which tells the
-                client whether there is anything to do.  The third is
-                either None, or an exception which indicates partial
-                success.  This is currently used to indicate a failure
-                in refreshing catalogs. It can raise
-                CatalogRefreshException, IpkgOutOfDateException,
-                NetworkUnavailableException, PlanCreationException and
-                PermissionsException."""
+                """Creates a plan to change the specified variants and/or facets
+                for the image.
 
-                self.__plan_common_start("change-variant", noexecute, new_be, be_name)
+                'variants' is a dict of the variants to change the values of.
+
+                'facets' is a dict of the facets to change the values of.
+
+                For all other parameters, refer to the 'plan_install' function
+                for an explanation of their usage and effects.
+
+                This function returns a boolean which indicates whether there
+                is anything to do.
+                """
+
+                self.__plan_common_start("change-variant", noexecute, new_be,
+                    be_name)
                 if not variants and not facets:
                         raise ValueError, "Nothing to do"
                 try:
@@ -589,7 +671,7 @@ class ImageInterface(object):
                         self.__disable_cancel()
 
                         if not noexecute:
-                                self.__plan_type = self.__IMAGE_UPDATE
+                                self.__plan_type = self.__UPDATE
 
                         self.__plan_desc = PlanDescription(self.__img, self.__new_be)
 
@@ -618,12 +700,10 @@ class ImageInterface(object):
                 return self.__plan_desc
 
         def prepare(self):
-                """Takes care of things which must be done before the plan
-                can be executed. This includes downloading the packages to
-                disk and preparing the indexes to be updated during
-                execution. It can raise ProblematicPermissionsIndexException,
-                and PlanMissingException. Should only be called once a
-                plan_X method has been called."""
+                """Takes care of things which must be done before the plan can
+                be executed. This includes downloading the packages to disk and
+                preparing the indexes to be updated during execution.  Should
+                only be called once a plan_X method has been called."""
 
                 self.__acquire_activity_lock()
                 try:
@@ -640,7 +720,7 @@ class ImageInterface(object):
                                 raise apx.AlreadyPreparedException()
                         assert self.__plan_type == self.__INSTALL or \
                             self.__plan_type == self.__UNINSTALL or \
-                            self.__plan_type == self.__IMAGE_UPDATE
+                            self.__plan_type == self.__UPDATE
 
                         self.__enable_cancel()
 
@@ -691,10 +771,7 @@ class ImageInterface(object):
                         self.__activity_lock.release()
 
         def execute_plan(self):
-                """Executes the plan. This is uncancelable one it begins. It
-                can raise CorruptedIndexException, ImageLockedError,
-                ProblematicPermissionsIndexException, ImageplanStateException,
-                ImageUpdateOnLiveImageException, and PlanMissingException.
+                """Executes the plan. This is uncancelable once it begins.
                 Should only be called after the prepare method has been
                 called."""
 
@@ -718,7 +795,7 @@ class ImageInterface(object):
 
                         assert self.__plan_type == self.__INSTALL or \
                             self.__plan_type == self.__UNINSTALL or \
-                            self.__plan_type == self.__IMAGE_UPDATE
+                            self.__plan_type == self.__UPDATE
 
                         try:
                                 be = bootenv.BootEnv(self.__img.get_root())
@@ -775,7 +852,7 @@ class ImageInterface(object):
                                 self.log_operation_end(error=error)
                                 raise error
                         except actuator.NonzeroExitException, e:
-                                # Won't happen during image-update
+                                # Won't happen during update
                                 be.restore_install_uninstall()
                                 error = apx.ActuatorException(e)
                                 self.log_operation_end(error=error)

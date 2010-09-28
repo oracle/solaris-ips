@@ -65,9 +65,9 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, self.foo10)
                 self.pkg("-R %s refresh" % imgpath)
 
-                self.pkg("-R %s image-update" % badpath, exit=1)
-                self.pkg("-R %s image-update --be-name NEWBENAME" % imgpath, exit=1)
-                self.pkg("-R %s image-update" % imgpath)
+                self.pkg("-R %s update" % badpath, exit=1)
+                self.pkg("-R %s update --be-name NEWBENAME" % imgpath, exit=1)
+                self.pkg("-R %s update" % imgpath)
 
                 self.pkg("-R %s uninstall foo" % badpath, exit=1)
                 self.pkg("-R %s install foo" % imgpath, exit=4)
