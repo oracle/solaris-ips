@@ -107,11 +107,23 @@ log_level = CRITICAL
                         ret, output, err = self.pkglint(opt, exit=2)
 
         def test_3_list(self):
-                """Tests that a given checker method is listed with -L."""
-                ret, output, err = self.pkglint("-L")
-                self.assert_(
-                    "pkg.lint.pkglint_action.PkgDupActionChecker.duplicate_paths"
-                    in output, "List output didn't show expected checker")
+                """Tests that -L prints headers and descriptions or methods."""
+                for flag in ["-L", "-vL"]:
+                        ret, output, err = self.pkglint(flag)
+                        self.assert_("pkglint.dupaction001" in output,
+                            "short name didn't appear in %s output" % flag)
+
+                        self.assert_("NAME" in output,
+                            "Header not printed in %s output" % flag)
+                        if flag == "-vL":
+                                self.assert_(
+                                    "pkg.lint.pkglint_action.PkgDupActionChecker.duplicate_paths"
+                                    in output,
+                                    "verbose list output didn't show method")
+                        elif flag == "-L":
+                                self.assert_(
+                                    "Paths should be unique." in output,
+                                    "description didn't appear in -L output: %s" % output)
 
         def test_4_manifests(self):
                 """Tests that we exit normally with a correct manifest."""
@@ -146,14 +158,14 @@ log_level = CRITICAL
                 self.pkglint("-f %s/rcfile1 %s" % (self.test_root, mpath1),
                     exit=0)
 
-                ret, output, err = self.pkglint("-f %s/rcfile -L" %
+                ret, output, err = self.pkglint("-f %s/rcfile -vL" %
                     self.test_root, testrc=False, exit=0)
                 self.assert_(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"
                     in output, "List output missing excluded checker")
                 self.assert_("Excluded checks:" in output)
 
-                ret, output, err = self.pkglint("-f %s/rcfile1 -L" %
+                ret, output, err = self.pkglint("-f %s/rcfile1 -vL" %
                     self.test_root, testrc=False, exit=0)
                 self.assert_(
                     "pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets"

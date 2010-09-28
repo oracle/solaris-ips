@@ -205,11 +205,16 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.dup_attr_check(["file", "license"], "path", self.ref_paths,
                     self.processed_paths, action, engine, msgid=pkglint_id)
 
+        duplicate_paths.pkglint_desc = _(
+            "Paths should be unique.")
+
         def duplicate_drivers(self, action, manifest, engine, pkglint_id="002"):
                 """Checks for duplicate driver names."""
 
                 self.dup_attr_check(["driver"], "name", self.ref_drivers,
                     self.processed_drivers, action, engine, msgid=pkglint_id)
+
+        duplicate_drivers.pkglint_desc = _("Driver names should be unique.")
 
         def duplicate_usernames(self, action, manifest, engine,
             pkglint_id="003"):
@@ -218,11 +223,15 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.dup_attr_check(["user"], "username", self.ref_usernames,
                     self.processed_usernames, action, engine, msgid=pkglint_id)
 
+        duplicate_usernames.pkglint_desc = _("User names should be unique.")
+
         def duplicate_uids(self, action, manifest, engine, pkglint_id="004"):
                 """Checks for duplicate uids."""
 
                 self.dup_attr_check(["user"], "uid", self.ref_uids,
                     self.processed_uids, action, engine, msgid=pkglint_id)
+
+        duplicate_uids.pkglint_desc = _("UIDs should be unique.")
 
         def duplicate_groupnames(self, action, manifest, engine,
             pkglint_id="005"):
@@ -231,11 +240,16 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.dup_attr_check(["group"], "groupname", self.ref_groupnames,
                     self.processed_groupnames, action, engine, msgid=pkglint_id)
 
+        duplicate_groupnames.pkglint_desc = _(
+            "Group names should be unique.")
+
         def duplicate_gids(self, action, manifest, engine, pkglint_id="006"):
                 """Checks for duplicate gids."""
 
                 self.dup_attr_check(["group"], "name", self.ref_gids,
                     self.processed_gids, action, engine, msgid=pkglint_id)
+
+        duplicate_gids.pkglint_desc = _("GIDs should be unique.")
 
         def duplicate_refcount_path_attrs(self, action, manifest, engine,
             pkglint_id="007"):
@@ -301,6 +315,9 @@ class PkgDupActionChecker(base.ActionChecker):
                             "suspects": " ".join([key for key in suspects])},
                             msgid="%s%s" % (self.name, pkglint_id))
                 self.processed_refcount_paths[p] = True
+
+        duplicate_refcount_path_attrs.pkglint_desc = _(
+            "Duplicated reference counted actions should have the same attrs.")
 
         def dup_attr_check(self, action_names, attr_name, ref_dic,
             processed_dic, action, engine, msgid=""):
@@ -401,6 +418,9 @@ class PkgDupActionChecker(base.ActionChecker):
                                     " ".join([f.get_fmri() for f in fmris])},
                                     msgid="%s%s" % (self.name, pkglint_id))
                 self.seen_dup_types[p] = True
+
+        duplicate_path_types.pkglint_desc = _(
+            "Paths should be delivered by one action type only.")
 
         def _merge_dict(self, src, target):
                 """Merges the given src dictionary into the target
@@ -514,6 +534,9 @@ class PkgActionChecker(base.ActionChecker):
                                     "fmri": manifest.fmri},
                                     msgid="%s%s" % (self.name, pkglint_id))
 
+        underscores.pkglint_desc = _(
+            "Underscores are discouraged in action attributes.")
+
         def unusual_perms(self, action, manifest, engine, pkglint_id="002"):
                 """Checks that the permissions in this action look sane."""
 
@@ -564,6 +587,9 @@ class PkgActionChecker(base.ActionChecker):
                                     "path": action.attrs["path"],
                                     "pkg": manifest.fmri},
                                     msgid="%s%s.2" % (self.name, pkglint_id))
+
+        unusual_perms.pkglint_desc = _(
+            "UNIX file modes should be sensible.")
 
         def legacy(self, action, manifest, engine, pkglint_id="003"):
                 """Cross-check that the 'pkg' attribute points to a package
@@ -628,6 +654,9 @@ class PkgActionChecker(base.ActionChecker):
                                     "contain a REV= string") % manifest.fmri,
                                     msgid="%s%s.3" % (self.name, pkglint_id))
 
+        legacy.pkglint_desc = _(
+            "'legacy' actions should have valid attributes.")
+
         def unknown(self, action, manifest, engine, pkglint_id="004"):
                 """We should never have actions called 'unknown'."""
 
@@ -635,6 +664,8 @@ class PkgActionChecker(base.ActionChecker):
                         engine.error(_("unknown action found in %s") %
                             manifest.fmri,
                             msgid="%s%s" % (self.name, pkglint_id))
+
+        unknown.pkglint_desc = _("'unknown' actions should never occur.")
 
         def license(self, action, manifest, engine, pkglint_id="005"):
                 """License actions should not have path attributes."""
@@ -646,6 +677,8 @@ class PkgActionChecker(base.ActionChecker):
                             {"pkg": manifest.fmri,
                             "path": action.attrs["path"]},
                             msgid="%s%s" % (self.name, pkglint_id))
+
+        license.pkglint_desc = _("'license' actions should not have paths.")
 
         def dep_obsolete(self, action, manifest, engine, pkglint_id="005"):
                 """We should not have a require dependency on a package that has
@@ -726,6 +759,9 @@ class PkgActionChecker(base.ActionChecker):
                             "pkg": manifest.fmri},
                             msgid="%s.1" % lint_id)
 
+        dep_obsolete.pkglint_desc = _(
+            "Packages should not have dependencies on obsolete packages.")
+
         def valid_fmri(self, action, manifest, engine, pkglint_id="006"):
                 """We should be given a valid FMRI as a dependency, allowing
                 for a potentially missing component value"""
@@ -747,3 +783,4 @@ class PkgActionChecker(base.ActionChecker):
                                     "action": action},
                                     msgid="%s%s" % (self.name, pkglint_id))
 
+        valid_fmri.pkglint_desc = _("pkg(5) FMRIs should be valid.")

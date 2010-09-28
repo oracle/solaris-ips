@@ -1382,6 +1382,26 @@ depend fmri=system/obsolete@0.5.11-0.140 type=require
                             "manifests that should contain no errors: %s %s" %
                             (basename, "\n".join(lint_msgs)))
 
+        def test_relative_path(self):
+                """The engine can start with a relative path to its cache."""
+                lint_logger = TestLogFormatter()
+                lint_engine = engine.LintEngine(lint_logger,
+                    use_tracker=False,
+                    config_file=os.path.join(self.test_root,
+                    "pkglintrc"))
+
+                lint_engine.setup(cache=self.cache_dir,
+                    lint_uris=[self.ref_uri])
+
+                lint_engine.execute()
+                lint_engine.teardown()
+
+                relative = os.path.join("..", os.path.basename(self.cache_dir))
+                cache = os.path.join(self.cache_dir, relative)
+                lint_engine.setup(cache=cache)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
 def read_manifests(names, lint_logger):
         "Read a list of filenames, return a list of Manifest objects"
         manifests = []

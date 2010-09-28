@@ -1,4 +1,4 @@
-                                                         
+
 
 
 User Commands                                          pkglint(1)
@@ -10,9 +10,9 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkglint [ -c dir ] [ -r uri ] [ -p regexp ]
-                      [ -f rcfile ] [ -b build_no ]
+                      [ -f rcfile ] [ -b build_no ] [ -v ]
                       [ -l uri ] | manifest ...
-     /usr/bin/pkglint -L
+     /usr/bin/pkglint -L [ -v ]
 
 
 DESCRIPTION
@@ -60,7 +60,7 @@ DESCRIPTION
 
 
 
-SunOS 5.11          Last change: 20 Aug 2010                    1
+SunOS 5.11          Last change: 27 Sep 2010                    1
 
 
 
@@ -100,7 +100,11 @@ OPTIONS
 
 
      -L                   List  the  known  and   excluded   lint
-                          checks, then exit.
+                          checks,  showing the short name of each
+                          check, and its description  then  exit.
+                          When  combined  with  the  -v flag, the
+                          method that  implements  the  check  is
+                          printed instead of the description.
 
 
      -f config_file       Configure the pkglint session using the
@@ -120,13 +124,9 @@ OPTIONS
                           reference repository.
 
 
-     -v                   Run the tool in a verbose  mode,  over-
-                          riding  any  log_level  settings in the
-                          config file.  This option  also  causes
 
 
-
-SunOS 5.11          Last change: 20 Aug 2010                    2
+SunOS 5.11          Last change: 27 Sep 2010                    2
 
 
 
@@ -137,8 +137,9 @@ User Commands                                          pkglint(1)
 
 
 
-                          progress information on the lint run to
-                          be printed when using repositories.
+     -v                   Run the tool in a verbose  mode,  over-
+                          riding  any  log_level  settings in the
+                          config file.
 
 
      --help or -?         Displays a usage message.
@@ -191,8 +192,7 @@ CONFIGURATION FILE
 
 
 
-
-SunOS 5.11          Last change: 20 Aug 2010                    3
+SunOS 5.11          Last change: 27 Sep 2010                    3
 
 
 
@@ -215,7 +215,9 @@ DEVELOPERS
      cial keyword argument, "pkglint_id" are invoked  during  the
      course  of  the lint session.  Those methods should have the
      same signature as the corresponding check(..) method in  the
-     super class.
+     super   class.    Methods   should   also   be   assigned  a
+     "pkglint_desc" attribute, which is used as the  description,
+     printed by pkglint -L.
 
 EXAMPLES
      Example 1:  Running a pkglint session for the first time.
@@ -254,11 +256,9 @@ EXAMPLES
      pkglint.ext.mycheck = org.timf.mychecks
      pkglint.ext.opensolaris = pkg.lint.opensolaris
 
-     pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker pkg.lint.pkglint.PkgActionChecker.unusual_perms
 
 
-
-SunOS 5.11          Last change: 20 Aug 2010                    4
+SunOS 5.11          Last change: 27 Sep 2010                    4
 
 
 
@@ -269,6 +269,7 @@ User Commands                                          pkglint(1)
 
 
 
+     pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker pkg.lint.pkglint.PkgActionChecker.unusual_perms
           pkg.lint.pkglint.PkgManifestChecker pkg.lint.opensolaris.OpenSolarisManifestChecker
 
 
@@ -320,8 +321,7 @@ NOTES
 
 
 
-
-SunOS 5.11          Last change: 20 Aug 2010                    5
+SunOS 5.11          Last change: 27 Sep 2010                    5
 
 
 

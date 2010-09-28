@@ -130,7 +130,7 @@ def main_func():
 
                 if opts.list_checks:
                         list_checks(lint_engine.checkers,
-                            lint_engine.excluded_checkers)
+                            lint_engine.excluded_checkers, opts.verbose)
                         sys.exit(0)
 
                 if (opts.lint_uris or opts.ref_uris) and not opts.cache:
@@ -164,16 +164,19 @@ def main_func():
         else:
                 return 0
 
-def list_checks(checkers, exclude):
+def list_checks(checkers, exclude, verbose=False):
         """Prints a human-readable version of configured checks."""
 
         # used for justifying output
         width = 28
 
-        def get_method_name(method):
-                return "%s.%s.%s" % (method.im_class.__module__,
-                    method.im_class.__name__,
-                    method.im_func.func_name)
+        def get_method_desc(method, verbose):
+                if "pkglint_desc" in method.func_dict and not verbose:
+                        return method.pkglint_desc
+                else:
+                        return "%s.%s.%s" % (method.im_class.__module__,
+                            method.im_class.__name__,
+                            method.im_func.func_name)
 
         def get_pkglint_id(method):
                 """Inspects a given checker method to find the 'pkglint_id'
@@ -188,33 +191,48 @@ def list_checks(checkers, exclude):
                         i = arg_spec.args.index("pkglint_id")
                 except ValueError:
                         return "%s.?" % name
-                return "%s.%s" % (name, arg_spec.defaults[c - i])
+                return "%s%s" % (name, arg_spec.defaults[c - i])
 
-        has_excluded_methods = False
+        def emit(name, value):
+                msg("%s %s" % (name.ljust(width), value))
+
+        def print_list(items):
+                k = items.keys()
+                k.sort()
+                for lint_id in k:
+                        emit(lint_id, items[lint_id])
+
+        include_items = {}
+        exclude_items = {}
+
         for checker in checkers:
                 for m in checker.included_checks:
-                        msg("%s %s" % (get_pkglint_id(m).ljust(width),
-                            get_method_name(m)))
-                if checker.excluded_checks:
-                        has_excluded_methods = True
+                        lint_id = get_pkglint_id(m)
+                        include_items[lint_id] = get_method_desc(m, verbose)
 
-        if not (exclude or has_excluded_methods):
-                return
-
-        msg(_("\nExcluded checks:"))
         for checker in exclude:
                 for m in checker.excluded_checks:
-                        msg("%s %s" % (get_pkglint_id(m).ljust(width),
-                            get_method_name(m)))
+                        lint_id = get_pkglint_id(m)
+                        exclude_items[lint_id] = get_method_desc(m, verbose)
                 for m in checker.included_checks:
-                        msg("%s %s" % (get_pkglint_id(m).ljust(width),
-                            get_method_name(m)))
+                        lint_id = get_pkglint_id(m)
+                        exclude_items[lint_id] = get_method_desc(m, verbose)
+
         for checker in checkers:
                 for m in checker.excluded_checks:
-                        msg("%s %s" % (get_pkglint_id(m).ljust(width),
-                            get_method_name(m)))
+                        lint_id = get_pkglint_id(m)
+                        exclude_items[lint_id] = get_method_desc(m, verbose)
 
+        if include_items or exclude_items:
+                if verbose:
+                        emit(_("NAME"), _("METHOD"))
+                else:
+                        emit(_("NAME"), _("DESCRIPTION"))
+                print_list(include_items)
 
+                if exclude_items:
+                        msg(_("\nExcluded checks:"))
+                        print_list(exclude_items)
 
 def read_manifests(names, lint_logger):
         """Read a list of filenames, return a list of Manifest objects."""

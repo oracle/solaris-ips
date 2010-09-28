@@ -303,7 +303,7 @@ class LintEngine(object):
                             "reference or lint repositories."))
 
                 if cache:
-                        self.basedir = cache
+                        self.basedir = os.path.abspath(cache)
 
                         try:
                                 self.lint_image = os.path.join(self.basedir,
@@ -635,6 +635,9 @@ class LintEngine(object):
                         self.info("Not checking linted manifest %s" %
                             manifest.fmri, msgid="pkglint001.1")
                         return
+
+                self.debug(_("Checking %s") % manifest.fmri, "pkglint001.3")
+
                 for checker in manifest_checks:
                         try:
                                 checker.check(manifest, self)

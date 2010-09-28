@@ -71,6 +71,8 @@ class OpenSolarisActionChecker(base.ActionChecker):
                             "pkg": manifest.fmri},
                             msgid="%s%s.3" % (self.name, pkglint_id))
 
+        username_format.pkglint_desc = _("User names should be valid.")
+
 
 class OpenSolarisManifestChecker(base.ManifestChecker):
         """An opensolaris.org-specific class to check manifests."""
@@ -140,15 +142,8 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                             manifest.fmri,
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
-        def print_fmri(self, manifest, engine, pkglint_id="002"):
-                """For now, this is simply a convenient way to output
-                the FMRI being checked.  We pkglint.exclude this check
-                by default."""
-                # Using the python logger attached to the engine rather than
-                # emitting a lint message - this message is purely informational
-                # and isn't a source of lint messages (which would otherwise
-                # cause a non-zero exit from pkglint)
-                engine.logger.info(" %s" % manifest.fmri)
+        missing_attrs.pkglint_desc = _(
+            "Standard package attributes should be present.")
 
         def info_classification(self, manifest, engine, pkglint_id="003"):
                 """Checks that the info.classification attribute is valid."""
@@ -177,6 +172,9 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 else:
                         self._check_info_classification_value(engine, value,
                             manifest.fmri, "%s%s" % (self.name, pkglint_id))
+
+        info_classification.pkglint_desc = _(
+            "info.classification attribute should be valid.")
 
         def _check_info_classification_value(self, engine, value, fmri, msgid):
 

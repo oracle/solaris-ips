@@ -107,6 +107,9 @@ class PkgManifestChecker(base.ManifestChecker):
                             "set or signature actions") % manifest.fmri,
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
+        obsoletion.pkglint_desc = _(
+            "Obsolete packages should have valid contents.")
+
         def renames(self, manifest, engine, pkglint_id="002"):
                 """Checks for correct package renaming.
                 * error if renamed packages contain anything other than set,
@@ -126,12 +129,13 @@ class PkgManifestChecker(base.ManifestChecker):
                             manifest.fmri, msgid="%s%s" %
                             (self.name, pkglint_id))
 
+        renames.pkglint_desc = _("Renamed packages should have valid contents.")
 
         def variants(self, manifest, engine, pkglint_id="003"):
                 """Checks for correct use of variant tags.
                 * if variant tags present, matching variant descriptions
                   exist and are correctly specified
-                * All manifests that deliver file actions of a given\
+                * All manifests that deliver file actions of a given
                   architecture declare variant.arch
 
                 These checks are only performed on published packages."""
@@ -181,6 +185,8 @@ class PkgManifestChecker(base.ManifestChecker):
                             manifest.fmri,
                             msgid="%s%s.3" % (self.name, pkglint_id))
 
+        variants.pkglint_desc = _("Variants used by packages should be valid.")
+
         def naming(self, manifest, engine, pkglint_id="004"):
                 """Warn when there's a namespace clash where the last component
                 of the pkg name matches an existing one in the catalog."""
@@ -203,6 +209,9 @@ class PkgManifestChecker(base.ManifestChecker):
                             msgid="%s%s" % (self.name, pkglint_id))
 
                 self.processed_lastnames.append(lastname)
+
+        naming.pkglint_desc = _(
+            "Packages are encouraged to use unique leaf names.")
 
         def duplicate_deps(self, manifest, engine, pkglint_id="005"):
                 """Checks for repeated dependencies, including package version
@@ -244,6 +253,9 @@ class PkgManifestChecker(base.ManifestChecker):
                             "actions": " ".join([str(d) for d in duplicates])},
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
+        duplicate_deps.pkglint_desc = _(
+            "Packages should not have duplicate 'depend' actions.")
+
         def duplicate_sets(self, manifest, engine, pkglint_id="006"):
                 """Checks for duplicate set actions."""
                 seen_sets = {}
@@ -270,6 +282,9 @@ class PkgManifestChecker(base.ManifestChecker):
                             {"names": " ".join([str(a) for a in duplicates]),
                             "pkg": manifest.fmri},
                             msgid="%s%s" % (self.name, pkglint_id))
+
+        duplicate_sets.pkglint_desc = _(
+            "Packages should not have duplicate 'set' actions.")
 
         def _merge_names(self, src, target):
                 """Merges the given src list into the target list"""
