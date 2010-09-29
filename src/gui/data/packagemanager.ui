@@ -3345,24 +3345,6 @@ following name.</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">10</property>
                     <child>
-                      <object class="GtkLabel" id="alias_label">
-                        <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="xpad">4</property>
-                        <property name="ypad">4</property>
-                        <property name="label" translatable="yes">_Alias:</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">add_publisher_alias</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="url_label">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -3378,6 +3360,24 @@ following name.</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="alias_label">
+                        <property name="visible">True</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <property name="xpad">4</property>
+                        <property name="ypad">4</property>
+                        <property name="label" translatable="yes">_Alias:</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">add_publisher_alias</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
@@ -3427,7 +3427,6 @@ following name.</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="ypad">2</property>
-                            <property name="label" translatable="no"></property>
                             <property name="use_markup">True</property>
                           </object>
                           <packing>
@@ -6072,6 +6071,20 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
           <object class="GtkHButtonBox" id="dialog-action_area162">
             <property name="visible">True</property>
             <child>
+              <object class="GtkButton" id="log_help_button">
+                <property name="label">gtk-help</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="log_clear_button">
                 <property name="label">gtk-clear</property>
                 <property name="visible">True</property>
@@ -6083,7 +6096,7 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -6098,7 +6111,7 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -6111,8 +6124,9 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">log_clear_button</action-widget>
-      <action-widget response="0">log_close_button</action-widget>
+      <action-widget response="-11">log_help_button</action-widget>
+      <action-widget response="-2">log_clear_button</action-widget>
+      <action-widget response="-3">log_close_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="license_dialog">

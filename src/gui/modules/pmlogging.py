@@ -49,6 +49,7 @@ class PMLogging:
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)          
                 self.w_log_close_button = builder.get_object("log_close_button")
                 self.w_log_clear_button = builder.get_object("log_clear_button")
+                self.w_log_help_button = builder.get_object("log_help_button")
 
         def set_window_icon(self, window_icon):
                 self.w_view_log_dialog.set_icon(window_icon)
@@ -59,6 +60,8 @@ class PMLogging:
                      self.__on_log_close_button_clicked),
                     (self.w_log_clear_button, "clicked",
                      self.__on_log_clear_button_clicked),
+                    (self.w_log_help_button, "clicked",
+                     self.__on_log_help_button_clicked),
                     (self.w_view_log_dialog, "delete_event",
                      self.__on_log_dialog_delete_event)
                     ]
@@ -68,6 +71,10 @@ class PMLogging:
         def set_modal_and_transient(self, parent_window):
                 gui_misc.set_modal_and_transient(self.w_view_log_dialog,
                     parent_window)
+
+        @staticmethod
+        def __on_log_help_button_clicked(widget):
+                gui_misc.display_help("gkiod")
 
         def __on_log_dialog_delete_event(self, widget, event):
                 self.__on_log_close_button_clicked(None)

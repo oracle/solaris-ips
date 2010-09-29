@@ -32,9 +32,9 @@ RESET_PACKAGE_DELAY = 2000              # Delay before label text is reset
                                         # Also used to reset window text during install
 DIALOG_DEFAULT_WIDTH = 450              # Default Width of Progress Dialog
 DIALOG_EXPANDED_DETAILS_HEIGHT = 462    # Height of Progress Dialog when Details expanded
-DIALOG_INSTALL_COLLAPSED_HEIGHT = 232   # Heights of progress dialog when Details
+DIALOG_INSTALL_COLLAPSED_HEIGHT = 242   # Heights of progress dialog when Details
                                         # collapsed for install, remove and done stages
-DIALOG_REMOVE_COLLAPSED_HEIGHT = 210
+DIALOG_REMOVE_COLLAPSED_HEIGHT = 220
 DIALOG_DONE_COLLAPSED_HEIGHT = 126
 
 DIALOG_UM_EXTRA_HEIGHT = 60             # Extra height needed when in UM mode
@@ -227,6 +227,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.current_stage_label = self.w_stage1_label
                 self.current_stage_icon = self.w_stage1_icon
 
+                self.w_stages_label.set_line_wrap(True)
+                self.w_stages_label.set_size_request(DIALOG_DEFAULT_WIDTH - 20, -1)
+                
                 self.done_icon = gui_misc.get_icon(
                     self.parent.icon_theme, "progress_checkmark")
                 blank_icon = gui_misc.get_icon(
@@ -622,7 +625,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __on_help_button_clicked(self, widget):
                 if self.top_level:
-                        gui_misc.display_help("um_info")
+                        gui_misc.display_help("using_um")
                 elif self.action == enumerations.INSTALL_UPDATE:
                         gui_misc.display_help("install-pkg")
                 elif self.action == enumerations.REMOVE:
