@@ -1,3 +1,13 @@
+Version 46:
+Incompatible with clients using versions 0-45.
+
+    pkg.client.api.ImageInterface has changed as follows:
+         
+        * The actual_cmd parameter is no longer a parameter to the 
+          plan_update_all function.  Instead that information is stored in the
+          global_settings object.  It's used when looking for the trust anchors 
+          of the image from which pkg was run.
+
 Version 45:
 Compatible with clients using versions 43-44.
 

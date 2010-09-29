@@ -1364,8 +1364,11 @@ adm
                 self.pkg("uninstall amber bronze")
                 self.pkg("verify -v")
 
-                # make sure all directories are gone save /var in test image
-                self.assert_(os.listdir(self.get_img_path()) ==  ["var"])
+                # Make sure all directories are gone save /var in test image.
+                # 'pkg' will also be present as a file because image create
+                # places it there.
+                self.assertEqual(set(os.listdir(self.get_img_path())),
+                    set(["pkg", "var"]))
 
         def test_upgrade2(self):
                 """ test incorporations:

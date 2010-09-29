@@ -484,18 +484,19 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.foo12,
                     self.corepkgs))
-                api_obj = self.image_create(self.rurl)
+                self.image_create(self.rurl)
 
                 # We need to pretend that we're running out of the image we just
                 # created, so that the up to date code looks in that image to do
                 # the checking.
                 argv0 = os.path.join(self.get_img_path(), "usr/bin/pkg")
+                api_obj = self.get_img_api_obj(cmd_path=argv0)
 
                 # Update when it doesn't appear to be an opensolaris image
                 # shouldn't have any issues.
                 self.__do_install(api_obj, ["foo@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # Even though SUNWipkg is on the system, it won't appear as an
                 # opensolaris system.
@@ -504,7 +505,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWipkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # Same for package/pkg
                 api_obj.reset()
@@ -512,7 +513,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "package/pkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # Same for SUNWcs
                 api_obj.reset()
@@ -520,7 +521,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWcs"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # There are still no problems if the packaging system is up to
                 # date.  We can't test with SUNWipkg installed instead, because
@@ -533,7 +534,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # We should run into a problem if pkg(5) is out of date.
                 api_obj.reset()
@@ -543,7 +544,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     ["foo@1.0", "SUNWcs", "package/pkg@1.0"])
                 api_obj.reset()
                 self.assertRaises(api_errors.IpkgOutOfDateException,
-                    api_obj.plan_update_all, argv0)
+                    api_obj.plan_update_all)
 
                 # Use the metadata on release/name to determine it's an
                 # opensolaris system.
@@ -554,7 +555,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     ["foo@1.0", "release/name@2.0", "package/pkg@1.0"])
                 api_obj.reset()
                 self.assertRaises(api_errors.IpkgOutOfDateException,
-                    api_obj.plan_update_all, argv0)
+                    api_obj.plan_update_all)
 
                 # An older release/name which doesn't have the metadata should
                 # cause us to skip the check.
@@ -564,7 +565,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_install(api_obj,
                     ["foo@1.0", "release/name@1.0", "package/pkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
                 # Verify that if the installed version of pkg is from an
                 # unconfigured publisher and is newer than what is available
@@ -600,7 +601,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # version of pkg installed is newer than the versions that
                 # are offered by the current publishers.
                 api_obj.reset()
-                api_obj.plan_update_all(argv0)
+                api_obj.plan_update_all()
 
         def test_recursive_uninstall(self):
                 """Install bar@1.0, dependent on foo@1.0, uninstall foo

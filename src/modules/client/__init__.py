@@ -23,6 +23,7 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import copy
 import logging
 import os
 import sys
@@ -47,6 +48,7 @@ class GlobalSettings(object):
                 self.__error_log_handler = None
                 self.__verbose = False
                 self.client_name = None
+                self.client_args = sys.argv[:]
                 # Default maximum number of redirects received before
                 # aborting a connection.
                 self.pkg_client_max_redirect_default = 5

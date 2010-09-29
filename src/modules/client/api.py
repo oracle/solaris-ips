@@ -65,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 45
+CURRENT_API_VERSION = 46
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -127,7 +127,7 @@ class ImageInterface(object):
                 'pkg_client_name' is a string containing the name of the client,
                 such as "pkg" or "packagemanager"."""
 
-                compatible_versions = set([43, 44, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -566,17 +566,13 @@ class ImageInterface(object):
 
                 return False
 
-        def plan_update_all(self, actual_cmd, refresh_catalogs=True,
+        def plan_update_all(self, refresh_catalogs=True,
             noexecute=False, force=False, update_index=True,
             be_name=None, new_be=True):
                 """Constructs a plan to update all packages on the system
                 to the latest known versions.  Once an operation has been
                 planned, it may be executed by first calling prepare(), and
                 then execute_plan().
-
-                'actual_cmd' is the command used to start the client.  It
-                is used to determine the image to check when determining
-                whether the package system is up to date.
 
                 'force' indicates whether update should skip the package
                 system up to date check.
@@ -599,7 +595,6 @@ class ImageInterface(object):
                         if opensolaris_image and not force:
                                 try:
                                         if not self.__img.ipkg_is_up_to_date(
-                                            actual_cmd,
                                             self.__check_cancelation,
                                             noexecute,
                                             refresh_allowed=refresh_catalogs,

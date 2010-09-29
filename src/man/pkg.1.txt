@@ -858,7 +858,7 @@ IMAGE PROPERTIES
 
      trust-anchor-directory
           (string)  The pathname of the directory that contains the trust 
-          anchors for the image.
+          anchors for the image.  This path is relative to the image.
 
 
 PUBLISHER PROPERTIES

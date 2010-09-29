@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 45
+CLIENT_API_VERSION = 46
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1531,7 +1531,7 @@ def update(img, args):
                         # the patterns provided, attempt to update all
                         # installed packages.
                         stuff_to_do, opensolaris_image = \
-                            api_inst.plan_update_all(sys.argv[0],
+                            api_inst.plan_update_all(
                                 refresh_catalogs, noexecute, force=force,
                                 be_name=be_name, new_be=new_be,
                                 update_index=update_index)

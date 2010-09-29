@@ -1339,7 +1339,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         # we are passing force, since we already checked if the
                         # packages are up to date.
                         stuff_to_do, opensolaris_image = \
-                            self.api_o.plan_update_all(sys.argv[0],
+                            self.api_o.plan_update_all(
                             refresh_catalogs = False,
                             noexecute = False, force = True,
                             be_name = None, new_be = None) # Create BE if required

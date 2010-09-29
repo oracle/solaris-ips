@@ -122,7 +122,7 @@ class CheckForUpdates:
                         return
                 try:
                         plan_ret = \
-                            self.api_obj.plan_update_all(sys.argv[0],
+                            self.api_obj.plan_update_all(
                             refresh_catalogs = True,
                             noexecute = True, force = True)
                         stuff_to_do = plan_ret[0]

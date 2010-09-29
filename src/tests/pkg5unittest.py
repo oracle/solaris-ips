@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 45
+CLIENT_API_VERSION = 46
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -1337,6 +1337,7 @@ class CliTestCase(Pkg5TestCase):
                 self.image_dir = None
                 self.img_path = os.path.join(self.test_root, "image")
                 os.environ["PKG_IMAGE"] = self.img_path
+                self.image_created = False
 
         def tearDown(self):
                 Pkg5TestCase.tearDown(self)
@@ -1344,13 +1345,21 @@ class CliTestCase(Pkg5TestCase):
         def get_img_path(self):
                 return self.img_path
 
-        def get_img_api_obj(self):
+        def get_img_api_obj(self, cmd_path=None):
+                from pkg.client import global_settings
                 progresstracker = pkg.client.progress.NullProgressTracker()
-                return pkg.client.api.ImageInterface(self.get_img_path(),
+                if not cmd_path:
+                        cmd_path = os.path.join(self.img_path, "pkg")
+                old_val = global_settings.client_args
+                global_settings.client_args[0] = cmd_path
+                res = pkg.client.api.ImageInterface(self.get_img_path(),
                     CLIENT_API_VERSION, progresstracker, lambda x: False,
                     PKG_CLIENT_NAME)
+                global_settings.client_args = old_val
+                return res
 
-        def image_create(self, repourl, prefix="test", variants=EmptyDict):
+        def image_create(self, repourl, prefix="test", variants=EmptyDict,
+            destroy=True):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
                 to user) image using the pkg.client.api and returns the related
@@ -1359,7 +1368,8 @@ class CliTestCase(Pkg5TestCase):
                 assert self.img_path
                 assert self.img_path != "/"
 
-                self.image_destroy()
+                if destroy:
+                        self.image_destroy()
                 os.mkdir(self.img_path)
 
                 progtrack = pkg.client.progress.NullProgressTracker()
@@ -1367,6 +1377,9 @@ class CliTestCase(Pkg5TestCase):
                     CLIENT_API_VERSION, self.img_path,
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
                     prefix=prefix, progtrack=progtrack, variants=variants)
+                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
+                    os.path.join(self.img_path, "pkg"))
+                self.image_created = True
                 return api_inst
 
         def pkg_image_create(self, repourl, prefix="test", additional_args="",
@@ -1396,6 +1409,9 @@ class CliTestCase(Pkg5TestCase):
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, 0,
                             retcode, output)
+                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
+                    os.path.join(self.img_path, "pkg"))
+                self.image_created = True
                 return retcode
 
         def image_set(self, imgdir):
@@ -1411,8 +1427,13 @@ class CliTestCase(Pkg5TestCase):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
-            out=False, stderr=False):
-                cmdline = "%s/usr/bin/pkg %s" % (g_proto_area, command)
+            out=False, stderr=False, alt_img_path=None):
+                pth = self.img_path
+                if alt_img_path:
+                        pth = alt_img_path
+                elif not self.image_created:
+                        pth = "%s/usr/bin" % g_proto_area
+                cmdline = "%s/pkg %s" % (pth, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
 
@@ -1875,7 +1896,7 @@ class CliTestCase(Pkg5TestCase):
 
         def _api_image_update(self, api_obj, **kwargs):
                 self.debug("planning update")
-                api_obj.plan_update_all(sys.argv[0], **kwargs)
+                api_obj.plan_update_all(**kwargs)
                 self._api_finish(api_obj)
 
         def _api_finish(self, api_obj):
@@ -2003,6 +2024,7 @@ class SingleDepotTestCase(ManyDepotTestCase):
             start_depot=False):
                 ManyDepotTestCase.setUp(self, [publisher],
                     debug_features=debug_features, start_depots=start_depot)
+                self.backup_img_path = None
 
         def __get_dc(self):
                 if self.dcs:
@@ -2022,6 +2044,12 @@ class SingleDepotTestCase(ManyDepotTestCase):
         # for convenience of writing test cases.
         dc = property(fget=__get_dc)
 
+        def create_sub_image(self, repourl, prefix="test", variants=EmptyDict):
+                if not self.backup_img_path:
+                        self.backup_img_path = self.img_path
+                self.image_set(os.path.join(self.img_path, "sub"))
+                self.image_create(repourl, prefix, variants, destroy=False)
+
 
 class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         """ A class which allows manipulation of the image directory that
@@ -2037,7 +2065,6 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
 
         def setUp(self, debug_features=EmptyI, publisher="test",
             start_depot=False):
-                self.backup_img_path = None
                 SingleDepotTestCase.setUp(self, debug_features=debug_features,
                     publisher=publisher, start_depot=start_depot)
 
@@ -2051,7 +2078,7 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 if self.backup_img_path:
                         self.img_path = self.backup_img_path
 
-        def corrupt_image_create(self, repourl, config, subdirs, prefix = "test",
+        def corrupt_image_create(self, repourl, config, subdirs, prefix="test",
             destroy = True):
                 """ Creates two levels of directories under the original image
                 directory. In the first level (called bad), it builds a "corrupt
@@ -2062,7 +2089,7 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 speicified by config. As another subdirectory of bad, it
                 creates a subdirectory called final which represents the
                 directory the command was actually run from (which is why
-                img_path is set to that location). Exisintg image destruction
+                img_path is set to that location). Existing image destruction
                 was made optional to allow testing of two images installed next
                 to each other (a user and full image created in the same
                 directory for example). """
@@ -2127,6 +2154,8 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                                 shutil.rmtree(os.path.join(tmpDir, "pkg"))
                         if "index_absent" in config:
                                 shutil.rmtree(os.path.join(tmpDir, "index"))
+                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
+                    os.path.join(self.img_path, "pkg"))
 
                 # Make find root start at final. (See the doc string for
                 # more explanation.)

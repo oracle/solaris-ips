@@ -30,6 +30,10 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import re
+import shutil
+import sys
+import unittest
 
 import pkg.actions as action
 import pkg.actions.signature as signature
@@ -69,13 +73,46 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/baz variant.arch=i386
             close """
 
+        image_files = ['simple_file']
         misc_files = ['tmp/example_file']
+
+        def seed_ta_dir(self, certs, dest_dir=None):
+                if isinstance(certs, basestring):
+                        certs = [certs]
+                if not dest_dir:
+                        dest_dir = self.ta_dir
+                self.assert_(dest_dir)
+                self.assert_(self.raw_trust_anchor_dir)
+                for c in certs:
+                        name = "%s_cert.pem" % c
+                        portable.copyfile(
+                            os.path.join(self.raw_trust_anchor_dir, name),
+                            os.path.join(dest_dir, name))
+
+        def pkg_image_create(self, *args, **kwargs):
+                pkg5unittest.SingleDepotTestCase.pkg_image_create(self,
+                    *args, **kwargs)
+                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                os.makedirs(self.ta_dir)
+                for f in self.image_files:
+                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                                fh.close()
+
+        def image_create(self, *args, **kwargs):
+                pkg5unittest.SingleDepotTestCase.image_create(self,
+                    *args, **kwargs)
+                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                os.makedirs(self.ta_dir)
+                for f in self.image_files:
+                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                                fh.close()
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
+                self.ta_dir = None
 
                 self.path_to_certs = os.path.join(self.ro_data_root,
                     "signing_certs", "produced")
@@ -88,7 +125,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     "publisher_cas")
                 self.inter_certs_dir = os.path.join(self.path_to_certs,
                     "inter_certs")
-                self.trust_anchor_dir = os.path.join(self.path_to_certs,
+                self.raw_trust_anchor_dir = os.path.join(self.path_to_certs,
                     "trust_anchors")
                 self.crl_dir = os.path.join(self.path_to_certs, "crl")
 
@@ -223,8 +260,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 # Find the hash of the publisher CA cert used.
                 hsh = self.calc_file_hash(ca_path)
@@ -242,16 +279,19 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
 
-                self.pkg("unset-property trust-anchor-directory")
-                # This should fail because the chain is root in an untrusted
+                emptyCA = os.path.join(self.img_path, "emptyCA")
+                os.makedirs(emptyCA)
+                self.pkg("set-property trust-anchor-directory emptyCA")
+                # This should fail because the chain is rooted in an untrusted
                 # self-signed cert.
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
                     ["example_pkg"])
                 # Test that the cli handles BrokenChain exceptions.
                 self.pkg("install example_pkg", exit=1)
-                self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join(self.path_to_certs, "ta3"))
+                # Now seed the emptyCA directory to test that certs can be
+                # pulled from it correctly.
+                self.seed_ta_dir("ta3", dest_dir=emptyCA)
                 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -427,9 +467,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
-
-                self.pkg("set-property trust-anchor-directory %s" %
-                    self.trust_anchor_dir)
+                self.seed_ta_dir("ta1")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -446,7 +484,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     "i1_ta1_cert.pem")], ca=False)
                 r.add_signing_certs([os.path.join(self.inter_certs_dir,
                     "i2_ta1_cert.pem")], ca=False)
-                r.add_signing_certs([os.path.join(self.trust_anchor_dir,
+                r.add_signing_certs([os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")], ca=True)
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
@@ -475,8 +513,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
                 
                 self.pkg_image_create(self.rurl1)
-                self.pkg("set-property trust-anchor-directory %s" %
-                    self.trust_anchor_dir)
+                self.seed_ta_dir(["ta1", "ta2"])
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
@@ -548,9 +585,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     }
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
-
-                self.pkg("set-property trust-anchor-directory %s" %
-                    self.trust_anchor_dir)
+                self.seed_ta_dir("ta1")
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
@@ -559,7 +594,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 """Check that chains of length two work correctly."""
 
                 r = self.get_repo(self.dcs[1].get_repodir())
-                r.add_signing_certs([os.path.join(self.trust_anchor_dir,
+                r.add_signing_certs([os.path.join(self.raw_trust_anchor_dir,
                     "ta2_cert.pem")], ca=True)
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
                 sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % \
@@ -578,9 +613,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     self._api_install, api_obj, ["example_pkg"])
                 # Test that the cli handles an UntrustedSelfSignedCert.
                 self.pkg("install example_pkg", exit=1)
-                
-                self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join(self.path_to_certs, "ta2"))
+                self.seed_ta_dir("ta2")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -726,7 +759,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Test that the cli handles a BadFileFormat exception.
                 self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join(self.test_root, "tmp/example_file"))
+                    os.path.join("simple_file"))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.InvalidPropertyValue, self._api_install,
                     api_obj, ["example_pkg"])
@@ -745,7 +778,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg_image_create(self.rurl1)
                 self.pkg("set-property signature-policy verify")
                 self.pkg("set-property trust-anchor-directory %s" %
-                    os.path.join(self.test_root, "tmp/example_file"))
+                    os.path.join("simple_file"))
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.InvalidPropertyValue, self._api_install,
                     api_obj, ["example_pkg"])
@@ -779,8 +812,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 sign_args = "-a sha384 %(name)s" % {"name": plist[0]}
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property require-signatures verify")
                 api_obj = self.get_img_api_obj()
@@ -802,8 +835,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -866,8 +899,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 # Make sure the manifest is locally stored.
                 api_obj = self.get_img_api_obj()
@@ -925,8 +958,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -957,8 +990,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -993,8 +1026,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta1"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta1")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1024,8 +1057,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 # This fails because the index hasn't been updated.
                 self.pkg("search -r rsa-sha256", exit=1)
@@ -1057,8 +1090,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1066,10 +1099,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_uninstall(api_obj, ["example_pkg"])
 
                 # Replace the client CS cert.
-                pub = api_obj.get_publisher("test")
-
                 hsh = self.calc_file_hash(cs_path)
-                pth = os.path.join(pub.cert_root, hsh)
+                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
+                    "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.ModifiedCertificateException,
@@ -1089,7 +1121,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Replace the client CA cert.
                 hsh = self.calc_file_hash(ca_path)
-                pth = os.path.join(pub.cert_root, hsh)
+                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
+                    "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.ModifiedCertificateException,
@@ -1148,8 +1181,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1172,7 +1205,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 portable.copyfile(os.path.join(self.crl_dir,
                     "pubCA1_ta4_crl.pem"),
                     os.path.join(rstore.file_root, "pu", "pubCA1_ta4_crl.pem"))
-
+                
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
@@ -1184,8 +1217,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta4"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1220,8 +1253,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta5"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta5")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1254,8 +1287,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta4"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1281,8 +1314,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta4"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1322,9 +1355,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
-
-                self.pkg("set-property trust-anchor-directory %s" %
-                    self.trust_anchor_dir)
+                self.seed_ta_dir("ta1")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1365,9 +1396,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
-
-                self.pkg("set-property trust-anchor-directory %s" %
-                    self.trust_anchor_dir)
+                self.seed_ta_dir("ta1")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1394,8 +1423,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta4"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1431,7 +1460,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'  --variant variant.arch=i386" % os.path.join(self.path_to_certs, "ta3"))
+                    additional_args="--variant variant.arch=i386")
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1512,8 +1542,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1539,8 +1569,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1565,8 +1595,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1591,8 +1621,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 }
                 self.pkgsign(self.rurl1, sign_args)
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1620,8 +1650,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].start()
                 
-                self.pkg_image_create(self.durl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("info -r var_pkg")
                 self.dcs[1].stop()
@@ -1637,6 +1667,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install --no-refresh var_pkg", exit=1)
 
         def test_manual_pub_cert_approval(self):
+                """Test that manually approving a publisher's CA cert works
+                correctly."""
+
                 ca_path = os.path.join(os.path.join(self.pub_cas_dir,
                     "pubCA1_ta3_cert.pem"))
                 r = self.get_repo(self.dcs[1].get_repodir())
@@ -1696,8 +1729,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # the manifest won't cause problems.
                 r.rebuild()
 
-                self.pkg_image_create(self.rurl1,
-                    additional_args="--set-property trust-anchor-directory='%s'" % os.path.join(self.path_to_certs, "ta3"))
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1708,3 +1741,81 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+        def test_using_default_cert_loc(self):
+                """Test that the default location is properly image relative
+                and is used."""
+
+                ca_path = os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem")
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                
+                self.pkg_image_create(self.rurl1,
+                    additional_args="--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_using_pkg_image_cert_loc(self):
+                """Test that trust anchors are properly pulled from the image
+                that the pkg command was run from."""
+
+                ca_path = os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem")
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                orig_img_path = self.img_path
+                
+                # This changes self.img_path to point to the newly created
+                # sub image.
+                self.create_sub_image(self.rurl1)
+                self.pkg("set-property signature-policy require-signatures")
+                api_obj = self.get_img_api_obj()
+                # This raises an exception because the command is run from
+                # within the sub-image, which has now trust anchors installed.
+                self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
+                    ["example_pkg"])
+                # This should work because the command is run from within the
+                # original image which contains the trust anchors needed to
+                # validate the chain.
+                api_obj = self.get_img_api_obj(
+                    cmd_path=os.path.join(orig_img_path, "pkg"))
+                self._api_install(api_obj, ["example_pkg"])
+                # Check that the package is installed into the correct image.
+                self.pkg("list example_pkg")
+                self.pkg("-R %s list example_pkg" % orig_img_path, exit=1)
+                api_obj = self.get_img_api_obj()
+                self._api_uninstall(api_obj, ["example_pkg"])
+                # Repeat the test using the pkg command interface instead of the
+                # api.
+                self.pkg("-R %s install example_pkg" % self.img_path,
+                    alt_img_path=orig_img_path)
+                self.pkg("list example_pkg")
+                self.pkg("-R %s list example_pkg" % orig_img_path, exit=1)
+
+if __name__ == "__main__":
+        unittest.main()

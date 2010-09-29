@@ -183,7 +183,8 @@ class Image(object):
             "state/installed", "state/known" ]
 
         def __init__(self, root, user_provided_dir=False, progtrack=None,
-            should_exist=True, imgtype=None, force=False):
+            should_exist=True, imgtype=None, force=False,
+            augment_ta_from_parent_image=True):
                 if should_exist:
                         assert(imgtype is None)
                         assert(not force)
@@ -249,6 +250,15 @@ class Image(object):
                 # locked down umask.
                 os.umask(0022)
 
+                self.__cmddir = None
+                if global_settings.client_args[0] and not self.is_liveroot():
+                        cmdpath = os.path.join(os.getcwd(),
+                            global_settings.client_args[0])
+                        cmdpath = os.path.realpath(cmdpath)
+                        self.__cmddir = os.path.dirname(os.path.realpath(
+                            cmdpath))
+                self.augment_ta_from_parent_image = augment_ta_from_parent_image
+
         def _check_subdirs(self, sub_d, prefix):
                 for n in self.required_subdirs:
                         if not os.path.isdir(os.path.join(sub_d, prefix, n)):
@@ -287,32 +297,47 @@ class Image(object):
         @property
         def trust_anchors(self):
                 """Return a dictionary mapping subject hashes for certificates
-                this image trusts to those certs."""
+                this image trusts to those certs.  The image trusts those
+                trust anchors in its trust_anchor_dir and those in the from
+                which pkg was run."""
 
                 if self.__trust_anchors is not None:
                         return self.__trust_anchors
                 if not self.cfg_cache:
                         self.__load_config()
-                trust_anchor_loc = self.cfg_cache.properties.get(
-                    "trust-anchor-directory", "/etc/certs/CA/")
-                if not os.path.isdir(trust_anchor_loc):
+                user_set_ta_loc = True
+                rel_dir = self.cfg_cache.properties.get(
+                    "trust-anchor-directory", "etc/certs/CA/")
+                if rel_dir[0] == "/":
+                        rel_dir = rel_dir[1:]
+                trust_anchor_loc = os.path.join(self.root, rel_dir)
+                loc_is_dir = os.path.isdir(trust_anchor_loc)
+                pkg_trust_anchors = {}
+                if self.__cmddir and self.augment_ta_from_parent_image:
+                        pkg_trust_anchors = Image(self.__cmddir,
+                            augment_ta_from_parent_image=False).trust_anchors
+                if not loc_is_dir and os.path.exists(trust_anchor_loc):
                         raise apx.InvalidPropertyValue(_("The trust "
-                            "anchor for the image was expected to be found "
+                            "anchors for the image were expected to be found "
                             "in %s, but that is not a directory.  Please set "
                             "the image property 'trust-anchor-directory' to "
                             "the correct path.") % trust_anchor_loc)
                 self.__trust_anchors = {}
-                for fn in os.listdir(trust_anchor_loc):
-                        pth = os.path.join(trust_anchor_loc, fn)
-                        if os.path.islink(pth):
-                                continue
-                        trusted_ca = m2.X509.load_cert(pth)
-                        # M2Crypto's subject hash doesn't match openssl's
-                        # subject hash so recompute it so all hashes are in the
-                        # same universe.
-                        s = trusted_ca.get_subject().as_hash()
-                        self.__trust_anchors.setdefault(s, [])
-                        self.__trust_anchors[s].append(trusted_ca)
+                if loc_is_dir:
+                        for fn in os.listdir(trust_anchor_loc):
+                                pth = os.path.join(trust_anchor_loc, fn)
+                                if os.path.islink(pth):
+                                        continue
+                                trusted_ca = m2.X509.load_cert(pth)
+                                # M2Crypto's subject hash doesn't match
+                                # openssl's subject hash so recompute it so all
+                                # hashes are in the same universe.
+                                s = trusted_ca.get_subject().as_hash()
+                                self.__trust_anchors.setdefault(s, [])
+                                self.__trust_anchors[s].append(trusted_ca)
+                for s in pkg_trust_anchors:
+                        if s not in self.__trust_anchors:
+                                self.__trust_anchors[s] = pkg_trust_anchors[s]
                 return self.__trust_anchors
 
         @property
@@ -2562,7 +2587,7 @@ class Image(object):
                 self.__make_plan_common("update", progtrack,
                     check_cancelation, noexecute, pkg_list)
 
-        def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
+        def ipkg_is_up_to_date(self, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):
                 """Test whether the packaging system is updated to the latest
                 version known to be available for this image."""
@@ -2594,16 +2619,13 @@ class Image(object):
                 img = self
 
                 if not img.is_liveroot():
-                        cmdpath = os.path.join(os.getcwd(), actual_cmd)
-                        cmdpath = os.path.realpath(cmdpath)
-                        cmddir = os.path.dirname(os.path.realpath(cmdpath))
                         #
                         # Find the path to ourselves, and use that
                         # as a way to locate the image we're in.  It's
                         # not perfect-- we could be in a developer's
                         # workspace, for example.
                         #
-                        newimg = Image(cmddir, progtrack=progtrack)
+                        newimg = Image(self.__cmddir, progtrack=progtrack)
 
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,
