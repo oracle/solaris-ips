@@ -479,11 +479,6 @@ operation again."""
         return _(error) % locals()
 
 
-class CfgCacheError(Exception):
-        """Thrown when there are errors with the cfg cache."""
-        def __init__(self, args=None):
-                self._args = args
-
 # ImmutableDict and EmptyI for argument defaults
 EmptyI = tuple()
 

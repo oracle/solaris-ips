@@ -239,7 +239,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         pl = []
 
                 # verify the variant settings
-                ic = self.get_img_api_obj().img.cfg_cache
+                ic = self.get_img_api_obj().img.cfg
                 if "variant.arch" not in ic.variants:
                         self.assert_(False,
                             "unable to determine image arch variant")

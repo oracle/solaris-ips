@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -34,6 +35,7 @@ import shutil
 import sys
 import tempfile
 import pkg.client.imageconfig as imageconfig
+import pkg.portable as portable
 
 
 class TestImageConfig(pkg5unittest.Pkg5TestCase):
@@ -66,11 +68,12 @@ sort_policy: priority
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-                self.ic = imageconfig.ImageConfig(self.test_root, "publisher")
+                self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
+                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
+                    "publisher"))
 
         def test_0_read(self):
                 """Verify that read works and that values are read properly."""
-                self.ic.read(self.test_root)
 
                 pub = self.ic.publishers["sfbay.sun.com"]
                 self.assertEqual(pub.alias, "zruty")
@@ -94,34 +97,18 @@ sort_policy: priority
                 # uuid should have been set even though it wasn't in the file
                 self.assertNotEqual(pub.client_uuid, None)
 
-        def test_1_unicode(self):
-                self.ic.read(self.test_root)
-                ustr = u'abc\u3041def'
-                self.ic.properties['name'] = ustr
-                newdir = tempfile.mkdtemp()
-                self.ic.write(newdir)
-                ic2 = imageconfig.ImageConfig(newdir, "publisher")
-                ic2.read(newdir)
-                ustr2 = ic2.properties['name']
-                shutil.rmtree(newdir)
-                self.assert_(ustr == ustr2)
-
-        def test_2_missing_conffile(self):
-                #
-                #  See what happens if the conf file is missing.
-                #
-                shutil.rmtree(self.test_root)
-                self.assertRaises(RuntimeError, self.ic.read, self.test_root)
-
-        def test_3_reread(self):
+        def test_1_reread(self):
                 """Verify that the uuid determined during the first read is the
                 same as the uuid in the second read."""
-                self.ic.read(self.test_root)
+                self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
+                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
+                    "publisher"))
                 pub = self.ic.publishers["sfbay.sun.com"]
                 uuid = pub.client_uuid
 
-                ic2 = imageconfig.ImageConfig(self.test_root, "publisher")
-                ic2.read(self.test_root)
+                ic2 = imageconfig.ImageConfig(os.path.join(self.test_root,
+                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
+                    "publisher"))
                 pub2 = ic2.publishers["sfbay.sun.com"]
                 self.assertEqual(pub2.client_uuid, uuid)
 

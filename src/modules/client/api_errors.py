@@ -1851,6 +1851,14 @@ class ImageAlreadyExists(ImageCreationException):
                     "the -f (force) option.") % self.path
 
 
+class ImageCfgEmptyError(ApiException):
+        """Used to indicate that the image configuration is invalid."""
+
+        def __str__(self):
+                return _("The configuration data for the image located at "
+                    "'%s' is empty or missing.") % self.data
+
+
 class CreatingImageInNonEmptyDir(ImageCreationException):
         def __str__(self):
                 return _("the specified image path is not empty: %s.\nTo "

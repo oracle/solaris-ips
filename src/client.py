@@ -68,6 +68,7 @@ import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
+import pkg.config as cfg
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
@@ -3521,25 +3522,22 @@ def property_add_value(img, args):
         """pkg add-property-value propname propvalue"""
 
         # ensure no options are passed in
+        subcommand = "add-property-value"
         opts, pargs = getopt.getopt(args, "")
         try:
                 propname, propvalue = pargs
         except ValueError:
-                usage(_("requires a property name and value"),
-                    cmd="add-property-value")
+                usage(_("requires a property name and value"), cmd=subcommand)
 
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd="add-property-value")
+                    "publisher"), cmd=subcommand)
                 return EXIT_OOPS
 
         try:
                 img.add_property_value(propname, propvalue)
-        except (api_errors.PermissionsException,
-            api_errors.InvalidPropertyValue), e:
-                # Prepend a newline because otherwise the exception
-                # will be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="add-property-value")
+        except api_errors.ApiException, e:
+                error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3547,25 +3545,22 @@ def property_remove_value(img, args):
         """pkg remove-property-value propname propvalue"""
 
         # ensure no options are passed in
+        subcommand = "remove-property-value"
         opts, pargs = getopt.getopt(args, "")
         try:
                 propname, propvalue = pargs
         except ValueError:
-                usage(_("requires a property name and value"),
-                    cmd="remove-property-value")
+                usage(_("requires a property name and value"), cmd=subcommand)
 
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd="remove-property-value")
+                    "publisher"), cmd=subcommand)
                 return EXIT_OOPS
 
         try:
                 img.remove_property_value(propname, propvalue)
-        except (api_errors.PermissionsException,
-            api_errors.InvalidPropertyValue), e:
-                # Prepend a newline because otherwise the exception
-                # will be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="remove-property-value")
+        except api_errors.ApiException, e:
+                error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3573,29 +3568,45 @@ def property_set(img, args):
         """pkg set-property propname propvalue [propvalue ...]"""
 
         # ensure no options are passed in
+        subcommand = "set-property"
         opts, pargs = getopt.getopt(args, "")
         try:
                 propname = pargs[0]
                 propvalues = pargs[1:]
         except IndexError:
-                usage(_("requires a property name and at least one value"),
-                    cmd="set-property")
+                propvalues = []
         if len(propvalues) == 0:
                 usage(_("requires a property name and at least one value"),
-                    cmd="set-property")
+                    cmd=subcommand)
+        elif propname not in ("publisher-search-order",
+            "signature-policy", "signature-required-names") and \
+            len(propvalues) == 1:
+                # All other properties are single value, so if only one (or no)
+                # value was specified, transform it.  If multiple values were
+                # specified, allow the value to be passed on so that the
+                # configuration classes can re-raise the appropriate error.
+                propvalues = propvalues[0]
 
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd="set-property")
+                    "publisher"), cmd=subcommand)
                 return EXIT_OOPS
 
+        props = { propname: propvalues }
+        if propname == "signature-policy":
+                policy = propvalues[0]
+                props[propname] = policy
+                params = propvalues[1:]
+                if policy != "require-names" and len(params):
+                        usage(_("Signature-policy %s doesn't allow additional "
+                            "parameters.") % policy, cmd=subcommand)
+                elif policy == "require-names":
+                        props["signature-required-names"] = params
+
         try:
-                img.set_property(propname, propvalues)
-        except (api_errors.PermissionsException,
-            api_errors.InvalidPropertyValue), e:
-                # Prepend a newline because otherwise the exception
-                # will be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="set-property")
+                img.set_properties(props)
+        except api_errors.ApiException, e:
+                error(str(e), cmd=subcommand)
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3607,27 +3618,22 @@ def property_unset(img, args):
         # if not, error
 
         # ensure no options are passed in
+        subcommand = "unset-property"
         opts, pargs = getopt.getopt(args, "")
         if not pargs:
                 usage(_("requires at least one property name"),
-                    cmd="unset-property")
+                    cmd=subcommand)
 
         for p in pargs:
                 if p == "preferred-publisher":
                         error(_("set-publisher must be used to change the "
-                            "preferred publisher"), cmd="unset-property")
+                            "preferred publisher"), cmd=subcommand)
                         return EXIT_OOPS
 
                 try:
                         img.delete_property(p)
-                except KeyError:
-                        error(_("no such property: %s") % p,
-                            cmd="unset-property")
-                        return EXIT_OOPS
-                except api_errors.PermissionsException, e:
-                        # Prepend a newline because otherwise the exception
-                        # will be printed on the same line as the spinner.
-                        error("\n" + str(e), cmd="unset-property")
+                except api_errors.ApiException, e:
+                        error(str(e), cmd=subcommand)
                         return EXIT_OOPS
 
         return EXIT_OK
@@ -3636,6 +3642,7 @@ def property_list(img, args):
         """pkg property [-H] [propname ...]"""
         omit_headers = False
 
+        subcommand = "property"
         opts, pargs = getopt.getopt(args, "H")
         for opt, arg in opts:
                 if opt == "-H":
@@ -3643,11 +3650,13 @@ def property_list(img, args):
 
         for p in pargs:
                 if not img.has_property(p):
-                        error(_("property: no such property: %s") % p)
+                        error(_("no such property: %s") % p, cmd=subcommand)
                         return EXIT_OOPS
 
         if not pargs:
-                pargs = list(img.properties())
+                # If specific properties were named, list them in the order
+                # requested; otherwise, list them sorted.
+                pargs = sorted(list(img.properties()))
 
         width = max(max([len(p) for p in pargs]), 8)
         fmt = "%%-%ss %%s" % width

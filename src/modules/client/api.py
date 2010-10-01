@@ -2421,17 +2421,20 @@ class ImageInterface(object):
         def get_pub_search_order(self):
                 """Return current search order of publishers; includes
                 disabled publishers"""
-                return self.__img.cfg_cache.publisher_search_order
+                return self.__img.cfg.get_property("property",
+                    "publisher-search-order")
 
         def set_pub_search_after(self, being_moved_prefix, staying_put_prefix):
                 """Change the publisher search order so that being_moved is
                 searched after staying_put"""
-                self.__img.pub_search_after(being_moved_prefix, staying_put_prefix)
+                self.__img.pub_search_after(being_moved_prefix,
+                    staying_put_prefix)
 
         def set_pub_search_before(self, being_moved_prefix, staying_put_prefix):
                 """Change the publisher search order so that being_moved is
                 searched before staying_put"""
-                self.__img.pub_search_before(being_moved_prefix, staying_put_prefix)
+                self.__img.pub_search_before(being_moved_prefix,
+                    staying_put_prefix)
 
         def get_preferred_publisher(self):
                 """Returns the preferred publisher object for the image."""

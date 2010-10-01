@@ -33,13 +33,15 @@ import re
 from pkg.client import global_settings
 logger = global_settings.logger
 
-import pkg.client.api_errors  as api_errors
-import pkg.client.publisher   as publisher
-import pkg.facet              as facet
-import pkg.fmri               as fmri
-import pkg.portable           as portable
-import pkg.client.sigpolicy   as sigpolicy
-import pkg.variant            as variant
+import pkg.client.api_errors as apx
+import pkg.client.publisher as publisher
+import pkg.config as cfg
+import pkg.facet as facet
+import pkg.fmri as fmri
+import pkg.misc as misc
+import pkg.portable as portable
+import pkg.client.sigpolicy as sigpolicy
+import pkg.variant as variant
 
 from pkg.misc import DictProperty, SIGNATURE_POLICY
 # The default_policies dictionary defines the policies that are supported by
@@ -60,7 +62,9 @@ default_policies = {
 CA_PATH = "ca-path"
 # Default CA_PATH is /etc/openssl/certs
 default_properties = {
-        CA_PATH: os.path.join(os.path.sep, "etc", "openssl", "certs")
+        CA_PATH: os.path.join(os.path.sep, "etc", "openssl", "certs"),
+        # Path default is intentionally relative for this case.
+        "trust-anchor-directory": os.path.join("etc", "certs", "CA"),
 }
 
 # Assume the repository metadata should be checked no more than once every
@@ -71,79 +75,131 @@ REPO_REFRESH_SECONDS_DEFAULT = 4 * 60 * 60
 CFG_FILE = "cfg_cache"
 DA_FILE = "disabled_auth"
 
+# Token used for default values.
+DEF_TOKEN = "DEFAULT"
+_val_map_none = { "None": None }
 
-class ImageConfig(object):
+class ImageConfig(cfg.FileConfig):
         """An ImageConfig object is a collection of configuration information:
         URLs, publishers, properties, etc. that allow an Image to operate."""
 
-        # XXX The SSL ssl_key attribute asserts that there is one
-        # ssl_key per publisher.  This may be insufficiently general:  we
-        # may need one ssl_key per mirror.
+        # This dictionary defines the set of default properties and property
+        # groups for a repository configuration indexed by version.
+        __defs = {
+            3: [
+                cfg.PropertySection("property", properties=[
+                    cfg.PropPublisher("preferred-authority"),
+                    cfg.PropList("publisher-search-order"),
+                    cfg.PropBool(FLUSH_CONTENT_CACHE,
+                        default=default_policies[FLUSH_CONTENT_CACHE]),
+                    cfg.PropBool(MIRROR_DISCOVERY,
+                        default=default_policies[MIRROR_DISCOVERY]),
+                    cfg.PropBool(SEND_UUID,
+                        default=default_policies[SEND_UUID]),
+                    cfg.PropDefined(SIGNATURE_POLICY,
+                        allowed=list(sigpolicy.Policy.policies()) + [DEF_TOKEN],
+                        default=DEF_TOKEN),
+                    cfg.Property(CA_PATH,
+                        default=default_properties[CA_PATH]),
+                    cfg.Property("trust-anchor-directory",
+                        default=DEF_TOKEN),
+                    cfg.PropList("signature-required-names"),
+                ]),
+                cfg.PropertySection("facet", properties=[
+                    cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),
+                ]),
+                cfg.PropertySection("variant", properties=[]),
+                cfg.PropertySectionTemplate("^authority_.*", properties=[
+                    # Base publisher information.
+                    cfg.PropPublisher("alias", value_map=_val_map_none),
+                    cfg.PropPublisher("prefix", value_map=_val_map_none),
+                    cfg.PropBool("disabled"),
+                    cfg.PropBool("sticky"),
+                    cfg.PropUUID("uuid", value_map=_val_map_none),
+                    # Publisher transport information.
+                    cfg.PropPubURIList("mirrors",
+                        value_map=_val_map_none),
+                    cfg.PropPubURI("origin", value_map=_val_map_none),
+                    cfg.PropPubURIList("origins",
+                        value_map=_val_map_none),
+                    cfg.Property("ssl_cert", value_map=_val_map_none),
+                    cfg.Property("ssl_key", value_map=_val_map_none),
+                    # Publisher signing information.
+                    cfg.PropDefined("property.%s" % SIGNATURE_POLICY,
+                        allowed=list(sigpolicy.Policy.policies()) + [DEF_TOKEN],
+                        default=DEF_TOKEN),
+                    cfg.PropList("property.signature-required-names"),
+                    cfg.PropList("intermediate_certs"),
+                    cfg.PropList("approved_ca_certs"),
+                    cfg.PropList("revoked_ca_certs"),
+                    cfg.PropList("signing_ca_certs"),
+                    # Publisher repository metadata.
+                    cfg.PropDefined("repo.collection_type", ["core",
+                        "supplemental"], default="core",
+                        value_map=_val_map_none),
+                    cfg.PropDefined("repo.description",
+                        value_map=_val_map_none),
+                    cfg.PropList("repo.legal_uris", value_map=_val_map_none),
+                    cfg.PropDefined("repo.name", default="package repository",
+                        value_map=_val_map_none),
+                    cfg.Property("repo.refresh_seconds",
+                        default=str(REPO_REFRESH_SECONDS_DEFAULT),
+                        value_map=_val_map_none),
+                    cfg.PropBool("repo.registered", value_map=_val_map_none),
+                    cfg.Property("repo.registration_uri",
+                        value_map=_val_map_none),
+                    cfg.PropList("repo.related_uris",
+                        value_map=_val_map_none),
+                    cfg.Property("repo.sort_policy", value_map=_val_map_none),
+                ]),
+            ],
+        }
 
-        # XXX Use of ConfigParser is convenient and at most speculative--and
-        # definitely not interface.
-
-        def __init__(self, imgroot, pubdir):
+        def __init__(self, cfgpathname, imgroot, pubroot,
+            overrides=misc.EmptyDict):
                 self.__imgroot = imgroot
-                self.__pubdir = pubdir
+                self.__pubroot = pubroot
                 self.__publishers = {}
-                self.__publisher_search_order = []
-
-                self.__properties = dict((
-                    (p, str(v))
-                    for p, v in default_policies.iteritems()
-                ))
-                self.properties.update(dict((
-                    (p, str(v))
-                    for p, v in default_properties.iteritems()
-                )))
+                self.__validate = False
                 self.facets = facet.Facets()
                 self.variants = variant.Variants()
-                self.children = []
-                self.__delay_validation = False
+                cfg.FileConfig.__init__(self, cfgpathname,
+                    definitions=self.__defs, overrides=overrides, version=3)
 
         def __str__(self):
-                return "%s\n%s" % (self.__publishers, self.properties)
-
-        def __get_preferred_publisher(self):
-                """Returns prefix of preferred publisher"""
-
-                for p in self.__publisher_search_order:
-                        if not self.__publishers[p].disabled:
-                                return p
-                raise KeyError, "No preferred publisher"
-
-        def __set_preferred_publisher(self, prefix):
-                """Enforce search order rules"""
-                if prefix not in self.__publishers:
-                        raise KeyError, "Publisher %s not found" % prefix
-                self.__publisher_search_order.remove(prefix)
-                self.__publisher_search_order.insert(0, prefix)
+                return "%s\n%s" % (self.__publishers, self)
 
         def remove_publisher(self, prefix):
                 """External functional interface - use property interface"""
                 del self.publishers[prefix]
+                self.remove_section("authority_%s" % prefix)
 
         def change_publisher_search_order(self, new_world_order):
                 """Change search order to desired value"""
-                if sorted(new_world_order) != sorted(self.__publisher_search_order):
+                pval = self.get_property("property", "publisher-search-order")
+                if sorted(new_world_order) != sorted(pval):
                         raise ValueError, "publishers added or removed"
-                self.__publisher_search_order = new_world_order
+                self.set_property("property", "publisher-search-order",
+                    new_world_order)
 
         def __get_publisher(self, prefix):
                 """Accessor method for publishers dictionary"""
                 return self.__publishers[prefix]
 
-        def __set_publisher(self, prefix, value):
-                """Accesor method to keep search order correct on insert"""
-                if prefix not in self.__publisher_search_order:
-                        self.__publisher_search_order.append(prefix)
-                self.__publishers[prefix] = value
+        def __set_publisher(self, prefix, pubobj):
+                """Accessor method to keep search order correct on insert"""
+                pval = self.get_property("property", "publisher-search-order")
+                if prefix not in pval:
+                        self.add_property_value("property",
+                            "publisher-search-order", prefix)
+                self.__publishers[prefix] = pubobj
 
         def __del_publisher(self, prefix):
                 """Accessor method for publishers"""
-                if prefix in self.__publisher_search_order:
-                        self.__publisher_search_order.remove(prefix)
+                pval = self.get_property("property", "publisher-search-order")
+                if prefix in pval:
+                        self.remove_property_value("property",
+                            "publisher-search-order", prefix)
                 del self.__publishers[prefix]
 
         def __publisher_iter(self):
@@ -166,264 +222,258 @@ class ImageConfig(object):
                 the default value for the policy if the named policy is
                 not defined in the image configuration.
                 """
-                assert policy in default_policies
-                if policy in self.properties:
-                        policystr = self.properties[policy]
-                        return policystr.lower() in ("true", "yes")
-                return default_policies[policy]
+                return str(self.get_policy_str(policy)).lower() in ("true",
+                    "yes")
 
         def get_policy_str(self, policy):
-                """Return a boolean value for the named policy.  Returns
+                """Return the string value for the named policy.  Returns
                 the default value for the policy if the named policy is
                 not defined in the image configuration.
                 """
                 assert policy in default_policies
-                return self.__properties.get(policy, default_policies[policy])
+                return self.get_property("property", policy)
 
-        def read(self, path):
-                """Read the config files for the image from the given directory.
+        def get_property(self, section, name):
+                """Returns the value of the property object matching the given
+                section and name.  Raises UnknownPropertyError if it does not
+                exist.
                 """
-                # keep track of whether the config needs to be rewritten
-                changed = False
+                if name == "preferred-publisher":
+                        name = "preferred-authority"
+                rval = cfg.FileConfig.get_property(self, section, name)
+                if name in default_policies and rval == DEF_TOKEN:
+                        return default_policies[name]
+                if name in default_properties and rval == DEF_TOKEN:
+                        return default_properties[name]
+                return rval
 
-                cp = ConfigParser.SafeConfigParser()
-                cp.optionxform = str # preserve option case
+        def reset(self, overrides=misc.EmptyDict):
+                """Discards current configuration state and returns the
+                configuration object to its initial state.
 
-                ccfile = os.path.join(path, CFG_FILE)
-                r = cp.read(ccfile)
-                if len(r) == 0:
-                        raise RuntimeError("Couldn't read configuration from "
-                            "%s" % ccfile)
+                'overrides' is an optional dictionary of property values indexed
+                by section name and property name.  If provided, it will be used
+                to override any default values initially assigned during reset.
+                """
 
-                assert r[0] == ccfile
+                # Set __validate to be False so that the order the properties
+                # are set here doesn't matter.
+                self.__validate = False
 
-                # The root directory for publisher metadata.
-                pmroot = os.path.join(path, self.__pubdir)
-
-                #
-                # Must load filters first, since the value of a filter can
-                # impact the default value of the zone variant.  This is
-                # legacy code, and should be removed when upgrade from
-                # pre-variant versions of opensolaris is no longer
-                # supported
-                #
-
-                filters = {}
-                if cp.has_section("filter"):
-                        for o in cp.options("filter"):
-                                filters[o] = cp.get("filter", o)
+                # Allow parent class to populate property data first.
+                cfg.FileConfig.reset(self, overrides=overrides)
 
                 #
-                # Must load variants next, since in the case of zones,
-                # the variant can impact the processing of publishers.
+                # Now transform property data as needed and populate image
+                # configuration data structures.
                 #
-                if cp.has_section("variant"):
-                        for o in cp.options("variant"):
-                                self.variants[o] = cp.get("variant", o)
-                # facets
-                if cp.has_section("facet"):
-                        for o in cp.options("facet"):
-                                self.facets[o] = cp.get("facet", o) != "False"
-                # make sure we define architecture variant
+
+                # Must load variants first, since in the case of zones, the
+                # variant can impact the processing of publishers.  (Notably,
+                # how ssl cert and key paths are interpreted.)
+                idx = self.get_index()
+                self.variants.update(idx.get("variant", {}))
+                self.facets.update(idx.get("facet", {}))
+
+                # Ensure architecture and zone variants are defined.
                 if "variant.arch" not in self.variants:
                         self.variants["variant.arch"] = platform.processor()
-                        changed = True
-
-                # make sure we define zone variant
                 if "variant.opensolaris.zone" not in self.variants:
-                        zone = filters.get("opensolaris.zone", "")
-                        if zone == "nonglobal":
-                                self.variants[
-                                    "variant.opensolaris.zone"] = "nonglobal"
-                        else:
-                                self.variants[
-                                    "variant.opensolaris.zone"] = "global"
-                        changed = True
+                        self.variants["variant.opensolaris.zone"] = "global"
+
+                # Merge disabled publisher file with configuration; the DA_FILE
+                # is used for compatibility with older clients.
+                dafile = os.path.join(os.path.dirname(self.target), DA_FILE)
+                if os.path.exists(dafile):
+                        # Merge disabled publisher configuration data.
+                        disabled_cfg = cfg.FileConfig(dafile,
+                            definitions=self.__defs, version=3)
+                        for s in disabled_cfg.get_sections():
+                                if s.name.startswith("authority_"):
+                                        self.add_section(s)
+
+                        # Get updated configuration index.
+                        idx = self.get_index()
 
                 preferred_publisher = None
-                for s in cp.sections():
+                for s, v in idx.iteritems():
                         if re.match("authority_.*", s):
-                                k, a, c = self.read_publisher(pmroot, cp, s)
-                                changed |= c
+                                k, a = self.read_publisher(self.__pubroot, s, v)
                                 self.publishers[k] = a
                                 # just in case there's no other indication
                                 if preferred_publisher is None:
                                         preferred_publisher = k
 
-                # read in the policy section to provide backward
-                # compatibility for older images
-                if cp.has_section("policy"):
-                        for o in cp.options("policy"):
-                                self.properties[o] = cp.get("policy", o)
+                # Move any properties found in policy section (from older
+                # images) to the property section.
+                for k, v in idx.get("policy", {}).iteritems():
+                        self.set_property("property", k, v)
+                        self.remove_property("policy", k)
 
-                # Set __delay_validation to be True so that the order the
-                # properties are read doesn't matter.
-                self.__delay_validation = True
-                if cp.has_section("property"):
-                        for o in cp.options("property"):
-                                self.properties[o] = cp.get("property",
-                                    o, raw=True).decode('utf-8')
-                self.__delay_validation = False
-                # Now validate the properties are consistent.
-                self.__validate_properties()
+                # Setup defaults for properties that have no value.
+                if not self.get_property("property", CA_PATH):
+                        self.set_property("property", CA_PATH,
+                            default_properties[CA_PATH])
 
-                try:
-                        preferred_publisher = \
-                            str(self.properties["preferred-publisher"])
-                except KeyError:
-                        try:
-                                # Compatibility with older clients.
-                                self.properties["preferred-publisher"] = \
-                                    str(self.properties["preferred-authority"])
-                                preferred_publisher = \
-                                    self.properties["preferred-publisher"]
-                                del self.properties["preferred-authority"]
-                        except KeyError:
-                                pass
-
-                try:
-                        self.properties[CA_PATH] = str(
-                            self.properties[CA_PATH])
-                except KeyError:
-                        self.properties[CA_PATH] = \
-                            default_properties[CA_PATH]
-
-                # read disabled publisher file
-                # XXX when compatility with the old code is no longer needed,
-                # this can be removed
-                cp = ConfigParser.SafeConfigParser()
-                dafile = os.path.join(path, DA_FILE)
-                if os.path.exists(dafile):
-                        r = cp.read(dafile)
-                        if len(r) == 0:
-                                raise RuntimeError("Couldn't read "
-                                    "configuration from %s" % dafile)
-                        for s in cp.sections():
-                                if re.match("authority_.*", s):
-                                        k, a, c = self.read_publisher(pmroot,
-                                            cp, s)
-                                        self.publishers[k] = a
-                                        changed |= c
-
-                try:
-                        self.__publisher_search_order = self.read_list(
-                            str(self.properties["publisher-search-order"]))
-                except KeyError:
+                pso = self.get_property("property", "publisher-search-order")
+                if not pso and preferred_publisher:
                         # make up the default - preferred, then the rest in
                         # alpha order
-                        self.__publisher_search_order = [preferred_publisher] + \
-                            sorted([ 
-                                name 
-                                for name in self.__publishers.keys() 
-                                if name != preferred_publisher
-                                ])
-                        changed = True
-                else:
-                        # Ensure that all configured publishers are present in
-                        # search order (add them in alpha order to the end).
-                        # Also ensure that all publishers in search order that
-                        # are not known are removed.
-                        known_pubs = set(self.__publishers.keys())
-                        sorted_pubs = set(self.__publisher_search_order)
-                        new_pubs = known_pubs - sorted_pubs
-                        old_pubs = sorted_pubs - known_pubs
+                        pso = [preferred_publisher]
 
-                        for pub in old_pubs:
-                                self.__publisher_search_order.remove(pub)
+                # Ensure that all configured publishers are present in
+                # search order (add them in alpha order to the end).
+                # Also ensure that all publishers in search order that
+                # are not known are removed.
+                known_pubs = set(self.__publishers.keys())
+                sorted_pubs = set(pso)
+                new_pubs = known_pubs - sorted_pubs
+                old_pubs = sorted_pubs - known_pubs
+                for pub in old_pubs:
+                        pso.remove(pub)
+                pso.extend(sorted(new_pubs))
+                self.set_property("property", "publisher-search-order", pso)
 
-                        self.__publisher_search_order.extend(sorted(new_pubs))
-                        
-                self.properties["publisher-search-order"] = \
-                    str(self.__publisher_search_order)
+                # Now re-enable validation and validate the properties.
+                self.__validate = True
+                self.__validate_properties()
 
-                # If the configuration changed, rewrite it if possible.
-                if changed:
-                        try:
-                                self.write(path)
-                        except api_errors.PermissionsException:
-                                pass
+                # Finally, attempt to write configuration again to ensure
+                # changes are reflected on-disk.
+                self.write(ignore_unprivileged=True)
 
-        def write(self, path):
-                """Write the configuration to the given directory"""
-                cp = ConfigParser.SafeConfigParser()
-                # XXX the use of the disabled_auth file can be removed when
-                # compatibility with the older code is no longer needed
-                da = ConfigParser.SafeConfigParser()
-                cp.optionxform = str # preserve option case
+        def set_property(self, section, name, value):
+                """Sets the value of the property object matching the given
+                section and name.  If the section or property does not already
+                exist, it will be added.  Raises InvalidPropertyValueError if
+                the value is not valid for the given property."""
 
-                # For compatibility, the preferred-publisher is written out
-                # as the preferred-authority.  Modify a copy so that we don't
-                # change the in-memory copy.
-                props = self.__properties.copy()
+                if name == "preferred-publisher":
+                        # Ensure that whenever preferred-publisher is changed,
+                        # search order is updated as well.  In addition, ensure
+                        # that 'preferred-publisher' is always stored as
+                        # 'preferred-authority' internally for compatibility
+                        # with older clients.
+                        name = "preferred-authority"
+                        pso = self.get_property("property",
+                            "publisher-search-order")
+                        if value in pso:
+                                pso.remove(value)
+                        pso.insert(0, value)
+                cfg.FileConfig.set_property(self, section, name, value)
+
+                if self.__validate:
+                        self.__validate_properties()
+
+        def set_properties(self, properties):
+                """Sets the values of the property objects matching those found
+                in the provided dictionary.  If any section or property does not
+                already exist, it will be added.  An InvalidPropertyValueError
+                will be raised if the value is not valid for the given
+                properties.
+
+                'properties' should be a dictionary of dictionaries indexed by
+                section and then by property name.  As an example:
+
+                    {
+                        'section': {
+                            'property': value
+                        }
+                    }
+                """
+
+                # Validation must be delayed until after all properties are set,
+                # in case some properties are interdependent for validation.
+                self.__validate = False
                 try:
-                        del props["preferred-publisher"]
-                except KeyError:
+                        cfg.FileConfig.set_properties(self, properties)
+                finally:
+                        # Ensure validation is re-enabled even if an exception
+                        # is raised.
+                        self.__validate = True
+
+                self.__validate_properties()
+
+        def write(self, ignore_unprivileged=False):
+                """Write the image configuration."""
+
+                # Force preferred-authority to match publisher-search-order.
+                pso = self.get_property("property", "publisher-search-order")
+                ppub = None
+                for p in pso:
+                        if not self.__publishers[p].disabled:
+                                ppub = p
+                                break
+                else:
+                        if pso:
+                                # Fallback to first publisher in the unlikley
+                                # case that all publishers in search order are
+                                # disabled.
+                                ppub = pso[0]
+                self.set_property("property", "preferred-authority", ppub)
+
+                # The variant and facet sections must be removed so that the
+                # private variant and facet objects can have their information
+                # transferred to the configuration object verbatim.
+                try:
+                        self.remove_section("variant")
+                except cfg.UnknownSectionError:
                         pass
-                props["preferred-authority"] = str(self.__publisher_search_order[0])
-                props["publisher-search-order"] = str(self.__publisher_search_order)
-
-                cp.add_section("property")
-                for p in props:
-                        if isinstance(props[p], basestring):
-                                cp.set("property", p, props[p].encode("utf-8"))
-                        else:
-                                cp.set("property", p, str(props[p]).encode(
-                                    "utf-8"))
-
-                cp.add_section("variant")
                 for f in self.variants:
-                        cp.set("variant", f, str(self.variants[f]))
+                        self.set_property("variant", f, self.variants[f])
 
-                cp.add_section("facet")
-
+                try:
+                        self.remove_section("facet")
+                except cfg.UnknownSectionError:
+                        pass
                 for f in self.facets:
+                        self.set_property("facet", f, self.facets[f])
 
-                        cp.set("facet", f, str(self.facets[f]))
+                # Transfer current publisher information to configuration.
+                da_path = os.path.join(os.path.dirname(self.target), DA_FILE)
+                if os.path.exists(da_path):
+                        # Ensure existing information is ignored during write.
+                        try:
+                                portable.remove(da_path)
+                        except EnvironmentError, e:
+                                exc = apx._convert_error(e)
+                                if not isinstance(exc, apx.PermissionsException) or \
+                                    not ignore_unprivileged:
+                                        raise exc
 
+                # For compatibility with older clients, enabled and disabled
+                # publishers are written to separate configuration files.
+                disabled_cfg = cfg.FileConfig(da_path, definitions=self.__defs,
+                    version=3)
+                disabled_cfg.remove_section("property")
+                disabled = []
                 for prefix in self.__publishers:
                         pub = self.__publishers[prefix]
                         section = "authority_%s" % pub.prefix
 
-                        c = cp
+                        c = self
                         if pub.disabled:
-                                c = da
+                                # Ensure disabled publishers are removed from
+                                # base configuration.
+                                try:
+                                        self.remove_section(section)
+                                except cfg.UnknownSectionErro:
+                                        pass
+                                c = disabled_cfg
 
-                        c.add_section(section)
-                        c.set(section, "alias", str(pub.alias))
-                        c.set(section, "prefix", str(pub.prefix))
-                        c.set(section, "signing_ca_certs", str(
-                            pub.signing_ca_certs))
-                        c.set(section, "approved_ca_certs", str(
-                            pub.approved_ca_certs))
-                        c.set(section, "revoked_ca_certs", str(
-                            pub.revoked_ca_certs))
-                        c.set(section, "intermediate_certs", str(
-                            pub.intermediate_certs))
-                        c.set(section, "disabled", str(pub.disabled))
-                        c.set(section, "sticky", str(pub.sticky))
-
-                        repo = pub.selected_repository
+                        for prop in ("alias", "prefix", "signing_ca_certs",
+                            "approved_ca_certs", "revoked_ca_certs",
+                            "intermediate_certs", "disabled", "sticky"):
+                                c.set_property(section, prop,
+                                    getattr(pub, prop))
 
                         # For now, write out "origin" for compatibility with
                         # older clients in addition to "origins".  Older
                         # clients may drop the "origins" when rewriting the
                         # configuration, but that doesn't really break
                         # anything.
-                        c.set(section, "origin", repo.origins[0].uri)
-
-                        c.set(section, "origins",
-                            str([u.uri for u in repo.origins]))
-                        c.set(section, "mirrors",
-                            str([u.uri for u in repo.mirrors]))
-
-                        if repo.system_repo:
-                                c.set(section, "sysrepo.uri",
-                                    str(repo.system_repo))
-                                c.set(section, "sysrepo.sock_path",
-                                    repo.system_repo.socket_path)
-                        else:
-                                c.set(section, "sysrepo.uri", "None")
-                                c.set(section, "sysrepo.sock_path", "None")
+                        repo = pub.selected_repository
+                        c.set_property(section, "origin", repo.origins[0].uri)
 
                         #
                         # For zones, where the reachability of an absolute path
@@ -438,256 +488,163 @@ class ImageConfig(object):
                                 # Trim the imageroot from the path.
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
-                        # XXX this should be per origin or mirror
-                        c.set(section, "ssl_key", p)
+                        c.set_property(section, "ssl_key", p)
+
                         p = str(pub["ssl_cert"])
                         if ngz and self.__imgroot != os.sep and p != "None":
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
-                        # XXX this should be per origin or mirror
-                        c.set(section, "ssl_cert", p)
+                        c.set_property(section, "ssl_cert", p)
 
                         # XXX this should really be client_uuid, but is being
                         # left with this name for compatibility with older
                         # clients.
-                        c.set(section, "uuid", str(pub.client_uuid))
+                        c.set_property(section, "uuid", pub.client_uuid)
 
                         # Write selected repository data.
-                        # XXX this is temporary until a switch to a more
-                        # expressive configuration format is made.
-                        repo = pub.selected_repository
-                        repo_data = {
-                            "collection_type": repo.collection_type,
-                            "description": repo.description,
-                            "legal_uris": [u.uri for u in repo.legal_uris],
-                            "name": repo.name,
-                            "refresh_seconds": repo.refresh_seconds,
-                            "registered": repo.registered,
-                            "registration_uri": repo.registration_uri,
-                            "related_uris": [u.uri for u in repo.related_uris],
-                            "sort_policy": repo.sort_policy,
-                        }
+                        for prop in ("origins", "mirrors", "collection_type",
+                            "description", "legal_uris", "name",
+                            "refresh_seconds", "registered", "registration_uri",
+                            "related_uris", "sort_policy"):
+                                pval = getattr(repo, prop)
+                                if isinstance(pval, list):
+                                        # Stringify lists of objects; this
+                                        # assumes the underlying objects
+                                        # can be stringified properly.
+                                        pval = [str(v) for v in pval]
 
-                        for key, val in repo_data.iteritems():
-                                c.set(section, "repo.%s" % key, str(val))
+                                cfg_key = prop
+                                if prop not in ("origins", "mirrors"):
+                                        # All other properties need to be
+                                        # prefixed.
+                                        cfg_key = "repo.%s" % cfg_key
+                                if prop == "registration_uri":
+                                        # Must be stringified.
+                                        pval = str(pval)
+                                c.set_property(section, cfg_key, pval)
+
+                        secobj = c.get_section(section)
+                        for pname in secobj.get_index():
+                                if pname.startswith("property.") and \
+                                    pname[len("property."):] not in pub.properties:
+                                        # Ensure properties not currently set
+                                        # for the publisher are removed from
+                                        # the existing configuration.
+                                        secobj.remove_property(pname)
 
                         for key, val in pub.properties.iteritems():
-                                c.set(section, "property.%s" % key, str(val))
+                                if val == DEF_TOKEN:
+                                        continue
+                                c.set_property(section, "property.%s" % key,
+                                    val)
 
-                # XXX Child images
+                        if pub.disabled:
+                                # Track any sections for disabled publishers
+                                # so they can be merged with the base config
+                                # later.
+                                disabled.append(c.get_section(section))
 
-                for afile, acp in [(CFG_FILE, cp), (DA_FILE, da)]:
-                        thefile = os.path.join(path, afile)
-                        if len(acp.sections()) == 0:
-                                if os.path.exists(thefile):
-                                        portable.remove(thefile)
-                                continue
+                # Write configuration only if configuration directory exists;
+                # this is to prevent failure during the early stages of image
+                # creation.
+                if os.path.exists(os.path.dirname(self.target)):
+                        # Ensure properties with the special value of DEF_TOKEN
+                        # are never written so that if the default value is
+                        # changed later, clients will automatically get that
+                        # value instead of the previous one.
+                        default = []
+                        for name in (default_properties.keys() +
+                            default_policies.keys()):
+                                # The actual class method must be called here as
+                                # ImageConfig's set_property can return the
+                                # value that maps to 'DEFAULT' instead.
+                                secobj = self.get_section("property")
+                                try:
+                                        propobj = secobj.get_property(name)
+                                except cfg.UnknownPropertyError:
+                                        # Property was removed, so skip it.
+                                        continue
+
+                                if propobj.value == DEF_TOKEN:
+                                        default.append(name)
+                                        secobj.remove_property(name)
+
                         try:
-                                f = open(thefile, "w")
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                if e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(
-                                            e.filename)
-                                raise
-                        acp.write(f)
+                                cfg.FileConfig.write(self)
+                                if not [s for s in disabled_cfg.get_sections()]:
+                                        # If there are no disabled publishers,
+                                        # ensure that DA_FILE is removed if it
+                                        # exists.
+                                        try:
+                                                portable.remove(
+                                                    disabled_cfg.target)
+                                        except OSError, e:
+                                                if e.errno != errno.ENOENT:
+                                                        raise apx._convert_error(e)
+                                else:
+                                        # Disabled publishers to write out;
+                                        # these are written to a separate file
+                                        # for compatibility with older clients.
+                                        disabled_cfg.write()
+                        except apx.PermissionsException:
+                                if not ignore_unprivileged:
+                                        raise
+                        finally:
+                                # Merge default props back into configuration.
+                                for name in default:
+                                        self.set_property("property", name,
+                                            DEF_TOKEN)
 
-        @staticmethod
-        def read_list(list_str):
-                """Take a list in string representation and convert it back
-                to a Python list."""
+                # Merge disabled publishers back into base configuration.
+                map(self.add_section, disabled)
 
-                list_str = list_str.encode("utf-8")
-                # Strip brackets and any whitespace
-                list_str = list_str.strip("][ ")
-                # Strip comma and any whitespeace
-                lst = list_str.split(", ")
-                # Strip empty whitespace, single, and double quotation marks
-                lst = [ s.strip("' \"") for s in lst ]
-                # Eliminate any empty strings
-                lst = [ s for s in lst if s != '' ]
-
-                return lst
-
-        def read_publisher(self, meta_root, cp, s):
+        def read_publisher(self, meta_root, sname, sec_idx):
                 # s is the section of the config file.
                 # publisher block has alias, prefix, origin, and mirrors
                 changed = False
-                try:
-                        alias = cp.get(s, "alias")
-                        if alias == "None":
-                                alias = None
-                except ConfigParser.NoOptionError:
-                        alias = None
 
-                prefix = cp.get(s, "prefix")
-
-                try:
-                        ca_certs = self.read_list(cp.get(s, "signing_ca_certs"))
-                except ConfigParser.NoOptionError:
-                        ca_certs = []
-
-                try:
-                        approved_ca_certs = self.read_list(cp.get(s,
-                            "approved_ca_certs"))
-                except ConfigParser.NoOptionError:
-                        approved_ca_certs = []
-
-                try:
-                        revoked_ca_certs = self.read_list(cp.get(s,
-                            "revoked_ca_certs"))
-                except ConfigParser.NoOptionError:
-                        revoked_ca_certs = []
-
-                try:
-                        intermediate_certs = self.read_list(cp.get(s,
-                            "intermediate_certs"))
-                except ConfigParser.NoOptionError:
-                        intermediate_certs = []
-                try:
-                        signature_policy = cp.get(s, "signature_policy")
-                except ConfigParser.NoOptionError:
-                        signature_policy = sigpolicy.DEFAULT_POLICY
-                try:
-                        signature_names = self.read_list(cp.get(s,
-                            "signature-required-names"))
-                except ConfigParser.NoOptionError:
-                        signature_names = []
-
-                if prefix.startswith(fmri.PREF_PUB_PFX):
-                        raise RuntimeError(
-                            "Invalid Publisher name: %s" % prefix)
-
-                try:
-                        sticky = cp.getboolean(s, "sticky")
-                except (ConfigParser.NoOptionError, ValueError):
-                        sticky = True
-
-                try:
-                        d = cp.get(s, "disabled")
-                except ConfigParser.NoOptionError:
-                        d = 'False'
-                disabled = d.lower() in ("true", "yes")
-
-                origin = cp.get(s, "origin")
-                try:
-                        sysrepo_uristr = cp.get(s, "sysrepo.uri")
-                except ConfigParser.NoOptionError:
-                        sysrepo_uristr = "None"
-                try:
-                        sysrepo_sock_path = cp.get(s, "sysrepo.sock_path")
-                except ConfigParser.NoOptionError:
-                        sysrepo_sock_path = "None"
-
-                try:
-                        org_str = cp.get(s, "origins")
-                except ConfigParser.NoOptionError:
-                        org_str = "None"
-
-                if org_str == "None":
-                        origins = []
-                else:
-                        origins = self.read_list(org_str)
-
-                # Ensure that the list of origins is unique and complete.
-                origins = set(origins)
-                if origin != "None":
+                # Ensure that the list of origins is unique and complete;
+                # add 'origin' to list of origins if it doesn't exist already.
+                origins = set(sec_idx["origins"])
+                origin = sec_idx["origin"]
+                if origin:
                         origins.add(origin)
 
-                if sysrepo_uristr in origins:
-                        origins.remove(sysrepo_uristr)
-
-                mir_str = cp.get(s, "mirrors")
-                if mir_str == "None":
-                        mirrors = []
-                else:
-                        mirrors = self.read_list(mir_str)
-
-                try:
-                        ssl_key = cp.get(s, "ssl_key")
-                        if ssl_key == "None":
-                                ssl_key = None
-                except ConfigParser.NoOptionError:
-                        ssl_key = None
-
-                try:
-                        ssl_cert = cp.get(s, "ssl_cert")
-                        if ssl_cert == "None":
-                                ssl_cert = None
-                except ConfigParser.NoOptionError:
-                        ssl_cert = None
-
-                try:
-                        # XXX this should really be client_uuid, but is being
-                        # left with this name for compatibility with older
-                        # clients.
-                        client_uuid = cp.get(s, "uuid")
-                        if client_uuid == "None":
-                                client_uuid = None
-                except ConfigParser.NoOptionError:
-                        client_uuid = None
-
                 props = {}
-                for opt in cp.options(s):
-                        if not opt.startswith("property."):
+                for k, v in sec_idx.iteritems():
+                        if not k.startswith("property."):
                                 continue
-                        prop_name = opt[len("property."):]
-                        val = self.read_list(cp.get(s, opt))
-                        props[prop_name] = val
+                        prop_name = k[len("property."):]
+                        if v == DEF_TOKEN:
+                                # Discard publisher properties with the
+                                # DEF_TOKEN value; allow the publisher class to
+                                # handle these.
+                                self.remove_property(sname, k)
+                                continue
+                        props[prop_name] = v
 
-                # Load selected repository data.
-                # XXX this is temporary until a switch to a more expressive
-                # configuration format is made.
-                repo_data = {
-                    "collection_type": None,
-                    "description": None,
-                    "legal_uris": None,
-                    "name": None,
-                    "refresh_seconds": None,
-                    "registered": None,
-                    "registration_uri": None,
-                    "related_uris": None,
-                    "sort_policy": None,
-                }
-
-                for key in repo_data:
-                        try:
-                                val = cp.get(s, "repo.%s" % key)
-                                if key.endswith("_uris"):
-                                        val = self.read_list(val)
-                                        if val == "None":
-                                                val = []
-                                else:
-                                        if val == "None":
-                                                val = None
-                                repo_data[key] = val
-                        except ConfigParser.NoOptionError:
-                                if key.endswith("_uris"):
-                                        repo_data[key] = []
-                                else:
-                                        repo_data[key] = None
+                # Load repository data.
+                repo_data = {}
+                for key, val in sec_idx.iteritems():
+                        if key.startswith("repo."):
+                                pname = key[len("repo."):]
+                                repo_data[pname] = val
 
                 # Normalize/sanitize repository data.
-                val = repo_data["registered"]
-                if val is not None and val.lower() in ("true", "yes", "1"):
-                        repo_data["registered"] = True
-                else:
-                        repo_data["registered"] = False
-
                 for attr in ("collection_type", "sort_policy"):
                         if not repo_data[attr]:
                                 # Assume default value for attr.
                                 del repo_data[attr]
 
-                if repo_data["refresh_seconds"] is None:
+                if repo_data["refresh_seconds"] == "":
                         repo_data["refresh_seconds"] = \
-                            REPO_REFRESH_SECONDS_DEFAULT
+                            str(REPO_REFRESH_SECONDS_DEFAULT)
 
                 # Guard against invalid configuration for ssl information. If
                 # this isn't done, the user won't be able to load the client
                 # to fix the problem.
+                ssl_key = sec_idx["ssl_key"]
+                ssl_cert = sec_idx["ssl_cert"]
                 for origin in origins:
                         if not origin.startswith("https"):
                                 ssl_key = None
@@ -700,9 +657,8 @@ class ImageConfig(object):
                 # we have a different policy: ssl_key and ssl_cert are treated
                 # as zone root relative.
                 #
-                ngz = self.variants.get("variant.opensolaris.zone",
-                    "global") == "nonglobal"
-
+                prefix = sec_idx["prefix"]
+                ngz = self.variants["variant.opensolaris.zone"] == "nonglobal"
                 if ssl_key:
                         if ngz:
                                 ssl_key = os.path.normpath(self.__imgroot +
@@ -710,7 +666,7 @@ class ImageConfig(object):
                         else:
                                 ssl_key = os.path.abspath(ssl_key)
                         if not os.path.exists(ssl_key):
-                                logger.error(api_errors.NoSuchKey(ssl_key,
+                                logger.error(apx.NoSuchKey(ssl_key,
                                     uri=list(origins)[0], publisher=prefix))
                                 ssl_key = None
 
@@ -721,161 +677,56 @@ class ImageConfig(object):
                         else:
                                 ssl_cert = os.path.abspath(ssl_cert)
                         if not os.path.exists(ssl_cert):
-                                logger.error(api_errors.NoSuchCertificate(
+                                logger.error(apx.NoSuchCertificate(
                                     ssl_cert, uri=list(origins)[0],
                                     publisher=prefix))
                                 ssl_cert = None
 
                 r = publisher.Repository(**repo_data)
-                if sysrepo_uristr != "None" and sysrepo_sock_path != "None":
-                        r.set_system_repo(sysrepo_uristr,
-                            socket_path=sysrepo_sock_path)
                 for o in origins:
                         r.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
-                for m in mirrors:
+                for m in sec_idx["mirrors"]:
                         r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
 
                 # Root directory for this publisher's metadata.
                 pmroot = os.path.join(meta_root, prefix)
 
-                pub = publisher.Publisher(prefix, alias=alias,
-                    client_uuid=client_uuid, disabled=disabled,
-                    meta_root=pmroot, repositories=[r], sticky=sticky,
-                    ca_certs=ca_certs, intermediate_certs=intermediate_certs,
-                    props=props, revoked_ca_certs=revoked_ca_certs,
-                    approved_ca_certs=approved_ca_certs)
+                pub = publisher.Publisher(prefix, alias=sec_idx["alias"],
+                    client_uuid=sec_idx["uuid"], disabled=sec_idx["disabled"],
+                    meta_root=pmroot, repositories=[r],
+                    sticky=sec_idx["sticky"],
+                    ca_certs=sec_idx["signing_ca_certs"],
+                    intermediate_certs=sec_idx["intermediate_certs"],
+                    props=props, revoked_ca_certs=sec_idx["revoked_ca_certs"],
+                    approved_ca_certs=sec_idx["approved_ca_certs"])
 
-                # write out the UUID if it was set
-                if pub.client_uuid != client_uuid:
-                        changed = True
+                if pub.client_uuid != sec_idx["uuid"]:
+                        # Publisher has generated new uuid; ensure configuration
+                        # matches.
+                        self.set_property(sname, "uuid", pub.client_uuid)
 
-                return prefix, pub, changed
-
-        def __get_prop(self, name):
-                """Accessor method for properties dictionary"""
-                return self.__properties[name]
+                return prefix, pub
 
         def __validate_properties(self):
                 """Check that properties are consistent with each other."""
 
-                if self.__properties[SIGNATURE_POLICY] == "require-names":
-                        if not self.__properties.get("signature-required-names",
-                            None):
-                                raise api_errors.InvalidPropertyValue(_(
+                try:
+                        polval = self.get_property("property", SIGNATURE_POLICY)
+                except cfg.PropertyConfigError:
+                        # If it hasn't been set yet, there's nothing to 
+                        # validate.
+                        return
+
+                if polval == "require-names":
+                        signames = self.get_property("property",
+                            "signature-required-names")
+                        if not signames: 
+                                raise apx.InvalidPropertyValue(_(
                                     "At least one name must be provided for "
                                     "the signature-required-names policy."))
 
-        def __set_prop(self, name, values):
-                """Accessor method to add a property"""
-
-                if name == SIGNATURE_POLICY:
-                        if isinstance(values, basestring):
-                                values = [values]
-                        policy_name = values[0]
-                        if policy_name not in sigpolicy.Policy.policies():
-                                raise api_errors.InvalidPropertyValue(_(
-                                    "%(val)s is not a valid value for this "
-                                    "property: %(prop)s") % {"val": policy_name,
-                                    "prop": SIGNATURE_POLICY})
-                        self.__properties[SIGNATURE_POLICY] = policy_name
-                        if policy_name == "require-names":
-                                # If __delay_validation is set, then it's
-                                # possible that signature-required-names was
-                                # set by a previous line in the cfg_cache
-                                # file.  If so, don't overwrite the values
-                                # that have already been read.
-                                if self.__delay_validation:
-                                        self.__properties.setdefault(
-                                            "signature-required-names", [])
-                                        self.__properties[
-                                            "signature-required-names"].extend(
-                                            values[1:])
-                                else:
-                                        self.__properties[
-                                            "signature-required-names"] = \
-                                            values[1:]
-                        else:
-                                if len(values) > 1:
-                                        raise api_errors.InvalidPropertyValue(
-                                            _("The %s signature-policy takes "
-                                            "no argument.") % policy_name)
-                elif name == "signature-required-names":
-                        if isinstance(values, basestring):
-                                values = self.read_list(values)
-                        self.__properties[name] = values
-                elif name == "trust-anchor-directory":
-                        if isinstance(values, list):
-                                if len(values) > 1:
-                                        raise api_errors.InvalidPropertyValue(
-                                            _("%(name)s is not a multivalued "
-                                            "property.  Values are: %(value)r") %
-                                            { "name": name, "value": values })
-                                values = values[0]
-                        self.__properties[name] = values
-                elif name == "publisher-search-order":
-                        self.__properties[name] = values
-                else:
-                        # No other properties are expected to be a list, so
-                        # forcibly convert to a single value.
-                        if values:
-                                if isinstance(values, basestring) and \
-                                    values[0] == "[" and values[-1] == "]":
-                                        values = self.read_list(values)
-                                if isinstance(values, list):
-                                        if len(values) > 1:
-                                                raise api_errors.InvalidPropertyValue(
-                                                    _("%(name)s is not a "
-                                                    "multivalued property.  "
-                                                    "Values are: %(value)r") %
-                                                    { "name": name,
-                                                    "value": values })
-                                        self.__properties[name] = values[0]
-                                else:
-                                        self.__properties[name] = values
-                        else:
-                                self.__properties[name] = ""
-                if not self.__delay_validation:
-                        self.__validate_properties()
-
-        def __del_prop(self, name):
-                """Accessor method for properties"""
-                del self.__properties[name]
-
-        def __prop_iter(self):
-                return self.__properties.__iter__()
-
-        def __prop_iteritems(self):
-                """Support iteritems on properties"""
-                return self.__properties.iteritems()
-
-        def __prop_keys(self):
-                """Support keys() on properties"""
-                return self.__properties.keys()
-
-        def __prop_values(self):
-                """Support values() on properties"""
-                return self.__properties.values()
-
-        def __prop_getdefault(self, name, value):
-                return self.__properties.get(name, value)
-
-        def __prop_setdefault(self, name, value):
-                return self.__properties.setdefault(name, value)
-
-        def __prop_update(self, d):
-                return self.__properties.update(d)
-
         # properties so we can enforce rules
-
-        publisher_search_order = property(lambda self: self.__publisher_search_order[:])
-        preferred_publisher = property(__get_preferred_publisher, __set_preferred_publisher,
-            doc="The publisher we prefer - first non-disabled publisher in search order")
-        publishers = DictProperty(__get_publisher, __set_publisher, __del_publisher,
-            __publisher_iteritems, __publisher_keys, __publisher_values, __publisher_iter,
+        publishers = DictProperty(__get_publisher, __set_publisher,
+            __del_publisher, __publisher_iteritems, __publisher_keys,
+            __publisher_values, __publisher_iter,
             doc="A dict mapping publisher prefixes to publisher objects")
-
-        properties = DictProperty(__get_prop, __set_prop, __del_prop,
-            __prop_iteritems, __prop_keys, __prop_values, __prop_iter,
-            doc="A dict holding the properties for an image.",
-            fgetdefault=__prop_getdefault, fsetdefault=__prop_setdefault,
-            update=__prop_update)

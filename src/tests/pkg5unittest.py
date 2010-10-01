@@ -1632,7 +1632,7 @@ class CliTestCase(Pkg5TestCase):
                 --rebuild option.
                 """
 
-                # Preserve destination repository's cfg_cache if it exists.
+                # Preserve destination repository's configuration if it exists.
                 dest_cfg = os.path.join(dest, "pkg5.repository")
                 dest_cfg_data = None
                 if os.path.exists(dest_cfg):

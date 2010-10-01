@@ -62,7 +62,7 @@ class TestPkgPropertyBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("unset-property", exit=2)
 
                 self.pkg("set-property signature-policy verify")
-                self.pkg("set-property signature-policy verify foo", exit=1)
+                self.pkg("set-property signature-policy verify foo", exit=2)
                 self.pkg("set-property signature-policy vrify", exit=1)
                 self.pkg("set-property signature-policy require-names", exit=1)
                 self.pkg("set-property signature-policy require-names foo")

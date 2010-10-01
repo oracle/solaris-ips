@@ -50,6 +50,7 @@ import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
 import pkg.client.sigpolicy             as sigpolicy
 import pkg.client.transport.transport   as transport
+import pkg.config                       as cfg
 import pkg.fmri
 import pkg.lockfile                     as lockfile
 import pkg.manifest                     as manifest
@@ -62,7 +63,7 @@ import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
-from pkg.misc import CfgCacheError, EmptyI, EmptyDict
+from pkg.misc import EmptyI, EmptyDict
 
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
@@ -199,7 +200,7 @@ class Image(object):
                     "Policy-Pursue-Latest": True
                 }
                 self.blocking_locks = False
-                self.cfg_cache = None
+                self.cfg = None
                 self.history = history.History()
                 self.imageplan = None # valid after evaluation succeeds
                 self.img_prefix = None
@@ -243,7 +244,7 @@ class Image(object):
                             len(os.listdir(self.root)) > 0:
                                 raise apx.CreatingImageInNonEmptyDir(self.root)
                         self.__set_dirs(root=self.root, imgtype=imgtype,
-                            progtrack=progtrack)
+                            progtrack=progtrack, purge=True)
 
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
@@ -285,12 +286,11 @@ class Image(object):
 
                 if self.__sig_policy is not None:
                         return self.__sig_policy
-                if not self.cfg_cache:
+                if not self.cfg:
                         self.__load_config()
-                txt = self.cfg_cache.get_policy_str(
-                    imageconfig.SIGNATURE_POLICY)
-                names = self.cfg_cache.properties.get(
-                    "signature-required-names", [])
+                txt = self.cfg.get_policy_str(imageconfig.SIGNATURE_POLICY)
+                names = self.cfg.get_property("property",
+                    "signature-required-names")
                 self.__sig_policy = sigpolicy.Policy.policy_factory(txt, names)
                 return self.__sig_policy
 
@@ -303,11 +303,10 @@ class Image(object):
 
                 if self.__trust_anchors is not None:
                         return self.__trust_anchors
-                if not self.cfg_cache:
+                if not self.cfg:
                         self.__load_config()
                 user_set_ta_loc = True
-                rel_dir = self.cfg_cache.properties.get(
-                    "trust-anchor-directory", "etc/certs/CA/")
+                rel_dir = self.get_property("trust-anchor-directory")
                 if rel_dir[0] == "/":
                         rel_dir = rel_dir[1:]
                 trust_anchor_loc = os.path.join(self.root, rel_dir)
@@ -505,10 +504,9 @@ class Image(object):
                 if self.root == None:
                         raise RuntimeError, "self.root must be set"
 
-                ic = imageconfig.ImageConfig(self.root,
-                    self._get_publisher_meta_dir())
-                ic.read(self.imgdir)
-                self.cfg_cache = ic
+                icpath = os.path.join(self.imgdir, "cfg_cache")
+                self.cfg = imageconfig.ImageConfig(icpath, self.root,
+                    os.path.join(self.imgdir, self._get_publisher_meta_dir()))
 
                 self.transport.cfg.reset_caches()
                 for pub in self.gen_publishers(inc_disabled=True):
@@ -516,13 +514,11 @@ class Image(object):
 
         def save_config(self):
                 # First, create the image directories if they haven't been, so
-                # the cfg_cache can be written.
+                # the configuration file can be written.
                 self.mkdirs()
-                self.cfg_cache.write(self.imgdir)
+                self.cfg.write()
                 self.transport.cfg.reset_caches()
 
-        # XXX mkdirs and set_attrs() need to be combined into a create
-        # operation.
         def mkdirs(self):
                 for sd in self.image_subdirs:
                         if os.path.isdir(os.path.join(self.imgdir, sd)):
@@ -533,7 +529,7 @@ class Image(object):
                         except EnvironmentError, e:
                                 raise apx._convert_error(e)
 
-        def __set_dirs(self, imgtype, root, progtrack=None):
+        def __set_dirs(self, imgtype, root, progtrack=None, purge=False):
                 self.type = imgtype
                 self.root = root
                 if self.type == IMG_USER:
@@ -563,6 +559,20 @@ class Image(object):
 
                 # Must set imgdir first.
                 self.imgdir = os.path.join(self.root, self.img_prefix)
+
+                # In the case of initial image creation, purge is specified
+                # to ensure that when an image is created over an existing
+                # one, any old data is removed first.
+                if purge and os.path.exists(self.imgdir):
+                        for entry in os.listdir(self.imgdir):
+                                epath = os.path.join(self.imgdir, entry)
+                                try:
+                                        if os.path.isdir(epath):
+                                                shutil.rmtree(epath)
+                                        else:
+                                                portable.remove(epath)
+                                except EnvironmentError, e:
+                                        raise apx._convert_error(e)
 
                 # Remaining dirs may now be set.
                 self.__tmpdir = os.path.join(self.imgdir, "tmp")
@@ -710,28 +720,31 @@ class Image(object):
                         p.meta_root = self._get_publisher_meta_root(p.prefix)
                         p.transport = self.transport
 
-                # Initialize and store the configuration object.
-                self.cfg_cache = imageconfig.ImageConfig(self.root,
-                    self._get_publisher_meta_dir())
-                self.history.log_operation_start("image-create")
+                if props:
+                        props = { "property": props }
 
-                self.cfg_cache.properties.update(props)
+                # Initialize and store the configuration object.
+                icpath = os.path.join(self.imgdir, "cfg_cache")
+                self.cfg = imageconfig.ImageConfig(icpath, self.root,
+                    os.path.join(self.imgdir, self._get_publisher_meta_dir()),
+                    overrides=props)
+                self.history.log_operation_start("image-create")
 
                 # Determine and add the default variants for the image.
                 if is_zone:
-                        self.cfg_cache.variants[
-                            "variant.opensolaris.zone"] = "nonglobal"
+                        self.cfg.variants["variant.opensolaris.zone"] = \
+                            "nonglobal"
                 else:
-                        self.cfg_cache.variants[
-                            "variant.opensolaris.zone"] = "global"
+                        self.cfg.variants["variant.opensolaris.zone"] = \
+                            "global"
 
-                self.cfg_cache.variants["variant.arch"] = \
+                self.cfg.variants["variant.arch"] = \
                     variants.get("variant.arch", platform.processor())
 
                 # After setting up the default variants, add any overrides or
                 # additional variants or facets specified.
-                self.cfg_cache.variants.update(variants)
-                self.cfg_cache.facets.update(facets)
+                self.cfg.variants.update(variants)
+                self.cfg.facets.update(facets)
 
                 # Now everything is ready for publisher configuration.
                 # Since multiple publishers are allowed, they are all
@@ -746,11 +759,12 @@ class Image(object):
                 if refresh_allowed:
                         self.refresh_publishers(progtrack=progtrack)
 
-                # Assume first publisher in list is preferred.
-                self.cfg_cache.preferred_publisher = pubs[0].prefix
+                self.cfg.set_property("property", "publisher-search-order",
+                    [p.prefix for p in pubs])
 
-                # No need to save configuration as add_publisher will do that
-                # if successful.
+                # Ensure publisher search order is written.
+                self.save_config()
+
                 self.history.log_operation_end()
 
         def is_liveroot(self):
@@ -758,11 +772,11 @@ class Image(object):
                     DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
-                return self.cfg_cache.variants[
-                    "variant.opensolaris.zone"] == "nonglobal"
+                return self.cfg.variants["variant.opensolaris.zone"] == \
+                    "nonglobal"
 
         def get_arch(self):
-                return self.cfg_cache.variants["variant.arch"]
+                return self.cfg.variants["variant.arch"]
 
         def get_cachedirs(self):
                 """Returns a list of tuples of the form (dir, readonly, pub)
@@ -798,12 +812,11 @@ class Image(object):
                 return self.__get_catalog(self.IMG_CATALOG_KNOWN).last_modified
 
         def gen_publishers(self, inc_disabled=False):
-                if not self.cfg_cache:
-                        raise CfgCacheError, "empty ImageConfig"
-                for p in self.cfg_cache.publishers:
-                        pub = self.cfg_cache.publishers[p]
+                if not self.cfg:
+                        raise apx.ImageCfgEmptyError(self.root)
+                for pfx, pub in self.cfg.publishers.iteritems():
                         if inc_disabled or not pub.disabled:
-                                yield self.cfg_cache.publishers[p]
+                                yield pub
 
         def get_publisher_ranks(self):
                 """Returns dictionary of publishers by name; each
@@ -813,7 +826,7 @@ class Image(object):
                 whether or not the publisher is enabled"""
 
                 # automatically make disabled publishers not sticky
-                so = self.cfg_cache.publisher_search_order
+                so = self.cfg.get_property("property", "publisher-search-order")
 
                 ret = dict([
                     (p.prefix, (so.index(p.prefix), p.sticky, True))
@@ -862,18 +875,20 @@ class Image(object):
                         pub = self.get_publisher(prefix=prefix,
                             alias=alias)
 
-                        if pub.prefix == self.cfg_cache.preferred_publisher:
+                        ppub = self.cfg.get_property("property",
+                            "preferred-publisher")
+                        if pub.prefix == ppub:
                                 raise apx.RemovePreferredPublisher()
 
-                        self.cfg_cache.remove_publisher(pub.prefix)
+                        self.cfg.remove_publisher(pub.prefix)
                         self.remove_publisher_metadata(pub, progtrack=progtrack)
                         self.save_config()
 
         def get_publishers(self):
-                return self.cfg_cache.publishers
+                return self.cfg.publishers
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
-                publishers = [p for p in self.cfg_cache.publishers.values()]
+                publishers = [p for p in self.cfg.publishers.values()]
                 for pub in publishers:
                         if prefix and prefix == pub.prefix:
                                 return pub
@@ -908,18 +923,18 @@ class Image(object):
                         raise apx.MoveRelativeToSelf()
 
                 # compute new order and set it
-                so = self.cfg_cache.publisher_search_order
+                so = self.cfg.get_property("property", "publisher-search-order")
                 so.remove(bm)
                 if after:
                         so.insert(so.index(sp) + 1, bm)
                 else:
                         so.insert(so.index(sp), bm)
-                self.cfg_cache.change_publisher_search_order(so)
+                self.cfg.change_publisher_search_order(so)
                 self.save_config()
 
         def get_preferred_publisher(self):
                 """Returns the prefix of the preferred publisher."""
-                return self.cfg_cache.preferred_publisher
+                return self.cfg.get_property("property", "preferred-publisher")
 
         def set_preferred_publisher(self, prefix=None, alias=None, pub=None):
                 """Sets the preferred publisher for packaging operations.
@@ -940,63 +955,54 @@ class Image(object):
                                 pub = self.get_publisher(prefix=prefix,
                                     alias=alias)
 
-                                if pub.disabled:
-                                        raise apx.SetDisabledPublisherPreferred(
-                                            pub)
-                                self.cfg_cache.preferred_publisher = pub.prefix
-                                self.save_config()
+                        if pub.disabled:
+                                raise apx.SetDisabledPublisherPreferred(pub)
+                        self.cfg.set_property("property", "preferred-publisher",
+                            pub.prefix)
+                        self.save_config()
 
-        def set_property(self, prop_name, prop_values):
+        def set_property(self, prop_name, prop_value):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("set-property"):
-                        self.cfg_cache.properties[prop_name] = prop_values
+                        self.cfg.set_property("property", prop_name,
+                            prop_value)
+                        self.save_config()
+
+        def set_properties(self, properties):
+                assert "preferred-publisher" not in properties
+                properties = { "property": properties }
+                with self.locked_op("set-property"):
+                        self.cfg.set_properties(properties)
                         self.save_config()
 
         def get_property(self, prop_name):
-                return self.cfg_cache.properties[prop_name]
+                return self.cfg.get_property("property", prop_name)
 
         def has_property(self, prop_name):
-                return prop_name in self.cfg_cache.properties
+                try:
+                        self.cfg.get_property("property", prop_name)
+                        return True
+                except cfg.ConfigError:
+                        return False
 
         def delete_property(self, prop_name):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("unset-property"):
-                        del self.cfg_cache.properties[prop_name]
+                        self.cfg.remove_property("property", prop_name)
                         self.save_config()
 
         def add_property_value(self, prop_name, prop_value):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("add-property-value"):
-                        t = self.cfg_cache.properties.setdefault(prop_name, [])
-                        if not isinstance(t, list):
-                                raise apx.InvalidPropertyValue(_(
-                                    "Cannot add a value to a single valued "
-                                    "property.  The property name is: %(name)s "
-                                    "and the current value is: %(value)s") %
-                                    { "name": prop_name, "value": t })
-                        self.cfg_cache.properties[prop_name].append(prop_value)
+                        self.cfg.add_property_value("property", prop_name,
+                            prop_value)
                         self.save_config()
 
         def remove_property_value(self, prop_name, prop_value):
                 assert prop_name != "preferred-publisher"
                 with self.locked_op("remove-property-value"):
-                        t = self.cfg_cache.properties.get(prop_name, None)
-                        if not isinstance(t, list):
-                                raise apx.InvalidPropertyValue(_(
-                                    "Cannot remove a value from a single "
-                                    "valued property, unset must be used.  "
-                                    "The property name is: %(name)s and the "
-                                    "current value is: %(value)s") %
-                                    { "name": prop_name, "value": t })
-                        try:
-                                self.cfg_cache.properties[prop_name].remove(
-                                    prop_value)
-                        except ValueError:
-                                raise apx.InvalidPropertyValue(_(
-                                    "Cannot remove the value %(value)s from "
-                                    "the property %(name)s because the value "
-                                    "is not in the property's list.") %
-                                    { "value": prop_value, "name": prop_name })
+                        self.cfg.remove_property_value("property", prop_name,
+                            prop_value)
                         self.save_config()
 
         def destroy(self):
@@ -1016,8 +1022,9 @@ class Image(object):
                         raise apx._convert_error(e)
 
         def properties(self):
-                for p in self.cfg_cache.properties:
-                        yield p
+                if not self.cfg:
+                        raise apx.ImageCfgEmptyError(self.root)
+                return self.cfg.get_index()["property"].keys()
 
         def add_publisher(self, pub, refresh_allowed=True, progtrack=None,
             approved_cas=EmptyI, revoked_cas=EmptyI, unset_cas=EmptyI):
@@ -1035,7 +1042,7 @@ class Image(object):
                 assert repo and repo.origins
 
                 with self.locked_op("add-publisher"):
-                        for p in self.cfg_cache.publishers.values():
+                        for p in self.cfg.publishers.values():
                                 if pub.prefix == p.prefix or \
                                     pub.prefix == p.alias or \
                                     pub.alias and (pub.alias == p.alias or
@@ -1049,7 +1056,7 @@ class Image(object):
                         pub.meta_root = self._get_publisher_meta_root(
                             pub.prefix)
                         pub.transport = self.transport
-                        self.cfg_cache.publishers[pub.prefix] = pub
+                        self.cfg.publishers[pub.prefix] = pub
 
                         # Ensure that if the publisher's meta directory already
                         # exists for some reason that the data within is not
@@ -1072,14 +1079,12 @@ class Image(object):
                                 except Exception, e:
                                         # Remove the newly added publisher since
                                         # it is invalid or the retrieval failed.
-                                        self.cfg_cache.remove_publisher(
-                                            pub.prefix)
+                                        self.cfg.remove_publisher(pub.prefix)
                                         raise
                                 except:
                                         # Remove the newly added publisher since
                                         # the retrieval failed.
-                                        self.cfg_cache.remove_publisher(
-                                            pub.prefix)
+                                        self.cfg.remove_publisher(pub.prefix)
                                         raise
 
                         for ca in approved_cas:
@@ -1185,7 +1190,7 @@ class Image(object):
                 # compute dict of changing variants
                 if variants:
                         variants = dict(set(variants.iteritems()) - \
-                           set(self.cfg_cache.variants.iteritems()))
+                           set(self.cfg.variants.iteritems()))
                 # facets are always the entire set
 
                 try:
@@ -1198,19 +1203,12 @@ class Image(object):
 
         def image_config_update(self, new_variants, new_facets):
                 """update variants in image config"""
-                ic = self.cfg_cache
 
                 if new_variants is not None:
-                        ic.variants.update(new_variants)
-
+                        self.cfg.variants.update(new_variants)
                 if new_facets is not None:
-                        ic.facets = new_facets
-
-                ic.write(self.imgdir)
-                ic = imageconfig.ImageConfig(self.root,
-                    self._get_publisher_meta_dir())
-                ic.read(self.imgdir)
-                self.cfg_cache = ic
+                        self.cfg.facets = new_facets
+                self.cfg.write()
 
         def repair(self, *args, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""
@@ -1341,7 +1339,7 @@ class Image(object):
                 if all_variants:
                         excludes = EmptyI
                 else:
-                        excludes = [ self.cfg_cache.variants.allow_action ]
+                        excludes = [ self.cfg.variants.allow_action ]
  
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
@@ -1613,25 +1611,25 @@ class Image(object):
                 new_variants or new_facets are specified."""
 
                 if new_variants:
-                        new_vars = self.cfg_cache.variants.copy()
+                        new_vars = self.cfg.variants.copy()
                         new_vars.update(new_variants)
                         var_call = new_vars.allow_action
                 else:
-                        var_call = self.cfg_cache.variants.allow_action
+                        var_call = self.cfg.variants.allow_action
                 if new_facets:
                         fac_call = new_facets.allow_action
                 else:
-                        fac_call = self.cfg_cache.facets.allow_action
+                        fac_call = self.cfg.facets.allow_action
 
                 return [var_call, fac_call]
 
         def get_variants(self):
                 """ return a copy of the current image variants"""
-                return self.cfg_cache.variants.copy()
+                return self.cfg.variants.copy()
 
         def get_facets(self):
                 """ Return a copy of the current image facets"""
-                return self.cfg_cache.facets.copy()
+                return self.cfg.facets.copy()
 
         def __rebuild_image_catalogs(self, progtrack=None):
                 """Rebuilds the image catalogs based on the available publisher
@@ -2382,7 +2380,7 @@ class Image(object):
                 directory hierarchy.  Don't clean up caches if the
                 user overrode the underlying setting using PKG_CACHEDIR. """
 
-                if self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
+                if self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
                         logger.info("Deleting content cache")
                         for path, readonly, pub in self.get_cachedirs():
                                 if not readonly and \

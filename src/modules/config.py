@@ -67,7 +67,7 @@ class ConfigError(api_errors.ApiException):
         """Base exception class for property errors."""
 
 
-class PropertyConfigError(api_errors.ApiException):
+class PropertyConfigError(ConfigError):
         """Base exception class for property errors."""
 
         def __init__(self, section=None, prop=None):
@@ -80,11 +80,28 @@ class PropertyConfigError(api_errors.ApiException):
 class InvalidPropertyNameError(PropertyConfigError):
         """Exception class used to indicate an invalid property name."""
 
+        def __init__(self, prop):
+                assert prop is not None
+                PropertyConfigError.__init__(self, prop=prop)
+
         def __str__(self):
                 return _("Property name '%s' is not valid.  Section names "
                     "may not contain: tabs, newlines, carriage returns, "
                     "form feeds, vertical tabs, slashes, backslashes, or "
                     "non-ASCII characters.") % self.prop
+
+
+class InvalidPropertyTemplateNameError(PropertyConfigError):
+        """Exception class used to indicate an invalid property template name.
+        """
+
+        def __init__(self, prop):
+                assert prop is not None
+                PropertyConfigError.__init__(self, prop=prop)
+
+        def __str__(self):
+                return _("Property template name '%s' is not valid.") % \
+                    self.prop
 
 
 class InvalidPropertyValueError(PropertyConfigError):
@@ -96,15 +113,48 @@ class InvalidPropertyValueError(PropertyConfigError):
 
         def __str__(self):
                 if self.section:
-                        return _("Invalid value '%(val)s' for " \
-                            "%(section)s.%(prop)s.") % { "val": self.value,
-                                "section": self.section, "prop": self.prop }
-                return _("Invalid value '%(val)s' for %(prop)s.") % {
-                    "val": self.value, "prop": self.prop }
+                        return _("Invalid value '%(value)s' for property "
+                            "'%(prop)s' in section '%(section)s'.") % \
+                            self.__dict__
+                return _("Invalid value '%(value)s' for %(prop)s.") % \
+                    self.__dict__
+
+
+class PropertyMultiValueError(InvalidPropertyValueError):
+        """Exception class used to indicate the property in question doesn't
+        allow multiple values."""
+
+        def __str__(self):
+                if self.section:
+                        return _("Property '%(prop)s' in section '%(section)s' "
+                            "doesn't allow multiple values.") % self.__dict__
+                return _("Property %s doesn't allow multiple values.") % \
+                    self.prop
+
+
+class UnknownPropertyValueError(PropertyConfigError):
+        """Exception class used to indicate that the value specified
+        could not be found in the property's list of values."""
+
+        def __init__(self, section=None, prop=None, value=None):
+                PropertyConfigError.__init__(self, section=section, prop=prop)
+                self.value = value
+
+        def __str__(self):
+                if self.section:
+                        return _("Value '%(value)s' not found in the list of "
+                            "values for property '%(prop)s' in section "
+                            "'%(section)s'.") % self.__dict__
+                return _("Value '%(value)s' not found in the list of values "
+                    "for %(prop)s .") % self.__dict__
 
 
 class InvalidSectionNameError(PropertyConfigError):
         """Exception class used to indicate an invalid section name."""
+
+        def __init__(self, section):
+                assert section is not None
+                PropertyConfigError.__init__(self, section=section)
 
         def __str__(self):
                 return _("Section name '%s' is not valid.  Section names "
@@ -113,13 +163,25 @@ class InvalidSectionNameError(PropertyConfigError):
                     "non-ASCII characters.") % self.section
 
 
+class InvalidSectionTemplateNameError(PropertyConfigError):
+        """Exception class used to indicate an invalid section template name."""
+
+        def __init__(self, section):
+                assert section is not None
+                PropertyConfigError.__init__(self, section=section)
+
+        def __str__(self):
+                return _("Section template name '%s' is not valid.") % \
+                    self.section
+
+
 class UnknownPropertyError(PropertyConfigError):
         """Exception class used to indicate an invalid property."""
 
         def __str__(self):
                 if self.section:
-                        return _("Unknown property %s.%s") % (self.section,
-                            self.prop)
+                        return _("Unknown property '%(prop)s' in section "
+                            "'%(section)s'.") % self.__dict__
                 return _("Unknown property %s") % self.prop
 
 
@@ -137,8 +199,9 @@ class Property(object):
         __name_re = re.compile(r"\A[^\t\n\r\f\v\\/]+\Z")
 
         _value = None
+        _value_map = misc.EmptyDict
 
-        def __init__(self, name, default=""):
+        def __init__(self, name, default="", value_map=misc.EmptyDict):
                 if not isinstance(name, basestring) or \
                     not self.__name_re.match(name):
                         raise InvalidPropertyNameError(prop=name)
@@ -151,6 +214,7 @@ class Property(object):
 
                 # Last, set the property's initial value.
                 self.value = default
+                self._value_map = value_map
 
         def __cmp__(self, other):
                 if not isinstance(other, Property):
@@ -172,7 +236,8 @@ class Property(object):
                 return self.value != other.value
 
         def __copy__(self):
-                return self.__class__(self.name, default=self.value)
+                return self.__class__(self.name, default=self.value,
+                    value_map=self._value_map)
 
         def __unicode__(self):
                 if isinstance(self.value, unicode):
@@ -223,6 +288,8 @@ class Property(object):
         @value.setter
         def value(self, value):
                 """Sets the property's value."""
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
                 if value is None:
                         value = ""
                 elif isinstance(value, (bool, int)):
@@ -233,14 +300,77 @@ class Property(object):
                 self._value = value
 
 
+class PropertyTemplate(object):
+        """A class representing a template for a property.  These templates are
+        used when loading existing configuration data or when adding new
+        properties to an existing configuration object if the property name
+        found matches the pattern name given for the template.
+        """
+
+        def __init__(self, name_pattern, allowed=None, default=None,
+            prop_type=Property, value_map=None):
+                assert prop_type
+                if not isinstance(name_pattern, basestring) or not name_pattern:
+                        raise InvalidPropertyTemplateNameError(
+                            prop=name_pattern)
+                self.__name = name_pattern
+                try:
+                        self.__pattern = re.compile(name_pattern)
+                except Exception:
+                        # Unfortunately, python doesn't have a public exception
+                        # class to catch re parse issues; but this only happens
+                        # for misbehaved programs anyway.
+                        raise InvalidPropertyTemplateNameError(
+                            prop=name_pattern)
+
+                self.__allowed = allowed
+                self.__default = default
+                self.__prop_type = prop_type
+                self.__value_map = value_map
+
+        def __copy__(self):
+                return self.__class__(self.__name, allowed=self.__allowed,
+                    default=self.__default, prop_type=self.__prop_type,
+                    value_map=self.__value_map)
+
+        def create(self, name):
+                """Returns a new PropertySection object based on the template
+                using the given name.
+                """
+                assert self.match(name)
+                pargs = {}
+                if self.__allowed is not None:
+                        pargs["allowed"] = self.__allowed
+                if self.__default is not None:
+                        pargs["default"] = self.__default
+                if self.__value_map is not None:
+                        pargs["value_map"] = self.__value_map
+                return self.__prop_type(name, **pargs)
+
+        def match(self, name):
+                """Returns a boolean indicating whether the given name matches
+                the pattern for this template.
+                """
+                return self.__pattern.match(name) is not None
+
+        @property
+        def name(self):
+                """The name (pattern string) of the property template."""
+                # Must return a string.
+                return self.__name
+
+
 class PropBool(Property):
         """Class representing properties with a boolean value."""
 
-        def __init__(self, name, default=False):
-                Property.__init__(self, name, default=default)
+        def __init__(self, name, default=False, value_map=misc.EmptyDict):
+                Property.__init__(self, name, default=default,
+                    value_map=value_map)
 
         @Property.value.setter
         def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
                 if value is None or value == "":
                         self._value = False
                         return
@@ -260,11 +390,14 @@ class PropBool(Property):
 class PropInt(Property):
         """Class representing a property with an integer value."""
 
-        def __init__(self, name, default=0):
-                Property.__init__(self, name, default=default)
+        def __init__(self, name, default=0, value_map=misc.EmptyDict):
+                Property.__init__(self, name, default=default,
+                    value_map=value_map)
 
         @Property.value.setter
         def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
                 if value is None or value == "":
                         self._value = 0
                         return
@@ -281,9 +414,12 @@ class PropPublisher(Property):
 
         @Property.value.setter
         def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
                 if value is None or value == "":
                         self._value = ""
                         return
+
                 if not isinstance(value, basestring) or \
                     not misc.valid_pub_prefix(value):
                         # Only string values are allowed.
@@ -296,9 +432,11 @@ class PropDefined(Property):
         """Class representing properties with that can only have one of a set
         of pre-defined values."""
 
-        def __init__(self, name, allowed=misc.EmptyI, default=""):
+        def __init__(self, name, allowed=misc.EmptyI, default="",
+            value_map=misc.EmptyDict):
                 self.__allowed = allowed
-                Property.__init__(self, name, default=default)
+                Property.__init__(self, name, default=default,
+                    value_map=value_map)
 
         def __copy__(self):
                 prop = Property.__copy__(self)
@@ -355,7 +493,7 @@ class PropList(PropDefined):
                 resulting data structure."""
                 try:
                         value = ast.literal_eval(value)
-                except ValueError:
+                except (SyntaxError, ValueError):
                         # ast raises ValueError if input isn't safe or
                         # valid.
                         raise InvalidPropertyValueError(prop=self.name,
@@ -364,6 +502,8 @@ class PropList(PropDefined):
 
         @PropDefined.value.setter
         def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
                 if value is None or value == "":
                         value = []
                 elif isinstance(value, basestring):
@@ -403,7 +543,9 @@ class PropSimpleList(PropList):
         """Class representing a property with a list of string values that are
         simple in nature.  Output is in a comma-separated format that may not
         be suitable for some datasets such as those containing arbitrary data,
-        newlines, commas or that may contain zero-length strings.
+        newlines, commas or that may contain zero-length strings.  This class
+        exists for compatibility with older configuration files that stored
+        lists of data in this format and should not be used for new consumers.
         """
 
         def _is_allowed(self, value):
@@ -479,10 +621,13 @@ class PropPubURI(Property):
                             value=value)
 
 
-class PropPubURIList(PropSimpleList):
+class PropSimplePubURIList(PropSimpleList):
         """Class representing a property for a list of publisher URIs.  Output
         is in a basic comma-separated format that may not be suitable for some
-        datasets."""
+        datasets.  This class exists for compatibility with older configuration
+        files that stored lists of data in this format and should not be used
+        for new consumers.
+        """
 
         def _is_allowed(self, value):
                 """Raises an InvalidPropertyValueError if 'value' is not allowed
@@ -491,6 +636,23 @@ class PropPubURIList(PropSimpleList):
 
                 # Enforce base class rules.
                 PropSimpleList._is_allowed(self, value)
+
+                valid = misc.valid_pub_url(value)
+                if not valid:
+                        raise InvalidPropertyValueError(prop=self.name,
+                            value=value)
+
+
+class PropPubURIList(PropList):
+        """Class representing a property for a list of publisher URIs."""
+
+        def _is_allowed(self, value):
+                """Raises an InvalidPropertyValueError if 'value' is not allowed
+                for this property.
+                """
+
+                # Enforce base class rules.
+                PropList._is_allowed(self, value)
 
                 valid = misc.valid_pub_url(value)
                 if not valid:
@@ -528,12 +690,12 @@ class PropertySection(object):
                 if not isinstance(name, basestring) or \
                     not self.__name_re.match(name) or \
                     name == "CONFIGURATION":
-                        raise InvalidSectionNameError(section=name)
+                        raise InvalidSectionNameError(name)
                 try:
                         name.encode("ascii")
                 except ValueError:
                         # Name contains non-ASCII characters.
-                        raise InvalidSectionNameError(section=name)
+                        raise InvalidSectionNameError(name)
                 self.__name = name
 
                 # Should be set last.
@@ -590,12 +752,63 @@ class PropertySection(object):
                 try:
                         del self.__properties[name]
                 except KeyError:
-                        # Already removed; don't care.
-                        pass
+                        raise UnknownPropertyError(section=self.__name,
+                            prop=name)
 
         @property
         def name(self):
                 """The name of the section."""
+                return self.__name
+
+
+class PropertySectionTemplate(object):
+        """A class representing a template for a section of the configuration.
+        These templates are used when loading existing configuration data
+        or when adding new sections to an existing configuration object if
+        the section name found matches the pattern name given for the template.
+        """
+
+        def __init__(self, name_pattern, properties=misc.EmptyI):
+                if not isinstance(name_pattern, basestring) or not name_pattern:
+                        raise InvalidSectionTemplateNameError(
+                            section=name_pattern)
+                self.__name = name_pattern
+                try:
+                        self.__pattern = re.compile(name_pattern)
+                except Exception:
+                        # Unfortunately, python doesn't have a public exception
+                        # class to catch re parse issues; but this only happens
+                        # for misbehaved programs anyway.
+                        raise InvalidSectionTemplateNameError(
+                            section=name_pattern)
+                self.__properties = properties
+
+        def __copy__(self):
+                return self.__class__(self.__name,
+                    properties=copy.copy(self.__properties))
+
+        def create(self, name):
+                """Returns a new PropertySection object based on the template
+                using the given name.
+                """
+                assert self.match(name)
+                # A *copy* of the properties must be used to construct the new
+                # section; otherwise all sections created by this template will
+                # share the same property *objects* (which is bad).
+                return PropertySection(name, properties=[
+                    copy.copy(p) for p in self.__properties
+                ])
+
+        def match(self, name):
+                """Returns a boolean indicating whether the given name matches
+                the pattern for this template.
+                """
+                return self.__pattern.match(name) is not None
+
+        @property
+        def name(self):
+                """The name (pattern text) of the property section template."""
+                # Must return a string.
                 return self.__name
 
 
@@ -660,6 +873,45 @@ class Config(object):
                         out += "\n"
                 return out
 
+        def _get_matching_property(self, section, name, default_type=Property):
+                """Returns the Property object matching the given name for
+                the given PropertySection object, or adds a new one (if it
+                does not already exist) based on class definitions.
+                
+                'default_type' is an optional parameter specifying the type of
+                property to create if a class definition does not exist for the
+                given property.
+                """
+
+                self._validate_section_name(section)
+                self._validate_property_name(name)
+
+                try:
+                        secobj = self.get_section(section)
+                except UnknownSectionError:
+                        # Get a copy of the definition for this section.
+                        secobj = self.__get_section_def(section)
+
+                        # Elide property templates.
+                        elide = [
+                            p.name for p in secobj.get_properties()
+                            if not isinstance(p, Property)
+                        ]
+                        map(secobj.remove_property, elide)
+                        self.add_section(secobj)
+
+                try:
+                        return secobj.get_property(name)
+                except UnknownPropertyError:
+                        # See if there is an existing definition for this
+                        # property; if there is, duplicate it, and add it
+                        # to the section.
+                        secdef = self.__get_section_def(secobj.name)
+                        propobj = self.__get_property_def(secdef, name,
+                            default_type=default_type)
+                        secobj.add_property(propobj)
+                        return propobj
+
         # Subclasses can redefine these to impose additional restrictions on
         # section and property names.  These methods should return if the name
         # is valid, or raise an exception if it is not.  These methods are only
@@ -676,15 +928,99 @@ class Config(object):
                 """
                 pass
 
+        def __get_property_def(self, secdef, name, default_type=Property):
+                """Returns a new Property object for the given name based on
+                class definitions (if available).
+                """
+
+                try:
+                        propobj = secdef.get_property(name)
+                        return copy.copy(propobj)
+                except UnknownPropertyError:
+                        # No specific definition found for this section,
+                        # see if there is a suitable template for creating
+                        # one.
+                        for p in secdef.get_properties():
+                                if not isinstance(p, PropertyTemplate):
+                                        continue
+                                if p.match(name):
+                                        return p.create(name)
+
+                        # Not a known property; create a new one using
+                        # the default type.
+                        return default_type(name)
+
+        def __get_section_def(self, name):
+                """Returns a new PropertySection object for the given name based
+                on class definitions (if available).
+                """
+
+                # See if there is an existing definition for this
+                # section; if there is, return a copy.
+                for s in self._defs.get(self._version, misc.EmptyDict):
+                        if not isinstance(s, PropertySection):
+                                # Ignore section templates.
+                                continue
+                        if s.name == name:
+                                return copy.copy(s)
+                else:
+                        # No specific definition found for this section,
+                        # see if there is a suitable template for creating
+                        # one.
+                        for s in self._defs.get(self._version,
+                            misc.EmptyDict):
+                                if not isinstance(s,
+                                    PropertySectionTemplate):
+                                        continue
+                                if s.match(name):
+                                        return s.create(name)
+                return PropertySection(name)
+
         def __reset(self, overrides=misc.EmptyDict):
                 """Returns the configuration object to its default state."""
                 self.__sections = {}
                 for s in self._defs.get(self._version, misc.EmptyDict):
+                        if not isinstance(s, PropertySection):
+                                # Templates should be skipped during reset.
+                                continue
                         self._validate_section_name(s.name)
-                        self.add_section(copy.copy(s))
+
+                        # Elide property templates.
+                        secobj = copy.copy(s)
+                        elide = [
+                            p.name for p in secobj.get_properties()
+                            if not isinstance(p, Property)
+                        ]
+                        map(secobj.remove_property, elide)
+                        self.add_section(secobj)
+
                 for sname, props in overrides.iteritems():
                         for pname, val in props.iteritems():
                                 self.set_property(sname, pname, val)
+
+        def add_property_value(self, section, name, value):
+                """Adds the value to the property object matching the given
+                section and name.  If the section or property does not already
+                exist, it will be added.  Raises InvalidPropertyValueError if
+                the value is not valid for the given property or if the target
+                property isn't a list."""
+
+                propobj = self._get_matching_property(section, name,
+                    default_type=PropList)
+                if not isinstance(propobj.value, list):
+                        raise PropertyMultiValueError(section=section,
+                            prop=name, value=value)
+
+                # If a value was just appended directly, the property class
+                # set method wouldn't be executed and the value added wouldn't
+                # get verified, so append to a copy of the property's value and
+                # then set the property to the new value.  This allows the new
+                # value to be verified and/or rejected without affecting the
+                # property.
+                pval = copy.copy(propobj.value)
+                pval.append(value)
+                propobj.value = pval
+                self._dirty = True
 
         def add_section(self, section):
                 """Adds the specified property section object.  The section must
@@ -707,6 +1043,14 @@ class Config(object):
                 """Returns the value of the property object matching the given
                 section and name.  Raises UnknownPropertyError if it does not
                 exist.
+
+                Be aware that references to the original value are returned;
+                if the return value is not an immutable object (such as a list),
+                changes to the object will affect the property.  If the return
+                value needs to be modified, consumers are advised to create a
+                copy first, and then call set_property() to update the value.
+                Calling set_property() with the updated value is the only way
+                to ensure that changes to a property's value are persistent.
                 """
                 try:
                         sec = self.get_section(section)
@@ -741,6 +1085,66 @@ class Config(object):
                 objects."""
                 return self.__sections.itervalues()
 
+        def remove_property(self, section, name):
+                """Remove the property object matching the given section and
+                name.  Raises UnknownPropertyError if it does not exist.
+                """
+                try:
+                        sec = self.get_section(section)
+                except UnknownSectionError:
+                        # To aid in debugging, re-raise as a property error
+                        # so that both the unknown section and property are
+                        # in the error message.
+                        raise UnknownPropertyError(section=section, prop=name)
+                sec.remove_property(name)
+                self._dirty = True
+
+        def remove_property_value(self, section, name, value):
+                """Removes the value from the list of values for the property
+                object matching the given section and name.  Raises
+                UnknownPropertyError if the property or section does not
+                exist.  Raises InvalidPropertyValueError if the value is not
+                valid for the given property or if the target property isn't a
+                list."""
+
+                self._validate_section_name(section)
+                self._validate_property_name(name)
+
+                try:
+                        secobj = self.get_section(section)
+                except UnknownSectionError:
+                        # To aid in debugging, re-raise as a property error
+                        # so that both the unknown section and property are
+                        # in the error message.
+                        raise UnknownPropertyError(section=section, prop=name)
+
+                propobj = secobj.get_property(name)
+                if not isinstance(propobj.value, list):
+                        raise PropertyMultiValueError(section=section,
+                            prop=name, value=value)
+
+                # Remove the value from a copy of the actual property object
+                # value so that the property's set verification can happen.
+                pval = copy.copy(propobj.value)
+                try:
+                        pval.remove(value)
+                except ValueError:
+                        raise UnknownPropertyValueError(section=section,
+                            prop=name, value=value)
+                else:
+                        propobj.value = pval
+                self._dirty = True
+
+        def remove_section(self, name):
+                """Remove the object matching the given section name.  Raises
+                UnknownSectionError if it does not exist.
+                """
+                try:
+                        del self.__sections[name]
+                except KeyError:
+                        raise UnknownSectionError(section=name)
+                self._dirty = True
+
         def reset(self, overrides=misc.EmptyDict):
                 """Discards current configuration data and returns the
                 configuration object to its initial state.
@@ -764,21 +1168,30 @@ class Config(object):
                 self._validate_section_name(section)
                 self._validate_property_name(name)
 
-                try:
-                        secobj = self.get_section(section)
-                except UnknownSectionError:
-                        # Add a new section.
-                        secobj = PropertySection(section)
-                        self.add_section(secobj)
-
-                try:
-                        propobj = secobj.get_property(name)
-                except UnknownPropertyError:
-                        # Assume unknown properties are base type.
-                        propobj = secobj.add_property(Property(name))
-
+                propobj = self._get_matching_property(section, name)
                 propobj.value = value
                 self._dirty = True
+
+        def set_properties(self, properties):
+                """Sets the values of the property objects matching those found
+                in the provided dictionary.  If any section or property does not
+                already exist, it will be added.  An InvalidPropertyValueError
+                will be raised if the value is not valid for the given
+                properties.
+
+                'properties' should be a dictionary of dictionaries indexed by
+                section and then by property name.  As an example:
+
+                    {
+                        'section': {
+                            'property': value
+                        }
+                    }
+                """
+
+                for section, props in properties.iteritems():
+                        for pname, pval in props.iteritems():
+                                self.set_property(section, pname, pval)
 
         @property
         def target(self):
@@ -861,6 +1274,9 @@ class FileConfig(Config):
 
                 # First, attempt to read the target.
                 cp = ConfigParser.SafeConfigParser()
+                # Disabled ConfigParser's inane option transformation to ensure
+                # option case is preserved.
+                cp.optionxform = lambda x: x
 
                 try:
                         efile = codecs.open(self._target, mode="rb",
@@ -902,18 +1318,8 @@ class FileConfig(Config):
                                     prop in overrides[section]:
                                         continue
 
-                                try:
-                                        secobj = self.get_section(section)
-                                except UnknownSectionError:
-                                        secobj = PropertySection(section)
-                                        self.add_section(secobj)
-
-                                try:
-                                        propobj = secobj.get_property(prop)
-                                except UnknownPropertyError:
-                                        # Assume unknown properties are strings.
-                                        propobj = secobj.add_property(
-                                            Property(prop))
+                                propobj = self._get_matching_property(section,
+                                    prop)
 
                                 # Try to convert unicode object to str object
                                 # to ensure comparisons works as expected for
@@ -956,9 +1362,15 @@ class FileConfig(Config):
                         return
 
                 cp = ConfigParser.SafeConfigParser()
+                # Disabled ConfigParser's inane option transformation to ensure
+                # option case is preserved.
+                cp.optionxform = lambda x: x
+
                 for section, props in self.get_properties():
+                        assert isinstance(section, PropertySection)
                         cp.add_section(section.name)
                         for p in props:
+                                assert isinstance(p, Property)
                                 cp.set(section.name, p.name, str(p))
 
                 # Used to track configuration management information.
@@ -1013,6 +1425,10 @@ _SMF_name_re = '^([A-Za-z][ A-Za-z0-9.-]*,)?[A-Za-z][ A-Za-z0-9-_]*$'
 class SMFInvalidPropertyNameError(PropertyConfigError):
         """Exception class used to indicate an invalid SMF property name."""
 
+        def __init__(self, prop):
+                assert prop is not None
+                PropertyConfigError.__init__(self, prop=prop)
+
         def __str__(self):
                 return _("Property name '%(name)s' is not valid.  Property "
                     "names may not contain: tabs, newlines, carriage returns, "
@@ -1023,6 +1439,10 @@ class SMFInvalidPropertyNameError(PropertyConfigError):
 
 class SMFInvalidSectionNameError(PropertyConfigError):
         """Exception class used to indicate an invalid SMF section name."""
+
+        def __init__(self, section):
+                assert section is not None
+                PropertyConfigError.__init__(self, section=section)
 
         def __str__(self):
                 return _("Section name '%(name)s' is not valid.  Section names "
@@ -1183,20 +1603,8 @@ class SMFConfig(Config):
                                     prop in overrides[section]:
                                         continue
 
-                                # Get the property section and property.
-                                try:
-                                        secobj = self.get_section(section)
-                                except UnknownSectionError:
-                                        secobj = PropertySection(section)
-                                        self.add_section(secobj)
-
-                                try:
-                                        propobj = secobj.get_property(prop)
-                                except UnknownPropertyError:
-                                        # Assume unknown properties are strings.
-                                        propobj = secobj.add_property(
-                                            Property(prop))
-
+                                propobj = self._get_matching_property(section,
+                                    prop)
                                 if isinstance(propobj, PropList):
                                         nvalue = []
                                         for v in shlex.split(value):

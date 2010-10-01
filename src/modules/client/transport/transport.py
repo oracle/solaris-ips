@@ -254,9 +254,9 @@ class ImageTransportCfg(TransportCfg):
                 return self.__img.gen_publishers()
 
         def get_policy(self, policy_name):
-                if not self.__img.cfg_cache:
+                if not self.__img.cfg:
                         return False
-                return self.__img.cfg_cache.get_policy(policy_name)
+                return self.__img.cfg.get_policy(policy_name)
 
         def get_pkg_dir(self, pfmri):
                 """Returns the absolute path of the directory that should be
@@ -272,9 +272,9 @@ class ImageTransportCfg(TransportCfg):
                 return self.__img.get_manifest_path(pfmri)
 
         def get_property(self, property_name):
-                if not self.__img.cfg_cache:
+                if not self.__img.cfg:
                         raise KeyError
-                return self.__img.get_property(property_name)
+                return self.__img.get_property("property", property_name)
 
         def get_publisher(self, publisher_name):
                 return self.__img.get_publisher(publisher_name)

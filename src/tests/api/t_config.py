@@ -33,6 +33,7 @@ import pkg5unittest
 import copy
 import os
 import pwd
+import re
 import shutil
 import signal
 import stat
@@ -115,6 +116,13 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                         p2.value = str(p1)
                         self.assertEqual(p1.value, p2.value)
                         self.assertEqualDiff(str(p1), str(p2))
+
+        def __verify_ex_stringify(self, ex):
+                encs = str(ex)
+                self.assertNotEqual(len(encs), 0)
+                unis = unicode(ex)
+                self.assertNotEqual(len(unis), 0)
+                self.assertEqualDiff(encs, unis.encode("utf-8"))
 
         def test_base(self):
                 """Verify base property functionality works as expected."""
@@ -319,9 +327,9 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
 
                 # Verify the expected behavior of all ConfigError classes.
                 for excls in (cfg.PropertyConfigError,
-                    cfg.InvalidPropertyNameError, cfg.InvalidPropertyValueError,
-                    cfg.InvalidSectionNameError, cfg.UnknownPropertyError,
-                    cfg.UnknownSectionError):
+                    cfg.PropertyMultiValueError,
+                    cfg.InvalidPropertyValueError, cfg.UnknownPropertyError,
+                    cfg.UnknownPropertyValueError, cfg.UnknownSectionError):
                         # Verify that exception can't be created without
                         # specifying section or property.
                         self.assertRaises(AssertionError, excls)
@@ -329,7 +337,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                         # Verify that exception can be created with just
                         # section or property, or both, and that expected
                         # value is set.  In addition, verify that the
-                        # stringified form or unicode object that is equal
+                        # stringified form or unicode object is equal
                         # and not zero-length.
                         ex1 = excls(section="section")
                         self.assertEqual(ex1.section, "section")
@@ -344,13 +352,45 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                         if excls == cfg.PropertyConfigError:
                                 # Can't stringify base class.
                                 continue
+                        map(self.__verify_ex_stringify, (ex1, ex2, ex3))
 
-                        for ex in (ex1, ex2, ex3):
-                                encs = str(ex)
-                                self.assertNotEqual(len(encs), 0)
-                                unis = unicode(ex)
-                                self.assertNotEqual(len(unis), 0)
-                                self.assertEqualDiff(encs, unis.encode("utf-8"))
+                        if excls != cfg.UnknownPropertyValueError:
+                                continue
+
+                        ex4 = excls(section="section", prop="property",
+                            value="value")
+                        self.assertEqual(ex4.section, "section")
+                        self.assertEqual(ex4.prop, "property")
+                        self.assertEqual(ex4.value, "value")
+                        self.__verify_ex_stringify(ex4)
+
+                for excls in (cfg.InvalidSectionNameError,
+                    cfg.InvalidSectionTemplateNameError):
+                        # Verify that exception can't be created without
+                        # specifying section.
+                        self.assertRaises(AssertionError, excls, None)
+
+                        # Verify that exception can be created with just section
+                        # and that expected value is set.  In addition, verify
+                        # that the stringified form or unicode object is equal
+                        # and not zero-length.
+                        ex1 = excls("section")
+                        self.assertEqual(ex1.section, "section")
+                        self.__verify_ex_stringify(ex1)
+
+                for excls in (cfg.InvalidPropertyNameError,
+                    cfg.InvalidPropertyTemplateNameError):
+                        # Verify that exception can't be created without
+                        # specifying prop.
+                        self.assertRaises(AssertionError, excls, None)
+
+                        # Verify that exception can be created with just prop
+                        # and that expected value is set.  In addition, verify
+                        # that the stringified form or unicode object is equal
+                        # and not zero-length.
+                        ex1 = excls("prop")
+                        self.assertEqual(ex1.prop, "prop")
+                        self.__verify_ex_stringify(ex1)
 
         def test_list(self):
                 """Verify list properties work as expected."""
@@ -577,8 +617,53 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
         def test_puburi_list(self):
                 """Verify publisher URI list properties work as expected."""
 
-                # Verify default if no initial value provided.
                 propcls = cfg.PropPubURIList
+
+                # Verify default if no initial value provided.
+                p = propcls("uri_list")
+                self.assertEqual(p.value, [])
+
+                # Verify that all expected values are accepted at init and
+                # during set and that the value is set as expected.  Also
+                # verify that bad values are rejected both during init and
+                # set.
+                glist = [(None, []), ("", []), ("['http://example.com/']",
+                    ["http://example.com/"]), (["file:/abspath"],
+                    ["file:/abspath"])]
+                blist = [["bogus://"], [{}], [object()], [123],
+                    ["http://@&*#($badchars"], ["http:/baduri"],
+                    ["example.com"]]
+                self.__verify_init(propcls, "uri_list", glist, blist)
+
+                # Verify equality works as expected.
+                eqlist = [
+                    # Equal because property names and values match.
+                    (("uri_list", ""), ("uri_list", [])),
+                    (("uri_list", ["http://example.com", "file:/abspath"]),
+                        ("uri_list", ["http://example.com", "file:/abspath"])),
+                ]
+                nelist = [
+                    # Not equal because property names and/or values do not
+                    # match.
+                    (("uri_list", ["http://example.com", "file:/abspath"]),
+                        ("uri_list2", ["http://example.com", "file:/abspath"])),
+                    (("uri_list", ["http://example.com", "file:/abspath"]),
+                        ("uri_list", ["http://example.net/"])),
+                ]
+                self.__verify_equality(propcls, eqlist, nelist)
+
+                # Verify stringified form.
+                self.__verify_stringify(propcls, "uri", [("", "[]"),
+                    (["http://example.com", "file:/abspath"],
+                        "['http://example.com', 'file:/abspath']"),
+                    (["file:/abspath"], "['file:/abspath']")])
+
+        def test_simple_puburi_list(self):
+                """Verify publisher URI list properties work as expected."""
+
+                propcls = cfg.PropSimplePubURIList
+
+                # Verify default if no initial value provided.
                 p = propcls("uri_list")
                 self.assertEqual(p.value, [])
 
@@ -658,6 +743,62 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                     "16fd2706-8baf-433b-82eb-8c7fada847da")])
 
 
+class TestPropertyTemplate(pkg5unittest.Pkg5TestCase):
+        """Class to test the functionality of the pkg.config PropertyTemplate
+        class.
+        """
+
+        def test_base(self):
+                """Verify base property template functionality works as
+                expected.
+                """
+
+                propcls = cfg.PropertyTemplate
+
+                # Verify invalid names aren't permitted.
+                for n in ("", re.compile("^$"), "foo.*("):
+                        self.assertRaises(cfg.InvalidPropertyTemplateNameError,
+                            propcls, n)
+
+                prop = propcls("^facet\..*$")
+                self.assertEqual(prop.name, "^facet\..*$")
+
+        def test_create_match(self):
+                """Verify that create and match operations work as expected."""
+
+                proptemp = cfg.PropertyTemplate("^facet\..*$")
+
+                # Verify match will match patterns as expected.
+                self.assertEqual(proptemp.match("facet.devel"), True)
+                self.assertEqual(proptemp.match("facet"), False)
+
+                # Verify create raises an assert if name doesn't match
+                # template pattern.
+                self.assertRaises(AssertionError, proptemp.create, "notallowed")
+
+                # Verify create returns expected property.
+                expected_props = [
+                    ({}, { "value": "" }),
+                    ({ "prop_type": cfg.Property, "value_map": { "None": None }
+                        }, { "value": "" } ),
+                    ({ "default": True, "prop_type": cfg.PropBool},
+                        { "value": True }),
+                    ({ "allowed": ["always", "never"], "default": "never",
+                        "prop_type": cfg.PropDefined },
+                        { "allowed": ["always", "never"], "value": "never" }),
+                ]
+                for args, exp_attrs in expected_props:
+                        proptemp = cfg.PropertyTemplate("name", **args)
+                        extype = args.get("prop_type", cfg.Property)
+
+                        prop = proptemp.create("name")
+                        self.assert_(isinstance(prop, extype))
+
+                        for attr in exp_attrs:
+                                self.assertEqual(getattr(prop, attr),
+                                    exp_attrs[attr])
+
+
 class TestPropertySection(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of the pkg.config PropertySection
         classes.
@@ -726,10 +867,10 @@ class TestPropertySection(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(cfg.UnknownPropertyError,
                     sec.get_property, "p1")
 
-                # Verify that attempting to remove an unknown property succeeds.
-                # (It's assumed that the property was already removed and that
-                # the existence doesn't matter.)
-                sec.remove_property("p1")
+                # Verify that attempting to remove an unknown property raises
+                # an exception.
+                self.assertRaises(cfg.UnknownPropertyError,
+                    sec.remove_property, "p1")
 
                 # Verify that a property cannot be added twice.
                 p1 = propcls("p1", default="1")
@@ -756,6 +897,60 @@ class TestPropertySection(pkg5unittest.Pkg5TestCase):
                     "p3": "3",
                 }
                 self.assertEqual(sec.get_index(), exp_idx)
+
+
+class TestPropertySectionTemplate(pkg5unittest.Pkg5TestCase):
+        """Class to test the functionality of the pkg.config PropertyTemplate
+        class.
+        """
+
+        def test_base(self):
+                """Verify base property section template functionality works as
+                expected.
+                """
+
+                seccls = cfg.PropertySectionTemplate
+
+                # Verify invalid names aren't permitted.
+                for n in ("", re.compile("^$"), "foo.*("):
+                        self.assertRaises(cfg.InvalidSectionTemplateNameError,
+                            seccls, n)
+
+                sec = seccls("^authority_.*$")
+                self.assertEqual(sec.name, "^authority_.*$")
+
+        def test_create_match(self):
+                """Verify that create and match operations work as expected."""
+
+                sectemp = cfg.PropertySectionTemplate("^authority_.*$")
+
+                # Verify match will match patterns as expected.
+                self.assertEqual(sectemp.match("authority_example.com"), True)
+                self.assertEqual(sectemp.match("authority"), False)
+
+                # Verify create raises an assert if name doesn't match
+                # template pattern.
+                self.assertRaises(AssertionError, sectemp.create, "notallowed")
+
+                # Verify create returns expected section.
+                exp_props = [
+                    cfg.Property("prop"),
+                    cfg.PropBool("bool"),
+                    cfg.PropList("list"),
+                    cfg.PropertyTemplate("multi_value", prop_type=cfg.PropList),
+                ]
+                sectemp = cfg.PropertySectionTemplate("name",
+                    properties=exp_props)
+                sec = sectemp.create("name")
+                self.assert_(isinstance(sec, cfg.PropertySection))
+
+                expected = sorted([
+                    (p.name, type(p)) for p in exp_props
+                ])
+                returned = sorted([
+                    (p.name, type(p)) for p in sec.get_properties()
+                ])
+                self.assertEqualDiff(expected, returned)
 
 
 class _TestConfigBase(pkg5unittest.Pkg5TestCase):
@@ -797,8 +992,8 @@ class _TestConfigBase(pkg5unittest.Pkg5TestCase):
                     cfg.PropPubURI("uri_basic"),
                     cfg.PropPubURI("uri_default",
                         default="http://example.com/"),
-                    cfg.PropPubURIList("urilist_basic"),
-                    cfg.PropPubURIList("urilist_default",
+                    cfg.PropSimplePubURIList("urilist_basic"),
+                    cfg.PropSimplePubURIList("urilist_default",
                         default=["http://example.com/", "file:/example/path"]),
                     cfg.PropUUID("uuid_basic"),
                     cfg.PropUUID("uuid_default",
@@ -809,6 +1004,17 @@ class _TestConfigBase(pkg5unittest.Pkg5TestCase):
                     cfg.PropBool("bool_basic"),
                     cfg.Property("str_basic"),
                 ]),
+            ],
+        }
+
+        _templated_defs = {
+            0: [cfg.PropertySection("facet", properties=[
+                    cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool)
+                ]),
+            ],
+            1: [cfg.PropertySectionTemplate("^authority_.*", properties=[
+                    cfg.PropPublisher("prefix")
+                ])
             ],
         }
 
@@ -906,7 +1112,6 @@ class _TestConfigBase(pkg5unittest.Pkg5TestCase):
                 exp_types = map_types(ver_defs)
                 act_types = map_types(conf.get_sections())
                 self.assertEqualDiff(exp_types, act_types)
-
 
 class TestConfig(_TestConfigBase):
         """Class to test the functionality of the pkg.config 'flat'
@@ -1061,8 +1266,11 @@ str_basic = %s
 bool_basic = False
 
 """ % TH_PACKAGE, unicode(conf))
+        
+                # Verify target is None.
+                self.assertEqual(conf.target, None)
 
-        def test_add_get_sections(self):
+        def test_add_get_remove_sections(self):
                 """Verify that add_section, get_section, get_sections, and
                 get_index work as expected.
                 """
@@ -1073,6 +1281,11 @@ bool_basic = False
                 # Verify that attempting to retrieve an unknown section raises
                 # an exception.
                 self.assertRaises(cfg.UnknownSectionError, conf.get_section,
+                    "s1")
+
+                # Verify that attempting to remove an unknown section raises
+                # an exception.
+                self.assertRaises(cfg.UnknownSectionError, conf.remove_section,
                     "s1")
 
                 # Verify that a section cannot be added twice.
@@ -1137,6 +1350,10 @@ str_basic = bob cat
 """
                 scpath = self.make_misc_files({ "cfg_cache": content })[0]
                 conf = cfg.FileConfig(scpath, definitions=self._defs)
+
+                # Verify target matches specified path.
+                self.assertEqual(conf.target, scpath)
+
                 self.assertEqual(conf.version, 1) # Newest version assumed.
                 self.assertEqual(conf.get_property("first_section",
                     "str_basic"), "bob cat")
@@ -1270,9 +1487,10 @@ new_property = %s
                 self.assertEqual(astat.st_uid, 65534)
                 self.assertEqual(astat.st_gid, 65534)
 
-        def test_get_set_property(self):
-                """Verify that get_property, set_property, and get_properties
-                work as expected.
+        def test_get_modify_properties(self):
+                """Verify that get_property, set_property, get_properties,
+                set_properties, add_property_value, remove_property_value,
+                and remove_property work as expected.
                 """
 
                 # Verify no definitions, overrides, or version.
@@ -1292,8 +1510,12 @@ new_property = %s
                 self.assertEqual(secobj.name, "section")
                 self.assert_(isinstance(secobj, cfg.PropertySection))
 
-                conf.set_property("section", "int_prop", 16384)
-                conf.set_property("section", "str_prop", "bob cat")
+                conf.set_properties({
+                    "section": {
+                        "int_prop": 16384,
+                        "str_prop": "bob cat",
+                    },
+                })
 
                 # Unknown properties when set are assumed to be a string
                 # and forcibly cast as one if they are int, bool, etc.
@@ -1303,6 +1525,18 @@ new_property = %s
                     "16384")
                 self.assertEqual(conf.get_property("section", "str_prop"),
                     "bob cat")
+
+                # Verify that get_properties returns expected value.
+                secobj = conf.get_section("section")
+                props = [
+                    secobj.get_property(p)
+                    for p in ("bool_prop", "str_prop", "int_prop")
+                ]
+                expected = [(secobj, props)]
+                returned = []
+                for sec, secprops in conf.get_properties():
+                        returned.append((sec, [p for p in secprops]))
+                self.assertEqual(expected, returned)
 
                 # Verify unknown property causes exception.
                 self.assertRaises(cfg.UnknownPropertyError,
@@ -1322,6 +1556,105 @@ new_property = %s
                 # exception when the value given is not valid for the property.
                 self.assertRaises(cfg.InvalidPropertyValueError,
                     conf.set_property, "first_section", "int_basic", "badval")
+
+                # Verify that setting a property that doesn't currently exist,
+                # but for which there is a matching definition, will be created
+                # using the definition.
+                conf = cfg.Config(definitions=self._defs, version=0)
+
+                # If the section is removed, then setting any property for
+                # that section should cause all properties defined for that
+                # section to be set with their default values using the
+                # types from the definition.
+                conf.remove_section("first_section")
+                conf.set_property("first_section", "bool_basic", False)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    conf.set_property, "first_section", "bool_basic", 255)
+
+                conf.set_property("first_section", "list_basic", [])
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    conf.set_property, "first_section", "list_basic", 255)
+
+                self.assertEqualDiff(
+                    sorted(conf.get_index()["first_section"].keys()),
+                    sorted(self._initial_state[0]["first_section"].keys()))
+
+                # Verify that add_property_value and remove_property_value
+                # raise exceptions when used with non-list properties.
+                self.assertRaises(cfg.PropertyMultiValueError,
+                    conf.add_property_value, "first_section", "bool_basic",
+                    True)
+                self.assertRaises(cfg.PropertyMultiValueError,
+                    conf.remove_property_value, "first_section", "bool_basic",
+                    True)
+        
+                # Verify that add_property_value and remove_property_value
+                # work as expected for list properties.
+                conf.add_property_value("first_section", "list_noneallowed",
+                    "always")
+                self.assertEqual(conf.get_property("first_section",
+                    "list_noneallowed"), ["always"])
+
+                conf.remove_property_value("first_section", "list_noneallowed",
+                    "always")
+                self.assertEqual(conf.get_property("first_section",
+                    "list_noneallowed"), [])
+
+                # Verify that remove_property_value will raise expected error
+                # if property value doesn't exist.
+                self.assertRaises(cfg.UnknownPropertyValueError,
+                    conf.remove_property_value, "first_section",
+                    "list_noneallowed", "nosuchvalue")
+
+                # Remove the property for following tests.
+                conf.remove_property("first_section", "list_noneallowed")
+
+                # Verify that attempting to remove a property that doesn't exist
+                # will raise the expected exception.
+                self.assertRaises(cfg.UnknownPropertyError,
+                    conf.remove_property, "first_section", "list_noneallowed")
+
+                # Verify that add_property_value will automatically create
+                # properties, just as set_property does, if needed.
+                conf.add_property_value("first_section", "list_noneallowed",
+                    "always")
+                self.assertEqual(conf.get_property("first_section",
+                    "list_noneallowed"), ["always"])
+
+                # Verify that add_property_value will reject invalid values
+                # just as set_property does.
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    conf.add_property_value, "first_section",
+                        "list_noneallowed", "notallowed")
+
+                # Verify that attempting to remove a property in a section that
+                # doesn't exist fails as expected.
+                conf.remove_section("first_section")
+                self.assertRaises(cfg.UnknownPropertyError,
+                    conf.remove_property, "first_section", "list_noneallowed")
+
+                # Verify that attempting to remove a property value in for a
+                # property in a section that doesn't exist fails as expected.
+                self.assertRaises(cfg.UnknownPropertyError,
+                    conf.remove_property_value, "first_section",
+                    "list_noneallowed", "always")
+
+                # Verify that setting a property for which a property section
+                # template exists, but an instance of the section does not yet
+                # exist, works as expected.
+                conf = cfg.Config(definitions=self._templated_defs, version=0)
+                conf.remove_section("facet")
+                conf.set_property("facet", "facet.devel", True)
+                self.assertEqual(conf.get_property("facet", "facet.devel"),
+                    True)
+
+                conf = cfg.Config(definitions=self._templated_defs, version=1)
+                self.assertEqualDiff([], conf.get_index().keys())
+
+                conf.set_property("authority_example.com", "prefix",
+                    "example.com")
+                self.assertEqual(conf.get_property("authority_example.com",
+                    "prefix"), "example.com")
 
 
 class TestSMFConfig(_TestConfigBase):
@@ -1587,6 +1920,13 @@ class TestSMFConfig(_TestConfigBase):
                 self.__starttime = time.time()
                 return sc_repo_doorpath
 
+        def __verify_ex_stringify(self, ex):
+                encs = str(ex)
+                self.assertNotEqual(len(encs), 0)
+                unis = unicode(ex)
+                self.assertNotEqual(len(unis), 0)
+                self.assertEqualDiff(encs, unis.encode("utf-8"))
+
         def test_exceptions(self):
                 """Verify that exception classes can be initialized as expected,
                 and when stringified return a non-zero-length string.
@@ -1606,41 +1946,33 @@ class TestSMFConfig(_TestConfigBase):
                         ex = excls(svc_fmri, errmsg)
                         self.assertEqual(ex.fmri, svc_fmri)
                         self.assertEqual(ex.errmsg, errmsg)
+                        self.__verify_ex_stringify(ex)
 
-                        encs = str(ex)
-                        self.assertNotEqual(len(encs), 0)
-                        unis = unicode(ex)
-                        self.assertNotEqual(len(unis), 0)
-                        self.assertEqualDiff(encs, unis.encode("utf-8"))
+                # Verify that exception can't be created without specifying
+                # section.
+                excls = cfg.SMFInvalidSectionNameError
+                self.assertRaises(AssertionError, excls, None)
 
-                for excls in (cfg.SMFInvalidPropertyNameError,
-                    cfg.SMFInvalidSectionNameError):
+                # Verify that exception can be created with just section and
+                # that expected value is set.  In addition, verify that the
+                # stringified form or unicode object is equal and not zero-
+                # length.
+                ex1 = excls("section")
+                self.assertEqual(ex1.section, "section")
+                self.__verify_ex_stringify(ex1)
 
-                        # Verify that exception can't be created without
-                        # specifying a section or property.
-                        self.assertRaises(AssertionError, excls)
+                # Verify that exception can't be created without specifying
+                # prop.
+                excls = cfg.SMFInvalidPropertyNameError
+                self.assertRaises(AssertionError, excls, None)
 
-                        # Verify that exception can be created with just
-                        # section or property, or both, and that expected
-                        # value is set.  In addition, verify that the
-                        # stringified form or unicode object that is equal
-                        # and not zero-length.
-                        ex1 = excls(section="section")
-                        self.assertEqual(ex1.section, "section")
-
-                        ex2 = excls(prop="property")
-                        self.assertEqual(ex2.prop, "property")
-
-                        ex3 = excls(section="section", prop="property")
-                        self.assertEqual(ex3.section, "section")
-                        self.assertEqual(ex3.prop, "property")
-
-                        for ex in (ex1, ex2, ex3):
-                                encs = str(ex)
-                                self.assertNotEqual(len(encs), 0)
-                                unis = unicode(ex)
-                                self.assertNotEqual(len(unis), 0)
-                                self.assertEqualDiff(encs, unis.encode("utf-8"))
+                # Verify that exception can be created with just prop and that 
+                # expected value is set.  In addition, verify that the
+                # stringified form or unicode object is equal and not zero-
+                # length.
+                ex1 = excls("prop")
+                self.assertEqual(ex1.prop, "prop")
+                self.__verify_ex_stringify(ex1)
 
         def test_add_set_property(self):
                 """Verify that add_section and set_property works as expected.

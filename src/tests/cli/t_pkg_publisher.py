@@ -294,31 +294,6 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_system_repository_publisher(self):
-                """Test that system repositories can be added and
-                removed using the set-publisher interface."""
-
-                self.image_create(self.rurl)
-
-                sock_path = os.path.join(self.test_root, "/tmp/test_sock")
-
-                self.pkg("set-publisher --no-refresh --system-repo=file://%s1 "
-                    "--socket-path=%s test1" % (self.bogus_url, sock_path),
-                    exit=1)
-                self.pkg("set-publisher --no-refresh --system-repo=http://%s1 "
-                    "--socket-path=%s test1" % (self.bogus_url, sock_path))
-                self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher --no-refresh -O http://%s2 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh --clear-system-repo test1")
-                self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
-                    self.bogus_url)
-                self.pkg("set-publisher --no-refresh --system-repo=http://%s1 "
-                    "--socket-path=%s test1" % (self.bogus_url, sock_path),
-                    exit=1)
-                self.pkg("unset-publisher test1")
-
         def test_old_publisher_ca_certs(self):
                 """Check that approving and revoking CA certs is reflected in
                 the output of pkg publisher and that setting the CA certs when

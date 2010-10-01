@@ -486,41 +486,6 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("image-create -p test1=%s %s/image" % (
                     self.rurl1, p), su_wrap=True, exit=1)
 
-        def test_img_create_unix_socket(self):
-                """Verify that we can create an image using a unix
-                domain socket."""
-
-                dc = self.dcs[6]
-                if not dc.is_alive():
-                        dc.start()
-
-                # Publish a package.
-                self.pkgsend_bulk(self.durl6, """
-                open foo@0.0
-                close
-                """)
-
-                sock_path = os.path.join(self.test_root, "/tmp/test_sock2")
-
-                # Stop the depot, and bring it back up on a unix socket.
-                if dc.is_alive():
-                        dc.stop()
-                dc.set_socket_path(sock_path)
-                dc.start()
-
-                # First, create a new image.
-                self.pkg_image_create(self.durl6, prefix="test1",
-                  additional_args="--system-repo --socket-path=%s" % sock_path)
-
-                # test that an install works
-                self.pkg("info -r foo")
-                self.pkg("install foo")
-
-                # Cleanup
-                dc.stop()
-                dc.set_socket_path(None)
-                os.remove(sock_path)
-
 
 class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
         persistent_setup = True

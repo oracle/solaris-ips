@@ -2362,11 +2362,28 @@ pkg unset-publisher %s
                 " always preferred to other publishers.")
 
         def __get_prop(self, name):
-                """Accessor method for properites dictionary"""
+                """Accessor method for properties dictionary"""
                 return self.__properties[name]
 
+        @staticmethod
+        def __read_list(list_str):
+                """Take a list in string representation and convert it back
+                to a Python list."""
+
+                list_str = list_str.encode("utf-8")
+                # Strip brackets and any whitespace
+                list_str = list_str.strip("][ ")
+                # Strip comma and any whitespeace
+                lst = list_str.split(", ")
+                # Strip empty whitespace, single, and double quotation marks
+                lst = [ s.strip("' \"") for s in lst ]
+                # Eliminate any empty strings
+                lst = [ s for s in lst if s != '' ]
+
+                return lst
+
         def __set_prop(self, name, values):
-                """Accesor method to add a property"""
+                """Accessor method to add a property"""
 
                 if name == SIGNATURE_POLICY:
                         self.__sig_policy = None
@@ -2405,7 +2422,7 @@ pkg unset-publisher %s
                         return
                 if name == "signature-required-names":
                         if isinstance(values, basestring):
-                                values = self.read_list(values)
+                                values = self.__read_list(values)
                 self.__properties[name] = values
 
         def __del_prop(self, name):
@@ -2433,11 +2450,21 @@ pkg unset-publisher %s
 
         def __prop_setdefault(self, name, value):
                 """Support setdefault() on properties"""
-                return self.__properties.setdefault(name, value)
+                # Must set it this way so that the logic in __set_prop is used.
+                try:
+                        return self.__properties[name]
+                except KeyError:
+                        self.properties[name] = value
+                        return value
 
         def __prop_update(self, d):
                 """Support update() on properties"""
-                return self.__properties.update(d)
+
+                for k, v in d.iteritems():
+                        # Must iterate through each value and
+                        # set it this way so that the logic
+                        # in __set_prop is used.
+                        self.properties[k] = v
 
         def __prop_pop(self, d, default):
                 """Support pop() on properties"""
@@ -2456,7 +2483,7 @@ pkg unset-publisher %s
                 if self.__sig_policy is not None:
                         return self.__sig_policy
                 txt = self.properties.get(SIGNATURE_POLICY,
-                    [sigpolicy.DEFAULT_POLICY])[0]
+                    sigpolicy.DEFAULT_POLICY)
                 names = self.properties.get("signature-required-names", [])
                 self.__sig_policy = sigpolicy.Policy.policy_factory(txt, names)
                 return self.__sig_policy
