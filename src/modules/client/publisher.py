@@ -266,54 +266,6 @@ class RepositoryURI(object):
             "URI property.")
 
 
-class SystemRepositoryURI(RepositoryURI):
-
-        # These properties are declared here so that they show up in the pydoc
-        # documentation as private, and for clarity in the property declarations
-        # found near the end of the class definition.
-        __socket_path = None
-
-        def __init__(self, uri, priority=None, socket_path=None,
-            trailing_slash=True):
-
-                RepositoryURI.__init__(self, uri, priority=priority,
-                    ssl_cert=None, ssl_key=None, trailing_slash=trailing_slash)
-
-                # Note that the properties set here are intentionally lacking
-                # the '__' prefix which means assignment will occur using the
-                # get/set methods declared for the property near the end of
-                # the class definition.
-                self.socket_path = socket_path
-
-        def __copy__(self):
-                uri = SystemRepositoryURI(self.uri, priority=self.priority,
-                    socket_path=self.__socket_path,
-                    trailing_slash=self.trailing_slash)
-                uri._source_object_id = id(self)
-                return uri
-
-        def __set_socket_path(self, filename):
-                if filename:
-                        if not isinstance(filename, basestring):
-                                raise api_errors.BadRepositoryAttributeValue(
-                                    "socket_path", value=filename)
-                        filename = os.path.abspath(filename)
-
-                if filename == "":
-                        filename = None
-                self.__socket_path = filename
-
-        socket_path = property(lambda self: self.__socket_path,
-            __set_socket_path, None,
-            "The absolute pathname of a UNIX domain socket.")
-
-        ssl_cert = property(lambda self: None, lambda self, val: None, None,
-            "The absolute pathname of a PEM-encoded SSL certificate file.")
-
-        ssl_key = property(lambda self: None, lambda self, val: None, None,
-            "The absolute pathname of a PEM-encoded SSL key file.")
-
-
 class Repository(object):
         """Class representing a repository object.
 
@@ -338,7 +290,6 @@ class Repository(object):
         __registration_uri = None
         __related_uris = []
         __sort_policy = URI_SORT_PRIORITY
-        __system_repo = None
 
         # Used to store the id of the original object this one was copied
         # from during __copy__.
@@ -351,7 +302,7 @@ class Repository(object):
         def __init__(self, collection_type=REPO_CTYPE_CORE, description=None,
             legal_uris=None, mirrors=None, name=None, origins=None,
             refresh_seconds=None, registered=False, registration_uri=None,
-            related_uris=None, sort_policy=URI_SORT_PRIORITY, system_repo=None):
+            related_uris=None, sort_policy=URI_SORT_PRIORITY):
                 """Initializes a repository object.
 
                 'collection_type' is an optional constant value indicating the
@@ -390,10 +341,7 @@ class Repository(object):
 
                 'sort_policy' is an optional constant value indicating how
                 legal_uris, mirrors, origins, and related_uris should be
-                sorted.
-
-                'system_repo' is a SystemRepositoryURI object that is
-                used by zones."""
+                sorted."""
 
                 # Note that the properties set here are intentionally lacking
                 # the '__' prefix which means assignment will occur using the
@@ -414,7 +362,6 @@ class Repository(object):
                 self.registered = registered
                 self.registration_uri = registration_uri
                 self.related_uris = related_uris
-                self.system_repo = system_repo
 
         def __add_uri(self, attr, uri, dup_check=None, priority=None,
             ssl_cert=None, ssl_key=None, trailing_slash=True):
@@ -431,16 +378,10 @@ class Repository(object):
                 ulist.sort(key=URI_SORT_POLICIES[self.__sort_policy])
 
         def __copy__(self):
-
                 cluris = [copy.copy(u) for u in self.legal_uris]
                 cmirrors = [copy.copy(u) for u in self.mirrors]
                 cruris = [copy.copy(u) for u in self.related_uris]
-                corigins = [
-                    copy.copy(u)
-                    for u in self.origins
-                    if not self._is_system_repo(u)
-                ]
-                csysrepo = copy.copy(self.system_repo)
+                corigins = [copy.copy(u) for u in self.origins]
                 repo = Repository(collection_type=self.collection_type,
                     description=self.description,
                     legal_uris=cluris,
@@ -449,8 +390,7 @@ class Repository(object):
                     refresh_seconds=self.refresh_seconds,
                     registered=self.registered,
                     registration_uri=copy.copy(self.registration_uri),
-                    related_uris=cruris,
-                    system_repo=csysrepo)
+                    related_uris=cruris)
                 repo._source_object_id = id(self)
                 return repo
 
@@ -485,16 +425,6 @@ class Repository(object):
 
         def __set_origins(self, value):
                 self.__origins = self.__replace_uris("origins", value)
-                if not self.system_repo:
-                        return
-
-                def dup_check(origin):
-                        if self.has_origin(origin):
-                                raise api_errors.\
-                                    DuplicateRepositoryOrigin(origin)
-
-                self.__add_uri("origins", self.system_repo,
-                    dup_check=dup_check)
 
         def __set_registration_uri(self, value):
                 if value and not isinstance(value, RepositoryURI):
@@ -521,29 +451,6 @@ class Repository(object):
                 if value not in URI_SORT_POLICIES:
                         raise api_errors.BadRepositoryURISortPolicy(value)
                 self.__sort_policy = value
-
-        def __set_system_repo(self, sruri):
-                # System repository not changed.  Return.
-                if sruri == self.__system_repo:
-                        return
-               
-                # General case:  Remove old_repo, if it exists.
-                # Add new repo, if one exists.
-                old_repo = self.__system_repo
-                self.__system_repo = sruri
-
-                if old_repo:
-                        for i, m in enumerate(self.origins):
-                                if old_repo == m:
-                                        del self.origins[i]
-
-                if self.__system_repo:
-                        def dup_check(origin):
-                                if self.has_origin(origin):
-                                        raise api_errors.\
-                                            DuplicateRepositoryOrigin(origin)
-
-                        self.__add_uri("origins", sruri, dup_check=dup_check)
 
         def add_legal_uri(self, uri, priority=None, ssl_cert=None,
             ssl_key=None):
@@ -599,11 +506,6 @@ class Repository(object):
                 self.__add_uri("related_uris", uri, priority=priority,
                     ssl_cert=ssl_cert, ssl_key=ssl_key, trailing_slash=False)
 
-        def clear_system_repo(self):
-                """Removes the system repository."""
-
-                self.__set_system_repo(None)
-
         def get_mirror(self, mirror):
                 """Returns a RepositoryURI object representing the mirror
                 that matches 'mirror'.
@@ -650,13 +552,6 @@ class Repository(object):
                         origin = misc.url_affix_trailing_slash(origin)
                 return origin in self.origins
 
-        @staticmethod
-        def _is_system_repo(ruri):
-                """Returns True if the supplied object is a system
-                repository object."""
-
-                return isinstance(ruri, SystemRepositoryURI)
-
         def remove_legal_uri(self, uri):
                 """Removes the legal URI matching 'uri' from the repository.
 
@@ -696,9 +591,6 @@ class Repository(object):
                         if origin == o.uri:
                                 # Immediate return as the index into the array
                                 # changes with each removal.
-                                if self._is_system_repo(o):
-                                        raise api_errors.UnsupportedSystemRepositoryOperation(
-                                               "remove_origin")
                                 del self.origins[i]
                                 return
                 raise api_errors.UnknownRepositoryOrigin(origin)
@@ -715,25 +607,6 @@ class Repository(object):
                                 del self.related_uris[i]
                                 return
                 raise api_errors.UnknownRelatedURI(uri)
-
-        def set_system_repo(self, uri, priority=None, socket_path=None):
-                """Sets the specified system repository URI to the
-                repository.
-
-                'uri' can be a SystemRepositoryURI object or a URI string.
-                If it is a SystemRepositoryURI object, all other parameters
-                will be ignored."""
-
-                if not self._is_system_repo(uri):
-                        proto = urlparse.urlsplit(uri)[0]
-                        if proto != "http":
-                                raise api_errors.\
-                                    UnsupportedSystemRepositoryProtocol(proto)
-
-                        uri = SystemRepositoryURI(uri, priority=priority,
-                            socket_path=socket_path)
-
-                self.__set_system_repo(uri)
 
         def update_mirror(self, mirror, priority=None, ssl_cert=None,
             ssl_key=None):
@@ -762,9 +635,6 @@ class Repository(object):
                             ssl_cert=ssl_cert, ssl_key=ssl_key)
 
                 target = self.get_origin(origin)
-                if self._is_system_repo(target):
-                        raise api_errors.UnsupportedSystemRepositoryOperation(
-                            "update_origin")
                 target.priority = origin.priority
                 target.ssl_cert = origin.ssl_cert
                 target.ssl_key = origin.ssl_key
@@ -843,11 +713,6 @@ class Repository(object):
                         The "priority" policy indicate that URIs should be
                         sorted according to the value of their priority
                         attribute.""")
-
-        system_repo = property(lambda self: self.__system_repo,
-            __set_system_repo, None,
-            """A SystemRepositoryURI object that describes a system
-            repository.""")
 
 
 class Publisher(object):

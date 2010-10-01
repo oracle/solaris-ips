@@ -46,14 +46,13 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # repository that is different than the actual test1
                 # repository can be used.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test1", "test1", "nopubconfig", "test1"])
+                    "test1", "test1", "nopubconfig"])
 
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.rurl3 = self.dcs[3].get_repo_url()
                 self.rurl4 = self.dcs[4].get_repo_url()
                 self.durl5 = self.dcs[5].get_depot_url()
-                self.durl6 = self.dcs[6].get_depot_url()
 
                 # The fifth depot is purposefully one with the publisher
                 # operation disabled.

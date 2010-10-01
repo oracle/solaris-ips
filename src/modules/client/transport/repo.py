@@ -301,33 +301,31 @@ class HTTPRepo(TransportRepo):
                 self._repouri = repouri
                 self._engine = engine
                 self._verdata = None
-                self._sock_path = getattr(self._repouri, "socket_path", None)
 
         def _add_file_url(self, url, filepath=None, progclass=None,
             progtrack=None, header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
-                    header=header, compressible=compress,
-                    sock_path=self._sock_path)
+                    header=header, compressible=compress)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
             failonerror=True):
                 return self._engine.get_url(url, header, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    sock_path=self._sock_path, failonerror=failonerror)
+                    failonerror=failonerror)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
                 return self._engine.get_url_header(url, header,
                     repourl=self._url, ccancel=ccancel,
-                    sock_path=self._sock_path, failonerror=failonerror)
+                    failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     repourl=self._url, ccancel=ccancel,
-                    sock_path=self._sock_path, data_fobj=data_fobj,
-                    data_fp=data_fp, failonerror=failonerror)
+                    data_fobj=data_fobj, data_fp=data_fp,
+                    failonerror=failonerror)
 
         def __check_response_body(self, fobj):
                 """Parse the response body found accessible using the provided
@@ -952,8 +950,7 @@ class HTTPSRepo(HTTPRepo):
                     progclass=progclass, progtrack=progtrack,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    header=header, compressible=compress,
-                    sock_path=self._sock_path)
+                    header=header, compressible=compress)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
             failonerror=True):
@@ -961,24 +958,22 @@ class HTTPSRepo(HTTPRepo):
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    sock_path=self._sock_path, failonerror=failonerror)
+                    failonerror=failonerror)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
                 return self._engine.get_url_header(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel, sock_path=self._sock_path,
-                    failonerror=failonerror)
+                    ccancel=ccancel, failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True):
                 return self._engine.send_data(url, data=data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    ccancel=ccancel, sock_path=self._sock_path,
-                    data_fobj=data_fobj, data_fp=data_fp,
-                    failonerror=failonerror)
+                    ccancel=ccancel, data_fobj=data_fobj,
+                    data_fp=data_fp, failonerror=failonerror)
 
 
 class FileRepo(TransportRepo):

@@ -2675,9 +2675,6 @@ def publisher_set(img, args):
         search_before = None
         search_after = None
         repo_uri = None
-        clear_sys_repo = False
-        sys_repo_uri = None
-        socket_path = None
 
         approved_ca_certs = []
         revoked_ca_certs = []
@@ -2689,9 +2686,9 @@ def publisher_set(img, args):
 
         opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
             ["add-mirror=", "remove-mirror=", "add-origin=",
-            "clear-system-repo", "remove-origin=", "no-refresh", "reset-uuid",
+            "remove-origin=", "no-refresh", "reset-uuid",
             "enable", "disable", "sticky", "non-sticky", "search-before=",
-            "search-after=", "system-repo=", "socket-path=", "approve-ca-cert=",
+            "search-after=", "approve-ca-cert=",
             "revoke-ca-cert=", "unset-ca-cert=", "set-property=",
             "add-property-value=", "remove-property-value=", "unset-property="])
 
@@ -2730,12 +2727,6 @@ def publisher_set(img, args):
                         search_before = arg
                 elif opt == "--search-after":
                         search_after = arg
-                elif opt == "--clear-system-repo":
-                        clear_sys_repo = True
-                elif opt == "--system-repo":
-                        sys_repo_uri = arg
-                elif opt == "--socket-path":
-                        socket_path = arg
                 elif opt == "--approve-ca-cert":
                         approved_ca_certs.append(arg)
                 elif opt == "--revoke-ca-cert":
@@ -2795,20 +2786,11 @@ def publisher_set(img, args):
 
         if repo_uri and (add_origins or add_mirrors or remove_origins or
             remove_mirrors or disable != None or not refresh_allowed or
-            reset_uuid or sys_repo_uri or socket_path):
+            reset_uuid):
                 usage(_("the -p option may not be combined with the -g, "
                     "--add-origin, -G, --remove-origin, -m, --add-mirror, "
                     "-M, --remove-mirror, --enable, --disable, --no-refresh, "
-                    "--reset-uuid options, or --system-repo "),
-                    cmd="set-publisher")
-
-        if sys_repo_uri and clear_sys_repo:
-                usage(_("The --system-repo and --clear-system-repo options "
-                    "may not be combined."), cmd="set-publisher")
-
-        if sys_repo_uri and not socket_path:
-                usage(_("The --socket-path argument must be used with "
-                    "--system-repo."), cmd="set-publisher")
+                    "or --reset-uuid options"), cmd="set-publisher")
 
         api_inst = __api_alloc(img)
         if api_inst == None:
@@ -2828,8 +2810,6 @@ def publisher_set(img, args):
                     ssl_key=ssl_key, search_before=search_before,
                     search_after=search_after, reset_uuid=reset_uuid,
                     refresh_allowed=refresh_allowed, preferred=preferred,
-                    socket_path=socket_path, clear_sys_repo=clear_sys_repo,
-                    sys_repo_uri=sys_repo_uri,
                     set_props=set_props, add_prop_values=add_prop_values,
                     remove_prop_values=remove_prop_values,
                     unset_props=unset_props, approved_cas=approved_ca_certs,
@@ -3032,9 +3012,9 @@ assistance."""))
 def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
     origin_uri=None, add_mirrors=EmptyI, remove_mirrors=EmptyI,
     add_origins=EmptyI, remove_origins=EmptyI, ssl_cert=None, ssl_key=None,
-    search_before=None, search_after=None, socket_path=None, sys_repo_uri=None,
+    search_before=None, search_after=None,
     reset_uuid=None, refresh_allowed=False, preferred=False,
-    clear_sys_repo=False, set_props=EmptyI, add_prop_values=EmptyI,
+    set_props=EmptyI, add_prop_values=EmptyI,
     remove_prop_values=EmptyI, unset_props=EmptyI, approved_cas=EmptyI,
     revoked_cas=EmptyI, unset_cas=EmptyI, img=None):
 
@@ -3048,8 +3028,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                                 pub.reset_client_uuid()
                         repo = pub.selected_repository
                 except api_errors.UnknownPublisher:
-                        if not origin_uri and not add_origins \
-                            and not sys_repo_uri:
+                        if not origin_uri and not add_origins:
                                 return EXIT_OOPS, _("publisher does not exist. "
                                     "Use -g to define origin URI for new "
                                     "publisher.")
@@ -3098,11 +3077,6 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                 # XXX once image configuration supports storing this
                 # information at the uri level, ssl info should be set
                 # here.
-
-        if clear_sys_repo:
-                repo.clear_system_repo()
-        elif sys_repo_uri and socket_path:
-                repo.set_system_repo(sys_repo_uri, socket_path=socket_path)
 
         for entry in (("mirror", add_mirrors, remove_mirrors), ("origin",
             add_origins, remove_origins)):
@@ -3412,12 +3386,7 @@ def publisher_list(img, args):
                         # a publisher record in our desired format.
                         for uri in r.origins:
                                 # XXX get the real origin status
-                                if r._is_system_repo(uri):
-                                        set_value(field_data["type"],
-                                            _("system"))
-                                else:
-                                        set_value(field_data["type"],
-                                            _("origin"))
+                                set_value(field_data["type"], _("origin"))
                                 set_value(field_data["status"], _("online"))
                                 set_value(field_data["uri"], str(uri))
                                 values = map(get_value,
@@ -3461,12 +3430,7 @@ def publisher_list(img, args):
                 def display_repository(r):
                         retcode = 0
                         for uri in r.origins:
-                                if r._is_system_repo(uri):
-                                        msg(_("           System URI:"), uri)
-                                        msg(_("          Socket Path:"),
-                                            uri.socket_path)
-                                else:
-                                        msg(_("           Origin URI:"), uri)
+                                msg(_("           Origin URI:"), uri)
                                 rval = display_ssl_info(uri)
                                 if rval == 1:
                                         retcode = EXIT_PARTIAL
@@ -3753,11 +3717,8 @@ def image_create(args):
         pub_name = None
         pub_url = None
         refresh_allowed = True
-        sock_path = None
         ssl_key = None
         ssl_cert = None
-        sys_repo = False
-        sys_repo_uri = None
         variants = {}
         facets = pkg.facet.Facets()
         set_props = {}
@@ -3765,7 +3726,7 @@ def image_create(args):
         opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
             ["force", "full", "partial", "user", "zone", "authority=", "facet=",
                 "mirror=", "origin=", "publisher=", "no-refresh", "variant=",
-                "system-repo", "socket-path=", "set-property="])
+                "set-property="])
 
         for opt, arg in opts:
                 # -a is deprecated and will be removed at a future date.
@@ -3795,10 +3756,6 @@ def image_create(args):
                         imgtype = IMG_TYPE_PARTIAL
                 elif opt == "-U" or opt == "--user":
                         imgtype = IMG_TYPE_USER
-                elif opt == "--system-repo":
-                        sys_repo = True
-                elif opt == "--socket-path":
-                        sock_path = arg
                 elif opt == "--no-refresh":
                         refresh_allowed = False
                 elif opt == "--variant":
@@ -3848,10 +3805,7 @@ def image_create(args):
                 usage(_("--no-refresh cannot be used with -p unless a "
                     "publisher prefix is provided."), cmd=cmd_name)
 
-        if sys_repo and sock_path:
-                repo_uri = None
-                sys_repo_uri = pub_url
-        elif not refresh_allowed and pub_url:
+        if not refresh_allowed and pub_url:
                 # Auto-config can't be done if refresh isn't allowed, so treat
                 # this as a manual configuration case.
                 add_origins.add(pub_url)
@@ -3870,8 +3824,7 @@ def image_create(args):
                     image_dir, imgtype, is_zone, facets=facets, force=force,
                     mirrors=add_mirrors, origins=add_origins, prefix=pub_name,
                     progtrack=progtrack, refresh_allowed=refresh_allowed,
-                    socket_path=sock_path, ssl_cert=ssl_cert,
-                    ssl_key=ssl_key, sys_repo=sys_repo_uri, repo_uri=repo_uri,
+                    ssl_cert=ssl_cert, ssl_key=ssl_key, repo_uri=repo_uri,
                     variants=variants, props=set_props)
                 __img = api_inst.img
         except api_errors.InvalidDepotResponseException, e:

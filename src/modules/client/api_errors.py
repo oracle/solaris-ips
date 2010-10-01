@@ -1338,21 +1338,6 @@ class UnsupportedRepositoryOperation(PublisherError):
                 return _("Publisher '%s' has no repositories that support the"
                     " '%s' operation.") % (self.pub, self.op)
 
-class UnsupportedSystemRepositoryOperation(PublisherError):
-        """Operating on the SystemRepository using this method is not
-        supported."""
-
-        def __str__(self):
-                return _("Can not modify system repository using "
-                    "method '%s'.") % self.data
-
-class UnsupportedSystemRepositoryProtocol(PublisherError):
-        """The caller tried to configure a System Repository with a
-        protocol that is not supported."""
-
-        def __str__(self):
-                return _("System repository does not support "
-                    "protocol '%s'.") %  self.data
 
 class RepoPubConfigUnavailable(PublisherError):
         """Used to indicate that the specified repository does not provide

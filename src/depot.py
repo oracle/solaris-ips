@@ -129,7 +129,7 @@ Usage: /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--file-root dir] [--log-access dest] [--log-errors dest]
            [--mirror] [--nasty] [--proxy-base url] [--readonly]
-           [--socket-path] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+           [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
            [--sort-file-max-size size] [--writable-root dir]
 
         -d inst_root    The file system path at which the server should find its
@@ -262,7 +262,7 @@ if __name__ == "__main__":
                     "content-root=", "debug=", "disable-ops=", "exit-ready",
                     "file-root=", "help", "log-access=", "log-errors=",
                     "llmirror", "mirror", "nasty=", "proxy-base=", "readonly",
-                    "rebuild", "refresh-index", "set-property=", "socket-path=",
+                    "rebuild", "refresh-index", "set-property=",
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
                     "sort-file-max-size=", "writable-root="]
 
@@ -405,8 +405,6 @@ if __name__ == "__main__":
                                             "<value>'."))
                                 repo_props.setdefault(p_sec, {})
                                 repo_props[p_sec][p_name] = p_value
-                        elif opt == "--socket-path":
-                                socket_path = arg
                         elif opt == "--ssl-cert-file":
                                 if arg == "none" or arg == "":
                                         # Assume this is an override to clear
@@ -675,7 +673,6 @@ if __name__ == "__main__":
             "log.screen": False,
             "server.max_request_body_size": MAX_REQUEST_BODY_SIZE,
             "server.shutdown_timeout": 0,
-            "server.socket_file": socket_path,
             "server.socket_host": HOST_DEFAULT,
             "server.socket_port": port,
             "server.socket_timeout": socket_timeout,
