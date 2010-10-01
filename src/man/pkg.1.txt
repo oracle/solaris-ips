@@ -187,6 +187,11 @@ SUBCOMMANDS
           pkg_fmri_pattern allowed by the packages installed in the
           image.
 
+          Some configuration files may be renamed or replaced during the
+          install process.  For more information on how the package system
+          determines which files to preserve, and how they are preserved
+          during package operations, see "File Actions" in pkg(5).
+
           With the -n option, execute the requested operation but make
           no persistent changes to the image.
 
@@ -256,11 +261,13 @@ SUBCOMMANDS
           specific packages across package rename or obsolete boundaries
           is not supported.
 
-          Any preserved configuration files that have been edited and have
-          changed between package versions will be renamed.  If the package
-          being replaced is newer than what is being installed, the
-          existing file will be renamed using the extension '.update';
-          otherwise '.old'.
+          Any preserved configuration files that are part of packages to
+          be downgraded by update and that have been changed since the
+          original version was installed will be renamed using the
+          extension '.update'.  For more information on how the package
+          system determines which files to preserve, and how these files
+          are preserved during package upgrades, see "File Actions" in
+          pkg(5).
 
           With the -f option, don't execute the client up to date check
           when updating all installed packages.
@@ -417,7 +424,7 @@ SUBCOMMANDS
           account so that pkg actually sees the ' or ".
 
           Boolean search using AND and OR is supported.  Field, or structured,
-          queries are supported. The syntax for these is
+          queries are supported.  The syntax for these is
           pkg_name:action_type:key:token.  Missing fields are implicitly
           wildcarded.  A search for :basename:pkg would match all actions
           types in all packages with a key of basename and which matched
@@ -541,7 +548,7 @@ SUBCOMMANDS
 
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
-          is created during image update. See also beadm(1m).
+          is created during image update.  See also beadm(1m).
 
           With --require-new-be, always create a new boot environment.  Without
           this option, a new boot environment is only created if needed.
@@ -578,7 +585,7 @@ SUBCOMMANDS
 
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
-          is created during the operation. See also beadm(1m).
+          is created during the operation.  See also beadm(1m).
 
           With --require-new-be, always create a new boot environment.  Without
           this option, a new boot environment is only created if needed.
@@ -675,7 +682,7 @@ SUBCOMMANDS
           the publisher being modified is now searched after the specified
           publisher.
 
-	  With --approve-ca-cert, add the given certificate as a CA certificate 
+          With --approve-ca-cert, add the given certificate as a CA certificate 
           that is trusted.  The hashes of the user approved CA certificates are
           listed in the output of the detailed pkg publisher view for a
           publisher.
@@ -730,8 +737,8 @@ SUBCOMMANDS
           With -e (--enable), enable the publisher; with -d (--disable), disable
           the publisher.  A disabled publisher is not used when populating the
           package list or in certain package operations (install, uninstall, and
-          image-update).  However, the properties for a disabled publisher can
-          still be set and viewed.  If only one publisher exists, it cannot be
+          update).  However, the properties for a disabled publisher can still
+          be set and viewed.  If only one publisher exists, it cannot be
           disabled.
 
      unset-publisher publisher ...
@@ -768,7 +775,7 @@ SUBCOMMANDS
           Deletes all existing history information.
 
      rebuild-index
-          Rebuilds the index used by 'pkg search'. This is a recovery operation
+          Rebuilds the index used by 'pkg search'.  This is a recovery operation
           not intended for general use.
 
      version
@@ -783,47 +790,46 @@ IMAGE PROPERTIES
 
      ca-path
           (string) A pathname that points to a directory where CA certs are
-	  kept for SSL operations.  The format of this directory is specific
-	  to the underlying SSL implementation.  If the administrator
-	  would like to use an alternate location for trusted CA
-	  certificates, this value should be changed to point to a
-	  different directory.  Please see the 'CApath' portions of
-	  SSL_CTX_load_verify_locations(3openssl) for requirements
-	  about the CA directory.
+          kept for SSL operations.  The format of this directory is specific
+          to the underlying SSL implementation.  If the administrator
+          would like to use an alternate location for trusted CA
+          certificates, this value should be changed to point to a
+          different directory.  Please see the 'CApath' portions of
+          SSL_CTX_load_verify_locations(3openssl) for requirements
+          about the CA directory.
 
-	  Default value: /etc/openssl/certs
+          Default value: /etc/openssl/certs
 
      flush-content-cache-on-success
-          (boolean) If this is set to True, the package client will
-	  remove the files in its content-cache when install or
-	  image-update operations complete.  For image-update
-	  operations, the content is removed only from the source BE.
-	  When a packaging operation next occurs in the destination BE,
-	  it will flush its content cache, provided this option has not
-	  been changed.
-	  
-	  This property may be used to keep the content-cache small on
-	  systems with limited disk space, but it may cause operations
-	  to take longer to complete.
+          (boolean) If this is set to True, the package client will remove
+          the files in its content-cache when install or update operations
+          complete.  For update operations, the content is removed only
+          from the source BE.  When a packaging operation next occurs in
+          the destination BE, it will flush its content cache, provided
+          this option has not been changed.
 
-	  Default value: False
+          This property may be used to keep the content-cache small on
+          systems with limited disk space, but it may cause operations
+          to take longer to complete.
+
+          Default value: False
 
      mirror-discovery
           (boolean)  Mirror-discovery tells the client to discover
-	  link-local content mirrors using mDNS and DNS-SD.  If this is
-	  set to True, the client will attempt to download package content
-	  from mirrors it dynamically discovers.  To run a mirror that
-	  advertises its content via mDNS, see pkg.depotd(1m).
+          link-local content mirrors using mDNS and DNS-SD.  If this is
+          set to True, the client will attempt to download package content
+          from mirrors it dynamically discovers.  To run a mirror that
+          advertises its content via mDNS, see pkg.depotd(1m).
 
-	  Default value: False
+          Default value: False
 
      send-uuid
           (boolean)  Send the image's Universally Unique Identifier
-	  (UUID) when performing network operations.  Although users may
-	  disable this option, some network repositories may refuse to talk
-	  to clients that do not supply a UUID.
+          (UUID) when performing network operations.  Although users may
+          disable this option, some network repositories may refuse to talk
+          to clients that do not supply a UUID.
 
-	  Default value: True
+          Default value: True
 
      signature-policy
           (string)  Determine what checks will be performed on manifests
@@ -859,7 +865,6 @@ IMAGE PROPERTIES
      trust-anchor-directory
           (string)  The pathname of the directory that contains the trust 
           anchors for the image.  This path is relative to the image.
-
 
 PUBLISHER PROPERTIES
      The following properties are part of the image and may be set using
