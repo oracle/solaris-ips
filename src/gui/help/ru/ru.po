@@ -19,8 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
 msgstr ""
@@ -1593,113 +1592,35 @@ msgid "translator-credits"
 msgstr "переводчик - сведения об авторах"
 
 
-#: package-manager.xml:15(para)
-msgid ""
-"Sun Microsystems, Inc. has intellectual property rights relating to "
-"technology embodied in the product that is described in this document. In "
-"particular, and without limitation, these intellectual property rights may "
-"include one or more U.S. patents or pending patent applications in the U.S. "
-"and in other countries."
-msgstr ""
-"Компания Sun Microsystems, Inc. имеет интеллектуальные права собственности на"
-"технологию, воплощенную в продукте, который описан в данном документе. "
-"В частности, и помимо прочего, данные интеллектуальные права собственности могут "
-"включать один или более патентов США либо заявки на патенты в США "
-"и других странах."
+#: legalnotice.xml:1(para) 
+msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
+msgstr "Данное программное обеспечение и документация предоставляются по лицензионному соглашению, накладывающему ограничения на использование и раскрытие информации, и защищены законодательством об охране интеллектуальной собственности. Кроме случаев, специально оговоренных в Вашем лицензионном соглашении или предусмотренных законодательством, воспроизведение и передача этих Программ, полностью или частично, для каких бы то ни было целей, в какой бы то ни было форме и какими бы то ни было средствами запрещены. Запрещается вскрытие технологии, дизассемблирование и декомпиляция программ, кроме случаев, когда это требуется для обеспечения совместимости с другими программными продуктами независимых разработчиков или предусматривается законом"
 
-#: package-manager.xml:16(para)
-msgid ""
-"U.S. Government Rights – Commercial software. Government users are subject "
-"to the Sun Microsystems, Inc. standard license agreement and applicable "
-"provisions of the FAR and its supplements."
-msgstr ""
-"Права правительства США – коммерческое программное обеспечение. Пользователи "
-"из государственных организаций подчинены стандартному лицензионному соглашению Sun Microsystems, Inc.,"
-"положениям документа FAR и его дополнений."
+#: legalnotice.xml:2(para) 
+msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
+msgstr "Информация, содержащаяся в этой документации, может быть изменена без уведомления. Безошибочность этой документации не гарантируется. При обнаружении ошибок в документации просьба сообщить нам об этих ошибках в письменном виде."
 
-#: package-manager.xml:17(para)
-msgid "This distribution may include materials developed by third parties."
-msgstr "Данный выпуск может включать в себя материалы, разработанные третьими сторонами."
+#: legalnotice.xml:3(para) 
+msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
+msgstr "Если настоящие программное обеспечение и документация поставляются правительству США или любой организации, выдающей лицензии или использующей эти Программы от лица правительства США, применимо следующее уведомление:"
 
-#: package-manager.xml:18(para)
-msgid ""
-"Parts of the product may be derived from Berkeley BSD systems, licensed from "
-"the University of California. UNIX is a registered trademark in the U.S. and "
-"other countries, exclusively licensed through X/Open Company, Ltd."
-msgstr ""
-"Части данного продукта могут быть основаны на системах Berkeley BSD, лицензированных "
-"в Калифорнийском университете. UNIX является зарегистрированной торговой маркой в США и "
-"других странах, лицензируемой исключительно через компанию X/Open Company, Ltd."
+#: legalnotice.xml:4(para) 
+msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
+msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are \"commercial computer software\" or \"commercial technical data\" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065, USA"
 
-#: package-manager.xml:19(para)
-msgid ""
-"Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
-"logo, docs.sun.com, Java, and Solaris are trademarks or registered "
-"trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and "
-"other countries. All SPARC trademarks are used under license and are "
-"trademarks or registered trademarks of SPARC International, Inc. in the U.S. "
-"and other countries. Products bearing SPARC trademarks are based upon an "
-"architecture developed by Sun Microsystems, Inc."
-msgstr ""
-"Sun, Sun Microsystems, логотипы Sun, Solaris и Java Coffee Cup, "
-"docs.sun.com, Java и Solaris являются торговыми марками или зарегистрированными "
-"торговыми марками Sun Microsystems, Inc. или ее филиалов в США и "
-"других странах. Все торговые марки SPARC используются по лицензии и "
-"являются торговыми марками или зарегистрированными торговыми марками SPARC International, Inc. в США"
-"и других странах. Изделия с торговыми марками SPARC основаны на "
-"архитектуре, разработанной Sun Microsystems, Inc."
+#: legalnotice.xml:5(para) 
+msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
+msgstr "Настоящее программное обеспечение или аппаратные средства предназначены для применения в различных приложениях управления информацией. Они не предназначены для использования в опасных по своему характеру средах, в том числе способных представлять угрозу для жизни и здоровья людей. Если программное обеспечение или аппаратные средства все же используются в опасных условиях, на вас возлагается ответственность за соблюдение всех необходимых мер по обеспечению отказоустойчивости, архивированию, резервированию и других мер безопасности. Корпорация Oracle и ее филиалы отказываются от какой бы то ни было ответственности за ущерб, вызываемый использованием данного программного обеспечения или аппаратных средств в опасных условиях."
 
-#: package-manager.xml:20(para)
-msgid ""
-"The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
-"developed by Sun Microsystems, Inc. for its users and licensees. Sun "
-"acknowledges the pioneering efforts of Xerox in researching and developing "
-"the concept of visual or graphical user interfaces for the computer "
-"industry. Sun holds a non-exclusive license from Xerox to the Xerox "
-"Graphical User Interface, which license also covers Sun's licensees who "
-"implement OPEN LOOK GUIs and otherwise comply with Sun's written license "
-"agreements."
-msgstr ""
-"Графический интерфейс пользователя OPEN LOOK и <trademark>Sun</trademark> был"
-"разработан компанией Sun Microsystems, Inc. для пользователей и лицензиатов компании. Компания Sun "
-"признает первенство компании Xerox в исследовании и разработке "
-"концепции визуальных или графических интерфейсов для компьютерной "
-"промышленности. Компания Sun имеет неисключительную лицензию компании Xerox на графический интерфейс пользователя Xerox, "
-"лицензия на который распространяется также на лицензиатов компании Sun, "
-"внедряющих интерфейсы OPEN LOOK и выполняющих все прочие письменные лицензионные соглашения, "
-"заключенные ими с компанией Sun."
+#: legalnotice.xml:6(para) 
+msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
+msgstr "Oracle and Java являются зарегистрированными товарными знаками корпорации Oracle и/или ее филиалов. Прочие названия могут являться товарными знаками соответствующих владельцев."
 
-#: package-manager.xml:21(para)
-msgid ""
-"Products covered by and information contained in this publication are "
-"controlled by U.S. Export Control laws and may be subject to the export or "
-"import laws in other countries. Nuclear, missile, chemical or biological "
-"weapons or nuclear maritime end uses or end users, whether direct or "
-"indirect, are strictly prohibited. Export or reexport to countries subject "
-"to U.S. embargo or to entities identified on U.S. export exclusion lists, "
-"including, but not limited to, the denied persons and specially designated "
-"nationals lists is strictly prohibited."
-msgstr ""
-"Изделия и сведения, описываемые в данной публикации, находятся "
-"под юрисдикцией законов США об экспортном контроле и законов об экспорте "
-"или импорте других стран. Строго запрещено прямое или косвенное "
-"использование конечными пользователями в целях разработки ядерного, "
-"ракетного, химического или биологического оружия, а также судов с атомным двигателем. "
-"Строго запрещен экспорт или реэкспорт в страны, на которые наложено "
-"эмбарго США или находящиеся в списке исключения экспорта из США, "
-"включая, без ограничений, списки запрещенных лиц и специальные списки лиц из данных стран."
+#: legalnotice.xml:7(para) 
+msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
+msgstr "AMD, Opteron, AMD логотип, и AMD Opteron логотип являются зарегистрированными товарными знаками корпорации Advanced Micro Devices. Intel и Intel Xeon являются зарегистрированными товарными знаками корпорации Intel Corporation. Все товарные знаки корпорации SPARC лицензированы и являются зарегистрированными товарными знаками корпорации SPARC International, Inc. UNIX является зарегистрированным товарным знаком, лицензированным корпорацией X/Open Company, Ltd."
 
-#: package-manager.xml:22(para)
-msgid ""
-"DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
-"REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
-"MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE "
-"DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE "
-"LEGALLY INVALID."
-msgstr ""
-"ДОКУМЕНТАЦИЯ ПРЕДОСТАВЛЯЕТСЯ НА УСЛОВИЯХ «КАК ЕСТЬ» БЕЗ КАКИХ-ЛИБО ПРЯМЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ УСЛОВИЙ, "
-"ПРЕДОСТАВЛЕНИЙ СВЕДЕНИЙ И ГАРАНТИЙ, ВКЛЮЧАЯ ЛЮБЫЕ ПОДРАЗУМЕВАЕМЫЕ ГАРАНТИИ "
-"ГОДНОСТИ ДЛЯ ПРОДАЖИ, ПРИГОДНОСТИ К КОНКРЕТНОЙ ЦЕЛИ ИСПОЛЬЗОВАНИЯ ИЛИ НЕНАРУШЕНИЯ ЧЬИХ-ЛИБО ПРАВ, "
-"КРОМЕ СЛУЧАЕВ, КОГДА ПОДОБНЫЕ ОТКАЗЫ ПРИЗНАЮТСЯ "
-"НЕ ИМЕЮЩИМИ ЮРИДИЧЕСКОЙ СИЛЫ."
+#: legalnotice.xml:8(para) 
+msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
+msgstr "Настоящее программное обеспечение, аппаратные средства и документация могут содержать информацию о контенте, продуктах и услугах третьих сторон или предлагать возможности доступа к этим ресурсам. Корпорация Oracle и ее филиалы не несут ответственности в отношении стороннего контента, продуктов и услуг и прямо отказываются от предоставления соответствующих гарантий любого вида. Корпорация Oracle и ее филиалы не несут ответственности за ущерб, убытки или затраты, которые может повлечь доступ к стороннему контенту, продуктам и услугам или их использование."
 

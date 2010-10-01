@@ -19,8 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 msgid ""
 msgstr ""
@@ -1582,113 +1581,35 @@ msgid "translator-credits"
 msgstr "Sun Microsystems"
 
 
-#: package-manager.xml:15(para)
-msgid ""
-"Sun Microsystems, Inc. has intellectual property rights relating to "
-"technology embodied in the product that is described in this document. In "
-"particular, and without limitation, these intellectual property rights may "
-"include one or more U.S. patents or pending patent applications in the U.S. "
-"and in other countries."
-msgstr ""
-"对于本文档中介绍的产品，Sun Microsystems, Inc. "
-"对其所涉及的技术拥有相关的知识产权。"
-"需特别指出的是（但不局限于此），"
-"这些知识产权可能包含一项或多项美国专利，"
-"或在美国和其他国家/地区申请的待批专利。"
+#: legalnotice.xml:1(para) 
+msgid "This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited."
+msgstr "本软件和相关文档是根据许可证协议提供的，该许可证协议中规定了关于使用和公开本软件和相关文档的各种限制，并受知识产权法的保护。除非在许可证协议中明确许可或适用法律明确授权，否则不得以任何形式、任何方式使用、拷贝、复制、翻译、广播、修改、授权、传播、分发、展示、执行、发布或显示本软件和相关文档的任何部分。除非法律要求实现互操作，否则严禁对本软件进行逆向工程设计、反汇编或反编译。"
 
-#: package-manager.xml:16(para)
-msgid ""
-"U.S. Government Rights – Commercial software. Government users are subject "
-"to the Sun Microsystems, Inc. standard license agreement and applicable "
-"provisions of the FAR and its supplements."
-msgstr ""
-"美国政府权利－商业软件。政府用户应遵循 Sun Microsystems, Inc. 的"
-"标准许可协议，以及 FAR（Federal Acquisition Regulations，即“联邦政府采购法规”）"
-"的适用条款及其补充条款。"
+#: legalnotice.xml:2(para) 
+msgid "The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing."
+msgstr "此文档所含信息可能随时被修改，恕不另行通知，我们不保证该信息没有错误。如果贵方发现任何问题，请书面通知我们。"
 
-#: package-manager.xml:17(para)
-msgid "This distribution may include materials developed by third parties."
-msgstr "本发行版可能包含由第三方开发的内容。"
+#: legalnotice.xml:3(para) 
+msgid "If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:"
+msgstr "如果将本软件或相关文档交付给美国政府，或者交付给以美国政府名义获得许可证的任何机构，必须符合以下规定："
 
-#: package-manager.xml:18(para)
-msgid ""
-"Parts of the product may be derived from Berkeley BSD systems, licensed from "
-"the University of California. UNIX is a registered trademark in the U.S. and "
-"other countries, exclusively licensed through X/Open Company, Ltd."
-msgstr ""
-"本产品的某些部分可能是从 Berkeley BSD 系统衍生出来的，并获得了加利福尼亚大学的许可。"
-"UNIX 是 X/Open Company, Ltd. "
-"在美国和其他国家/地区独家许可的注册商标。"
+#: legalnotice.xml:4(para) 
+msgid "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
+msgstr "U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are \"commercial computer software\" or \"commercial technical data\" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations.As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007).Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065."
 
-#: package-manager.xml:19(para)
-msgid ""
-"Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
-"logo, docs.sun.com, Java, and Solaris are trademarks or registered "
-"trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and "
-"other countries. All SPARC trademarks are used under license and are "
-"trademarks or registered trademarks of SPARC International, Inc. in the U.S. "
-"and other countries. Products bearing SPARC trademarks are based upon an "
-"architecture developed by Sun Microsystems, Inc."
-msgstr ""
-"Sun、Sun Microsystems、Sun 徽标、Solaris 徽标、Java 咖啡杯徽标、"
-"docs.sun.com、Java 和 Solaris 是 Sun Microsystems, Inc. "
-"或其子公司在美国和其他国家/地区的商标或注册商标。"
-"所有 SPARC 商标的使用均已获得许可，"
-"它们是 SPARC International, Inc. 在美国和其他国家/地区的商标或注册商标。"
-"标有 SPARC 商标的产品均基于由 Sun Microsystems, Inc. "
-"开发的体系结构。"
+#: legalnotice.xml:5(para) 
+msgid "This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications."
+msgstr "本软件或硬件是为了在各种信息管理应用领域内的一般使用而开发的。它不应被应用于任何存在危险或潜在危险的应用领域，也不是为此而开发的，其中包括可能会产生人身伤害的应用领域。如果在危险应用领域内使用本软件或硬件，贵方应负责采取所有适当的防范措施，包括备份、冗余和其它确保安全使用本软件或硬件的措施。对于因在危险应用领域内使用本软件或硬件所造成的一切损失或损害，Oracle Corporation 及其附属公司概不负责。"
 
-#: package-manager.xml:20(para)
-msgid ""
-"The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
-"developed by Sun Microsystems, Inc. for its users and licensees. Sun "
-"acknowledges the pioneering efforts of Xerox in researching and developing "
-"the concept of visual or graphical user interfaces for the computer "
-"industry. Sun holds a non-exclusive license from Xerox to the Xerox "
-"Graphical User Interface, which license also covers Sun's licensees who "
-"implement OPEN LOOK GUIs and otherwise comply with Sun's written license "
-"agreements."
-msgstr ""
-"OPEN LOOK 和 <trademark>Sun</trademark> 图形用户界面是 "
-"Sun Microsystems, Inc. 为其用户和许可证持有者开发的。"
-"Sun 感谢 Xerox 在研究和开发可视或图形用户界面"
-"的概念方面为计算机行业所做的开拓性贡献。"
-"Sun 已从 Xerox 获得了对 Xerox 图形用户界面的非独占性许可证，"
-"该许可证还适用于实现 OPEN LOOK GUI 和在其他方面"
-"遵守 Sun 书面许可协议的 Sun 许可证"
-"持有者。"
+#: legalnotice.xml:6(para) 
+msgid "Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners."
+msgstr "Oracle 和 Java 是Oracle 和/或其附属公司的注册商标。其他名称可能是各自所有者的商标。"
 
-#: package-manager.xml:21(para)
-msgid ""
-"Products covered by and information contained in this publication are "
-"controlled by U.S. Export Control laws and may be subject to the export or "
-"import laws in other countries. Nuclear, missile, chemical or biological "
-"weapons or nuclear maritime end uses or end users, whether direct or "
-"indirect, are strictly prohibited. Export or reexport to countries subject "
-"to U.S. embargo or to entities identified on U.S. export exclusion lists, "
-"including, but not limited to, the denied persons and specially designated "
-"nationals lists is strictly prohibited."
-msgstr ""
-"本出版物所介绍的产品以及所包含的信息受"
-"美国出口控制法制约，并应遵守其他国家/地区的进出口法律。"
-"严禁将本产品直接或间接地用于核设施、导弹、生化武器或海上核设施，"
-"也不能直接或间接地出口给核设施、导弹、生化武器或海上核设施的最终用户。"
-"严禁出口或转口到美国禁运的国家/地区"
-"以及美国禁止出口清单中所包含的实体，"
-"包括但不限于被禁止的个人"
-"以及特别指定的国家/地区的公民。"
+#: legalnotice.xml:7(para) 
+msgid "AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd."
+msgstr "AMD、Opteron、AMD 徽标以及 AMD Opteron 徽标是Advanced Micro Devices 的商标或注册商标。Intel 和 Intel Xeon是Intel Corporation 的商标或注册商标。所有SPARC 商标均是 SPARC International, Inc 的商标或注册商标，并应按照许可证的规定使用。UNIX 是通过 X/Open Company, Ltd 授权的注册商标。"
 
-#: package-manager.xml:22(para)
-msgid ""
-"DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
-"REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
-"MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE "
-"DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE "
-"LEGALLY INVALID."
-msgstr ""
-"本文档按“原样”提供，对于所有明示或默示的"
-"条件、陈述和担保，包括对适销性、适用性或"
-"非侵权性的默示保证，均不承担任何责任，"
-"除非此免责声明的适用范围在法律上"
-"无效。"
+#: legalnotice.xml:8(para) 
+msgid "This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services."
+msgstr "本软件或硬件以及文档可能提供了访问第三方内容、产品和服务的方式或有关这些内容、产品和服务的信息。对于第三方内容、产品和服务，Oracle Corporation 及其附属公司明确表示不承担任何种类的担保，亦不对其承担任何责任。对于因访问或使用第三方内容、产品或服务所造成的任何损失、成本或损害，Oracle Corporation 及其附属公司概不负责。"
 
