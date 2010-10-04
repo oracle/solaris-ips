@@ -56,7 +56,7 @@ from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.misc import emsg
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
-CLIENT_API_VERSION = 45
+CLIENT_API_VERSION = 46
 PKG_CLIENT_NAME = "importer.py"
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
@@ -843,7 +843,7 @@ def gen_file_depend_actions(action, fname, proto_dir):
                         action.attrs[PD_PROTO_DIR_LIST] = [proto_dir]
                         instance_deps, errs, attrs = \
                             smf_manifest.process_smf_manifest_deps(action,
-                            local_smf_manifests)
+                            {})
 
                         for dep in instance_deps:
                                 # strip the proto_area dir name
