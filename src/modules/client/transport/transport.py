@@ -274,7 +274,7 @@ class ImageTransportCfg(TransportCfg):
         def get_property(self, property_name):
                 if not self.__img.cfg:
                         raise KeyError
-                return self.__img.get_property("property", property_name)
+                return self.__img.get_property(property_name)
 
         def get_publisher(self, publisher_name):
                 return self.__img.get_publisher(publisher_name)
