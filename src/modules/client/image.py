@@ -222,6 +222,9 @@ class Image(object):
                 self.__sig_policy = None
                 self.__trust_anchors = None
 
+                # cache for presence of boot-archive
+                self.__boot_archive = None
+
                 # When users and groups are added before their database files
                 # have been installed, the actions store them temporarily in the
                 # image, in these members.
@@ -777,6 +780,41 @@ class Image(object):
 
         def get_arch(self):
                 return self.cfg.variants["variant.arch"]
+
+        def has_boot_archive(self):
+                """Returns True if a boot_archive is present in this image"""
+                if self.__boot_archive is not None:
+                        return self.__boot_archive
+
+                for p in ["platform/i86pc/amd64/boot_archive",
+                          "platform/i86pc/boot_archive",
+                          "platform/sun4u/boot_archive",
+                          "platform/sun4v/boot_archive"]:
+                        if os.path.isfile(os.path.join(self.root, p)):
+                                self.__boot_archive = True
+                                break
+                else:
+                        self.__boot_archive = False
+                return self.__boot_archive
+
+        def get_ramdisk_filelist(self):
+                """return the filelist... add the filelist so we rebuild 
+                boot archive if it changes... append trailing / to 
+                directories that are really there"""
+
+                p = "boot/solaris/filelist.ramdisk"
+                f = os.path.join(self.root, p)
+
+                def addslash(path):
+                        if os.path.isdir(os.path.join(self.root, path)):
+                                return path + "/"
+                        return path
+
+                if not os.path.isfile(f):
+                        return []
+
+                return [ addslash(l.strip()) for l in file(f) ] + [p]
+
 
         def get_cachedirs(self):
                 """Returns a list of tuples of the form (dir, readonly, pub)

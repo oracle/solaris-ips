@@ -793,9 +793,9 @@ class ImageInterface(object):
                             self.__plan_type == self.__UPDATE
 
                         try:
-                                be = bootenv.BootEnv(self.__img.get_root())
+                                be = bootenv.BootEnv(self.__img)
                         except RuntimeError:
-                                be = bootenv.BootEnvNull(self.__img.get_root())
+                                be = bootenv.BootEnvNull(self.__img)
                         self.__img.bootenv = be
 
                         if self.__new_be == False and \
@@ -895,6 +895,11 @@ class ImageInterface(object):
                         # Must be done after bootenv restore.
                         self.log_operation_end(error=error)
                         raise error
+
+                if self.__img.imageplan.boot_archive_needed() or \
+                    self.__new_be:
+                        be.update_boot_archive()
+
                 if self.__new_be == True:
                         be.activate_image()
                 else:
@@ -3019,6 +3024,12 @@ class PlanDescription(object):
                 """A boolean value indicating that execution of the plan will
                 take place in a clone of the current live environment"""
                 return self.__new_be
+
+        @property
+        def update_boot_archive(self):
+                """A boolean value indicating whether or not the boot archive
+                will be rebuilt"""
+                return self.__plan.boot_archive_needed()
 
 
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,

@@ -131,6 +131,7 @@ class ImagePlan(object):
                 self.__new_facets = None
                 self.__variant_change = False
                 self.__references = {} # dict of fmri -> pattern
+                self.__need_boot_archive = None
 
         def __str__(self):
 
@@ -413,6 +414,11 @@ class ImagePlan(object):
                 assert self.state >= EVALUATED_OK
                 return self.__actuators.reboot_needed()
 
+        def boot_archive_needed(self):
+                """True if boot archive needs to be rebuilt"""
+                assert self.state >= EVALUATED_OK
+                return self.__need_boot_archive
+
         def get_plan(self, full=True):
                 if full:
                         return str(self)
@@ -613,6 +619,13 @@ class ImagePlan(object):
                         # plan is no longer valid.
                         raise api_errors.InvalidPlanError()
 
+                if self.image.has_boot_archive():
+                        ramdisk_prefixes = tuple(self.image.get_ramdisk_filelist())
+                        if not ramdisk_prefixes:
+                                self.__need_boot_archive = False
+                else:
+                        self.__need_boot_archive = False
+
                 # prefetch manifests
                 prefetch_mfsts = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
@@ -790,6 +803,10 @@ class ImagePlan(object):
                                 attrs = re = None
 
                         self.__actuators.scan_removal(ap.src.attrs)
+                        if self.__need_boot_archive is None:
+                                if ap.src.attrs.get("path", "").startswith(
+                                    ramdisk_prefixes):
+                                        self.__need_boot_archive = True
 
                 self.__progtrack.evaluate_progress()
 
@@ -874,6 +891,10 @@ class ImagePlan(object):
                                 nkv = index = ra = None
 
                         self.__actuators.scan_install(ap.dst.attrs)
+                        if self.__need_boot_archive is None:
+                                if ap.dst.attrs.get("path", "").startswith(
+                                    ramdisk_prefixes):
+                                        self.__need_boot_archive = True
 
                 del ConsolidationEntry, cons_generic, cons_named, plan_pos
 
@@ -955,6 +976,10 @@ class ImagePlan(object):
                         if a[1]:
                                 self.__actuators.scan_update(a[1].attrs)
                         self.__actuators.scan_update(a[2].attrs)
+                        if self.__need_boot_archive is None:
+                                if a[2].attrs.get("path", "").startswith(
+                                    ramdisk_prefixes):
+                                        self.__need_boot_archive = True
 
                 self.update_actions.extend(l_refresh)
 
@@ -980,6 +1005,10 @@ class ImagePlan(object):
                 # Evaluation complete.
                 self.__progtrack.evaluate_done(self.__target_install_count, \
                     self.__target_update_count, self.__target_removal_count)
+
+                if self.__need_boot_archive is None:
+                        self.__need_boot_archive = False
+
                 self.state = EVALUATED_OK
 
         def nothingtodo(self):

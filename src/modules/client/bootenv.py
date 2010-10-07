@@ -61,19 +61,21 @@ class BootEnv(object):
         operate successfully.  It is soft required, meaning if it exists the
         bootenv class will attempt to provide recovery support."""
 
-        def __init__(self, root):
+        def __init__(self, img):
                 self.be_name = None
                 self.dataset = None
                 self.be_name_clone = None
                 self.clone_dir = None
-                self.img = None
+                self.img = img
                 self.is_live_BE = False
                 self.is_valid = False
                 self.snapshot_name = None
-                self.root = root
+                # record current location of image root so we can remember
+                # original source BE if we clone existing image
+                self.root = self.img.get_root()
                 rc = 0
 
-                assert root != None
+                assert self.root != None
 
                 # Check for the old beList() API since pkg(1) can be
                 # back published and live on a system without the latest libbe.
@@ -111,13 +113,13 @@ class BootEnv(object):
                         # operating on the live BE, then verify
                         # that the mountpoint of the BE matches
                         # the -R argument passed in by the user.
-                        if root == '/':
+                        if self.root == '/':
                                 if not beVals.get("active"):
                                         continue
                                 else:
                                         self.is_live_BE = True
                         else:
-                                if beVals.get("mountpoint") != root:
+                                if beVals.get("mountpoint") != self.root:
                                         continue
 
                         # Set the needed BE components so snapshots
@@ -311,35 +313,38 @@ class BootEnv(object):
                 elif be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
 
+        def update_boot_archive(self):
+                """Rebuild the boot archive in the current image.
+                Just report errors; failure of pkg command is not needed,
+                and bootadm problems should be rare."""
+                cmd = [
+                    "/sbin/bootadm", "update-archive", "-R",
+                    self.img.get_root()
+                    ]
+
+                try:
+                        ret = subprocess.call(cmd,
+                            stdout = open(os.devnull), stderr=subprocess.STDOUT)
+                except OSError, e:
+                        logger.error(_("pkg: A system error %(e)s was "
+                            "caught executing %(cmd)s") % { "e": e,
+                            "cmd": " ".join(cmd) })
+                        return
+
+                if ret:
+                        logger.error(_("pkg: '%(cmd)s' failed. \nwith "
+                            "a return code of %(ret)d.") % {
+                            "cmd": " ".join(cmd), "ret": ret })
+                    
+                
         def activate_image(self):
 
                 """Activate a clone of the BE being operated on.
                         If were operating on a non-live BE then
                         destroy the snapshot."""
 
-                def exec_cmd(cmd):
-                        ret = 0
-                        try:
-                                ret = subprocess.call(cmd,
-                                    stdout = file("/dev/null"),
-                                    stderr = subprocess.STDOUT)
-                        except OSError, e:
-                                logger.error(_("pkg: A system error %(e)s was "
-                                    "caught executing %(cmd)s") % { "e": e,
-                                    "cmd": " ".join(cmd) })
 
-                        if ret != 0:
-                                logger.error(_("pkg: '%(cmd)s' failed. \nwith "
-                                    "a return code of %(ret)d.") % {
-                                    "cmd": " ".join(cmd), "ret": ret })
-                                return
-
-                def activate_live_be(cmd):
-                        cmd += [self.clone_dir]
-
-                        # Activate the clone.
-                        exec_cmd(cmd)
-
+                def activate_live_be():
                         if be.beActivate(self.be_name_clone) != 0:
                                 logger.error(_("pkg: unable to activate %s") \
                                     % self.be_name_clone)
@@ -366,13 +371,9 @@ Reboot when ready to switch to this updated BE.
 """) % \
                             (self.be_name, self.be_name_clone))
 
-                def activate_be(cmd):
+                def activate_be():
                         # Delete the snapshot that was taken before we
                         # updated the image and update the the boot archive.
-
-                        cmd += [self.root]
-                        exec_cmd(cmd)
-
                         logger.info(_("%s has been updated successfully") % \
                                 (self.be_name))
 
@@ -392,12 +393,12 @@ Reboot when ready to switch to this updated BE.
                         self.img.unlock()
 
                 caught_exception = None
-                cmd = [ "/sbin/bootadm", "update-archive", "-R" ]
+
                 try:
                         if self.is_live_BE:
-                                activate_live_be(cmd)
+                                activate_live_be()
                         else:
-                                activate_be(cmd)
+                                activate_be()
                 except Exception, e:
                         caught_exception = e
                         if relock:
@@ -527,7 +528,11 @@ class BootEnvNull(object):
 
         """BootEnvNull is a class that gets used when libbe doesn't exist."""
 
-        def __init__(self, root):
+        def __init__(self, img):
+                pass
+
+        @staticmethod
+        def update_boot_archive(self):
                 pass
 
         @staticmethod

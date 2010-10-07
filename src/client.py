@@ -657,13 +657,13 @@ def fix_image(img, args):
                 # Create a snapshot in case they want to roll back
                 success = False
                 try:
-                        be = bootenv.BootEnv(img.get_root())
+                        be = bootenv.BootEnv(img)
                         if be.exists():
                                 msg(_("Created ZFS snapshot: %s") %
                                     be.snapshot_name)
                 except RuntimeError:
                         # Error is printed by the BootEnv call.
-                        be = bootenv.BootEnvNull(img.get_root())
+                        be = bootenv.BootEnvNull(img)
                 img.bootenv = be
                 try:
                         success = img.repair(repairs, progresstracker,
@@ -834,7 +834,7 @@ def accept_plan_licenses(api_inst):
                 api_inst.set_plan_license_status(pfmri, dest.license,
                     accepted=True)
 
-display_plan_options = ["basic", "fmris", "variants/facets", "services", "actions"]
+display_plan_options = ["basic", "fmris", "variants/facets", "services", "actions", "boot-archive"]
 
 def display_plan(api_inst, verbose):
         """Helper function to display plan to the desired degree.
@@ -844,7 +844,7 @@ def display_plan(api_inst, verbose):
         if isinstance(verbose, int):
                 disp = ["basic"]
                 if verbose > 0:
-                        disp.extend(["fmris", "services", "variants/facets"])
+                        disp.extend(["fmris", "services", "variants/facets", "boot-archive"])
                 if verbose > 1:
                         disp.extend(["actions"])
         else:
@@ -888,6 +888,14 @@ def display_plan(api_inst, verbose):
 
                 if not plan.new_be:
                         cond_show(_("               Services to restart: %5d"), len(plan.get_services()))
+
+        if "boot-archive" in disp:
+                if plan.update_boot_archive:
+                        s = _("Yes")
+                else:
+                        s = _("No")
+
+                logger.info(_("              Rebuild boot archive: %5s") % s)
 
         if "variants/facets" in disp and v:
                 logger.info(_("Changed variants/facets:"))
