@@ -39,7 +39,6 @@ i386_REPO=http://localhost:10002
 EXTRA_ARGS=
 JUST_THESE_PKGS=
 
-
 $(MERGEDIR):
 	mkdir -p $(MERGEDIR)
 
@@ -53,25 +52,32 @@ $(SETPUBLISHERDIR):
 # and followed by a single publish
 
 merge:
-	PYTHONPATH=$(PYTHONPATH) ./merge.py $(EXTRA_ARGS) -r -d $(MERGEDIR) \
+	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) ./merge.py \
+	    $(EXTRA_ARGS) -r -d $(MERGEDIR) \
 	    -v sparc,$(SPARC_REPO) -v i386,$(i386_REPO) arch $(JUST_THESE_PKGS)
+
+clobber_merge:
+	rm -fr $(MERGEDIR)
 
 publish: $(MERGEDIR)
 	for var in `(cd $(MERGEDIR); echo * )`; do \
-		PYTHONPATH=$(PYTHONPATH) \
+		PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
 		    ./pkg_publish $(MERGEDIR)/$$var $(REPO); \
 	done
 
 publish_setpublisher: $(SETPUBLISHERDIR)
-	PYTHONPATH=$(PYTHONPATH) ./set-publisher.sh $(BUILDID:%= -b %) \
-	    -d $(SETPUBLISHERDIR) -p $(REPO) \
+	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
+	    ./set-publisher.sh $(BUILDID:%=-b %) -d $(SETPUBLISHERDIR) \
+	    -p $(REPO) \
 	    $(ON_REPO) \
 	    $(INSTALL_REPO) \
 	    $(X_REPO) \
 	    $(IPS_REPO) \
 	    $(VPANELS_REPO)
 
+clobber_setpublisher:
+	rm -fr $(SETPUBLISHERDIR)
+
 clean:
 
-clobber:
-	rm -rf $(MERGEDIR) $(SETPUBLISHERDIR)
+clobber: clobber_merge clobber_setpublisher
