@@ -1,0 +1,13 @@
+package compress/bzip2
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWbzip
+version 1.0.6
+end package
+
+package SUNWbzip
+consolidation "sfw"
+renamed 133
+depend compress/bzip2
+version 1.0.5
+end package

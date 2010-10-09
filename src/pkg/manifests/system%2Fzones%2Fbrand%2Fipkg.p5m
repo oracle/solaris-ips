@@ -53,7 +53,6 @@ file path=usr/lib/brand/ipkg/smf_disable.lst
 file path=usr/lib/brand/ipkg/support mode=0755
 file path=usr/lib/brand/ipkg/uninstall mode=0755
 license cr_Oracle license=cr_Oracle
-license lic_CDDL license=lic_CDDL
 legacy pkg=SUNWipkg-brand version=0.0.0
 depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
 depend type=require fmri=package/pkg

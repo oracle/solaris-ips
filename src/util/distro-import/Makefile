@@ -629,7 +629,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	149/redist_import
+default:	150/redist_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \

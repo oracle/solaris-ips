@@ -263,7 +263,6 @@ dir path=var/svc/manifest/application
 file path=var/svc/manifest/application/pkg-server.xml
 file path=var/svc/manifest/application/pkg-mdns.xml
 license cr_Oracle license=cr_Oracle
-license lic_CDDL license=lic_CDDL
 license lic_minisat license=lic_minisat
 license lic_gustaebel license=lic_gustaebel
 legacy pkg=SUNWipkg version=0.0.0

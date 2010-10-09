@@ -103,7 +103,6 @@ dir path=var/svc/manifest
 dir path=var/svc/manifest/application
 file path=var/svc/manifest/application/pkg-update.xml
 license cr_Oracle license=cr_Oracle
-license lic_CDDL license=lic_CDDL
 legacy pkg=SUNWipkg-um version=0.1.1
 
 depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)
