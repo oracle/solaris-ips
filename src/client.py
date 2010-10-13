@@ -1328,7 +1328,7 @@ def install(img, args):
         # XXX Publisher-catalog issues.
         op = "install"
         opts, pargs = getopt.getopt(args, "nvq", ["accept", "licenses",
-            "no-refresh", "no-index", "deny-new-be", "require-new-be", "be-name"])
+            "no-refresh", "no-index", "deny-new-be", "require-new-be", "be-name="])
 
         accept = quiet = noexecute = show_licenses = False
         verbose = 0
@@ -1410,7 +1410,7 @@ def uninstall(img, args):
 
         op = "uninstall"
         opts, pargs = getopt.getopt(args, "nrvq", ["no-index", 
-            "deny-new-be", "require-new-be", "be-name"])
+            "deny-new-be", "require-new-be", "be-name="])
 
         quiet = noexecute = recursive_removal = False
         verbose = 0
