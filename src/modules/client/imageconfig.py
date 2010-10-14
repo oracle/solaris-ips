@@ -172,7 +172,10 @@ class ImageConfig(cfg.FileConfig):
         def remove_publisher(self, prefix):
                 """External functional interface - use property interface"""
                 del self.publishers[prefix]
-                self.remove_section("authority_%s" % prefix)
+                try:
+                        self.remove_section("authority_%s" % prefix)
+                except cfg.UnknownSectionError:
+                        pass
 
         def change_publisher_search_order(self, new_world_order):
                 """Change search order to desired value"""
