@@ -759,7 +759,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                     "button to continue removal without"
                                     "\n\t%(package)s\n") % \
                                     {"button": label,
-                                     "package": nlpe[0].get_name()}
+                                     "package": nlpe.fmri.get_name()}
                                 self.retry = True
                                 self.w_close_button.show()
                         self.__g_error_stage(msg)
