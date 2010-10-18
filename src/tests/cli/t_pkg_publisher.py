@@ -59,8 +59,11 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
                     exit=1)
-                self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
+
+                # Verify that a publisher can be added initially disabled.
+                self.pkg("set-publisher -d --no-refresh -O http://%s1 test1" %
                     self.bogus_url)
+
                 self.pkg("publisher | grep test")
                 self.pkg("set-publisher -P -O http://%s2 test2" %
                     self.bogus_url, exit=1)

@@ -460,7 +460,7 @@ class ImageConfig(cfg.FileConfig):
                                 # base configuration.
                                 try:
                                         self.remove_section(section)
-                                except cfg.UnknownSectionErro:
+                                except cfg.UnknownSectionError:
                                         pass
                                 c = disabled_cfg
 
