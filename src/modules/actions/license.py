@@ -57,7 +57,7 @@ class LicenseAction(generic.Action):
         def preinstall(self, pkgplan, orig):
                 # Set attrs["path"] so filelist can handle this action;
                 # the path must be relative to the root of the image.
-                self.attrs["path"] = os.path.relpath(os.path.join(
+                self.attrs["path"] = misc.relpath(os.path.join(
                     pkgplan.image.get_license_dir(pkgplan.destination_fmri),
                     "license." + self.attrs["license"]), pkgplan.image.root)
 

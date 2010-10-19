@@ -834,3 +834,11 @@ PKG_FILE_MODE = stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 PKG_DIR_MODE = (stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH |
     stat.S_IXOTH)
 PKG_RO_FILE_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
+
+def relpath(path, start="."):
+        """Version of relpath to workaround python bug:
+            http://bugs.python.org/issue5117
+        """
+        if path and start and start == "/" and path[0] == "/":
+                return path.lstrip("/")
+        return os.path.relpath(path, start=start)

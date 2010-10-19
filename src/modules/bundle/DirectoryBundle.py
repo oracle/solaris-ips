@@ -69,7 +69,7 @@ class DirectoryBundle(object):
 
         def action(self, path):
                 rootdir = self.rootdir
-                pubpath = os.path.relpath(path, rootdir)
+                pubpath = pkg.misc.relpath(path, rootdir)
                 pstat = os.lstat(path)
                 mode = oct(stat.S_IMODE(pstat.st_mode))
                 timestamp = pkg.misc.time_to_timestamp(pstat.st_mtime)
@@ -90,7 +90,7 @@ class DirectoryBundle(object):
                                     timestamp=timestamp)
                         else:
                                 # Find the relative path to the link target.
-                                target = os.path.relpath(self.inodes[inode],
+                                target = pkg.misc.relpath(self.inodes[inode],
                                     os.path.dirname(path))
                                 return pkg.actions.hardlink.HardLinkAction(
                                     path=pubpath, target=target)
