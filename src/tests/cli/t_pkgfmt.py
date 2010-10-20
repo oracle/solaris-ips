@@ -944,12 +944,12 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
                 f.write(self.pkgcontents)
                 f.close()
 
-        def pkgfmt(self, args, exit=0):
+        def pkgfmt(self, args, exit=0, su_wrap=False):
                 cmd="%s/usr/bin/pkgfmt %s" % (pkg5unittest.g_proto_area, args)
-                self.cmdline_run(cmd, exit=exit)
+                self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap)
 
-        def test_1(self):
-                """ display that pkgfmt makes no diff in manifest"""
+        def test_1_difference(self):
+                """display that pkgfmt makes no diff in manifest"""
                 source_file = os.path.join(self.test_root, "source_file")
                 mod_file = os.path.join(self.test_root, "mod_file")
 
@@ -963,3 +963,16 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
                 self.cmdline_run("/usr/bin/diff %s %s" %
                     (source_file, mod_file), coverage=False)
 
+        def test_2_unprivileged(self):
+                """Verify pkgfmt handles unprivileged user gracefully."""
+
+                source_file = os.path.join(self.test_root, "source_file")
+                # Should fail since manifest needs formatting and user can't
+                # replace file.
+                self.pkgfmt("%s" % source_file, su_wrap=True, exit=1)
+
+                # Now reformat the file.
+                self.pkgfmt("%s" % source_file)
+
+                # Should not fail even though user is unprivileged.
+                self.pkgfmt("-c %s" % source_file, su_wrap=True)

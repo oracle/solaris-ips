@@ -270,7 +270,14 @@ def main_func():
                         # force path to be absolute; gives better diagnostics if
                         # something goes wrong.
                         path = os.path.abspath(fname)
-                        pathdir = os.path.dirname(path)
+                        pathdir = None
+                        if not opt_check:
+                                # By only setting pathdir in the replacement
+                                # case, this ensures that the temporary file
+                                # will live somewhere unprivileged users can
+                                # still create files (since the tempfile
+                                # module will fallback to TMPDIR, etc.).
+                                pathdir = os.path.dirname(path)
                         tfd, tname = \
                              tempfile.mkstemp(dir=pathdir)
 
@@ -295,6 +302,10 @@ def main_func():
                                 os.unlink(tname)
                         else:
                                 try:
+                                        # Ensure existing mode is preserved.
+                                        mode = os.stat(fname).st_mode
+                                        os.chmod(tname, mode)
+
                                         os.rename(tname, fname)
                                 except EnvironmentError, e:
                                         if os.path.exists(tname):
@@ -312,7 +323,6 @@ def main_func():
                         except:
                                 pass
                         raise
-
 
         return ret
 
