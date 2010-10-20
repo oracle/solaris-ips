@@ -230,7 +230,6 @@ class Package(object):
                                         fetch_file(action, local_smf_manifests)
                                         
                         if hollow:
-                                action.attrs["opensolaris.zone"] = "global"
                                 action.attrs["variant.opensolaris.zone"] = "global"
 
                         self.check_perms(action)
