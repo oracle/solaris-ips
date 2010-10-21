@@ -56,7 +56,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # The fifth depot is purposefully one with the publisher
                 # operation disabled.
-                self.dcs[5].set_disable_ops(["publisher/0"])
+                self.dcs[5].set_disable_ops(["publisher/0", "publisher/1"])
                 self.dcs[5].start()
 
         def test_basic(self):

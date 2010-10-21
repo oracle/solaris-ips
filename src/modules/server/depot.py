@@ -417,6 +417,7 @@ class DepotHTTP(_Depot):
 
         def refresh(self):
                 """Catch SIGUSR1 and reload the depot information."""
+                old_pubs = self.repo.publishers
                 self.repo.reload()
                 if type(self.cfg) == cfg.SMFConfig:
                         # For all other cases, reloading depot configuration
@@ -425,6 +426,9 @@ class DepotHTTP(_Depot):
 
                 # Handles the BUI (Browser User Interface).
                 face.init(self)
+
+                # Map new publishers into operation space.
+                map(self.__map_pub_ops, self.repo.publishers - old_pubs)
 
         def __map_pub_ops(self, pub_prefix):
                 # Map the publisher into the depot's operation namespace if
@@ -2107,21 +2111,21 @@ class DNSSD_Plugin(SimplePlugin):
 
 class BackgroundTaskPlugin(SimplePlugin):
         """This class allows background task execution for the depot server.  It
-        is designed in such a way as to only allow a single task to be queued
+        is designed in such a way as to only allow a few tasks to be queued
         for execution at a time.
         """
 
         def __init__(self, bus):
                 # Setup the background task queue.
                 SimplePlugin.__init__(self, bus)
-                self.__q = Queue.Queue(1)
+                self.__q = Queue.Queue(10)
                 self.__thread = None
 
         def put(self, task, *args, **kwargs):
-                """Schedule the given task for background execution if one
-                is not already.
+                """Schedule the given task for background execution if queue
+                isn't full.
                 """
-                if self.__q.unfinished_tasks:
+                if self.__q.unfinished_tasks > 9:
                         raise Queue.Full()
                 self.__q.put_nowait((task, args, kwargs))
 

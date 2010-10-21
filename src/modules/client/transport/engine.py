@@ -676,7 +676,8 @@ class CurlTransportEngine(TransportEngine):
 
         def send_data(self, url, data=None, header=None, sslcert=None,
             sslkey=None, repourl=None, ccancel=None,
-            data_fobj=None, data_fp=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True,
+            progclass=None, progtrack=None):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -690,7 +691,7 @@ class CurlTransportEngine(TransportEngine):
                 fobj = fileobj.StreamingFileObj(url, self, ccancel=ccancel)
                 progfunc = None
 
-                if ccancel:
+                if ccancel and not progtrack and not progclass:
                         progfunc = fobj.get_progress_func()
 
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
@@ -698,7 +699,8 @@ class CurlTransportEngine(TransportEngine):
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
                     read_fobj=data_fobj, read_filepath=data_fp,
-                    failonerror=failonerror)
+                    failonerror=failonerror, progclass=progclass,
+                    progtrack=progtrack)
 
                 self.__req_q.appendleft(t)
 

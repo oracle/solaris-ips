@@ -50,6 +50,7 @@ import pkg.bundle
 import pkg.client.api_errors as apx
 import pkg.fmri
 import pkg.manifest
+import pkg.misc as misc
 import pkg.publish.transaction as trans
 import pkg.client.transport.transport as transport
 import pkg.client.publisher as publisher
@@ -124,7 +125,7 @@ def trans_create_repository(repo_uri, args):
                         repo_props.setdefault(p_sec, {})
                         repo_props[p_sec][p_name] = p_value
 
-        xport, pub = setup_transport_and_pubs(repo_uri)
+        xport, pub = setup_transport_and_pubs(repo_uri, remote=False)
 
         try:
                 trans.Transaction(repo_uri, create_repo=True,
@@ -581,19 +582,16 @@ def trans_refresh_index(repo_uri, args):
                 return 1
         return 0
 
-def setup_transport_and_pubs(repo_uri):
+def setup_transport_and_pubs(repo_uri, remote=True):
 
-        try:
-                repo = publisher.Repository(origins=[repo_uri])
-                pub = publisher.Publisher(prefix="default", repositories=[repo])
-                xport = transport.Transport(transport.GenericTransportCfg(
-                    publishers=[pub]))
-        except apx.UnsupportedRepositoryURI:
-                if repo_uri.startswith("null:"):
-                        return None, None
-                raise
+        if repo_uri.startswith("null:"):
+                return None, None
 
-        return xport, pub
+        xport, xport_cfg = transport.setup_transport()
+        targ_pub = transport.setup_publisher(repo_uri, "default",
+            xport, xport_cfg, remote_prefix=remote)
+
+        return xport, targ_pub
 
 def main_func():
         gettext.install("pkg", "/usr/share/locale")
@@ -614,6 +612,9 @@ def main_func():
                                 show_usage = True
         except getopt.GetoptError, e:
                 usage(_("pkgsend: illegal global option -- %s") % e.opt)
+
+        if repo_uri and not repo_uri.startswith("null:"):
+                repo_uri = misc.parse_uri(repo_uri)
 
         subcommand = None
         if pargs:

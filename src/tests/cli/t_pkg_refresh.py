@@ -94,7 +94,7 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 order."""
 
                 # 127.0.0.1 - - [15/Oct/2009:00:15:38]
-                # "GET /catalog/1/catalog.base.C HTTP/1.1" 200 189 ""
+                # "GET [/<pub>]/catalog/1/catalog.base.C HTTP/1.1" 200 189 ""
                 # "pkg/b1f63b112bff+ (sunos i86pc; 5.11 snv_122; none; pkg)"
                 entry_comps = [
                     r"(?P<host>\S+)",
@@ -125,6 +125,9 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                         if req_method != method:
                                 continue
 
+                        # Strip publisher from URI for this part.
+                        uri = uri.replace("/test1", "")
+                        uri = uri.replace("/test2", "")
                         req_parts = uri.strip("/").split("/", 3)
                         if req_parts[0] != op:
                                 continue

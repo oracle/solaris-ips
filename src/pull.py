@@ -56,11 +56,12 @@ from pkg.misc import emsg, get_pkg_otw_size, msg, PipeError
 cache_dir = None
 complete_catalog = None
 download_start = False
-repo_cache = {}
 tmpdirs = []
 temp_root = None
 xport = None
 xport_cfg = None
+dest_xport = None
+targ_pub = None
 
 def error(text):
         """Emit an error message prefixed by the command name """
@@ -87,9 +88,9 @@ def usage(usage_error=None, retcode=2):
 
         msg(_("""\
 Usage:
-        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-kr] [-m match]
-            (fmri|pattern) ...
-        pkgrecv [-s src_repo_uri] -n
+        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-kr] [-m match] [-n]
+            [--raw] (fmri|pattern) ...
+        pkgrecv [-s src_repo_uri] --newest
 
 Options:
         -c cache_dir    The path to a directory that will be used to cache
@@ -99,32 +100,43 @@ Options:
                         cache directory was automatically chosen, use this
                         option to resume the download.
 
-        -d path_or_uri  The path of a directory to save the retrieved package
-                        to, or the URI of a repository to republish it to.  If
-                        not provided, the default value is the current working
-                        directory.  If a directory path is provided, then
-                        package content will only be retrieved if it does not
-                        already exist in the target directory.  If a repository
-                        URI is provided, a temporary directory will be created
-                        and all of the package data retrieved before attempting
-                        to republish it.
+        -d path_or_uri  The filesystem path or URI of the target repository to
+                        republish packages to.  If not provided, the default
+                        value is the current working directory.  The target
+                        must already exist.  New repositories can be created
+                        using pkgrepo(1).
 
         -h              Display this usage message.
+
         -k              Keep the retrieved package content compressed, ignored
                         when republishing.  Should not be used with pkgsend.
+
         -m match        Controls matching behaviour using the following values:
                             all-timestamps
                                 includes all matching timestamps, not just
                                 latest (implies all-versions)
                             all-versions
                                 includes all matching versions, not just latest
-        -n              List the most recent versions of the packages available
-                        from the specified repository and exit.  (All other
-                        options except -s will be ignored.)
+
+        -n              Perform a trial run with no changes made.
+
         -r              Recursively evaluates all dependencies for the provided
                         list of packages and adds them to the list.
+
         -s src_repo_uri A URI representing the location of a pkg(5)
                         repository to retrieve package data from.
+
+        --newest        List the most recent versions of the packages available
+                        from the specified repository and exit.  (All other
+                        options except -s will be ignored.)
+
+        --raw           Retrieve and store the raw package data in a set of
+                        directory structures by stem and version at the location
+                        specified by -d.  May only be used with filesystem-
+                        based destinations.  This can be used with pkgsend(1)
+                        include to conveniently modify and republish packages,
+                        perhaps by correcting file contents or providing
+                        additional package metadata.
 
 Environment:
         PKG_DEST        Destination directory or repository URI
@@ -145,6 +157,14 @@ def cleanup(caller_error=False):
                         continue
                 shutil.rmtree(d, True)
 
+        if caller_error and dest_xport and targ_pub:
+                try:
+                        dest_xport.publish_refresh_packages(targ_pub)
+                except apx.TransportError:
+                        # If this fails, ignore it as this was a last ditch
+                        # attempt anyway.
+                        pass
+
 def abort(err=None, retcode=1):
         """To be called when a fatal error is encountered."""
 
@@ -153,7 +173,7 @@ def abort(err=None, retcode=1):
                 msg("")
                 error(err)
 
-        cleanup()
+        cleanup(caller_error=True)
         sys.exit(retcode)
 
 def get_tracker(quiet=False):
@@ -188,32 +208,6 @@ def get_manifest(pfmri, basedir, contents=False):
                 return m.tostr_unsorted()
         return m
 
-def get_repo(uri):
-        if uri in repo_cache:
-                return repo_cache[uri]
-
-        parts = urlparse.urlparse(uri, "file", allow_fragments=0)
-        path = urllib.url2pathname(parts[2])
-
-        try:
-                repo = sr.Repository(read_only=True, root=path)
-        except EnvironmentError, _e:
-                error("an error occurred while trying to " \
-                    "initialize the repository directory " \
-                    "structures:\n%s" % _e)
-                sys.exit(1)
-        except sr.RepositoryError, _e:
-                error(_e)
-                sys.exit(1)
-        except cfg.ConfigError, _e:
-                error("repository configuration error: %s" % _e)
-                sys.exit(1)
-        except (search_errors.IndexingException, apx.PermissionsException), _e:
-                emsg(str(_e), "INDEX")
-                sys.exit(1)
-        repo_cache[uri] = repo
-        return repo
-
 def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
         """Find matching fmri using CONSTRAINT_AUTO cache for performance.
         Returns None if no matching fmri is found."""
@@ -239,29 +233,9 @@ def expand_matching_fmris(fmri_list, pfmri_strings):
         except pkg.fmri.FmriError, e:
                 abort(err=e)
 
-        # XXX publisher prefixes have to be stripped for catalog matching
-        # for now; awaits v1 client support, etc.
-        pattern_pubs = {}
-        for f in patterns:
-                if f.publisher:
-                        pattern_pubs[f.get_fmri(anarchy=True)] = f.publisher
-                        f.publisher = None
-
-        matches, unmatched = catalog.extract_matching_fmris(fmri_list,
+        return catalog.extract_matching_fmris(fmri_list,
             patterns=patterns, constraint=version.CONSTRAINT_AUTO,
             matcher=pkg.fmri.glob_match)
-
-        if unmatched:
-                match_err = apx.InventoryException(**unmatched)
-                emsg(match_err)
-                abort()
-
-        # XXX restore stripped publisher information.
-        for m in matches:
-                pub = pattern_pubs.pop(str(m), None)
-                if pub:
-                        m.publisher = pub
-        return matches
 
 def get_dependencies(src_uri, fmri_list, basedir, tracker):
 
@@ -294,18 +268,18 @@ def _get_dependencies(src_uri, s, pfmri, basedir, tracker):
 
 def add_hashes_to_multi(mfst, multi):
         """Takes a manifest and a multi object. Adds the hashes to the
-        multi object, returns (nfiles, nbytes) tuple."""
+        multi object, returns (get_bytes, send_bytes) tuple."""
 
-        nf = 0
-        nb = 0
+        getb = 0
+        sendb = 0
 
         for atype in ("file", "license"):
                 for a in mfst.gen_actions_by_type(atype):
                         if a.needsdata(None, None):
                                 multi.add_action(a)
-                                nf += 1
-                                nb += get_pkg_otw_size(a)
-        return nf, nb
+                                getb += get_pkg_otw_size(a)
+                                sendb += int(a.attrs.get("pkg.size", 0))
+        return getb, sendb
 
 def prune(fmri_list, all_versions, all_timestamps):
         """Returns a filtered version of fmri_list based on the provided
@@ -345,7 +319,7 @@ def list_newest_fmris(fmri_list):
                 fm_list.append(l[0])
 
         for e in fm_list:
-                msg(e.get_fmri(anarchy=True))
+                msg(e.get_fmri())
 
 def fetch_catalog(src_pub, tracker, txport):
         """Fetch the catalog from src_uri."""
@@ -356,12 +330,20 @@ def fetch_catalog(src_pub, tracker, txport):
 
         if not src_pub.meta_root:
                 # Create a temporary directory for catalog.
-                cat_dir = tempfile.mkdtemp(dir=temp_root)
+                cat_dir = tempfile.mkdtemp(dir=temp_root,
+                    prefix=global_settings.client_name + "-")
                 tmpdirs.append(cat_dir)
                 src_pub.meta_root = cat_dir
 
         src_pub.transport = txport
-        src_pub.refresh(True, True)
+        try:
+                src_pub.refresh(True, True)
+        except apx.TransportError, e:
+                # Assume that a catalog doesn't exist for the target publisher,
+                # and drive on.  If there was an actual failure due to a
+                # transport issue, let the failure happen whenever some other
+                # operation is attempted later.
+                return []
 
         cat = src_pub.catalog
 
@@ -378,9 +360,10 @@ def fetch_catalog(src_pub, tracker, txport):
         return fmri_list
 
 def main_func():
-        global cache_dir, download_start, xport, xport_cfg
+        global cache_dir, download_start, xport, xport_cfg, dest_xport, targ_pub
         all_timestamps = False
         all_versions = False
+        dry_run = False
         keep_compressed = False
         list_newest = False
         recursive = False
@@ -388,7 +371,7 @@ def main_func():
         target = None
         incoming_dir = None
         src_pub = None
-        targ_pub = None
+        raw = False
 
         temp_root = misc.config_temp_root()
 
@@ -399,7 +382,8 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:",
+                    ["newest", "raw"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
@@ -412,12 +396,6 @@ def main_func():
                         usage(retcode=0)
                 elif opt == "-k":
                         keep_compressed = True
-                elif opt == "-n":
-                        list_newest = True
-                elif opt == "-r":
-                        recursive = True
-                elif opt == "-s":
-                        src_uri = arg
                 elif opt == "-m":
                         if arg == "all-timestamps":
                                 all_timestamps = True
@@ -425,17 +403,31 @@ def main_func():
                                 all_versions = True
                         else:
                                 usage(_("Illegal option value -- %s") % arg)
+                elif opt == "-n":
+                        dry_run = True
+                elif opt == "-r":
+                        recursive = True
+                elif opt == "-s":
+                        src_uri = arg
+                elif opt == "--newest":
+                        list_newest = True
+                elif opt == "--raw":
+                        raw = True
 
         if not src_uri:
                 usage(_("a source repository must be provided"))
+        else:
+                src_uri = misc.parse_uri(src_uri)
 
         if not cache_dir:
-                cache_dir = tempfile.mkdtemp(dir=temp_root)
+                cache_dir = tempfile.mkdtemp(dir=temp_root,
+                    prefix=global_settings.client_name + "-")
                 # Only clean-up cache dir if implicitly created by pkgrecv.
                 # User's cache-dirs should be preserved
                 tmpdirs.append(cache_dir)
 
-        incoming_dir = tempfile.mkdtemp(dir=temp_root)
+        incoming_dir = tempfile.mkdtemp(dir=temp_root,
+            prefix=global_settings.client_name + "-")
         tmpdirs.append(incoming_dir)
 
         # Create transport and transport config
@@ -451,200 +443,286 @@ def main_func():
         dest_xport_cfg.add_cache(cache_dir, readonly=False)
         dest_xport_cfg.incoming_root = incoming_dir
 
-        # Configure src publisher
-        src_pub = transport.setup_publisher(src_uri, "source", xport, xport_cfg,
+        # Configure src publisher(s).
+        transport.setup_publisher(src_uri, "source", xport, xport_cfg,
             remote_prefix=True)
 
-        tracker = get_tracker()
-        if list_newest:
-                if pargs or len(pargs) > 0:
-                        usage(_("-n takes no options"))
+        any_unmatched = []
+        total_processed = 0
+        for src_pub in xport_cfg.gen_publishers():
+                tracker = get_tracker()
+                if list_newest:
+                        if pargs or len(pargs) > 0:
+                                usage(_("-n takes no options"))
 
-                fmri_list = fetch_catalog(src_pub, tracker, xport)
-                list_newest_fmris(fmri_list)
-                return 0
-
-        if pargs == None or len(pargs) == 0:
-                usage(_("must specify at least one pkgfmri"))
-
-        republish = False
-
-        if not target:
-                target = basedir = os.getcwd()
-        elif target.find("://") != -1:
-                basedir = tempfile.mkdtemp(dir=temp_root)
-                tmpdirs.append(basedir)
-                republish = True
-
-                targ_pub = transport.setup_publisher(target, "target",
-                    dest_xport, dest_xport_cfg, remote_prefix=True)
-
-                # Files have to be decompressed for republishing.
-                keep_compressed = False
-                if target.startswith("file://"):
-                        # Check to see if the repository exists first.
-                        try:
-                                t = trans.Transaction(target, xport=dest_xport,
-                                    pub=targ_pub)
-                        except trans.TransactionRepositoryInvalidError, e:
-                                txt = str(e) + "\n\n"
-                                txt += _("To create a repository, use the "
-                                    "pkgsend command.")
-                                abort(err=txt)
-                        except trans.TransactionRepositoryConfigError, e:
-                                txt = str(e) + "\n\n"
-                                txt += _("The repository configuration for "
-                                    "the repository located at '%s' is not "
-                                    "valid or the specified path does not "
-                                    "exist.  Please correct the configuration "
-                                    "of the repository or create a new "
-                                    "one.") % target
-                                abort(err=txt)
-                        except trans.TransactionError, e:
-                                abort(err=e)
-        else:
-                basedir = target
-                if not os.path.exists(basedir):
-                        try:
-                                os.makedirs(basedir, misc.PKG_DIR_MODE)
-                        except:
-                                error(_("Unable to create basedir '%s'.") % \
-                                    basedir)
-                                return 1
-
-        xport_cfg.pkg_root = basedir
-        dest_xport_cfg.pkg_root = basedir
-
-        if republish:
-                targ_fmris = fetch_catalog(targ_pub, tracker, dest_xport)
-
-        all_fmris = fetch_catalog(src_pub, tracker, xport)
-        fmri_arguments = pargs
-        fmri_list = prune(list(set(expand_matching_fmris(all_fmris,
-            fmri_arguments))), all_versions, all_timestamps)
-
-        if recursive:
-                msg(_("Retrieving manifests for dependency evaluation ..."))
-                tracker.evaluate_start()
-                fmri_list = prune(get_dependencies(src_uri, fmri_list, basedir,
-                    tracker), all_versions, all_timestamps)
-                tracker.evaluate_done()
-
-        def get_basename(pfmri):
-                open_time = pfmri.get_timestamp()
-                return "%d_%s" % \
-                    (calendar.timegm(open_time.utctimetuple()),
-                    urllib.quote(str(pfmri), ""))
-
-        # First, retrieve the manifests and calculate package transfer sizes.
-        npkgs = len(fmri_list)
-        nfiles = 0
-        nbytes = 0
-
-        if not recursive:
-                msg(_("Retrieving manifests for package evaluation ..."))
-
-        tracker.evaluate_start(npkgs=npkgs)
-        retrieve_list = []
-        while fmri_list:
-                f = fmri_list.pop()
-
-                if republish and f in targ_fmris:
-                        msg(_("Skipping %s: already present "
-                            "at destination") % f)
+                        fmri_list = fetch_catalog(src_pub, tracker, xport)
+                        list_newest_fmris(fmri_list)
                         continue
 
-                m = get_manifest(f, basedir)
-                pkgdir = xport_cfg.get_pkg_dir(f)
-                mfile = xport.multi_file_ni(src_pub, pkgdir,
-                    not keep_compressed, tracker)
- 
-                nf, nb = add_hashes_to_multi(m, mfile)
-                nfiles += nf
-                nbytes += nb
+                msg(_("Processing packages for publisher %s ...") %
+                    src_pub.prefix)
+                if pargs == None or len(pargs) == 0:
+                        usage(_("must specify at least one pkgfmri"))
 
-                retrieve_list.append((f, mfile))
+                republish = False
 
-                tracker.evaluate_progress(fmri=f)
-        tracker.evaluate_done()
+                if not target:
+                        target = basedir = os.getcwd()
+                elif target and not raw:
+                        basedir = tempfile.mkdtemp(dir=temp_root,
+                            prefix=global_settings.client_name + "-")
+                        tmpdirs.append(basedir)
+                        republish = True
 
-        # Next, retrieve and store the content for each package.
-        msg(_("Retrieving package content ..."))
-        tracker.download_set_goal(len(retrieve_list), nfiles, nbytes)
+                        # Turn target into a valid URI.
+                        target = misc.parse_uri(target)
 
-        publish_list = []
-        while retrieve_list:
-                f, mfile = retrieve_list.pop()
-                tracker.download_start_pkg(f.get_fmri(include_scheme=False))
+                        # Setup target for transport.
+                        targ_pub = transport.setup_publisher(target,
+                            src_pub.prefix, dest_xport, dest_xport_cfg)
 
-                if mfile:
-                        mfile.wait_files()
-                        if not download_start:
-                                download_start = True
+                        # Files have to be decompressed for republishing.
+                        keep_compressed = False
+                        if target.startswith("file://"):
+                                # Check to see if the repository exists first.
+                                try:
+                                        t = trans.Transaction(target,
+                                            xport=dest_xport, pub=targ_pub)
+                                except trans.TransactionRepositoryInvalidError, e:
+                                        txt = str(e) + "\n\n"
+                                        txt += _("To create a repository, use "
+                                            "the pkgsend command.")
+                                        abort(err=txt)
+                                except trans.TransactionRepositoryConfigError, e:
+                                        txt = str(e) + "\n\n"
+                                        txt += _("The repository configuration "
+                                            "for the repository located at "
+                                            "'%s' is not valid or the "
+                                            "specified path does not exist.  "
+                                            "Please correct the configuration "
+                                            "of the repository or create a new "
+                                            "one.") % target
+                                        abort(err=txt)
+                                except trans.TransactionError, e:
+                                        abort(err=e)
+                else:
+                        basedir = target
+                        if not os.path.exists(basedir):
+                                try:
+                                        os.makedirs(basedir, misc.PKG_DIR_MODE)
+                                except Exception, e:
+                                        error(_("Unable to create basedir "
+                                            "'%s': %s") % (basedir, e))
+                                        abort()
+
+                xport_cfg.pkg_root = basedir
+                dest_xport_cfg.pkg_root = basedir
 
                 if republish:
-                        publish_list.append(f)
-                tracker.download_end_pkg()
-        tracker.download_done()
-        tracker.reset()
+                        targ_fmris = fetch_catalog(targ_pub, tracker, dest_xport)
 
-        # Finally, republish the packages if needed.
-        while publish_list:
-                f = publish_list.pop()
-                msg(_("Republishing %s ...") % f)
+                all_fmris = fetch_catalog(src_pub, tracker, xport)
+                fmri_arguments = pargs
+                matches, unmatched = expand_matching_fmris(all_fmris,
+                    fmri_arguments)
 
-                m = get_manifest(f, basedir)
+                # Track anything that failed to match.
+                any_unmatched.append(unmatched)
+                if not matches:
+                        # No matches at all; nothing to do for this publisher.
+                        continue
 
-                # Get first line of original manifest so that inclusion of the
-                # scheme can be determined.
-                use_scheme = True
-                contents = get_manifest(f, basedir, contents=True)
-                if contents.splitlines()[0].find("pkg:/") == -1:
-                        use_scheme = False
+                fmri_list = prune(list(set(matches)), all_versions,
+                    all_timestamps)
 
-                pkg_name = f.get_fmri(include_scheme=use_scheme)
-                pkgdir = xport_cfg.get_pkg_dir(f)
+                if recursive:
+                        msg(_("Retrieving manifests for dependency "
+                            "evaluation ..."))
+                        tracker.evaluate_start()
+                        fmri_list = prune(get_dependencies(src_uri, fmri_list,
+                            basedir, tracker), all_versions, all_timestamps)
+                        tracker.evaluate_done()
 
-                # This is needed so any previous failures for a package
-                # can be aborted.
-                trans_id = get_basename(f)
+                def get_basename(pfmri):
+                        open_time = pfmri.get_timestamp()
+                        return "%d_%s" % \
+                            (calendar.timegm(open_time.utctimetuple()),
+                            urllib.quote(str(pfmri), ""))
 
-                if not targ_pub:
-                        targ_pub = transport.setup_publisher(target, "target",
-                            dest_xport, dest_xport_cfg, remote_prefix=True)
+                # First, retrieve the manifests and calculate package transfer
+                # sizes.
+                npkgs = len(fmri_list)
+                get_bytes = 0
+                send_bytes = 0
 
-                try:
-                        t = trans.Transaction(target, pkg_name=pkg_name,
-                            trans_id=trans_id, xport=dest_xport, pub=targ_pub)
+                if not recursive:
+                        msg(_("Retrieving and evaluating %d package(s)...") %
+                            npkgs)
 
-                        # Remove any previous failed attempt to
-                        # to republish this package.
+                tracker.evaluate_start(npkgs=npkgs)
+                skipped = False
+                retrieve_list = []
+                while fmri_list:
+                        f = fmri_list.pop()
+
+                        if republish and f in targ_fmris:
+                                if not skipped:
+                                        # Ensure a new line is output so message
+                                        # is on separate line from spinner.
+                                        msg("")
+                                msg(_("Skipping %s: already present "
+                                    "at destination") % f)
+                                skipped = True
+                                continue
+
+                        m = get_manifest(f, basedir)
+                        pkgdir = xport_cfg.get_pkg_dir(f)
+                        mfile = xport.multi_file_ni(src_pub, pkgdir,
+                            not keep_compressed, tracker)
+         
+                        getb, sendb = add_hashes_to_multi(m, mfile)
+                        get_bytes += getb
+                        if republish:
+                                send_bytes += sendb
+
+                        retrieve_list.append((f, mfile))
+
+                        tracker.evaluate_progress(fmri=f)
+                tracker.evaluate_done()
+
+                # Next, retrieve and store the content for each package.
+                tracker.republish_set_goal(len(retrieve_list), get_bytes,
+                    send_bytes)
+
+                if dry_run:
+                        tracker.republish_done()
+                        cleanup()
+                        continue
+
+                processed = 0
+                while retrieve_list:
+                        f, mfile = retrieve_list.pop()
+                        tracker.republish_start_pkg(f.pkg_name)
+
+                        if mfile:
+                                download_start = True
+                                mfile.wait_files()
+
+                        if not republish:
+                                # Nothing more to do for this package.
+                                tracker.republish_end_pkg()
+                                continue
+
+                        m = get_manifest(f, basedir)
+
+                        # Get first line of original manifest so that inclusion
+                        # of the scheme can be determined.
+                        use_scheme = True
+                        contents = get_manifest(f, basedir, contents=True)
+                        if contents.splitlines()[0].find("pkg:/") == -1:
+                                use_scheme = False
+
+                        pkg_name = f.get_fmri(include_scheme=use_scheme)
+                        pkgdir = xport_cfg.get_pkg_dir(f)
+
+                        # This is needed so any previous failures for a package
+                        # can be aborted.
+                        trans_id = get_basename(f)
+
+                        if not targ_pub:
+                                targ_pub = transport.setup_publisher(target,
+                                    src_pub.prefix, dest_xport, dest_xport_cfg,
+                                    remote_prefix=True)
+
                         try:
-                                t.close(abandon=True)
-                        except:
-                                # It might not exist already.
-                                pass
+                                t = trans.Transaction(target, pkg_name=pkg_name,
+                                    trans_id=trans_id, xport=dest_xport,
+                                    pub=targ_pub, progtrack=tracker)
 
-                        t.open()
-                        for a in m.gen_actions():
-                                if a.name == "set" and \
-                                    a.attrs.get("name", "") in ("fmri",
-                                    "pkg.fmri"):
-                                        # To be consistent with the server,
-                                        # the fmri can't be added to the
-                                        # manifest.
-                                        continue
+                                # Remove any previous failed attempt to
+                                # to republish this package.
+                                try:
+                                        t.close(abandon=True)
+                                except:
+                                        # It might not exist already.
+                                        pass
 
-                                if hasattr(a, "hash"):
-                                        fname = os.path.join(pkgdir,
-                                            a.hash)
-                                        a.data = lambda: open(fname,
-                                            "rb")
-                                t.add(a)
-                        t.close()
-                except trans.TransactionError, e:
-                        abort(err=e)
-                        return 1
+                                t.open()
+                                for a in m.gen_actions():
+                                        if a.name == "set" and \
+                                            a.attrs.get("name", "") in ("fmri",
+                                            "pkg.fmri"):
+                                                # To be consistent with the
+                                                # server, the fmri can't be
+                                                # added to the manifest.
+                                                continue
+
+                                        if hasattr(a, "hash"):
+                                                fname = os.path.join(pkgdir,
+                                                    a.hash)
+                                                a.data = lambda: open(fname,
+                                                    "rb")
+                                        t.add(a)
+                                # Always defer catalog update.
+                                t.close(add_to_catalog=False)
+                        except trans.TransactionError, e:
+                                abort(err=e)
+
+                        # Dump data retrieved so far after each successful
+                        # republish to conserve space.
+                        try:
+                                shutil.rmtree(dest_xport_cfg.incoming_root)
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        misc.makedirs(dest_xport_cfg.incoming_root)
+
+                        processed += 1
+                        tracker.republish_end_pkg()
+
+                tracker.republish_done()
+                tracker.reset()
+
+                if processed > 0:
+                        # If any packages were published, trigger an update of
+                        # the catalog.
+                        total_processed += processed
+                        dest_xport.publish_refresh_packages(targ_pub)
+
+                # Prevent further use.
+                targ_pub = None
+
+        # Find the intersection of patterns that failed to match.
+        unmatched = {}
+        for pub_unmatched in any_unmatched:
+                if not pub_unmatched:
+                        # If any publisher matched all patterns, then treat
+                        # the operation as successful.
+                        unmatched = {}
+                        break
+
+                # Otherwise, find the intersection of unmatched patterns so far.
+                for k in pub_unmatched:
+                        try:
+                                src = set(unmatched[k])
+                                unmatched[k] = \
+                                    src.intersection(pub_unmatched[k])
+                        except KeyError:
+                                # Nothing to intersect with; assign instead.
+                                unmatched[k] = pub_unmatched[k]
+
+        # Prune types of matching that didn't have any match failures.
+        for k, v in unmatched.items():
+                if not v:
+                        del unmatched[k]
+
+        if unmatched:
+                # If any match failures remain, abort with an error.
+                match_err = apx.InventoryException(**unmatched)
+                emsg(match_err)
+                if total_processed > 0:
+                        # Partial failure.
+                        abort(retcode=3)
+                abort()
 
         # Dump all temporary data.
         cleanup()

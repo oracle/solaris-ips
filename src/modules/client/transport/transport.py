@@ -2115,7 +2115,8 @@ class Transport(object):
                             (chash, newhash), size=s.st_size)
 
         @LockedTransport()
-        def publish_add(self, pub, action=None, trans_id=None):
+        def publish_add(self, pub, action=None, ccancel=None, progtrack=None,
+            trans_id=None):
                 """Perform the 'add' publication operation to the publisher
                 supplied in pub.  The transaction-id is passed in trans_id."""
 
@@ -2123,11 +2124,14 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
+                if progtrack and ccancel:
+                        progtrack.check_cancelation = ccancel
+
                 for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
                     single_repository=True, operation="add", versions=[0]):
                         try:
                                 d.publish_add(action, header=header,
-                                    trans_id=trans_id)
+                                    progtrack=progtrack, trans_id=trans_id)
                                 return
                         except tx.ExcessiveTransientFailure, ex:
                                 # If an endpoint experienced so many failures

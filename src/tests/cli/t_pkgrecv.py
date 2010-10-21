@@ -109,11 +109,12 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
                     depot1 is mapped to publisher test1 (preferred)
-                    depot2 is mapped to publisher test1 (alternate) """
+                    depot2 is mapped to publisher test1 (alternate)
+                    depot3 and depot4 are scratch depots"""
 
                 # This test suite needs actual depots.
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1"],
-                    start_depots=True)
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1",
+                    "test2", "test2"], start_depots=True)
 
                 self.make_misc_files(self.misc_files)
 
@@ -133,6 +134,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.tempdir = tempfile.mkdtemp(dir=self.test_root)
 
+                self.durl3 = self.dcs[3].get_depot_url()
+                self.durl4 = self.dcs[4].get_depot_url()
+
         @staticmethod
         def get_repo(uri):
                 parts = urlparse.urlparse(uri, "file", allow_fragments=0)
@@ -150,7 +154,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 invalid options or option values return expected exit code."""
 
                 # Test that bad options return expected exit code.
-                self.pkgrecv(command="-n", exit=2)
+                self.pkgrecv(command="--newest", exit=2)
                 self.pkgrecv(self.durl1, "-!", exit=2)
                 self.pkgrecv(self.durl1, "-p foo", exit=2)
                 self.pkgrecv(self.durl1, "-d %s gold@1.0-1" % self.tempdir,
@@ -165,15 +169,15 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl1, "-d file://%s foo" % npath,  exit=1)
 
                 # Test list newest.
-                self.pkgrecv(self.durl1, "-n")
+                self.pkgrecv(self.durl1, "--newest")
                 output = self.reduceSpaces(self.output)
 
                 # The latest version of amber and bronze should be listed
                 # (sans publisher prefix currently).
-                amber = self.published[1].replace("pkg://test1/", "pkg:/")
-                scheme = self.published[6].replace("pkg://test1/", "pkg:/")
-                bronze = self.published[4].replace("pkg://test1/", "pkg:/")
-                tree = self.published[5].replace("pkg://test1/", "pkg:/")
+                amber = self.published[1]
+                scheme = self.published[6]
+                bronze = self.published[4]
+                tree = self.published[5]
                 expected = "\n".join((amber, scheme, tree, bronze)) + "\n"
                 self.assertEqualDiff(expected, output)
 
@@ -183,7 +187,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 f = fmri.PkgFmri(self.published[3], None)
 
                 # First, retrieve the package.
-                self.pkgrecv(self.durl1, "-d %s %s" % (self.tempdir, f))
+                self.pkgrecv(self.durl1, "--raw -d %s %s" % (self.tempdir, f))
 
                 # Next, load the manifest.
                 basedir = os.path.join(self.tempdir, f.get_dir_path())
@@ -225,7 +229,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # First, pkgrecv the pkg to a directory.  The files are
                 # kept compressed so they can be compared directly to the
                 # repository's internal copy.
-                self.pkgrecv(self.durl1, "-k -d %s %s" % (self.tempdir, f))
+                self.pkgrecv(self.durl1, "--raw -k -d %s %s" % (self.tempdir,
+                    f))
 
                 # Next, compare the manifests.
                 orepo = self.get_repo(self.dpath1)
@@ -320,6 +325,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Fourth, create an image and verify that the sent package is
                 # seen by the client.
+                self.wait_repo(self.dpath2)
                 self.image_create(self.durl2, prefix="test1")
                 self.pkg("info -r bronze@2.0")
 
@@ -350,7 +356,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze recursively to a directory, this should
                 # also retrieve its dependency: amber, and amber's dependency:
                 # tree.
-                self.pkgrecv(self.durl1, "-r -k -d %s %s" % (self.tempdir,
+                self.pkgrecv(self.durl1, "--raw -r -k -d %s %s" % (self.tempdir,
                     bronze))
 
                 amber = fmri.PkgFmri(self.published[1], None)
@@ -371,8 +377,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Retrieve bronze using -m all-timestamps and a version pattern.
                 # This should only retrieve bronze20_1 and bronze20_2.
-                self.pkgrecv(self.durl1, "-m all-timestamps -r -k -d %s %s" % (
-                    self.tempdir, "bronze@2.0"))
+                self.pkgrecv(self.durl1, "--raw -m all-timestamps -r -k "
+                    "-d %s %s" % (self.tempdir, "bronze@2.0"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -392,8 +398,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Retrieve bronze using -m all-timestamps and a package stem.
                 # This should retrieve bronze10, bronze20_1, and bronze20_2.
-                self.pkgrecv(self.durl1, "-m all-timestamps -r -k -d %s %s" % (
-                    self.tempdir, "bronze"))
+                self.pkgrecv(self.durl1, "--raw -m all-timestamps -r -k "
+                    "-d %s %s" % (self.tempdir, "bronze"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -414,8 +420,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
                 # Retrieve bronze using -m all-versions, this should only
                 # retrieve bronze10 and bronze20_2.
-                self.pkgrecv(self.durl1, "-m all-versions -r -k -d %s %s" % (
-                    self.tempdir, "bronze"))
+                self.pkgrecv(self.durl1, "--raw -m all-versions -r -k "
+                    "-d %s %s" % (self.tempdir, "bronze"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -439,7 +445,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 os.environ["PKG_DEST"] = self.tempdir
 
                 # First, retrieve the package.
-                self.pkgrecv(command="%s" % f)
+                self.pkgrecv(command="--raw %s" % f)
 
                 # Next, load the manifest.
                 basedir = os.path.join(self.tempdir, f.get_dir_path())
@@ -481,6 +487,36 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Next, recursively pkgrecv bronze2.0 into a file repository
                 # This would fail before behavior fixed to skip existing pkgs.
                 self.pkgrecv(self.durl1, "-r -d file://%s %s" % (npath, f2))
+
+        def test_7_recv_multipublisher(self):
+                """Verify that pkgrecv handles multi-publisher repositories as
+                expected."""
+
+                # Setup a repository with packages from multiple publishers.
+                amber = self.amber10.replace("open ", "open pkg://test2/")
+                self.pkgsend_bulk(self.durl3, amber)
+                self.pkgrecv(self.durl1, "-d %s amber@1.0 bronze@1.0" %
+                    self.durl3)
+
+                # Now attempt to receive from a repository with packages from
+                # multiple publishers and verify entry exists only for test1.
+                self.pkgrecv(self.durl3, "-d %s bronze" % self.durl4)
+                self.pkgrecv(self.durl3, "--newest")
+                self.assertNotEqual(self.output.find("test1/bronze"), -1)
+                self.assertEqual(self.output.find("test2/bronze"), -1)
+
+                # Now retrieve amber, and verify entries exist for both pubs.
+                self.wait_repo(self.dcs[4].get_repodir())
+                self.wait_repo(self.dcs[3].get_repodir())
+                self.pkgrecv(self.durl3, "-d %s amber" % self.durl4)
+                self.pkgrecv(self.durl4, "--newest")
+                self.assertNotEqual(self.output.find("test1/amber"), -1)
+                self.assertNotEqual(self.output.find("test2/amber"), -1)
+
+                # Verify attempting to retrieve a non-existent package fails
+                # for a multi-publisher repository.
+                self.pkgrecv(self.durl3, "-d %s nosuchpackage" % self.durl4,
+                    exit=1)
 
 
 if __name__ == "__main__":

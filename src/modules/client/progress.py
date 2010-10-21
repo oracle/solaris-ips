@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -62,13 +61,14 @@ class ProgressTracker(object):
                 self.reset()
 
         def reset_download(self):
+                self.dl_started = False
                 self.dl_goal_nfiles = 0
                 self.dl_cur_nfiles = 0
                 self.dl_goal_nbytes = 0
                 self.dl_cur_nbytes = 0
                 self.dl_goal_npkgs = 0
                 self.dl_cur_npkgs = 0
-                self.dl_cur_pkg = "None"
+                self.cur_pkg = "None"
 
         def reset(self):
                 self.cat_cur_catalog = None
@@ -101,6 +101,10 @@ class ProgressTracker(object):
                 self.item_goal_nitems = 0
                 self.item_phase = "None"
                 self.item_phase_last = "None"
+
+                self.send_cur_nbytes = 0
+                self.send_goal_nbytes = 0
+                self.republish_started = False
 
                 # The tracker sets this to True whenever it has emitted
                 # output, but not yet written a newline. ProgressTracker
@@ -183,7 +187,7 @@ class ProgressTracker(object):
                 self.dl_goal_nbytes = nbytes
 
         def download_start_pkg(self, pkgname):
-                self.dl_cur_pkg = pkgname
+                self.cur_pkg = pkgname
                 if self.dl_goal_nbytes != 0:
                         self.dl_output()
 
@@ -197,8 +201,12 @@ class ProgressTracker(object):
 
                 self.dl_cur_nbytes += nbytes
                 self.dl_cur_nfiles += nfiles
-                if self.dl_goal_nbytes != 0:
-                        self.dl_output()
+                if self.dl_started:
+                        if self.dl_goal_nbytes != 0:
+                                self.dl_output()
+                elif self.republish_started:
+                        if self.dl_goal_nbytes != 0:
+                                self.republish_output()
 
         def download_done(self):
                 """ Call when all downloading is finished """
@@ -273,6 +281,36 @@ class ProgressTracker(object):
                 if self.item_goal_nitems > 0:
                         self.item_output_done()
                 assert self.item_goal_nitems == self.item_cur_nitems
+
+        def republish_set_goal(self, npkgs, ngetbytes, nsendbytes):
+                self.item_cur_nitems = 0
+                self.item_goal_nitems = npkgs
+                self.dl_cur_nbytes = 0
+                self.dl_goal_nbytes = ngetbytes
+                self.send_cur_nbytes = 0
+                self.send_goal_nbytes = nsendbytes
+
+        def republish_start_pkg(self, pkgname):
+                self.cur_pkg = pkgname
+                if self.dl_goal_nbytes != 0:
+                        self.republish_output()
+
+        def republish_end_pkg(self):
+                self.item_cur_nitems += 1
+                if self.dl_goal_nbytes != 0:
+                        self.republish_output()
+
+        def upload_add_progress(self, nbytes):
+                """ Call to provide news that the upload has made progress """
+
+                self.send_cur_nbytes += nbytes
+                if self.send_goal_nbytes != 0:
+                        self.republish_output()
+
+        def republish_done(self):
+                """ Call when all downloading is finished """
+                if self.dl_goal_nbytes != 0:
+                        self.republish_output_done()
 
         #
         # This set of methods should be regarded as abstract *and* protected.
@@ -376,6 +414,14 @@ class ProgressTracker(object):
                 raise NotImplementedError("item_output_done() not implemented "
                     "in superclass")
 
+        def republish_output(self):
+                raise NotImplementedError("republish_output() not implemented "
+                    "in superclass")
+
+        def republish_output_done(self):
+                raise NotImplementedError("republish_output_done() not "
+                    "implemented in superclass")
+
         def flush(self):
                 raise NotImplementedError("flush() not implemented in "
                     "superclass")
@@ -464,8 +510,15 @@ class QuietProgressTracker(ProgressTracker):
         def item_output_done(self):
                 return
 
+        def republish_output(self):
+                return
+
+        def republish_output_done(self):
+                return
+
         def flush(self):
                 return
+
 
 class NullProgressTracker(QuietProgressTracker):
         """ This ProgressTracker is a subclass of QuietProgressTracker
@@ -487,7 +540,7 @@ class CommandLineProgressTracker(ProgressTracker):
 
         def __init__(self):
                 ProgressTracker.__init__(self)
-                self.dl_last_printed_pkg = None
+                self.last_printed_pkg = None
 
         def cat_output_start(self):
                 return
@@ -531,20 +584,26 @@ class CommandLineProgressTracker(ProgressTracker):
         def ver_output_done(self):
                 return
 
-        def dl_output(self):
+        def __generic_pkg_output(self, pkg_line):
                 try:
                         # The first time, emit header.
-                        if self.dl_cur_pkg != self.dl_last_printed_pkg:
-                                if self.dl_last_printed_pkg != None:
+                        if self.cur_pkg != self.last_printed_pkg:
+                                if self.last_printed_pkg != None:
                                         print _("Done")
-                                print _("Download: %s ... ") % (self.dl_cur_pkg),
-                                self.dl_last_printed_pkg = self.dl_cur_pkg
+                                print pkg_line % self.cur_pkg,
+                                self.last_printed_pkg = self.cur_pkg
                                 self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
+
+        def dl_output(self):
+                self.__generic_pkg_output(_("Download: %s ... "))
+
+        def republish_output(self):
+                self.__generic_pkg_output(_("Republish : %s ... "))
 
         def __generic_done(self):
                 try:
@@ -557,6 +616,9 @@ class CommandLineProgressTracker(ProgressTracker):
                         raise
 
         def dl_output_done(self):
+                self.__generic_done()
+
+        def republish_output_done(self):
                 self.__generic_done()
 
         def __generic_output(self, phase_attr, last_phase_attr, force=False):
@@ -644,7 +706,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 self.cr = '\r'
                         else:
                                 raise ProgressTrackerException()
-                self.dl_started = False
                 self.spinner = 0
                 self.spinner_chars = "/-\|"
                 self.curstrlen = 0
@@ -837,9 +898,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 print self.cr,
                                 self.needs_cr = True
 
-                        pkg_name = self.dl_cur_pkg
+                        pkg_name = self.cur_pkg
                         if len(pkg_name) > 38:
-                                pkg_name = pkg_name[:34] + "..."
+                                pkg_name = "..." + pkg_name[-34:]
 
                         s = "%-38.38s %7s %11s %12s" % \
                             (pkg_name,
@@ -857,11 +918,69 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def dl_output_done(self):
-                self.dl_cur_pkg = "Completed"
+                self.cur_pkg = "Completed"
                 self.dl_output(force=True)
 
                 # Reset.
                 self.dl_started = False
+                self.spinner = 0
+                self.curstrlen = 0
+
+                try:
+                        print
+                        print
+                        self.needs_cr = False
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def republish_output(self, force=False):
+                if self.republish_started and not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
+                        return
+
+                self.last_print_time = time.time()
+
+                try:
+                        # The first time, emit header.
+                        if not self.republish_started:
+                                self.republish_started = True
+                                print "%-40s %12s %12s %12s" % (_("PROCESS"),
+                                    _("ITEMS"), _("GET (MB)"), _("SEND (MB)"))
+                        else:
+                                print self.cr,
+                                self.needs_cr = True
+
+                        pkg_name = self.cur_pkg
+                        if len(pkg_name) > 40:
+                                pkg_name = "..." + pkg_name[-37:]
+
+                        s = "%-40.40s %12s %12s %12s" % \
+                            (pkg_name,
+                            "%d/%d" % (self.item_cur_nitems,
+                                self.item_goal_nitems),
+                            "%.1f/%.1f" % \
+                                ((self.dl_cur_nbytes / 1024.0 / 1024.0),
+                                (self.dl_goal_nbytes / 1024.0 / 1024.0)),
+                            "%.1f/%.1f" % \
+                                ((self.send_cur_nbytes / 1024.0 / 1024.0),
+                                (self.send_goal_nbytes / 1024.0 / 1024.0)))
+                        sys.stdout.write(s + self.clear_eol)
+                        self.needs_cr = True
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def republish_output_done(self):
+                self.cur_pkg = "Completed"
+                self.republish_output(force=True)
+
+                # Reset.
+                self.republish_started = False
                 self.spinner = 0
                 self.curstrlen = 0
 

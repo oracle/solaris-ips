@@ -121,11 +121,11 @@ class GuiProgressTracker(NullProgressTracker):
 
         def dl_output(self):
                 self.display_download_info()
-                if self.prev_pkg != self.dl_cur_pkg:
-                        self.prev_pkg = self.dl_cur_pkg
+                if self.prev_pkg != self.cur_pkg:
+                        self.prev_pkg = self.cur_pkg
                         self.update_details_text(
                             _("Package %d of %d: %s\n") % (self.dl_cur_npkgs+1, 
-                            self.dl_goal_npkgs, self.dl_cur_pkg), "level1")
+                            self.dl_goal_npkgs, self.cur_pkg), "level1")
 
         def dl_output_done(self):
                 self.update_details_text("\n")

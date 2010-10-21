@@ -131,10 +131,12 @@ class NullTransaction(object):
         purposes."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, xport=None, pub=None):
+            repo_props=EmptyDict, trans_id=None, xport=None, pub=None,
+            progtrack=None):
                 self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
+                self.progtrack = progtrack
                 self.trans_id = trans_id
 
         def add(self, action):
@@ -195,7 +197,8 @@ class TransportTransaction(object):
         """Provides a publishing interface that uses client transport."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, xport=None, pub=None):
+            repo_props=EmptyDict, trans_id=None, xport=None, pub=None,
+            progtrack=None):
 
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
@@ -204,6 +207,7 @@ class TransportTransaction(object):
                 self.trans_id = trans_id
                 self.scheme = scheme
                 self.path = path
+                self.progtrack = progtrack
                 self.transport = xport
                 self.publisher = pub
 
@@ -267,7 +271,8 @@ class TransportTransaction(object):
 
                 try:
                         self.transport.publish_add(self.publisher,
-                            action=action, trans_id=self.trans_id)
+                            action=action, trans_id=self.trans_id,
+                            progtrack=self.progtrack)
                 except apx.TransportError, e:
                         msg = str(e)
                         raise TransactionOperationError("add",
@@ -421,7 +426,7 @@ class Transaction(object):
 
         def __new__(cls, origin_url, create_repo=False, pkg_name=None,
             repo_props=EmptyDict, trans_id=None, noexecute=False, xport=None,
-            pub=None):
+            pub=None, progtrack=None):
 
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
@@ -459,4 +464,4 @@ class Transaction(object):
                 return cls.__schemes[scheme](origin_url,
                     create_repo=create_repo, pkg_name=pkg_name,
                     repo_props=repo_props, trans_id=trans_id, xport=xport,
-                    pub=pub)
+                    pub=pub, progtrack=progtrack)

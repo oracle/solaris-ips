@@ -6,42 +6,35 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
-         [-kr] [-m match] (fmri|pattern) ...
-     /usr/bin/pkgrecv [-s src_uri] -n
+         [-kr] [-m match] [-n] [--raw] (fmri|pattern) ...
+     /usr/bin/pkgrecv [-s src_uri] --newest
 
 DESCRIPTION
      pkgrecv allows the user to retrieve the contents of a package
      from a pkg(5) repository.  With the default options, the contents
-     are retrieved in a format that can easily be input to pkgsend(1)
-     when used with the 'include' subcommand.  As a result, pkgrecv(1)
-     and pkgsend(1) can be used to conveniently modify and republish
-     packages, perhaps by correcting file contents or providing
-     additional package tags.
+     are retrieved in a repository format suitable for use with
+     pkg.depotd(1M).
 
 OPTIONS
      The following options are supported:
 
      -c cache_dir    The path to a directory that will be used to cache
-		     downloaded content.  If one is not supplied, the
-		     client will automatically pick a cache directory.
-		     In the case where a download is interrupted, and a
-		     cache directory was automatically chosen, use this
-		     option to resume the download.
+                     downloaded content.  If one is not supplied, the
+                     client will automatically pick a cache directory.
+                     In the case where a download is interrupted, and a
+                     cache directory was automatically chosen, use this
+                     option to resume the download.
 
-     -d path_or_uri  The path of a directory to save the retrieved package
-                     to, or the URI of a repository to republish it to.  If
-                     not provided, the default value is the current working
-                     directory.  If a directory path is provided, then
-                     package content will only be retrieved if it does not
-                     already exist in the target directory.  If a repository
-                     URI is provided, a temporary directory will be created
-                     and all of the package data retrieved before attempting
-                     to republish it.
+     -d path_or_uri  The filesystem path or URI of the target repository to
+                     republish packages to.  If not provided, the default
+                     value is the current working directory.  The target
+                     must already exist.  New repositories can be created
+                     using pkgrepo(1).
 
      -h              Display usage message.
 
      -k              Keep the retrieved package content compressed, ignored
-                     when republishing.  Should not be used with pkgsend.
+                     when republishing.  Should not be used with pkgsend(1).
 
      -m match        Controls matching behavior using the following values:
                          all-timestamps
@@ -50,9 +43,7 @@ OPTIONS
                          all-versions
                              includes all matching versions, not just latest
 
-     -n              List the most recent versions of the packages available
-                     from the specified repository and exit.  (All other
-                     options except -s will be ignored.)
+     -n              Perform a trial run with no changes made.
 
      -r              Recursively retrieves all dependencies for the provided
                      list of packages.
@@ -60,20 +51,34 @@ OPTIONS
      -s src_repo_uri A URI representing the location of a pkg(5) repository
                      from which to receive package data.
 
+     --newest        List the most recent versions of the packages available
+                     from the specified repository and exit.  (All other
+                     options except -s will be ignored.)
+
+     --raw           Retrieve and store the raw package data in a set of
+                     directory structures by stem and version at the location
+                     specified by -d.  May only be used with filesystem-
+                     based destinations.  This can be used with pkgsend(1)
+                     include to conveniently modify and republish packages,
+                     perhaps by correcting file contents or providing
+                     additional package metadata.
+
 EXAMPLES
      Example 1:  List newest packages available from the repository on
      the system named 'test'.
 
-     $ pkgrecv -s http://test -n
+     $ pkgrecv -s http://test --newest
      pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
      pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
      pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
      pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
 
      Example 2: Receive the SUNWlibC, SUNWfreetype, and SUNWlibm
-     packages from example 1.
+     packages from example 1 in a format suitable for use with
+     pkgsend(1) include.
 
-     $ pkgrecv -s http://test SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
+     $ pkgrecv -s http://test SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z \
+         --raw
      SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
      SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
      $ ls -d SUNW*
@@ -92,7 +97,7 @@ EXAMPLES
      Example 5: Receive all versions of the package "SUNWvim" from the
      system named 'test' and republish it to a local repository.
 
-     $ pkgrecv -s http://test -d file:///local/repo SUNWvim
+     $ pkgrecv -s http://test -d /local/repo SUNWvim
 
      Example 6: Receive all versions of the package "SUNWzlib" from the
      system named 'test' and republish it to a remote repository on the
@@ -103,7 +108,12 @@ EXAMPLES
      Example 7: Receive the package "SUNWemacs" and all of its dependencies
      from the repository located at '/var/pkg/repo'.
 
-     $ pkgrecv -s file:///var/pkg/repo -r SUNWemacs
+     $ pkgrecv -s /var/pkg/repo -r SUNWemacs
+
+     Example 8: Receive all packages that do not already exist from the
+     repository located at 'http://example.com:10000':
+
+     $ pkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
@@ -119,13 +129,14 @@ ENVIRONMENT VARIABLES
 EXIT STATUS
      The following exit values are returned:
 
-     0     Everything worked.
+     0     Command succeeded.
 
-     1     Something bad happened.
+     1     An error occurred.
 
      2     Invalid command line options were specified.
 
-FILES
+     3     Multiple operations were requested, but only some of them
+           succeeded.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the following attributes:
@@ -136,7 +147,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), attributes(5), pkg(5)
+     pkgrepo(1), pkgsend(1), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.

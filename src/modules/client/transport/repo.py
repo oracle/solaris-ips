@@ -129,7 +129,8 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def publish_add(self, action, header=None, trans_id=None):
+        def publish_add(self, action, header=None, progtrack=None,
+            trans_id=None):
                 """The publish operation that adds content to a repository.
                 The action must be populated with a data property.
                 Callers may supply a header, and should supply a transaction
@@ -321,11 +322,13 @@ class HTTPRepo(TransportRepo):
                     failonerror=failonerror)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
-            data_fobj=None, data_fp=None, failonerror=True):
+            data_fobj=None, data_fp=None, failonerror=True, progclass=None,
+            progtrack=None):
                 return self._engine.send_data(url, data=data, header=header,
                     repourl=self._url, ccancel=ccancel,
                     data_fobj=data_fobj, data_fp=data_fp,
-                    failonerror=failonerror)
+                    failonerror=failonerror, progclass=progclass,
+                    progtrack=progtrack)
 
         def __check_response_body(self, fobj):
                 """Parse the response body found accessible using the provided
@@ -371,9 +374,9 @@ class HTTPRepo(TransportRepo):
                 pub_prefix = getattr(pub, "prefix", None)
                 if pub_prefix and not methodstr.startswith("open/") and \
                     not base.endswith("/%s/" % pub_prefix) and \
-                    self.supports_version("publisher", [1]):
+                    self.supports_version("publisher", [1]) > -1:
                         # Append the publisher prefix to the repository URL.
-                        base = urlparse.urljoin(base, pub_prefix)
+                        base = urlparse.urljoin(base, pub_prefix) + "/"
 
                 uri = urlparse.urljoin(base, methodstr)
                 if not query:
@@ -650,7 +653,8 @@ class HTTPRepo(TransportRepo):
 
                 return self._verdata is not None
 
-        def publish_add(self, action, header=None, trans_id=None):
+        def publish_add(self, action, header=None, progtrack=None,
+            trans_id=None):
                 """The publish operation that adds content to a repository.
                 The action must be populated with a data property.
                 Callers may supply a header, and should supply a transaction
@@ -659,6 +663,10 @@ class HTTPRepo(TransportRepo):
                 attrs = action.attrs
                 data_fobj = None
                 data = None
+                progclass = None
+
+                if progtrack:
+                        progclass = FileProgress
 
                 baseurl = self.__get_request_url("add/0/")
                 request_str = "%s/%s" % (trans_id, action.name)
@@ -678,7 +686,8 @@ class HTTPRepo(TransportRepo):
                         headers.update(header)
 
                 fobj = self._post_url(requesturl, header=headers,
-                    data_fobj=data_fobj, data=data, failonerror=False)
+                    data_fobj=data_fobj, data=data, failonerror=False,
+                    progclass=progclass, progtrack=progtrack)
                 self.__check_response_body(fobj)
 
         def publish_add_file(self, pth, header=None, trans_id=None):
@@ -880,7 +889,7 @@ class HTTPRepo(TransportRepo):
         def publish_refresh_indexes(self, header=None, pub=None):
                 """Attempt to refresh the search data in the repository."""
 
-                if self.supports_version("admin", [0]):
+                if self.supports_version("admin", [0]) > -1:
                         requesturl = self.__get_request_url("admin/0", query={
                             "cmd": "refresh-indexes" }, pub=pub)
                 else:
@@ -1444,7 +1453,8 @@ class FileRepo(TransportRepo):
 
                 return self._verdata is not None
 
-        def publish_add(self, action, header=None, trans_id=None):
+        def publish_add(self, action, header=None, progtrack=None,
+            trans_id=None):
                 """The publish operation that adds an action and its
                 payload (if applicable) to an existing transaction in a
                 repository.  The action must be populated with a data property.
@@ -1454,10 +1464,21 @@ class FileRepo(TransportRepo):
                 # Calling any publication operation sets read_only to False.
                 self._frepo.read_only = False
 
+                progclass = None
+                if progtrack:
+                        progclass = FileProgress
+                        progtrack = progclass(progtrack)
+
                 try:
                         self._frepo.add(trans_id, action)
                 except svr_repo.RepositoryError, e:
+                        if progtrack:
+                                progtrack.abort()
                         raise tx.TransportOperationError(str(e))
+                else:
+                        if progtrack:
+                                sz = int(action.attrs.get("pkg.size", 0))
+                                progtrack.progress_callback(0, 0, sz, sz)
 
         def publish_add_file(self, pth, header=None, trans_id=None):
                 """The publish operation that adds a file to an existing
@@ -1678,6 +1699,8 @@ class FileProgress(ProgressCallback):
                 ProgressCallback.__init__(self, progtrack)
                 self.dltotal = 0
                 self.dlcurrent = 0
+                self.ultotal = 0
+                self.ulcurrent = 0
                 self.completed = False
 
         def abort(self):
@@ -1685,6 +1708,7 @@ class FileProgress(ProgressCallback):
                 by this file from the ProgressTracker."""
 
                 self.progtrack.download_add_progress(0, -self.dlcurrent)
+                self.progtrack.upload_add_progress(-self.ulcurrent)
                 self.completed = True
 
         def commit(self, size):
@@ -1718,6 +1742,14 @@ class FileProgress(ProgressCallback):
                 if new_progress > 0:
                         self.dlcurrent += new_progress
                         self.progtrack.download_add_progress(0, new_progress)
+
+                if self.ultotal != ultot:
+                        self.ultotal = ultot
+
+                new_progress = int(ulcur - self.ulcurrent)
+                if new_progress > 0:
+                        self.ulcurrent += new_progress
+                        self.progtrack.upload_add_progress(new_progress)
 
                 return 0
 
