@@ -88,9 +88,10 @@ def usage(usage_error=None, retcode=2):
 
         msg(_("""\
 Usage:
-        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-kr] [-m match] [-n]
-            [--raw] (fmri|pattern) ...
-        pkgrecv [-s src_repo_uri] --newest
+        pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
+            [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
+            (fmri|pattern) ...
+        pkgrecv [-s src_repo_uri] --newest 
 
 Options:
         -c cache_dir    The path to a directory that will be used to cache
@@ -137,6 +138,10 @@ Options:
                         include to conveniently modify and republish packages,
                         perhaps by correcting file contents or providing
                         additional package metadata.
+
+        --key keyfile   Specify a client SSL key file to use for pkg retrieval.
+
+        --cert certfile Specify a client SSL certificate file to use for pkg retrieval.
 
 Environment:
         PKG_DEST        Destination directory or repository URI
@@ -372,6 +377,8 @@ def main_func():
         incoming_dir = None
         src_pub = None
         raw = False
+        key = None
+        cert = None
 
         temp_root = misc.config_temp_root()
 
@@ -382,8 +389,8 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:",
-                    ["newest", "raw"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:", 
+                    ["key=", "cert=", "newest", "raw"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
@@ -413,6 +420,10 @@ def main_func():
                         list_newest = True
                 elif opt == "--raw":
                         raw = True
+                elif opt == "--key":
+                        key= arg
+                elif opt == "--cert":
+                        cert = arg
 
         if not src_uri:
                 usage(_("a source repository must be provided"))
@@ -445,7 +456,7 @@ def main_func():
 
         # Configure src publisher(s).
         transport.setup_publisher(src_uri, "source", xport, xport_cfg,
-            remote_prefix=True)
+            remote_prefix=True, ssl_key=key, ssl_cert=cert)
 
         any_unmatched = []
         total_processed = 0

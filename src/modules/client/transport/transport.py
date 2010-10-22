@@ -2805,7 +2805,8 @@ class MultiFileNI(MultiFile):
 # need to configure a transport and or publishers.
 
 def setup_publisher(repo_uri, prefix, xport, xport_cfg,
-    remote_prefix=False, remote_publishers=False):
+    remote_prefix=False, remote_publishers=False, ssl_key=None, 
+    ssl_cert=None):
         """Given transport 'xport' and publisher configuration 'xport_cfg'
         take the string that identifies a repository by uri in 'repo_uri'
         and create a publisher object.  The caller must specify the prefix.
@@ -2823,6 +2824,11 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
         else:
                 repouri_list = [publisher.RepositoryURI(repo_uri)]
                 repo = publisher.Repository(origins=repouri_list)
+
+        for origin in repo.origins:
+                if origin.scheme == "https": 
+                        origin.ssl_key = ssl_key
+                        origin.ssl_cert = ssl_cert
 
         pub = publisher.Publisher(prefix=prefix, repositories=[repo])
 
@@ -2853,6 +2859,12 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                                         psr.origins.insert(i, r)
                 else:
                         psr.origins = repouri_list
+
+                for newrepo in p.repositories:
+                        for origin in newrepo.origins:
+                                if origin.scheme == "https": 
+                                        origin.ssl_key = ssl_key
+                                        origin.ssl_cert = ssl_cert
 
                 xport_cfg.add_publisher(p)
 

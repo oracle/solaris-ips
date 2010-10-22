@@ -6,7 +6,8 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
-         [-kr] [-m match] [-n] [--raw] (fmri|pattern) ...
+         [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
+         (fmri|pattern) ...
      /usr/bin/pkgrecv [-s src_uri] --newest
 
 DESCRIPTION
@@ -51,6 +52,12 @@ OPTIONS
      -s src_repo_uri A URI representing the location of a pkg(5) repository
                      from which to receive package data.
 
+     --cert file     Specify a client SSL certificate file to use for package 
+                     retrieval from an HTTPS repository.
+
+     --key file      Specify a client SSL key file to use for package retrieval
+                     from an HTTPS repository.
+
      --newest        List the most recent versions of the packages available
                      from the specified repository and exit.  (All other
                      options except -s will be ignored.)
@@ -62,6 +69,8 @@ OPTIONS
                      include to conveniently modify and republish packages,
                      perhaps by correcting file contents or providing
                      additional package metadata.
+
+
 
 EXAMPLES
      Example 1:  List newest packages available from the repository on
