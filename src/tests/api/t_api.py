@@ -97,6 +97,16 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
             add license license.licensed license=license.licensed must-accept=True
             close """
 
+        # Fourth iteration is completely unchanged, so shouldn't require
+        # acceptance.
+        licensed14 = """
+            open licensed@1.4,5.11-0
+            add depend type=require fmri=baz@1.0
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed must-accept=True
+            close """
+
         p5i_bobcat = """{
   "packages": [
     "pkg:/bar@1.0,5.11-0", 
@@ -938,6 +948,28 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Prepare should succeed this time; so execute afterwards.
                 api_obj.prepare()
                 api_obj.execute_plan()
+                api_obj.reset()
+
+                plist.extend(self.pkgsend_bulk(self.rurl, self.licensed14))
+                api_obj.refresh()
+                api_obj.reset()
+
+                # Next, verify that an update to a newer version of a package
+                # where the license hasn't changed and it previously required
+                # acceptance is treated as already having been accepted.
+                api_obj.plan_update_all(sys.argv[0])
+                plan = api_obj.describe()
+                pfmri = fmri.PkgFmri(plist[5])
+                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+                for dest_fmri, src, dest, accepted, displayed in lics:
+                        # License information should only be for "licensed@1.4".
+                        self.assertEqual(pfmri, dest_fmri)
+
+                        if dest.must_accept:
+                                # Since the license hasn't changed and was
+                                # previously accepted, then acceptance shouldn't
+                                # be required here.
+                                self.assertTrue(accepted)
                 api_obj.reset()
 
                 # Finally, verify that an uninstall won't trigger license

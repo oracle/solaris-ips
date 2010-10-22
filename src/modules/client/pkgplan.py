@@ -204,6 +204,22 @@ class PkgPlan(object):
                     self.gen_install_actions()):
                         if dest.name == "license":
                                 self.__add_license(src, dest)
+                                if not src or self.__repair_actions:
+                                        # Never assume acceptance for
+                                        # fix/repair scenario.
+                                        continue
+                                src_ma = src.attrs.get("must-accept", False)
+                                dest_ma = dest.attrs.get("must-accept", False)
+                                if (dest_ma and src_ma) and \
+                                    src.hash == dest.hash:
+                                        # If src action required acceptance,
+                                        # then license was already accepted
+                                        # before, and if the hashes are the
+                                        # same for the license payload, then
+                                        # it doesn't need to be accepted again.
+                                        self.set_license_status(
+                                            dest.attrs["license"],
+                                            accepted=True)
 
         def get_licenses(self):
                 """A generator function that yields tuples of the form (license,
