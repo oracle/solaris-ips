@@ -1,0 +1,17 @@
+package system/input-method/iiim/twle-open
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWiiimf-zhTW-twle-open
+end package
+
+package system/input-method/iiim/zh_tw-twle-open
+consolidation "l10n"
+renamed 151
+depend system/input-method/iiim/twle-open
+end package
+
+package SUNWiiimf-zhTW-twle-open
+consolidation "l10n"
+renamed 133
+depend system/input-method/iiim/zh_tw-twle-open
+end package

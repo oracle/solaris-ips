@@ -1,0 +1,11 @@
+package release/registration
+consolidation "cns"
+classification "System/Core"
+import SUNWstosreg
+end package
+
+package SUNWstosreg
+consolidation "cns"
+renamed 151
+depend release/registration
+end package

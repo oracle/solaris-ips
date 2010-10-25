@@ -25,11 +25,6 @@
 
 ARCH:sh=	uname -p
 REPO=http://localhost:10000
-ON_REPO=http://localhost:20000
-INSTALL_REPO=http://localhost:20001
-X_REPO=http://localhost:20002
-IPS_REPO=http://localhost:20003
-VPANELS_REPO=http://localhost:20004
 MERGEDIR=../../../proto/merge
 SETPUBLISHERDIR=../../../proto/set-publisher
 PROTO=../../../proto/root_$(ARCH)
@@ -39,18 +34,42 @@ i386_REPO=http://localhost:10002
 EXTRA_ARGS=
 JUST_THESE_PKGS=
 
+ON_REPO=http://localhost:20000
+INSTALL_REPO=http://localhost:20001
+X_REPO=http://localhost:20002
+IPS_REPO=http://localhost:20003
+VPANELS_REPO=http://localhost:20004
+
+INPUT_REPOS = \
+    $(ON_REPO) \
+    $(INSTALL_REPO) \
+    $(X_REPO) \
+    $(IPS_REPO) \
+    $(VPANELS_REPO)
+
+ON_EXTRA_REPO=http://localhost:30000
+
+EXTRA_CONTENT = \
+    driver/management/bmc \
+    driver/storage/ifp \
+    driver/storage/isp \
+    driver/storage/qus \
+    system/header/header-ifp \
+    shell/ksh88
+
 $(MERGEDIR):
 	mkdir -p $(MERGEDIR)
 
 $(SETPUBLISHERDIR):
 	mkdir -p $(SETPUBLISHERDIR)
 
+#
 # add other targets as needed; -r flag recursively expands
 # incorporations
 # be sure to clobber between publish targets
 # note that multiple invocations of merge can be done
 # and followed by a single publish
-
+#
 merge:
 	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) ./merge.py \
 	    $(EXTRA_ARGS) -r -d $(MERGEDIR) \
@@ -64,16 +83,16 @@ publish: $(MERGEDIR)
 		PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
 		    ./pkg_publish $(MERGEDIR)/$$var $(REPO); \
 	done
+	pkgrepo -s $(REPO) refresh
 
 publish_setpublisher: $(SETPUBLISHERDIR)
 	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
 	    ./set-publisher.sh $(BUILDID:%=-b %) -d $(SETPUBLISHERDIR) \
-	    -p $(REPO) \
-	    $(ON_REPO) \
-	    $(INSTALL_REPO) \
-	    $(X_REPO) \
-	    $(IPS_REPO) \
-	    $(VPANELS_REPO)
+	    $(JUST_THESE_PKGS:%=-j %) -p $(REPO) $(INPUT_REPOS)
+
+publish_setpublisher-extra: $(SETPUBLISHERDIR)
+	INPUT_REPOS=$(ON_EXTRA_REPO) JUST_THESE_PKGS="$(EXTRA_CONTENT)" \
+	    $(MAKE) publish_setpublisher
 
 clobber_setpublisher:
 	rm -fr $(SETPUBLISHERDIR)

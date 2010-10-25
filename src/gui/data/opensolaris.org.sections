@@ -8,7 +8,7 @@ category = Accessories,Configuration and Preferences,Games,Graphics and Imaging,
 category = Documentation,File Managers,Libraries,Localizations,Scripts,Sessions,Theming,Trusted Extensions,Window Managers
 
 [Development]
-category = C,C++,Databases,Distribution Tools,Editors,Fortran,GNOME and GTK+,GNU,High Performance Computing,Integrated Development Environments,Java,Objective C,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,Suites,System,X11
+category = C,C++,Databases,Distribution Tools,Editors,Fortran,GNOME and GTK+,GNU,High Performance Computing,Integrated Development Environments,Java,Objective C,Observability,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,Suites,System,X11
 
 [Drivers]
 category = Display,Media,Networking,Other Peripherals,Ports,Storage

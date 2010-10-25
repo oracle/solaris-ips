@@ -1,0 +1,18 @@
+package system/input-method/iiim/wnn
+consolidation "l10n"
+classification "System/Internationalization"
+summary "IIIMF - Japanese Language Engine (Wnn)"
+import SUNWjwncr
+import SUNWjwncu
+import SUNWjwnsr
+import SUNWjwnsu
+depend system/locale/ja-extra
+add depend fmri=pkg:/system/iiim/ja/wnn8@8-1 type=optional
+version 8
+end package
+
+package system/iiim/ja/wnn8
+renamed 151
+depend system/input-method/iiim/wnn
+version 8-1
+end package

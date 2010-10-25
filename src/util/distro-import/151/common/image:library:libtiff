@@ -1,0 +1,12 @@
+package image/library/libtiff
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWTiff
+import SUNWTiff-devel
+end package
+
+package SUNWTiff
+consolidation "gnome"
+renamed 133
+depend image/library/libtiff
+end package

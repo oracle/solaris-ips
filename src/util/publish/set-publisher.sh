@@ -24,9 +24,10 @@
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+#
 # set-publisher.sh takes a set of repositories and uses the rules
 # in set-publisher.transforms to change the consolidation-specific
-# publisher names to opensolaris.org.
+# publisher names to that specified by the transforms file.
 #
 # There are 3 options:
 #   -b <build>
@@ -41,19 +42,27 @@
 #     empty other packages there will be published at publication time.
 #     This option is required.
 #
+#   -j <package>
+#     A specific package to republish.  More than one package may be
+#     specified this way and only those packages will be republished.  This
+#     option is optional.
+#
 #   -p repository
 #     A file: or http: repository path to publish the results.  This
 #     repository should have already been created with opensolaris.org
 #     as its publisher.  This option is required.
+#
 
 recv_dir=
 publish_repo=
 only_this_build=
-while getopts b:d:p: opt
-do
+just_these_pkgs=
+
+while getopts b:d:j:p: opt; do
 	case $opt in
 	b)	only_this_build="$OPTARG";;
 	d)	recv_dir="$OPTARG";;
+	j)	just_these_pkgs="$just_these_pkgs $OPTARG";;
 	p)	publish_repo="$OPTARG";;
 	?)	print "Usage: $0: [-b build] -d directory -p publish_repo "
 		    "input_repos" 
@@ -75,11 +84,13 @@ if [ ! -d $recv_dir ]; then
 	fi
 fi
 
+#
 # Iterate through the repositories, and pkgrecv the contents of each
 # of them.
+#
 for repo in $*; do
 	echo $repo
-	pkglist=$(pkgrecv -s $repo -n)
+	pkglist=$(pkgrecv -s $repo --newest)
 	if [ $? -ne 0 ]; then
 		echo "no suitable response from $repo.  exiting"
 		exit 1
@@ -100,18 +111,40 @@ for repo in $*; do
 		modified_pkglist="$pkglist"
 	fi
 
-	echo "pkgrecv -s $repo -d $recv_dir $modified_pkglist"
-	pkgrecv -s $repo -d $recv_dir $modified_pkglist
+	echo "pkgrecv -s $repo -d $recv_dir --raw $modified_pkglist"
+	pkgrecv -s $repo -d $recv_dir --raw $modified_pkglist
 	if [ $? -ne 0 ]; then
-		echo "error from pkgrecv -s $repo -d $recv_dir " \
+		echo "error from pkgrecv -s $repo -d $recv_dir --raw" \
 		    "$modified_pkglist"
 		exit 1
 	fi
 done
 
-# Replace the publisher name with opensolaris.org and publish.
-for pkg in $(echo $recv_dir/*/*); do
-	./pkgmogrify.py -O $pkg/manifest $pkg/manifest \
-	    ./set-publisher.transforms
-	./pkg_publish $pkg $publish_repo
-done
+#
+# Replace the publisher name as specified by the transforms file and
+# publish.
+#
+if [ -z $just_these_pkgs ]; then
+	for pkg in $(echo $recv_dir/*/*); do
+		./pkgmogrify.py -O $pkg/manifest $pkg/manifest \
+		    ./set-publisher.transforms
+		./pkg_publish $pkg $publish_repo
+	done
+else
+	for unquoted in $just_these_pkgs; do
+		quoted=$(python -c \
+		    'import sys, urllib; print urllib.quote(sys.argv[1], "")' \
+		    ${unquoted})
+		if [ ! -d ${recv_dir}/${quoted} ]; then
+			echo "WARNING: Package \"${unquoted}\" not found"
+			continue
+		fi
+		for pkg in $(echo $recv_dir/${quoted}/*); do
+			./pkgmogrify.py -O $pkg/manifest $pkg/manifest \
+			    ./set-publisher.transforms
+			./pkg_publish $pkg $publish_repo
+		done
+	done
+fi
+
+pkgrepo -s ${publish_repo} refresh

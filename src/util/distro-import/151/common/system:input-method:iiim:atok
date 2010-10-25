@@ -1,0 +1,17 @@
+package system/input-method/iiim/atok
+consolidation "l10n"
+classification "System/Internationalization"
+summary "IIIMF - Japanese Language Engine (ATOK)"
+import JSatsvr
+import JSatsvu
+depend system/library/iconv/extra
+depend system/library/iconv/unicode
+add depend fmri=pkg:/system/iiim/ja/atok@17-1 type=optional
+version 17
+end package
+
+package system/iiim/ja/atok
+renamed 151
+depend system/input-method/iiim/atok
+version 17-1
+end package

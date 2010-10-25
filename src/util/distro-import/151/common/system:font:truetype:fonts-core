@@ -1,0 +1,17 @@
+package system/font/truetype/fonts-core
+consolidation "l10n"
+classification "System/Fonts"
+import SUNWttf-fonts-core
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/core:pri=35 \
+    target=../../../usr/share/fonts/TrueType/core
+add depend fmri=pkg:/system/font/truetype/ttf-fonts-core@1.1-1 type=optional
+version 1.1
+end package
+
+package system/font/truetype/ttf-fonts-core
+renamed 151
+depend system/font/truetype/fonts-core
+version 1.1-1
+end package

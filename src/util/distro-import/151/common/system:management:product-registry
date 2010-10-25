@@ -1,0 +1,12 @@
+package system/management/product-registry
+consolidation "admin"
+classification "System/Administration and Configuration"
+import SUNWwsr2
+import SUNWproduct-registry-root
+end package
+
+package SUNWwsr2
+consolidation "admin"
+renamed 151
+depend system/management/product-registry
+end package
