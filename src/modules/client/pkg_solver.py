@@ -201,9 +201,16 @@ class PkgSolver(object):
                 # corresponding installed packages.
                 self.__timeit("phase 1")
                 for f in self.__installed_fmris.values():
-                        if trim_proposed_installed or \
-                            f.pkg_name not in proposed_dict:
-                                self.__trim_older(f)
+                        if not trim_proposed_installed and \
+                            f.pkg_name in proposed_dict:
+                                # Don't trim versions if newest version in
+                                # proposed dict is older than installed
+                                # version.
+                                verlist = proposed_dict[f.pkg_name]
+                                if verlist[-1].version < f.version:
+                                        # Assume downgrade is intentional.
+                                        continue
+                        self.__trim_older(f)
 
                 self.__progtrack.evaluate_progress()
 

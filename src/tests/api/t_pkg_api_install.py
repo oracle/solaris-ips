@@ -364,17 +364,64 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 self.__do_install(api_obj, ["carriage@2"])
 
+                # Attempting to update carriage should result in nothing to do.
+                api_obj.reset()
+                self.assertFalse(api_obj.plan_update(["carriage"]))
+
                 # Downgrading to carriage@1.0 would force a downgrade to
-                # horse@1.0 ...
+                # horse@1.0 and so should raise an exception...
                 api_obj.reset()
                 self.assertRaises(api_errors.PlanCreationException,
                     api_obj.plan_update, ["carriage@1"])
 
-                # ...but naming both should allow the downgrade to succeed.
+                api_obj.reset()
+                self.assertRaises(api_errors.PlanCreationException,
+                    api_obj.plan_update, ["carriage@1", "horse"])
+ 
+                # ...unless horse is explicitly downgraded as well.
                 api_obj.reset()
                 self.__do_update(api_obj, ["carriage@1", "horse@1"])
-
                 self.pkg("list carriage@1 horse@1")
+
+                # Update carriage again.
+                self.__do_update(api_obj, ["carriage"])
+                self.pkg("list carriage@2 horse@2")
+
+                # Publish a new version of carriage.
+                self.pkgsend_bulk(self.rurl, """
+                    open carriage@3.0
+                    add depend type=require fmri=horse@1.0
+                    add depend type=exclude fmri=horse@2.0
+                    close """)
+                api_obj.reset()
+                api_obj.refresh()
+
+                # Upgrading implicitly to carriage@3.0 would force a downgrade
+                # to horse@1.0 so should be ignored as a possibility by
+                # the solver.
+                api_obj.reset()
+                self.assertFalse(api_obj.plan_update(["carriage"]))
+
+                # Upgrading explicitly to carriage@3.0 would force a downgrade
+                # to horse@1.0 and so should raise an exception...
+                api_obj.reset()
+                self.assertRaises(api_errors.PlanCreationException,
+                    api_obj.plan_update, ["carriage@3", "horse"])
+ 
+                # ...unless horse is explicitly downgraded as well.
+                api_obj.reset()
+                self.__do_update(api_obj, ["carriage@3", "horse@1"])
+                self.pkg("list carriage@3 horse@1")
+
+                # Now verify an implicit update to carriage@3.0 will work
+                # if horse is explicitly downgraded to 1.0.
+                api_obj.reset()
+                self.__do_update(api_obj, ["carriage@2", "horse@2"])
+                self.pkg("list carriage@2 horse@2")
+
+                api_obj.reset()
+                self.__do_update(api_obj, ["carriage", "horse@1"])
+                self.pkg("list carriage@3 horse@1")
 
         def test_multi_publisher(self):
                 """ Verify that package install works as expected when multiple
