@@ -326,7 +326,6 @@ depend library/gnome/print/gnome-print
 depend library/gnutls
 depend library/graphics/pixman
 depend library/idnkit
-depend library/java/java-gnome
 depend library/java/javahelp
 depend library/java/jss
 depend library/lcms
@@ -740,6 +739,7 @@ depend web/browser/firefox/locale/pt_br
 depend web/browser/firefox/locale/ru_ru
 depend web/browser/firefox/locale/zh_cn
 depend web/browser/firefox/locale/zh_tw
+depend web/browser/firefox/plugin/firefox-flashplayer
 depend web/browser/firefox/plugin/firefox-java
 depend web/browser/w3m
 depend web/curl
