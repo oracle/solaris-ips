@@ -36,6 +36,9 @@ dir path=etc/xdg/autostart
 file path=etc/xdg/autostart/updatemanagernotifier.desktop
 dir path=lib
 dir path=lib/svc
+dir path=lib/svc/manifest
+dir path=lib/svc/manifest/application
+file path=lib/svc/manifest/application/pkg-update.xml
 dir path=lib/svc/method
 file path=lib/svc/method/pkg-update
 dir path=usr
@@ -97,11 +100,6 @@ file path=usr/share/update-manager/icons/hicolor/36x36/actions/updatemanager.png
 dir path=usr/share/update-manager/icons/hicolor/48x48
 dir path=usr/share/update-manager/icons/hicolor/48x48/actions
 file path=usr/share/update-manager/icons/hicolor/48x48/actions/updatemanager.png
-dir path=var
-dir path=var/svc
-dir path=var/svc/manifest
-dir path=var/svc/manifest/application
-file path=var/svc/manifest/application/pkg-update.xml
 license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-um version=0.1.1
 

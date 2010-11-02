@@ -18,8 +18,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 MACH:sh = uname -p
@@ -355,31 +356,6 @@ help/%/package-manager.xml: help/%/%.mo
 #
 modules/%.pyc: modules/%.py
 	python -m compileall -l $(@D)
-
-PWD:sh = pwd
-
-#This will not link l10n files
-link:
-	mkdir -p /usr/share/lib/package-manager/data
-	ln -sf $(PWD)/../packagemanager.py /usr/bin/packagemanager
-	ln -sf $(PWD)/data/packagemanager.ui /usr/share/package-manager/packagemanager.ui
-	ln -sf $(PWD)/data/opensolaris.org.sections /usr/share/package-manager/data/opensolaris.org.sections
-	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
-	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
-	ln -sf $(PWD)/data/packagemanager.schemas /etc/gconf/schemas/packagemanager-preferences.schemas
-	ln -sf $(PWD)/data/icons /usr/share/package-manager/icons/hicolor
-	ln -sf $(PWD)/data/icons/48x48/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
-	ln -sf $(PWD)/data/icons/HighContrast/48x48/packagemanager.png /usr/share/icons/HighContrast/48x48/apps/packagemanager.png
-	ln -sf $(PWD)/modules /usr/lib/python2.6/vendor-packages/pkg/gui
-
-link-clean:
-	rm -rf /usr/share/lib/package-manager
-	rm -rf /usr/lib/python2.6/vendor-packages/pkg/gui
-	rm -f /usr/share/applications/packagemanager.desktop
-	rm -f /usr/share/applications/addmoresoftware.desktop
-	rm -f /usr/bin/packagemanager
-	rm -f /usr/share/icons/hicolor/48x48/apps/packagemanager.png
-	rm -f /usr/share/icons/HighContrast/48x48/apps/packagemanager.png
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@

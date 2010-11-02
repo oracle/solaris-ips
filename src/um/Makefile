@@ -18,8 +18,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 MACH:sh = uname -p
@@ -200,31 +201,6 @@ clean:
 
 clobber: clean
 	rm -f $(ROOTCOMPONENTS)
-
-PWD:sh = pwd
-
-#This will not link l10n files
-link:
-	ln -sf $(PWD)/../updatemanagernotifier.py /usr/lib/updatemanagernotifier
-	ln -sf $(PWD)/update-refresh.sh /usr/lib/update-manager/update-refresh.sh
-	ln -sf $(PWD)/pkg-update /lib/svc/method/pkg-update
-	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop
-	ln -sf $(PWD)/data/updatemanager-preferences.schemas /etc/gconf/schemas/updatemanage-preferences.schemas
-	ln -sf $(PWD)/data/icons /usr/share/update-manager/icons/hicolor
-	ln -sf $(PWD)/data/icons/48x48/updatemanager.png /usr/share/icons/hicolor/48x48/apps/updatemanager.png
-	ln -sf $(PWD)/data/icons/HighContrast/48x48/updatemanager.png /usr/share/icons/HighContrast/48x48/apps/updatemanager.png
-	ln -sf $(PWD)/data/updatemanager.desktop /usr/share/applications/updatemanager.desktop
-
-link-clean:
-	rm -rf /usr/share/update-manager
-	rm -f /etc/xdg/autostart/updatemanagernotifier.desktop
-	rm -f /etc/gconf/schemas/updatemanager-preferences.schemas
-	rm -f /usr/lib/updatemanagernotifier
-	rm -f /usr/lib/-manager/update-refresh.sh
-	rm -f /lib/svc/method/pkg-update
-	rm -f /usr/share/applications/updatemanager.desktop
-	rm -f /usr/share/icons/hicolor/48x48/apps/updatemanager.png
-	rm -f /usr/share/icons/HighContrast/48x48/apps/updatemanager.png
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@

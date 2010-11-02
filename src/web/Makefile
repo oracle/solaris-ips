@@ -18,26 +18,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 ROOTSHARE = /usr/lib/share/pkg
 RSWEB = $(ROOTSHARE)/web
 
 all:
-
-PWD:sh = pwd
-link:
-	mkdir -p $(RSWEB)
-	ln -sf $(PWD)/en $(RSWEB)/en
-	ln -sf $(PWD)/_themes $(RSWEB)/_themes
-	ln -sf $(PWD)/config.shtml $(RSWEB)/config.shtml
-	ln -sf $(PWD)/index.shtml $(RSWEB)/index.shtml
-	ln -sf $(PWD)/robots.txt $(RSWEB)/robots.txt
-	ln -sf $(PWD)/shared.shtml $(RSWEB)/shared.shtml
-
-link-clean:
-	rm -rf /usr/share/lib/pkg
 
 install: all
 

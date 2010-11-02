@@ -19,9 +19,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-
+#
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+#
 
 MACH:sh = uname -p
 
@@ -72,8 +72,6 @@ BIN = \
 support := LDLIBS = -lzonecfg
 
 all := TARGET = all
-link := TARGET = link
-link-clean := TARGET = link-clean
 
 support: support.c
 	$(LINK.c) -o $@ $@.c $(LDLIBS)
@@ -93,35 +91,6 @@ clobber: clean
 
 install: $(ROOTFILES)
 
-
-# XXX link is a developer target to connect the local machine to the current
-# repository's working copy's versions of the commands and modules.
-PWD:sh = pwd
-link:
-	mkdir -p /etc/brand/ipkg
-	mkdir -p /usr/lib/brand/ipkg
-	ln -sf $(PWD)/pkgrm.conf /etc/brand/ipkg/pkgrm.conf
-	ln -sf $(PWD)/smf_disable.conf /etc/brand/ipkg/smf_disable.conf
-	ln -sf $(PWD)/pkgrm.lst /usr/lib/brand/ipkg/pkgrm.lst
-	ln -sf $(PWD)/smf_disable.lst /usr/lib/brand/ipkg/smf_disable.lst
-	ln -sf $(PWD)/smf_disable.conf /usr/lib/brand/ipkg/smf_disable.conf
-	ln -sf $(PWD)/attach /usr/lib/brand/ipkg/attach
-	ln -sf $(PWD)/clone /usr/lib/brand/ipkg/clone
-	ln -sf $(PWD)/common.ksh /usr/lib/brand/ipkg/common.ksh
-	ln -sf $(PWD)/detach /usr/lib/brand/ipkg/detach
-	ln -sf $(PWD)/image_install /usr/lib/brand/ipkg/image_install
-	ln -sf $(PWD)/p2v /usr/lib/brand/ipkg/p2v
-	ln -sf $(PWD)/pkgcreatezone /usr/lib/brand/ipkg/pkgcreatezone
-	ln -sf $(PWD)/poststate /usr/lib/brand/ipkg/poststate
-	ln -sf $(PWD)/prestate /usr/lib/brand/ipkg/prestate
-	ln -sf $(PWD)/support /usr/lib/brand/ipkg/support
-	ln -sf $(PWD)/uninstall /usr/lib/brand/ipkg/uninstall
-	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
-
-link-clean:
-	rm -rf /usr/lib/brand/ipkg
-	rm -f /etc/zones/SUNWipkg.xml
-	rm -rf /etc/brand/ipkg
 
 $(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTETCZONES) $(ROOTUSRLIB) \
 	$(ROOTBRAND) $(ROOTBRANDPKG):

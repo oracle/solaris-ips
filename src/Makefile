@@ -26,10 +26,8 @@
 PYTHON = /usr/bin/python2.6
 
 all := TARGET = all
-link := TARGET = link
 install := TARGET = install
 packages := TARGET = install
-link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
 test := TARGET = test
@@ -65,38 +63,6 @@ packages: install
 	@cd pkg; pwd; $(MAKE) $(TARGET) check \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
 		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages
-
-# XXX link is a developer target to connect the local machine to the current
-# repository's working copy's versions of the commands, modules, and supporting
-# files.
-PWD:sh = pwd
-link:
-	ln -sf $(PWD)/client.py /usr/bin/pkg
-	ln -sf $(PWD)/pull.py /usr/bin/pkgrecv
-	ln -sf $(PWD)/publish.py /usr/bin/pkgsend
-	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
-	ln -sf $(PWD)/modules /usr/lib/python2.6/vendor-packages/pkg
-	ln -sf $(PWD)/pkg-server.xml /var/svc/manifest/application/pkg-server.xml
-	ln -sf $(PWD)/pkg-update.xml /var/svc/manifest/application/pkg-update.xml
-	@cd web; pwd; $(MAKE) $(TARGET)
-	@cd brand; pwd; $(MAKE) $(TARGET)
-	@cd man; pwd; $(MAKE) $(TARGET)
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd um; pwd; $(MAKE) $(TARGET)
-
-link-clean:
-	rm -f /usr/bin/pkg
-	rm -f /usr/bin/pkgrecv
-	rm -f /usr/bin/pkgsend
-	rm -f /usr/lib/pkg.depotd
-	rm -f /usr/lib/python2.6/vendor-packages/pkg
-	rm -f /var/svc/manifest/application/pkg-server.xml
-	rm -f /var/svc/manifest/application/pkg-update.xml
-	@cd web; pwd; $(MAKE) $(TARGET)
-	@cd brand; pwd; $(MAKE) $(TARGET)
-	@cd man; pwd; $(MAKE) $(TARGET)
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd um; pwd; $(MAKE) $(TARGET)
 
 test:
 	$(PYTHON) setup.py test
