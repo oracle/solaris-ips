@@ -489,15 +489,17 @@ printf "$m_core\n"
 # it's present in the current image), to constrain everything.  Then,
 # SUNWcsd, to lay down device files which are subsequently needed by
 # driver actions.  Then SUNWcs to lay down /etc/passwd, /etc/group,
-# etc so that subsequent user and group actions # work.  This can all
+# etc so that subsequent user and group actions work.  This can all
 # hopefully go away once "primordial" actions arrive.
 #
 if [[ -n $entire_fmri ]]; then
-	LC_ALL=C $PKG install -q --no-refresh --no-index $entire_fmri || \
-	    pkg_err_check "$f_pkg"
+	LC_ALL=C $PKG install -q --accept --no-refresh --no-index \
+	    $entire_fmri || pkg_err_check "$f_pkg"
 fi
-LC_ALL=C $PKG install --no-refresh --no-index SUNWcsd || pkg_err_check "$f_pkg"
-LC_ALL=C $PKG install --no-refresh --no-index SUNWcs || pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --accept --no-refresh --no-index SUNWcsd || \
+    pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --accept --no-refresh --no-index SUNWcs || \
+    pkg_err_check "$f_pkg"
 
 printf "$m_more\n"
 pkglist=""
@@ -557,7 +559,8 @@ pkglist="$pkglist $extra_packages"
 # Do the install; we just refreshed on image-create, so skip that.  We
 # also skip indexing here, as that is also what the LiveCD does.
 #
-LC_ALL=C $PKG install --no-index --no-refresh $pkglist || pkg_err_check "$f_pkg"
+LC_ALL=C $PKG install --accept --no-index --no-refresh $pkglist || \
+    pkg_err_check "$f_pkg"
 
 printf "\n$m_mannote\n"
 

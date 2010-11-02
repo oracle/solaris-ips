@@ -600,7 +600,7 @@ if [[ -z $gz_entire_fmri && -n $ngz_entire_fmri ]]; then
 fi
 
 if [[ $allow_update == 0 ]]; then
-	LC_ALL=C $PKG install --no-refresh -n $incorp_list
+	LC_ALL=C $PKG install --accept --no-refresh -n $incorp_list
 	if [[ $? == 4 ]]; then
 		log "$m_complete"
 		EXIT_CODE=$ZONE_SUBPROC_OK
@@ -619,10 +619,12 @@ fi
 # same version as we have in the GZ.
 #
 if [[ -n $gz_entire_fmri && -z $ngz_entire_fmri ]]; then
-	LC_ALL=C $PKG install --no-refresh entire  || pkg_err_check "$f_update"
+	LC_ALL=C $PKG install --accept --no-refresh entire  || \
+	    pkg_err_check "$f_update"
 fi
 
-LC_ALL=C $PKG install --no-refresh $incorp_list  || pkg_err_check "$f_update"
+LC_ALL=C $PKG install --accept --no-refresh $incorp_list  || \
+    pkg_err_check "$f_update"
 
 log "$m_sync_done"
 log "$m_complete"
