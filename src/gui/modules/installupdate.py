@@ -766,18 +766,20 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.ProblematicPermissionsIndexException, err:
                         msg = str(err)
-                        msg += _("\nFailure of consistent use of pfexec or gksu when "
-                            "running %s is often a source of this problem.") % \
-                            self.parent_name
-                        msg += _("\nTo rebuild index, please use the terminal command:")
-                        msg += _("\n\tpfexec pkg rebuild-index")
+                        msg += _("\nFailure to consistently execute pkg "
+                            "commands when running %s as a privileged user is "
+                            "often a source of this problem.") % self.parent_name
+                        msg += _("\nTo rebuild index, please execute the "
+                            "following command as a privileged user:")
+                        msg += _("\n\tpkg rebuild-index")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CorruptedIndexException:
                         msg = _("There was an error during installation. The search "
                             "index is corrupted. You might want try to fix this "
-                            "problem by running command:\n"
-                            "\tpfexec pkg rebuild-index")
+                            "problem by executing the following command as a "
+                            "privileged user:\n"
+                            "\tpkg rebuild-index")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ImageUpdateOnLiveImageException:
@@ -1177,7 +1179,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                     "Please let the developers know about this problem by "
                     "filing a bug together with the error details listed below at:\n"
                     ) % self.current_stage_name
-                msg_2 = "http://defect.opensolaris.org\n\n"
+                msg_2 = "%s\n\n" % misc.BUG_URI_GUI
                 self.update_details_text(_("\nError:\n"), "bold")
                 self.update_details_text("%s" % msg_1, "level1")
                 self.update_details_text("%s" % msg_2, "bold", "level2")

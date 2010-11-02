@@ -353,7 +353,7 @@ def trans_publish(repo_uri, fargs):
                         basename = os.path.basename(a.attrs["path"])
                         for pattern in timestamp_files:
                                 if fnmatch.fnmatch(basename, pattern):
-                                        ts = pkg.misc.time_to_timestamp(
+                                        ts = misc.time_to_timestamp(
                                             os.stat(path).st_mtime)
                                         a.attrs["timestamp"] = ts
                                         break
@@ -450,7 +450,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                         basename = os.path.basename(a.attrs["path"])
                         for pattern in timestamp_files:
                                 if fnmatch.fnmatch(basename, pattern):
-                                        ts = pkg.misc.time_to_timestamp(
+                                        ts = misc.time_to_timestamp(
                                             os.stat(path).st_mtime)
                                         a.attrs["timestamp"] = ts
                                         break
@@ -679,11 +679,11 @@ if __name__ == "__main__":
                 raise _e
         except:
                 traceback.print_exc()
-                error(
-                    _("\n\nThis is an internal error.  Please let the "
-                    "developers know about this\nproblem by filing a bug at "
-                    "http://defect.opensolaris.org and including the\nabove "
-                    "traceback and this message.  The version of pkg(5) is "
-                    "'%s'.") % pkg.VERSION)
+                error(_("""\n
+This is an internal error in pkg(5) version %(version)s.  Please let the
+developers know about this problem by including the information above (and
+this message) when filing a bug at:
+
+%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI })
                 __ret = 99
         sys.exit(__ret)

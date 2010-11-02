@@ -68,7 +68,6 @@ import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
-import pkg.config as cfg
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
@@ -108,20 +107,20 @@ valid_special_prefixes = ["action."]
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
-        if cmd:
-                text = "%s: %s" % (cmd, text)
-                pkg_cmd = "pkg "
-        else:
-                pkg_cmd = "pkg: "
-
-                # If we get passed something like an Exception, we can convert
-                # it down to a string.
+        if not isinstance(text, basestring):
+                # Assume it's an object that can be stringified.
                 text = str(text)
 
         # If the message starts with whitespace, assume that it should come
         # *before* the command-name prefix.
         text_nows = text.lstrip()
         ws = text[:len(text) - len(text_nows)]
+
+        if cmd:
+                text_nows = "%s: %s" % (cmd, text_nows)
+                pkg_cmd = "pkg "
+        else:
+                pkg_cmd = "pkg: "
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
@@ -271,17 +270,6 @@ Options:
 Environment:
         PKG_IMAGE"""))
         sys.exit(retcode)
-
-# XXX Subcommands to implement:
-#        pkg image-set name value
-#        pkg image-unset name
-#        pkg image-get [name ...]
-
-INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
-    "Please rebuild the index with 'pkg rebuild-index'."
-
-PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = "\n(Failure of consistent use " + \
-    "of pfexec when executing pkg commands is often a\nsource of this problem.)"
 
 def get_fmri_args(api_inst, args, cmd=None):
         """ Convenience routine to check that input args are valid fmris. """
@@ -1019,10 +1007,13 @@ def __api_execute_plan(operation, api_inst):
                     "environment.") % operation)
                 return EXIT_NOTLIVE
         except api_errors.CorruptedIndexException, e:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                error("The search index appears corrupted.  Please rebuild the "
+                    "index with 'pkg rebuild-index'.")
                 return EXIT_OOPS
         except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                error(str(e))
+                error(_("\n(Failure to consistently execute pkg commands as a "
+                    "privileged user is often a source of this problem.)"))
                 return EXIT_OOPS
         except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
                 # Prepend a newline because otherwise the exception will
@@ -1060,22 +1051,23 @@ def __api_plan_exception(op, api_inst, noexecute, verbose):
         e_type, e, e_traceback = sys.exc_info()
 
         if e_type == api_errors.ImageNotFoundException:
-                error(_("No image rooted at '%s'") % e.user_dir)
+                error(_("No image rooted at '%s'") % e.user_dir, cmd=op)
                 return EXIT_OOPS
         if e_type == api_errors.InventoryException:
-                error(_("%s failed (inventory exception):\n%s") % (op, e))
+                error("\n" + _("%s failed (inventory exception):\n%s") % (op,
+                    e))
                 return EXIT_OOPS
         if e_type == api_errors.IpkgOutOfDateException:
                 msg(_("""\
 WARNING: pkg(5) appears to be out of date, and should be updated before
-running %(op)s.  Please update pkg(5) using 'pfexec pkg install
-pkg:/package/pkg' and then retry the %(op)s."""
+running %(op)s.  Please update pkg(5) by executing 'pkg install
+pkg:/package/pkg' as a privileged user and then retry the %(op)s."""
                     ) % locals())
                 return EXIT_OOPS
         if e_type == api_errors.NonLeafPackageException:
                 error(_("""\
 Cannot remove '%s' due to the following packages that depend on it:"""
-                    ) % e.fmri)
+                    ) % e.fmri, cmd=op)
                 for d in e.dependents:
                         logger.error("  %s" % d)
                 return EXIT_OOPS
@@ -1088,19 +1080,26 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors):
-                error("\n" + str(e))
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
 
         if e_type == api_errors.ImageUpdateOnLiveImageException:
-                logger.error("The proposed operation cannot be performed on a live image.")
+                error("\n" + _("The proposed operation cannot be performed on "
+                    "a live image."), cmd=op)
                 return EXIT_NOTLIVE
 
         if issubclass(e_type, api_errors.BEException):
-                error(_(e))
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
 
         if e_type == api_errors.PlanCreationException:
-                error(_(e))
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                txt = str(e)
+                if e.multiple_matches:
+                        txt += "\n\n" + _("Please provide one of the package "
+                            "FMRIs listed above to the install command.")
+                error("\n" + txt, cmd=op)
                 if verbose:
                         logger.error("\n".join(e.verbose_info))
                 return EXIT_OOPS
@@ -1112,13 +1111,17 @@ Cannot remove '%s' due to the following packages that depend on it:"""
             api_errors.InvalidResourceLocation):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                error("\n" + str(e))
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
         if e_type == fmri.IllegalFmri:
-                error(e, cmd=op)
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
         if isinstance(e, api_errors.SigningException):
-                error(e)
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
 
         # if we didn't deal with the exception above, pass it on.
@@ -3875,11 +3878,13 @@ def rebuild_index(img, pargs):
         try:
                 api_inst.rebuild_search_index()
         except api_errors.CorruptedIndexException:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE, cmd="rebuild-index")
+                error("The search index appears corrupted.  Please rebuild the "
+                    "index with 'pkg rebuild-index'.", cmd="rebuild-index")
                 return EXIT_OOPS
         except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE,
-                    cmd="rebuild-index")
+                error(str(e))
+                error(_("\n(Failure to consistently execute pkg commands as a "
+                    "privileged user is often a source of this problem.)"))
                 return EXIT_OOPS
         else:
                 return EXIT_OK
@@ -4211,11 +4216,13 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 def handle_errors(func, non_wrap_print=True, *args, **kwargs):
-        traceback_str = _("\n\nThis is an internal error.  Please let the "
-            "developers know about this\nproblem by filing a bug at "
-            "http://defect.opensolaris.org and including the\nabove "
-            "traceback and this message.  The version of pkg(5) is "
-            "'%s'.") % pkg.VERSION
+        traceback_str = _("""\n
+This is an internal error in pkg(5) version %(version)s.  Please let the
+developers know about this problem by including the information above (and
+this message) when filing a bug at:
+
+%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI }
+
         try:
                 # Out of memory errors can be raised as EnvironmentErrors with
                 # an errno of ENOMEM, so in order to handle those exceptions

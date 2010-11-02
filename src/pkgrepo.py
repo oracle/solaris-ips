@@ -1170,11 +1170,13 @@ def handle_errors(func, *args, **kwargs):
         a message and/or exit with an appropriate return code.
         """
 
-        traceback_str = _("\n\nThis is an internal error.  Please let the "
-            "developers know about this\nproblem by filing a bug at "
-            "http://defect.opensolaris.org and including the\nabove "
-            "traceback and this message.  The version of pkg(5) is "
-            "'%s'.") % pkg.VERSION
+        traceback_str = _("""\n
+This is an internal error in pkg(5) version %(version)s.  Please let the
+developers know about this problem by including the information above (and
+this message) when filing a bug at:
+
+%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI }
+
         try:
                 # Out of memory errors can be raised as EnvironmentErrors with
                 # an errno of ENOMEM, so in order to handle those exceptions

@@ -57,6 +57,10 @@ PKG_STATE_INSTALLED = 2
 # Constant string used across many modules as a property name.
 SIGNATURE_POLICY = "signature-policy"
 
+# Bug URI Constants
+BUG_URI_CLI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=cli"
+BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=gui"
+
 def get_release_notes_url():
         """Return a release note URL pointing to the correct release notes
            for this version"""

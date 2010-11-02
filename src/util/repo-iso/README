@@ -24,8 +24,8 @@ OpenSolarisTM 2009.06 Release Repository Image
       with each of these forms.
 
     Please note that the example commands listed in this document should be
-    executed as root, or executed using the 'pfexec' command as appropriate
-    for your environment.
+    executed as root, or executed as a privileged user as appropriate for
+    your environment.
 
 2.1.  Single image case
 

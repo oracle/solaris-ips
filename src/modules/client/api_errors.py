@@ -269,13 +269,13 @@ class PermissionsException(ApiException):
         def __str__(self):
                 if self.path:
                         return _("Could not operate on %s\nbecause of "
-                            "insufficient permissions. Please try the command "
-                            "again using pfexec\nor otherwise increase your "
-                            "privileges.") % self.path
+                            "insufficient permissions. Please try the "
+                            "command again as a privileged user.") % \
+                            self.path
                 else:
                         return _("""
-Could not complete the operation because of insufficient permissions. Please
-try the command again using pfexec or otherwise increase your privileges.
+Could not complete the operation because of insufficient permissions.
+Please try the command again as a privileged user.
 """)
 
 class FileInUseException(PermissionsException):

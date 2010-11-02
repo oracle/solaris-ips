@@ -110,7 +110,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pfexec(1), pkg(1), attributes(5), pkg(5)
+     pkg(1), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.

@@ -116,8 +116,7 @@ class GlobalExceptionHandler:
                 md.format_secondary_text(dmsg)
                 md.set_title(_('Unexpected Error'))
 
-                uri_btn = gtk.LinkButton(
-                    "http://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg",
+                uri_btn = gtk.LinkButton(misc.BUG_URI_GUI,
                     "defect.opensolaris.org")
                 uri_btn.set_relief(gtk.RELIEF_NONE)
                 uri_btn.set_size_request(160, -1)
