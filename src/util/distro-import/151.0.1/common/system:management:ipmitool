@@ -1,0 +1,21 @@
+package system/management/ipmitool
+consolidation "sfw"
+classification "System/Hardware"
+import SUNWipmi
+import SUNWipmir
+version 1.8.10
+end package
+
+package system/ipmi/ipmitool
+consolidation "sfw"
+renamed 151.0.1
+depend system/management/ipmitool
+version 1.8.10
+end package
+
+package SUNWipmi
+consolidation "sfw"
+renamed 133
+depend system/ipmi/ipmitool
+version 1.8.10
+end package

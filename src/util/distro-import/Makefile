@@ -44,11 +44,26 @@ NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
 
 TEST_PKGS=
 REPO=http://localhost:10000
+
 ON_REPO=http://localhost:20000
+ON_BUILDID=$(BUILDID)
+ON_INCORPORATION=consolidation/osnet/osnet-incorporation@0.5.11-0.$(ON_BUILDID)
+
 INSTALL_REPO=http://localhost:20001
+INSTALL_BUILDID=$(BUILDID)
+INSTALL_INCORPORATION=consolidation/install/install-incorporation@0.5.11-0.$(INSTALL_BUILDID)
+
 X_REPO=http://localhost:20002
+X_BUILDID=$(BUILDID)
+X_INCORPORATION=consolidation/X/X-incorporation@0.5.11-0.$(X_BUILDID)
+
 IPS_REPO=http://localhost:20003
+IPS_BUILDID=$(BUILDID)
+IPS_INCORPORATION=consolidation/ips/ips-incorporation@0.5.11-0.$(IPS_BUILDID)
+
 VPANELS_REPO=http://localhost:20004
+VPANELS_BUILDID=$(BUILDID)
+VPANELS_INCORPORATION=consolidation/vpanels/vpanels-incorporation@0.5.11-0.$(VPANELS_BUILDID)
 
 BUILDID_NORESPIN=/usr/bin/echo $(BUILDID) | sed -e 's/\([0-9]\)[a-z]*$$/\1/g'
 
@@ -86,29 +101,29 @@ EXTRA_OPTIONS=
 
 OSNET_CONSOLIDATION_OPTIONS = \
 	-C osnet \
-	-R $(ON_REPO)@consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/osnet/osnet-incorporation@0.5.11-0.$(BUILDID) \
+	-R $(ON_REPO)@$(ON_INCORPORATION) \
+	-E $(ON_INCORPORATION) \
 	-J developer/build/onbld -J developer/opensolaris/osnet
 
 INSTALL_CONSOLIDATION_OPTIONS = \
 	-C install \
-	-R $(INSTALL_REPO)@consolidation/install/install-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/install/install-incorporation@0.5.11-0.$(BUILDID)
+	-R $(INSTALL_REPO)@$(INSTALL_INCORPORATION) \
+	-E $(INSTALL_INCORPORATION)
 
 X_CONSOLIDATION_OPTIONS = \
 	-C X \
-	-R $(X_REPO)@consolidation/X/X-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/X/X-incorporation@0.5.11-0.$(BUILDID)
+	-R $(X_REPO)@$(X_INCORPORATION) \
+	-E $(X_INCORPORATION)
 
 IPS_CONSOLIDATION_OPTIONS = \
 	-C ips \
-	-R $(IPS_REPO)@consolidation/ips/ips-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/ips/ips-incorporation@0.5.11-0.$(BUILDID)
+	-R $(IPS_REPO)@$(IPS_INCORPORATION) \
+	-E $(IPS_INCORPORATION)
 
 VPANELS_CONSOLIDATION_OPTIONS = \
 	-C vpanels \
-	-R $(VPANELS_REPO)@consolidation/vpanels/vpanels-incorporation@0.5.11-0.$(BUILDID) \
-	-E consolidation/vpanels/vpanels-incorporation@0.5.11-0.$(BUILDID)
+	-R $(VPANELS_REPO)@$(VPANELS_INCORPORATION) \
+	-E $(VPANELS_INCORPORATION)
 
 CONSOLIDATION_OPTIONS_136 = \
 	$(OSNET_CONSOLIDATION_OPTIONS)
@@ -131,6 +146,7 @@ CONSOLIDATION_OPTIONS_148 = $(CONSOLIDATION_OPTIONS_145) \
 CONSOLIDATION_OPTIONS_149 = $(CONSOLIDATION_OPTIONS_148)
 CONSOLIDATION_OPTIONS_150 = $(CONSOLIDATION_OPTIONS_148)
 CONSOLIDATION_OPTIONS_151 = $(CONSOLIDATION_OPTIONS_148)
+CONSOLIDATION_OPTIONS_151.0.1 = $(CONSOLIDATION_OPTIONS_148)
 CONSOLIDATION_OPTIONS = $(CONSOLIDATION_OPTIONS_$(BUILDID))
 
 GLOBAL_CHATTRS_BASE=	\
@@ -198,6 +214,7 @@ GLOBAL_CHATTRS_148 = $(GLOBAL_CHATTRS_124)
 GLOBAL_CHATTRS_149 = $(GLOBAL_CHATTRS_124)
 GLOBAL_CHATTRS_150 = $(GLOBAL_CHATTRS_124)
 GLOBAL_CHATTRS_151 = $(GLOBAL_CHATTRS_124)
+GLOBAL_CHATTRS_151.0.1 = $(GLOBAL_CHATTRS_124)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.6/vendor-packages \
@@ -284,6 +301,7 @@ ELIDED_FILES_148 = $(ELIDED_FILES_BASE)
 ELIDED_FILES_149 = $(ELIDED_FILES_BASE)
 ELIDED_FILES_150 = $(ELIDED_FILES_BASE)
 ELIDED_FILES_151 = $(ELIDED_FILES_BASE)
+ELIDED_FILES_151.0.1 = $(ELIDED_FILES_BASE)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -390,6 +408,7 @@ CACHED_FILES_148 =
 CACHED_FILES_149 =
 CACHED_FILES_150 =
 CACHED_FILES_151 =
+CACHED_FILES_151.0.1 =
 
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
@@ -524,6 +543,7 @@ FIX_FILES_148 = $(FIX_FILES_136)
 FIX_FILES_149 = $(FIX_FILES_136)
 FIX_FILES_150 = $(FIX_FILES_136)
 FIX_FILES_151 = $(FIX_FILES_136)
+FIX_FILES_151.0.1 = $(FIX_FILES_136)
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -622,7 +642,8 @@ BUILDS=	75a			\
 	148			\
 	149			\
 	150			\
-	151
+	151			\
+	151.0.1
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -635,7 +656,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	151/redist_import
+default:	151.0.1/redist_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -854,6 +875,7 @@ INCLUDE_PATH_148 = 148:$(INCLUDE_PATH_147)
 INCLUDE_PATH_149 = 149:$(INCLUDE_PATH_148)
 INCLUDE_PATH_150 = 150:$(INCLUDE_PATH_149)
 INCLUDE_PATH_151 = 151:$(INCLUDE_PATH_150)
+INCLUDE_PATH_151.0.1 = 151.0.1:$(INCLUDE_PATH_151)
 
 import:	cluster.import $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

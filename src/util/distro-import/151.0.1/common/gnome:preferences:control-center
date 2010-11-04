@@ -1,0 +1,16 @@
+package gnome/preferences/control-center
+consolidation "gnome"
+classification "Applications/Configuration and Preferences"
+import SUNWgnome-desktop-prefs
+import SUNWgnome-desktop-prefs-devel
+import SUNWgnome-desktop-prefs-root
+depend system/library/iconv/utf-8
+chattr usr/share/applications/mimeinfo.cache \
+    original_name=SUNWgnome-desktop-prefs:usr/share/applications/mimeinfo.cache
+end package
+
+package SUNWgnome-desktop-prefs
+consolidation "gnome"
+renamed 133
+depend gnome/preferences/control-center
+end package
