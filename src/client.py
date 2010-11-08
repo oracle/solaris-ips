@@ -4090,7 +4090,6 @@ def main_func():
             "help"             : None,
             "history"          : history_list,
             "image-create"     : None,
-            "image-update"     : update,
             "info"             : info,
             "install"          : install,
             "list"             : list_inventory,
@@ -4118,6 +4117,8 @@ def main_func():
         subcommand = None
         if pargs:
                 subcommand = pargs.pop(0)
+                # 'image-update' is an alias for 'update' for compatibility.
+                subcommand = subcommand.replace("image-update", "update")
                 if subcommand == "help":
                         if pargs:
                                 sub = pargs.pop(0)
