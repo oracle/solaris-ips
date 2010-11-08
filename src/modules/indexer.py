@@ -90,6 +90,10 @@ class Indexer(object):
                 self.excludes = excludes
                 self.__log = log
                 self.sort_file_max_size = sort_file_max_size
+                if self.sort_file_max_size <= 0:
+                        raise search_errors.IndexingException(
+                            _("sort_file_max_size must be greater than 0"))
+
                 # This structure was used to gather all index files into one
                 # location. If a new index structure is needed, the files can
                 # be added (or removed) from here. Providing a list or
