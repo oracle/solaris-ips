@@ -825,6 +825,47 @@ test\t3\tonline\t%sZ
                 self.dc.start()
                 repo_uri = self.dc.get_depot_url()
                 self.__test_rebuild(repo_path, repo_uri)
+
+                # Verify rebuild only rebuilds package data for specified
+                # publisher in the case that the repository contains package
+                # data for multiple publishers.
+                self.pkgsend_bulk(repo_uri, """
+                    open pkg://test2/foo@1.0
+                    close
+                    """)
+
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                test_cts = cat.created
+                cat = repo.get_catalog(pub="test2")
+                test2_cts = cat.created
+
+                self.pkgrepo("rebuild -s %s -p test" % repo_uri)
+                self.wait_repo(repo_path)
+
+                # Now compare creation timestamps of each publisher's
+                # catalog to verify only test's catalog was rebuilt.
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                self.assertNotEqual(cat.created, test_cts)
+                test_cts = cat.created
+                cat = repo.get_catalog(pub="test2")
+                self.assertEqual(cat.created, test2_cts)
+                test2_cts = cat.created
+
+                # Verify rebuild without specifying a publisher
+                # will rebuild the catalogs for all publishers.
+                self.pkgrepo("rebuild -s %s" % repo_uri)
+                self.wait_repo(repo_path)
+
+                # Now compare creation timestamps of each publisher's
+                # catalog to verify all catalogs were rebuilt.
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                self.assertNotEqual(cat.created, test_cts)
+                cat = repo.get_catalog(pub="test2")
+                self.assertNotEqual(cat.created, test2_cts)
+
                 self.dc.stop()
 
         def __test_refresh(self, repo_path, repo_uri):
@@ -950,6 +991,56 @@ test\t3\tonline\t%sZ
                 self.dc.start()
                 repo_uri = self.dc.get_depot_url()
                 self.__test_refresh(repo_path, repo_uri)
+
+                # Verify refresh only refreshes package data for specified
+                # publisher in the case that the repository contains package
+                # data for multiple publishers.
+
+                # This is needed to ensure test2 exists as a publisher before
+                # the package ever is created.
+                self.pkgrepo("set -s %s -p test2 publisher/alias=" % repo_path)
+                self.dc.stop()
+                self.dc.start()
+
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                test_plist = [str(f) for f in cat.fmris()]
+                cat = repo.get_catalog(pub="test2")
+                test2_plist = [str(f) for f in cat.fmris()]
+
+                self.pkgsend_bulk(repo_uri, """
+                    open pkg://test/refresh@1.0
+                    close
+                    open pkg://test2/refresh@1.0
+                    close
+                    """, no_catalog=True)
+
+                self.pkgrepo("refresh -s %s -p test" % repo_uri)
+                self.wait_repo(repo_path)
+
+                # Now compare package lists to ensure new package is only seen
+                # for 'test' publisher.
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                self.assertNotEqual([str(f) for f in cat.fmris()], test_plist)
+                test_plist = [str(f) for f in cat.fmris()]
+                cat = repo.get_catalog(pub="test2")
+                self.assertEqual([str(f) for f in cat.fmris()], test2_plist)
+                test2_plist = [str(f) for f in cat.fmris()]
+
+                # Verify refresh without specifying a publisher will refresh the
+                # the catalogs for all publishers.
+                self.pkgrepo("refresh -s %s" % repo_uri)
+                self.wait_repo(repo_path)
+
+                # Now compare package lists to ensure new package is seen for
+                # all publishers.
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                self.assertEqual([str(f) for f in cat.fmris()], test_plist)
+                cat = repo.get_catalog(pub="test2")
+                self.assertNotEqual([str(f) for f in cat.fmris()], test2_plist)
+
                 self.dc.stop()
 
         def test_06_version(self):

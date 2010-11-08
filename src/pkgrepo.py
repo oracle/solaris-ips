@@ -122,17 +122,17 @@ Subcommands:
      pkgrepo add-signing-intermediate-cert [-p publisher ...]
          [-s repo_uri_or_path] path ...
 
-     pkgrepo get [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
          [section/property ...]
 
      pkgrepo info [-F format] [-H] [-p publisher ...]
          [-s repo_uri_or_path]
 
-     pkgrepo rebuild [-s repo_uri_or_path] [--no-catalog]
-         [--no-index]
+     pkgrepo rebuild [-p publisher ...] [-s repo_uri_or_path]
+         [--no-catalog] [--no-index]
 
-     pkgrepo refresh [-s repo_uri_or_path] [--no-catalog]
-         [--no-index]
+     pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
+         [--no-catalog] [--no-index]
 
      pkgrepo remove-signing-ca-cert [-p publisher ...]
          [-s repo_uri_or_path] hash ...
@@ -612,9 +612,7 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
         return EXIT_OK
 
 
-def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
-    pargs):
-        """Display publisher properties."""
+def _get_matching_pubs(subcommand, pubs, xport, xpub, out_format="default"):
 
         # Retrieve publisher information.
         pub_data = xport.get_publisherdata(xpub)
@@ -635,7 +633,18 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
                         # Don't pollute other output formats.
                         error(_("no matching publishers found"),
                             cmd=subcommand)
-                return EXIT_OOPS
+                return EXIT_OOPS, None, None
+        return rval, found, pub_data
+
+
+def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
+    pargs):
+        """Display publisher properties."""
+
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub, out_format=out_format)
+        if rval == EXIT_OOPS:
+                return rval
 
         # Set minimum widths for section and property name columns by using the
         # length of the column headers and data.
@@ -855,9 +864,15 @@ def subcmd_rebuild(conf, args):
         build_catalog = True
         build_index = True
 
-        opts, pargs = getopt.getopt(args, "s:", ["no-catalog", "no-index"])
+        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index"])
+        pubs = set()
         for opt, arg in opts:
-                if opt == "-s":
+                if opt == "-p":
+                        if not misc.valid_pub_prefix(arg):
+                                error(_("Invalid publisher prefix '%s'") % arg,
+                                    cmd=subcommand)
+                        pubs.add(arg)
+                elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
                 elif opt == "--no-catalog":
                         build_catalog = False
@@ -875,17 +890,27 @@ def subcmd_rebuild(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, src_pub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
-        logger.info("Repository rebuild initiated.")
-        if build_catalog and build_index:
-                xport.publish_rebuild(src_pub)
-        elif build_catalog:
-                xport.publish_rebuild_packages(src_pub)
-        elif build_index:
-                xport.publish_rebuild_indexes(src_pub)
+        def do_rebuild(xport, xpub):
+                if build_catalog and build_index:
+                        xport.publish_rebuild(xpub)
+                elif build_catalog:
+                        xport.publish_rebuild_packages(xpub)
+                elif build_index:
+                        xport.publish_rebuild_indexes(xpub)
 
-        return EXIT_OK
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub)
+        if rval == EXIT_OOPS:
+                return rval
+
+        logger.info("Initiating repository rebuild.")
+        for pfx in found:
+                xpub.prefix = pfx
+                do_rebuild(xport, xpub)
+
+        return rval
 
 
 def subcmd_refresh(conf, args):
@@ -895,9 +920,15 @@ def subcmd_refresh(conf, args):
         add_content = True
         refresh_index = True
 
-        opts, pargs = getopt.getopt(args, "s:", ["no-catalog", "no-index"])
+        opts, pargs = getopt.getopt(args, "p:s:", ["no-catalog", "no-index"])
+        pubs = set()
         for opt, arg in opts:
-                if opt == "-s":
+                if opt == "-p":
+                        if not misc.valid_pub_prefix(arg):
+                                error(_("Invalid publisher prefix '%s'") % arg,
+                                    cmd=subcommand)
+                        pubs.add(arg)
+                elif opt == "-s":
                         conf["repo_uri"] = parse_uri(arg)
                 elif opt == "--no-catalog":
                         add_content = False
@@ -915,16 +946,27 @@ def subcmd_refresh(conf, args):
         if not conf.get("repo_uri", None):
                 usage(_("A package repository location must be provided "
                     "using -s."), cmd=subcommand)
-        xport, src_pub, tmp_dir = setup_transport(conf, subcommand=subcommand)
 
-        logger.info("Repository refresh initiated.")
-        if add_content and refresh_index:
-                xport.publish_refresh(src_pub)
-        elif add_content:
-                xport.publish_refresh_packages(src_pub)
-        elif refresh_index:
-                xport.publish_refresh_indexes(src_pub)
-        return EXIT_OK
+        def do_refresh(xport, xpub):
+                if add_content and refresh_index:
+                        xport.publish_refresh(xpub)
+                elif add_content:
+                        xport.publish_refresh_packages(xpub)
+                elif refresh_index:
+                        xport.publish_refresh_indexes(xpub)
+
+        xport, xpub, tmp_dir = setup_transport(conf, subcommand=subcommand)
+        rval, found, pub_data = _get_matching_pubs(subcommand, pubs, xport,
+            xpub)
+        if rval == EXIT_OOPS:
+                return rval
+
+        logger.info("Initiating repository refresh.")
+        for pfx in found:
+                xpub.prefix = pfx
+                do_refresh(xport, xpub)
+
+        return rval
 
 
 def subcmd_set(conf, args):

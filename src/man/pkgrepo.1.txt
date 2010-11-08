@@ -13,17 +13,17 @@ SYNOPSIS
      pkgrepo add-signing-intermediate-cert [-p publisher ...]
          [-s repo_uri_or_path] path ...
 
-     pkgrepo get [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
          [section/property ...]
 
      pkgrepo info [-F format] [-H] [-p publisher ...]
          [-s repo_uri_or_path]
 
-     pkgrepo rebuild [-s repo_uri_or_path] [--no-catalog]
-         [--no-index]
+     pkgrepo rebuild [-p publisher ...] [-s repo_uri_or_path]
+         [--no-catalog] [--no-index]
 
-     pkgrepo refresh [-s repo_uri_or_path] [--no-catalog]
-         [--no-index]
+     pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
+         [--no-catalog] [--no-index]
 
      pkgrepo remove-signing-ca-cert [-p publisher ...]
          [-s repo_uri_or_path] hash ...
@@ -101,7 +101,8 @@ SUBCOMMANDS
           With -s, operate on the repository located at the given URI
           or filesystem path.
 
-     get [-F format] [-H] [-s repo_uri_or_path] [section/property ...]
+     get [-F format] [-H] [-p publisher ...] [-s repo_uri_or_path]
+       [section/property ...]
           Displays the property information for the repository or
           its publishers.
 
@@ -144,10 +145,16 @@ SUBCOMMANDS
           With -s, operate on the repository located at the given URI
           or filesystem path.
 
-     rebuild [-s repo_uri_or_path] [--no-catalog] [--no-index]
+     rebuild [-p publisher ...] [-s repo_uri_or_path] [--no-catalog]
+       [--no-index]
           Discards all catalog, search, and other cached information
           found in the repository and then re-creates it based on the
           current contents of the repository.
+
+          With -p, perform the operation only for the given publisher.
+          If not provided, or if the special value 'all' is specified,
+          the operation will be performed for all publishers.  This
+          option may be specified multiple times.
 
           With -s, operate on the repository located at the given URI
           or filesystem path.
@@ -156,11 +163,17 @@ SUBCOMMANDS
 
           With --no-index, don't rebuild search indexes.
 
-     refresh [-s repo_uri_or_path] [--no-catalog] [--no-index]
+     refresh [-p publisher ...] [-s repo_uri_or_path] [--no-catalog]
+       [--no-index]
           Catalogs any new packages found in the repository and
           updates all search indexes.  This is intended for use with
           deferred publication (--no-catalog or --no-index options of
           pkgsend).
+
+          With -p, perform the operation only for the given publisher.
+          If not provided, or if the special value 'all' is specified,
+          the operation will be performed for all publishers.  This
+          option may be specified multiple times.
 
           With -s, operate on the repository located at the given URI
           or filesystem path.
