@@ -65,7 +65,7 @@ proto_code_map = {
 retryable_pycurl_errors = set((pycurl.E_COULDNT_CONNECT, pycurl.E_PARTIAL_FILE,
     pycurl.E_OPERATION_TIMEOUTED, pycurl.E_GOT_NOTHING, pycurl.E_SEND_ERROR,
     pycurl.E_RECV_ERROR, pycurl.E_COULDNT_RESOLVE_HOST,
-    pycurl.E_TOO_MANY_REDIRECTS))
+    pycurl.E_TOO_MANY_REDIRECTS, pycurl.E_BAD_CONTENT_ENCODING))
 
 class TransportException(api_errors.TransportError):
         """Base class for various exceptions thrown by code in transport
