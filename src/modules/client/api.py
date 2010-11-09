@@ -880,7 +880,8 @@ class ImageInterface(object):
                         self.__finished_execution(be)
                 finally:
                         self.__img.cleanup_downloads()
-                        self.__img.unlock()
+                        if self.__img.locked:
+                                self.__img.unlock()
                         self.__activity_lock.release()
 
         def __finished_execution(self, be):
