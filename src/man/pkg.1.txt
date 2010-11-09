@@ -73,7 +73,7 @@ SYNOPSIS
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPn] [publisher ...]
 
-     /usr/bin/pkg history [-Hl] [-n number]
+     /usr/bin/pkg history [-Hl] [-t [time|time-time],...] [-o column,...] [-n number]
      /usr/bin/pkg purge-history
 
      /usr/bin/pkg rebuild-index
@@ -758,10 +758,19 @@ SUBCOMMANDS
 
           With -n, display only enabled publishers.
 
-     history [-Hl] [-n number]
+     history [-Hl] [-t [time|time-time],...] [-n number] [-o column,...]
+
           Display the command history of the applicable image.  
 
           With -H, omit the headers from the listing.
+
+          With -t, display log records for a comma-separated list of
+          timestamps, formatted with "%Y-%m-%dT%H:%M:%S" (see strftime(3C)).
+          To specify a range of times, use a "-" between a start and
+          finish timestamp.  The keyword "now" can be used as an alias for
+          the current time.  If the timestamps specified contain duplicate
+          timestamps or overlapping date ranges, only a single instance of
+          each duplicate history event is printed.
 
           With -l, display log records in long format, which, in addition to
           the standard format, includes the outcome of the command, the time
@@ -770,6 +779,33 @@ SUBCOMMANDS
           were encountered while executing the command.
 
           With -n, display only the specified number of most recent entries.
+
+          With -o, display output using the specified comma-separated list of
+          column names.  Valid column names are:
+          
+          be            The name of the boot environment this operation was
+                        started on
+          client        The name of the client
+          client_ver    The version of the client
+          command       The command line used for this operation
+          finish        The time that this operation finished
+          id            The user id that started this operation
+          new_be        The new boot environment created by this operation
+          operation     The name of the operation
+          outcome       A summary of the outcome of this operation
+          reason        Additional information on the outcome of this operation
+          snapshot      The snapshot taken during this operation.  This is only
+                        recorded if the snapshot was not automatically removed
+                        after successful operation completion
+          start         The time that this operation started
+          time          The total time taken to perform this operation
+                        (for operations that take less than a second, "0:00:00"
+                        will be printed)
+          user          The username that started this operation
+
+          If the "command" or "reason" columns are specified, they must be the
+          last item in the -o list, in order to preserve output field
+          separation.  These columns cannot be printed at the same time.
 
      purge-history
           Deletes all existing history information.

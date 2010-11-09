@@ -42,6 +42,7 @@ logger = global_settings.logger
 import pkg.actions
 import pkg.catalog
 import pkg.client.api_errors            as apx
+import pkg.client.bootenv               as bootenv
 import pkg.client.history               as history
 import pkg.client.imageconfig           as imageconfig
 import pkg.client.imageplan             as imageplan
@@ -366,7 +367,8 @@ class Image(object):
                 error = None
                 self.lock(allow_unprivileged=allow_unprivileged)
                 try:
-                        self.history.log_operation_start(op)
+                        self.history.log_operation_start(op,
+                            be_name=bootenv.BootEnv.get_be_name(self.root))
                         yield
                 except apx.ImageLockedError, e:
                         # Don't unlock the image if the call failed to
@@ -1685,7 +1687,8 @@ class Image(object):
                         progtrack.cache_catalogs_done()
                         return
 
-                self.history.log_operation_start("rebuild-image-catalogs")
+                self.history.log_operation_start("rebuild-image-catalogs",
+                    be_name=bootenv.BootEnv.get_be_name(self.root))
 
                 # Mark all operations as occurring at this time.
                 op_time = datetime.datetime.utcnow()
@@ -1968,7 +1971,8 @@ class Image(object):
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
 
-                self.history.log_operation_start("refresh-publishers")
+                self.history.log_operation_start("refresh-publishers",
+                    be_name=bootenv.BootEnv.get_be_name(self.root))
 
                 # Verify validity of certificates before attempting network
                 # operations.

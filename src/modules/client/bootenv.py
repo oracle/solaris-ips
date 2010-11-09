@@ -136,6 +136,7 @@ class BootEnv(object):
                         # 2nd field is the returned snapshot name
                         if err == 0:
                                 self.snapshot_name = snapshot_name
+                                img.history.operation_snapshot = snapshot_name
                         else:
                                 logger.error(_("pkg: unable to create an auto "
                                     "snapshot. pkg recovery is disabled."))
@@ -254,6 +255,32 @@ class BootEnv(object):
                 return beList
 
         @staticmethod
+        def get_be_name(path):
+                """Looks for the name of the boot environment corresponding to
+                a path."""
+                be_name = None
+                beList = BootEnv.get_be_list()
+
+                for be in beList:
+                        be_name = be.get("orig_be_name")
+
+                        if not be_name or not be.get("mounted"):
+                                continue
+
+                        # Check if we're operating on the live BE.
+                        # If so it must also be active. If we are not
+                        # operating on the live BE, then verify
+                        # that the mountpoint of the BE matches
+                        # the path argument passed in by the user.
+                        if path == '/':
+                                if be.get("active"):
+                                        return be_name
+                        else:
+                                if be.get("mountpoint") == path:
+                                        return be_name
+                return be_name
+
+        @staticmethod
         def get_activated_be_name():
                 try:
                         beList = BootEnv.get_be_list()
@@ -353,6 +380,7 @@ class BootEnv(object):
                         # Consider the last operation a success, and log it as
                         # ending here so that it will be recorded in the new
                         # image's history.
+                        self.img.history.operation_new_be = self.be_name_clone
                         self.img.history.log_operation_end()
 
                         if be.beUnmount(self.be_name_clone) != 0:
@@ -379,6 +407,7 @@ Reboot when ready to switch to this updated BE.
 
                         os.rmdir(self.clone_dir)
                         self.destroy_snapshot()
+                        self.img.history.operation_snapshot = None
 
                 self.__store_image_state()
 
@@ -570,6 +599,10 @@ class BootEnvNull(object):
 
         @staticmethod
         def get_be_list():
+                pass
+
+        @staticmethod
+        def get_be_name(path):
                 pass
 
         @staticmethod

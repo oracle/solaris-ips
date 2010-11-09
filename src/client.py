@@ -48,6 +48,7 @@ import errno
 import fnmatch
 import getopt
 import gettext
+import glob
 import itertools
 import locale
 import logging
@@ -216,7 +217,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         adv_usage["unset-publisher"] = _("publisher ...")
         adv_usage["publisher"] = _("[-HPn] [publisher ...]")
-        adv_usage["history"] = _("[-Hl] [-n number]")
+        adv_usage["history"] = _("[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]")
         adv_usage["purge-history"] = ""
         adv_usage["rebuild-index"] = ""
 
@@ -3892,12 +3893,39 @@ def rebuild_index(img, pargs):
 def history_list(img, args):
         """Display history about the current image.
         """
+        # define column name, header, field width and <History> attribute name
+        # we compute 'reason' and 'time' columns ourselves
+        history_cols = {
+            "be": (_("BE"), "%-20s", "operation_be"),
+            "client": (_("CLIENT"), "%-19s", "client_name"),
+            "client_ver": (_("VERSION"), "%-15s", "client_version"),
+            "command": (_("COMMAND"), "%s", "client_args"),
+            "finish": (_("FINISH"), "%-25s", "operation_end_time"),
+            "id": (_("ID"), "%-10s", "operation_userid"),
+            "new_be": (_("NEW BE"), "%-20s", "operation_new_be"),
+            "operation": (_("OPERATION"), "%-25s", "operation_name"),
+            "outcome": (_("OUTCOME"), "%-12s", "operation_result"),
+            "reason": (_("REASON"), "%-10s", None),
+            "snapshot": (_("SNAPSHOT"), "%-20s", "operation_snapshot"),
+            "start": (_("START"), "%-25s", "operation_start_time"),
+            "time": (_("TIME"), "%-10s", None),
+            "user": (_("USER"), "%-10s", "operation_username"),
+            # omitting start state, end state, errors for now
+            # as these don't nicely fit into columns
+        }
 
         omit_headers = False
         long_format = False
+        column_format = False
         display_limit = None    # Infinite
+        time_vals = [] # list of timestamps for which we want history events
+        columns = ["start", "operation", "client", "outcome"]
 
-        opts, pargs = getopt.getopt(args, "Hln:")
+        if not os.path.exists(img.history.path):
+                # Nothing to display.
+                return EXIT_OK
+
+        opts, pargs = getopt.getopt(args, "Hln:o:t:")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
@@ -3915,25 +3943,96 @@ def history_list(img, args):
                                 logger.error(
                                     _("Argument to -n must be positive"))
                                 return EXIT_BADOPT
+                elif opt == "-o":
+                        column_format = True
+                        columns = arg.split(",")
+
+                        # 'command' and 'reason' are multi-field columns, we
+                        # insist they be the last item in the -o output,
+                        # otherwise scripts could be broken by different numbers
+                        # of output fields
+                        if "command" in columns and "reason" in columns:
+                                # Translators: 'command' and 'reason' are
+                                # keywords and should not be translated
+                                logger.error(_("'command' and 'reason' columns "
+                                    "cannot be used together."))
+                                return EXIT_BADOPT
+
+                        for col in ["command", "reason"]:
+                                if col in columns and \
+                                    columns.index(col) != len(columns) - 1:
+                                        logger.error(
+                                            _("The '%s' column must be the "
+                                            "last item in the -o list") % col)
+                                        return EXIT_BADOPT
+
+                        for col in columns:
+                                if col not in history_cols:
+                                        logger.error(
+                                            _("Unknown output column '%s'") %
+                                            col)
+                                        return EXIT_BADOPT
+                        if not __unique_columns(columns):
+                                return EXIT_BADOPT                                
+
+                elif opt == "-t":
+                        time_vals = arg.split(",")
+                        # make entries a set to cope with multiple overlapping
+                        # ranges or time values
+                        entries = set()
+                        for time_val in time_vals:
+                                try:
+                                        # used for the 'now' alias, we calculate
+                                        # this once only
+                                        utc_now = datetime.datetime.utcnow().strftime(
+                                            "%Y%m%dT%H%M%SZ")
+                                        files = __get_history_paths(time_val,
+                                            img.history.path, utc_now)
+                                        if files == EXIT_BADOPT:
+                                                return EXIT_BADOPT
+                                        entries.update(files)
+                                except ValueError:
+                                        logger.error(_("Invalid time format "
+                                        "'%s'.  Please use "
+                                        "%%Y-%%m-%%dT%%H:%%M:%%S or\n"
+                                        "%%Y-%%m-%%dT%%H:%%M:%%S-%%Y-%%m-%%dT%%H:%%M:%%S"
+                                        ) % time_val)
+                                        return EXIT_BADOPT
+                        entries = sorted(entries)
 
         if omit_headers and long_format:
                 usage(_("-H and -l may not be combined"), cmd="history")
 
-        if not long_format:
-                if not omit_headers:
-                        msg("%-19s %-25s %-15s %s" % (_("TIME"),
-                            _("OPERATION"), _("CLIENT"), _("OUTCOME")))
+        if column_format and long_format:
+                usage(_("-o and -l may not be combined"), cmd="history")
 
-        if not os.path.exists(img.history.path):
-                # Nothing to display.
-                return EXIT_OK
+        if time_vals and display_limit:
+                usage(_("-n and -t may not be combined"), cmd="history")
+
+        history_fmt = None
+
+        if not long_format:
+                headers = []
+                # build our format string
+                for col in columns:
+                        # no need for trailing space for our last column
+                        if columns.index(col) == len(columns) - 1:
+                                fmt = "%s"
+                        else:
+                                fmt = history_cols[col][1]
+                        if history_fmt:
+                                history_fmt = "%s%s" % (history_fmt, fmt)
+                        else:
+                                history_fmt = "%s" % fmt
+                        headers.append(history_cols[col][0])
+                if not omit_headers:
+                        msg(history_fmt % tuple(headers))
 
         if display_limit:
                 n = -display_limit
                 entries = sorted(os.listdir(img.history.path))[n:]
-        else:
+        elif not time_vals:
                 entries = sorted(os.listdir(img.history.path))
-
         for entry in entries:
                 # Load the history entry.
                 try:
@@ -3948,66 +4047,196 @@ def history_list(img, args):
                                 continue
                         raise
 
-                # Retrieve and format some of the data shared between each
-                # output format.
-                start_time = misc.timestamp_to_time(
-                    he.operation_start_time)
-                start_time = datetime.datetime.fromtimestamp(
-                    start_time).isoformat()
+                # populate a dictionary containing our output
+                output = {}
+                for col in history_cols:
+                        if not history_cols[col][2]:
+                                continue
+                        output[col] = he.__getattribute__(history_cols[col][2])
 
-                res = he.operation_result
-                if len(res) > 1:
-                        outcome = "%s (%s)" % (_(res[0]), _(res[1]))
-                else:
-                        outcome = _(res[0])
+                # format some of the History object attributes ourselves
+                output["start"] = misc.timestamp_to_time(
+                    he.operation_start_time)
+                output["start"] = datetime.datetime.fromtimestamp(
+                    output["start"]).isoformat()
+                output["finish"] = misc.timestamp_to_time(
+                    he.operation_end_time)
+                output["finish"] = datetime.datetime.fromtimestamp(
+                    output["finish"]).isoformat()
+
+                dt_start = misc.timestamp_to_datetime(he.operation_start_time)
+                dt_end = misc.timestamp_to_datetime(he.operation_end_time)
+                if dt_start > dt_end:
+                        error(_("History operation appeared to end before it "
+                            "started.  Start time: %(start_time)s, "
+                            "End time: %(end_time)s") %
+                            (output["start"], output["finish"]), cmd="history")
+                        return EXIT_OOPS
+
+                output["time"] = dt_end - dt_start
+                # This should never happen.  We can't use timedelta's str()
+                # method, since it prints eg. "4 days, 3:12:54" breaking our
+                # field separation, so we need to do this by hand.
+                if output["time"].days > 0:
+                        secs = total_time.seconds
+                        add_hrs = total_time.days * 24
+                        mins, secs = divmod(secs, 60)
+                        hrs, mins = divmod(mins, 60)
+                        output["time"] = "%s:%s:%s" % \
+                            (add_hrs + hrs, mins, secs)
+
+                output["be"] = he.operation_be
+                output["command"] = " ".join(he.client_args)
+                output["new_be"] = he.operation_new_be
+                output["outcome"] = history.result_l10n[he.operation_result[0]]
+                output["reason"] = history.result_l10n[he.operation_result[1]]
+                output["snapshot"] = he.operation_snapshot
+
+                # be, snapshot and new_be use values in parenthesis
+                # since these cannot appear in valid BE or snapshot names
+                if not output["be"]:
+                        output["be"] = _("(Unknown)")
+
+                if not output["snapshot"]:
+                        output["snapshot"] = _("(None)")
+
+                if not output["new_be"]:
+                        output["new_be"] = _("(None)")
 
                 if long_format:
-                        data = []
-                        data.append(("Operation", he.operation_name))
-
-                        data.append(("Outcome", outcome))
-                        data.append(("Client", he.client_name))
-                        data.append(("Version", he.client_version))
-
-                        data.append(("User", "%s (%s)" % \
-                            (he.operation_username, he.operation_userid)))
-
-                        data.append(("Start Time", start_time))
-
-                        end_time = misc.timestamp_to_time(
-                            he.operation_end_time)
-                        end_time = datetime.datetime.fromtimestamp(
-                            end_time).isoformat()
-                        data.append(("End Time", end_time))
-
-                        data.append(("Command", " ".join(he.client_args)))
-
-                        state = he.operation_start_state
-                        if state:
-                                data.append(("Start State", "\n" + state))
-
-                        state = he.operation_end_state
-                        if state:
-                                data.append(("End State", "\n" + state))
-
-                        errors = "\n".join(he.operation_errors)
-                        if errors:
-                                data.append(("Errors", "\n" + errors))
-
+                        data = __get_long_history_data(he, output)
                         for field, value in data:
-                                msg("%15s: %s" % (_(field), value))
+                                msg("%15s: %s" % (field, value))
 
                         # Separate log entries with a blank line.
                         msg("")
                 else:
-                        msg("%-19s %-25s %-15s %s" % (start_time,
-                            he.operation_name, he.client_name, outcome))
-
+                        items = []
+                        for col in columns:
+                                items.append(output[col])
+                        msg(history_fmt % tuple(items))
         return EXIT_OK
+
+def __get_history_paths(time_val, history_path, utc_now):
+        """Given a local timestamp, either as a discrete value, or a range of
+        values, formatted as '<timestamp>-<timestamp>', and a path to find
+        history xml files, return an array of paths that match that timestamp.
+        utc_now is the current time expressed in UTC"""
+
+        files = []
+        if len(time_val) > 20 or time_val.startswith("now-"):
+                if time_val.startswith("now-"):
+                        start = utc_now
+                        finish = __utc_format(time_val[4:], utc_now)
+                else:
+                        # our ranges are 19 chars of timestamp, a '-', and
+                        # another timestamp
+                        start = __utc_format(time_val[:19], utc_now)
+                        finish = __utc_format(time_val[20:], utc_now)
+                if start > finish:
+                        logger.error(_("Start time must be older than finish "
+                            "time: %s") % time_val)
+                        return EXIT_BADOPT
+                files = __get_history_range(history_path, start, finish)
+        else:
+                # there can be multiple event files per timestamp
+                prefix = __utc_format(time_val, utc_now)
+                files = glob.glob(os.path.join(history_path, "%s*" % prefix))
+        if not files:
+                logger.error(_("No history entries found for %s") % time_val)
+                return EXIT_BADOPT
+        return files
+
+def __unique_columns(columns):
+        """Return true if each entry in the provided list of columns only
+        appears once."""
+
+        seen_cols = set()
+        dup_cols = set()
+        for col in columns:
+                if col in seen_cols:
+                        dup_cols.add(col)
+                seen_cols.add(col)
+        for col in dup_cols:
+                logger.error(_("Duplicate column specified: %s") % col)
+        return not dup_cols
+
+def __utc_format(time_str, utc_now):
+        """ Given a local time value string, formatted with "%Y-%m-%dT%H:%M:%S,
+        return a UTC representation of that value, formatted with
+        %Y%m%dT%H%M%SZ.  This raises a ValueError if the time was incorrectly
+        formatted.  If the time_str is "now", we return the value of utc_now"""
+        
+        if time_str == "now":                
+                return utc_now
+
+        local_dt = datetime.datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S")
+        secs = time.mktime(local_dt.timetuple())
+        utc_dt = datetime.datetime.utcfromtimestamp(secs)
+        return utc_dt.strftime("%Y%m%dT%H%M%SZ")
+
+def __get_history_range(path, start, finish):
+        """Given an img.history.path and start and finish dates, formatted
+        as UTC date strings as per __utc_format(), return a list of history
+        file names that fall within that date range.  A range of two equal
+        dates is equivalent of just retrieving history for that single
+        date string."""
+
+        entries = []
+        all_entries = sorted(os.listdir(path))
+
+        for entry in all_entries:
+                # our timestamps are always 16 character datestamps
+                basename = os.path.basename(entry)[:16]
+                if basename >= start:
+                        if basename > finish:
+                                # we can stop looking now.
+                                break
+                        entries.append(entry)
+        return entries
+
+def __get_long_history_data(he, hist_info):
+        """Return an array of tuples containing long_format history info"""
+        data = []
+        data.append((_("Operation"), hist_info["operation"]))
+
+        data.append((_("Outcome"), hist_info["outcome"]))
+        data.append((_("Reason"), hist_info["reason"]))
+        data.append((_("Client"), hist_info["client"]))
+        data.append((_("Version"), hist_info["client_ver"]))
+
+        data.append((_("User"), "%s (%s)" % (hist_info["user"],
+            hist_info["id"])))
+
+        if hist_info["be"]:
+                data.append((_("Boot Env."), hist_info["be"]))
+        if hist_info["new_be"]:
+                data.append((_("New Boot Env."), hist_info["new_be"]))
+        if hist_info["snapshot"]:
+                data.append((_("Snapshot"), hist_info["snapshot"]))
+
+        data.append((_("Start Time"), hist_info["start"]))
+        data.append((_("End Time"), hist_info["finish"]))
+        data.append((_("Total Time"), hist_info["time"]))
+        data.append((_("Command"), hist_info["command"]))
+
+        state = he.operation_start_state
+        if state:
+                data.append((_("Start State"), "\n" + state))
+
+        state = he.operation_end_state
+        if state:
+                data.append((_("End State"), "\n" + state))
+
+        errors = "\n".join(he.operation_errors)
+        if errors:
+                data.append((_("Errors"), "\n" + errors))
+        return data
 
 def history_purge(img, pargs):
         """Purge image history"""
-        ret_code = img.history.purge()
+        ret_code = img.history.purge(
+            be_name=bootenv.BootEnv.get_be_name(img.root))
         if ret_code == EXIT_OK:
                 msg(_("History purged."))
         return ret_code

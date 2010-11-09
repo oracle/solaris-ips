@@ -79,6 +79,10 @@ def timestamp_to_time(ts):
         # XXX optimize?
         return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
 
+def timestamp_to_datetime(ts):
+        """convert %Y%m%dT%H%M%SZ format to a datetime object"""
+        return datetime.datetime.strptime(ts,"%Y%m%dT%H%M%SZ")
+
 def copyfile(src_path, dst_path):
         """copy a file, preserving attributes, ownership, etc. where possible"""
         fs = os.lstat(src_path)

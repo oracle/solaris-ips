@@ -65,7 +65,8 @@ image-modifying operations that they perform.
                           (e.g. root)
 
         result          - The outcome of the operation and the reason for it
-                          (e.g. Failed, Transport)
+                          (e.g. Failed, Transport) This maps to the pkg history
+                          output columns of 'outcome' and 'reason'.
 
     The following information about the operation will be recorded if provided
     by the client or api:
@@ -80,6 +81,17 @@ image-modifying operations that they perform.
 
         errors          - Any errors that were encountered while performing the
                           operation (i.e. tracebacks, exceptions, etc.)
+
+        be              - The name of the boot environment on which the
+                          operation was performed
+
+        new_be          - The name of any new boot environment that was created
+                          while performing the operation.
+
+        snapshot        - The name of the snapshot that was taken as a result of
+                          this operation.  If the operation completed
+                          successfully and the snapshot was destroyed, this
+                          this information is not stored.
 
 3.2 Storage
 
@@ -145,12 +157,15 @@ image-modifying operations that they perform.
             </client>
 
             The operation element has the following attributes: name,
-            start_time, end_time, userid, and username.  It can also
-            contain the following, optional elements: start_state,
+            start_time, end_time, userid, and username.  Optional attributes
+            are be, snapshot and new_be, indicating the boot environment the
+            operation was applied to, the snapshot taken during this operation,
+            and any new boot environment created as a result.
+            It can also contain the following, optional elements: start_state,
             end_state, and errors.  It only occurs once per file.
 
             <operation end_time="20080912T225513Z" name="install" result="Succeeded"
-                start_time="20080912T225327Z" userid="101" username="swalker">
+                start_time="20080912T225327Z" userid="101" be="solaris" username="username">
 
                 The start_state element is used to store information about the
                 operation performed before a request is evaluated (e.g. image
