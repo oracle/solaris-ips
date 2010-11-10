@@ -32,7 +32,9 @@
 <transform dir path=usr/share/lib -> set group sys>
 <transform file dir path=usr/share/mime -> default group root>
 <transform file path=usr/share/(package|update)-manager/icons -> default group other>
-<transform dir file path=lib/svc -> default group sys>
+<transform dir path=lib/svc$ -> default group bin>
+<transform dir file path=lib/svc/manifest -> default group sys>
+<transform dir file path=lib/svc/method -> default group bin>
 <transform file path=(usr/bin|lib/svc/method) -> default mode 0755>
 <transform file path=$(PYDIR)/.*\.so -> default mode 0755>
 
