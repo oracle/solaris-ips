@@ -561,7 +561,7 @@ class BootEnvNull(object):
                 pass
 
         @staticmethod
-        def update_boot_archive(self):
+        def update_boot_archive():
                 pass
 
         @staticmethod
