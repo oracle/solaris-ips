@@ -1,0 +1,16 @@
+package mail/mutt
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWmutt
+import SUNWmuttr
+version 1.5.21
+chattr etc/mutt/Muttrc original_name=SUNWmutt:etc/mutt/Muttrc
+chattr etc/mutt/mime.types original_name=SUNWmutt:etc/mutt/mime.types
+end package
+
+package SUNWmutt
+consolidation "sfw"
+renamed 133
+depend mail/mutt
+version 1.5.20
+end package

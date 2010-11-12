@@ -1,0 +1,13 @@
+package mail/fetchmail
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWfetchmail
+version 6.3.18
+end package
+
+package SUNWfetchmail
+consolidation "sfw"
+renamed 133
+depend mail/fetchmail
+version 6.3.13
+end package

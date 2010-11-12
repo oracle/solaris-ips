@@ -1,0 +1,5 @@
+package library/python-2/locale-services
+consolidation "l10n"
+classification "Development/Python"
+import g11nsvc
+end package

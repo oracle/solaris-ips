@@ -1,0 +1,15 @@
+package gnome/media/gnome-media-player
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWgnome-media-player
+import SUNWgnome-media-player-devel
+import SUNWgnome-media-player-root
+depend library/python-2/python-gst-26
+depend library/python-2/coherence-26
+end package
+
+package SUNWgnome-media-player
+consolidation "gnome"
+renamed 133
+depend gnome/media/gnome-media-player
+end package
