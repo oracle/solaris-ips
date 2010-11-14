@@ -29,6 +29,7 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 import pkg.client.api_errors as api_errors
+import pkg.misc as misc
 import pkg.pkgsubprocess as subprocess
 
 # Since pkg(1) may be installed without libbe installed
@@ -65,6 +66,7 @@ class BootEnv(object):
                 self.be_name = None
                 self.dataset = None
                 self.be_name_clone = None
+                self.be_name_clone_uuid = None
                 self.clone_dir = None
                 self.img = img
                 self.is_live_BE = False
@@ -257,12 +259,12 @@ class BootEnv(object):
         @staticmethod
         def get_be_name(path):
                 """Looks for the name of the boot environment corresponding to
-                a path."""
-                be_name = None
+                an image root, returning name and uuid """
                 beList = BootEnv.get_be_list()
 
                 for be in beList:
                         be_name = be.get("orig_be_name")
+                        be_uuid = be.get("uuid_str")
 
                         if not be_name or not be.get("mounted"):
                                 continue
@@ -274,11 +276,21 @@ class BootEnv(object):
                         # the path argument passed in by the user.
                         if path == '/':
                                 if be.get("active"):
-                                        return be_name
+                                        return be_name, be_uuid
                         else:
                                 if be.get("mountpoint") == path:
-                                        return be_name
-                return be_name
+                                        return be_name, be_uuid
+                return None, None
+
+        @staticmethod
+        def get_uuid_be_dic():
+                """Return a dictionary of all boot environment names on the
+                system, keyed by uuid"""
+                beList = BootEnv.get_be_list()
+                uuid_bes = {}
+                for be in beList:
+                        uuid_bes[be.get("uuid_str")] = be.get("orig_be_name")
+                return uuid_bes
 
         @staticmethod
         def get_activated_be_name():
@@ -335,6 +347,10 @@ class BootEnv(object):
                                 raise api_errors.UnableToMountBE(
                                     self.be_name_clone, self.clone_dir)
 
+                        # record the UUID of this cloned boot environment
+                        not_used, self.be_name_clone_uuid = \
+                            BootEnv.get_be_name(self.clone_dir)
+
                         # Set the image to our new mounted BE.
                         img.find_root(self.clone_dir)
                 elif be_name is not None:
@@ -381,6 +397,7 @@ class BootEnv(object):
                         # ending here so that it will be recorded in the new
                         # image's history.
                         self.img.history.operation_new_be = self.be_name_clone
+                        self.img.history.operation_new_be_uuid = self.be_name_clone_uuid
                         self.img.history.log_operation_end()
 
                         if be.beUnmount(self.be_name_clone) != 0:
@@ -603,7 +620,11 @@ class BootEnvNull(object):
 
         @staticmethod
         def get_be_name(path):
-                pass
+                return None, None
+
+        @staticmethod
+        def get_uuid_be_dic():
+                return misc.EmptyDict
 
         @staticmethod
         def get_activated_be_name():

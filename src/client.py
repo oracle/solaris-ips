@@ -3897,12 +3897,14 @@ def history_list(img, args):
         # we compute 'reason' and 'time' columns ourselves
         history_cols = {
             "be": (_("BE"), "%-20s", "operation_be"),
+            "be_uuid": (_("BE UUID"), "%-41s", "operation_be_uuid"),
             "client": (_("CLIENT"), "%-19s", "client_name"),
             "client_ver": (_("VERSION"), "%-15s", "client_version"),
             "command": (_("COMMAND"), "%s", "client_args"),
             "finish": (_("FINISH"), "%-25s", "operation_end_time"),
             "id": (_("ID"), "%-10s", "operation_userid"),
             "new_be": (_("NEW BE"), "%-20s", "operation_new_be"),
+            "new_be_uuid": (_("NEW BE UUID"), "%-41s", "operation_new_be_uuid"),
             "operation": (_("OPERATION"), "%-25s", "operation_name"),
             "outcome": (_("OUTCOME"), "%-12s", "operation_result"),
             "reason": (_("REASON"), "%-10s", None),
@@ -4033,6 +4035,8 @@ def history_list(img, args):
                 entries = sorted(os.listdir(img.history.path))[n:]
         elif not time_vals:
                 entries = sorted(os.listdir(img.history.path))
+
+        uuid_be_dic = bootenv.BootEnv.get_uuid_be_dic()
         for entry in entries:
                 # Load the history entry.
                 try:
@@ -4086,8 +4090,26 @@ def history_list(img, args):
                             (add_hrs + hrs, mins, secs)
 
                 output["be"] = he.operation_be
+                be_uuid = he.operation_be_uuid
                 output["command"] = " ".join(he.client_args)
                 output["new_be"] = he.operation_new_be
+                new_be_uuid = he.operation_new_be_uuid
+
+                # lookup be and new_be names from the saved uuid, in case
+                # the boot environment names have changed since we stored the
+                # History object.  Where we weren't able to lookup the current
+                # name, add a '*' to the entry, indicating the boot environment
+                # is no longer present
+                if be_uuid in uuid_be_dic:
+                        output["be"] = uuid_be_dic[be_uuid]
+                elif be_uuid:
+                        output["be"] = "%s*" % output["be"]
+
+                if new_be_uuid in uuid_be_dic:
+                        output["new_be"] = uuid_be_dic[new_be_uuid]
+                elif new_be_uuid:
+                        output["new_be"] = "%s*" % output["new_be"]
+
                 output["outcome"] = history.result_l10n[he.operation_result[0]]
                 output["reason"] = history.result_l10n[he.operation_result[1]]
                 output["snapshot"] = he.operation_snapshot
@@ -4097,16 +4119,22 @@ def history_list(img, args):
                 if not output["be"]:
                         output["be"] = _("(Unknown)")
 
+                if not output["be_uuid"]:
+                        output["be_uuid"] = _("(Unknown)")
+
                 if not output["snapshot"]:
                         output["snapshot"] = _("(None)")
 
                 if not output["new_be"]:
                         output["new_be"] = _("(None)")
 
+                if not output["new_be_uuid"]:
+                        output["new_be_uuid"] = _("(None)")
+
                 if long_format:
                         data = __get_long_history_data(he, output)
                         for field, value in data:
-                                msg("%15s: %s" % (field, value))
+                                msg("%18s: %s" % (field, value))
 
                         # Separate log entries with a blank line.
                         msg("")
@@ -4210,8 +4238,13 @@ def __get_long_history_data(he, hist_info):
 
         if hist_info["be"]:
                 data.append((_("Boot Env."), hist_info["be"]))
+        if hist_info["be_uuid"]:
+                data.append((_("Boot Env. UUID"), hist_info["be_uuid"]))
         if hist_info["new_be"]:
                 data.append((_("New Boot Env."), hist_info["new_be"]))
+        if hist_info["new_be_uuid"]:
+                data.append((_("New Boot Env. UUID"),
+                    hist_info["new_be_uuid"]))
         if hist_info["snapshot"]:
                 data.append((_("Snapshot"), hist_info["snapshot"]))
 
@@ -4235,8 +4268,9 @@ def __get_long_history_data(he, hist_info):
 
 def history_purge(img, pargs):
         """Purge image history"""
+        be_name, be_uuid = bootenv.BootEnv.get_be_name(img.root)
         ret_code = img.history.purge(
-            be_name=bootenv.BootEnv.get_be_name(img.root))
+            be_name=be_name, be_uuid=be_uuid)
         if ret_code == EXIT_OK:
                 msg(_("History purged."))
         return ret_code

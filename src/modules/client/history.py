@@ -183,14 +183,15 @@ class _HistoryOperation(object):
         def __copy__(self):
                 h = _HistoryOperation()
                 for attr in ("name", "start_time", "end_time", "start_state",
-                    "end_state", "username", "userid", "be", "new_be",
-                    "result", "snapshot"):
+                    "end_state", "username", "userid", "be", "be_uuid",
+                    "new_be", "new_be_uuid", "result", "snapshot"):
                         setattr(h, attr, getattr(self, attr))
                 h.errors = [copy.copy(e) for e in self.errors]
                 return h
 
         def __setattr__(self, name, value):
-                if name not in ("result", "errors", "be", "new_be", "snapshot"):
+                if name not in ("result", "errors", "be", "be_uuid", "new_be",
+                    "new_be_uuid", "snapshot"):
                         # Force all other attribute values to be a string
                         # to avoid issues with minidom.
                         value = str(value)
@@ -209,13 +210,16 @@ Operation End State:
 %s
 Operation User: %s (%s)
 Operation Boot Env.: %s
+Operation Boot Env. UUID: %s
 Operation New Boot Env.: %s
+Operation New Boot Env. UUID: %s
 Operation Snapshot: %s
 Operation Errors:
 %s
 """ % (self.name, self.result, self.start_time, self.end_time,
     self.start_state, self.end_state, self.username, self.userid,
-    self.be, self.new_be, self.snapshot, self.errors)
+    self.be, self.be_uuid, self.new_be, self.new_be_uuid, self.snapshot,
+    self.errors)
 
         # All "time" values should be in UTC, using ISO 8601 as the format.
         # Name of the operation performed (e.g. install, update, etc.).
@@ -236,8 +240,13 @@ Operation Errors:
         userid = None
         # The boot environment on which the user performed the operation
         be = None
+        # The uuid of the BE on which the user performed the operation
+        be_uuid = None
         # The new boot environment that was created as a result of the operation
         new_be = None
+        # The uuid of the boot environment that was created as a result of the
+        # operation
+        new_be_uuid = None
 
         # The snapshot that was created while running this operation
         # set to None if no snapshot was taken, or destroyed after successful
@@ -281,7 +290,9 @@ class History(object):
         operation_username = None
         operation_userid = None
         operation_be = None
+        operation_be_uuid = None
         operation_new_be = None
+        operation_new_be_uuid = None
         operation_start_time = None
         operation_end_time = None
         operation_start_state = None
@@ -479,11 +490,15 @@ class History(object):
                 # "Ignored, Nothing to do", so work around that
                 if op.result[0] == "Nothing to do":
                         op.result = RESULT_NOTHING_TO_DO
-                        
+
                 if node.hasAttribute("be"):
                         op.be = node.getAttribute("be")
+                if node.hasAttribute("be_uuid"):
+                        op.be_uuid = node.getAttribute("be_uuid")
                 if node.hasAttribute("new_be"):
                         op.new_be = node.getAttribute("new_be")
+                if node.hasAttribute("new_be_uuid"):
+                        op.new_be_uuid = node.getAttribute("new_be_uuid")
 
                 def get_node_values(parent_name, child_name=None):
                         try:
@@ -589,8 +604,13 @@ class History(object):
 
                 if self.operation_be:
                         op.setAttribute("be", self.operation_be)
+                if self.operation_be_uuid:
+                        op.setAttribute("be_uuid", self.operation_be_uuid)
                 if self.operation_new_be:
                         op.setAttribute("new_be", self.operation_new_be)
+                if self.operation_new_be_uuid:
+                        op.setAttribute("new_be_uuid",
+                            self.operation_new_be_uuid)
                 if self.operation_snapshot:
                         op.setAttribute("snapshot", self.operation_snapshot)
 
@@ -688,13 +708,14 @@ class History(object):
                         except Exception, e:
                                 raise HistoryStoreException(e)
 
-        def purge(self, be_name=None):
+        def purge(self, be_name=None, be_uuid=None):
                 """Removes all history information by deleting the directory
                 indicated by the value self.path and then creates a new history
                 entry to record that this purge occurred.
                 """
                 self.operation_name = "purge-history"
                 self.operation_be = be_name
+                self.operation_be_uuid = be_uuid
 
                 try:
                         shutil.rmtree(self.path)
@@ -729,11 +750,12 @@ class History(object):
                         # of the history information to fail.
                         return
 
-        def log_operation_start(self, name, be_name=None):
+        def log_operation_start(self, name, be_name=None, be_uuid=None):
                 """Marks the start of an operation to be recorded in image
                 history."""
                 self.operation_name = name
                 self.operation_be = be_name
+                self.operation_be_uuid = be_uuid
 
         def log_operation_end(self, error=None, result=None):
                 """Marks the end of an operation to be recorded in image
@@ -749,6 +771,7 @@ class History(object):
                 if error:
                         self.log_operation_error(error)
                         self.operation_new_be = None
+                        self.operation_new_be_uuid = None
 
                 if error and not result:
                         try:

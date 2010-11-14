@@ -85,8 +85,12 @@ image-modifying operations that they perform.
         be              - The name of the boot environment on which the
                           operation was performed
 
+        be_uuid         - The uuid corresponding to the boot environment
+
         new_be          - The name of any new boot environment that was created
                           while performing the operation.
+
+        new_be_uuid     - The uuid corresponding to the new boot environment
 
         snapshot        - The name of the snapshot that was taken as a result of
                           this operation.  If the operation completed

@@ -2782,8 +2782,9 @@ class ImageInterface(object):
         def log_operation_start(self, name):
                 """Marks the start of an operation to be recorded in image
                 history."""
+                be_name, be_uuid = bootenv.BootEnv.get_be_name(self.__img.root)
                 self.__img.history.log_operation_start(name,
-                    be_name=bootenv.BootEnv.get_be_name(self.__img.root))
+                    be_name=be_name, be_uuid=be_uuid)
 
         def parse_p5i(self, data=None, fileobj=None, location=None):
                 """Reads the pkg(5) publisher JSON formatted data at 'location'

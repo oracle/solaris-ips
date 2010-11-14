@@ -335,9 +335,9 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 known["outcome"] = arr[3]
 
                 # Ensure we can obtain output for each column
-                cols = ["be", "client", "client_ver", "command", "finish",
-                    "id", "new_be", "operation", "outcome", "reason",
-                    "snapshot", "start", "time", "user"]
+                cols = ["be", "be_uuid", "client", "client_ver", "command",
+                    "finish", "id", "new_be", "new_be_uuid", "operation",
+                    "outcome", "reason", "snapshot", "start", "time", "user"]
                 for col in cols:
                         self.pkg("history -H -n1 -o %s" % col)
                         self.assert_(self.output)

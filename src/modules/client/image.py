@@ -367,8 +367,10 @@ class Image(object):
                 error = None
                 self.lock(allow_unprivileged=allow_unprivileged)
                 try:
+                        be_name, be_uuid = \
+                            bootenv.BootEnv.get_be_name(self.root)
                         self.history.log_operation_start(op,
-                            be_name=bootenv.BootEnv.get_be_name(self.root))
+                            be_name=be_name, be_uuid=be_uuid)
                         yield
                 except apx.ImageLockedError, e:
                         # Don't unlock the image if the call failed to
@@ -1687,8 +1689,9 @@ class Image(object):
                         progtrack.cache_catalogs_done()
                         return
 
+                be_name, be_uuid = bootenv.BootEnv.get_be_name(self.root)
                 self.history.log_operation_start("rebuild-image-catalogs",
-                    be_name=bootenv.BootEnv.get_be_name(self.root))
+                    be_name=be_name, be_uuid=be_uuid)
 
                 # Mark all operations as occurring at this time.
                 op_time = datetime.datetime.utcnow()
@@ -1971,8 +1974,9 @@ class Image(object):
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
 
+                be_name, be_uuid = bootenv.BootEnv.get_be_name(self.root)
                 self.history.log_operation_start("refresh-publishers",
-                    be_name=bootenv.BootEnv.get_be_name(self.root))
+                    be_name=be_name, be_uuid=be_uuid)
 
                 # Verify validity of certificates before attempting network
                 # operations.

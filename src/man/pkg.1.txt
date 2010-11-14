@@ -785,12 +785,16 @@ SUBCOMMANDS
           
           be            The name of the boot environment this operation was
                         started on
+          be_uuid       The uuid of the boot environment this operation was
+                        started on
           client        The name of the client
           client_ver    The version of the client
           command       The command line used for this operation
           finish        The time that this operation finished
           id            The user id that started this operation
           new_be        The new boot environment created by this operation
+          new_be_uuid   The uuid of the new boot environment created by this
+                        operation
           operation     The name of the operation
           outcome       A summary of the outcome of this operation
           reason        Additional information on the outcome of this operation
@@ -806,6 +810,15 @@ SUBCOMMANDS
           If the "command" or "reason" columns are specified, they must be the
           last item in the -o list, in order to preserve output field
           separation.  These columns cannot be printed at the same time.
+
+          A "*" is printed after the values for "be" or "new_be" if the boot
+          environment is no longer present on the system.
+
+          The values for "be" and "new_be" are obtained by looking up the
+          current boot environment name, using the "be_uuid" or
+          "new_be_uuid fields".  If a boot environment was subsequently renamed,
+          and later deleted, the values for "be" and "new_be" displayed
+          are those recorded at the time of the pkg operation.
 
      purge-history
           Deletes all existing history information.
