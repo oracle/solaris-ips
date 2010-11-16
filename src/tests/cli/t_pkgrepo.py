@@ -1164,6 +1164,56 @@ test\t3\tonline\t%sZ
                 self.__test_add_remove_certs(repo_uri)
                 self.__test_add_remove_certs(repo_uri, ["nosuchpub"])
 
+        def test_08_add_publisher(self):
+                """Verify that add-publisher subcommand works as expected."""
+
+                # Create a repository.
+                repo_path = os.path.join(self.test_root, "repo")
+                self.create_repo(repo_path)
+
+                # Verify invalid publisher prefixes are rejected gracefully.
+                self.pkgrepo("-s %s add-publisher !valid" % repo_path, exit=1)
+                self.pkgrepo("-s %s add-publisher file:%s" % (repo_path,
+                    repo_path), exit=1)
+                self.pkgrepo("-s %s add-publisher valid !valid" % repo_path,
+                    exit=1)
+
+                # Verify that multiple publishers can be added at a time, and
+                # that the first publisher named will be set as the default
+                # publisher if a default was not already set.
+                self.pkgrepo("-s %s add-publisher example.com example.net" %
+                    repo_path)
+                self.pkgrepo("-s %s get -p example.com -p example.net "
+                    "publisher/alias" % repo_path)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\texample.com
+"""
+                self.assertEqualDiff(expected, self.output)
+
+                # Verify that add-publisher will exit with complete failure if
+                # all publishers being added already exist.
+                self.pkgrepo("-s %s add-publisher example.com example.net" %
+                    repo_path, exit=1)
+
+                # Verify that add-publisher will exit with partial failure if
+                # only some publishers already exist.
+                self.pkgrepo("-s %s add-publisher example.com example.org" %
+                    repo_path, exit=3)
+
+                # Now set a default publisher before adding a publisher for
+                # the first time.
+                shutil.rmtree(repo_path)
+                self.create_repo(repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=example.net" %
+                    repo_path)
+                self.pkgrepo("-s %s add-publisher example.org" % repo_path)
+                self.pkgrepo("get -s %s -HFtsv publisher/prefix" % repo_path)
+                expected = """\
+publisher\tprefix\texample.net
+"""
+                self.assertEqualDiff(expected, self.output)
+
 
 if __name__ == "__main__":
         unittest.main()

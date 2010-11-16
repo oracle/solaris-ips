@@ -7,6 +7,8 @@ NAME
 SYNOPSIS
      pkgrepo create [--version] uri_or_path
 
+     pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
+
      pkgrepo add-signing-ca-cert [-p publisher ...]
          [-s repo_uri_or_path] path ...
 
@@ -73,6 +75,12 @@ SUBCOMMANDS
                     publishers, catalog version 1, and search
                     version 1.
 
+     add-publisher [-s repo_uri_or_path] publisher ...
+          May only be used with version 4 filesystem-based repositories.
+
+          Add the specified publisher(s) to the repository.  The new
+          publisher(s) will not have any packages or content.
+
      add-signing-ca-certs [-p publisher ...]
        [-s repo_uri_or_path] path ...
           May only be used with filesystem-based repositories.
@@ -112,6 +120,9 @@ SUBCOMMANDS
           characters (';', '&', '(', ')', '|', '^', '<', '>', newline,
           space, tab, backslash, '"', single-quote, '`') in ASCII
           string values are quoted by backslashes (\).
+
+          For a list of possible properties, the purpose of each and its
+          value, see the set subcommand below.
 
           With -F, specify an alternative output format.  Currently,
           only 'tsv' (Tab Separated Values) is valid.
@@ -216,12 +227,13 @@ SUBCOMMANDS
        [section/property=value ...]
           May only be used with filesystem-based repositories.
 
-          Sets the value of the specified properties for the
-          repository or publishers.
+          Sets the value of the specified properties for the repository
+          or publishers.
 
-          With -p, only set property data for the given publisher.
-          The special value 'all' may be used to set the property
-          for all publishers.
+          With -p, only set property data for the given publisher.  If
+          the publisher does not already exist, it will be added.  The
+          special value 'all' may be used to set the property for all
+          publishers.  
 
           With -s, operate on the repository located at the given URI
           or filesystem path.
@@ -237,8 +249,98 @@ SUBCOMMANDS
                     value.
 
                section/property=(value1 value2 valueN)
-                    The property's value will be replaced with the
-                    list of values.
+                    The property's value will be replaced with the list of
+                    values.
+
+          For repository versions 3 and 4, the following properties can be
+          set for the repository:
+
+               publisher/prefix
+                    A string representing the name of the default
+                    publisher.  The first character must be a-z, A-Z, or
+                    0-9.  The remainder of the string may only contain the
+                    characters 0-9, -, ., a-z, and A-Z.  This value
+                    indicates the publisher that should be used when more
+                    than one publisher's packages are present, or when
+                    packages are published to the repository, and a
+                    publisher is not specified.
+
+               publisher/signing_ca_certs
+                    A list of strings containing the hashes of signing CA
+                    certificates that should be used for this publisher.
+
+               publisher/intermediate_certs
+                    A list of strings containing the hashes of intermediate
+                    certificates that should be used for this publisher.
+
+          For repository versions 3 and 4, the following properties can be
+          set for individual publishers in the repository:
+
+               publisher/alias
+                    A string representing the default alias that clients
+                    should use when adding a publisher using the
+                    repository's configuration data.  The first character
+                    must be a-z, A-Z, or 0-9.  The remainder of the string
+                    may only contain the characters 0-9, -, ., a-z, and
+                    A-Z.
+
+               repository/collection_type
+                    May have the value 'core' or 'supplemental', indicating
+                    the type of packages offered in this repository.
+
+                    The 'core' type indicates that the repository contains
+                    all of the dependencies declared by packages in the
+                    repository.  It is primarily used for operating system
+                    repositories.
+
+                    The 'supplemental' type indicates that the repository
+                    contains packages that rely on or are intended to be
+                    used with packages located in another repository.
+
+               repository/description
+                    A paragraph of plain text describing the purpose and
+                    contents of the repository.
+
+               repository/detailed_url
+                    A URI representing the location of a document (such as
+                    a web page) that provides additional information about
+                    the repository.
+
+               repository/legal_uris    
+                    A list of locations (URIs) for documents that provide
+                    additional legal information about the repository.
+
+               repository/mirrors
+                    A list of locations (URIs) of repositories that contain
+                    a copy of the repository's package content (but not the
+                    package metadata).
+
+               repository/name
+                    A plain text string containing the name of the
+                    repository.
+
+               repository/origins
+                    A list of locations (URIs) of repositories that contain
+                    a complete copy of the repository's package metadata
+                    and content.
+
+               repository/refresh_seconds
+                    An integer value representing the number of seconds
+                    clients should wait before checking the repository
+                    for updated package data after each update check.
+
+               repository/registration_uri
+                    A URI representing the location of a resource that
+                    must be used to obtain credentials for access to the
+                    repository.  (Such as a registration web page.)
+
+               repository/related_uris
+                    A list of locations (URIs) of repositories that contain
+                    packages that users may be interested in.
+
+          Properties not documented here, but listed in the output of the
+          get subcommand, are reserved for internal use and should not be
+          set.
 
      version
           Display a unique string identifying the version of the
@@ -285,7 +387,7 @@ EXAMPLES
      example.com repository origins  http://example.com/repository
      example.net repository origins  http://example.net/repository
 
-     Example 7:  Set a repository property.
+     Example 7:  Set the default publisher.
 
      $ pkgrepo set -s /my/repository publisher/prefix=example.com
 
@@ -321,6 +423,10 @@ EXAMPLES
 
      $ pkgrepo remove-signing-intermediate-ca-cert -s /my/repository \
          -p example.com a12345
+
+     Example 13:  Add a new publisher to the repository.
+
+     $ pkgrepo add-publisher -s /my/repository example.com
 
 EXIT STATUS
      The following exit values are returned:

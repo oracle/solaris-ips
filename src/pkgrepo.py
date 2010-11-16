@@ -116,6 +116,8 @@ Usage:
 Subcommands:
      pkgrepo create [--version] uri_or_path
 
+     pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
+
      pkgrepo add-signing-ca-cert [-p publisher ...]
          [-s repo_uri_or_path] path ...
 
@@ -462,6 +464,70 @@ def setup_transport(conf, subcommand=None):
             xport_cfg, remote_prefix=True)
 
         return xport, src_pub, tmp_dir
+
+
+def subcmd_add_publisher(conf, args):
+        """Add publisher(s) to the specified repository."""
+
+        subcommand = "add-publisher"
+
+        opts, pargs = getopt.getopt(args, "s:")
+
+        version = None
+        for opt, arg in opts:
+                if opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        repo_uri = conf.get("repo_uri", None)
+        if not repo_uri:
+                usage(_("No repository location specified."), cmd=subcommand)
+        if repo_uri.scheme != "file":
+                usage(_("Network repositories are not currently supported "
+                    "for this operation."), cmd=subcommand)
+
+        if not pargs:
+                usage(_("At least one publisher must be specified"),
+                    cmd=subcommand)
+
+        abort = False
+        for pfx in pargs:
+                if not misc.valid_pub_prefix(pfx):
+                        error(_("Invalid publisher prefix '%s'") % pfx,
+                            cmd=subcommand)
+                        abort = True
+        if abort:
+                return EXIT_OOPS
+
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
+        make_default = not repo.publishers
+        existing = repo.publishers & set(pargs)
+
+        # Elide the publishers that already exist, but retain the order
+        # publishers were specified in.
+        new_pubs = [
+            pfx for pfx in pargs
+            if pfx not in repo.publishers
+        ]
+
+        # Tricky logic; _set_pub will happily add new publishers if necessary
+        # and not set any properties if you didn't specify any.
+        rval = _set_pub(conf, subcommand, {}, new_pubs, repo)
+
+        if make_default:
+                # No publisher existed previously, so set the default publisher
+                # to be the first new one that was added.
+                _set_repo(conf, subcommand, { "publisher": {
+                    "prefix": new_pubs[0] } }, repo)
+
+        if rval == EXIT_OK and existing:
+                # Some of the publishers that were requested for addition
+                # were already known.
+                error(_("specified publisher(s) already exist: %s") %
+                    ", ".join(existing), cmd=subcommand)
+                if new_pubs:
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+        return rval
 
 
 def subcmd_create(conf, args):
@@ -1036,13 +1102,12 @@ def subcmd_set(conf, args):
 
         # Set properties.
         if pubs:
-                return _set_pub(conf, subcommand, omit_headers, props, pubs,
-                    repo)
+                return _set_pub(conf, subcommand, props, pubs, repo)
 
-        return _set_repo(conf, subcommand, omit_headers, props, repo)
+        return _set_repo(conf, subcommand, props, repo)
 
 
-def _set_pub(conf, subcommand, omit_headers, props, pubs, repo):
+def _set_pub(conf, subcommand, props, pubs, repo):
         """Set publisher properties."""
 
         for sname, sprops in props.iteritems():
@@ -1127,7 +1192,7 @@ def _set_pub(conf, subcommand, omit_headers, props, pubs, repo):
         return EXIT_OK
 
 
-def _set_repo(conf, subcommand, omit_headers, props, repo):
+def _set_repo(conf, subcommand, props, repo):
         """Set repository properties."""
 
         # Set properties.
