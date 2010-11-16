@@ -33,6 +33,7 @@ import urllib
 import pkg.fmri as fmri
 import pkg.lockfile as lockfile
 import pkg.manifest as manifest
+import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
 import pkg.version
@@ -815,8 +816,7 @@ class Indexer(object):
                 assert res is not 0
                 return res
 
-        def rebuild_index_from_scratch(self, fmris,
-            tmp_index_dir=None):
+        def rebuild_index_from_scratch(self, fmris, tmp_index_dir=None):
                 """Removes any existing index directory and rebuilds the
                 index based on the fmris and manifests provided as an
                 argument.
@@ -827,19 +827,26 @@ class Indexer(object):
                 self.file_version_number = INITIAL_VERSION_NUMBER
                 self.empty_index = True
 
+                # A lock can't be held while the index directory is being
+                # removed as that can cause rmtree() to fail when using
+                # NFS.  As such, attempt to get the lock first, then
+                # unlock, immediately rename the old index directory,
+                # and then remove the old the index directory and
+                # create a new one.
                 self.lock()
+                self.unlock()
+
+                portable.rename(self._index_dir, self._index_dir + ".old")
                 try:
-                        shutil.rmtree(self._index_dir)
+                        shutil.rmtree(self._index_dir + ".old")
                         makedirs(self._index_dir)
                 except OSError, e:
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
-                finally:
-                        self.unlock()
 
-                self._generic_update_index(fmris,
-                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
+                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
+                    tmp_index_dir)
                 self.empty_index = False
 
         def setup(self):

@@ -646,9 +646,21 @@ class _RepoStore(object):
                             self.manifest,
                             log=self.__index_log,
                             sort_file_max_size=self.__sort_file_max_size)
+
+                        # To prevent issues with NFS consumers, attempt to lock
+                        # the index first, but don't hold the lock as holding
+                        # a lock while removing the directory containing it
+                        # can cause rmtree() to fail.
                         ind.lock(blocking=False)
+                        ind.unlock()
+
+                        # Since the lock succeeded, immediately try to rename
+                        # the index directory to prevent other consumers from
+                        # using the index while it is being removed since
+                        # a lock can't be held.
+                        portable.rename(self.index_root, self.index_root + ".old")
                         try:
-                                shutil.rmtree(self.index_root)
+                                shutil.rmtree(self.index_root + ".old")
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise apx.PermissionsException(
@@ -658,8 +670,6 @@ class _RepoStore(object):
                                             e.filename)
                                 if e.errno != errno.ENOENT:
                                         raise
-                        finally:
-                                ind.unlock()
 
                         # Discard in-memory search data.
                         self.reset_search()
