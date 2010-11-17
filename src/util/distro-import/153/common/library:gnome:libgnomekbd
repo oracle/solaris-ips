@@ -1,0 +1,7 @@
+package library/gnome/libgnomekbd
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWgnome-keyboard-libs
+import SUNWgnome-keyboard-libs-devel
+import SUNWgnome-keyboard-libs-root
+end package
