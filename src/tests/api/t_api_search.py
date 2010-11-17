@@ -1161,7 +1161,8 @@ close
                 shutil.move(index_dir_tmp, index_dir)
 
         def _get_index_dirs(self):
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
                 index_dir_tmp = index_dir + "TMP"
                 return index_dir, index_dir_tmp
 
@@ -1291,7 +1292,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
                 shutil.rmtree(index_dir)
 
                 self._run_degraded_local_tests(api_obj)
@@ -1338,7 +1340,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
 
                 first = True
 
@@ -1368,7 +1371,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 api_obj = self.image_create(durl)
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
 
                 first = True
 
@@ -1443,8 +1447,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
-                    "TMP")
+                tmp_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index", "TMP")
                 self._api_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
                 self._api_install(api_obj, ["fat"])
@@ -1510,7 +1514,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._run_remove_root_search(self._search_op_multi, False,
                     api_obj, ip)
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
                 shutil.rmtree(index_dir)
                 # Do slow local searches
                 self._run_remove_root_search(self._search_op_slow_multi, False,
@@ -1834,7 +1839,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 api_obj = self.image_create(durl)
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir = os.path.join(self.img_path, "var", "pkg",
+                    "cache", "index")
 
                 orig_fn = os.path.join(index_dir,
                     query_parser.TermQuery._get_gdd(index_dir).values()[0].\

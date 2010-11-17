@@ -81,7 +81,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 46
+CLIENT_API_VERSION = 47
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -104,6 +104,16 @@ logger = global_settings.logger
 valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 
 valid_special_prefixes = ["action."]
+
+def format_update_error(e):
+        # This message is displayed to the user whenever an
+        # ImageFormatUpdateNeeded exception is encountered.
+        logger.error("\n")
+        logger.error(str(e))
+        logger.error(_("To continue, execute 'pkg update-format' as a "
+            "privileged user and then try again.  Please note that updating "
+            "the format of the image will render it unusable with older "
+            "versions of the pkg(5) system."))
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -220,6 +230,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         adv_usage["history"] = _("[-Hl] [-t [time|time-time],...] [-n number] [-o column,...]")
         adv_usage["purge-history"] = ""
         adv_usage["rebuild-index"] = ""
+        adv_usage["update-format"] = ""
 
         def print_cmds(cmd_list, cmd_dic):
                 for cmd in cmd_list:
@@ -665,6 +676,9 @@ def fix_image(img, args):
                     api_errors.InvalidResourceLocation), e:
                         logger.error("\n")
                         logger.error(str(e))
+                except api_errors.ImageFormatUpdateNeeded, e:
+                        format_update_error(e)
+                        return EXIT_OOPS
                 except api_errors.PlanLicenseErrors, e:
                         # Prepend a newline because otherwise the exception will
                         # be printed on the same line as the spinner.
@@ -787,6 +801,9 @@ def verify_image(img, args):
                             result=history.RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
                 notfound = e.notfound
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
 
         if processed:
                 progresstracker.verify_done()
@@ -977,6 +994,9 @@ def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return EXIT_OOPS
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except KeyboardInterrupt:
                 raise
         except:
@@ -1021,8 +1041,9 @@ def __api_execute_plan(operation, api_inst):
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 return EXIT_OOPS
-        except KeyboardInterrupt:
-                raise
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.BEException, e:
                 error(e)
                 return EXIT_OOPS
@@ -1045,6 +1066,9 @@ def __api_alloc(img, quiet=False):
                 return None
         except api_errors.PermissionsException, e:
                 error(e)
+                return None
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
                 return None
         return api_inst
 
@@ -1082,6 +1106,9 @@ Cannot remove '%s' due to the following packages that depend on it:"""
             api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors):
                 error("\n" + str(e), cmd=op)
+                return EXIT_OOPS
+        if e_type == api_errors.ImageFormatUpdateNeeded:
+                format_update_error(e)
                 return EXIT_OOPS
 
         if e_type == api_errors.ImageUpdateOnLiveImageException:
@@ -1892,6 +1919,9 @@ def search(img, args):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
                 return EXIT_OOPS
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.ApiException, e:
                 error(e)
                 return EXIT_OOPS
@@ -1944,6 +1974,9 @@ def info(img, args):
 
         try:
                 ret = api_inst.info(pargs, info_local, info_needed)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except (api_errors.InvalidPackageErrors,
             api_errors.ActionExecutionError,
             api_errors.UnrecognizedOptionsToInfo,
@@ -2445,6 +2478,9 @@ def list_contents(img, args):
                 for pfmri, summ, cats, states in res:
                         manifests.append(api_inst.get_manifest(pfmri,
                             all_variants=display_raw))
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.InvalidPackageErrors, e:
                 error(str(e), cmd=subcommand)
                 api_inst.log_operation_end(
@@ -2565,6 +2601,9 @@ def __refresh(api_inst, pubs, full_refresh=False):
                 # refresh to occur immediately.
                 api_inst.refresh(full_refresh=full_refresh,
                     immediate=True, pubs=pubs)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.PublisherError, e:
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
@@ -2646,6 +2685,12 @@ def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
                     "point to a valid pkg repository.\nPlease check the URI "
                     "and the client's network configuration."
                     "\nAdditional details:\n\n%s") % str(e)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                for entry in raise_errors:
+                        if isinstance(e, entry):
+                                raise
+                format_update_error(e)
+                return EXIT_OOPS, ""
         except api_errors.ApiException, e:
                 for entry in raise_errors:
                         if isinstance(e, entry):
@@ -3180,6 +3225,9 @@ def publisher_unset(img, args):
         for name in args:
                 try:
                         api_inst.remove_publisher(prefix=name, alias=name)
+                except api_errors.ImageFormatUpdateNeeded, e:
+                        format_update_error(e)
+                        return EXIT_OOPS
                 except (api_errors.PermissionsException,
                     api_errors.PublisherError), e:
                         errors.append((name, e))
@@ -3512,6 +3560,9 @@ def property_add_value(img, args):
 
         try:
                 img.add_property_value(propname, propvalue)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.ApiException, e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
@@ -3535,6 +3586,9 @@ def property_remove_value(img, args):
 
         try:
                 img.remove_property_value(propname, propvalue)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.ApiException, e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
@@ -3581,6 +3635,9 @@ def property_set(img, args):
 
         try:
                 img.set_properties(props)
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.ApiException, e:
                 error(str(e), cmd=subcommand)
                 return EXIT_OOPS
@@ -3608,6 +3665,9 @@ def property_unset(img, args):
 
                 try:
                         img.delete_property(p)
+                except api_errors.ImageFormatUpdateNeeded, e:
+                        format_update_error(e)
+                        return EXIT_OOPS
                 except api_errors.ApiException, e:
                         error(str(e), cmd=subcommand)
                         return EXIT_OOPS
@@ -3734,6 +3794,7 @@ def image_create(args):
         variants = {}
         facets = pkg.facet.Facets()
         set_props = {}
+        version = None
 
         opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
             ["force", "full", "partial", "user", "zone", "authority=", "facet=",
@@ -3768,18 +3829,6 @@ def image_create(args):
                         imgtype = IMG_TYPE_PARTIAL
                 elif opt == "-U" or opt == "--user":
                         imgtype = IMG_TYPE_USER
-                elif opt == "--no-refresh":
-                        refresh_allowed = False
-                elif opt == "--variant":
-                        try:
-                                v_name, v_value = arg.split("=", 1)
-                                if not v_name.startswith("variant."):
-                                        v_name = "variant.%s" % v_name
-                        except ValueError:
-                                usage(_("variant arguments must be of the "
-                                    "form '<name>=<value>'."),
-                                    cmd=cmd_name)
-                        variants[v_name] = v_value
                 elif opt == "--facet":
                         allow = { "TRUE":True, "FALSE":False }
                         f_name, f_value = arg.split("=", 1)
@@ -3790,6 +3839,8 @@ def image_create(args):
                                     "form 'facet..=[True|False]'"),
                                     cmd=cmd_name)
                         facets[f_name] = allow[f_value.upper()]
+                elif opt == "--no-refresh":
+                        refresh_allowed = False
                 elif opt == "--set-property":
                         t = arg.split("=", 1)
                         if len(t) < 2:
@@ -3801,6 +3852,16 @@ def image_create(args):
                                     "command. %s was set twice") % t[0],
                                     cmd=cmd_name)
                         set_props[t[0]] = t[1]
+                elif opt == "--variant":
+                        try:
+                                v_name, v_value = arg.split("=", 1)
+                                if not v_name.startswith("variant."):
+                                        v_name = "variant.%s" % v_name
+                        except ValueError:
+                                usage(_("variant arguments must be of the "
+                                    "form '<name>=<value>'."),
+                                    cmd=cmd_name)
+                        variants[v_name] = v_value
 
         if not pargs:
                 usage(_("an image directory path must be specified"),
@@ -3878,6 +3939,9 @@ def rebuild_index(img, pargs):
 
         try:
                 api_inst.rebuild_search_index()
+        except api_errors.ImageFormatUpdateNeeded, e:
+                format_update_error(e)
+                return EXIT_OOPS
         except api_errors.CorruptedIndexException:
                 error("The search index appears corrupted.  Please rebuild the "
                     "index with 'pkg rebuild-index'.", cmd="rebuild-index")
@@ -4293,6 +4357,25 @@ def print_proxy_config():
         if https_proxy:
                 logger.error(_("https_proxy: %s\n") % https_proxy)
 
+def update_format(img, pargs):
+        """Update image to newest format."""
+
+        api_inst = __api_alloc(img)
+        if api_inst == None:
+                return EXIT_OOPS
+
+        try:
+                res = api_inst.update_format()
+        except api_errors.ApiException, e:
+                error(str(e), cmd="update-format")
+                return EXIT_OOPS
+
+        if res:
+                logger.info(_("Image format updated."))
+                return EXIT_OK
+
+        logger.info(_("Image format already current."))
+        return EXIT_NOP
 
 # To allow exception handler access to the image.
 __img = None
@@ -4372,6 +4455,7 @@ def main_func():
             "unset-property"   : property_unset,
             "unset-publisher"  : publisher_unset,
             "update"           : update,
+            "update-format"    : update_format,
             "variant"          : variant_list,
             "verify"           : verify_image,
             "version"          : None
@@ -4454,7 +4538,8 @@ def main_func():
                 return EXIT_OOPS
 
         try:
-                __img = img = image.Image(mydir, provided_image_dir)
+                __img = img = image.Image(mydir,
+                    user_provided_dir=provided_image_dir)
         except api_errors.ImageNotFoundException, e:
                 if e.user_specified:
                         m = "No image rooted at '%s'"

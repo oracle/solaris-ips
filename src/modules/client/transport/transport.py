@@ -300,10 +300,6 @@ class ImageTransportCfg(TransportCfg):
             doc="The absolute pathname of the directory where in-progress "
             "downloads should be stored.")
 
-        pkg_root = property(lambda self: self.__img.pkgdir, doc="The absolute "
-            "pathname of the directory where manifest files should be stored "
-            "to and loaded from.")
-
         user_agent = property(__get_user_agent, doc="A string that identifies "
             "the user agent for the transport.")
 
@@ -1099,7 +1095,8 @@ class Transport(object):
 
                                 m = manifest.FactoredManifest(fmri,
                                     self.cfg.get_pkg_dir(fmri),
-                                    contents=mcontent, excludes=excludes)
+                                    contents=mcontent, excludes=excludes,
+                                    pathname=self.cfg.get_pkg_pathname(fmri))
 
                                 return m
 
@@ -1303,7 +1300,8 @@ class Transport(object):
                                         mf.close()
                                         manifest.FactoredManifest(fmri,
                                             self.cfg.get_pkg_dir(fmri),
-                                            contents=mcontent, excludes=excludes)
+                                            contents=mcontent, excludes=excludes,
+                                            pathname=self.cfg.get_pkg_pathname(fmri))
                                 except (apx.InvalidPackageErrors,
                                     ActionError), e:
                                         if verified:
@@ -1468,6 +1466,8 @@ class Transport(object):
                         # For now, pick first cache in list, if any are
                         # present.
                         cache = cache[0]
+                else:
+                        cache = None
 
                 for d, v in self.__gen_repo(pub, retry_count, operation="file",
                     versions=[0, 1], alt_repo=mfile.get_alt_repo()):

@@ -89,11 +89,27 @@ class ImageNotFoundException(ApiException):
                 self.user_dir = user_dir
                 self.root_dir = root_dir
 
+
+class ImageFormatUpdateNeeded(ApiException):
+        """Used to indicate that an image cannot be used until its format is
+        updated."""
+
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                return _("The image rooted at %s is written in an older format "
+                    "and must be updated before the requested operation can be "
+                    "performed.") % self.path
+
+
 class VersionException(ApiException):
         def __init__(self, expected_version, received_version):
                 ApiException.__init__(self)
                 self.expected_version = expected_version
                 self.received_version = received_version
+
 
 class PlanExistsException(ApiException):
         def __init__(self, plan_type):
@@ -1378,10 +1394,12 @@ class UnsupportedRepositoryURI(PublisherError):
                 if self.data:
                         scheme = urlparse.urlsplit(self.data,
                             allow_fragments=0)[0]
-                        return _("The URI '%(uri)s' contains an unsupported "
-                            "scheme '%(scheme)s'.") % { "uri": self.data,
-                            "scheme": scheme }
-                return _("The specified URI contains an unsupported scheme.")
+                        return _("The URI '%(uri)s' uses the unsupported "
+                            "scheme '%(scheme)s'.  Supported schemes are "
+                            "file://, http://, and https://.") % {
+                            "uri": self.data, "scheme": scheme }
+                return _("The specified URI uses an unsupported scheme."
+                    "  Supported schemes are: file://, http://, and https://.")
 
 
 class UnsupportedRepositoryURIAttribute(PublisherError):
@@ -1840,8 +1858,22 @@ class ImageCfgEmptyError(ApiException):
         """Used to indicate that the image configuration is invalid."""
 
         def __str__(self):
-                return _("The configuration data for the image located at "
-                    "'%s' is empty or missing.") % self.data
+                return _("The configuration data for the image rooted at "
+                    "%s is empty or missing.") % self.data
+
+
+class UnsupportedImageError(ApiException):
+        """Used to indicate that the image at a specific location is in a format
+        not supported by this version of the pkg(5) API."""
+
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                return _("The image rooted at %s is invalid or is not "
+                    "supported by this version of the packaging system.") % \
+                    self.path
 
 
 class CreatingImageInNonEmptyDir(ImageCreationException):

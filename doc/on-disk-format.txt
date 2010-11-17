@@ -194,7 +194,7 @@ ON-DISK FORMAT PROPOSAL
             The pkg(5) repository format is a set of directories and
             files that conform to a pre-defined structure.
             
-            For a version 1 repository (the current format), the
+            For a version 3 repository (the current format), the
             structure is as follows:
 
             <REPO_ROOT>/
@@ -212,7 +212,7 @@ ON-DISK FORMAT PROPOSAL
                     <in-flight transaction files>
                 cfg_cache (optional repository configuration file)
 
-            Version 2 of the repository format eliminates the potential
+            Version 4 of the repository format eliminates the potential
             for unintended collisions between package metadata from
             different publishers and simplifies composition and decomp-
             osition of repository content.  The top-level is an optional
@@ -334,7 +334,7 @@ ON-DISK FORMAT PROPOSAL
             plify configuration, but to separate depot configuration
             from repsitory configuration.
 
-            An example version 2 repository might be structured as
+            An example version 4 repository might be structured as
             follows:
 
             <REPO_ROOT>/
@@ -376,7 +376,7 @@ ON-DISK FORMAT PROPOSAL
 
               pkg5.repository:
                 [repository]
-                version = 2
+                version = 4
 
     4.3. Archive Format:
 
@@ -524,7 +524,7 @@ ON-DISK FORMAT PROPOSAL
 
             Creation of the archive took 7 minutes, 35 seconds on a
             custom-built Intel Core 2 DUO E8400, with 8GB Memory,
-            and a 1TB 7200 RPM SATA Drive w/ 64MB Cache.
+            and a 1TB 10000 RPM SATA Drive w/ 64MB Cache.
 
         4.3.7. Package Archive Specification:
 
@@ -720,7 +720,7 @@ ON-DISK FORMAT PROPOSAL
         archive files as a destination due to the publication
         model it currently uses.
 
-        To support the expanded multiple publisher version 2 format
+        To support the expanded multiple publisher version 4 format
         of repositories, the depot server will be updated to respond
         to requests as follows:
 
@@ -813,27 +813,70 @@ ON-DISK FORMAT PROPOSAL
         and pkg(5) repositories, the format of the client image
         will be changed to use the structure described below.
 
+        For a version 3 image (the current format), the structure is as
+        follows:
+
+        <IMG_ROOT>
+            download/
+                <first two letters of file hash>/
+                    <file-named-by-hash>
+            file/
+            gui_cache/
+            history/
+            index/
+            lost+found/
+            pkg/
+                <stem>/
+                    <version>/
+                        manifest
+                        manifest.<cachefiles>
+            publisher/
+                <prefix>/
+                    catalog/
+                    certs/ (optional)
+                    last_refreshed (optional)
+            state/
+               installed/
+                    <image catalog files>
+               known/
+                    <image catalog files>
+            tmp/
+            cfg_cache
+            lock
+
         For a version 4 image (the proposed format), the structure is
         as follows:
 
         <IMG_ROOT>
             cache/
-                <publisher_prefix>/
-                    certs/
-                        <publisher signing certificates>
-                    pkg/
-                        <stem>/
-                            <manifest-cache-files>
-            publisher/
-                 <as described in section 4.2.2>
-            index/
-                <client search index files>
-            ssl/
-                client ssl certificates>
+                index/
+                    <api search index files>
+                publisher/
+                    <publisher_prefix>/
+                        catalog/
+                            <repository composition cache files>
+                        pkg/
+                            <stem>/
+                                <version>/
+                                    <manifest-cache-files>
+                tmp/
+                    <api temporary files>
+            gui_cache/
+                <package manager data files>
             history/
                 <client history files>
-            pm_cache/
-                <package manager data files>
+            license/
+                <stem>/
+                    <license files>
+            lost+found/
+                <salvaged filesystem objects>
+            publisher/
+                <prefix>/
+                    certs/
+                        <publisher signing certificates>
+                    <otherwise as described in section 4.2.2>
+            ssl/
+                client ssl certificates>
             state/
                installed/
                     <image catalog files>
@@ -849,16 +892,9 @@ ON-DISK FORMAT PROPOSAL
         format.  To enable the upgrading of existing images to newer
         formats, the following subcommands will be added:
 
-        meta-update
+        update-format
             Updates the format of the client's image to the current
             format if possible.
-
-            Has these options:
-
-            -n determine whether the upgrade could be formed and exit
-            
-            -v show a summary of what will be done, the current format
-               of the repository and what it will be upgraded to
 
     5.4. Client and Depot Support for On-Disk Archive Format:
 

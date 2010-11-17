@@ -65,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 46
+CURRENT_API_VERSION = 47
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -127,7 +127,7 @@ class ImageInterface(object):
                 'pkg_client_name' is a string containing the name of the client,
                 such as "pkg" or "packagemanager"."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([46, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -143,7 +143,7 @@ class ImageInterface(object):
                         # Store this for reset().
                         self.__img_path = img_path
                         self.__img = image.Image(img_path,
-                            progtrack=progresstracker)
+                            progtrack=progresstracker, user_provided_dir=True)
                 elif isinstance(img_path, image.Image):
                         # This is a temporary, special case for client.py
                         # until the image api is complete.
@@ -254,15 +254,28 @@ class ImageInterface(object):
                         raise
 
         def __refresh_publishers(self):
-                """Refresh publisher metadata."""
+                """Refresh publisher metadata; this should only be used by
+                functions in this module for implicit refresh cases."""
 
                 #
                 # Verify validity of certificates before possibly
                 # attempting network operations.
                 #
                 self.__cert_verify()
-                self.__img.refresh_publishers(immediate=True,
-                    progtrack=self.__progresstracker)
+                try:
+                        self.__img.refresh_publishers(immediate=True,
+                            progtrack=self.__progresstracker)
+                except apx.ImageFormatUpdateNeeded:
+                        # If image format update is needed to perform refresh,
+                        # continue on and allow failure to happen later since
+                        # an implicit refresh failing for this reason isn't
+                        # important.  (This allows planning installs and updates
+                        # before the format of an image is updated.  Yes, this
+                        # means that if the refresh was needed to do that, then
+                        # this isn't useful, but this is as good as it gets.)
+                        logger.warning(_("Skipping publisher metadata refresh;"
+                            "image rooted at %s must have its format updated "
+                            "before a refresh can occur.") % self.__img.root)
 
         def __acquire_activity_lock(self):
                 """Private helper method to aqcuire activity lock."""
@@ -2868,6 +2881,23 @@ class ImageInterface(object):
                                 # Whatever the error was, return it.
                                 error = e
                         yield (pat, error, npat, matcher)
+
+        def update_format(self):
+                """Attempt to update the on-disk format of the image to the
+                newest version.  Returns a boolean indicating whether any action
+                was taken."""
+
+                self.__acquire_activity_lock()
+                try:
+                        self.__disable_cancel()
+                        self.__img.allow_ondisk_upgrade = True
+                        return self.__img.update_format(
+                            progtrack=self.__progresstracker)
+                except apx.CanceledException, e:
+                        self.__cancel_done()
+                        raise
+                finally:
+                        self.__activity_lock.release()
 
         def write_p5i(self, fileobj, pkg_names=None, pubs=None):
                 """Writes the publisher, repository, and provided package names

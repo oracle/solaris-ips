@@ -43,7 +43,7 @@ import shutil
 import sys
 
 PKG_CLIENT_NAME = "pkglint"
-CLIENT_API_VERSION = 46
+CLIENT_API_VERSION = 47
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 class LintEngineException(Exception):

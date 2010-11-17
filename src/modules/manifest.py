@@ -34,6 +34,7 @@ from itertools import groupby, chain, repeat
 
 import pkg.actions as actions
 import pkg.client.api_errors as apx
+import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variant
 
@@ -152,13 +153,10 @@ class Manifest(object):
 
                 added = [(None, sdict[i]) for i in sset - oset]
                 removed = [(odict[i], None) for i in oset - sset]
-                # XXX for now, we force license actions to always be
-                # different to insure that existing license files for
-                # new versions are always installed
                 changed = [
                     (odict[i], sdict[i])
                     for i in oset & sset
-                    if odict[i].different(sdict[i]) or i[0] == "license"
+                    if odict[i].different(sdict[i])
                 ]
 
                 # XXX Do changed actions need to be sorted at all?  This is
@@ -707,10 +705,10 @@ class FactoredManifest(Manifest):
                 'pathname' is an optional string containing the pathname of a
                 manifest.  If not provided, it is assumed that the manifest is
                 stored in a file named 'manifest' in the directory indicated by
-                'cache_root'.
+                'cache_root'.  If provided, and contents is also provided, then
+                'contents' will be stored in 'pathname' if it does not already
+                exist.
                 """
-
-                assert not (contents and pathname)
 
                 Manifest.__init__(self, fmri)
                 self.__cache_root = cache_root
@@ -790,6 +788,9 @@ class FactoredManifest(Manifest):
                 assert self.loaded
 
                 t_dir = self.__cache_root
+
+                # Ensure target cache directory and intermediates exist.
+                misc.makedirs(t_dir)
 
                 # create per-action type cache; use rename to avoid
                 # corrupt files if ^C'd in the middle

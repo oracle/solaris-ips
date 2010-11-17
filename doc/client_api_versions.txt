@@ -1,3 +1,21 @@
+Version 47:
+Compatible with clients using version 46.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * A new function named 'update_format' has been added to allow
+          clients to upgrade images in older formats to the newest one.
+          By default, images rooted at '/' or that are for a zone are
+          automatically upgraded to the newest format if the user of
+          the client has sufficient privileges.
+
+    pkg.client.api_errors has changed as follows:
+
+        * A new exception named 'ImageFormatUpdateNeeded' has been added
+          that may be raised by the API whenever an API operation
+          requires that the image be updated to a new format before
+          the operation can be performed.
+
 Version 46:
 Incompatible with clients using versions 0-45.
 

@@ -33,6 +33,8 @@ import os
 import pkg.portable
 import pkg.catalog
 import pkg.client.image as image
+import pkg.config as cfg
+import pkg.misc as misc
 import shutil
 import unittest
 
@@ -346,9 +348,9 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list --no-refresh -a | grep baz")
 
         def test_8_image_upgrade(self):
-                """Verify that a version 0 image can be used by a client that
-                normally creates version 1 images, and that it will be upgraded
-                correctly when a privileged user uses it."""
+                """Verify that a version 2 or version 3 image can be used by a
+                client that creates version 4 images, and that it will be
+                upgraded correctly when a privileged user uses it."""
 
                 # Publish some sample packages (to separate repositories).
                 self.pkgsend_bulk(self.rurl1, "open quux@1.0\nclose")
@@ -372,8 +374,9 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # Next, disable the second repository's publisher.
                 self.pkg("set-publisher -d test2")
 
-                # Next, convert the v1 image to a v0 image.
+                # Next, convert the v4 image to a v2 image.
                 img_root = os.path.join(self.get_img_path(), "var", "pkg")
+
                 cat_path = os.path.join(img_root, "catalog")
                 pub_path = os.path.join(img_root, "publisher")
 
@@ -382,11 +385,28 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 v0_cat_path = os.path.join(cat_path, "test1")
 
                 # For conversion, the v0 catalogs need to be generated in
-                # the v0 location.
+                # the v2 location.
                 os.makedirs(v0_cat_path)
                 self.__transform_v1_v0(v1_cat, v0_cat_path)
 
-                # The existing installed state has to be converted to v0.
+                # Manifests have to be linked into their v2/v3 location.
+                def link_manifests():
+                        for pub in os.listdir(pub_path):
+                                pkg_root = os.path.join(pub_path, pub, "pkg")
+                                for stem in os.listdir(pkg_root):
+                                        stem_root = os.path.join(pkg_root, stem)
+                                        for ver in os.listdir(stem_root):
+                                                src = os.path.join(stem_root,
+                                                    ver)
+                                                dest = os.path.join(img_root,
+                                                    "pkg", stem, ver,
+                                                    "manifest")
+                                                misc.makedirs(
+                                                    os.path.dirname(dest))
+                                                os.link(src, dest)
+                link_manifests()
+
+                # The existing installed state has to be converted to v2.
                 state_dir = os.path.join(img_root, "state")
                 inst_state_dir = os.path.join(state_dir, "installed")
                 cat = pkg.catalog.Catalog(meta_root=inst_state_dir)
@@ -394,32 +414,67 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         self.__add_install_file(img_root, f)
                 cat = None
 
-                # Now dump the new publisher directory, the 'known' state
-                # directory, and any catalog files in the 'installed'
-                # directory.
-                known_state_dir = os.path.join(state_dir, "known")
-                for path in (pub_path, known_state_dir):
-                        shutil.rmtree(path)
+                # Now dump any v4 directories not found in v2 images.
+                shutil.rmtree(pub_path)
+                for entry in ("cache", "license", "ssl", "state/known"):
+                        shutil.rmtree(os.path.join(img_root, entry))
 
                 for fname in sorted(os.listdir(inst_state_dir)):
                         if fname.startswith("catalog"):
                                 pkg.portable.remove(os.path.join(inst_state_dir,
                                     fname))
 
-                # Next, verify that the new client can read v0 images as an
+                # Finally, rename image configuration and revert it.
+                src = os.path.join(img_root, "pkg5.image")
+                dest = os.path.join(img_root, "cfg_cache")
+                newcfg = cfg.FileConfig(src)
+                newcfg._version = 2
+                newcfg.set_property("image", "version", 2)
+
+
+                # Older clients store disabled authorities in separate config
+                # file.
+                disabled_src = os.path.join(img_root, "disabled_auth")
+                discfg = cfg.FileConfig(disabled_src, version=2)
+
+                for p in ("publisher-search-order", "signature-required-names"):
+                        newcfg.remove_property("property", p)
+                for p in ("origins", "property.signature-required-names",
+                    "intermediate_certs", "approved_ca_certs",
+                    "revoked_ca_certs", "signing_ca_certs"):
+                        newcfg.remove_property("authority_test1", p)
+                        newcfg.remove_property("authority_test2", p)
+
+                discfg.add_section(newcfg.get_section("authority_test2"))
+                newcfg.remove_section("authority_test2")
+                newcfg.write()
+                pkg.portable.rename(src, dest)
+                discfg.write()
+
+                # Next, verify that the new client can read v2 images as an
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly (because of the publisher preferred prefix).
                 self.pkg("publisher -a", su_wrap=True)
                 self.pkg("info pkg://test1/quux corge", su_wrap=True)
                 self.pkg("info pkg://test2/corge quux", su_wrap=True)
+                self.pkg("update -nv --no-refresh", su_wrap=True, exit=4)
 
-                # Next, verify that the new client can upgrade v0 images to
-                # v1 images.
+                # Verify pkg refresh fails when not simulating a live root
+                # since image needs format update.
+                self.pkg("refresh", exit=1)
+
+                # Next, verify that the client won't automatically upgrade
+                # images unless the image is the liveroot.
+                self.pkg("--debug simulate_live_root=True info quux "
+                    "pkg://test1/quux pkg://test2/corge")
+
+                # Next, verify that the new client can upgrade v2 images to
+                # v4 images if the image is the liveroot.
                 self.pkg("info quux pkg://test1/quux pkg://test2/corge")
 
-                # Finally, verify that the old structures and state information
-                # are gone.
+                # Next, verify that the old structures and state information
+                # are gone and a part of the new structure is present.
                 self.assertFalse(os.path.exists(cat_path))
                 self.assertTrue(os.path.exists(pub_path))
 
@@ -427,6 +482,88 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         # If there any other files but catalog files here, then
                         # the old state information didn't get properly removed.
                         self.assert_(pl.startswith("catalog."))
+
+                # Now convert the v4 image to a v3 image.
+                link_manifests()
+
+                # Dump any v4 directories not found in v3 images.
+                for entry in ("cache", "license", "ssl"):
+                        shutil.rmtree(os.path.join(img_root, entry))
+
+                # Next, revert image configuration.
+                src = os.path.join(img_root, "pkg5.image")
+                newcfg = cfg.FileConfig(src)
+                newcfg._version = 3
+                newcfg.set_property("image", "version", 3)
+                newcfg.write()
+                newcfg.reset()
+                newcfg.write()
+
+                # Next, verify that the new client can read v3 images as an
+                # an unprivileged user.  Each must be done with and without
+                # the publisher prefix to test that these are stripped and
+                # read properly.
+                self.pkg("--debug simulate_live_root=True publisher -a",
+                    su_wrap=True)
+                self.pkg("--debug simulate_live_root=True info "
+                    "pkg://test1/quux corge", su_wrap=True)
+                self.pkg("--debug simulate_live_root=True info "
+                    "pkg://test2/corge quux", su_wrap=True)
+                self.pkg("--debug simulate_live_root=True update -nv "
+                    "--no-refresh", su_wrap=True, exit=4)
+
+                # Next, verify that the new client can upgrade v3 images to
+                # v4 images.
+                self.pkg("--debug simulate_live_root=True info quux "
+                    "pkg://test1/quux pkg://test2/corge")
+
+                # Next, verify that the old structures and state information
+                # are gone and a part of the new structure is present.
+                self.assertFalse(os.path.exists(
+                    os.path.join(img_root, "index")))
+                self.assertTrue(os.path.exists(
+                    os.path.join(img_root, "cache")))
+
+                # Now convert the v4 image to a v3 image again.
+                link_manifests()
+
+                # Dump any v4 directories not found in v3 images.
+                for entry in ("cache", "license", "ssl"):
+                        shutil.rmtree(os.path.join(img_root, entry))
+
+                # Next, revert image configuration.
+                src = os.path.join(img_root, "pkg5.image")
+                newcfg = cfg.FileConfig(src)
+                newcfg._version = 3
+                newcfg.set_property("image", "version", 3)
+                newcfg.write()
+                newcfg.reset()
+                newcfg.write()
+
+                # Verify pkg update-format fails as an unprivileged user.
+                self.pkg("update-format", su_wrap=True, exit=1)
+
+                # Verify pkg refresh succeeds even when image needs format
+                # update for a v3 image.
+                self.pkg("refresh")
+
+                # Verify update-format will upgrade a v3 image to a v4 image.
+                self.pkg("update-format")
+                self.assertFalse(os.path.exists(
+                    os.path.join(img_root, "index")))
+                self.assertTrue(os.path.exists(
+                    os.path.join(img_root, "cache")))
+                self.pkg("verify")
+
+                # Verify updated image works as expected.
+                self.pkg("publisher -a", su_wrap=True)
+                self.pkg("info pkg://test1/quux corge", su_wrap=True)
+                self.pkg("info pkg://test2/corge quux", su_wrap=True)
+                self.pkg("update -nv --no-refresh", su_wrap=True, exit=4)
+
+                # Verify an already updated image will cause update-format to
+                # exit 4.
+                self.pkg("update-format", exit=4)
 
         def test_9_bad_image_state(self):
                 """Verify that the pkg(1) command handles invalid image state

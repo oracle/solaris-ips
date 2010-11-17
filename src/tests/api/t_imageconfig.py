@@ -69,8 +69,7 @@ sort_policy: priority
                 pkg5unittest.Pkg5TestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
-                    "publisher"))
+                    "cfg_cache"), self.test_root)
 
         def test_0_read(self):
                 """Verify that read works and that values are read properly."""
@@ -101,19 +100,15 @@ sort_policy: priority
                 """Verify that the uuid determined during the first read is the
                 same as the uuid in the second read."""
                 self.ic = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
-                    "publisher"))
+                    "cfg_cache"), self.test_root)
                 pub = self.ic.publishers["sfbay.sun.com"]
                 uuid = pub.client_uuid
 
                 ic2 = imageconfig.ImageConfig(os.path.join(self.test_root,
-                    "cfg_cache"), self.test_root, os.path.join(self.test_root,
-                    "publisher"))
+                    "cfg_cache"), self.test_root)
                 pub2 = ic2.publishers["sfbay.sun.com"]
                 self.assertEqual(pub2.client_uuid, uuid)
 
-
-# XXX more test cases needed.
 
 if __name__ == "__main__":
         unittest.main()

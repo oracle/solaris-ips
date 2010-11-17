@@ -153,7 +153,8 @@ def get_trashdir(path):
                             return itrash
 
             try:
-                    img = image.Image(os.path.dirname(path))
+                    img = image.Image(os.path.dirname(path),
+                        allow_ondisk_upgrade=False)
             except ImageNotFoundException:
                     # path is not within an image, no trash dir
                     return None

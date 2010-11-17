@@ -32,6 +32,7 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.misc as misc
+import shutil
 import time
 import unittest
 
@@ -211,8 +212,10 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 size2 = self.file_size(victim)
                 self.assertNotEqual(size1, size2)
 
-                # Verify that the fix will fail since the license requires
-                # acceptance.
+                # Verify that the fix will fail if the license file needs fixing
+                # since the license action requires acceptance.
+                img = self.get_img_api_obj().img
+                shutil.rmtree(os.path.join(img.imgdir, "license"))
                 self.pkg("fix licensed", exit=6)
 
                 # Verify that when the fix failed, it displayed the license

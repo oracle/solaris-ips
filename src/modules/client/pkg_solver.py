@@ -31,7 +31,7 @@ import pkg.solver
 import pkg.version           as version
 import time
 
-from pkg.misc import EmptyDict, EmptyI
+from pkg.misc import EmptyI
 
 
 SOLVER_INIT    = "Initialized"
@@ -1358,11 +1358,12 @@ class PkgSolver(object):
 
                         if da.attrs.get("root-image", "").lower() == "true":
                                 if self.__root_fmris is None:
-                                        self.__root_fmris = dict(
-                                            [
+                                        root_img = pkg.client.image.Image("/",
+                                            allow_ondisk_upgrade=False)
+                                        self.__root_fmris = dict([
                                             (f.pkg_name, f) 
-                                            for f in pkg.client.image.Image("/").gen_installed_pkgs()
-                                            ])                
+                                            for f in root_img.gen_installed_pkgs()
+                                        ])                
 
                                 installed = self.__root_fmris.get(req_fmri.pkg_name, None)
                                 dep_str = _("root image")

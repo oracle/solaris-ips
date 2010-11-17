@@ -38,6 +38,7 @@ from stat import S_IWRITE, S_IREAD
 import generic
 import pkg.misc as misc
 import pkg.portable as portable
+import urllib
 
 class LicenseAction(generic.Action):
         """Class representing a license packaging object."""
@@ -59,7 +60,8 @@ class LicenseAction(generic.Action):
                 # the path must be relative to the root of the image.
                 self.attrs["path"] = misc.relpath(os.path.join(
                     pkgplan.image.get_license_dir(pkgplan.destination_fmri),
-                    "license." + self.attrs["license"]), pkgplan.image.root)
+                    "license." + urllib.quote(self.attrs["license"], "")),
+                    pkgplan.image.root)
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs the license."""
@@ -111,7 +113,7 @@ class LicenseAction(generic.Action):
                 info = []
 
                 path = os.path.join(img.get_license_dir(pfmri),
-                    "license." + self.attrs["license"])
+                    "license." + urllib.quote(self.attrs["license"], ""))
 
                 if args["forever"] == True:
                         try:
@@ -132,7 +134,7 @@ class LicenseAction(generic.Action):
         def remove(self, pkgplan):
                 path = os.path.join(
                     pkgplan.image.get_license_dir(pkgplan.origin_fmri),
-                    "license." + self.attrs["license"])
+                    "license." + urllib.quote(self.attrs["license"], ""))
 
                 try:
                         # Make file writable so it can be deleted
@@ -174,8 +176,17 @@ class LicenseAction(generic.Action):
                 """Return an opener for the license text from the local disk or
                 None if the data for the text is not on-disk."""
 
-                path = os.path.join(img.get_license_dir(pfmri),
-                    "license." + self.attrs["license"])
+                if img.version <= 3:
+                        # Older images stored licenses without accounting for
+                        # '/', spaces, etc. properly.
+                        path = os.path.join(img.get_license_dir(pfmri),
+                            "license." + self.attrs["license"])
+                else:
+                        # Newer images ensure licenses are stored with encoded
+                        # name so that '/', spaces, etc. are properly handled.
+                        path = os.path.join(img.get_license_dir(pfmri),
+                            "license." + urllib.quote(self.attrs["license"],
+                            ""))
 
                 if not os.path.exists(path):
                         return None

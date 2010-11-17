@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 46
+CLIENT_API_VERSION = 47
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -1345,14 +1345,16 @@ class CliTestCase(Pkg5TestCase):
         def get_img_path(self):
                 return self.img_path
 
-        def get_img_api_obj(self, cmd_path=None):
+        def get_img_api_obj(self, cmd_path=None, img_path=None):
+                if not img_path:
+                        img_path = self.img_path
                 from pkg.client import global_settings
                 progresstracker = pkg.client.progress.NullProgressTracker()
                 if not cmd_path:
-                        cmd_path = os.path.join(self.img_path, "pkg")
+                        cmd_path = os.path.join(img_path, "pkg")
                 old_val = global_settings.client_args
                 global_settings.client_args[0] = cmd_path
-                res = pkg.client.api.ImageInterface(self.get_img_path(),
+                res = pkg.client.api.ImageInterface(img_path,
                     CLIENT_API_VERSION, progresstracker, lambda x: False,
                     PKG_CLIENT_NAME)
                 global_settings.client_args = old_val
@@ -1705,21 +1707,46 @@ class CliTestCase(Pkg5TestCase):
                                                 continue
                                         copy_manifests(src_root, dest_root)
 
+        def get_img_manifest_cache_dir(self, pfmri, img_path=None):
+                """Returns the path to the manifest for the given fmri."""
+
+                img = self.get_img_api_obj(img_path=img_path).img
+
+                if not pfmri.publisher:
+                        # Allow callers to not specify a fully-qualified FMRI
+                        # if it can be asssumed which publisher likely has
+                        # the package.
+                        pubs = [
+                            p.prefix
+                            for p in img.gen_publishers(inc_disabled=True)
+                        ]
+                        assert len(pubs) == 1
+                        pfmri.publisher = pubs[0]
+                return img.get_manifest_dir(pfmri)
+
         def get_img_manifest_path(self, pfmri, img_path=None):
                 """Returns the path to the manifest for the given fmri."""
 
-                if not img_path:
-                        img_path = self.get_img_path()
+                img = self.get_img_api_obj(img_path=img_path).img
 
-                return os.path.join(img_path, "var", "pkg", "pkg",
-                    pfmri.get_dir_path(), "manifest")
+                if not pfmri.publisher:
+                        # Allow callers to not specify a fully-qualified FMRI
+                        # if it can be asssumed which publisher likely has
+                        # the package.
+                        pubs = [
+                            p.prefix
+                            for p in img.gen_publishers(inc_disabled=True)
+                        ]
+                        assert len(pubs) == 1
+                        pfmri.publisher = pubs[0]
+                return img.get_manifest_path(pfmri)
 
         def get_img_manifest(self, pfmri, img_path=None):
                 """Retrieves the client's cached copy of the manifest for the
                 given package FMRI and returns it as a string.  Callers are
                 responsible for all error handling."""
 
-                mpath = self.get_img_manifest_path(pfmri, img_path)
+                mpath = self.get_img_manifest_path(pfmri, img_path=img_path)
                 with open(mpath, "rb") as f:
                         return f.read()
 
@@ -1732,7 +1759,7 @@ class CliTestCase(Pkg5TestCase):
                         img_path = self.get_img_path()
 
                 mpath = self.get_img_manifest_path(pfmri, img_path=img_path)
-                mdir = os.path.dirname(mpath)
+                mdir = self.get_img_manifest_cache_dir(pfmri, img_path=img_path)
 
                 # Dump the manifest directory for the package to ensure any
                 # cached information related to it is gone.
@@ -2147,13 +2174,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                         if "publisher_empty" in config:
                                 os.mkdir(os.path.join(tmpDir, "publisher"))
                         if "cfg_cache_absent" in config:
-                                os.remove(os.path.join(tmpDir, "cfg_cache"))
-                        if "file_absent" in config:
-                                shutil.rmtree(os.path.join(tmpDir, "file"))
-                        if "pkg_absent" in config:
-                                shutil.rmtree(os.path.join(tmpDir, "pkg"))
+                                os.remove(os.path.join(tmpDir, "pkg5.image"))
                         if "index_absent" in config:
-                                shutil.rmtree(os.path.join(tmpDir, "index"))
+                                shutil.rmtree(os.path.join(tmpDir, "cache",
+                                    "index"))
                 shutil.copy("%s/usr/bin/pkg" % g_proto_area,
                     os.path.join(self.img_path, "pkg"))
 

@@ -24,7 +24,6 @@
 # Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
 #
 
-import ConfigParser
 import errno
 import os.path
 import platform
@@ -37,7 +36,6 @@ import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
 import pkg.config as cfg
 import pkg.facet as facet
-import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.client.sigpolicy as sigpolicy
@@ -79,6 +77,8 @@ DA_FILE = "disabled_auth"
 DEF_TOKEN = "DEFAULT"
 _val_map_none = { "None": None }
 
+CURRENT_VERSION = 3
+
 class ImageConfig(cfg.FileConfig):
         """An ImageConfig object is a collection of configuration information:
         URLs, publishers, properties, etc. that allow an Image to operate."""
@@ -86,7 +86,60 @@ class ImageConfig(cfg.FileConfig):
         # This dictionary defines the set of default properties and property
         # groups for a repository configuration indexed by version.
         __defs = {
+            2: [
+                cfg.PropertySection("filter", properties=[]),
+                cfg.PropertySection("image", properties=[
+                    cfg.PropInt("version"),
+                ]),
+                cfg.PropertySection("property", properties=[
+                    cfg.PropList("publisher-search-order"),
+                    cfg.PropPublisher("preferred-authority"),
+                    cfg.PropBool("display-coprights", default=True),
+                    cfg.PropBool("require-optional", default=False),
+                    cfg.PropBool("pursue-latest", default=True),
+                    cfg.PropBool(FLUSH_CONTENT_CACHE,
+                        default=default_policies[FLUSH_CONTENT_CACHE]),
+                    cfg.PropBool(SEND_UUID,
+                        default=default_policies[SEND_UUID]),
+                ]),
+                cfg.PropertySection("variant", properties=[]),
+                cfg.PropertySectionTemplate("^authority_.*", properties=[
+                    # Base publisher information.
+                    cfg.PropPublisher("alias", value_map=_val_map_none),
+                    cfg.PropPublisher("prefix", value_map=_val_map_none),
+                    cfg.PropBool("disabled"),
+                    cfg.PropUUID("uuid", value_map=_val_map_none),
+                    # Publisher transport information.
+                    cfg.PropPubURIList("mirrors",
+                        value_map=_val_map_none),
+                    cfg.PropPubURI("origin", value_map=_val_map_none),
+                    cfg.Property("ssl_cert", value_map=_val_map_none),
+                    cfg.Property("ssl_key", value_map=_val_map_none),
+                    # Publisher repository metadata.
+                    cfg.PropDefined("repo.collection_type", ["core",
+                        "supplemental"], default="core",
+                        value_map=_val_map_none),
+                    cfg.PropDefined("repo.description",
+                        value_map=_val_map_none),
+                    cfg.PropList("repo.legal_uris", value_map=_val_map_none),
+                    cfg.PropDefined("repo.name", default="package repository",
+                        value_map=_val_map_none),
+                    # Must be a string so "" can be stored.
+                    cfg.Property("repo.refresh_seconds",
+                        default=str(REPO_REFRESH_SECONDS_DEFAULT),
+                        value_map=_val_map_none),
+                    cfg.PropBool("repo.registered", value_map=_val_map_none),
+                    cfg.Property("repo.registration_uri",
+                        value_map=_val_map_none),
+                    cfg.PropList("repo.related_uris",
+                        value_map=_val_map_none),
+                    cfg.Property("repo.sort_policy", value_map=_val_map_none),
+                ]),
+            ],
             3: [
+                cfg.PropertySection("image", properties=[
+                    cfg.PropInt("version"),
+                ]),
                 cfg.PropertySection("property", properties=[
                     cfg.PropPublisher("preferred-authority"),
                     cfg.PropList("publisher-search-order"),
@@ -142,6 +195,7 @@ class ImageConfig(cfg.FileConfig):
                     cfg.PropList("repo.legal_uris", value_map=_val_map_none),
                     cfg.PropDefined("repo.name", default="package repository",
                         value_map=_val_map_none),
+                    # Must be a string so "" can be stored.
                     cfg.Property("repo.refresh_seconds",
                         default=str(REPO_REFRESH_SECONDS_DEFAULT),
                         value_map=_val_map_none),
@@ -155,16 +209,16 @@ class ImageConfig(cfg.FileConfig):
             ],
         }
 
-        def __init__(self, cfgpathname, imgroot, pubroot,
-            overrides=misc.EmptyDict):
+        def __init__(self, cfgpathname, imgroot, overrides=misc.EmptyDict,
+            version=None):
                 self.__imgroot = imgroot
-                self.__pubroot = pubroot
                 self.__publishers = {}
                 self.__validate = False
                 self.facets = facet.Facets()
                 self.variants = variant.Variants()
                 cfg.FileConfig.__init__(self, cfgpathname,
-                    definitions=self.__defs, overrides=overrides, version=3)
+                    definitions=self.__defs, overrides=overrides,
+                    version=version)
 
         def __str__(self):
                 return "%s\n%s" % (self.__publishers, self)
@@ -290,7 +344,7 @@ class ImageConfig(cfg.FileConfig):
                 if os.path.exists(dafile):
                         # Merge disabled publisher configuration data.
                         disabled_cfg = cfg.FileConfig(dafile,
-                            definitions=self.__defs, version=3)
+                            definitions=self.__defs, version=self.version)
                         for s in disabled_cfg.get_sections():
                                 if s.name.startswith("authority_"):
                                         self.add_section(s)
@@ -301,7 +355,7 @@ class ImageConfig(cfg.FileConfig):
                 preferred_publisher = None
                 for s, v in idx.iteritems():
                         if re.match("authority_.*", s):
-                                k, a = self.read_publisher(self.__pubroot, s, v)
+                                k, a = self.read_publisher(s, v)
                                 self.publishers[k] = a
                                 # just in case there's no other indication
                                 if preferred_publisher is None:
@@ -342,8 +396,10 @@ class ImageConfig(cfg.FileConfig):
                 self.__validate_properties()
 
                 # Finally, attempt to write configuration again to ensure
-                # changes are reflected on-disk.
-                self.write(ignore_unprivileged=True)
+                # changes are reflected on-disk -- but only if the version
+                # matches most current.
+                if self.version == CURRENT_VERSION:
+                        self.write(ignore_unprivileged=True)
 
         def set_property(self, section, name, value):
                 """Sets the value of the property object matching the given
@@ -433,41 +489,14 @@ class ImageConfig(cfg.FileConfig):
                         self.set_property("facet", f, self.facets[f])
 
                 # Transfer current publisher information to configuration.
-                da_path = os.path.join(os.path.dirname(self.target), DA_FILE)
-                if os.path.exists(da_path):
-                        # Ensure existing information is ignored during write.
-                        try:
-                                portable.remove(da_path)
-                        except EnvironmentError, e:
-                                exc = apx._convert_error(e)
-                                if not isinstance(exc, apx.PermissionsException) or \
-                                    not ignore_unprivileged:
-                                        raise exc
-
-                # For compatibility with older clients, enabled and disabled
-                # publishers are written to separate configuration files.
-                disabled_cfg = cfg.FileConfig(da_path, definitions=self.__defs,
-                    version=3)
-                disabled_cfg.remove_section("property")
-                disabled = []
                 for prefix in self.__publishers:
                         pub = self.__publishers[prefix]
                         section = "authority_%s" % pub.prefix
 
-                        c = self
-                        if pub.disabled:
-                                # Ensure disabled publishers are removed from
-                                # base configuration.
-                                try:
-                                        self.remove_section(section)
-                                except cfg.UnknownSectionError:
-                                        pass
-                                c = disabled_cfg
-
                         for prop in ("alias", "prefix", "signing_ca_certs",
                             "approved_ca_certs", "revoked_ca_certs",
                             "intermediate_certs", "disabled", "sticky"):
-                                c.set_property(section, prop,
+                                self.set_property(section, prop,
                                     getattr(pub, prop))
 
                         # For now, write out "origin" for compatibility with
@@ -476,7 +505,8 @@ class ImageConfig(cfg.FileConfig):
                         # configuration, but that doesn't really break
                         # anything.
                         repo = pub.selected_repository
-                        c.set_property(section, "origin", repo.origins[0].uri)
+                        self.set_property(section, "origin",
+                            repo.origins[0].uri)
 
                         #
                         # For zones, where the reachability of an absolute path
@@ -491,18 +521,14 @@ class ImageConfig(cfg.FileConfig):
                                 # Trim the imageroot from the path.
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
-                        c.set_property(section, "ssl_key", p)
+                        self.set_property(section, "ssl_key", p)
 
                         p = str(pub["ssl_cert"])
                         if ngz and self.__imgroot != os.sep and p != "None":
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
-                        c.set_property(section, "ssl_cert", p)
-
-                        # XXX this should really be client_uuid, but is being
-                        # left with this name for compatibility with older
-                        # clients.
-                        c.set_property(section, "uuid", pub.client_uuid)
+                        self.set_property(section, "ssl_cert", p)
+                        self.set_property(section, "uuid", pub.client_uuid)
 
                         # Write selected repository data.
                         for prop in ("origins", "mirrors", "collection_type",
@@ -524,9 +550,9 @@ class ImageConfig(cfg.FileConfig):
                                 if prop == "registration_uri":
                                         # Must be stringified.
                                         pval = str(pval)
-                                c.set_property(section, cfg_key, pval)
+                                self.set_property(section, cfg_key, pval)
 
-                        secobj = c.get_section(section)
+                        secobj = self.get_section(section)
                         for pname in secobj.get_index():
                                 if pname.startswith("property.") and \
                                     pname[len("property."):] not in pub.properties:
@@ -538,19 +564,27 @@ class ImageConfig(cfg.FileConfig):
                         for key, val in pub.properties.iteritems():
                                 if val == DEF_TOKEN:
                                         continue
-                                c.set_property(section, "property.%s" % key,
+                                self.set_property(section, "property.%s" % key,
                                     val)
-
-                        if pub.disabled:
-                                # Track any sections for disabled publishers
-                                # so they can be merged with the base config
-                                # later.
-                                disabled.append(c.get_section(section))
 
                 # Write configuration only if configuration directory exists;
                 # this is to prevent failure during the early stages of image
                 # creation.
                 if os.path.exists(os.path.dirname(self.target)):
+                        # Discard old disabled publisher configuration if it
+                        # exists.
+                        da_path = os.path.join(os.path.dirname(self.target),
+                            DA_FILE)
+                        try:
+                                portable.remove(da_path)
+                        except EnvironmentError, e:
+                                # Don't care if the file is already gone.
+                                if e.errno != errno.ENOENT:
+                                        exc = apx._convert_error(e)
+                                        if not isinstance(exc, apx.PermissionsException) or \
+                                            not ignore_unprivileged:
+                                                raise exc
+
                         # Ensure properties with the special value of DEF_TOKEN
                         # are never written so that if the default value is
                         # changed later, clients will automatically get that
@@ -574,21 +608,6 @@ class ImageConfig(cfg.FileConfig):
 
                         try:
                                 cfg.FileConfig.write(self)
-                                if not [s for s in disabled_cfg.get_sections()]:
-                                        # If there are no disabled publishers,
-                                        # ensure that DA_FILE is removed if it
-                                        # exists.
-                                        try:
-                                                portable.remove(
-                                                    disabled_cfg.target)
-                                        except OSError, e:
-                                                if e.errno != errno.ENOENT:
-                                                        raise apx._convert_error(e)
-                                else:
-                                        # Disabled publishers to write out;
-                                        # these are written to a separate file
-                                        # for compatibility with older clients.
-                                        disabled_cfg.write()
                         except apx.PermissionsException:
                                 if not ignore_unprivileged:
                                         raise
@@ -598,18 +617,14 @@ class ImageConfig(cfg.FileConfig):
                                         self.set_property("property", name,
                                             DEF_TOKEN)
 
-                # Merge disabled publishers back into base configuration.
-                map(self.add_section, disabled)
-
-        def read_publisher(self, meta_root, sname, sec_idx):
+        def read_publisher(self, sname, sec_idx):
                 # s is the section of the config file.
                 # publisher block has alias, prefix, origin, and mirrors
-                changed = False
 
                 # Ensure that the list of origins is unique and complete;
                 # add 'origin' to list of origins if it doesn't exist already.
-                origins = set(sec_idx["origins"])
-                origin = sec_idx["origin"]
+                origins = set(sec_idx.get("origins", []))
+                origin = sec_idx.get("origin", None)
                 if origin:
                         origins.add(origin)
 
@@ -691,17 +706,14 @@ class ImageConfig(cfg.FileConfig):
                 for m in sec_idx["mirrors"]:
                         r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
 
-                # Root directory for this publisher's metadata.
-                pmroot = os.path.join(meta_root, prefix)
-
                 pub = publisher.Publisher(prefix, alias=sec_idx["alias"],
                     client_uuid=sec_idx["uuid"], disabled=sec_idx["disabled"],
-                    meta_root=pmroot, repositories=[r],
-                    sticky=sec_idx["sticky"],
-                    ca_certs=sec_idx["signing_ca_certs"],
-                    intermediate_certs=sec_idx["intermediate_certs"],
-                    props=props, revoked_ca_certs=sec_idx["revoked_ca_certs"],
-                    approved_ca_certs=sec_idx["approved_ca_certs"])
+                    repositories=[r], sticky=sec_idx.get("sticky", True),
+                    ca_certs=sec_idx.get("signing_ca_certs", []),
+                    intermediate_certs=sec_idx.get("intermediate_certs", []),
+                    props=props,
+                    revoked_ca_certs=sec_idx.get("revoked_ca_certs", []),
+                    approved_ca_certs=sec_idx.get("approved_ca_certs", []))
 
                 if pub.client_uuid != sec_idx["uuid"]:
                         # Publisher has generated new uuid; ensure configuration

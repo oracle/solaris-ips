@@ -254,7 +254,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 # Check that manifest cache file exists after install.
                 pfmri = fmri.PkgFmri(plist[1])
-                mdir = os.path.dirname(self.get_img_manifest_path(pfmri))
+                mdir = self.get_img_manifest_cache_dir(pfmri)
                 mcpath = os.path.join(mdir, "manifest.set")
                 assert os.path.exists(mcpath)
 

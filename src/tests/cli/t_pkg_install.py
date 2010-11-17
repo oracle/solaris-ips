@@ -635,7 +635,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("install foo")
 
-                # Stop depot,  so client can't connect.
+                # Stop depot, so client can't connect.
                 self.dc.stop()
                 self.pkg("set-publisher --no-refresh -O %s test" % self.durl)
 
@@ -3084,7 +3084,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
                     self.pkg505, self.pkg51, self.pkg60, self.pkg61,
-                    self.pkg70, self.pkg80, self.pkg81, self.pkg90, 
+                    self.pkg70, self.pkg80, self.pkg81, self.pkg90,
                     self.pkg91, self.bug_7394_incorp,
                     self.pkg100, self.pkg101, self.pkg102,
                     self.pkg110, self.pkg111))
@@ -3235,11 +3235,11 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # everyone is present
                 self.pkg("uninstall '*'")
-                
+
                 self.pkg("install pkg2@1.1")  # install trigger
                 self.pkg("verify")
                 self.pkg("install pkg7@1.0")  # install pkg
-                self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # all here again 
+                self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # all here again
                 self.pkg("verify")
 
         def test_require_any_dependencies(self):
@@ -3252,7 +3252,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list pkg8@1.0 pkg9@1.0 pkg2@1.1", exit=3)
                 self.pkg("uninstall '*'")
 
-                # test to see if solver will install new verion of existing 
+                # test to see if solver will install new verion of existing
                 # package rather than add new package
                 self.pkg("install pkg8@1.0 pkg9@1.0")  # install pkg
                 self.pkg("verify")
@@ -3286,7 +3286,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("image-update")
                 self.pkg("list pkg10@1.2")
                 self.pkg("uninstall '*'")
-                # check that dependencies are ignored if 
+                # check that dependencies are ignored if
                 # dependency not present
                 self.pkg("install pkg10@1.2")
                 self.pkg("uninstall '*'")
@@ -3884,36 +3884,14 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-        def test_var_pkg_missing_file(self):
-                """ Creating bad_dir with only the file dir missing. """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl,
-                    set(["file_absent"]), ["var/pkg"])
-
-                self.pkg("install foo@1.1")
-
-        def test_var_pkg_missing_pkg(self):
-                """ Creates bad_dir with only the pkg dir missing. """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl, set(["pkg_absent"]),
-                    ["var/pkg"])
-
-                self.pkg("install foo@1.1")
-
         def test_var_pkg_missing_index(self):
                 """ Creates bad_dir with only the index dir missing. """
 
                 self.pkgsend_bulk(self.rurl, self.foo11)
                 self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(self.rurl, set(["index_absent"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(self.rurl, set(
+                    ["index_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -4007,30 +3985,6 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-        def test_ospkg_missing_file(self):
-                """ Creates a corrupted image at bad_dir by creating
-                bad_dir with only the file dir missing. """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl, set(["file_absent"]),
-                    [".org.opensolaris,pkg"])
-
-                self.pkg("install foo@1.1")
-
-        def test_ospkg_missing_pkg(self):
-                """ Creates a corrupted image at bad_dir by creating
-                bad_dir with only the pkg dir missing. """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl, set(["pkg_absent"]),
-                    [".org.opensolaris,pkg"])
-
-                self.pkg("install foo@1.1")
-
         def test_ospkg_missing_index(self):
                 """ Creates a corrupted image at bad_dir by creating
                 bad_dir with only the index dir missing. """
@@ -4116,7 +4070,8 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(self.rurl, self.foo11)
                 self.image_create(self.rurl)
 
-                self.dir = self.corrupt_image_create(self.rurl, set(), ["var/pkg"])
+                self.dir = self.corrupt_image_create(self.rurl, set(),
+                    ["var/pkg"])
                 self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"],
                     destroy=False)
@@ -4191,8 +4146,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                self.pkgsend_bulk(self.rurl, (foo1, foo2, fbar, qbar, qux1, qux2,
-                    fred1))
+                self.pkgsend_bulk(self.rurl, (foo1, foo2, fbar, qbar, qux1,
+                    qux2, fred1))
 
                 self.image_create(self.rurl)
 
@@ -4791,7 +4746,8 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
-                self.pkgsend_bulk(self.rurl, (pA_1, pA_2, pA_3, pB_1, pB_2, pB_3))
+                self.pkgsend_bulk(self.rurl, (pA_1, pA_2, pA_3, pB_1, pB_2,
+                    pB_3))
                 self.image_create(self.rurl)
 
                 # Check installation of an unobsoleted package with no

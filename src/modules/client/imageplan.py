@@ -1039,6 +1039,11 @@ class ImagePlan(object):
                         self.state = PREEXECUTED_OK
                         return
 
+                if self.image.version != self.image.CURRENT_VERSION:
+                        # Prevent plan execution if image format isn't current.
+                        raise api_errors.ImageFormatUpdateNeeded(
+                            self.image.root)
+
                 # Checks the index to make sure it exists and is
                 # consistent. If it's inconsistent an exception is thrown.
                 # If it's totally absent, it will index the existing packages
