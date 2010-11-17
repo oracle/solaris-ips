@@ -180,19 +180,17 @@ class PkgDupActionChecker(base.ActionChecker):
                         seed_dict(manifest, "gid", self.lint_gids,
                             atype="group")
 
-                self._merge_dict(self.lint_paths, self.ref_paths)
-                self._merge_dict(self.lint_drivers, self.ref_drivers)
-                self._merge_dict(self.lint_usernames, self.ref_usernames)
-                self._merge_dict(self.lint_uids, self.ref_uids)
-                self._merge_dict(self.lint_groupnames, self.ref_groupnames)
-                self._merge_dict(self.lint_gids, self.ref_gids)
+                dup_dictionaries = [(self.lint_paths, self.ref_paths),
+                    (self.lint_drivers, self.ref_drivers),
+                    (self.lint_usernames, self.ref_usernames),
+                    (self.lint_uids, self.ref_uids),
+                    (self.lint_groupnames, self.ref_groupnames),
+                    (self.lint_gids, self.ref_gids)]
 
-                self.lint_paths = {}
-                self.lint_drivers = {}
-                self.lint_usernames = {}
-                self.lint_uids = {}
-                self.lint_groupnames = {}
-                self.lint_gids = {}
+                for lint_dic, ref_dic in dup_dictionaries:
+                        self._merge_dict(lint_dic, ref_dic,
+                            ignore_pubs=engine.ignore_pubs)
+                        self.lint_dic = {}
 
         def duplicate_paths(self, action, manifest, engine, pkglint_id="001"):
                 """Checks for duplicate paths on non-ref-counted actions."""
@@ -428,7 +426,7 @@ class PkgDupActionChecker(base.ActionChecker):
         duplicate_path_types.pkglint_desc = _(
             "Paths should be delivered by one action type only.")
 
-        def _merge_dict(self, src, target):
+        def _merge_dict(self, src, target, ignore_pubs=True):
                 """Merges the given src dictionary into the target
                 dictionary, giving us the target content as it would appear,
                 were the packages in src to get published to the
@@ -464,7 +462,9 @@ class PkgDupActionChecker(base.ActionChecker):
                                 for targ_pfmri in targ_dic.copy():
                                         sname = src_pfmri.get_name()
                                         tname = targ_pfmri.get_name()
-                                        if lint_fmri_successor(src_pfmri, targ_pfmri):
+                                        if lint_fmri_successor(src_pfmri,
+                                            targ_pfmri,
+                                            ignore_pubs=ignore_pubs):
                                                 targ_dic.pop(targ_pfmri)
                         targ_dic.update(src_dic)
                         l = []
@@ -504,7 +504,11 @@ class PkgActionChecker(base.ActionChecker):
                         if "pkg.obsolete" in mf and \
                             mf["pkg.obsolete"].lower() == "true":
                                 dic[name] = ObsoleteFmri(True, mf.fmri)
-                        else:
+                        elif "pkg.renamed" not in mf or \
+                            mf["pkg.renamed"].lower() == "false":
+                                # we can't yet tell if a renamed
+                                # package gets obsoleted further down
+                                # its rename chain, so don't decide now
                                 dic[name] = ObsoleteFmri(False, mf.fmri)
 
                 engine.logger.debug(_("Seeding reference action dictionaries."))
@@ -531,7 +535,8 @@ class PkgActionChecker(base.ActionChecker):
                         if "_" in key:
                                 if key in ["original_name", "refresh_fmri",
                                     "restart_fmri", "suspend_fmri",
-                                    "disable_fmri", "clone_perms"]:
+                                    "disable_fmri", "clone_perms",
+                                    "reboot_needed"]:
                                         continue
                                 engine.warning(
                                     _("underscore in attribute name %(key)s in "
@@ -539,6 +544,22 @@ class PkgActionChecker(base.ActionChecker):
                                     {"key": key,
                                     "fmri": manifest.fmri},
                                     msgid="%s%s" % (self.name, pkglint_id))
+
+                if action.name != "set":
+                        return
+
+                name = action.attrs["name"]
+
+                if "_" not in name or name in ["info.maintainer_url",
+                    "info.upstream_url", "info.source_url",
+                    "info.repository_url", "info.repository_changeset",
+                    "info.defect_tracker.url", "opensolaris.arc_url"]:
+                            return
+
+                engine.warning(_("underscore in 'set' action name %(name)s in "
+                    "%(fmri)s") % {"name": name,
+                    "fmri": manifest.fmri},
+                    msgid="%s%s.2" % (self.name, pkglint_id))
 
         underscores.pkglint_desc = _(
             "Underscores are discouraged in action attributes.")
@@ -548,54 +569,63 @@ class PkgActionChecker(base.ActionChecker):
 
                 if "mode" in action.attrs:
                         mode = action.attrs["mode"]
-                        unusual = False
-                        filemodes = ["0644", "0755", "0555", "4755", "0664",
-                                    "0444", "4555", "0600", "2555" ]
-                        if action.name == "file":
-                                if mode not in filemodes:
-                                        unusual = True
+                        path = action.attrs["path"]
+                        st = None
+                        try:
+                                st = stat.S_IMODE(string.atoi(mode, 8))
+                        except ValueError:
+                                pass
 
-                        elif action.name == "dir":
-                                if mode not in ["0700", "0755", "0744", "0555",
-                                    "2555", "6555"]:
-                                        unusual = True
-                                # check it's executable
-                                st = None
-                                broken = False
-                                try:
-                                        st = stat.S_IMODE(string.atoi(mode, 8))
-                                except ValueError:
-                                        broken = True
-
-                                if not broken and \
+                        if action.name == "dir":
+                                # check for at least one executable bit
+                                if st and \
                                     (stat.S_IXUSR & st or stat.S_IXGRP & st
                                     or stat.S_IXOTH & st):
                                         pass
-                                else:
+                                elif st:
                                         engine.warning(_("directory action for "
-                                            "%(dir)s delivered in %(pkg)s with "
+                                            "%(path)s delivered in %(pkg)s with "
                                             "mode=%(mode)s "
                                             "that has no executable bits") %
-                                            {"dir": action.attrs["path"],
+                                            {"path": path,
                                             "pkg": manifest.fmri,
                                             "mode": mode},
                                             msgid="%s%s.1" %
                                             (self.name, pkglint_id))
 
-                        elif mode not in ["0644", "0755", "0700", "0444"]:
-                                unusual = True
-
-                        if unusual:
-                                engine.warning(
-                                    _("unusual mode %(mode)s in %(path)s "
-                                    "delivered by %(pkg)s") %
-                                    {"mode": mode,
-                                    "path": action.attrs["path"],
-                                    "pkg": manifest.fmri},
+                        if not st:
+                                engine.error(_("broken mode mode=%(mode)s "
+                                    "delivered in action for %(path)s in "
+                                    "%(pkg)s") %
+                                    {"path": path,
+                                    "pkg": manifest.fmri,
+                                    "mode": mode},
                                     msgid="%s%s.2" % (self.name, pkglint_id))
 
-        unusual_perms.pkglint_desc = _(
-            "UNIX file modes should be sensible.")
+                        if len(mode) < 3:
+                                engine.error(_("mode=%(mode)s is too short in "
+                                    "action for %(path)s in %(pkg)s") %
+                                    {"path": path,
+                                    "pkg": manifest.fmri,
+                                    "mode": mode},
+                                    msgid="%s%s.3" % (self.name, pkglint_id))
+                                return
+
+                        # now check for individual access permissions
+                        user = mode[-3]
+                        group = mode[-2]
+                        other = mode[-1]
+
+                        if (other > group or
+                            group > user or
+                            other > user):
+                                engine.warning(_("unusual mode mode=%(mode)s "
+                                    "delivered in action for %(path)s in "
+                                    "%(pkg)s") %
+                                    {"path": path,
+                                    "pkg": manifest.fmri,
+                                    "mode": mode},
+                                    msgid="%s%s.4" % (self.name, pkglint_id))
 
         def legacy(self, action, manifest, engine, pkglint_id="003"):
                 """Cross-check that the 'pkg' attribute points to a package
@@ -620,37 +650,14 @@ class PkgActionChecker(base.ActionChecker):
                                         (self.name, pkglint_id))
 
                 if "pkg" in action.attrs:
-                        mf = None
-                        try:
-                                mf = engine.get_manifest(action.attrs["pkg"],
-                                    search_type=engine.LATEST_SUCCESSOR)
-                        except base.LintException:
-                                # it's common to find a legacy package that
-                                # simply never existed as an IPS package eg.
-                                # arch-specific SVR4 packages combined into a
-                                # single IPS package.
-                                # We don't care about these.
-                                pass
-                        if mf:
-                                found_depend = False
-                                # check that the manifest we found depends on
-                                # the package containing this legacy action
-                                for depend in mf.gen_actions_by_type("depend"):
-                                        if depend.attrs["type"] != "require":
-                                                continue
-                                        fmri = depend.attrs["fmri"]
-                                        dep_name = \
-                                            pkg.fmri.extract_pkg_name(fmri)
-                                        if dep_name == name:
-                                                found_depend = True
-                                if not found_depend:
-                                        engine.error(
-                                        _("ancestor %(ancestor)s did not "
-                                        "declare a dependency on %(pkg)s") %
-                                        {"ancestor": mf.fmri,
-                                        "pkg": manifest.fmri},
-                                        msgid="%s%s.2" %
-                                        (self.name, pkglint_id))
+
+                        legacy = engine.get_manifest(action.attrs["pkg"],
+                            search_type=engine.LATEST_SUCCESSOR)
+                        # Some legacy ancestor packages never existed as pkg(5)
+                        # stubs
+                        if legacy:
+                                self.check_legacy_rename(legacy, action,
+                                    manifest, engine, pkglint_id)
 
                 if "version" in action.attrs:
                         # this could be refined
@@ -659,6 +666,44 @@ class PkgActionChecker(base.ActionChecker):
                                     _("legacy action in %s does not "
                                     "contain a REV= string") % manifest.fmri,
                                     msgid="%s%s.3" % (self.name, pkglint_id))
+
+        def check_legacy_rename(self, legacy, action, manifest, engine,
+            lint_id):
+                """Part of the legacy(..) check, not an individual check,
+                determines that the renaming of a package manifest, "legacy",
+                referred to by a legacy action, "action", was done correctly
+                and ultimately results on a dependency on the package,
+                "manifest"."""
+
+                if "pkg.renamed" in legacy and \
+                    legacy["pkg.renamed"].lower() == "true":
+                        mf = None
+                        try:
+                                mf = engine.follow_renames(action.attrs["pkg"],
+                                    target=manifest.fmri, old_mfs=[])
+                        except base.LintException, e:
+                                # we've tried to rename to ourselves
+                                engine.error(_("legacy renaming: %s") % str(e),
+                                    msgid="%s%s.5" % (self.name, lint_id))
+                                return
+
+                        if mf is None:
+                                engine.error(_("legacy package %(legacy)s did "
+                                    "not result in a dependency on %(pkg)s when"
+                                    " following package renames") %
+                                    {"legacy": legacy.fmri,
+                                    "pkg": manifest.fmri},
+                                    msgid="%s%s.4" %
+                                    (self.name, lint_id))
+
+                        elif not lint_fmri_successor(manifest.fmri, mf.fmri,
+                            ignore_pubs=engine.ignore_pubs):
+                                engine.error(_("legacy package %(legacy)s did "
+                                    "not result in a dependency on %(pkg)s") %
+                                    {"legacy": legacy.fmri,
+                                    "pkg": manifest.fmri},
+                                    msgid="%s%s.2" %
+                                    (self.name, lint_id))
 
         legacy.pkglint_desc = _(
             "'legacy' actions should have valid attributes.")
@@ -673,19 +718,6 @@ class PkgActionChecker(base.ActionChecker):
 
         unknown.pkglint_desc = _("'unknown' actions should never occur.")
 
-        def license(self, action, manifest, engine, pkglint_id="005"):
-                """License actions should not have path attributes."""
-
-                if action.name is "license" and "path" in action.attrs:
-                        engine.error(
-                            _("license action in %(pkg)s has a path attribute, "
-                            "%(path)s") %
-                            {"pkg": manifest.fmri,
-                            "path": action.attrs["path"]},
-                            msgid="%s%s" % (self.name, pkglint_id))
-
-        license.pkglint_desc = _("'license' actions should not have paths.")
-
         def dep_obsolete(self, action, manifest, engine, pkglint_id="005"):
                 """We should not have a require dependency on a package that has
                 been marked as obsolete.
@@ -697,7 +729,7 @@ class PkgActionChecker(base.ActionChecker):
                 noisy if all dependencies are intentionally not present in the
                 repository being linted or referenced."""
 
-                msg = _("dependency in %(pkg)s on obsolete pkg %(obs)s")
+                msg = _("dependency on obsolete package in %s:")
 
                 if action.name != "depend":
                         return
@@ -705,9 +737,11 @@ class PkgActionChecker(base.ActionChecker):
                 if action.attrs["type"] != "require":
                         return
 
-                # There's a good chance that dependencies can be satisfied from
-                # the manifests we cached during startup() Check there before
-                # doing the more expensive engine.get_manifest() call.
+                # it's ok for renamed packages to eventually be obsoleted
+                if "pkg.renamed" in manifest and \
+                    manifest["pkg.renamed"].lower() == "true":
+                        return
+
                 name = None
                 declared_fmri = None
                 dep_fmri = action.attrs["fmri"]
@@ -734,6 +768,8 @@ class PkgActionChecker(base.ActionChecker):
                 if dep_fmri in self.missing_deps:
                         return
 
+                # There's a good chance that dependencies can be satisfied from
+                # the manifests we cached during startup() Check there first.
                 if name and name in self.obsolete_pkgs:
 
                         if not self.obsolete_pkgs[name].is_obsolete:
@@ -743,7 +779,8 @@ class PkgActionChecker(base.ActionChecker):
                                 if not declared_fmri.has_version():
                                         return
                                 elif lint_fmri_successor(found_fmri,
-                                    declared_fmri):
+                                    declared_fmri,
+                                    ignore_pubs=engine.ignore_pubs):
                                         return
 
                 # A non-obsolete dependency wasn't found in the local cache,
@@ -751,12 +788,17 @@ class PkgActionChecker(base.ActionChecker):
                 # the fmri in the depend action.
                 lint_id = "%s%s" % (self.name, pkglint_id)
 
-                mf = engine.get_manifest(dep_fmri,
-                    search_type=engine.LATEST_SUCCESSOR)
-                if mf and "pkg.obsolete" in mf:
-                        engine.error(msg %  {"pkg": manifest.fmri,
-                            "obs": mf["pkg.fmri"]}, msgid=lint_id)
-                elif not mf:
+                mf = None
+                found_obsolete = False
+                try:
+                        mf = engine.follow_renames(
+                            dep_fmri, old_mfs=[], warn_on_obsolete=True)
+                except base.LintException, err:
+                        found_obsolete = True
+                        engine.error("%s %s" % (msg % manifest.fmri, err),
+                            msgid=lint_id)
+
+                if not mf and not found_obsolete:
                         self.missing_deps.append(dep_fmri)
                         engine.warning(_("obsolete dependency check "
                             "skipped: unable to find dependency %(dep)s"
@@ -790,3 +832,16 @@ class PkgActionChecker(base.ActionChecker):
                                     msgid="%s%s" % (self.name, pkglint_id))
 
         valid_fmri.pkglint_desc = _("pkg(5) FMRIs should be valid.")
+
+        def license(self, action, manifest, engine, pkglint_id="007"):
+                """License actions should not have path attributes."""
+
+                if action.name is "license" and "path" in action.attrs:
+                        engine.error(
+                            _("license action in %(pkg)s has a path attribute, "
+                            "%(path)s") %
+                            {"pkg": manifest.fmri,
+                            "path": action.attrs["path"]},
+                            msgid="%s%s" % (self.name, pkglint_id))
+
+        license.pkglint_desc = _("'license' actions should not have paths.")

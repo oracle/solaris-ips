@@ -29,11 +29,15 @@ import inspect
 import logging
 import sys
 import gettext
+import traceback
 from optparse import OptionParser
 
 gettext.install("pkg", "/usr/share/locale")
 
 from pkg.client.api_errors import InvalidPackageErrors
+from pkg import VERSION
+from pkg.misc import BUG_URI_CLI, PipeError
+
 import pkg.lint.engine as engine
 import pkg.lint.log as log
 import pkg.fmri as fmri
@@ -43,7 +47,6 @@ logger = None
 
 def error(message):
         logger.error(_("Error: %s") % message)
-        sys.exit(1)
 
 def msg(message):
         logger.info(message)
@@ -92,11 +95,7 @@ def main_func():
                     _("Required -c option missing, no local manifests provided."
                     ))
 
-        if not opts.pattern:
-                pattern = "*"
-        else:
-                pattern = opts.pattern
-        
+        pattern = opts.pattern
         opts.ref_uris = _make_list(opts.ref_uris)
         opts.lint_uris = _make_list(opts.lint_uris)
 
@@ -131,7 +130,7 @@ def main_func():
                 if opts.list_checks:
                         list_checks(lint_engine.checkers,
                             lint_engine.excluded_checkers, opts.verbose)
-                        sys.exit(0)
+                        return 0
 
                 if (opts.lint_uris or opts.ref_uris) and not opts.cache:
                         parser.error(
@@ -143,6 +142,7 @@ def main_func():
                         manifests = read_manifests(args, lint_logger)
                         if None in manifests:
                                 error(_("Fatal error in manifest - exiting."))
+                                return 1
                 lint_engine.setup(ref_uris=opts.ref_uris,
                     lint_uris=opts.lint_uris,
                     lint_manifests=manifests,
@@ -158,6 +158,7 @@ def main_func():
 
         except engine.LintEngineException, err:
                 error(err)
+                return 1
 
         if lint_logger.produced_lint_msgs():
                 return 1
@@ -316,5 +317,23 @@ def _make_list(opt):
 
 
 if __name__ == "__main__":
-        value = main_func()
-        sys.exit(value)
+        try:
+                value = main_func()
+                sys.exit(value)
+        except (PipeError, KeyboardInterrupt):
+                # We don't want to display any messages here to prevent
+                # possible further broken pipe (EPIPE) errors.
+                __ret = 1
+        except SystemExit, _e:
+                raise _e
+        except:
+                traceback_str = _("""\n
+This is an internal error in pkg(5) version %(version)s.  Please let the
+developers know about this problem by including the information above (and
+this message) when filing a bug at:
+
+%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": BUG_URI_CLI }
+
+                traceback.print_exc()
+                error(traceback_str)
+                sys.exit(99)

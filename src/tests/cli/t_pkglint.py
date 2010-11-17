@@ -316,7 +316,7 @@ dir group=sys mode=0755 owner=root path=etc
         def test_2_badcache(self):
                 """Checks we can deal with bad -c options """
 
-                opts = ["/dev/null", "/home", "/usr", "/etc/passwd"]
+                opts = ["/dev/null", "/home", "/etc/passwd"]
                 for cache in opts:
                         self.pkglint("-c %s -r %s -l %s" %
                             (cache, self.ref_uri, self.lint_uri), exit=1)
@@ -332,6 +332,13 @@ dir group=sys mode=0755 owner=root path=etc
                         self.pkglint("-c %s -r %s -l %s" %
                             (cache, self.ref_uri, self.lint_uri), exit=1)
                         shutil.rmtree(cache)
+
+        def test_3_badrelease(self):
+                """Checks we can deal with bad -b options """
+
+                for opt in ["chickens", "0,1234", "0.16b"]:
+                        self.pkglint("-c %s -l %s -b %s" %
+                            (self.cache_dir, self.lint_uri, opt), exit=1)
 
 if __name__ == "__main__":
         unittest.main()

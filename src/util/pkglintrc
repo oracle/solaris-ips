@@ -30,3 +30,5 @@ version.pattern = *,5.11-0.
 # The path used for info.classification attribute checks
 info_classification_path = /usr/share/package-manager/data/opensolaris.org.sections
 
+# Whether to ignore publisher differences when comparing package versions
+ignore_different_publishers = True

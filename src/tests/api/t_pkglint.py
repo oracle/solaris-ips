@@ -38,6 +38,8 @@ import pkg.lint.log as log
 import pkg.fmri as fmri
 import pkg.manifest
 
+from pkg.lint.engine import lint_fmri_successor
+
 import logging
 log_fmt_string = "%(asctime)s - %(levelname)s - %(message)s"
 
@@ -54,14 +56,17 @@ pkglintrcfile = "%s/usr/share/lib/pkg/pkglintrc" % pkg5unittest.g_proto_area
 broken_manifests = {}
 expected_failures = {}
 
-# WARNING pkglint.action002.2       unusual mode 2755 in usr/sbin/prtdiag  delivered by
-#                                   pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
-expected_failures["combo_variants.mf"] = ["pkglint.action002.2"]
-broken_manifests["combo_variants.mf"] = \
+expected_failures["unusual_perms.mf"] = ["pkglint.action002.2",
+    "pkglint.action002.1", "pkglint.action002.4", "pkglint.action002.4",
+    "pkglint.action002.3"]
+broken_manifests["unusual_perms.mf"] = \
 """
 #
 #
-# We deliver prtdiag as a link on one platform, as a file on another
+# We deliver prtdiag as a link on one platform, as a file on another, which is
+# allowed, testing variant combinations, the unusual permissions are not.
+# they being, broken mode 991, a mode where we have more access as the group and
+# world than we have as the user, and an underspecified mode
 #
 set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
 set name=org.opensolaris.consolidation value=osnet
@@ -71,6 +76,12 @@ set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 hardlink path=usr/sbin/prtdiag target=../../usr/lib/platexec variant.arch=sparc
 file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926e8f91adcffe2 elfarch=i386 elfbits=32 elfhash=64c67b16be970380cd5840dd9753828e0c5ada8c group=sys mode=2755 owner=root path=usr/sbin/prtdiag pkg.csize=5490 pkg.size=13572 variant.arch=i386
+# invalid modes
+dir path=usr mode=991
+dir path=usr/foo mode=457
+dir path=usr/foo/other mode=222
+file NOHASH path=usr/foo/file mode=0112
+file NOHASH path=usr/foo/bar mode=01
 """
 
 # The errors for this check are pretty unpleasant
@@ -84,13 +95,11 @@ file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926
 #                                   owner: root -> system/kernel
 #                                   elfhash: 64c67b16be970380cd5840dd9753828e0c5ada8c -> system/kernel
 #                                   elfbits: 32 -> system/kernel
-# WARNING pkglint.action002.2       unusual mode 2755 in usr/sbin/prtdiag  delivered by
-#                                   pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
 # ERROR pkglint.dupaction001.2      path usr/sbin/prtdiag is a duplicate delivered by
 #                                   pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141
 #                                   declaring overlapping variants variant.arch
 expected_failures["combo_variants_broken.mf"] = ["pkglint.dupaction008",
-    "pkglint.dupaction007", "pkglint.action002.2", "pkglint.dupaction001.2"]
+    "pkglint.dupaction007", "pkglint.dupaction001.2"]
 broken_manifests["combo_variants_broken.mf"] = \
 """
 #
@@ -468,7 +477,7 @@ user gcos-field="pkg(5) server UID" group=pkg5srv uid=100 username=pkg5s:v
 user gcos-field="pkg(5) server UID" group=pkg5srv uid=101 username=pkg5-_.
 """
 
-expected_failures["license-has-path.mf"] = ["pkglint.action005"]
+expected_failures["license-has-path.mf"] = ["pkglint.action007"]
 broken_manifests["license-has-path.mf"] = \
 """
 #
@@ -483,18 +492,17 @@ set name=pkg.summary value="Core Solaris Kernel"
 license license="Foo" path=usr/share/lib/legalese.txt
 """
 
-# We actually emit 4 messages here in testing, 2 for the legitmate errors,
+# We actually emit 3 messages here in testing, 1 for the legitmate error,
 # 2 for the "linted"-handling code, saying that we're not linting these actions
 #
 expected_failures["linted-action.mf"] = ["pkglint001.2", "pkglint001.2",
-    "pkglint.action002.2", "pkglint.dupaction003.1"]
+    "pkglint.dupaction003.1"]
 broken_manifests["linted-action.mf"] = \
 """
 #
-# we deliver some duplicate ref-counted actions (dir, link, hardlink) with
-# differing attributes, but since they're marked as linted, we should get no
-# output, we should still get the duplicate user though, as well as the unusual
-# mode check for the version of the path that's 0751
+# we deliver some duplicate ref-counted actions (dir, link, hardlink) with differing
+# attributes, but since they're marked as linted, we should get no output, we should
+# still get the duplicate user though.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
@@ -701,8 +709,8 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
 """
 
-expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002",
-    "pkglint.action005.1", "pkglint.action005.1"]
+expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002.1",
+    "pkglint.manifest002.3"]
 broken_manifests["renamed-more-actions.mf"] = \
 """
 #
@@ -721,8 +729,7 @@ dir mode=0555 owner=root group=sys path=/usr/bin
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
-expected_failures["renamed.mf"] = ["pkglint.action005.1",
-    "pkglint.action005.1"]
+expected_failures["renamed.mf"] = ["pkglint.manifest002.3"]
 broken_manifests["renamed.mf"] = \
 """
 #
@@ -737,6 +744,25 @@ set name=variant.arch value=sparc value=i386
 depend fmri=shell/zsh@4.3.9-0.133 type=require
 depend fmri=consolidation/sfw/sfw-incorporation type=require
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
+"""
+
+expected_failures["underscores.mf"] = ["pkglint.action001",
+    "pkglint.action001.2"]
+broken_manifests["underscores.mf"] = \
+"""
+#
+# We try to deliver attributes with underscores.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/underscores@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=test value=i386 variant.arch=sparc
+set name=this_underscore_check value=i386 another_attribute=False
+set name=info.source_url value=http://www.sun.com
+dir group=bin mode=0755 owner=root path=usr/lib/X11 reboot_needed=False
 """
 
 expected_failures["undescribed-variant.mf"] = ["pkglint.manifest003.1"]
@@ -795,7 +821,7 @@ unknown name="no idea"
 """
 
 expected_failures["unusual_mode_noexecdir.mf"] = ["pkglint.action002.1",
-    "pkglint.action002.2"]
+    "pkglint.action002.4"]
 broken_manifests["unusual_mode_noexecdir.mf"] = \
 """
 #
@@ -814,30 +840,6 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
-"""
-
-# There are four expected failures because of the combinations of variant.arch
-# and variant.opensolaris.zone.
-expected_failures["dup-action-variant-subset.mf"] = \
-    ["pkglint.dupaction001.2"] * 4
-broken_manifests["dup-action-variant-subset.mf"] = \
-"""
-set name=pkg.fmri value=pkg://opensolaris.org/developer/build/make@0.5.11,5.11-0.147:20100827T060516Z
-set name=pkg.summary value="Solaris Bundled tools"
-set name=description value="Solaris Bundled tools"
-set name=pkg.description value="Solaris Bundled tools"
-set name=variant.arch value=sparc value=i386
-#
-set name=variant.opensolaris.zone value=global value=nonglobal
-set name=variant.fish value=else value=other
-set name=variant.carrots value=foo
-#
-set name=org.opensolaris.consolidation value=sunpro
-set name=info.classification value="org.opensolaris.category.2008:Development/Source Code Management"
-dir group=sys mode=0755 owner=root path=usr
-dir group=bin mode=0755 owner=root path=usr/bin
-file /usr/bin/make elfarch=i386 variant.carrots=foo elfbits=32 group=bin mode=0755 owner=root path=usr/bin/make pkg.csize=93425 pkg.size=219296 
-file /usr/bin/make elfarch=i386 variant.fish=else elfbits=32 group=bin mode=0755 owner=root path=usr/bin/make pkg.csize=93425 pkg.size=219296
 """
 
 class TestLogFormatter(log.LogFormatter):
@@ -1043,14 +1045,16 @@ set name=variant.arch value=i386
         ref_mf["dummy-ancestor.mf"] = """
 #
 # This is a dummy package designed trip a lint of no-ancestor-legacy.mf
-# we don't declare a dependency on the FMRI delivered by it.
+# we don't declare a dependency on the package delivering the legacy action.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr@0.5.11,5.11-0.141
 set name=pkg.description value="additional reference actions for pkglint"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
 set name=org.opensolaris.consolidation value=osnet
+set name=pkg.renamed value=true
 set name=variant.arch value=i386 value=sparc
+depend fmri=system/more type=require
 """
 
         ref_mf["twovar.mf"] = """
@@ -1067,6 +1071,60 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=pkg.fmri value=pkg://opensolaris.org/variant/twovar@0.5.11,5.11-0.148:20100910T211706Z
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.opensolaris.zone=global
+"""
+        ref_mf["no_rename-dummy-ancestor.mf"] = """
+#
+# This is a dummy package designed trip a lint of no-ancestor-legacy.mf
+# we don't declare a dependency on the FMRI delivered by it.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWckr-norename@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+depend fmri=system/kernel type=require
+"""
+
+        ref_mf["legacy-uses-renamed-ancestor.mf"] = """
+#
+# A package with a legacy action that points to a renamed ancestor
+#
+set name=pkg.fmri value=pkg://opensolaris.org/legacy-uses-renamed-ancestor@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+legacy pkg="renamed-ancestor-old" desc="core kernel software for a specific instruction-set architecture" arch=i386 category=system hotline="Please contact your local service provider" name="Core Solaris Kernel (Root)" vendor="Sun Microsystems, Inc." version=11.11,REV=2009.11.11
+"""
+
+        ref_mf["renamed-ancestor-old.mf"] = """
+#
+# The ancestor referred to above, but we've renamed it
+#
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-old@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=renamed-ancestor-new type=require
+"""
+        ref_mf["renamed-ancestor-new.mf"] = """
+#
+# The renamed legacy ancestor - this correctly depends on the latest
+# named version
+#
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=legacy-uses-renamed-ancestor type=require
 """
 
         # A set of manifests to be linted. Note that these are all self
@@ -1210,6 +1268,47 @@ set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=pkg.fmri value=pkg://opensolaris.org/variants/onevar@0.5.11,5.11-0.148:20100910T195826Z
 set name=pkg.description value="A package published against only one variant value" variant.arch=i386
 dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.opensolaris.zone=global
+"""
+
+        expected_failures["broken-renamed-ancestor-new.mf"] = \
+            ["pkglint.manifest002.3"]
+        lint_mf["broken-renamed-ancestor-new.mf"] = """
+#
+# A new version of one of the packages in the rename chain for
+# legacy-has-renamed-ancestor, which should result in an error.
+# When tested on its own, this package results in just the 'missing rename'
+# error, pkglint.manifest002.3  When tested as part of a checking a legacy
+# action which has a pkg attribute pointing to an old package that gets renamed,
+# we should get pkglint.action003.4
+#
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=renamed-ancestor-missing type=require
+"""
+
+        expected_failures["self-depend-renamed-ancestor-new.mf"] = ["pkglint.manifest002.4"]
+        lint_mf["self-depend-renamed-ancestor-new.mf"] = """
+#
+# A new version of one of the packages in the rename chain for
+# legacy-has-renamed-ancestor, which should result in an error.
+# When tested on its own, this package results in the 'looping rename'
+# error, pkglint.manifest002.4  When tested as part of a checking a legacy action
+# which has a pkg attribute point to an old package that gets renamed,
+# we should get pkglint.action003.5, since we're trying to depend on ourselves
+#
+set name=pkg.fmri value=pkg://opensolaris.org/renamed-ancestor-new@0.5.11,5.11-0.141
+set name=pkg.description value="additional reference actions for pkglint"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+set name=pkg.renamed value=true
+depend fmri=renamed-ancestor-new type=require
 """
 
         def setUp(self):
@@ -1430,16 +1529,99 @@ dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.
                         lint_engine.execute()
                         lint_engine.teardown()
 
-                        # prune missing dependency warnings
+                        # prune missing dependency and missing rename warnings
                         lint_msgs = []
                         for msg in lint_logger.messages:
-                                if "pkglint.action005.1" not in msg:
+                                if "pkglint.manifest002.3" in msg or \
+                                    "pkglint.manifest002.4" in msg or \
+                                    "pkglint.action005.1" in msg:
+                                        pass
+                                else:
                                         lint_msgs.append(msg)
 
                         self.assertFalse(lint_msgs,
                             "Unexpected lint messages when linting individual "
                             "manifests that should contain no errors: %s %s" %
                             (basename, "\n".join(lint_msgs)))
+
+        def test_broken_legacy_rename(self):
+                """Tests that linting a package where we break the renaming
+                of a legacy package, we'll get an error."""
+
+                paths = self.make_misc_files(self.lint_mf)
+                paths.extend(self.make_misc_files(self.ref_mf))
+                rcfile = os.path.join(self.test_root, "pkglintrc")
+
+                legacy = os.path.join(self.test_root,
+                    "legacy-uses-renamed-ancestor.mf")
+                renamed_new = os.path.join(self.test_root,
+                    "broken-renamed-ancestor-new.mf")
+                renamed_self_depend = os.path.join(self.test_root,
+                    "self-depend-renamed-ancestor-new.mf")
+
+                # look for a rename that didn't ultimately resolve to the
+                # package that contained the legacy action
+                lint_logger = TestLogFormatter()
+                manifests = read_manifests([legacy, renamed_new], lint_logger)
+
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        if "pkglint.action005.1" not in msg:
+                                lint_msgs.append(msg)
+
+                self.assert_(len(lint_msgs) == 2, "Unexpected lint messages "
+                    "%s produced when linting broken renaming with legacy "
+                    "pkgs" % lint_msgs)
+
+                seen_2_3 = False
+                seen_3_4 = False
+                for i in lint_logger.ids:
+                        if i == "pkglint.manifest002.3":
+                                seen_2_3 = True
+                        if i == "pkglint.action003.4":
+                                seen_3_4 = True
+
+                self.assert_(seen_2_3 and seen_3_4,
+                    "Missing expected broken renaming legacy errors, "
+                    "got %s" % lint_msgs)
+
+                # make sure we spot renames that depend upon themselves
+                lint_logger = TestLogFormatter()
+                manifests = read_manifests([legacy, renamed_self_depend],
+                    lint_logger)
+
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        # if "pkglint.action005.1" not in msg:
+                        lint_msgs.append(msg)
+
+                self.assert_(len(lint_msgs) == 2, "Unexpected lint messages "
+                    "produced when linting broken self-dependent renaming with "
+                    "legacy pkgs")
+                seen_2_4 = False
+                seen_3_5 = False
+                for i in lint_logger.ids:
+                        if i == "pkglint.manifest002.4":
+                                seen_2_4 = True
+                        if i == "pkglint.action003.5":
+                                seen_3_5 = True
+                self.assert_(seen_2_3 and seen_3_4,
+                    "Missing expected broken renaming self-dependent errors "
+                    "with legacy pkgs. Got %s" % lint_msgs)
 
         def test_relative_path(self):
                 """The engine can start with a relative path to its cache."""
@@ -1460,6 +1642,229 @@ dir group=sys mode=0755 owner=root path=kernel/strmod variant.arch=i386 variant.
                 lint_engine.setup(cache=cache)
                 lint_engine.execute()
                 lint_engine.teardown(clear_cache=True)
+
+
+class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
+
+        def test_lint_fmri_successor(self):
+            """lint_fmri_successor reports lint successors correctly.
+
+            The lint fmri_successor check has a biase for new FMRIs  and
+            acts differently to the pkg.fmri.PkgFmri is_successor check,
+            favouring the new fmri if it is missing information not present
+            in the old fmri.
+
+            We also include some tests for the standard is_successor
+            check, which is used in the implementation of
+            lint_fmri_successor."""
+
+            class FmriPair():
+                    def __init__(self, new, old):
+                            self.new = new
+                            self.old = old
+
+                    def __repr__(self):
+                            return "FmriPair(%s, %s) " % (self.new, self.old)
+
+            def is_successor(pair):
+                    """baseline the standard fmri.is_successor check"""
+                    new = fmri.PkgFmri(pair.new)
+                    old = fmri.PkgFmri(pair.old)
+                    return new.is_successor(old)
+
+            def commutative(pair, ignore_pubs=True):
+                    """test that new succeeds old and old succeeds new."""
+                    new = fmri.PkgFmri(pair.new)
+                    old = fmri.PkgFmri(pair.old)
+                    return lint_fmri_successor(new, old,
+                        ignore_pubs=ignore_pubs) and \
+                        lint_fmri_successor(old, new, ignore_pubs=ignore_pubs)
+
+            def newer(pair, ignore_pubs=True, ignore_timestamps=True):
+                    """test that new succeeds old, but old does not succeed new"""
+                    new = fmri.PkgFmri(pair.new)
+                    old = fmri.PkgFmri(pair.old)
+                    return lint_fmri_successor(new, old,
+                        ignore_pubs=ignore_pubs,
+                        ignore_timestamps=ignore_timestamps) and \
+                        not lint_fmri_successor(old, new,
+                        ignore_pubs=ignore_pubs,
+                        ignore_timestamps=ignore_timestamps)
+
+            # messages used in assertions
+            fail_msg = "%s do not pass %s check"
+            fail_msg_pubs = "%s do not pass %s check, ignoring publishers"
+            fail_msg_ts = "%s do not pass %s check, ignoring timestamps"
+
+            fail_comm = fail_msg % ("%s", "commutative")
+            fail_comm_pubs = fail_msg_pubs % ("%s", "commutative")
+            fail_newer = fail_msg % ("%s", "newer")
+            fail_newer_pubs = fail_msg_pubs % ("%s", "newer")
+            fail_newer_ts = fail_msg_ts % ("%s", "newer timestamp-sensitive")
+            fail_successor = fail_msg % ("%s", "is_successor")
+
+            # 1 identical everything
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # 2 identical versions
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+                "pkg://foo.org/tst@1.0,5.11-0.120")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+
+            # 3 identical names
+            pair = FmriPair("pkg://foo.org/tst",
+                "pkg://foo.org/tst")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+
+            # 4 differing timestamps, same version (identical, in pkglint's view)
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+                "pkg://foo.org/tst@1.0,5.11-0.120:20311003T222559Z")
+            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(not is_successor(pair), fail_successor % pair)
+            self.assert_(not newer(pair, ignore_timestamps=False),
+                fail_newer_ts % pair)
+
+            # 5 missing timestamps, same version
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+
+            # 6 missing timestamps, different version
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
+                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+
+            # 7 different versions
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
+                "pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+
+            # 8 different versions (where string comparisons won't work since
+            # with string comparisons, '0.133' < '0.99' which is not desired
+            pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
+            "pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+
+            #  Now the same set of tests, this time with different publishers
+            # 1.1 identical everything
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+             # 2.1 identical versions
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+                "pkg://bar.org/tst@1.0,5.11-0.120")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(not commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # 3.1 identical names
+            pair = FmriPair("pkg://foo.org/tst",
+                "pkg://bar.org/tst")
+            self.assert_(commutative(pair), fail_comm % pair)
+            self.assert_(not commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # 4.1 differing timestamps, same version (identical, in pkglint's
+            # view unless we specifically look at the timestamp)
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120:20101003T222523Z",
+                "pkg://bar.org/tst@1.0,5.11-0.120:20311003T222559Z")
+            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(not commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(not is_successor(pair), fail_successor % pair)
+            self.assert_(not newer(pair, ignore_timestamps=False),
+                fail_newer_ts % pair)
+
+            # 5.1 missing timestamps, same version
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.120",
+                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(commutative(pair), fail_comm % (pair))
+            self.assert_(not commutative(pair, ignore_pubs=False),
+                fail_comm_pubs % pair)
+            self.assert_(not is_successor(pair), fail_successor % pair)
+
+            # 6.1 missing timestamps, different version
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121",
+                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # 7.1 different versions
+            pair = FmriPair("pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z",
+                "pkg://bar.org/tst@1.0,5.11-0.120:20101003T222523Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # 8.1 different versions (where string comparisons won't work
+            # with string comparisons, '0.133' < '0.99' which is not desired
+            pair = FmriPair("pkg://opensolaris.org/SUNWfcsm@0.5.11,5.11-0.133:20100216T065435Z",
+            "pkg://solaris/SUNWfcsm@0.5.11,5.11-0.99:20100216T065435Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+
+            # missing publishers
+            pair = FmriPair("pkg:/tst", "pkg://foo.org/tst")
+            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # different publishers
+            pair = FmriPair("pkg://bar.org/tst", "pkg://foo.org/tst")
+            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
+
+            # different publishers, missing timestmap, same version
+            pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.121",
+                "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
+            self.assert_(commutative(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % (pair))
+            self.assert_(not is_successor(pair), fail_successor % pair)
+
+            # different publishers, missing timestmap
+            pair = FmriPair("pkg://bar.org/tst@1.0,5.11-0.122",
+                "pkg://foo.org/tst@1.0,5.11-0.121:20101003T222523Z")
+            self.assert_(newer(pair), fail_newer % pair)
+            self.assert_(not newer(pair, ignore_pubs=False),
+                fail_newer_pubs % pair)
+            self.assert_(is_successor(pair), fail_successor % pair)
 
 def read_manifests(names, lint_logger):
         "Read a list of filenames, return a list of Manifest objects"

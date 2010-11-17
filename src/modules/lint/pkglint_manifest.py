@@ -77,7 +77,8 @@ class PkgManifestChecker(base.ManifestChecker):
                             or "pkg.obsolete" in manifest:
                                 continue
                         update_names(manifest.fmri, self.lint_lastnames)
-                self._merge_names(self.lint_lastnames, self.ref_lastnames)
+                self._merge_names(self.lint_lastnames, self.ref_lastnames,
+                    ignore_pubs=engine.ignore_pubs)
 
         def obsoletion(self, manifest, engine, pkglint_id="001"):
                 """Checks for correct package obsoletion.
@@ -113,21 +114,47 @@ class PkgManifestChecker(base.ManifestChecker):
         def renames(self, manifest, engine, pkglint_id="002"):
                 """Checks for correct package renaming.
                 * error if renamed packages contain anything other than set,
-                  signature and depend actions."""
+                  signature and depend actions.
+                * follows renames, ensuring they're not circular."""
 
                 if "pkg.renamed" not in manifest:
                         return
 
                 has_invalid_action = False
+                count_depends = 0
                 for action in manifest.gen_actions():
                         if action.name not in [ "set", "depend", "signature"]:
                                 has_invalid_action = True
 
+                        if action.name == "depend":
+                                if "incorporation" not in action.attrs["fmri"] or \
+                                    action.attrs["type"] == "require":
+                                        count_depends = count_depends + 1
+
                 if has_invalid_action:
                         engine.error(_("renamed package %s contains actions "
                             "other than set, depend or signature actions") %
-                            manifest.fmri, msgid="%s%s" %
+                            manifest.fmri, msgid="%s%s.1" %
                             (self.name, pkglint_id))
+
+                if count_depends == 0:
+                        engine.error(_("renamed package %s does not declare a "
+                            "'require' dependency indicating what it was "
+                            "renamed to") %
+                            manifest.fmri, msgid="%s%s.2" %
+                            (self.name, pkglint_id))
+
+                try:
+                        mf = engine.follow_renames(str(manifest.fmri),
+                            old_mfs=[])
+                        if not mf:
+                                engine.warning(_("unable to follow renames for "
+                                    "%s: possible missing package") %
+                                    manifest.fmri, msgid="%s%s.3" %
+                                    (self.name, pkglint_id))
+                except base.LintException, err:
+                        engine.error(_("package renaming: %s") % str(err),
+                            msgid="%s%s.4" % (self.name, pkglint_id) )
 
         renames.pkglint_desc = _("Renamed packages should have valid contents.")
 
@@ -286,7 +313,7 @@ class PkgManifestChecker(base.ManifestChecker):
         duplicate_sets.pkglint_desc = _(
             "Packages should not have duplicate 'set' actions.")
 
-        def _merge_names(self, src, target):
+        def _merge_names(self, src, target, ignore_pubs=True):
                 """Merges the given src list into the target list"""
 
                 for p in src:
@@ -304,8 +331,9 @@ class PkgManifestChecker(base.ManifestChecker):
                                 sname = pfmri.get_name()
                                 for old in targ_list:
                                         tname = old.get_name()
-                                        if lint_fmri_successor(pfmri, old):
-                                             removals.append(old)
+                                        if lint_fmri_successor(pfmri, old,
+                                            ignore_pubs=ignore_pubs):
+                                                removals.append(old)
                                 for i in removals:
                                         targ_list.remove(i)
 
