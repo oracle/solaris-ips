@@ -228,9 +228,9 @@ if [[ -n $propagate_extra ]]; then
 		if [[ -z "$publishers_extra_origins" ]]; then
 			publishers_extra_origins="$pub=$pub_urls"
 		else
-			publishers_extra_origins=`printf "%s\n%s" \
-			    "$pub=$pub_urls" \
-			    "$publishers_extra_origins"`
+			publishers_extra_origins=$(printf "%s\n%s" \
+			    "$publishers_extra_origins" \
+			    "$pub=$pub_urls")
 		fi
 	done
 
@@ -243,9 +243,9 @@ if [[ -n $propagate_extra ]]; then
 		if [[ -z "$publishers_extra_mirrors" ]]; then
 			publishers_extra_mirrors="$pub=$pub_urls"
 		else
-			publishers_extra_mirrors=`printf "%s\n%s" \
-			    "$pub=$pub_urls" \
-			    "$publishers_extra_mirrors"`
+			publishers_extra_mirrors=$(printf "%s\n%s" \
+			    "$publishers_extra_mirrors" \
+			    "$pub=$pub_urls")
 		fi
 	done
 fi
