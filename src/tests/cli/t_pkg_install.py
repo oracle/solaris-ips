@@ -623,9 +623,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo@1.1", exit=1)
 
         def test_bug_9929(self):
-                """Make sure that we can uninstall/install a package that
-                already has its contents on disk even when the repository
-                isn't accessible."""
+                """Make sure that we can uninstall a package that already
+                has its contents on disk even when the repository isn't
+                accessible."""
 
                 # Depot required for this test since client doesn't cache
                 # files from a file repository by default.
@@ -638,13 +638,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Stop depot, so client can't connect.
                 self.dc.stop()
                 self.pkg("set-publisher --no-refresh -O %s test" % self.durl)
-
                 self.pkg("uninstall foo")
-
-                api_inst = self.get_img_api_obj()
-                pub = api_inst.get_publisher("test")
-                os.remove(os.path.join(pub.meta_root, "last_refreshed"))
-                self.pkg("install --no-refresh foo")
 
         def test_bug_16189(self):
                 """Create a repository with a pair of manifests.  Have

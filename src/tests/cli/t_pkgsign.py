@@ -922,6 +922,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
 
+                # Write manifest to image cache again.
+                self.write_img_manifest(pfmri, s)
+
                 # Change the signature action.
                 pfmri = fmri.PkgFmri(plist[0])
                 s = self.get_img_manifest(pfmri)

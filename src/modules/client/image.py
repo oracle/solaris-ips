@@ -2037,11 +2037,20 @@ class Image(object):
                         progtrack.item_add_progress()
                 progtrack.item_done()
 
+                # Remove manifests of packages that were removed from the
+                # system.  Some packages may have only had facets or
+                # variants changed, so don't remove those.
+                removed = [e for e in removed if e not in added]
                 progtrack.item_set_goal(_("Package Cache Update Phase"),
                     len(removed))
                 for pfmri in removed:
                         manifest.FactoredManifest.clear_cache(
                             self.get_manifest_dir(pfmri))
+                        try:
+                                portable.remove(self.get_manifest_path(pfmri))
+                        except EnvironmentError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise apx._convert_error(e)
                         progtrack.item_add_progress()
                 progtrack.item_done()
 

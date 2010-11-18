@@ -872,7 +872,7 @@ class FactoredManifest(Manifest):
                                         if e.errno != errno.ENOENT:
                                                 raise
                 except EnvironmentError, e:
-                        apx._convert_error(e, ignored_errors=[errno.ENOENT])
+                        raise apx._convert_error(e)
 
         def get_directories(self, excludes):
                 """ return a list of directories implicitly or
