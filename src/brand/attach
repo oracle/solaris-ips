@@ -518,10 +518,10 @@ fi
 #
 # If there is a cache, use it.
 #
-if [ -d /var/pkg/download ]; then
-	PKG_CACHEDIR=/var/pkg/download
-	export PKG_CACHEDIR
-	log "$m_cache" "$PKG_CACHEDIR"
+if [[ -f /var/pkg/pkg5.image && -d /var/pkg/publisher ]]; then
+	PKG_CACHEROOT=/var/pkg/publisher
+	export PKG_CACHEROOT
+	log "$m_cache" "$PKG_CACHEROOT"
 fi
 
 log "$m_updating"

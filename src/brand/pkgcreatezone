@@ -457,10 +457,10 @@ fi
 # If this fails, assume the image is incomplete.
 LC_ALL=C $PKG refresh || fail_incomplete "$f_img"
 
-if [ -d /var/pkg/download ]; then
-	PKG_CACHEDIR=/var/pkg/download
-	export PKG_CACHEDIR
-	printf "$m_cache\n" $PKG_CACHEDIR
+if [[ -f /var/pkg/pkg5.image && -d /var/pkg/publisher ]]; then
+	PKG_CACHEROOT=/var/pkg/publisher
+	export PKG_CACHEROOT
+	printf "$m_cache\n" $PKG_CACHEROOT
 fi
 
 #

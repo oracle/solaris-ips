@@ -177,6 +177,10 @@ class Image(object):
                 self.__user_cache_dir = None
                 self._incoming_cache_dir = None
 
+                # Set if write_cache is actually a tree like /var/pkg/publisher
+                # instead of a flat cache.
+                self.__write_cache_root = None
+
                 self.__lock = pkg.nrlock.NRLock()
                 self.__lockfile = None
                 self.__sig_policy = None
@@ -695,17 +699,30 @@ class Image(object):
                 self._incoming_cache_dir = None
                 self.__user_cache_dir = None
                 self.__write_cache_dir = None
-                if "PKG_CACHEDIR" in os.environ:
-                        # The user specified cache is used as an additional
-                        # place to read cache data from, but as the only
-                        # place to store new cache data.
+                self.__write_cache_root = None
+                # The user specified cache is used as an additional place to
+                # read cache data from, but as the only place to store new
+                # cache data.
+                if "PKG_CACHEROOT" in os.environ:
+                        # If set, cache is structured like /var/pkg/publisher.
+                        # get_cachedirs() will build paths for each publisher's
+                        # cache using this directory.
+                        self.__user_cache_dir = os.path.normpath(
+                            os.environ["PKG_CACHEROOT"])
+                        self.__write_cache_root = self.__user_cache_dir
+                elif "PKG_CACHEDIR" in os.environ:
+                        # If set, cache is a flat structure that is used for
+                        # all publishers.
                         self.__user_cache_dir = os.path.normpath(
                             os.environ["PKG_CACHEDIR"])
+                        self.__write_cache_dir = self.__user_cache_dir
+                        # Since the cache structure is flat, add it to the
+                        # list of global read caches.
+                        self.__read_cache_dirs.append(self.__user_cache_dir)
+                if self.__user_cache_dir:
                         self._incoming_cache_dir = os.path.join(
                             self.__user_cache_dir,
-                            "__incoming-%d" % os.getpid())
-                        self.__read_cache_dirs.append(self.__user_cache_dir)
-                        self.__write_cache_dir = self.__user_cache_dir
+                            "incoming-%d" % os.getpid())
 
                 if self.version < 4:
                         if not self.__user_cache_dir:
@@ -1325,7 +1342,7 @@ class Image(object):
                     for cdir in self.__read_cache_dirs
                 ]
 
-                # Get write cache directory.
+                # Get global write cache directory.
                 if self.__write_cache_dir:
                         cdirs.append((self.__write_cache_dir, False, None))
 
@@ -1335,9 +1352,18 @@ class Image(object):
                         for pub in self.gen_publishers(inc_disabled=True):
                                 froot = os.path.join(pub.meta_root, "file")
                                 readonly = False
-                                if self.__write_cache_dir:
+                                if self.__write_cache_dir or \
+                                    self.__write_cache_root:
                                         readonly = True
                                 cdirs.append((froot, readonly, pub.prefix))
+
+                                if self.__write_cache_root:
+                                        # Cache is a tree structure like
+                                        # /var/pkg/publisher.
+                                        froot = os.path.join(
+                                            self.__write_cache_root, pub.prefix,
+                                            "file")
+                                        cdirs.append((froot, False, pub.prefix))
 
                 return cdirs
 
@@ -2799,14 +2825,16 @@ class Image(object):
                 """Delete the directory that stores all of our cached
                 downloaded content.  This may take a while for a large
                 directory hierarchy.  Don't clean up caches if the
-                user overrode the underlying setting using PKG_CACHEDIR. """
+                user overrode the underlying setting using PKG_CACHEDIR or
+                PKG_CACHEROOT. """
 
                 if self.cfg.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
                         logger.info("Deleting content cache")
                         for path, readonly, pub in self.get_cachedirs():
-                                if not readonly and \
-                                    path != self.__user_cache_dir:
-                                        shutil.rmtree(path, True)
+                                if readonly or (self.__user_cache_dir and
+                                    path.startswith(self.__user_cache_dir)):
+                                        continue
+                                shutil.rmtree(path, True)
 
         def __salvage(self, path):
                 # This ensures that if the path is already rooted in the image,
