@@ -54,11 +54,18 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
             add depend type=incorporate fmri=pkg:/foo@1
             close """
 
+        baz = """
+            open baz@1,5.11-0
+            add file tmp/baz mode=0555 owner=root group=bin path=/tmp/baz
+            close"""
+
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                misc_files = [ "tmp/baz" ]
+                self.make_misc_files(misc_files)
 
                 rurl1 = self.dcs[1].get_repo_url()
-                self.pkgsend_bulk(rurl1, (self.foo1, self.foo2))
+                self.pkgsend_bulk(rurl1, (self.foo1, self.foo2, self.baz))
 
                 # Ensure that the second repo's packages are exactly the same
                 # as those in the first ... by duplicating the repo.
@@ -72,6 +79,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # that these fail
                 for item in ["cheese", "tomatoes", "bread", "pasta"]:
                             self.pkg("install %s" % item, exit=1)
+                            time.sleep(1)
+                self.pkg("install baz")
                 self.pkg("refresh")
 
         def test_1_history_options(self):
@@ -111,7 +120,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                     ("set-publisher -m " + rurl2 + " test1", 0),
                     ("set-publisher -M " + rurl2 + " test1", 0),
                     ("unset-publisher test2", 0),
-                    ("rebuild-index", 0)
+                    ("rebuild-index", 0),
+                    ("fix", 0)
                 ]
 
                 operations = [
@@ -122,8 +132,14 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                     "update-publisher",
                     "set-preferred-publisher",
                     "remove-publisher",
-                    "rebuild-index"
+                    "rebuild-index",
+                    "fix"
                 ]
+
+                # remove a file in the image which will cause pkg fix to do
+                # work, writing a history entry in the process
+                img_file = os.path.join(self.get_img_path(), "tmp/baz")
+                os.remove(img_file)
 
                 for cmd, exit in commands:
                         self.pkg(cmd, exit=exit)
@@ -140,8 +156,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                                 raise RuntimeError("Operation: %s wasn't "
                                     "recorded, o:%s" % (op, o))
 
-                # The actual commands are only found in long format.
-                self.pkg("history -l")
+                self.pkg("history -o start,command")
                 o = self.output
                 for cmd, exit in commands:
                         # Verify that each of the commands was recorded.
@@ -438,7 +453,7 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                 # checks to verify history ranges are tricky since one history
                 # timestamp can correspond to more than one history entry.
                 # To help with this, we build a dictionary keyed by timestamp
-                # of history output                
+                # of history output
                 entries = {}
                 for line in entire_output.splitlines():
                         timestamp = line.strip().split()[0]
@@ -447,17 +462,8 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                         else:
                                 entries[timestamp] = [line]
 
-                # build a list of timestamps that correspond to exactly 1
-                # history entry
-                unique_timestamps = []
-                for ts in entries:
-                        if len(entries[ts]) == 1:
-                                unique_timestamps.append(ts)
-
-                self.assert_(len(unique_timestamps) > 0,
-                    "unable to test single-range timestamp")
-                single_ts = unique_timestamps[
-                    random.randint(0, len(unique_timestamps) - 1)]
+                single_ts = entries.keys()[
+                    random.randint(0, len(entries) - 1)]
 
                 # verify a range specifying the same timestamp twice
                 # is the same as printing just that timestamp
@@ -530,6 +536,29 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                             (ts, start_ts))
                         self.assert_(ts <= end_ts, "%s is not <= %s" %
                             (ts, end_ts))
+
+        def test_13_bug_17418(self):
+                """Verify we can get history for an operation that ran for a
+                long time"""
+
+                image_path = self.get_img_path()
+                history_dir = os.path.sep.join([image_path, "var", "pkg",
+                    "history"])
+                dirlist = os.listdir(history_dir)
+                dirlist.sort()
+
+                # create a new history xml file, changing its start time to
+                # 2009
+                latest = os.path.join(history_dir, dirlist[-1])
+                new_file = re.sub(".xml", "99.xml", latest)
+                outfile = file(os.path.join(history_dir, new_file), "w")
+                for line in file(latest):
+                        out = re.sub("start_time=\"20..", "start_time=\"2009",
+                            line)
+                        outfile.write(out)
+                outfile.close()
+
+                self.pkg("history -n 1")
 
 if __name__ == "__main__":
         unittest.main()

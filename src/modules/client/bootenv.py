@@ -138,6 +138,9 @@ class BootEnv(object):
                         # 2nd field is the returned snapshot name
                         if err == 0:
                                 self.snapshot_name = snapshot_name
+                                # we require BootEnv to be initialised within
+                                # the context of a history operation, i.e.
+                                # after img.history.operation_name has been set.
                                 img.history.operation_snapshot = snapshot_name
                         else:
                                 logger.error(_("pkg: unable to create an auto "

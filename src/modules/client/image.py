@@ -312,17 +312,20 @@ class Image(object):
                 return self.__lock and self.__lock.locked
 
         @contextmanager
-        def locked_op(self, op, allow_unprivileged=False):
+        def locked_op(self, op, allow_unprivileged=False, new_history_op=True):
                 """Helper method for executing an image-modifying operation
-                that needs locking.  It also automatically handles calling
-                log_operation_start and log_operation_end.  Locking behaviour
-                is controlled by the blocking_locks image property.
+                that needs locking.  It automatically handles calling
+                log_operation_start and log_operation_end by default.  Locking
+                behaviour is controlled by the blocking_locks image property.
 
                 'allow_unprivileged' is an optional boolean value indicating
                 that permissions-related exceptions should be ignored when
                 attempting to obtain the lock as the related operation will
                 still work correctly even though the image cannot (presumably)
                 be modified.
+
+                'new_history_op' indicates whether we should handle history
+                operations.
                 """
 
                 error = None
@@ -330,8 +333,9 @@ class Image(object):
                 try:
                         be_name, be_uuid = \
                             bootenv.BootEnv.get_be_name(self.root)
-                        self.history.log_operation_start(op,
-                            be_name=be_name, be_uuid=be_uuid)
+                        if new_history_op:
+                                self.history.log_operation_start(op,
+                                    be_name=be_name, be_uuid=be_uuid)
                         yield
                 except apx.ImageLockedError, e:
                         # Don't unlock the image if the call failed to
@@ -345,7 +349,8 @@ class Image(object):
                 else:
                         self.unlock()
                 finally:
-                        self.history.log_operation_end(error=error)
+                        if new_history_op:
+                                self.history.log_operation_end(error=error)
 
         def lock(self, allow_unprivileged=False):
                 """Locks the image in preparation for an image-modifying
@@ -1804,7 +1809,11 @@ class Image(object):
         def repair(self, *args, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""
 
-                with self.locked_op("fix"):
+                # prune off any new_history_op keyword argument, used for
+                # locked_op(), but not for __repair()
+                need_history_op = kwargs.pop("new_history_op", True)
+
+                with self.locked_op("fix", new_history_op=need_history_op):
                         try:
                                 return self.__repair(*args, **kwargs)
                         except apx.ActionExecutionError, e:
@@ -1823,6 +1832,11 @@ class Image(object):
 
                 # Allow garbage collection of previous plan.
                 self.imageplan = None
+
+                reason = "The following packages needed to be repaired:\n    %s"
+                self.history.operation_start_state = \
+                    reason % "\n    ".join(str(fmri)
+                    for fmri, failed in repairs)
 
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
                 # into the api and can actually use the

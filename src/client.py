@@ -654,6 +654,10 @@ def fix_image(img, args):
 
         # Repair anything we failed to verify
         if repairs:
+                # Since BootEnv records the snapshot name in the image history,
+                # we need to manage our own history start/end & exception
+                # handling rather then delegating to <Image>.repair()
+                api_inst.log_operation_start("fix")
                 # Create a snapshot in case they want to roll back
                 success = False
                 try:
@@ -667,7 +671,8 @@ def fix_image(img, args):
                 img.bootenv = be
                 try:
                         success = img.repair(repairs, progresstracker,
-                            accept=accept, show_licenses=show_licenses)
+                            accept=accept, show_licenses=show_licenses,
+                            new_history_op=False)
                 except (api_errors.InvalidPlanError,
                     api_errors.InvalidPackageErrors,
                     api_errors.ActionExecutionError,
@@ -678,6 +683,8 @@ def fix_image(img, args):
                         logger.error(str(e))
                 except api_errors.ImageFormatUpdateNeeded, e:
                         format_update_error(e)
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_CONFIGURATION)
                         return EXIT_OOPS
                 except api_errors.PlanLicenseErrors, e:
                         # Prepend a newline because otherwise the exception will
@@ -692,18 +699,27 @@ def fix_image(img, args):
                             "listed above, use the --accept option.  To "
                             "display all of the related licenses, use the "
                             "--licenses option."))
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_CONSTRAINED)
                         return EXIT_LICENSE
                 except api_errors.RebootNeededOnLiveImageException:
                         error(_("Requested \"fix\" operation would affect "
                             "files that cannot be modified in live image.\n"
                             "Please retry this operation on an alternate boot "
                             "environment."))
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_CONSTRAINED)
                         return EXIT_NOTLIVE
+                except (Exception, Error), e:
+                        api_inst.log_operation_end(error=e)
+                        raise
 
+                progresstracker.verify_done()
                 if not success:
-                        progresstracker.verify_done()
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_UNKNOWN)
                         return EXIT_OOPS
-        progresstracker.verify_done()
+                api_inst.log_operation_end(result=history.RESULT_SUCCEEDED)
         return EXIT_OK
 
 def verify_image(img, args):
@@ -4132,6 +4148,7 @@ def history_list(img, args):
                 # method, since it prints eg. "4 days, 3:12:54" breaking our
                 # field separation, so we need to do this by hand.
                 if output["time"].days > 0:
+                        total_time = output["time"]
                         secs = total_time.seconds
                         add_hrs = total_time.days * 24
                         mins, secs = divmod(secs, 60)
