@@ -806,9 +806,12 @@ class Image(object):
                         # If pre-upgrade data still exists; fire off a
                         # process to dump it so execution can continue.
                         orig_root = self.imgdir + ".old"
+                        nullf = open(os.devnull, "w")
                         if os.path.exists(orig_root):
+                                # Ensure all output is discarded; it really
+                                # doesn't matter if this succeeds.
                                 subprocess.Popen("rm -rf %s" % orig_root,
-                                    shell=True)
+                                    shell=True, stdout=nullf, stderr=nullf)
                         return False
 
                 if not progtrack:
@@ -1083,6 +1086,10 @@ class Image(object):
                 linktree(self.index_dir, os.path.join(tmp_root,
                     "cache", "index"))
 
+                # Next, link ssl data into place.
+                linktree(os.path.join(self.imgdir, "ssl"),
+                    os.path.join(tmp_root, "ssl"))
+
                 # Next, write state data into place.
                 if self.version < 3:
                         # Image state and publisher metadata 
@@ -1206,6 +1213,17 @@ class Image(object):
                 try:
                         portable.rename(self.imgdir, orig_root)
                         portable.rename(tmp_root, self.imgdir)
+
+                        # /var/pkg/repo is renamed into place instead of being
+                        # linked piece-by-piece for performance reasons.
+                        # Crawling the entire tree structure of a repository is
+                        # far slower than simply renaming the top level
+                        # directory (since it often has thousands or millions
+                        # of objects).
+                        old_repo = os.path.join(orig_root, "repo")
+                        if os.path.exists(old_repo):
+                                new_repo = os.path.join(tmp_root, "repo")
+                                portable.rename(old_repo, new_repo)
                 except EnvironmentError, e:
                         raise apx._convert_error(e)
                 self.find_root(self.root, exact_match=True, progtrack=progtrack)

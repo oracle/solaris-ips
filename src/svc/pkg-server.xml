@@ -97,8 +97,7 @@
 
 	<property_group name='pkg' type='application'>
 		<propval name='pkg_root' type='astring' value='/' />
-		<propval name='inst_root' type='astring'
-			value='/var/pkg/repo' />
+		<propval name='inst_root' type='astring' value='/var/pkgrepo' />
 		<propval name='port' type='count' value='80' />
 		<propval name='proxy_base' type='astring' value='' />
 		<propval name='socket_timeout' type='count' value='60' />

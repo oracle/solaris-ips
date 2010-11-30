@@ -359,6 +359,18 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # First, create a new image.
                 self.pkg_image_create(self.rurl1, prefix="test1")
 
+                # Create a 'repo' directory in image directory so that we
+                # can verify that it survives the various upgrades.
+                rpath = os.path.join(self.get_img_path(), "repo")
+                self.pkgrepo("create %s" % rpath)
+
+                # Create an 'ssl' directory in image directory so that we
+                # can verify that it survives the various upgrades.
+                sslpath = os.path.join(self.get_img_path(), "ssl")
+                sslfile = os.path.join(sslpath, "my.cert")
+                os.mkdir(sslpath)
+                open(sslfile, "wb").close()
+
                 # Add the second repository.
                 self.pkg("set-publisher -O %s test2" % self.rurl2)
 
@@ -564,6 +576,12 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # Verify an already updated image will cause update-format to
                 # exit 4.
                 self.pkg("update-format", exit=4)
+
+                # Finally, check that repository and ssl data still exists
+                # through all the upgrades.
+                self.assert_(os.path.exists(os.path.join(rpath,
+                    "pkg5.repository")))
+                self.assert_(os.path.exists(sslfile))
 
         def test_9_bad_image_state(self):
                 """Verify that the pkg(1) command handles invalid image state

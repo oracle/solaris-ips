@@ -1229,7 +1229,7 @@ class FileConfig(Config):
 
         [pkg]
         port = 80
-        inst_root = /var/pkg/repo
+        inst_root = /export/repo
 
         [pub_example_com]
         feed_description = example.com's software

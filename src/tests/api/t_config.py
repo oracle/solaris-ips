@@ -455,7 +455,7 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
 
                 # Verify allowed value functionality denies unexpected values.
                 p = propcls("list", allowed=["<pathname>"],
-                    default=["/var/pkg/repo"])
+                    default=["/export/repo"])
                 self.assertRaises(cfg.InvalidPropertyValueError,
                     setattr, p, "value", ["exec:/binary", "svc:/application",
                         ""])

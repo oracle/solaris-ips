@@ -115,9 +115,9 @@ EXAMPLES
      $ pkgrecv -s http://test -d http://remote:10000 SUNWzlib
 
      Example 7: Receive the package "SUNWemacs" and all of its dependencies
-     from the repository located at '/var/pkg/repo'.
+     from the repository located at '/export/repo'.
 
-     $ pkgrecv -s /var/pkg/repo -r SUNWemacs
+     $ pkgrecv -s /export/repo -r SUNWemacs
 
      Example 8: Receive all packages that do not already exist from the
      repository located at 'http://example.com:10000':

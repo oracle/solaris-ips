@@ -74,7 +74,7 @@ DESCRIPTION
                                 repository data.  Required unless
                                 file_root or PKG_REPO has been
                                 provided.  The default value is
-                                /var/pkg/repo.
+                                /var/pkgrepo.
 
      pkg/log_access             (astring) The destination for any
                                 access related information logged by
@@ -308,7 +308,7 @@ DEPOT CONFIGURATION
 
      [pkg]
      port = 80
-     inst_root = /var/pkg/repo
+     inst_root = /export/repo
 
      [pub_example_com]
      feed_description = example.com's software
@@ -357,10 +357,6 @@ EXIT STATUS
      2     Invalid command line options were specified.
 
 FILES
-     /var/pkg/repo              Default repository location; modify
-                                pkg/inst_root to select an
-                                alternate location.
-
      /usr/share/lib/pkg         Default presentation content location;
                                 modify pkg/content_root to select an
                                 alternate location.
