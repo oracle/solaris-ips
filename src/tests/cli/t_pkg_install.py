@@ -4991,10 +4991,9 @@ class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -n --licenses licensed@1.2 | "
                     "grep 'license.licensed'")
 
-                # Verify that licenses are not included in -n output if
-                # --licenses is not provided.
-                self.pkg("install -n licensed@1.2 | grep 'copyright.licensed'",
-                    exit=1)
+                # Verify that licenses that require display are included in
+                # -n output even if --licenses is not provided.
+                self.pkg("install -n licensed@1.2 | grep 'copyright.licensed'")
 
                 # Next, check that an upgrade succeeds when a license requires
                 # display and that the license will be displayed.

@@ -958,12 +958,11 @@ def display_plan_licenses(api_inst, show_all=False):
                 # Mark license as having been displayed.
                 api_inst.set_plan_license_status(pfmri, lic, displayed=True)
 
-def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
+def __api_prepare(operation, api_inst, accept=False):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
         try:
-                display_plan_licenses(api_inst, show_all=show_licenses)
                 if accept:
                         accept_plan_licenses(api_inst)
                 api_inst.prepare()
@@ -1229,18 +1228,15 @@ def change_variant(img, args):
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
 
+        display_plan_licenses(api_inst, show_all=show_licenses)
         if not quiet:
                 display_plan(api_inst, verbose)
-
         if noexecute:
-                if show_licenses:
-                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        ret_code = __api_prepare("change-variant", api_inst, accept=accept,
-            show_licenses=show_licenses)
+        ret_code = __api_prepare("change-variant", api_inst, accept=accept)
         if ret_code != EXIT_OK:
                 return ret_code
 
@@ -1333,18 +1329,15 @@ def change_facet(img, args):
                 msg(_("Facet change has no effect on image"))
                 return EXIT_NOP
 
+        display_plan_licenses(api_inst, show_all=show_licenses)
         if not quiet:
                 display_plan(api_inst, verbose)
-
         if noexecute:
-                if show_licenses:
-                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        ret_code = __api_prepare(op, api_inst, accept=accept,
-            show_licenses=show_licenses)
+        ret_code = __api_prepare(op, api_inst, accept=accept)
         if ret_code != EXIT_OK:
                 return ret_code
 
@@ -1417,18 +1410,15 @@ def install(img, args):
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
 
+        display_plan_licenses(api_inst, show_all=show_licenses)
         if not quiet:
                 display_plan(api_inst, verbose)
-
         if noexecute:
-                if show_licenses:
-                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        ret_code = __api_prepare(op, api_inst, accept=accept,
-            show_licenses=show_licenses)
+        ret_code = __api_prepare(op, api_inst, accept=accept)
         if ret_code != EXIT_OK:
                 return ret_code
 
@@ -1494,7 +1484,6 @@ def uninstall(img, args):
 
         if not quiet:
                 display_plan(api_inst, verbose)
-
         if noexecute:
                 return EXIT_OK
 
@@ -1585,16 +1574,13 @@ def update(img, args):
                 msg(_("No updates available for this image."))
                 return EXIT_NOP
 
+        display_plan_licenses(api_inst, show_all=show_licenses)
         if not quiet:
                 display_plan(api_inst, verbose)
-
         if noexecute:
-                if show_licenses:
-                        display_plan_licenses(api_inst, show_all=True)
                 return EXIT_OK
 
-        ret_code = __api_prepare(op, api_inst, accept=accept,
-            show_licenses=show_licenses)
+        ret_code = __api_prepare(op, api_inst, accept=accept)
         if ret_code != EXIT_OK:
                 return ret_code
 
