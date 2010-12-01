@@ -4920,7 +4920,7 @@ Use -U (--update-all) to proceed with Updates"""
                 try:
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
-                        image_dir = os.getcwd()
+                        image_dir = "/"
 
         try:
                 gtk.init_check()
