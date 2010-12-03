@@ -1,0 +1,13 @@
+package developer/versioning/git
+consolidation "sfw"
+classification "Development/Source Code Management"
+import SUNWgit
+version 1.7.3.2
+end package
+
+package SUNWgit
+consolidation "sfw"
+renamed 133
+depend developer/versioning/git
+version 1.5.6.5
+end package
