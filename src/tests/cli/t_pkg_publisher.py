@@ -473,7 +473,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         def __verify_pub_cfg(self, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""
 
-                img = image.Image(self.get_img_path(), should_exist=True)
+                img = image.Image(self.get_img_path(), should_exist=True,
+                    user_provided_dir=True)
                 pub = img.get_publisher(prefix=prefix)
                 for section in pub_cfg:
                         for prop, val in pub_cfg[section].iteritems():

@@ -27,32 +27,40 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import os
+import pkg.portable as portable
 import unittest
 
 
 class TestROption(pkg5unittest.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_setup = True
+        # Cleanup after every test.
+        persistent_setup = False
 
         foo10 = """
             open foo@1.0,5.11-0
             close """
 
-	def test_bad_cli_options(self):
-
-		self.image_create(self.rurl)
-		self.pkg("-@", exit=2)
-		self.pkg("-s status", exit=2)
-                self.pkg("-R status", exit=2)
-
-        def test_1(self):
-
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.pkgsend_bulk(self.rurl, self.foo10)
                 self.image_create(self.rurl)
 
-                imgpath = self.img_path
-                badpath = "/this/dir/should/not/ever/exist/foo/bar/afsddfas"
+	def test_bad_cli_options(self):
+                """Verify that pkg rejects invalid -R combos and values."""
 
+		self.pkg("-@", exit=2)
+		self.pkg("-s status", exit=2)
+                self.pkg("-R status", exit=2)
+                self.pkg("-R / version", exit=2)
+
+        def test_1_explicit(self):
+                """Ensure that pkg explicit image specification works as
+                expected."""
+
+                imgpath = self.img_path
+                badpath = self.test_root
+
+                # Verify that bad paths cause exit and good paths succeed.
                 self.pkg("-R %s list" % badpath, exit=1)
                 self.pkg("-R %s list" % imgpath, exit=1)
 
@@ -74,6 +82,36 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("-R %s info foo" % badpath, exit=1)
                 self.pkg("-R %s info foo" % imgpath)
+
+        def test_2_implicit(self):
+                """Ensure that pkg implicit image finding works as expected."""
+
+                # Should fail because $PKG_IMAGE is set to test root by default,
+                # and default test behaviour to use -R self.img_path was
+                # disabled.
+                self.pkg("install foo", exit=1, use_img_root=False)
+
+                # Unset unit testing default bogus image dir.
+                del os.environ["PKG_IMAGE"]
+                os.chdir(self.img_path)
+                self.assertEqual(os.getcwd(), self.img_path)
+
+                if portable.osname != "sunos":
+                        # For other platforms, first install a package uses an
+                        # explicit root, and then verify that an implicit find
+                        # of the image results in the right image being found.
+                        self.pkg("install foo")
+                        self.pkg("info foo", use_img_root=False)
+
+                        # Remaining tests are not valid on other platforms.
+                        return
+
+                # Should fail because image found is not at '/', but at cwd().
+                self.pkg("install foo", exit=1, use_img_root=False)
+
+                # Should succeed because image is found at simulated live root.
+                self.pkg("-D simulate_live_root=%s install foo" %
+                    self.img_path, use_img_root=False)
 
 
 if __name__ == "__main__":

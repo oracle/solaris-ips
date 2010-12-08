@@ -1,3 +1,28 @@
+Version 48:
+Compatible with clients using versions 46-47.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * The ImageInterface class constructor now accepts an
+          exact_match parameter that allows consumers to control
+          whether an attempt to find an image starting from the
+          specified directory is made.  See 'pydoc pkg.client.api'
+          for detailed usage.
+
+        * If the exact_match parameter of the class constructor is
+          False, an ImageLocationAmbiguous exception will be raised
+          on Solaris if the image is not found at '/'.  Other platforms
+          will continue to accept an image found at any location.
+
+        * A new property named 'progresstracker' was added to allow
+          consumers to change the ProgressTracker object used by the
+          API object instance after class initialization.  See 'pydoc
+          pkg.client.api' for detailed usage.
+
+    pkg.client.api_errors has changed as follows:
+
+        * A new ImageLocationAmbiguous exception was added.
+
 Version 47:
 Compatible with clients using version 46.
 

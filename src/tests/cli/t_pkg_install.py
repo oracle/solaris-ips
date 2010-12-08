@@ -1532,15 +1532,17 @@ adm
                 self.pkgsend_bulk(self.rurl, (self.liveroot10, self.liveroot20))
                 self.image_create(self.rurl)
 
-                self.pkg("--debug simulate_live_root=True install liveroot@1.0")
+                self.pkg("--debug simulate_live_root=%s install liveroot@1.0" %
+                    self.get_img_path())
                 self.pkg("verify -v")
-                self.pkg("--debug simulate_live_root=True install --deny-new-be liveroot@2.0",
-                    exit=5)
-                self.pkg("--debug simulate_live_root=True uninstall --deny-new-be liveroot",
-                    exit=5)
+                self.pkg("--debug simulate_live_root=%s install --deny-new-be "
+                    "liveroot@2.0" % self.get_img_path(), exit=5)
+                self.pkg("--debug simulate_live_root=%s uninstall "
+                    "--deny-new-be liveroot" % self.get_img_path(), exit=5)
                 # "break" liveroot@1
                 self.file_append("etc/liveroot", "this file has been changed")
-                self.pkg("--debug simulate_live_root=True fix liveroot", exit=5)
+                self.pkg("--debug simulate_live_root=%s fix liveroot" %
+                    self.get_img_path(), exit=5)
 
         def test_upgrade_driver_conflicts(self):
                 """Test to make sure driver_aliases conflicts don't cause
@@ -3829,9 +3831,10 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 pkg5unittest.SingleDepotTestCaseCorruptImage.setUp(self)
                 self.make_misc_files(self.misc_files)
 
-        def pkg(self, command, exit=0, comment=""):
+        def pkg(self, command, exit=0, comment="", use_img_root=True):
                 pkg5unittest.SingleDepotTestCaseCorruptImage.pkg(self, command,
-                    exit=exit, comment=comment, prefix=self.PREFIX % self.dir)
+                    exit=exit, comment=comment, prefix=self.PREFIX % self.dir,
+                    use_img_root=use_img_root)
 
         # For each test:
         # A good image is created at $basedir/image
@@ -3876,7 +3879,8 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), ["var/pkg"])
 
-                self.pkg("install foo@1.1")
+                self.pkg("-D simulate_live_root=%s install foo@1.1" %
+                    self.backup_img_path, use_img_root=False)
 
         def test_var_pkg_missing_index(self):
                 """ Creates bad_dir with only the index dir missing. """
@@ -3977,7 +3981,8 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
 
-                self.pkg("install foo@1.1")
+                self.pkg("-D simulate_live_root=%s install foo@1.1" %
+                    self.backup_img_path, use_img_root=False)
 
         def test_ospkg_missing_index(self):
                 """ Creates a corrupted image at bad_dir by creating
@@ -4036,8 +4041,8 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-# Tests for checking what happens when two images are installed side by side.
-
+        # Tests for checking what happens when two images are installed side by
+        # side.
         def test_var_pkg_missing_cfg_cache_ospkg_also_missing_alongside(self):
                 """ Each bad_dir is missing a cfg_cache
                 These 3 tests do nothing currently because trying to install an
@@ -4054,8 +4059,8 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), ["var/pkg"], destroy=False)
 
-                self.pkg("install foo@1.1")
-
+                self.pkg("-D simulate_live_root=%s install foo@1.1" %
+                    self.backup_img_path, use_img_root=False)
 
         def test_var_pkg_ospkg_missing_cfg_cache_alongside(self):
                 """ Complete Full image besides a User image missing cfg_cache
@@ -4066,11 +4071,18 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 self.dir = self.corrupt_image_create(self.rurl, set(),
                     ["var/pkg"])
+                img_path = self.get_img_path()
                 self.dir = self.corrupt_image_create(self.rurl,
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"],
                     destroy=False)
 
-                self.pkg("install foo@1.1")
+                # Found full image before we reached root image.
+                self.pkg("-D simulate_live_root=%s install foo@1.1" %
+                    self.backup_img_path, use_img_root=False, exit=1)
+
+                # Only possible if user specifies full image's root since
+                # user image is at the top level.
+                self.pkg("-R %s install foo@1.1" % img_path)
 
         def test_var_pkg_missing_cfg_cache_ospkg_alongside(self):
                 """ Complete User image besides a Full image missing cfg_cache
@@ -4084,6 +4096,12 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                 self.dir = self.corrupt_image_create(self.rurl, set(),
                     [".org.opensolaris,pkg"], destroy=False)
 
+                # Found user image before we reached root image.
+                self.pkg("-D simulate_live_root=%s install foo@1.1" %
+                    self.backup_img_path, use_img_root=False, exit=1)
+
+                # Should succeed and install package in user image since
+                # test suite will add -R self.get_img_path().
                 self.pkg("install foo@1.1")
 
 

@@ -90,7 +90,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # run the executable, replace the executable
                 tdir1 = tempfile.mkdtemp()
                 img1 = image.Image(tdir1, imgtype=image.IMG_USER,
-                    should_exist=False)
+                    should_exist=False, user_provided_dir=True)
                 img1.history.client_name = "pkg-test"
                 img1.set_attrs(False, "test",
                     origins=["http://localhost:10000"], refresh_allowed=False)
@@ -133,7 +133,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # run the executable, remove the executable
                 tdir1 = tempfile.mkdtemp()
                 img1 = image.Image(tdir1, imgtype=image.IMG_USER,
-                    should_exist=False)
+                    should_exist=False, user_provided_dir=True)
                 img1.history.client_name = "pkg-test"
                 img1.set_attrs(False, "test",
                     origins=["http://localhost:10000"], refresh_allowed=False)

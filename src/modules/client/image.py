@@ -143,7 +143,8 @@ class Image(object):
 
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
-            augment_ta_from_parent_image=True, allow_ondisk_upgrade=None):
+            augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
+            allow_ambiguous=False):
                 if should_exist:
                         assert(imgtype is None)
                         assert(not force)
@@ -153,6 +154,7 @@ class Image(object):
                 # Indicates whether automatic image format upgrades of the
                 # on-disk format are allowed.
                 self.allow_ondisk_upgrade = allow_ondisk_upgrade
+                self.allow_ambiguous = allow_ambiguous
                 self.__upgraded = False
 
                 # Must happen after upgraded assignment.
@@ -279,7 +281,8 @@ class Image(object):
                 pkg_trust_anchors = {}
                 if self.__cmddir and self.augment_ta_from_parent_image:
                         pkg_trust_anchors = Image(self.__cmddir,
-                            augment_ta_from_parent_image=False).trust_anchors
+                            augment_ta_from_parent_image=False,
+                            allow_ambiguous=True).trust_anchors
                 if not loc_is_dir and os.path.exists(trust_anchor_loc):
                         raise apx.InvalidPropertyValue(_("The trust "
                             "anchors for the image were expected to be found "
@@ -448,25 +451,32 @@ class Image(object):
                 startd = d
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
+
+                live_root = DebugValues.get_value("simulate_live_root")
+                if not live_root:
+                        live_root = "/"
+
                 while True:
                         imgtype = self.image_type(d)
-                        if imgtype == IMG_USER:
+                        if imgtype in (IMG_USER, IMG_ENTIRE):
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
                                         raise apx.ImageNotFoundException(
                                             exact_match, startd, d)
-                                self.__set_dirs(imgtype=imgtype, root=d,
-                                    progtrack=progtrack)
-                                return
-                        elif imgtype == IMG_ENTIRE:
-                                # XXX Look at image file to determine if this
-                                # image is a partial image?
-                                if exact_match and \
-                                    os.path.realpath(startd) != \
-                                    os.path.realpath(d):
-                                        raise apx.ImageNotFoundException(
-                                            exact_match, startd, d)
+                                if not exact_match and d != live_root and \
+                                    not self.allow_ambiguous and \
+                                    portable.osname == "sunos":
+                                        # On Solaris, consider an image found
+                                        # somewhere other than the live root an
+                                        # an error if an exact match wasn't
+                                        # requested.  (This prevents accidental
+                                        # use of nested images.) It is not
+                                        # desirable to do this on other
+                                        # platforms as non-root images are the
+                                        # norm.
+                                        raise apx.ImageLocationAmbiguous(d,
+                                            live_root=live_root)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     progtrack=progtrack)
                                 return
@@ -1307,7 +1317,7 @@ class Image(object):
 
         def is_liveroot(self):
                 return bool(self.root == "/" or
-                    DebugValues.get_value("simulate_live_root"))
+                    self.root == DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
                 return self.cfg.variants["variant.opensolaris.zone"] == \
@@ -3114,7 +3124,8 @@ class Image(object):
                         # workspace, for example.
                         #
                         newimg = Image(self.__cmddir,
-                            allow_ondisk_upgrade=False, progtrack=progtrack)
+                            allow_ondisk_upgrade=False, allow_ambiguous=True,
+                            progtrack=progtrack)
                         useimg = True
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,

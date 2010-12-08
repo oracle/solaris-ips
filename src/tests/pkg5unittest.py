@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 47
+CLIENT_API_VERSION = 48
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -1336,8 +1336,13 @@ class CliTestCase(Pkg5TestCase):
 
                 self.image_dir = None
                 self.img_path = os.path.join(self.test_root, "image")
-                os.environ["PKG_IMAGE"] = self.img_path
                 self.image_created = False
+
+                # Set image path to a path that's not actually an image to
+                # force failure of tests that don't explicitly provide an
+                # image root either through the default behaviour of the
+                # pkg() helper routine or another method.
+                os.environ["PKG_IMAGE"] = self.test_root
 
         def tearDown(self):
                 Pkg5TestCase.tearDown(self)
@@ -1429,19 +1434,25 @@ class CliTestCase(Pkg5TestCase):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
-            out=False, stderr=False, alt_img_path=None):
+            out=False, stderr=False, alt_img_path=None, use_img_root=True):
                 pth = self.img_path
                 if alt_img_path:
                         pth = alt_img_path
                 elif not self.image_created:
                         pth = "%s/usr/bin" % g_proto_area
+                if use_img_root and "-R" not in command and \
+                    "image-create" not in command and "version" not in command:
+                        command = "-R %s %s" % (self.get_img_path(), command)
                 cmdline = "%s/pkg %s" % (pth, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
 
         def pkgdepend_resolve(self, args, exit=0, comment=""):
-                cmdline = "%s/usr/bin/pkgdepend resolve %s" % (g_proto_area,
-                    args)
+                ops = ""
+                if "-R" not in args:
+                        ops = "-R %s" % self.get_img_path()
+                cmdline = "%s/usr/bin/pkgdepend %s resolve %s" % (
+                    g_proto_area, ops, args)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit)
 
         def pkgdepend_generate(self, args, exit=0, comment=""):
@@ -2110,10 +2121,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 """ Creates two levels of directories under the original image
                 directory. In the first level (called bad), it builds a "corrupt
                 image" which means it builds subdirectories the subdirectories
-                speicified by subdirs (essentially determining whether a user
+                specified by subdirs (essentially determining whether a user
                 image or a full image will be built). It populates these
                 subdirectories with a partial image directory stucture as
-                speicified by config. As another subdirectory of bad, it
+                specified by config. As another subdirectory of bad, it
                 creates a subdirectory called final which represents the
                 directory the command was actually run from (which is why
                 img_path is set to that location). Existing image destruction
@@ -2123,7 +2134,6 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 if not self.backup_img_path:
                         self.backup_img_path = self.img_path
                 self.img_path = os.path.join(self.img_path, "bad")
-                assert self.img_path
                 assert self.img_path and self.img_path != "/"
 
                 if destroy:

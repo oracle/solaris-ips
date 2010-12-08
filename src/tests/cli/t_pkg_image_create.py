@@ -149,7 +149,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
         def __verify_pub_cfg(self, img_path, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""
 
-                img = image.Image(img_path, should_exist=True)
+                img = image.Image(img_path, should_exist=True,
+                    user_provided_dir=True)
                 pub = img.get_publisher(prefix=prefix)
                 for section in pub_cfg:
                         for prop, val in pub_cfg[section].iteritems():
@@ -478,8 +479,8 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # Next, verify that the client won't automatically upgrade
                 # images unless the image is the liveroot.
-                self.pkg("--debug simulate_live_root=True info quux "
-                    "pkg://test1/quux pkg://test2/corge")
+                self.pkg("--debug simulate_live_root=%s info quux "
+                    "pkg://test1/quux pkg://test2/corge" % self.get_img_path())
 
                 # Next, verify that the new client can upgrade v2 images to
                 # v4 images if the image is the liveroot.
@@ -515,19 +516,21 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly.
-                self.pkg("--debug simulate_live_root=True publisher -a",
+                self.pkg("--debug simulate_live_root=%s publisher -a" %
+                    self.get_img_path(), su_wrap=True)
+                self.pkg("--debug simulate_live_root=%s info "
+                    "pkg://test1/quux corge" % self.get_img_path(),
                     su_wrap=True)
-                self.pkg("--debug simulate_live_root=True info "
-                    "pkg://test1/quux corge", su_wrap=True)
-                self.pkg("--debug simulate_live_root=True info "
-                    "pkg://test2/corge quux", su_wrap=True)
-                self.pkg("--debug simulate_live_root=True update -nv "
-                    "--no-refresh", su_wrap=True, exit=4)
+                self.pkg("--debug simulate_live_root=%s info "
+                    "pkg://test2/corge quux" % self.get_img_path(),
+                    su_wrap=True)
+                self.pkg("--debug simulate_live_root=%s update -nv "
+                    "--no-refresh" % self.get_img_path(), su_wrap=True, exit=4)
 
                 # Next, verify that the new client can upgrade v3 images to
                 # v4 images.
-                self.pkg("--debug simulate_live_root=True info quux "
-                    "pkg://test1/quux pkg://test2/corge")
+                self.pkg("--debug simulate_live_root=%s info quux "
+                    "pkg://test1/quux pkg://test2/corge" % self.get_img_path())
 
                 # Next, verify that the old structures and state information
                 # are gone and a part of the new structure is present.

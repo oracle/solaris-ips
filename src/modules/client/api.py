@@ -65,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 47
+CURRENT_API_VERSION = 48
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -109,10 +109,12 @@ class ImageInterface(object):
         __UPDATE = 3
 
         def __init__(self, img_path, version_id, progresstracker,
-            cancel_state_callable, pkg_client_name):
+            cancel_state_callable, pkg_client_name, exact_match=True):
                 """Constructs an ImageInterface object.
 
-                'img_path' is the absolute path to an existing image.
+                'img_path' is the absolute path to an existing image or to a
+                path from which to start looking for an image.  To control this
+                behaviour use the 'exact_match' parameter.
 
                 'version_id' indicates the version of the api the client is
                 expecting to use.
@@ -125,9 +127,19 @@ class ImageInterface(object):
                 changes.
 
                 'pkg_client_name' is a string containing the name of the client,
-                such as "pkg" or "packagemanager"."""
+                such as "pkg" or "packagemanager".
 
-                compatible_versions = set([46, CURRENT_API_VERSION])
+                'exact_match' is a boolean indicating whether the API should
+                attempt to find a usable image starting from the specified
+                directory, going up to the filesystem root until it finds one.
+                If set to True, an image must exist at the location indicated
+                by 'img_path'.  If set to False for a client running on the
+                Solaris platform, an ImageLocationAmbiguous exception will be
+                raised if an image is found somewhere other than '/'.  For all
+                other platforms, a value of False will allow any image location.
+                """
+
+                compatible_versions = set([46, 47, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -143,7 +155,11 @@ class ImageInterface(object):
                         # Store this for reset().
                         self.__img_path = img_path
                         self.__img = image.Image(img_path,
-                            progtrack=progresstracker, user_provided_dir=True)
+                            progtrack=progresstracker,
+                            user_provided_dir=exact_match)
+
+                        # Store final image path.
+                        self.__img_path = self.__img.get_root()
                 elif isinstance(img_path, image.Image):
                         # This is a temporary, special case for client.py
                         # until the image api is complete.
@@ -212,6 +228,16 @@ class ImageInterface(object):
                 last updated."""
 
                 return self.__img.get_last_modified()
+
+        def __set_progresstracker(self, value):
+                self.__activity_lock.acquire()
+                self.__progresstracker = value
+                self.__activity_lock.release()
+
+        progresstracker = property(lambda self: self.__progresstracker,
+            __set_progresstracker, doc="The current ProgressTracker object.  "
+            "This value should only be set when no other API calls are in "
+            "progress.")
 
         @property
         def root(self):
@@ -1988,7 +2014,8 @@ class ImageInterface(object):
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
                 self.__img = image.Image(self.__img_path,
-                    progtrack=self.__progresstracker)
+                    progtrack=self.__progresstracker,
+                    user_provided_dir=True)
                 self.__img.blocking_locks = self.__blocking_locks
 
                 self.__plan_desc = None
