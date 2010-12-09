@@ -29,6 +29,8 @@ import itertools
 import os
 import urllib
 
+from collections import namedtuple
+
 import pkg.actions as actions
 import pkg.client.api as api
 import pkg.flavor.base as base
@@ -44,25 +46,40 @@ import pkg.variant as variants
 paths_prefix = "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX
 files_prefix = "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX
 reason_prefix = "%s.reason" % base.Dependency.DEPEND_DEBUG_PREFIX
+type_prefix = "%s.type" % base.Dependency.DEPEND_DEBUG_PREFIX
+target_prefix = "%s.target" % base.Dependency.DEPEND_DEBUG_PREFIX
+
+Entries = namedtuple("Entries", ["delivered", "installed"])
+# This namedtuple is used to hold two items. The first, delivered, is used to
+# hold items which are part of packages being delivered.  The second, installed,
+# is used to hold items which are part of packages installed on the system.
 
 class DependencyError(Exception):
         """The parent class for all dependency exceptions."""
         pass
 
 class MultiplePackagesPathError(DependencyError):
-        """This exception is used when a file dependency has paths which
-        cause two packages to deliver files which fulfill the dependency."""
+        """This exception is used when a file dependency has paths which cause
+        two or more packages to deliver files which fulfill the dependency under
+        some combination of variants."""
 
-        def __init__(self, res, source):
+        def __init__(self, res, source, vc):
                 self.res = res
                 self.source = source
+                self.vc = vc
 
         def __str__(self):
                 return _("The file dependency %(src)s has paths which resolve "
-                    "to multiple packages. The actions are as "
+                    "to multiple packages under this combination of "
+                    "variants:\n%(vars)s\nThe actions are as "
                     "follows:\n%(acts)s") % {
                         "src":self.source,
-                        "acts":"\n".join(["\t%s" % a for a in self.res])
+                        "acts":"\n".join(["\t%s" % a for a in self.res]),
+                        "vars":"\n".join([
+                            " ".join([
+                                ("%s:%s" % (name, val)) for name, val in grp
+                            ])
+                            for grp in self.vc.sat_set])
                     }
 
 class AmbiguousPathError(DependencyError):
@@ -98,7 +115,8 @@ class UnresolvedDependencyError(DependencyError):
                         "dep":self.file_dep,
                         "combo":"\n".join([
                             " ".join([
-                                ("%s:%s" % (name, val)) for name, val in grp
+                                ("%s:%s" % (name, val))
+                                for name, val in sorted(grp)
                             ])
                             for grp in self.pvars.not_sat_set
                     ])}
@@ -189,6 +207,15 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         errs = []
         delivered = {}
         delivered_bn = {}
+
+        files = Entries({}, {})
+        links = Entries({}, {})
+
+        # A fake pkg name is used because there is no requirement that a package
+        # name itself to generate its dependencies.  Also, the name is entirely
+        # a private construction which should not escape to the user.
+        add_fmri_path_mapping(files.delivered, links.delivered,
+            fmri.PkgFmri("INTERNAL@0-0", build_release="0"), mfst)
         for a in mfst.gen_actions_by_type("file"):
                 pvars = a.get_variant_template()
                 if not pvars:
@@ -204,20 +231,14 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
                         pvars.merge_unknown(pkg_vars)
                 pvc = variants.VariantCombinations(pvars, satisfied=True)
                 p = a.attrs["path"]
-                delivered.setdefault(p, copy.copy(pvc))
-                p = os.path.join(a.attrs[portable.PD_PROTO_DIR], p)
-                np = os.path.normpath(p)
-                rp = os.path.realpath(p)
-                # adding the normalized path
-                delivered.setdefault(np, copy.copy(pvc))
-                # adding the real path
-                delivered.setdefault(rp, copy.copy(pvc))
                 bn = os.path.basename(p)
                 delivered_bn.setdefault(bn, copy.copy(pvc))
 
         for d in deps:
-                etype, pvars = d.resolve_internal(delivered_files=delivered,
-                    delivered_base_names=delivered_bn)
+                etype, pvars = d.resolve_internal(
+                    delivered_files=files.delivered,
+                    delivered_base_names=delivered_bn, links=links,
+                    resolve_links=resolve_links)
                 if etype is None:
                         continue
                 pvars.simplify(pkg_vars)
@@ -407,7 +428,7 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars):
                 # all variant combinations have been covered.
                 dep_vars.mark_as_satisfied(delivered_vars)
                 attrs = file_dep.attrs.copy()
-                attrs.update({"fmri":str(pfmri)})
+                attrs.update({"fmri":pfmri.get_short_fmri()})
                 # Add this package as satisfying the dependency.
                 res.append((actions.depend.DependencyAction(**attrs),
                     action_vars))
@@ -431,13 +452,148 @@ def make_paths(file_dep):
                 rps = [rps]
         return [os.path.join(rp, f) for rp in rps for f in files]
 
-def find_package_using_delivered_files(delivered, file_dep, dep_vars,
-    orig_dep_vars):
-        """Uses a dictionary mapping file paths to packages to determine which
-        package delivers the dependency under which variants.
+def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
+        """This method maps a path to one or more real paths and the variants
+        under which each real path can exist.
 
-        'delivered' is a dictionary mapping paths to a list of fmri, variants
+        'path' is the original text of the path which is being resolved to a
+        real path.
+
+        'files_dict' is a dictionary which maps package identity to the files
+        the package delivers and the variants under which each file is present.
+
+        'links' is an Entries namedtuple which contains two dictionaries.  One
+        dictionary maps package identity to the links that it delivers.  The
+        other dictionary, contains the same information for links that are
+        installed on the system.
+
+        'path_vars' is the set of variants under which 'path' exists.
+
+        'file_dep_attrs' is the dictonary of attributes for the file dependency
+        for 'path'.
+
+        'index' indicates how much of 'path' should be checked against the file
+        and link dictionaries."""
+
+        res_paths = []
+        res_links = []
+
+        # If the current path is a known file, then we might be done resolving
+        # the path.
+        if path in files_dict:
+                # Copy the variants so that marking the variants as satisified
+                # doesn't change the sate of 'path_vars.'
+                tmp_vars = copy.copy(path_vars)
+                assert(tmp_vars.is_empty() or not tmp_vars.is_satisfied())
+                # Check each package which delivers a file with this path.
+                for pfmri, p_vc in files_dict[path]:
+                        # If the file is delivered under a set of variants which
+                        # are irrelevant to the path being considered, skip it.
+                        if not path_vars.intersects(p_vc):
+                                continue
+                        # The intersection of the variants which apply to the
+                        # current path and the variants for the delivered file
+                        # is the combination of variants where the original
+                        # path resolves to the delivered file.
+                        inter = path_vars.intersection(p_vc)
+                        inter.mark_all_as_satisfied()
+                        tmp_vars.mark_as_satisfied(p_vc)
+                        res_paths.append((path, pfmri, inter))
+                # If the path was resolved under all relevant variants, then
+                # we're done.
+                if res_paths and tmp_vars.is_satisfied():
+                        return res_paths, res_links
+
+        lst = path.split(os.path.sep)
+        # If there aren't any more pieces of the path left to check, then
+        # there's nothing to do so return whatever has been found so far.
+        if index > len(lst):
+                return res_paths, res_links
+
+        # Create the path to check for links.
+        cur_path = os.path.join(*lst[0:index])
+        # The links in delivered packages (ie, those current being resolved)
+        # should be preferred over links from the installed system.
+        rel_links = links.delivered.get(cur_path, [])
+        tmp = set()
+        for pfmri, vc, rel_target in rel_links:
+                tmp.add(pfmri.get_name())
+        # Only considered links from installed packages which are not also being
+        # resolved.
+        for pfmri, vc, rel_target in links.installed.get(cur_path, []):
+                if pfmri.get_name() in tmp:
+                        continue
+                rel_links.append((pfmri, vc, rel_target))
+        # If there weren't any relevant links, then add the next path component
+        # to the path being considered and try again.
+        if not rel_links:
+                return resolve_links(path, files_dict, links, path_vars,
+                    file_dep_attrs, index=index+1)
+
+        for link_pfmri, link_vc, rel_target in rel_links:
+                # If the variants needed to reach the current path and the
+                # variants for the link don't intersect, then the link
+                # is irrelevant.
+                if not path_vars.intersects(link_vc):
+                        continue
+                vc_intersection = path_vars.intersection(link_vc)
+                # If the link only matters under variants that are satisfied,
+                # then it's not an interesting link for this purpose.
+                if vc_intersection.is_satisfied() and \
+                    not vc_intersection.is_empty():
+                        continue
+                # Apply the link to the current path to get the new relevant
+                # path.
+                next_path = os.path.normpath(os.path.join(
+                    os.path.dirname(cur_path), rel_target,
+                    *lst[index:])).lstrip(os.path.sep)
+                # Index is reset back to the default because an element in path
+                # the link provides could actually be a link.
+                rec_paths, link_deps = resolve_links(next_path, files_dict,
+                    links, vc_intersection, file_dep_attrs)
+                if not rec_paths:
+                        continue
+                # The current path was able to be resolved to a real path, so
+                # add the paths and the dependencies from links found to the
+                # results.
+                res_links.extend(link_deps)
+                res_paths.extend(rec_paths)
+                # Now add in the dependencies for the current link.
+                for rec_path, rec_pfmri, rec_vc in rec_paths:
+                        attrs = file_dep_attrs.copy()
+                        attrs.update({
+                            "fmri": link_pfmri.get_short_fmri(),
+                            type_prefix: "link",
+                            target_prefix: next_path,
+                            files_prefix: path
+                        })
+                        attrs.pop(paths_prefix, None)
+                        assert vc_intersection.intersects(rec_vc), \
+                            "vc:%s\nvc_intersection:%s" % \
+                            (rec_vc, vc_intersection)
+                        # The dependency is created with the same variants as
+                        # the path.  This works because the set of relevant
+                        # variants is restricted as links are applied so the
+                        # variants used for the path are the intersection of
+                        # the variants for each of the links used to reach the
+                        # path and the variants under which the file is
+                        # delivered.
+                        res_links.append((
+                            actions.depend.DependencyAction(**attrs), rec_vc))
+        return res_paths, res_links
+
+def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
+    orig_dep_vars):
+        """Maps a dependency on a file to the packages which can satisfy that
+        dependency.
+
+        'files_dict' is a dictionary mapping paths to a list of fmri, variants
         pairs.
+
+        'links' is an Entries namedtuple which contains two dictionaries.  One
+        dictionary maps package identity to the links that it delivers.  The
+        other dictionary, contains the same information for links that are
+        installed on the system.
 
         'file_dep' is the dependency that is being resolved.
 
@@ -449,16 +605,15 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
 
         res = []
         errs = []
-        multiple_path_errs = {}
+        link_deps = []
+        multiple_path_errs = []
+        multiple_path_pkgs = set()
         for p in make_paths(file_dep):
-                delivered_list = []
-                if p in delivered:
-                        delivered_list = delivered[p]
-
-                # XXX Eventually, this needs to be changed to use the
-                # link information provided by the manifests being
-                # resolved against, including the packages currently being
-                # published.
+                paths_info, path_deps = resolve_links(os.path.normpath(p),
+                    files_dict, links, orig_dep_vars, file_dep.attrs.copy())
+                link_deps.extend(path_deps)
+                delivered_list = \
+                    [(pfmri, vc) for (path, pfmri, vc) in paths_info]
                 try:
                         new_res, dep_vars = helper(delivered_list, file_dep,
                             dep_vars, orig_dep_vars)
@@ -490,28 +645,43 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                                         # configuration of variants under which
                                         # both packages can deliver a path which
                                         # satisfies the dependencies.
-                                        if v.intersects(new_v) or \
-                                            new_v.intersects(v):
-                                                multiple_path_errs.setdefault(a,
-                                                    set([a]))
-                                                multiple_path_errs[a].add(new_a)
+                                        if v.intersects(new_v):
+                                                multiple_path_errs.append((a,
+                                                    new_a,
+                                                    v.intersection(new_v)))
+                                                multiple_path_pkgs.add(a)
+                                                multiple_path_pkgs.add(new_a)
+                                        elif new_v.intersects(v):
+                                                multiple_path_errs.append((a,
+                                                    new_a,
+                                                    new_v.intersection(v)))
+                                                multiple_path_pkgs.add(a)
+                                                multiple_path_pkgs.add(new_a)
                                         else:
                                                 res.append((new_a, new_v))
-        for a in multiple_path_errs:
-                errs.append(MultiplePackagesPathError(multiple_path_errs[a],
-                    file_dep))
+
+        for a1, a2, vc in multiple_path_errs:
+                errs.append(MultiplePackagesPathError([a1, a2],
+                    file_dep, vc))
 
         # Extract the actions from res, and only return those which don't have
         # multiple path errors.
-        return [(a, v) for a, v in res if a not in multiple_path_errs], \
-            dep_vars, errs
+        return [(a, v) for a, v in res if a not in multiple_path_pkgs] + \
+            link_deps, dep_vars, errs
 
-def find_package(delivered, installed, file_dep, pkg_vars, use_system):
+def find_package(files, links, file_dep, pkg_vars, use_system):
         """Find the packages which resolve the dependency. It returns a list of
         dependency actions with the fmri tag resolved.
 
-        'delivered' and 'installed' are dictionaries mapping paths to
-        a list of fmri, variants pairs.
+        'files' is an Entries namedtuple which contains two dictionaries.  One
+        dictionary maps package identity to the files that it delivers.  The
+        other dictionary, contains the same information for files that are
+        installed on the system.
+
+        'links' is an Entries namedtuple which contains two dictionaries.  One
+        dictionary maps package identity to the links that it delivers.  The
+        other dictionary, contains the same information for links that are
+        installed on the system.
 
         'file_dep' is the dependency being resolved.
 
@@ -520,8 +690,8 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         file_dep, orig_dep_vars = split_off_variants(file_dep, pkg_vars)
         dep_vars = copy.copy(orig_dep_vars)
         # First try to resolve the dependency against the delivered files.
-        res, dep_vars, errs = find_package_using_delivered_files(delivered,
-                file_dep, dep_vars, orig_dep_vars)
+        res, dep_vars, errs = find_package_using_delivered_files(
+                files.delivered, links, file_dep, dep_vars, orig_dep_vars)
         if (res and dep_vars.is_satisfied()) or not use_system:
                 return res, dep_vars, errs
 
@@ -532,7 +702,7 @@ def find_package(delivered, installed, file_dep, pkg_vars, use_system):
         # above.
         const_dep_vars = copy.copy(dep_vars)
         inst_res, dep_vars, inst_errs = find_package_using_delivered_files(
-            installed, file_dep, dep_vars, const_dep_vars)
+            files.installed, links, file_dep, dep_vars, const_dep_vars)
         res.extend(inst_res)
         errs.extend(inst_errs)
         return res, dep_vars, errs
@@ -743,6 +913,39 @@ def prune_debug_attrs(action):
                      if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
         return actions.depend.DependencyAction(**attrs)
 
+def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst):
+        """Add mappings from path names to FMRIs and variants.
+
+        'files_dict' is a dictionary which maps package identity to the files
+        the package delivers and the variants under which each file is
+        present.
+
+        'links_dict' is a dictionary which maps package identity to the links
+        the package delivers and the variants under which each link is
+        present.
+
+        'pfmri' is the FMRI of the current manifest
+
+        'mfst' is the manifest to process."""
+
+        pvariants = mfst.get_all_variants()
+
+        for f in mfst.gen_actions_by_type("file"):
+                dep_vars = f.get_variant_template()
+                dep_vars.merge_unknown(pvariants)
+                vc = variants.VariantCombinations(dep_vars,
+                    satisfied=True)
+                files_dict.setdefault(f.attrs["path"], []).append(
+                    (pfmri, vc))
+        for f in itertools.chain(mfst.gen_actions_by_type("hardlink"),
+             mfst.gen_actions_by_type("link")):
+                dep_vars = f.get_variant_template()
+                dep_vars.merge_unknown(pvariants)
+                vc = variants.VariantCombinations(dep_vars,
+                    satisfied=True)
+                links_dict.setdefault(f.attrs["path"], []).append(
+                    (pfmri, vc, f.attrs["target"]))
+
 def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         """For each manifest given, resolve the file dependencies to package
         dependencies. It returns a mapping from manifest_path to a list of
@@ -754,28 +957,6 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
 
         'prune_attrs' is a boolean indicating whether debugging
         attributes should be stripped from returned actions."""
-
-        def add_fmri_path_mapping(pathdict, pfmri, mfst):
-                """Add mappings from path names to FMRIs and variants.
-
-                'pathdict' is a dict path -> (fmri, variants) to which
-                entries are added.
-
-                'pfmri' is the FMRI of the current manifest
-
-                'mfst' is the manifest to process."""
-
-                pvariants = mfst.get_all_variants()
-
-                for f in itertools.chain(mfst.gen_actions_by_type("file"),
-                     mfst.gen_actions_by_type("hardlink"),
-                     mfst.gen_actions_by_type("link")):
-                        dep_vars = f.get_variant_template()
-                        dep_vars.merge_unknown(pvariants)
-                        vc = variants.VariantCombinations(dep_vars,
-                            satisfied=True)
-                        pathdict.setdefault(f.attrs["path"], []).append(
-                            (pfmri, vc))
 
 
         # The variable 'manifests' is a list of 5-tuples. The first element
@@ -792,13 +973,14 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
             for mp in manifest_paths)
         ]
 
-        delivered_files = {}
-        installed_files = {}
+        files = Entries({}, {})
+        links = Entries({}, {})
 
         # Build a list of all files delivered in the manifests being resolved.
         for mp, name, mfst, pkg_vars, miss_files in manifests:
-                pfmri = fmri.PkgFmri(name).get_short_fmri()
-                add_fmri_path_mapping(delivered_files, pfmri, mfst)
+                pfmri = fmri.PkgFmri(name)
+                add_fmri_path_mapping(files.delivered, links.delivered, pfmri,
+                    mfst)
 
         # Build a list of all files delivered in the packages installed on
         # the system.
@@ -807,8 +989,8 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                     api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED):
                         pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
                         mfst = api_inst.get_manifest(pfmri, all_variants=True)
-                        add_fmri_path_mapping(installed_files,
-                            pfmri.get_short_fmri(), mfst)
+                        add_fmri_path_mapping(files.installed, links.installed,
+                            pfmri, mfst)
 
         pkg_deps = {}
         errs = []
@@ -818,8 +1000,8 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                         pkg_deps[mp] = None
                         continue
                 pkg_res = [
-                    (d, find_package(delivered_files, installed_files,
-                        d, pkg_vars, use_system))
+                    (d, find_package(files, links, d, pkg_vars,
+                        use_system))
                     for d in mfst.gen_actions_by_type("depend")
                     if is_file_dependency(d)
                 ]

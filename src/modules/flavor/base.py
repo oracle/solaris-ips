@@ -227,35 +227,81 @@ class PublishingDependency(Dependency):
 
                 return None
 
-        def possibly_delivered(self, delivered_files):
-                """Takes a dictionary of known files, and returns the pathes to
-                the files that satisfy this dependency."""
+        def possibly_delivered(self, delivered_files, links, resolve_links,
+            orig_dep_vars):
+                """Finds a list of files which satisfy this dependency, and the
+                variants under which each file satisfies it.  It takes into
+                account links and hardlinks.
+
+                'delivered_files' is a dictionary which maps paths to the
+                packages that deliver the path and the variants under which the
+                path is present.
+
+                'links' is an Entries namedtuple which contains two
+                dictionaries.  One dictionary maps package identity to the links
+                that it delivers.  The other dictionary, in this case, should be
+                empty.
+
+                'resolve_links' is a function which finds the real paths that a
+                path can resolve into, given a set of known links.
+
+                'orig_dep_vars' is the set of variants under which this
+                dependency exists."""
 
                 res = []
+                # A dependency may be built using this dictionary of attributes.
+                # Seeding it with the type is necessary to create a Dependency
+                # object.
+                attrs = {
+                        "type":"require"
+                }
                 for bn in self.base_names:
                         for rp in self.run_paths:
-                                path_to_check = os.path.join(rp, bn)
-                                p = self._check_path(path_to_check,
-                                    delivered_files)
-                                if p:
-                                        res.append(p)
+                                path_to_check = os.path.normpath(
+                                    os.path.join(rp, bn))
+
+                                # Find the potential real paths that
+                                # path_to_check could resolve to.
+                                res_pths, res_links = resolve_links(
+                                    path_to_check, delivered_files, links,
+                                    orig_dep_vars, attrs)
+                                for res_pth, res_pfmri, res_vc in res_pths:
+                                        p = self._check_path(res_pth,
+                                            delivered_files)
+                                        if p:
+                                                res.append((p, res_vc))
                 return res
 
-        def resolve_internal(self, delivered_files, *args, **kwargs):
-                """Takes a dictionary of files delivered in the same package,
-                and returns a tuple of two values.  The first is either None,
-                meaning the dependency was satisfied, or self.ERROR, meaning the
-                dependency wasn't totally satisfied by the delivered files.  The
-                second value is the set of variants for which the dependency
-                isn't satisfied.
+        def resolve_internal(self, delivered_files, links, resolve_links, *args,
+            **kwargs):
+                """Determines whether this dependency (self) can be satisfied by
+                the other items in the package which delivers it.  A tuple of
+                two values is produced.  The first is either None, meaning the
+                dependency was satisfied, or self.ERROR, meaning the dependency
+                wasn't totally satisfied by the delivered files.  The second
+                value is the set of variants for which the dependency isn't
+                satisfied.
+
+                'delivered_files' is a dictionary which maps package identity
+                to the files the package delivers.
+
+                'links' is an Entries namedtuple which contains two
+                dictionaries.  One dictionary maps package identity to the links
+                that it delivers.  The other dictionary, in this case, should be
+                empty.
+
+                'resolve_links' is a function which finds the real paths a path
+                can resolve into given a set of known links.
 
                 '*args' and '**kwargs' are used because subclasses may need
                 more information for their implementations. See pkg.flavor.elf
                 for an example of this."""
 
                 missing_vars = self.get_variant_combinations()
-                for p in self.possibly_delivered(delivered_files):
-                        missing_vars.mark_as_satisfied(delivered_files[p])
+                orig_dep_vars = self.get_variant_combinations()
+                for p, vc in self.possibly_delivered(delivered_files, links,
+                    resolve_links, orig_dep_vars):
+                        missing_vars.mark_as_satisfied(vc)
                         if missing_vars.is_satisfied():
                                 return None, missing_vars
                 return self.ERROR, missing_vars

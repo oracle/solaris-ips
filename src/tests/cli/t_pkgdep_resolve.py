@@ -733,7 +733,7 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                         if isinstance(e,
                             dependencies.AmbiguousPathError):
                                 for d in e.pkgs:
-                                        if d not in \
+                                        if str(d) not in \
                                             ("pkg:/sat_bar_libc",
                                             "pkg:/sat_bar_libc2"):
                                                 raise RuntimeError("Unexpected "
