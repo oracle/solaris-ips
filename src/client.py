@@ -42,42 +42,49 @@
 # PKG_IMAGE_TYPE [entire, partial, user] - type of image
 #       XXX or is this in the Image configuration?
 
-import calendar
-import datetime
-import errno
-import fnmatch
-import getopt
-import gettext
-import glob
-import itertools
-import locale
-import logging
-import os
-import socket
-import sys
-import textwrap
-import time
-import traceback
+try:
+        import calendar
+        import datetime
+        import errno
+        import fnmatch
+        import getopt
+        import gettext
+        import glob
+        import itertools
+        import locale
+        import logging
+        import os
+        import socket
+        import sys
+        import textwrap
+        import time
+        import traceback
 
-import pkg
-import pkg.actions as actions
-import pkg.client.api as api
-import pkg.client.api_errors as api_errors
-import pkg.client.bootenv as bootenv
-import pkg.client.history as history
-import pkg.client.progress as progress
-import pkg.client.publisher as publisher
-import pkg.fmri as fmri
-import pkg.misc as misc
-import pkg.version as version
+        import pkg
+        import pkg.actions as actions
+        import pkg.client.api as api
+        import pkg.client.api_errors as api_errors
+        import pkg.client.bootenv as bootenv
+        import pkg.client.history as history
+        import pkg.client.progress as progress
+        import pkg.client.publisher as publisher
+        import pkg.fmri as fmri
+        import pkg.misc as misc
+        import pkg.version as version
 
-from pkg.client import global_settings
-from pkg.client.api import IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL, IMG_TYPE_USER
-from pkg.client.debugvalues import DebugValues
-from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE,
-    RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
-from pkg.misc import EmptyI, msg, PipeError
+        from pkg.client import global_settings
+        from pkg.client.api import IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL, \
+            IMG_TYPE_USER
+        from pkg.client.debugvalues import DebugValues
+        from pkg.client.history import (RESULT_CANCELED,
+            RESULT_FAILED_BAD_REQUEST, RESULT_FAILED_CONFIGURATION,
+            RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE,
+            RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
+            RESULT_FAILED_OUTOFMEMORY)
+        from pkg.misc import EmptyI, msg, PipeError
+except KeyboardInterrupt:
+        import sys
+        sys.exit(1)
 
 CLIENT_API_VERSION = 48
 PKG_CLIENT_NAME = "pkg"
