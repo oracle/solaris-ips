@@ -710,7 +710,7 @@ def fix_image(api_inst, args):
                         api_inst.log_operation_end(
                             result=history.RESULT_FAILED_CONSTRAINED)
                         return EXIT_NOTLIVE
-                except (Exception, Error), e:
+                except Exception, e:
                         api_inst.log_operation_end(error=e)
                         raise
 
