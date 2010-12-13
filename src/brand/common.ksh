@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 unset LD_LIBRARY_PATH
@@ -71,7 +71,7 @@ fail_incomplete() {
 	printf "ERROR: " 1>&2
 	printf "$@" 1>&2
 	printf "\n" 1>&2
-	exit $ZONE_SUBPROC_INCOMPLETE
+	exit $ZONE_SUBPROC_NOTCOMPLETE
 }
 
 fail_usage() {
