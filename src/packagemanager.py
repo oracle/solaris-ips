@@ -4096,13 +4096,16 @@ class PackageManager:
                         if len(cat[1]) > 1:
                                 self.__add_package_to_category(cat[1],
                                     row_iter, application_list,
-                                    category_list)
+                                    category_list, pkg_name)
 
         @staticmethod
         def __add_package_to_category(category_name, package, 
-            application_list, category_list):
+            application_list, category_list, pkg_name):
                 category_names = category_name.split('/', 2)
-                if len(category_names) < 2:
+                if len(category_names) != 2:
+                        print _("Invalid category name [%(cat)s] for package %(pack)s") \
+                            % {"cat": category_name,
+                            "pack": pkg_name}
                         return
                 category_visible_name = category_names[1]
                 if not package or category_visible_name == 'All':
