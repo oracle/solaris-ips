@@ -3470,7 +3470,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
         def test_05_upgrade_non_preferred_to_preferred(self):
                 """Install a package from a non-preferred publisher, and then
-                try to upgrade it, failing to implicitly switchto the preferred
+                try to upgrade it, failing to implicitly switch to the preferred
                 publisher and then succeed doing it explicitly."""
                 self.pkg("list -a upgrade-np")
                 self.pkg("install upgrade-np@1.0")
@@ -3480,7 +3480,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
         def test_06_upgrade_preferred_to_non_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
-                upgrade it, failing to implicitly switching to a non-preferred
+                upgrade it, failing to implicitly switch to a non-preferred
                 publisher, when the package is constrained by an
                 incorporation, and then succeed when doing so explicitly"""
 
@@ -3491,7 +3491,6 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install incorp-p@1.1 pkg://test2/upgrade-p@1.1")
                 self.pkg("list upgrade-p@1.1")
                 self.pkg("uninstall '*'")
-
 
         def test_07_upgrade_non_preferred_to_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
@@ -3789,6 +3788,9 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher | egrep sticky", exit=1 )
 
         def test_17_dependency_is_from_deleted_publisher(self):
+                """Verify that packages installed from a publisher that has
+                been removed can still satisfy dependencies."""
+
                 self.pkg("set-publisher -O %s test4" % self.rurl5)
                 self.pkg("install pkg://test4/corge")
                 self.pkg("set-publisher --disable test2")
@@ -3798,6 +3800,39 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # this should work, since dependency is already installed
                 # even though it is from a disabled publisher
                 self.pkg("install baz@1.0")
+
+        def test_18_upgrade_across_publishers(self):
+                """Verify that an install/update of specific packages when
+                there is a newer package version available works as expected.
+                """
+
+                # Ensure a new image is created.
+                self.image_create(self.rurl1, prefix="test1", destroy=True)
+
+                # Add second publisher using repository #2.
+                self.pkg("set-publisher -O " + self.rurl2 + " test2")
+
+                # Install older version of package from test1.
+                self.pkg("install pkg://test1/upgrade-p@1.0")
+
+                # Verify update of all packages results in nothing to do even
+                # after test2 is set as preferred.
+                self.pkg("set-publisher -P test2")
+                self.pkg("update -v", exit=4)
+
+                # Verify setting test1 as non-sticky would result in update.
+                self.pkg("set-publisher --non-sticky test1")
+                self.pkg("update -n")
+
+                # Verify update of 'upgrade-p' package will result in upgrade
+                # from 1.0 -> 1.1.
+                self.pkg("update upgrade-p")
+                self.pkg("info pkg://test2/upgrade-p@1.1")
+
+                # Revert to 1.0 and verify install behaves the same.
+                self.pkg("update pkg://test1/upgrade-p@1.0")
+                self.pkg("install upgrade-p")
+                self.pkg("info pkg://test2/upgrade-p@1.1")
 
 
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):

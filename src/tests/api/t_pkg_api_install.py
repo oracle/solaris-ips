@@ -620,7 +620,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 # First, install package/pkg again.
                 self.__do_install(api_obj,
-                    ["foo@1.0", "SUNWcs", "package/pkg@1.0"])
+                    ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
 
                 # Next, create a repository with an older version of pkg,
                 # and a newer version of foo.

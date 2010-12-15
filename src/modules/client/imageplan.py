@@ -1646,10 +1646,26 @@ class ImagePlan(object):
                                 # aren't from the "best" available publisher, to
                                 # account for the scenario where the installed
                                 # version is the newest or best version for the
-                                # plan solution.
+                                # plan solution.  While doing so, also eliminate
+                                # any exact duplicate FMRIs from publishers
+                                # other than the installed publisher to prevent
+                                # thrashing in the solver due to many equiv.
+                                # solutions and unexpected changes in package
+                                # publishers that weren't explicitly requested.
+                                inst_f = installed_pkgs.get(f.pkg_name, None)
+                                inst_v = None
+                                if inst_f not in proposed_dict[pkg_name]:
+                                        # Should only apply if it's part of the
+                                        # proposed set.
+                                        inst_f = None
+                                else:
+                                        inst_v = inst_f.version
+
                                 proposed_dict[pkg_name] = [
                                     f for f in proposed_dict[pkg_name]
-                                    if f.publisher == best_pub or f == installed_pkgs.get(f.pkg_name, None)
+                                    if f == inst_f or \
+                                        (f.publisher == best_pub and
+                                        f.version != inst_v)
                                 ]
 
                 # construct references so that we can know which pattern

@@ -181,10 +181,14 @@ class PkgSolver(object):
                 self.__timeit()
 
                 # proposed_dict already contains publisher selection logic,
-                # so overwrite __publisher dict w/ values therein
+                # so prevent any further trimming of named packages based
+                # on publisher if they are installed.
                 for name in proposed_dict:
-                        self.__publisher[name] = \
-                            proposed_dict[name][0].get_publisher()
+                        if name in self.__installed_fmris:
+                                self.__mark_pub_trimmed(name)
+                        else:
+                                self.__publisher[name] = \
+                                    proposed_dict[name][0].get_publisher()
 
                 self.__progtrack.evaluate_progress()
 
@@ -1265,6 +1269,12 @@ class PkgSolver(object):
 
                 return ret, con_lists
 
+        def __mark_pub_trimmed(self, pkg_name):
+                """Record that a given package stem has been trimmed based on
+                publisher."""
+
+                self.__pub_trim[pkg_name] = True
+
         def __filter_publishers(self, pkg_name):
                 """Given a list of fmris for various versions of
                 a package from various publishers, trim those
@@ -1276,7 +1286,7 @@ class PkgSolver(object):
                 fmri_list = self.__get_catalog_fmris(pkg_name, dotrim=False)
                 version_dict = {}
 
-                self.__pub_trim[pkg_name] = True
+                self.__mark_pub_trimmed(pkg_name)
 
                 # XXX need to set up per disgruntled publisher reasons
                 if pkg_name in self.__publisher:
