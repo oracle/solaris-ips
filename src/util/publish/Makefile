@@ -39,23 +39,36 @@ INSTALL_REPO=http://localhost:20001
 X_REPO=http://localhost:20002
 IPS_REPO=http://localhost:20003
 VPANELS_REPO=http://localhost:20004
+USERLAND_REPO=http://localhost:20005
+L10N_REPO=http://localhost:20006
 
 INPUT_REPOS = \
     $(ON_REPO) \
     $(INSTALL_REPO) \
     $(X_REPO) \
     $(IPS_REPO) \
-    $(VPANELS_REPO)
+    $(VPANELS_REPO) \
+    $(USERLAND_REPO) \
+    $(L10N_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
+L10N_EXTRA_REPO=http://localhost:30006
 
-EXTRA_CONTENT = \
+ON_EXTRA_CONTENT = \
     driver/management/bmc \
     driver/storage/ifp \
     driver/storage/isp \
     driver/storage/qus \
-    system/header/header-ifp \
-    shell/ksh88
+    shell/ksh88 \
+    system/header/header-ifp
+
+L10N_EXTRA_CONTENT = \
+    system/font/truetype/fonts-core \
+    system/font/truetype/ttf-fonts-core \
+    system/iiim/ja/atok \
+    system/iiim/ja/wnn8 \
+    system/input-method/iiim/atok \
+    system/input-method/iiim/wnn
 
 $(MERGEDIR):
 	mkdir -p $(MERGEDIR)
@@ -91,7 +104,8 @@ publish_setpublisher: $(SETPUBLISHERDIR)
 	    $(JUST_THESE_PKGS:%=-j %) -p $(REPO) $(INPUT_REPOS)
 
 publish_setpublisher-extra: $(SETPUBLISHERDIR)
-	INPUT_REPOS=$(ON_EXTRA_REPO) JUST_THESE_PKGS="$(EXTRA_CONTENT)" \
+	INPUT_REPOS="$(ON_EXTRA_REPO) $(L10N_EXTRA_REPO)" \
+	    JUST_THESE_PKGS="$(ON_EXTRA_CONTENT) $(L10N_EXTRA_CONTENT)" \
 	    $(MAKE) publish_setpublisher
 
 clobber_setpublisher:
