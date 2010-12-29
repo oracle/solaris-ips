@@ -355,7 +355,7 @@ class BootEnv(object):
                             BootEnv.get_be_name(self.clone_dir)
 
                         # Set the image to our new mounted BE.
-                        img.find_root(self.clone_dir)
+                        img.find_root(self.clone_dir, exact_match=True)
                 elif be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
 
