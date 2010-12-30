@@ -1,0 +1,11 @@
+package desktop/virt-manager
+consolidation "gnome"
+obsoleted 156
+version 0.6.1
+end package
+
+package SUNWvirt-manager
+consolidation "gnome"
+obsoleted 156
+version 0.6.1
+end package

@@ -1,0 +1,13 @@
+package runtime/python-25
+consolidation "gnome"
+classification "Development/Python"
+import SUNWPython25
+version 2.5.4
+end package
+
+package SUNWPython25
+consolidation "gnome"
+renamed 133
+depend runtime/python-25
+version 2.5
+end package

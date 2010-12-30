@@ -1,0 +1,14 @@
+package diagnostic/wireshark
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWwireshark
+import SUNWwiresharkr
+version 1.2.13
+end package
+
+package SUNWwireshark
+consolidation "sfw"
+renamed 133
+depend diagnostic/wireshark
+version 1.2.5
+end package

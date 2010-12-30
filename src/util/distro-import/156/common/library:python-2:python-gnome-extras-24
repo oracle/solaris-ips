@@ -1,0 +1,9 @@
+package library/python-2/python-gnome-extras-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWgnome-python-extras
+consolidation "gnome"
+obsoleted 156
+end package

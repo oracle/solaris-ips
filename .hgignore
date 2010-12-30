@@ -38,8 +38,6 @@
 ^src/um/data/updatemanager.png$
 ^src/um/data/updatemanagernotifier.desktop$
 ^src/util/distro-import/.*/entire.incorporation$
-^src/util/distro-import/.*/services.desktop
-^src/util/distro-import/.*/shares.desktop
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
 ^src/util/distro-import/ksh-wrapper$

@@ -1,0 +1,10 @@
+package library/python-2/python-notify-24
+consolidation "gnome"
+obsoleted 156
+version 0.1.1
+end package
+
+package SUNWpython-notify
+consolidation "gnome"
+obsoleted 156
+end package

@@ -1,0 +1,11 @@
+package cde/cde-runtime
+consolidation "cde"
+classification "System/X11"
+import SUNWdtbas
+end package
+
+package SUNWdtbas
+consolidation "cde"
+renamed 133
+depend cde/cde-runtime
+end package

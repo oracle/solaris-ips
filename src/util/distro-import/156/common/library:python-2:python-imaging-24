@@ -1,0 +1,9 @@
+package library/python-2/python-imaging-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWpython-imaging
+consolidation "gnome"
+obsoleted 156
+end package

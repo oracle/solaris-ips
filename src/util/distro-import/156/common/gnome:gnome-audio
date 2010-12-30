@@ -1,0 +1,12 @@
+package gnome/gnome-audio
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWgnome-audio
+import SUNWgnome-audio-devel
+end package
+
+package SUNWgnome-audio
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-audio
+end package

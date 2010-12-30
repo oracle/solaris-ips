@@ -1,0 +1,21 @@
+package desktop/administration/gnome-system-tools
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgnome-system-tools
+# Insert hooks for Visual Panels
+add file vp-services path=usr/lib/vp-services mode=0555 owner=root group=bin
+add file vp-shares path=usr/lib/vp-shares mode=0555 owner=root group=bin
+add file services.desktop path=usr/share/applications/services.desktop \
+    mode=0644 owner=root group=bin
+add file shares.desktop path=usr/share/applications/shares.desktop \
+    mode=0644 owner=root group=bin
+import SUNWgnome-system-tools-devel
+import SUNWgnome-system-tools-root
+depend library/perl-5/authen-pam
+end package
+
+package SUNWgnome-system-tools
+consolidation "gnome"
+renamed 133
+depend desktop/administration/gnome-system-tools
+end package

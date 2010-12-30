@@ -1,0 +1,12 @@
+package games/gnome-games
+consolidation "gnome"
+classification "Applications/Games"
+import SUNWgnome-games
+import SUNWgnome-games-root
+end package
+
+package SUNWgnome-games
+consolidation "gnome"
+renamed 133
+depend games/gnome-games
+end package

@@ -1,0 +1,9 @@
+package library/python-2/python-dbus-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWdbus-python24
+consolidation "gnome"
+obsoleted 156
+end package

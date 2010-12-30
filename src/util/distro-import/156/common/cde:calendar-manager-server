@@ -1,0 +1,21 @@
+package cde/calendar-manager-server
+consolidation "cde"
+classification "System/Services"
+summary "CDE calendar manager service daemon"
+import SUNWdtdmn
+from SUNWdtdmr import
+etc
+etc/security
+etc/security/auth_attr
+lib
+lib/svc
+lib/svc/method
+lib/svc/method/rpc-cmsd
+var
+var/svc
+var/svc/manifest
+var/svc/manifest/network
+var/svc/manifest/network/rpc
+var/svc/manifest/network/rpc/cde-cmsd.xml
+end import
+end package

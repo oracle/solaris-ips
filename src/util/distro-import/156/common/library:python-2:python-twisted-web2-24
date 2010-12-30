@@ -1,0 +1,9 @@
+package library/python-2/python-twisted-web2-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWpython-twisted-web2
+consolidation "gnome"
+obsoleted 156
+end package

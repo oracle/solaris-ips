@@ -1,0 +1,8 @@
+package cde/help-viewer
+consolidation "cde"
+classification "System/X11"
+summary "CDE Help Runtime"
+import SUNWdthe
+depend_path /usr/dt/bin/dtaction
+depend_path /usr/dt/bin/dtksh
+end package

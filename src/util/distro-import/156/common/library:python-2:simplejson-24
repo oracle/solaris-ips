@@ -1,0 +1,9 @@
+package library/python-2/simplejson-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWpython24-simplejson
+consolidation "gnome"
+obsoleted 156
+end package

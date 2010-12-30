@@ -1,0 +1,10 @@
+package library/python-2/python-gtk-vnc-24
+consolidation "gnome"
+obsoleted 156
+version 0.3.10
+end package
+
+package SUNWgtk-vnc-python24
+consolidation "gnome"
+obsoleted 156
+end package

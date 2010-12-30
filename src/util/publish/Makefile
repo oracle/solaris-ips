@@ -64,9 +64,6 @@ ON_EXTRA_CONTENT = \
 
 L10N_EXTRA_CONTENT = \
     system/font/truetype/fonts-core \
-    system/font/truetype/ttf-fonts-core \
-    system/iiim/ja/atok \
-    system/iiim/ja/wnn8 \
     system/input-method/iiim/atok \
     system/input-method/iiim/wnn
 

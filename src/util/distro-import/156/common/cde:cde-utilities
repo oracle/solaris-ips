@@ -1,0 +1,5 @@
+package cde/cde-utilities
+consolidation "cde"
+classification "System/X11"
+import SUNWdtdst
+end package

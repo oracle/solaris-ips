@@ -1,0 +1,11 @@
+package developer/documentation-tool/epydoc
+consolidation "sfw"
+obsoleted 156
+version 3.0.1
+end package
+
+package SUNWepydoc
+consolidation "sfw"
+obsoleted 156
+version 3.0.1
+end package

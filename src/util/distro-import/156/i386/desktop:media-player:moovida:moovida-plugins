@@ -1,0 +1,9 @@
+package desktop/media-player/moovida/moovida-plugins
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWmoovida-plugins
+consolidation "gnome"
+obsoleted 156
+end package

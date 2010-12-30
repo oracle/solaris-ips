@@ -1,0 +1,9 @@
+package desktop/media-player/songbird
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWsongbird
+consolidation "gnome"
+obsoleted 156
+end package

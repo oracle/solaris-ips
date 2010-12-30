@@ -1,0 +1,9 @@
+package library/python-2/python-xdg-24
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWpython-xdg
+consolidation "gnome"
+obsoleted 156
+end package

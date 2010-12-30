@@ -1,0 +1,9 @@
+package gnome/desklet/gdesklets-extra
+consolidation "gnome"
+obsoleted 156
+end package
+
+package SUNWgnome-desklets-extra
+consolidation "gnome"
+obsoleted 156
+end package

@@ -1,0 +1,13 @@
+package library/motif
+consolidation "cde"
+classification "System/X11"
+import SUNWmfrun
+import SUNWmfdev
+import SUNWmfman exclude usr/dt/man
+end package
+
+package SUNWmfrun
+consolidation "cde"
+renamed 133
+depend library/motif
+end package
