@@ -94,11 +94,10 @@ Packager subcommands:
         pkgsend add action arguments
         pkgsend import [-T pattern] [--target file] bundlefile ...
         pkgsend include [-d basedir] ... [-T pattern] [manifest] ...
-        pkgsend close [-A | [--no-index] [--no-catalog]]
-        pkgsend publish [-d basedir] ... [-T pattern] [--no-index]
+        pkgsend close [-A | --no-catalog]
+        pkgsend publish [-d basedir] ... [-T pattern]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
         pkgsend generate [-T pattern] [--target file] bundlefile ...
-        pkgsend refresh-index
 
 Options:
         -s repo_uri     target repository URI
@@ -254,8 +253,10 @@ def trans_add(repo_uri, args):
         return 0
 
 def trans_publish(repo_uri, fargs):
-        opts, pargs = getopt.getopt(fargs, "d:T:", ["no-index",
-            "no-catalog", "fmri-in-manifest"])
+        # --no-index is now silently ignored as the publication process no
+        # longer builds search indexes automatically.
+        opts, pargs = getopt.getopt(fargs, "d:T:", ["no-index", "no-catalog",
+            "fmri-in-manifest"])
         basedirs = []
         timestamp_files = []
 
@@ -267,8 +268,6 @@ def trans_publish(repo_uri, fargs):
                         basedirs.append(arg)
                 elif opt == "-T":
                         timestamp_files.append(arg)
-                elif opt == "--no-index":
-                        refresh_index = False
                 elif opt == "--no-catalog":
                         add_to_catalog = False
                 elif opt == "--fmri-in-manifest":

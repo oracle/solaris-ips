@@ -7,14 +7,12 @@ NAME
 SYNOPSIS
      /usr/bin/pkgsend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgsend refresh-index
-
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend include [-d basedir] ... [-T pattern] [manifest] ...
-     /usr/bin/pkgsend publish [-d basedir] ... [-T pattern] [--no-index]
+     /usr/bin/pkgsend publish [-d basedir] ... [-T pattern]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
-     /usr/bin/pkgsend close [-A | --no-index] [--no-catalog]
+     /usr/bin/pkgsend close [-A | --no-catalog]
 
      /usr/bin/pkgsend generate [-T pattern] [--target file] bundlefile ...
      /usr/bin/pkgsend import [-T pattern] [--target file] bundlefile ...
@@ -113,34 +111,37 @@ SUBCOMMANDS
           -d options have their directories searched in the order they
           appear on the command line.
 
-	  The -T option works as in the import command.
+          The -T option works as in the import command.
 
-     close [-A] [--no-index]
-          Close current transaction.  With -A, abandon the current
-          transaction.  With --no-index, do not update the
-          repository's search indices.  With --no-catalog, do not add
-          to catalog which for now is only effective with file:// scheme
-          repositories.  This improves performance when publishing
-          many packages at once; the repository will need to be
-          started with a --add-content flag (see pkg.depotd(1M) man
-          page) to catalog and index the new content.
+     close [-A | --no-catalog]
+          Close current transaction.  By default, new packages will be
+          added to the package publisher's catalog, but will not be indexed
+          for search.  To add new packages to the search database use the
+          the refresh subcommand of pkgrepo(1).
 
-     publish [ -d basedir] ... [-T pattern] [--no-index]
-          [--fmri-in-manifest | fmri] [--no-catalog] [manifest] ...
+          With -A, abandon the current transaction.
 
-          Combines open, include and close in a single operation.  -d
-          and --no-index options behave as described for include and
-          close subcommands.  With --fmri-in-manifest, use the fmri
-          specified in the package manifest w/ a set action name of
-          "pkg.fmri".  Otherwise the fmri must be specified on the
-          command line.  With --no-catalog (which has effect only w/
-          file:// scheme repositories), do not update the catalog with
-          the new package.  This improves performance when publishing
-          many packages at once; the repository will need to be started
-          with a --add-content flag (see pkg.depotd(1M) man page) to
-          catalog and index the new content.
+          With --no-catalog, do not add the package to the publisher's
+          catalog.  This option is recommended whenever multiple packages
+          are being published at a time as updates to publisher catalogs
+          must be performed serially.  Once publication is complete, the
+          refresh subcommand of pkgrepo(1) can be used to add the new
+          packages to the respective publisher catalogs.
 
-	  The -T option works as in the import command.
+     publish [-d basedir] ... [-T pattern] [--fmri-in-manifest | fmri]
+          [--no-catalog] [manifest] ...
+
+          Combines open, include and close in a single operation.
+
+          Refer to the include subcommand above for a description of
+          the -d and -T options.
+
+          With --fmri-in-manifest, use the fmri specified in the package
+          manifest with a set action name of "pkg.fmri".  Otherwise the
+          fmri must be specified on the command line.
+          
+          Refer to the close subcommand above for a description of the
+          --no-catalog option.
 
      generate [-T pattern] [--target file] bundlefile ...
           Read each given bundlefile (such as an SVR4 package, directory,
@@ -150,11 +151,6 @@ SUBCOMMANDS
           subcommand.  Once obtained, the manifest can be annotated, have
           dependencies analyzed, added, etc before being passed to the
           publish or import subcommands.
-
-     refresh-index
-          Update the repository's search indices.  Should be used after
-          closing one or more transactions using --no-index.
-
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
