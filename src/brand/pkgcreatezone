@@ -571,10 +571,11 @@ LC_ALL=C $PKG install --accept --no-index --no-refresh $pkglist || \
 printf "\n$m_mannote\n"
 
 printf "$m_smf"
-ln -s ns_files.xml $ZONEROOT/var/svc/profile/name_service.xml
-ln -s generic_limited_net.xml $ZONEROOT/var/svc/profile/generic.xml
-ln -s inetd_generic.xml $ZONEROOT/var/svc/profile/inetd_services.xml
-ln -s platform_none.xml $ZONEROOT/var/svc/profile/platform.xml
+PROFILEDIR=etc/svc/profile
+ln -s ns_files.xml $ZONEROOT/$PROFILEDIR/name_service.xml
+ln -s generic_limited_net.xml $ZONEROOT/$PROFILEDIR/generic.xml
+ln -s inetd_generic.xml $ZONEROOT/$PROFILEDIR/inetd_services.xml
+ln -s platform_none.xml $ZONEROOT/$PROFILEDIR/platform.xml
 
 # This was formerly done in i.manifest
 repfile=$ZONEROOT/etc/svc/repository.db
@@ -583,24 +584,6 @@ chmod 0600 $repfile
 chown root:sys $repfile
 
 printf "$m_done\n"
-
-# Clean up root as a role and jack if needed
-if grep "^root::::type=role;" $ZONEROOT/etc/user_attr >/dev/null 2>&1; then
-	printf "$m_brokenness\n"
-	#
-	# Remove "jack" user.
-	#
-	print "/^jack:/d\nw" | ed -s $ZONEROOT/etc/passwd
-	chmod u+w $ZONEROOT/etc/shadow
-	print "/^jack:/d\nw" | ed -s $ZONEROOT/etc/shadow
-	chmod u-w $ZONEROOT/etc/shadow
-
-	#
-	# Set root from a role back to... not a role.  Grr.
-	#
-	print "s/^root::::type=role;/root::::/\nw" |
-	    ed -s $ZONEROOT/etc/user_attr
-fi
 
 #
 # Make sure sysidtools run; we manually poke in the SSH action
