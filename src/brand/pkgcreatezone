@@ -57,8 +57,7 @@ m_image=$(gettext       "       Image: Preparing at %s.")
 m_incorp=$(gettext      "Sanity Check: Looking for 'entire' incorporation.\n")
 m_key_prop=$(gettext    " Credentials: Propagating %s\n")
 m_cert_prop=$(gettext   " Credentials: Propagating %s\n")
-m_core=$(gettext	"  Installing: Core System (output follows)\n")
-m_more=$(gettext	"  Installing: Additional Packages (output follows)\n")
+m_core=$(gettext	"  Installing: Packages (output follows)\n")
 m_smf=$(gettext		" Postinstall: Copying SMF seed repository ...")
 m_more_brokenness=$(gettext " Postinstall: Applying workarounds.")
 m_mannote=$(gettext     "        Note: Man pages can be obtained by installing pkg:/system/manual")
@@ -484,71 +483,78 @@ if [[ -n $entire_fmri ]]; then
 fi
 
 printf "$m_core\n"
-#
-# We have to take baby steps here: first, by installing entire (if
-# it's present in the current image), to constrain everything.  Then,
-# SUNWcsd, to lay down device files which are subsequently needed by
-# driver actions.  Then SUNWcs to lay down /etc/passwd, /etc/group,
-# etc so that subsequent user and group actions work.  This can all
-# hopefully go away once "primordial" actions arrive.
-#
-if [[ -n $entire_fmri ]]; then
-	LC_ALL=C $PKG install -q --accept --no-refresh --no-index \
-	    $entire_fmri || pkg_err_check "$f_pkg"
-fi
-LC_ALL=C $PKG install --accept --no-refresh --no-index SUNWcsd || \
-    pkg_err_check "$f_pkg"
-LC_ALL=C $PKG install --accept --no-refresh --no-index SUNWcs || \
-    pkg_err_check "$f_pkg"
-
-printf "$m_more\n"
 pkglist=""
-pkglist="$pkglist SUNWcnetr SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
+if [[ -n $entire_fmri ]]; then
+	pkglist="$pkglist $entire_fmri"
+fi
 
-#
-# Workaround: For now, SUNWipkg has no dependency on python, so we supply it.
-#
-pkglist="$pkglist SUNWPython26 SUNWipkg"
+pkglist="$pkglist
+	pkg:///SUNWcs
+	pkg:///SUNWcsd
+	pkg:///system/network
+	pkg:///system/extended-system-utilities
+	pkg:///service/management/sysidtool
+	pkg:///system/management/sysidtool
+	pkg:///compress/bzip2
+	pkg:///compress/gzip
+	pkg:///compress/zip
+	pkg:///compress/unzip
+	pkg:///package/pkg"
 
 #
 # Get some diagnostic tools, truss, dtrace, etc.
 #
-pkglist="$pkglist SUNWtoo SUNWdtrc SUNWrcmdc SUNWbip"
+pkglist="$pkglist
+	pkg:///developer/linker
+	pkg:///developer/dtrace"
 
 #
-# Get at least one sensible shell, and vi
+# Needed for 'whois', 'snoop' I think; also provides rup, rmt, rsh etc.
+# ftp package is needed for ping (sigh).
 #
-pkglist="$pkglist SUNWbash SUNWvim"
+pkglist="$pkglist
+	pkg:///service/network/network-clients
+	pkg:///network/ftp"
 
 #
-# Get ssh and sshd.
+# Get at least one sensible shell, vim, ssh, sshd.
 #
-pkglist="$pkglist SUNWsshcu SUNWssh SUNWsshd"
+pkglist="$pkglist
+	pkg:///shell/bash
+	pkg:///editor/vim
+	pkg:///network/ssh
+	pkg:///service/network/ssh"
 
 #
 # Get some name services.
 #
-pkglist="$pkglist SUNWnis SUNWlldap"
+pkglist="$pkglist
+	pkg:///system/network/nis
+	pkg:///naming/ldap"
 
 #
 # Get nfs client and autofs; it's a pain not to have them.
 #
-pkglist="$pkglist SUNWnfsc SUNWatfs"
+pkglist="$pkglist
+	pkg:///system/file-system/autofs
+	pkg:///system/file-system/nfs"
 
 #
 # Get routing daemons.  They're required for useful exclusive stack zones.
 #
-pkglist="$pkglist SUNWroute"
+pkglist="$pkglist
+	pkg:///system/network/routing"
 
 #
 # Get packages for TX zones if appropriate.
 #
-(( $brand_labeled == 1 )) && pkglist="$pkglist system/trusted/trusted-nonglobal"
+(( $brand_labeled == 1 )) && pkglist="$pkglist pkg:///system/trusted/trusted-nonglobal"
 
 #
 # Get man(1) but not the man pages
 #
-pkglist="$pkglist SUNWdoc"
+pkglist="$pkglist \
+	pkg:///text/doctools"
 
 #
 # Add in any extra packages requested by the user.
@@ -556,7 +562,7 @@ pkglist="$pkglist SUNWdoc"
 pkglist="$pkglist $extra_packages"
 
 #
-# Do the install; we just refreshed on image-create, so skip that.  We
+# Do the install; we just refreshed after image-create, so skip that.  We
 # also skip indexing here, as that is also what the LiveCD does.
 #
 LC_ALL=C $PKG install --accept --no-index --no-refresh $pkglist || \
