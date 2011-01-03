@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 unset LD_LIBRARY_PATH
@@ -39,7 +39,7 @@ sanity_ok=$(gettext     "  Sanity Check: Passed.  Looks like an OpenSolaris syst
 sanity_fail=$(gettext   "  Sanity Check: FAILED (see log for details).")
 sanity_fail_vers=$(gettext  "  Sanity Check: the Solaris image (release %s) is not an OpenSolaris image and cannot be installed in this type of branded zone.")
 install_fail=$(gettext  "        Result: *** Installation FAILED ***")
-f_zfs_in_root=$(gettext "Installing a zone in the ROOT pool is unsupported.")
+f_zfs_in_root=$(gettext "Installing a zone inside of the root pool's 'ROOT' dataset is unsupported.")
 f_zfs_create=$(gettext "Unable to create the zone's ZFS dataset.")
 f_root_create=$(gettext "Unable to create the zone's ZFS dataset mountpoint.")
 f_no_gzbe=$(gettext "unable to determine global zone boot environment.")
