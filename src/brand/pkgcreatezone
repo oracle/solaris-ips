@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -61,7 +61,7 @@ m_core=$(gettext	"  Installing: Core System (output follows)\n")
 m_more=$(gettext	"  Installing: Additional Packages (output follows)\n")
 m_smf=$(gettext		" Postinstall: Copying SMF seed repository ...")
 m_more_brokenness=$(gettext " Postinstall: Applying workarounds.")
-m_mannote=$(gettext     "        Note: Man pages can be obtained by installing SUNWman")
+m_mannote=$(gettext     "        Note: Man pages can be obtained by installing pkg:/system/manual")
 
 m_usage=$(gettext "\n        install [-h]\n        install [-c certificate_file] [-k key_file] [-P publisher=uri]\n                [-e extrapkg [...]]\n        install {-a archive|-d path} {-p|-u} [-s|-v]")
 
