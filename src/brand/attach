@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
@@ -38,7 +38,8 @@ m_updating=$(gettext    "  Updating non-global zone: Output follows")
 m_sync_done=$(gettext   "  Updating non-global zone: Zone updated.")
 m_complete=$(gettext    "                    Result: Attach Succeeded.")
 m_failed=$(gettext      "                    Result: Attach Failed.")
-sanity_fail_global=$(gettext  "  Sanity Check: FAILED, the image is from the global zone.")
+f_sanity_variant=$(gettext "  Sanity Check: FAILED, couldn't determine %s from image.")
+f_sanity_global=$(gettext  "  Sanity Check: FAILED, appears to be a global zone (%s=%s).")
 f_update=$(gettext "Could not update attaching zone")
 f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
 f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
@@ -444,15 +445,20 @@ install_image "$inst_type" "$install_media"
 #
 
 #
-# Perform a final sanity check to confirm the image is not of the global zone.
-# Check for a few well-known global zone only svcs.
+# Perform a sanity check to confirm that the image is not a global zone.
 #
-[[ -f $ZONEROOT/var/svc/manifest/system/sysevent.xml ]] && \
-    fatal "$sanity_fail_global"
-[[ -f $ZONEROOT/var/svc/manifest/system/zones.xml ]] && \
-    fatal "$sanity_fail_global"
-[[ -f $ZONEROOT/var/svc/manifest/system/dumpadm.xml ]] && \
-    fatal "$sanity_fail_global"
+VARIANT=variant.opensolaris.zone
+variant=$(LC_ALL=C $PKG -R $ZONEROOT variant -H $VARIANT)
+[[ $? -ne 0 ]] && fatal "$f_sanity_variant" $VARIANT
+
+echo $variant | IFS=" " read variantname variantval
+[[ $? -ne 0 ]] && fatal "$f_sanity_variant"
+
+# Check that we got the output we expect...
+[[ $variantname = "$VARIANT" ]] || fatal "$f_sanity_variant" $VARIANT
+
+# Check that the variant is non-global, else fail
+[[ $variantval = "nonglobal" ]] || fatal "$f_sanity_global" $VARIANT $variantval
 
 # We would like to ensure that our NGZ publishers are a superset of
 # those in the GZ. We do this by building a list of all publishers in
