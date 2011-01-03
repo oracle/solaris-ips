@@ -19,16 +19,18 @@
 #
 # CDDL HEADER END
 #
+
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
+
 
 . /usr/lib/brand/ipkg/common.ksh
 
 m_usage=$(gettext  "detach [-n ].")
 
 f_mount=$(gettext "Error: error mounting zone root dataset.")
+f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 
 noexecute=0
 
@@ -60,16 +62,18 @@ get_current_gzbe
 get_zonepath_ds $zonepath
 get_active_ds $CURRENT_GZBE $ZONEPATH_DS
 
-/usr/sbin/zfs set zoned=off $ACTIVE_DS || fail_incomplete "$f_mount"
+/usr/sbin/zfs set zoned=off $ACTIVE_DS || \
+    fail_incomplete "$f_ds_config" "$ACTIVE_DS" "zoned=off"
 
-/usr/sbin/zfs set canmount=on $ACTIVE_DS || fail_incomplete "$f_mount"
+/usr/sbin/zfs set canmount=on $ACTIVE_DS || \
+    fail_incomplete "$f_ds_config" "$ACTIVE_DS" "canmount=on"
 
 #
 # This mounts the dataset.
 # XXX do we have to worry about subsidiary datasets?
 #
 /usr/sbin/zfs set mountpoint=$zonepath/root $ACTIVE_DS || \
-	fail_incomplete "$f_mount"
+    fail_incomplete "$f_ds_config" "$ACTIVE_DS" "mountpoint=$zonepath/root"
 
 #
 # There is no sw inventory in an ipkg branded zone, so just use the original

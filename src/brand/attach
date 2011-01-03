@@ -28,8 +28,9 @@
 
 m_attach_log=$(gettext "Log File: %s")
 m_zfs=$(gettext "A ZFS file system was created for the zone.")
-m_attaching=$(gettext "Attaching...")
 m_usage=$(gettext  "attach [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
+m_attach_root=$(gettext "               Attach Path: %s")
+m_attach_ds=$(gettext   "        Attach ZFS Dataset: %s")
 m_gzinc=$(gettext       "       Global zone version: %s")
 m_zinc=$(gettext        "   Non-Global zone version: %s")
 m_need_update=$(gettext "                Evaluation: Packages in zone %s are out of sync with the global zone. To proceed, retry with the -u flag.")
@@ -38,12 +39,22 @@ m_updating=$(gettext    "  Updating non-global zone: Output follows")
 m_sync_done=$(gettext   "  Updating non-global zone: Zone updated.")
 m_complete=$(gettext    "                    Result: Attach Succeeded.")
 m_failed=$(gettext      "                    Result: Attach Failed.")
+
+#
+# These two messages are used by the install_image function in
+# /usr/lib/brand/shared/common.ksh.  Yes, this is terrible.
+#
+installing=$(gettext    "                Installing: This may take several minutes...")
+no_installing=$(gettext "                Installing: Using pre-existing data in zonepath")
+
 f_sanity_variant=$(gettext "  Sanity Check: FAILED, couldn't determine %s from image.")
 f_sanity_global=$(gettext  "  Sanity Check: FAILED, appears to be a global zone (%s=%s).")
 f_update=$(gettext "Could not update attaching zone")
 f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
 f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
 f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
+f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
+f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
 
 # Clean up on interrupt
 trap_cleanup() {
@@ -71,10 +82,15 @@ trap_exit() {
 			# Restore the zone properties for the pre-existing
 			# dataset.
 			if [[ -n "$ACTIVE_DS" ]]; then
-				zfs set zoned=off $ACTIVE_DS >/dev/null 2>&1
-				zfs set canmount=on $ACTIVE_DS >/dev/null 2>&1
-				zfs set mountpoint=$ZONEROOT $ACTIVE_DS \
-				    >/dev/null 2>&1
+				zfs set zoned=off $ACTIVE_DS
+				(( $? != 0 )) && error "$f_ds_config" \
+				    "$ACTIVE_DS" "zoned=off"
+				zfs set canmount=on $ACTIVE_DS
+				(( $? != 0 )) && error "$f_ds_config" \
+				    "$ACTIVE_DS" "canmount=on"
+				zfs set mountpoint=$ZONEROOT $ACTIVE_DS
+				(( $? != 0 )) && error "$f_ds_config" \
+				    "$ACTIVE_DS" "mountpoint=$ZONEROOT"
 			fi
 		fi
 		log "$m_failed"
@@ -379,15 +395,22 @@ if [[ "$install_media" == "-" ]]; then
 		    print $1
 	}'`
 
-	[[ -z "$ACTIVE_DS" ]] && fatal "$f_no_active_ds"
+	[[ -z "$ACTIVE_DS" ]] && fatal "$f_no_active_ds_mounted" $ZONEROOT
 
 	# Set up proper attributes on the ROOT dataset.
 	get_zonepath_ds $ZONEPATH
 	zfs list -H -t filesystem -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
 	(( $? != 0 )) && fatal "$f_no_active_ds"
 
-	zfs set mountpoint=legacy $ZONEPATH_DS/ROOT >/dev/null 2>&1
-	zfs set zoned=on $ZONEPATH_DS/ROOT >/dev/null 2>&1
+	# need to ensure zoned is off to set mountpoint=legacy.
+	zfs set zoned=off $ZONEPATH_DS/ROOT
+	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT "zoned=off"
+
+	zfs set mountpoint=legacy $ZONEPATH_DS/ROOT
+	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT \
+	    "mountpoint=legacy"
+	zfs set zoned=on $ZONEPATH_DS/ROOT
+	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT "zoned=on"
 
 	#
 	# We're typically using a pre-existing mounted dataset so setting the
@@ -398,11 +421,19 @@ if [[ "$install_media" == "-" ]]; then
 	# and attempt the remount if necessary.
 	#
 	get_current_gzbe
-	zfs set $PROP_PARENT=$CURRENT_GZBE $ACTIVE_DS >/dev/null 2>&1
-	zfs set $PROP_ACTIVE=on $ACTIVE_DS >/dev/null 2>&1
-	zfs set canmount=noauto $ACTIVE_DS >/dev/null 2>&1
-	zfs inherit mountpoint $ACTIVE_DS >/dev/null 2>&1
-	zfs inherit zoned $ACTIVE_DS >/dev/null 2>&1
+	zfs set $PROP_PARENT=$CURRENT_GZBE $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS \
+	    "$PROP_PARENT=$CURRENT_GZBE"
+	zfs set $PROP_ACTIVE=on $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "$PROP_ACTIVE=on"
+	zfs set canmount=noauto $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "canmount=noauto"
+	zfs set zoned=off $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "zoned=off"
+	zfs inherit mountpoint $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "'inherit mountpoint'"
+	zfs inherit zoned $ACTIVE_DS
+	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "'inherit zoned'"
 
 	mounted_ds=`mount -p | nawk -v zroot=$ZONEROOT '{
 	    if ($3 == zroot && $4 == "zfs")
@@ -437,7 +468,10 @@ fi
 # The zone's datasets are now in place.
 #
 
-log "$m_attaching"
+log "$m_attach_root" "$ZONEROOT"
+# note \n to add whitespace
+log "$m_attach_ds\n" "$ACTIVE_DS"
+
 install_image "$inst_type" "$install_media"
 
 #
@@ -481,7 +515,7 @@ if [[ $? -ne 0 ]]; then
 	fail_usage "$f_no_pref_publisher" "global"
 fi
 
-log "preferred global publisher: $gz_publisher_pref"
+vlog "Preferred global publisher: $gz_publisher_pref"
 
 #
 # Try to find the "entire" incorporation's FMRI in the gz.
@@ -508,7 +542,7 @@ PKG_IMAGE="$ZONEROOT"
 ngz_entire_fmri=$(get_entire_incorp)
 
 [[ -n $gz_entire_fmri ]] && log "$m_gzinc" "$gz_entire_fmri"
-[[ -n $ngz_entire_fmri ]] && log "$m_zinc\n" "$ngz_entire_fmri"
+[[ -n $ngz_entire_fmri ]] && log "$m_zinc" "$ngz_entire_fmri"
 
 #
 # Create the list of incorporations we wish to install/update in the
@@ -599,7 +633,7 @@ if [[ -z $gz_entire_fmri && -n $ngz_entire_fmri ]]; then
 	if [[ $allow_update == 1 ]]; then
 		LC_ALL=C $PKG uninstall entire || pkg_err_check "$f_update"
 	else
-		log "$m_need_update" "$ZONENAME"
+		log "\n$m_need_update" "$ZONENAME"
 		EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
 		exit $EXIT_CODE
     fi
@@ -608,11 +642,11 @@ fi
 if [[ $allow_update == 0 ]]; then
 	LC_ALL=C $PKG install --accept --no-refresh -n $incorp_list
 	if [[ $? == 4 ]]; then
-		log "$m_complete"
+		log "\n$m_complete"
 		EXIT_CODE=$ZONE_SUBPROC_OK
 		exit $EXIT_CODE
 	else
-		log "$m_need_update" "$ZONENAME"
+		log "\n$m_need_update" "$ZONENAME"
 		EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
 		exit $EXIT_CODE
 	fi
@@ -632,7 +666,7 @@ fi
 LC_ALL=C $PKG install --accept --no-refresh $incorp_list  || \
     pkg_err_check "$f_update"
 
-log "$m_sync_done"
+log "\n$m_sync_done"
 log "$m_complete"
 
 EXIT_CODE=$ZONE_SUBPROC_OK
