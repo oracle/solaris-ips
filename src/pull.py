@@ -502,7 +502,7 @@ def main_func():
                                 except trans.TransactionRepositoryInvalidError, e:
                                         txt = str(e) + "\n\n"
                                         txt += _("To create a repository, use "
-                                            "the pkgsend command.")
+                                            "the pkgrepo command.")
                                         abort(err=txt)
                                 except trans.TransactionRepositoryConfigError, e:
                                         txt = str(e) + "\n\n"

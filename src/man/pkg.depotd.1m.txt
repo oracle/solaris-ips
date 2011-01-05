@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
      /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
          [-t socket_timeout] [--add-content] [--cfg] [--content-root]
-         [--debug] [--disable-ops=<op[/1]>[,...]] [--log-access]
+         [--debug feature_list] [--disable-ops=<op[/1]>[,...]] [--log-access]
          [--log-errors] [--mirror] [--proxy-base url] [--readonly]
          [--rebuild] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
          [--writable-root]
