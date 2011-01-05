@@ -18,13 +18,17 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/library/python-2/pycurl@7.19.0.1,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/library/python-2/pycurl@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="Python bindings for libcurl"
 set name=pkg.description value="PycURL provides a thin layer of Python bindings on top of libcurl."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://pycurl.sourceforge.net/
+set name=info.upstream value="Kjetil Jacobsen <kjetilja@gmail.com>" \
+        value="Markus F.X.J. Oberhumer <markus@oberhumer.com>"
 set name=variant.arch value=$(ARCH)
 
 # PycURL installs one of its subtrees in an odd place, so we want to move
@@ -39,7 +43,7 @@ dir path=usr
 dir path=usr/lib
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)
-file path=$(PYDIRVP)/pycurl-7.19.0-py2.6.egg-info
+file path=$(PYDIRVP)/pycurl-$(SOURCE_VER)-py2.6.egg-info
 dir path=$(PYDIRVP)/curl
 file path=$(PYDIRVP)/curl/__init__.py
 file path=$(PYDIRVP)/pycurl.so
@@ -94,7 +98,7 @@ file path=$(PYDIRVP)/share/doc/pycurl/tests/test_stringio.py mode=0755
 file path=$(PYDIRVP)/share/doc/pycurl/tests/test_xmlrpc.py mode=0755
 file path=$(PYDIRVP)/share/doc/pycurl/tests/util.py mode=0755
 license lic_pycurl license=lic_pycurl
-legacy pkg=SUNWpython-pycurl version=7.19.0.1
+legacy pkg=SUNWpython-pycurl version=$(PKG_VER)
 
 depend type=require fmri=library/libidn@1.9
 depend type=require fmri=library/security/openssl@0.9.8.14

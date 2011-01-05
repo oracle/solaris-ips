@@ -18,13 +18,15 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/system/desktop/ldtp@1.7.1,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/system/desktop/ldtp@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="Linux Desktop Testing Project"
 set name=pkg.description value="LDTP is a test automation framework that can be used to test and improve desktops and desktop applications."
 set name=info.classification value="org.opensolaris.category.2008:Development/Distribution Tools"
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://ldtp.freedesktop.org/
 set name=variant.arch value=$(ARCH)
 
 dir path=usr
@@ -65,7 +67,7 @@ file path=usr/share/ldtp/glade/ldtpeditor.glade
 dir path=usr/share/ldtp/icons
 file path=usr/share/ldtp/icons/ldtp-logo-small.png
 license lic_ldtp license=lic_ldtp
-legacy pkg=SUNWldtp version=1.7.1
+legacy pkg=SUNWldtp version=$(SOURCE_VER)
 
 depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)
 depend type=require fmri=gnome/accessibility/gnome-a11y-libs@$(PKGVERS_COMPONENT)

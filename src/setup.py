@@ -89,6 +89,7 @@ POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
 COV = 'coveragepy'
 COVIDIR = 'coverage'
 COVVER = '3.2b2'
+COVPVER = '3.2'
 COVARC = '%s-%s.tar.gz' % (COVIDIR, COVVER)
 COVDIR = '%s-%s' % (COVIDIR, COVVER)
 COVURL = 'http://pypi.python.org/packages/source/c/coverage/%s' % COVARC
@@ -132,6 +133,7 @@ PBJHASH = '92cabd14e04c5f62ce067c47c2057ee3d424d29b'
 PC = 'pycurl'
 PCIDIR = 'curl'
 PCVER = '7.19.0'
+PCPVER= '7.19.0.1'
 PCARC = '%s-%s.tar.gz' % (PC, PCVER)
 PCDIR = '%s-%s' % (PC, PCVER)
 PCURL = 'http://pycurl.sourceforge.net/download/%s' % PCARC
@@ -814,6 +816,34 @@ class dist_func(_bdist):
                 _bdist.initialize_options(self)
                 self.dist_dir = dist_dir
 
+class info_func(Command):
+        user_options = [
+            ("pkg=", None, "Component package name")
+        ]
+        description = "Print component information"
+
+        def initialize_options(self):
+                self.pkg = ""
+
+        def finalize_options(self):
+                self.pkg = urllib.unquote(self.pkg.rsplit(".", 1)[0])
+
+        pkginfo = {
+            "library/python-2/cherrypy": (CPVER, CPVER, CPURL),
+            "library/python-2/coverage": (COVVER, COVPVER, COVURL),
+            "library/python-2/m2crypto": (M2CVER, M2CVER, M2CURL),
+            "library/python-2/mako": (MAKOVER, MAKOVER, MAKOURL),
+            "library/python-2/ply": (PLYVER, PLYVER, PLYURL),
+            "library/python-2/pybonjour": (PBJVER, PBJVER, PBJURL),
+            "library/python-2/pycurl": (PCVER, PCPVER, PCURL),
+            "system/desktop/ldtp": (LDTPVER, LDTPVER, LDTPURL)
+        }
+
+        def run(self):
+                if self.pkg in self.pkginfo:
+                        print "-D SOURCE_VER=%s -D PKG_VER=%s " \
+                            "-D SOURCE_URL=%s" % self.pkginfo[self.pkg]
+
 
 # These are set to real values based on the platform, down below
 compile_args = None
@@ -848,6 +878,7 @@ cmdclasses = {
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,
+        'info': info_func,
         }
 
 # all builds of IPS should have manpages

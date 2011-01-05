@@ -112,9 +112,12 @@ $(PDIR)/$(INCORP).mog: manifests/$(INCORP).p5m $(PDIR) transforms/incorp
 		$(PKGMOGRIFY) $(PKGMOG_DEFINES) -D DEPTYPE=incorporate \
 		-I transforms -O $@ /dev/stdin incorp manifests/*.p5m
 
+INFO_DEFINES.cmd = python2.6 ../setup.py -q info --pkg $$(basename $@)
+INFO_DEFINES = $(INFO_DEFINES.cmd:sh)
+
 # The main mogrification rule
-$(PDIR)/%.mog: manifests/%.p5m $(PM_TRANSFORMS:%=transforms/%) $(PDIR) $(PM_TRANSFORMS:%=transforms/%)
-	$(PKGMOGRIFY) $(PKGMOG_DEFINES) -I transforms -O $@ $< $(PM_TRANSFORMS)
+$(PDIR)/%.mog: ../setup.py manifests/%.p5m $(PM_TRANSFORMS:%=transforms/%) $(PDIR) $(PM_TRANSFORMS:%=transforms/%)
+	$(PKGMOGRIFY) $(INFO_DEFINES) $(PKGMOG_DEFINES) -I transforms -O $@ $< $(PM_TRANSFORMS)
 
 # The main publication rule
 $(PDIR)/%.pub: $(PDIR)/%.mog $(PKGDEST)/repo

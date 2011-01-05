@@ -18,13 +18,16 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/library/python-2/coverage@3.2,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/library/python-2/coverage@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="The coverage.py Python code coverage tool"
 set name=pkg.description value="Coverage measures Python code coverage, typically during test execution."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://nedbatchelder.com/code/coverage/
+set name=info.upstream value="Ned Batchelder <ned@nedbatchelder.com>"
 set name=variant.arch value=$(ARCH)
 
 dir path=usr
@@ -33,13 +36,13 @@ file path=usr/bin/coverage
 dir path=usr/lib
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)
-dir path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/PKG-INFO
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/SOURCES.txt
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/dependency_links.txt
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/entry_points.txt
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/not-zip-safe
-file path=$(PYDIRVP)/coverage-3.2b2-py2.6.egg-info/top_level.txt
+dir path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/PKG-INFO
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/SOURCES.txt
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/dependency_links.txt
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/entry_points.txt
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/not-zip-safe
+file path=$(PYDIRVP)/coverage-$(SOURCE_VER)-py2.6.egg-info/top_level.txt
 dir path=$(PYDIRVP)/coverage
 file path=$(PYDIRVP)/coverage/__init__.py
 file path=$(PYDIRVP)/coverage/annotate.py

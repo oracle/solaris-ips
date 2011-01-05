@@ -18,19 +18,22 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/library/python-2/pybonjour@1.1.1,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/library/python-2/pybonjour@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="Python bindings for bonjour / dns-sd"
 set name=pkg.description value="Pybonjour provides a thin layer of Python bindings on top of bonjour."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://code.google.com/p/pybonjour/
+set name=info.upstream value="Christopher Stawarz <cstawarz@gmail.com>"
 
 dir path=usr
 dir path=usr/lib
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)
-file path=$(PYDIRVP)/pybonjour-1.1.1-py2.6.egg-info
+file path=$(PYDIRVP)/pybonjour-$(SOURCE_VER)-py2.6.egg-info
 file path=$(PYDIRVP)/pybonjour.py
 license lic_pybonjour license=lic_pybonjour
 

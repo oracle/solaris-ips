@@ -18,13 +18,16 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/library/python-2/m2crypto@0.20.0,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/library/python-2/m2crypto@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="Python interface for openssl"
 set name=pkg.description value="M2Crypto provides a python interface to the openssl library."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://chandlerproject.org/Projects/MeTooCrypto
+set name=info.upstream value="Heikki Toivonen <heikki@osafoundation.org>"
 set name=variant.arch value=$(ARCH)
 
 dir path=usr
@@ -32,11 +35,11 @@ dir path=usr/lib
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)
 dir path=$(PYDIRVP)/M2Crypto
-dir path=$(PYDIRVP)/M2Crypto-0.20.2-py2.6.egg-info
-file NOHASH path=$(PYDIRVP)/M2Crypto-0.20.2-py2.6.egg-info/PKG-INFO
-file NOHASH path=$(PYDIRVP)/M2Crypto-0.20.2-py2.6.egg-info/SOURCES.txt
-file NOHASH path=$(PYDIRVP)/M2Crypto-0.20.2-py2.6.egg-info/dependency_links.txt
-file NOHASH path=$(PYDIRVP)/M2Crypto-0.20.2-py2.6.egg-info/top_level.txt
+dir path=$(PYDIRVP)/M2Crypto-$(SOURCE_VER)-py2.6.egg-info
+file NOHASH path=$(PYDIRVP)/M2Crypto-$(SOURCE_VER)-py2.6.egg-info/PKG-INFO
+file NOHASH path=$(PYDIRVP)/M2Crypto-$(SOURCE_VER)-py2.6.egg-info/SOURCES.txt
+file NOHASH path=$(PYDIRVP)/M2Crypto-$(SOURCE_VER)-py2.6.egg-info/dependency_links.txt
+file NOHASH path=$(PYDIRVP)/M2Crypto-$(SOURCE_VER)-py2.6.egg-info/top_level.txt
 file NOHASH path=$(PYDIRVP)/M2Crypto/ASN1.py
 file NOHASH path=$(PYDIRVP)/M2Crypto/AuthCookie.py
 file NOHASH path=$(PYDIRVP)/M2Crypto/BIO.py

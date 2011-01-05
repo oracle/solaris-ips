@@ -18,26 +18,29 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/library/python-2/mako@0.2.2,$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+set name=pkg.fmri value=pkg:/library/python-2/mako@$(PKG_VER),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 set name=pkg.summary value="Template library written in Python"
 set name=pkg.description value="Mako is an embedded Python (i.e., Python Server Page) templating language."
 set name=info.classification value=org.opensolaris.category.2008:Development/Python
+set name=info.source_url value=$(SOURCE_URL)
+set name=info.upstream_url value=http://www.makotemplates.org/
+set name=info.upstream value="Mike Bayer <mike@zzzcomputing.com>"
 
 dir path=usr
 dir path=usr/lib
 dir path=$(PYDIR)
 dir path=$(PYDIRVP)
-dir path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/PKG-INFO
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/SOURCES.txt
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/dependency_links.txt
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/entry_points.txt
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/not-zip-safe
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/requires.txt
-file path=$(PYDIRVP)/Mako-0.2.2-py2.6.egg-info/top_level.txt
+dir path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/PKG-INFO
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/SOURCES.txt
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/dependency_links.txt
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/entry_points.txt
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/not-zip-safe
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/requires.txt
+file path=$(PYDIRVP)/Mako-$(SOURCE_VER)-py2.6.egg-info/top_level.txt
 dir path=$(PYDIRVP)/mako
 file path=$(PYDIRVP)/mako/__init__.py
 file path=$(PYDIRVP)/mako/_ast_util.py
@@ -62,6 +65,6 @@ file path=$(PYDIRVP)/mako/runtime.py
 file path=$(PYDIRVP)/mako/template.py
 file path=$(PYDIRVP)/mako/util.py
 license lic_mako license=lic_mako
-legacy pkg=SUNWpython-mako version=0.2.2
+legacy pkg=SUNWpython-mako version=$(SOURCE_VER)
 
 depend type=require fmri=runtime/python-26@2.6.4
