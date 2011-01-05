@@ -164,7 +164,9 @@ SUBCOMMANDS
           the -z (--zone) option can be used to set an appropriate filter.
 
           With -f (--force), force the creation of an image over an existing
-          image.  This option should be used with care.
+          image.  This option should be used with care; any existing image
+          metadata found will be lost (such as cached packages) except for
+          SSL certificates and keys used by the client.
 
           With --no-refresh, do not attempt to contact the repositories for
           the image's publishers to retrieve publisher metadata (e.g.

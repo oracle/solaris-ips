@@ -116,7 +116,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         f.write("V pkg:/%s@%s\n" % (stem, ver))
                 f.close()
 
-        def test_3588(self):
+        def test_force(self):
                 """Ensure that image creation works as expected when an image
                 already exists."""
 
@@ -145,6 +145,22 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("image-create -p test1=%s %s" % (self.rurl1, p),
                     exit=1)
                 self.pkg("image-create -f -p test1=%s %s" % (self.rurl1, p))
+
+                # Bug 17680: Ensure ssl directory is preserved if it
+                # already exists when creating an image where one
+                # might already exist with the -f (force) flag.
+                shutil.rmtree(self.get_img_path())
+                self.pkg("image-create -p test1=%s %s" % (self.rurl1,
+                    self.get_img_path()))
+
+                img = self.get_img_api_obj().img
+                cert_path = os.path.join(img.imgdir, "ssl", "cert.file")
+                misc.makedirs(os.path.dirname(cert_path))
+                open(cert_path, "wb").close()
+                assert os.path.exists(cert_path)
+                self.pkg("image-create -f -p test1=%s %s" % (self.rurl1,
+                    self.get_img_path()))
+                assert os.path.exists(cert_path)
 
         def __verify_pub_cfg(self, img_path, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""

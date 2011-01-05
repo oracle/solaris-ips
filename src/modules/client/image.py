@@ -590,20 +590,6 @@ class Image(object):
                 # Must set imgdir first.
                 self.imgdir = os.path.join(self.root, self.img_prefix)
 
-                # In the case of initial image creation, purge is specified
-                # to ensure that when an image is created over an existing
-                # one, any old data is removed first.
-                if purge and os.path.exists(self.imgdir):
-                        for entry in os.listdir(self.imgdir):
-                                epath = os.path.join(self.imgdir, entry)
-                                try:
-                                        if os.path.isdir(epath):
-                                                shutil.rmtree(epath)
-                                        else:
-                                                portable.remove(epath)
-                                except EnvironmentError, e:
-                                        raise apx._convert_error(e)
-
                 # Force a reset of version.
                 self.version = -1
 
@@ -615,6 +601,10 @@ class Image(object):
                 # one, any old data is removed first.
                 if purge and os.path.exists(self.imgdir):
                         for entry in os.listdir(self.imgdir):
+                                if entry == "ssl":
+                                        # Preserve certs and keys directory
+                                        # as a special exception.
+                                        continue
                                 epath = os.path.join(self.imgdir, entry)
                                 try:
                                         if os.path.isdir(epath):
