@@ -92,7 +92,6 @@ COVVER = '3.2b2'
 COVARC = '%s-%s.tar.gz' % (COVIDIR, COVVER)
 COVDIR = '%s-%s' % (COVIDIR, COVVER)
 COVURL = 'http://pypi.python.org/packages/source/c/coverage/%s' % COVARC
-# No hash, since we always fetch the latest
 COVHASH = '4710d033b8c6de1efaa562243e5b29e0a31fb8b9'
 
 LDTP = 'ldtp'
@@ -580,9 +579,7 @@ def prep_sw(swname, swarc, swdir, swurl, swhash):
                         fname, hdr = urllib.urlretrieve(swurl, swarc)
                 except IOError:
                         pass
-                if not os.path.exists(swarc) or \
-                    (hdr.gettype() != "application/x-gzip" and
-                     hdr.gettype() != "application/x-tar"):
+                if not os.path.exists(swarc):
                         print >> sys.stderr, "Unable to retrieve %s.\n" \
                             "Please retrieve the file " \
                             "and place it at: %s\n" % (swurl, swarc)
