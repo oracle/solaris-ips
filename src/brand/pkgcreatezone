@@ -343,8 +343,8 @@ if [[ $certfile != "None" ]]; then
 	printf "$m_cert_prop\n" $(basename $certfile)
 	mkdir -p -m 755 $ZONEROOT/$KEYDIR || fail_fatal "$f_cert_prop"
 	cp $certfile $ZONEROOT/$newcertlocation || fail_fatal "$f_cert_prop"
-	chmod 644 $ZONEROOT/$newkeylocation
-	chown -h root:root $ZONEROOT/$newkeylocation
+	chmod 644 $ZONEROOT/$newcertlocation
+	chown -h root:root $ZONEROOT/$newcertlocation
 fi
 
 #

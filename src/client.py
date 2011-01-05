@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -3890,10 +3890,11 @@ def image_create(args):
                 progtrack = get_tracker()
                 api_inst = api.image_create(PKG_CLIENT_NAME, CLIENT_API_VERSION,
                     image_dir, imgtype, is_zone, facets=facets, force=force,
-                    mirrors=add_mirrors, origins=add_origins, prefix=pub_name,
-                    progtrack=progtrack, refresh_allowed=refresh_allowed,
-                    ssl_cert=ssl_cert, ssl_key=ssl_key, repo_uri=repo_uri,
-                    variants=variants, props=set_props)
+                    mirrors=list(add_mirrors), origins=list(add_origins),
+                    prefix=pub_name, progtrack=progtrack,
+                    refresh_allowed=refresh_allowed, ssl_cert=ssl_cert,
+                    ssl_key=ssl_key, repo_uri=repo_uri, variants=variants,
+                    props=set_props)
                 img = api_inst.img
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
