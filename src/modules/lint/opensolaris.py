@@ -198,7 +198,7 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
 
                 # the data file looks like:
                 # [Section]
-                # categtory = Cat1,Cat2,Cat3
+                # category = Cat1,Cat2,Cat3
                 #
                 # We expect the info.classification action to look like:
                 # org.opensolaris.category.2008:Section/Cat2
@@ -212,12 +212,12 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                         if category not in ref_categories:
                                 valid_value = False
                 except ConfigParser.NoSectionError:
+                        sections = self.classification_data.sections()
                         engine.error(_("info.classification value %(value)s "
                             "does not contain one of the valid sections "
                             "%(ref_sections)s for %(fmri)s.") %
                             {"value": value,
-                            "ref_sections":
-                            ", ".join(self.classification_data.sections()),
+                            "ref_sections": ", ".join(sorted(sections)),
                             "fmri": fmri},
                             msgid="%s.4" % msgid)
                         return
@@ -235,7 +235,7 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 if valid_value:
                         return
 
-                ref_cats = self.classification_data.get(section,"category")
+                ref_cats = self.classification_data.get(section, "category")
                 engine.error(_("info.classification attribute in %(fmri)s "
                     "does not contain one of the values defined for the "
                     "section %(section)s: %(ref_cats)s from %(path)s") %

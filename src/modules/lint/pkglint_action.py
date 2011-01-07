@@ -287,7 +287,7 @@ class PkgDupActionChecker(base.ActionChecker):
                                 differences.add(key)
                 suspects = []
                 if differences:
-                        for key in differences:
+                        for key in sorted(differences):
                                 # a dictionary to map unique values for this key
                                 # the fmris that deliver them
                                 attr = {}
@@ -298,12 +298,12 @@ class PkgDupActionChecker(base.ActionChecker):
                                                         attr[val].append(pfmri)
                                                 else:
                                                         attr[val] = [pfmri]
-                                for val in attr:
+                                for val in sorted(attr):
                                         suspects.append("%s: %s -> %s" %
                                             (key, val,
                                             " ".join([pfmri.get_name()
-                                            for pfmri in attr[val]])))
-
+                                            for pfmri in sorted(attr[val])
+                                            ])))
                         engine.error(_("path %(path)s is reference-counted "
                             "but has different attributes across %(count)s "
                             "duplicates: %(suspects)s") %
@@ -362,14 +362,14 @@ class PkgDupActionChecker(base.ActionChecker):
                 has_conflict, conflict_vars = self.conflicting_variants(actions,
                     pkg_vars)
                 if has_conflict:
+                        plist = [f.get_fmri() for f in sorted(fmris)]
                         if not conflict_vars:
                                 engine.error(_("%(attr_name)s %(name)s is "
                                     "a duplicate delivered by %(pkgs)s "
                                     "under all variant combinations") %
                                     {"attr_name": attr_name,
                                     "name": name,
-                                    "pkgs":
-                                    " ".join([f.get_fmri() for f in fmris])},
+                                    "pkgs": " ".join(plist)},
                                     msgid="%s%s.1" % (self.name, msgid))
                         else:
                                 for fz in conflict_vars:
@@ -379,9 +379,7 @@ class PkgDupActionChecker(base.ActionChecker):
                                             "variants %(vars)s") %
                                             {"attr_name": attr_name,
                                             "name": name,
-                                            "pkgs":
-                                            " ".join([f.get_fmri() for f
-                                                in fmris]),
+                                            "pkgs": " ".join(plist),
                                             "vars":
                                             " ".join(["%s=%s" % (k, v)
                                                 for (k, v)
@@ -414,12 +412,14 @@ class PkgDupActionChecker(base.ActionChecker):
                             self.conflicting_variants(actions,
                                 manifest.get_all_variants())
                         if has_conflict:
+                                plist = [f.get_fmri() for f in sorted(fmris)]
+                                plist.sort()
                                 engine.error(
                                     _("path %(path)s is delivered by multiple "
                                     "action types across %(pkgs)s") %
                                     {"path": p,
                                     "pkgs":
-                                    " ".join([f.get_fmri() for f in fmris])},
+                                    " ".join(plist)},
                                     msgid="%s%s" % (self.name, pkglint_id))
                 self.seen_dup_types[p] = True
 

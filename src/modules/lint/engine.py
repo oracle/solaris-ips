@@ -506,6 +506,7 @@ class LintEngine(object):
                 self.ref_uris = ref_uris
                 self.lint_uris = lint_uris
                 self.lint_manifests = lint_manifests
+                self.lint_manifests.sort()
                 self.pattern = pattern
                 self.release = release
                 self.in_setup = True

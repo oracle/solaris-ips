@@ -192,16 +192,18 @@ class PkgManifestChecker(base.ManifestChecker):
                                 unknown_variants.add("%s=%s" % (k, v))
 
                 if len(undefined_variants) > 0:
+                        vlist = sorted((v for v in undefined_variants))
                         engine.error(_("variant(s) %(vars)s not defined by "
                             "%(pkg)s") %
-                            {"vars": " ".join([v for v in undefined_variants]),
+                            {"vars": " ".join(vlist),
                             "pkg": manifest.fmri},
                             msgid="%s%s.1" % (self.name, pkglint_id))
 
                 if len(unknown_variants) > 0:
+                        vlist = sorted((v for v in unknown_variants))
                         engine.error(_("variant(s) %(vars)s not in list of "
                             "known values for variants in %(pkg)s") %
-                            {"vars": " ".join([v for v in unknown_variants]),
+                            {"vars": " ".join(vlist),
                             "pkg": manifest.fmri},
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
@@ -226,11 +228,12 @@ class PkgManifestChecker(base.ManifestChecker):
                 fmris = self.ref_lastnames[lastname]
 
                 if len(self.ref_lastnames[lastname]) > 1:
+                        plist = sorted((f.get_fmri() for f in fmris))
                         engine.warning(
                             _("last name component %(name)s in package name "
                             "clashes across %(pkgs)s") %
                             {"name": lastname,
-                            "pkgs": " ".join([f.get_fmri() for f in fmris])},
+                            "pkgs": " ".join(plist)},
                             msgid="%s%s" % (self.name, pkglint_id))
 
                 self.processed_lastnames.append(lastname)
@@ -274,9 +277,10 @@ class PkgManifestChecker(base.ManifestChecker):
                                         duplicates.append(key)
 
                 if duplicates:
+                        dlist = sorted((str(d) for d in duplicates))
                         engine.error(dup_msg %
                             {"pkg": manifest.fmri,
-                            "actions": " ".join([str(d) for d in duplicates])},
+                            "actions": " ".join(dlist)},
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
         duplicate_deps.pkglint_desc = _(
@@ -305,8 +309,9 @@ class PkgManifestChecker(base.ManifestChecker):
                                         duplicates.append(key)
 
                 if duplicates:
+                        dlist = sorted((str(d) for d in duplicates))
                         engine.error(dup_set_msg %
-                            {"names": " ".join([str(a) for a in duplicates]),
+                            {"names": " ".join(dlist),
                             "pkg": manifest.fmri},
                             msgid="%s%s" % (self.name, pkglint_id))
 
