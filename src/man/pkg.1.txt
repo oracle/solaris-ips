@@ -9,14 +9,15 @@ SYNOPSIS
 
      /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-index]
          [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
-         pkg_fmri_pattern ...
+         [--reject pkg_fmri_pattern] pkg_fmri_pattern ...
+
      /usr/bin/pkg uninstall [-nrvq] [--no-index] 
          [--deny-new-be | --require-new-be] [--be-name name] 
          pkg_fmri_pattern ...
 
      /usr/bin/pkg update [-fnvq] [--accept] [--be-name name]
          [--deny-new-be | --require-new-be] [--licenses] [--no-index]
-         [--no-refresh]
+         [--no-refresh] [--reject pkg_fmri_pattern] [pkg_fmri_pattern ...]
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -185,7 +186,8 @@ SUBCOMMANDS
           incremental update.
 
      install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-       [--deny-new-be | --require-new-be] [--be-name] pkg_fmri_pattern ...
+       [--deny-new-be | --require-new-be] [--be-name] 
+       [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
 
           Installs and updates packages to the newest version that match
           pkg_fmri_pattern allowed by the packages installed in the
@@ -233,6 +235,10 @@ SUBCOMMANDS
           environment; the operation will not be performed if
           a new boot environment is required.
 
+          With --reject, prevent packages matching the given pattern from
+          being installed.  If matching packages are already installed, they
+          will be removed as part of the operation. 
+
      uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be]
        [--be-name name] pkg_fmri_pattern ...
 
@@ -248,7 +254,7 @@ SUBCOMMANDS
 
      update [-fnvq] [--accept] [--be-name name] [--licenses]
        [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
-       [pkg_fmri_pattern ...]
+       [--reject pkg_fmri_pattern ... ] [pkg_fmri_pattern ...]
 
           With no arguments, or if '*' is one of the patterns provided,
           update all installed packages in the current image to the newest
@@ -1096,6 +1102,13 @@ EXAMPLES
      version:
 
      $ pkg update foo@1.0
+
+     Example 22:  In the case of two conflicting packages, change which 
+     package is installed.  Suppose package A depends on either package B
+     or package C, and B and C are mutually exclusive.  If A and B are
+     installed, we can go to using C without uninstalling A via:
+
+     $ pkg install --reject B C
 
 EXIT STATUS
      The following exit values are returned:

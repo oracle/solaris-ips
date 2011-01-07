@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -672,6 +672,183 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 afobj.write("set name=pkg.summary value=\"banana\"\n")
                 afobj.close()
                 self.pkg("install a16189", exit=1)
+
+class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
+        """Test --reject option to pkg update/install"""
+        persistent_setup = True
+
+        pkgs = (
+                """
+                    open A@1.0,5.11-0
+                    add depend type=require-any fmri=pkg:/B@1.0 fmri=pkg:/C@1.0
+                    close """,
+
+                """
+                    open B@1.0,5.11-0
+                    add depend type=exclude fmri=pkg:/C
+                    close """,
+
+                """
+                    open C@1.0,5.11-0
+                    add depend type=exclude fmri=pkg:/B
+                    close """,
+
+                """
+                    open kernel@1.0,5.11-0.1
+                    add depend type=require fmri=pkg:/incorp
+                    close """,
+
+                """
+                    open kernel@1.0,5.11-0.2
+                    add depend type=require fmri=pkg:/incorp
+                    close """,
+
+                """
+                    open incorp@1.0,5.11-0.1
+                    add depend type=incorporate fmri=kernel@1.0,5.11-0.1
+                    close """,
+
+                 """
+                    open incorp@1.0,5.11-0.2
+                    add depend type=incorporate fmri=kernel@1.0,5.11-0.2
+                    close """,
+
+                """
+                    open kernel@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=pkg:/incorp
+                    add depend type=require fmri=pkg:/idr1
+                    close """,
+
+
+                """
+                    open kernel@1.0,5.11-0.1.1.1
+                    add depend type=require fmri=pkg:/incorp
+                    add depend type=require fmri=pkg:/idr1
+                    close """,
+
+                """
+                    open kernel@1.0,5.11-0.1.2.0
+                    add depend type=require fmri=pkg:/incorp
+                    add depend type=require fmri=pkg:/idr2
+                    close """,
+
+                """
+                    open idr1@1.0,5.11-0.1.1.0
+                    add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.0
+                    add depend type=require fmri=idr1_entitlement
+                    close """,
+
+                """
+                    open idr1@1.0,5.11-0.1.1.1
+                    add depend type=incorporate fmri=kernel@1.0,5.11-0.1.1.1
+                    add depend type=require fmri=idr1_entitlement
+                    close """,
+
+                """
+                    open idr2@1.0,5.11-0.1.2.0
+                    add depend type=incorporate fmri=kernel@1.0,5.11-0.1.2.0
+                    add depend type=require fmri=idr2_entitlement
+                    close """,
+
+                """
+                    open idr1_entitlement@1.0,5.11-0
+                    add depend type=exclude fmri=no-idrs
+                    close """,
+
+                """
+                    open idr2_entitlement@1.0,5.11-0
+                    add depend type=exclude fmri=no-idrs
+                    close """,
+
+                # hack to prevent idrs from being installed from repo...
+
+                """
+                    open no-idrs@1.0,5.11-0
+                    close """,
+
+                """
+                    open pkg://contrib/bogus@1.0,5.11-0
+                    add depend type=exclude fmri=A
+                    add depend type=require fmri=bogus1
+                    add depend type=require fmri=bogus2
+                    close """,
+
+                """
+                    open pkg://contrib/bogus1@1.0,5.11-0
+                    add depend type=exclude fmri=B
+                    close """,
+
+                """
+                    open pkg://contrib/bogus2@1.0,5.11-0
+                    add depend type=exclude fmri=C
+                    close """
+
+                )
+
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.pkgsend_bulk(self.rurl, self.pkgs)
+
+        def test_install(self):
+                self.image_create(self.rurl, prefix="")
+                # simple test of reject
+                self.pkg("install --reject B A")
+                self.pkg("list A C")
+                self.pkg("uninstall '*'")
+                self.pkg("install --reject C A")
+                self.pkg("list A B")
+                self.pkg("uninstall '*'")
+
+                # test swapping XOR'd pkgs B & C w/o uninstalling A
+                self.pkg("install B")
+                self.pkg("install A")
+                self.pkg("list A B")
+                self.pkg("install --reject B C")
+                self.pkg("list A C")
+                self.pkg("uninstall '*'")
+
+                # test that solver picks up on impossible cases
+                self.pkg("install --reject A A", exit=1)
+                self.pkg("install -v --reject B --reject C A", exit=1)
+
+                # test that publisher matching works
+                self.pkg("install bogus")
+                self.pkg("list bogus")
+                self.pkg("install --reject B --reject 'pkg://contrib/*' A")
+
+        def test_idr(self):
+                self.image_create(self.rurl)
+                # install kernel pkg; remember version so we can reinstall it later
+                self.pkg("install no-idrs")
+                self.pkg("install -v kernel@1.0,5.11-0.1")
+                self.pkg("list -Hv kernel@1.0,5.11-0.1 | /usr/bin/awk '{print $1}'")
+                kernel_fmri = self.output
+                # upgrade to next version w/o encountering idrs
+                self.pkg("update -v");
+                self.pkg("list kernel@1.0,5.11-0.2")
+                self.pkg("list")
+
+                # try installing idr1; testing wild card support as well
+                self.pkg("uninstall no-idrs")
+                self.pkg("install --reject 'k*' --reject 'i*'  no-idrs")
+                self.pkg("install -v kernel@1.0,5.11-0.1")
+                self.pkg("install -v --reject no-idrs idr1_entitlement")
+                self.pkg("install -v idr1@1.0,5.11-0.1.1.0")
+                self.pkg("update -v --reject idr2")
+                self.pkg("list idr1@1.0,5.11-0.1.1.1")
+
+                # switch to idr2, which affects same package
+                self.pkg("install -v --reject idr1 --reject 'idr1_*' idr2 idr2_entitlement")
+
+                # switch back to base version of kernel
+                self.pkg("update -v --reject idr2 --reject 'idr2_*' %s" % kernel_fmri)
+
+                # reinstall idr1, then update to version 2 of base kernel
+                self.pkg("install -v idr1@1.0,5.11-0.1.1.0 idr1_entitlement")
+                self.pkg("list kernel@1.0,5.11-0.1.1.0")
+                self.pkg("update -v --reject 'idr1*' incorp@1.0,5.11-0.2")
+                self.pkg("list  kernel@1.0,5.11-0.2")
 
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):

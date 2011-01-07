@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import atexit
@@ -545,7 +545,7 @@ class Image(object):
                             "cache/tmp", "gui_cache", "history", "license",
                             "lost+found", "publisher", "ssl", "state/installed",
                             "state/known"]
-                else:               
+                else:
                         img_dirs = ["download", "file", "gui_cache", "history",
                             "index", "lost+found", "pkg", "publisher",
                             "state/installed", "state/known", "tmp"]
@@ -693,9 +693,9 @@ class Image(object):
                 self.__lockfile = lockfile.LockFile(os.path.join(self.imgdir,
                     "lock"), set_lockstr=lockfile.client_lock_set_str,
                     get_lockstr=lockfile.client_lock_get_str,
-                    failure_exc=apx.ImageLockedError, 
+                    failure_exc=apx.ImageLockedError,
                     provide_mutex=False)
- 
+
                 if relock:
                         self.lock()
 
@@ -1097,7 +1097,7 @@ class Image(object):
 
                 # Next, write state data into place.
                 if self.version < 3:
-                        # Image state and publisher metadata 
+                        # Image state and publisher metadata
                         tmp_state_root = os.path.join(tmp_root, "state")
 
                         # Update image catalog locations.
@@ -1333,8 +1333,8 @@ class Image(object):
                 return self.__boot_archive
 
         def get_ramdisk_filelist(self):
-                """return the filelist... add the filelist so we rebuild 
-                boot archive if it changes... append trailing / to 
+                """return the filelist... add the filelist so we rebuild
+                boot archive if it changes... append trailing / to
                 directories that are really there"""
 
                 p = "boot/solaris/filelist.ramdisk"
@@ -1701,7 +1701,7 @@ class Image(object):
 
                         for hsh in unset_cas:
                                 pub.unset_ca_cert(hsh)
-                        
+
 
                         # Only after success should the configuration be saved.
                         self.save_config()
@@ -1990,7 +1990,7 @@ class Image(object):
                         excludes = EmptyI
                 else:
                         excludes = [ self.cfg.variants.allow_action ]
- 
+
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
                             intent=intent)
@@ -3047,14 +3047,14 @@ class Image(object):
                         raise apx.InvalidPackageErrors([e])
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute):
+            noexecute, reject_list=EmptyI):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
                 """
 
                 self.__make_plan_common("install", progtrack, check_cancelation,
-                    noexecute, pkg_list)
+                    noexecute, pkg_list, reject_list)
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
             progtrack, check_cancelation, noexecute):
@@ -3066,14 +3066,14 @@ class Image(object):
                     recursive_removal)
 
         def make_update_plan(self, progtrack, check_cancelation, noexecute,
-            pkg_list=None):
+            pkg_list=None, reject_list=EmptyI):
                 """Create a plan to update all packages or the specific ones as
                 far as possible.  This is a helper routine for some common
                 operations in the client.
                 """
 
                 self.__make_plan_common("update", progtrack,
-                    check_cancelation, noexecute, pkg_list)
+                    check_cancelation, noexecute, pkg_list, reject_list)
 
         def ipkg_is_up_to_date(self, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):

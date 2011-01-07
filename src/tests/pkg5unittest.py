@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import baseline
 import ConfigParser
@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 48
+CLIENT_API_VERSION = 49
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -217,7 +217,7 @@ class Pkg5TestCase(unittest.TestCase):
                 if not self.__test_root:
                         return None
                 return os.path.join(self.__test_root, "ro_data")
-        
+
         ro_data_root = property(fget=__get_ro_data_root)
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
@@ -1510,7 +1510,7 @@ class CliTestCase(Pkg5TestCase):
                         args.append(command)
 
                 prefix = "cd %s;" % self.test_root
-                cmdline = "%s/usr/bin/pkgsend %s" % (g_proto_area, 
+                cmdline = "%s/usr/bin/pkgsend %s" % (g_proto_area,
                     " ".join(args))
 
                 retcode, out = self.cmdline_run(cmdline, comment=comment,

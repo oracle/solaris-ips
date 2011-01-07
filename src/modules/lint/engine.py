@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -39,7 +39,7 @@ import shutil
 import sys
 
 PKG_CLIENT_NAME = "pkglint"
-CLIENT_API_VERSION = 48
+CLIENT_API_VERSION = 49
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 class LintEngineException(Exception):
@@ -127,7 +127,7 @@ class LintEngineCache():
 
                                 if key not in packages and \
                                     branch <= self.branch:
-                                        packages[key] = pfmri                                
+                                        packages[key] = pfmri
                                 # get_pkg_list returns results sorted by
                                 # publisher, then sorted by version. We may find
                                 # another publisher that has a more recent
@@ -186,7 +186,7 @@ class LintEngineCache():
                         return len(self.latest_cache[api_inst])
                 count = 0
                 for item in self.latest_cache[api_inst]:
-                        mf = self.latest_cache[api_inst][item]                        
+                        mf = self.latest_cache[api_inst][item]
                         if pkg.fmri.glob_match(str(mf.fmri), pattern):
                                 count = count + 1
                 return count
@@ -657,7 +657,7 @@ class LintEngine(object):
                     self.mf_cache.count_latest(api_inst, pattern))
                 for m in self.mf_cache.gen_latest(api_inst,
                     tracker, pattern):
-                        yield m                        
+                        yield m
                 return
 
         EXACT = 0
@@ -1009,7 +1009,7 @@ def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
         FMRIs as being newer than versioned FMRIs of the same package name,
         and un-timestamped packages as being newer than versioned FMRIs of the
         same package name and version.
-        
+
         For published packages, where the version and pkg names are identical,
         but the publisher differs, it also treats the new package as being a
         successor of the old.

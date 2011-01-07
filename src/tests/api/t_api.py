@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -41,7 +41,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 48
+CLIENT_API_VERSION = 49
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
@@ -358,8 +358,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # known catalog for installed packages exist in the installed
                 # catalog and are identical.
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = api.ImageInterface(self.get_img_path(), 
+                    CLIENT_API_VERSION, progresstracker, lambda x: False, 
+                    PKG_CLIENT_NAME)
                 img = api_obj.img
 
                 # Get image catalogs.
@@ -403,8 +404,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.dc.start()
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = api.ImageInterface(self.get_img_path(), 
+                    CLIENT_API_VERSION, progresstracker, 
+                    lambda x: False, PKG_CLIENT_NAME)
                 api_obj.refresh(immediate=True)
                 img = api_obj.img
 

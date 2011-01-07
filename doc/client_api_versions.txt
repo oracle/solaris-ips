@@ -1,3 +1,9 @@
+Version 49:
+Compatible with clients using versions 46-48:
+    pkg.client.api.ImageInterface has changed as follows:
+        * plan_install and plan_update take an optional
+          argument to reject packages in solution.
+
 Version 48:
 Compatible with clients using versions 46-47.
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """This module provides the supported, documented interface for clients to
@@ -65,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 48
+CURRENT_API_VERSION = 49
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -139,7 +139,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([46, 47, CURRENT_API_VERSION])
+                compatible_versions = set([46, 47, 48, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -312,7 +312,7 @@ class ImageInterface(object):
                         raise apx.ImageLockedError()
 
         def __plan_common_start(self, operation, noexecute, new_be, be_name):
-                """Start planning an operation:  
+                """Start planning an operation:
                     Acquire locks.
                     Log the start of the operation.
                     Check be_name."""
@@ -356,7 +356,7 @@ class ImageInterface(object):
 
         def __set_new_be(self):
                 """Figure out whether or not we'd create a new boot environment
-                given inputs and plan.  Toss cookies if we need a new be and 
+                given inputs and plan.  Toss cookies if we need a new be and
                 can't have one."""
                 # decide whether or not to create new BE.
 
@@ -414,7 +414,8 @@ class ImageInterface(object):
                 raise
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
-            noexecute=False, update_index=True, be_name=None, new_be=False):
+            noexecute=False, update_index=True, be_name=None,
+            reject_list=misc.EmptyI, new_be=False):
                 """Constructs a plan to install the packages provided in
                 pkg_list.  Once an operation has been planned, it may be
                 executed by first calling prepare(), and then execute_plan().
@@ -435,6 +436,10 @@ class ImageInterface(object):
                 'be_name' is a string to use as the name of any new boot
                 environment created during the operation.
 
+                'reject_list' is a list of patterns not to be permitted
+                in solution; installed packages matching these patterns
+                are removed.
+
                 'new_be' indicates whether a new boot environment should be
                 created during the operation.  If True, a new boot environment
                 will be created.  If False, and a new boot environment is
@@ -451,7 +456,8 @@ class ImageInterface(object):
 
                         self.__img.make_install_plan(pkg_list,
                             self.__progresstracker,
-                            self.__check_cancelation, noexecute)
+                            self.__check_cancelation, noexecute,
+                            reject_list=reject_list)
 
                         assert self.__img.imageplan
 
@@ -527,7 +533,8 @@ class ImageInterface(object):
                 return res
 
         def plan_update(self, pkg_list, refresh_catalogs=True,
-            noexecute=False, update_index=True, be_name=None, new_be=False):
+            reject_list=misc.EmptyI, noexecute=False, update_index=True,
+            be_name=None, new_be=False):
                 """Constructs a plan to update the packages provided in
                 pkg_list.  Once an operation has been planned, it may be
                 executed by first calling prepare(), and then execute_plan().
@@ -548,7 +555,7 @@ class ImageInterface(object):
 
                         self.__img.make_update_plan(self.__progresstracker,
                             self.__check_cancelation, noexecute,
-                            pkg_list=pkg_list)
+                            pkg_list=pkg_list, reject_list=reject_list)
 
                         assert self.__img.imageplan
 
@@ -606,8 +613,8 @@ class ImageInterface(object):
                 return False
 
         def plan_update_all(self, refresh_catalogs=True,
-            noexecute=False, force=False, update_index=True,
-            be_name=None, new_be=True):
+            reject_list=misc.EmptyI, noexecute=False, force=False,
+            update_index=True, be_name=None, new_be=True):
                 """Constructs a plan to update all packages on the system
                 to the latest known versions.  Once an operation has been
                 planned, it may be executed by first calling prepare(), and
@@ -645,7 +652,8 @@ class ImageInterface(object):
                                         pass
 
                         self.__img.make_update_plan(self.__progresstracker,
-                            self.__check_cancelation, noexecute)
+                            self.__check_cancelation, noexecute,
+                            reject_list=reject_list)
 
                         assert self.__img.imageplan
 
@@ -1097,7 +1105,7 @@ class ImageInterface(object):
 
                 pub_ranks = self.__img.get_publisher_ranks()
 
-                # The incorporation list should include all installed, 
+                # The incorporation list should include all installed,
                 # incorporated packages from all publishers.
                 for t in img_cat.entry_actions(cat_info):
                         (pub, stem, ver), entry, actions = t
@@ -1850,7 +1858,7 @@ class ImageInterface(object):
 
                                 mfst = None
                                 if not unsupported and \
-                                    (frozenset([PackageInfo.SIZE, 
+                                    (frozenset([PackageInfo.SIZE,
                                     PackageInfo.LICENSES]) | act_opts) & \
                                     info_needed:
                                         try:
@@ -1919,7 +1927,7 @@ class ImageInterface(object):
                                     states=states, publisher=pub, version=release,
                                     build_release=build_release, branch=branch,
                                     packaging_date=packaging_date, size=size,
-                                    pfmri=str(pfmri), licenses=licenses, 
+                                    pfmri=str(pfmri), licenses=licenses,
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
                                     description=description))

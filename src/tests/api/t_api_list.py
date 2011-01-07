@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -45,7 +45,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-API_VERSION = 48
+CLIENT_API_VERSION = 49
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
@@ -368,7 +368,7 @@ add set name=pkg.description value="%(desc)s"
                 if not api_obj:
                         progresstracker = progress.NullProgressTracker()
                         api_obj = api.ImageInterface(self.get_img_path(),
-                            API_VERSION, progresstracker, lambda x: False,
+                            CLIENT_API_VERSION, progresstracker, lambda x: False,
                             PKG_CLIENT_NAME)
 
                 # Set of states exposed by the API.
@@ -414,7 +414,7 @@ add set name=pkg.description value="%(desc)s"
                 combinations thereof."""
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 # First check all variants case.
@@ -494,7 +494,7 @@ add set name=pkg.description value="%(desc)s"
                 # patterns such that the newest version allowed by the
                 # pattern is what is listed.
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
@@ -578,7 +578,7 @@ add set name=pkg.description value="%(desc)s"
                 only installed packages and combinations thereof."""
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 # Verify no installed packages case.
@@ -685,7 +685,7 @@ add set name=pkg.description value="%(desc)s"
                 expected = [
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
-                    self.__get_exp_pub_entry("test2", 12, "corge", 
+                    self.__get_exp_pub_entry("test2", 12, "corge",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
@@ -704,7 +704,7 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=False),                    
+                        installed=False),
                     self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
                         installed=False),
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
@@ -1181,7 +1181,7 @@ add set name=pkg.description value="%(desc)s"
                 only upgradable packages and combinations thereof."""
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 # Verify no installed packages case.
@@ -1219,7 +1219,7 @@ add set name=pkg.description value="%(desc)s"
                 """Verify that get_pkg_categories returns expected results."""
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 # Verify no installed packages case.
@@ -1311,8 +1311,8 @@ add set name=pkg.description value="%(desc)s"
                         self.debug("plan uninstall: %s" % time.ctime())
                         # skip corge since it's renamed
                         api_obj.plan_uninstall([
-                                                p 
-                                                for p in pkgs 
+                                                p
+                                                for p in pkgs
                                                 if not p.startswith("corge@1.0")
                                                 ], False)
                         self.debug("prepare uninstall: %s" % time.ctime())
@@ -1327,7 +1327,7 @@ add set name=pkg.description value="%(desc)s"
                 """Verify that pattern filtering works as expected."""
 
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 # First, check all variants, but with multiple patterns for the

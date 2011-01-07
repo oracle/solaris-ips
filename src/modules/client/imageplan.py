@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple
@@ -161,7 +161,7 @@ class ImagePlan(object):
         @property
         def services(self):
                 """Returns a list of strings describing affected services"""
-                return ["%s: %s" % (fmri, smf) 
+                return ["%s: %s" % (fmri, smf)
                     for fmri, smf in self.__actuators.get_services_list()]
 
         @property
@@ -169,10 +169,10 @@ class ImagePlan(object):
                 """Returns list of variant/facet changes"""
                 ret = []
                 if self.__new_variants:
-                        ret += ["variant %s: %s" % a 
+                        ret += ["variant %s: %s" % a
                             for a in self.__new_variants.iteritems()]
                 if self.__new_facets:
-                        ret += ["  facet %s: %s" % a 
+                        ret += ["  facet %s: %s" % a
                             for a in self.__new_facets.iteritems()]
 
                 return ret
@@ -213,7 +213,7 @@ class ImagePlan(object):
                 self._planned_op = op
                 self._image_lm = self.image.get_last_modified()
 
-        def plan_install(self, pkgs_to_install):
+        def plan_install(self, pkgs_to_install, reject_list):
                 """Determine the fmri changes needed to install the specified
                 pkgs"""
                 self.__plan_op(self.PLANNED_INSTALL)
@@ -236,6 +236,14 @@ class ImagePlan(object):
                     installed_pubs=installed_pubs,
                     installed_pkgs=installed_dict)
 
+                if reject_list:
+                        reject_dict, references = self.match_user_fmris(
+                            reject_list, self.MATCH_ALL, pub_ranks=pub_ranks,
+                            installed_pubs=installed_pubs,
+                            installed_pkgs=installed_dict)
+                else:
+                        reject_dict = {}
+
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
                     self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
@@ -246,7 +254,7 @@ class ImagePlan(object):
 
                 # Solve... will raise exceptions if no solution is found
                 new_vector = self.__pkg_solver.solve_install([], proposed_dict,
-                    self.__new_excludes)
+                    self.__new_excludes, reject_dict=reject_dict)
 
                 self.__fmri_changes = [
                     (a, b)
@@ -294,7 +302,7 @@ class ImagePlan(object):
 
                 self.state = EVALUATED_PKGS
 
-        def plan_update(self, pkgs_to_update=None):
+        def plan_update(self, pkgs_to_update=None, reject_list=None):
                 """Determine the fmri changes needed to update the specified
                 pkgs or all packages if none were specified."""
                 self.__plan_op(self.PLANNED_UPDATE)
@@ -309,17 +317,27 @@ class ImagePlan(object):
                 # If specific packages or patterns were provided, then
                 # determine the proposed set to pass to the solver.
                 proposed_dict = None
-                if pkgs_to_update:
+                removal_list = []
+
+                if pkgs_to_update or reject_list:
                         # build installed publisher dictionary
                         installed_pubs = dict((
                             (f.pkg_name, f.get_publisher())
                             for f in installed_dict.values()
                         ))
-
+                if pkgs_to_update:
                         proposed_dict, self.__references = self.match_user_fmris(
                             pkgs_to_update, self.MATCH_INST_STEMS, pub_ranks=pub_ranks,
                             installed_pubs=installed_pubs,
                             installed_pkgs=installed_dict)
+
+                if reject_list:
+                        reject_dict, references = self.match_user_fmris(
+                            reject_list, self.MATCH_ALL, pub_ranks=pub_ranks,
+                            installed_pubs=installed_pubs,
+                            installed_pkgs=installed_dict)
+                else:
+                        reject_dict = {}
 
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
@@ -332,12 +350,14 @@ class ImagePlan(object):
                 # Solve... will raise exceptions if no solution is found
                 if pkgs_to_update:
                         new_vector = self.__pkg_solver.solve_update([],
-                            proposed_dict, self.__new_excludes)
+                            proposed_dict, excludes=self.__new_excludes,
+                            reject_dict=reject_dict)
                 else:
                         # Updating all installed packages requires a different
                         # solution path.
                         new_vector = self.__pkg_solver.solve_update_all([],
-                            self.__new_excludes)
+                            excludes=self.__new_excludes,
+                            reject_dict=reject_dict)
 
                 self.__fmri_changes = [
                     (a, b)
@@ -1015,10 +1035,10 @@ class ImagePlan(object):
                 """ Test whether this image plan contains any work to do """
                 # handle case w/ -n no verbose
                 if self.state == EVALUATED_PKGS:
-                        return not (self.__fmri_changes or self.__new_variants 
+                        return not (self.__fmri_changes or self.__new_variants
                             or self.__new_facets)
                 elif self.state >= EVALUATED_OK:
-                        return not (self.pkg_plans or self.__new_variants or 
+                        return not (self.pkg_plans or self.__new_variants or
                             self.__new_facets)
 
         def preexecute(self):

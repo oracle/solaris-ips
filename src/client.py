@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 48
+CLIENT_API_VERSION = 49
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -158,14 +158,15 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         basic_usage["install"] = _(
             "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            pkg_fmri_pattern ...")
+            "            [--reject pkg_fmri_patter ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
             "[-nrvq] [--no-index] [--deny-new-be | --require-new-be]\n"
             "            [--be-name name] pkg_fmri_pattern ...")
         basic_usage["update"] = _(
             "[-fnvq] [--accept] [--be-name name] [--licenses]\n"
             "            [--deny-new-be | --require-new-be] [--no-index]\n"
-            "            [--no-refresh] [pkg_fmri_pattern ...]")
+            "            [--no-refresh] [--reject pkg_fmri_pattern ...]"
+            "            [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
             "[-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]")
         basic_usage["refresh"] = _("[--full] [publisher ...]")
@@ -303,7 +304,7 @@ def get_fmri_args(api_inst, args, cmd=None):
                         errors.append("Illegal FMRI '%s': %s" % (pat,
                             err))
                 else:
-                        # Including the pattern is reundant for other
+                        # Including the pattern is redundant for other
                         # exceptions.
                         errors.append(err)
         if errors:
@@ -725,7 +726,7 @@ def fix_image(api_inst, args):
 def verify_image(api_inst, args):
         opts, pargs = getopt.getopt(args, "vfqH")
 
-        quiet = False 
+        quiet = False
         verbose = 0
         # for now, always check contents of files
         forever = display_headers = True
@@ -738,7 +739,7 @@ def verify_image(api_inst, args):
                 elif opt == "-f":
                         forever = True
                 elif opt == "-q":
-                        quiet = True                        
+                        quiet = True
                         display_headers = False
 
         if verbose and quiet:
@@ -1260,7 +1261,7 @@ def change_variant(api_inst, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants,
-                    facets=None, noexecute=noexecute, be_name=be_name, 
+                    facets=None, noexecute=noexecute, be_name=be_name,
                     new_be=new_be)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
@@ -1360,7 +1361,7 @@ def change_facet(api_inst, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants=None,
-                    facets=facets, noexecute=noexecute, be_name=be_name, 
+                    facets=facets, noexecute=noexecute, be_name=be_name,
                     new_be=new_be)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
@@ -1395,13 +1396,16 @@ def install(api_inst, args):
         # XXX Publisher-catalog issues.
         op = "install"
         opts, pargs = getopt.getopt(args, "nvq", ["accept", "licenses",
-            "no-refresh", "no-index", "deny-new-be", "require-new-be", "be-name="])
+            "no-refresh", "no-index", "deny-new-be", "require-new-be",
+            "be-name=", "reject="])
 
         accept = quiet = noexecute = show_licenses = False
         verbose = 0
         refresh_catalogs = update_index = True
         new_be = None
         be_name = None
+        reject_pats = []
+
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -1423,6 +1427,8 @@ def install(api_inst, args):
                         new_be = True
                 elif opt == "--be-name":
                         be_name = arg
+                elif opt == "--reject":
+                        reject_pats.append(arg)
 
         if not pargs:
                 usage(_("at least one package name required"), cmd=op)
@@ -1436,11 +1442,15 @@ def install(api_inst, args):
         if not rval:
                 return EXIT_OOPS
 
+        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
+        if not xrval:
+                return EXIT_OOPS
+
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_install(pargs,
-                    refresh_catalogs, noexecute, update_index=update_index, 
-                    be_name=be_name, new_be=new_be)
+                    refresh_catalogs, noexecute, update_index=update_index,
+                    be_name=be_name, new_be=new_be, reject_list=reject_pats)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1471,7 +1481,7 @@ def uninstall(api_inst, args):
         """Attempt to take package specified to DELETED state."""
 
         op = "uninstall"
-        opts, pargs = getopt.getopt(args, "nrvq", ["no-index", 
+        opts, pargs = getopt.getopt(args, "nrvq", ["no-index",
             "deny-new-be", "require-new-be", "be-name="])
 
         quiet = noexecute = recursive_removal = False
@@ -1488,7 +1498,7 @@ def uninstall(api_inst, args):
                 elif opt == "-v":
                         verbose = verbose + 1
                 elif opt == "-q":
-                        quiet = True                        
+                        quiet = True
                 elif opt == "--no-index":
                         update_index = False
                 elif opt == "--deny-new-be":
@@ -1512,7 +1522,7 @@ def uninstall(api_inst, args):
 
         try:
                 if not api_inst.plan_uninstall(pargs, recursive_removal,
-                    noexecute, update_index=update_index, be_name=be_name, 
+                    noexecute, update_index=update_index, be_name=be_name,
                     new_be=new_be):
                         assert 0
         except:
@@ -1540,7 +1550,7 @@ def update(api_inst, args):
         The operands are interpreted as glob patterns."""
 
         op = "update"
-        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=",
+        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=", "reject=",
             "licenses", "no-refresh", "no-index", "deny-new-be", "require-new-be"])
 
         accept = force = quiet = noexecute = show_licenses = False
@@ -1548,6 +1558,7 @@ def update(api_inst, args):
         refresh_catalogs = update_index = True
         be_name = None
         new_be = None
+        reject_pats = []
 
         for opt, arg in opts:
                 if opt == "-f":
@@ -1570,6 +1581,8 @@ def update(api_inst, args):
                         update_index = False
                 elif opt == "--deny-new-be":
                         new_be = False
+                elif opt == "--reject":
+                        reject_pats.append(arg)
                 elif opt == "--require-new-be":
                         new_be = True
 
@@ -1582,6 +1595,10 @@ def update(api_inst, args):
         if not rval:
                 return EXIT_OOPS
 
+        xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
+        if not xrval:
+                return EXIT_OOPS
+
         stuff_to_do = opensolaris_image = None
         try:
                 if res and "*" not in pargs and "*@*" not in pargs:
@@ -1590,17 +1607,19 @@ def update(api_inst, args):
                         # allowed by the patterns specified.  (The versions
                         # specified can be older than what is installed.)
                         stuff_to_do = api_inst.plan_update(pargs,
-                            refresh_catalogs, noexecute, be_name=be_name,
-                            new_be=new_be, update_index=update_index)
+                            refresh_catalogs=refresh_catalogs, noexecute=noexecute,
+                            be_name=be_name, new_be=new_be, update_index=update_index,
+                            reject_list=reject_pats)
                 else:
                         # If no packages were specified, or '*' was one of
                         # the patterns provided, attempt to update all
                         # installed packages.
                         stuff_to_do, opensolaris_image = \
                             api_inst.plan_update_all(
-                                refresh_catalogs, noexecute, force=force,
-                                be_name=be_name, new_be=new_be,
-                                update_index=update_index)
+                                refresh_catalogs=refresh_catalogs, noexecute=noexecute,
+                                be_name=be_name, new_be=new_be, force=force,
+                                update_index=update_index,
+                                reject_list=reject_pats)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -3775,7 +3794,7 @@ def image_create(args):
         kernel statistics or device information."""
 
         cmd_name = "image-create"
-        
+
         force = False
         imgtype = IMG_TYPE_USER
         is_zone = False
@@ -4032,7 +4051,7 @@ def history_list(api_inst, args):
                                             col)
                                         return EXIT_BADOPT
                         if not __unique_columns(columns):
-                                return EXIT_BADOPT                                
+                                return EXIT_BADOPT
 
                 elif opt == "-t":
                         time_vals = arg.split(",")
@@ -4252,8 +4271,8 @@ def __utc_format(time_str, utc_now):
         return a UTC representation of that value, formatted with
         %Y%m%dT%H%M%SZ.  This raises a ValueError if the time was incorrectly
         formatted.  If the time_str is "now", we return the value of utc_now"""
-        
-        if time_str == "now":                
+
+        if time_str == "now":
                 return utc_now
 
         local_dt = datetime.datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S")
