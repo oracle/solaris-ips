@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -323,7 +323,7 @@ class DependencyAction(generic.Action):
                 generic.py for a more detailed explanation."""
 
                 ctype = self.attrs["type"]
-                pfmri = self.attrs["fmri"]
+                pfmris = self.attrs["fmri"]
 
                 if ctype not in known_types:
                         return []
@@ -338,14 +338,18 @@ class DependencyAction(generic.Action):
                 # XXX This code will need to change if we start using fmris
                 # with publishers in dependencies.
                 #
-                if pfmri.startswith("pkg:/"):
-                        pfmri = pfmri[5:]
-                # Note that this creates a directory hierarchy!
-                inds = [
-                        ("depend", ctype, pfmri, None)
-                ]
+                if isinstance(pfmris, basestring):
+                        pfmris = [pfmris]
+                inds = []
+                for p in pfmris:
+                        if p.startswith("pkg:/"):
+                                p = p[5:]
+                        # Note that this creates a directory hierarchy!
+                        inds.append(
+                                ("depend", ctype, p, None)
+                        )
 
-                if "@" in pfmri:
-                        stem = pfmri.split("@")[0]
-                        inds.append(("depend", ctype, stem, None))
+                        if "@" in p:
+                                stem = p.split("@")[0]
+                                inds.append(("depend", ctype, stem, None))
                 return inds

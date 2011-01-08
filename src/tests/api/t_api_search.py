@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -153,6 +153,12 @@ close """
 open b2@1.0,5.11-0
 add set description="Image Packaging System"
 close """
+
+        require_any_manf = """
+open ra@1.0,5.11-0
+add depend type=require-any fmri=another_pkg@1.0,5.11-0 fmri=pkg:/space_pkg@1.0,5.11-0
+close
+"""
 
         res_8492_1 = set([('pkg:/b1@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
         res_8492_2 = set([('pkg:/b2@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
@@ -2435,6 +2441,28 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 fmris = indexer.Indexer.check_for_updates(back_dir,
                     self._get_repo_catalog())
                 self.assertEqual(len(fmris), 1)
+
+        def test_bug_17672(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, (self.another_pkg10, self.space_pkg10,
+                    self.require_any_manf))
+                repo = self.dc.get_repo()
+                repo.rebuild(build_catalog=False, build_index=True)
+                api_obj = self.image_create(durl)
+                expected_result = set([
+                    ('pkg:/ra@1.0-0', 'require-any',
+                    'depend fmri=another_pkg@1.0,5.11-0 ' +
+                    'fmri=pkg:/space_pkg@1.0,5.11-0 type=require-any')
+                ])
+                self._search_op(api_obj, True, "depend::", expected_result)
+                self._api_install(api_obj, ["ra"])
+                self._search_op(api_obj, False, "depend::", expected_result)
+                api_obj.rebuild_search_index()
+                self._search_op(api_obj, False, "depend::", expected_result)
+                self._search_op(api_obj, False, "depend::another_pkg",
+                    expected_result)
+                self._search_op(api_obj, False, "depend::space_pkg",
+                    expected_result)
 
 
 class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
