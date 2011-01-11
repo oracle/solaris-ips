@@ -1,0 +1,21 @@
+<div class="page-container">
+	<div class="footer">
+		<div class="footer-line"></div>
+		<div class="logo">
+			<a href="http://www.oracle.com/us/corporate/index.html">
+				<img border="0" alt="Hardware and Software Engineered to Work Together" src="http://www.oracle.com/ocom/groups/public/@ocom/documents/webcontent/oracle-footer-tagline.gif">
+			</a>
+		</div>
+		<div class="footer-nav">
+			<a class="footer-links" href="http://www.oracle.com/corporate/index.html">About Oracle</a> | 
+			<a class="footer-links" href="http://www.oracle.com/sun/index.html">Oracle and Sun</a> | 
+			<a href='http://www.oracle.com/rss/index.html'> <img src="http://www.oracleimg.com/ocom/groups/systemobject/@mktg_admin/@ocom_admin/documents/digitalasset/feed-icon-14x14.png" alt="Oracle RSS Feeds" style="margin-bottom: 1px;" align="absmiddle" border="0" height="14" width="14"></a> | 
+			<a class="footer-links" href="http://www.oracle.com/subscribe/index.html" >Subscribe</a> | 
+			<a href="http://www.oracle.com/corporate/contact/index.html" class="footer-links">Contact Us</a> | 
+			<a href="http://www.oracle.com/html/copyright.html" class="footer-links">Legal Notices</a> |
+			<a href="http://www.oracle.com/html/terms.html" class="footer-links">Terms of Use</a> |
+			<a href="http://www.oracle.com/html/privacy.html" class="footer-links">Your Privacy Rights</a>
+		</div>
+	</div>
+</div>
+

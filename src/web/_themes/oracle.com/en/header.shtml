@@ -1,0 +1,34 @@
+<%page args="g_vars, title, crumbs, gmenu_items"/>\
+
+<div id="head-container" class="page-container">
+	<div class="masthead">
+               	<a id="logo" href="http://www.oracle.com/"></a>
+               	<div class="lang_wrapper">
+			United States| English
+               	</div>
+	</div>
+	<ul id="navigation" class="menu">
+	% for e, (link, text) in enumerate(gmenu_items):
+		% if e == 0:
+		<li id="left_cap" class="top-level"><p><a href="${link}">${text}</a></p></li>
+		% else:
+		<li class="top-level"><p><a href="${link}">${text}</a></p></li>
+		% endif
+	% endfor
+		<li class="top-level special last"><p>&nbsp;</p></li>
+	</ul>
+        <div class="breadcrumbs">
+		<div class="breadcrumb_left"></div>
+		<div class="breadcrumb_center">
+			<span class="breadcrumb_content">
+			% for e, (link, text) in enumerate(crumbs):
+			        <a href="${link}">${text}</a> 
+			% if e < len(crumbs) - 1:
+				<img src="http://www.oracleimg.com/ocom/groups/systemobject/@mktg_admin/documents/digitalasset/066625.gif"></img>
+			% endif
+			% endfor
+			</span>
+		</div>
+		<div class="breadcrumb_right"></div>
+        </div>
+</div>
