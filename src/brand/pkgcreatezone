@@ -517,19 +517,21 @@ pkglist="$pkglist
 	pkg:///network/ftp"
 
 #
-# Get at least one sensible shell, vim, ssh, sshd.
+# Get at least one sensible shell, vim, ssh, ssh key utils, sshd.
 #
 pkglist="$pkglist
 	pkg:///shell/bash
 	pkg:///editor/vim
 	pkg:///network/ssh
+	pkg:///network/ssh/ssh-key
 	pkg:///service/network/ssh"
 
 #
-# Get some name services.
+# Get some name services and DNS.
 #
 pkglist="$pkglist
 	pkg:///system/network/nis
+	pkg:///network/dns/bind
 	pkg:///naming/ldap"
 
 #
