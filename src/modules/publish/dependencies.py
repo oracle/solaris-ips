@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -484,6 +484,8 @@ def resolve_links(path, files_dict, links, path_vars, file_dep_attrs, index=1):
                 # Copy the variants so that marking the variants as satisified
                 # doesn't change the sate of 'path_vars.'
                 tmp_vars = copy.copy(path_vars)
+                # If tmp_vars has been satisfied, then this function should
+                # never have been called.
                 assert(tmp_vars.is_empty() or not tmp_vars.is_satisfied())
                 # Check each package which delivers a file with this path.
                 for pfmri, p_vc in files_dict[path]:
@@ -609,6 +611,10 @@ def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
         multiple_path_errs = []
         multiple_path_pkgs = set()
         for p in make_paths(file_dep):
+                # If orig_dep_vars is satisfied, then this function should never
+                # have been called.
+                assert(orig_dep_vars.is_empty() or
+                    not orig_dep_vars.is_satisfied())
                 paths_info, path_deps = resolve_links(os.path.normpath(p),
                     files_dict, links, orig_dep_vars, file_dep.attrs.copy())
                 link_deps.extend(path_deps)
@@ -688,11 +694,18 @@ def find_package(files, links, file_dep, pkg_vars, use_system):
         'pkg_vars' is the variants against which the package was published."""
 
         file_dep, orig_dep_vars = split_off_variants(file_dep, pkg_vars)
+        # If the file dependency has already satisfied all its variants, then
+        # this function should never have been called.
+        assert(orig_dep_vars.is_empty() or not orig_dep_vars.is_satisfied())
         dep_vars = copy.copy(orig_dep_vars)
         # First try to resolve the dependency against the delivered files.
         res, dep_vars, errs = find_package_using_delivered_files(
                 files.delivered, links, file_dep, dep_vars, orig_dep_vars)
-        if (res and dep_vars.is_satisfied()) or not use_system:
+        # If dep_vars is satisfied then we found at least one solution.  It's
+        # possible that more than one solution was found, causing an error.
+        assert(not dep_vars.is_satisfied() or
+            (res or errs or dep_vars.is_empty()))
+        if ((res or errs) and dep_vars.is_satisfied()) or not use_system:
                 return res, dep_vars, errs
 
         # If the dependency isn't fully satisfied, resolve it against the
@@ -701,6 +714,9 @@ def find_package(files, links, file_dep, pkg_vars, use_system):
         # We only need to resolve for the variants not already satisfied
         # above.
         const_dep_vars = copy.copy(dep_vars)
+        # If dep_vars has been satisfied, then we should have exited the
+        # function above.
+        assert(const_dep_vars.is_empty() or not const_dep_vars.is_satisfied())
         inst_res, dep_vars, inst_errs = find_package_using_delivered_files(
             files.installed, links, file_dep, dep_vars, const_dep_vars)
         res.extend(inst_res)

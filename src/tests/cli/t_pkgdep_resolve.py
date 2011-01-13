@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -226,6 +226,43 @@ set name=pkg.fmri value=double_provides@1.0,5.11-1
 file NOHASH group=sys mode=0755 owner=root path=kernel/exec/amd64/elfexec reboot-needed=true variant.opensolaris.zone=global
 file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-needed=true variant.opensolaris.zone=global
 """
+
+        bug_17700_dep = """\
+set name=pkg.fmri value=b17700_dep@1.0,5.11-1
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=sparc value=i386
+depend fmri=__TBD pkg.debug.depend.file=bignum pkg.debug.depend.path=kernel/misc/sparcv9 pkg.debug.depend.path=platform/sun4u/kernel/misc/sparcv9 pkg.debug.depend.path=platform/sun4v/kernel/misc/sparcv9 pkg.debug.depend.path=usr/kernel/misc/sparcv9 pkg.debug.depend.reason=kernel/drv/sparcv9/emlxs pkg.debug.depend.type=elf type=require variant.arch=sparc variant.opensolaris.zone=global
+"""
+        bug_17700_res1 = """\
+set name=pkg.fmri value=system/kernel@1.0,5.11-1
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=sparc value=i386
+file NOHASH group=bin mode=0755 owner=root path=kernel/misc/sparcv9/bignum variant.arch=sparc variant.opensolaris.zone=global
+"""
+
+        installed_17700_res1 = """\
+open system/kernel@1.0,5.11-1
+add set name=variant.opensolaris.zone value=global value=nonglobal
+add set name=variant.arch value=sparc value=i386
+add file tmp/foo group=bin mode=0755 owner=root path=kernel/misc/sparcv9/bignum variant.arch=sparc variant.opensolaris.zone=global
+close
+"""
+
+        bug_17700_res2 = """\
+set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=sparc value=i386
+file NOHASH group=bin mode=0755 owner=root path=platform/sun4u/kernel/misc/sparcv9/bignum variant.arch=sparc variant.opensolaris.zone=global
+"""
+
+        installed_17700_res2 = """\
+open system/kernel/platform@1.0,5.11-1
+add set name=variant.opensolaris.zone value=global value=nonglobal
+add set name=variant.arch value=sparc value=i386
+add file tmp/foo group=bin mode=0755 owner=root path=platform/sun4u/kernel/misc/sparcv9/bignum variant.arch=sparc variant.opensolaris.zone=global
+close
+"""
+
 
         misc_files = ["tmp/foo"]
 
@@ -772,6 +809,35 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-neede
                         fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
                         if str(fmri).startswith("pkg:/double_provides"):
                                 self.assertEqual(str(fmri.version.branch), "1")
+
+        def test_bug_17700(self):
+                """Test that when multiple packages satisfy a dependency under
+                the same combination of two variants, that an error is reported
+                instead of an assertion being raised."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_17700_res1)
+                self.pkgsend_bulk(self.rurl, self.installed_17700_res2)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["system/kernel",
+                    "system/kernel/platform"])
+                dep_path = self.make_manifest(self.bug_17700_dep)
+                res1_path = self.make_manifest(self.bug_17700_res1)
+                res2_path = self.make_manifest(self.bug_17700_res2)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path,
+                    res1_path, res2_path], self.api_obj)
+                for k in pkg_deps:
+                        self.assertEqual(len(pkg_deps[k]), 0,
+                            "Should not have resolved any dependencies instead "
+                            "%s had the following dependencies found:%s" %
+                            (k, "\n".join([str(s) for s in pkg_deps[k]])))
+                self.assertEqual(len(errs), 2, "Should have gotten exactly one "
+                    "error, instead got:%s" % "\n".join([str(s) for s in errs]))
+                for e in errs:
+                        self.assert_(isinstance(e,
+                            dependencies.MultiplePackagesPathError) or
+                            isinstance(e,
+                            dependencies.UnresolvedDependencyError))
 
 if __name__ == "__main__":
         unittest.main()
