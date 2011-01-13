@@ -596,18 +596,20 @@ for key in ${!gz_publishers[*]}; do
 	fi
 
 	if [[ ${publisher.keyfile} != "None" ]]; then
-		newloc="$ZONEROOT/$KEYDIR/$(basename ${publisher.keyfile})"
+		relnewloc="$KEYDIR/$(basename ${publisher.keyfile})"
+		newloc="$ZONEROOT/$relnewloc"
 		safe_copy ${publisher.keyfile} $newloc
 		chmod 644 $newloc
 		chown -h root:root $newloc
-		args="$args -k $newloc"
+		args="$args -k $relnewloc"
 	fi
 	if [[ ${publisher.certfile} != "None" ]]; then
-		newloc="$ZONEROOT/$KEYDIR/$(basename ${publisher.certfile})"
+		relnewloc="$KEYDIR/$(basename ${publisher.certfile})"
+		newloc="$ZONEROOT/$relnewloc"
 		safe_copy ${publisher.certfile} $newloc
 		chmod 644 $newloc
 		chown -h root:root $newloc
-		args="$args -c $newloc"
+		args="$args -c $relnewloc"
 	fi
 	LC_ALL=C $PKG unset-publisher $key >/dev/null 2>&1
 	LC_ALL=C $PKG set-publisher $args $key
