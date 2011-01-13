@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a file packaging object
@@ -355,8 +355,14 @@ class FileAction(generic.Action):
                 # that was installed, and the version on disk is different
                 # than the installed package's original version, then preserve
                 # the installed file by renaming it.
+                #
+                # If pkgplan.origin_fmri isn't set, but there is an orig action,
+                # then this file is moving between packages and it can't be
+                # a downgrade since that isn't allowed across rename or obsolete
+                # boundaries.
                 if orig and pkgplan.destination_fmri and \
                     self.hash != orig.hash and \
+                    pkgplan.origin_fmri and \
                     pkgplan.destination_fmri.version < pkgplan.origin_fmri.version:
                         # Installed, preserved file is for a package newer than
                         # what will be installed.  So check if the version on

@@ -1377,6 +1377,21 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        renpreserve = """
+            open orig_pkg@1.0
+            add file tmp/preserve1 path=foo1 mode=0644 owner=root group=root preserve=true
+            add file tmp/bronze1 path=bronze1 mode=0644 owner=root group=root preserve=true
+            close
+            open orig_pkg@1.1
+            add set pkg.renamed=true
+            add depend type=require fmri=new_pkg@1.0
+            close
+            open new_pkg@2.0
+            add file tmp/preserve3 path=foo2 mode=0644 owner=root group=root original_name=orig_pkg:foo1 preserve=true
+            add file tmp/bronze1 path=bronze1 mode=0644 owner=root group=root preserve=true
+            close
+        """
+
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -1778,7 +1793,7 @@ adm
                 package install, update, upgrade, and removal."""
 
                 self.pkgsend_bulk(self.rurl, (self.preserve1, self.preserve2,
-                    self.preserve3))
+                    self.preserve3, self.renpreserve))
                 self.image_create(self.rurl)
 
                 # If there are no local modifications, no preservation should be
@@ -1882,6 +1897,51 @@ adm
                 self.file_remove("testme")
                 self.file_doesnt_exist("testme")
                 self.pkg("uninstall preserve")
+
+                # Verify preserve works across package rename with and without
+                # original_name use and even when the original file is missing.
+                self.pkg("install orig_pkg@1.0")
+                foo1_path = os.path.join(self.get_img_path(), "foo1")
+                self.assert_(os.path.isfile(foo1_path))
+                bronze1_path = os.path.join(self.get_img_path(), "bronze1")
+                self.assert_(os.path.isfile(bronze1_path))
+
+                # Update across the rename boundary, then verify that the files
+                # were installed with their new name and the old ones were
+                # removed.
+                self.pkg("update orig_pkg")
+                foo2_path = os.path.join(self.get_img_path(), "foo2")
+                self.assert_(not os.path.exists(foo1_path))
+                self.assert_(os.path.isfile(foo2_path))
+                self.assert_(os.path.isfile(bronze1_path))
+                self.pkg("uninstall \*")
+
+                # Update across the rename boundary, then truncate each of the
+                # preserved files.  They should remain empty even though one is
+                # changing names and the other is simply being preserved across
+                # a package rename.
+                self.pkg("install orig_pkg@1.0")
+                open(foo1_path, "wb").close()
+                open(bronze1_path, "wb").close()
+                self.pkg("update orig_pkg")
+                self.assert_(not os.path.exists(foo1_path))
+                self.assert_(os.path.isfile(foo2_path))
+                self.assertEqual(os.stat(foo2_path).st_size, 0)
+                self.assert_(os.path.isfile(bronze1_path))
+                self.assertEqual(os.stat(bronze1_path).st_size, 0)
+                self.pkg("uninstall \*")
+
+                # Update across the rename boundary, then verify that a change
+                # in file name will cause re-delivery of preserved files, but
+                # unchanged, preserved files will not be re-delivered.
+                self.pkg("install orig_pkg@1.0")
+                os.unlink(foo1_path)
+                os.unlink(bronze1_path)
+                self.pkg("update orig_pkg")
+                self.assert_(not os.path.exists(foo1_path))
+                self.assert_(os.path.isfile(foo2_path))
+                self.assert_(not os.path.exists(bronze1_path))
+                self.pkg("uninstall \*")
 
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
