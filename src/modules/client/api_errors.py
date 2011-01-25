@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -419,7 +419,9 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                                         ]
                 if self.no_solution:
                         res += [_("No solution was found to satisfy constraints")]
-
+                        if isinstance(self.no_solution, list):
+                                res.extend(self.no_solution)
+                        
                 if self.no_version:
                         res += self.no_version
 

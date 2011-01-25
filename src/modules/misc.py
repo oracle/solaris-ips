@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import calendar
 import cStringIO
@@ -292,7 +292,11 @@ def setlocale(category, loc=None, printer=None):
                 printer("Unable to set locale%s; locale package may be broken "
                     "or\nnot installed.  Reverting to C locale." % dl)
                 locale.setlocale(category, "C")
-
+def N_(message):
+        """Return its argument; used to mark strings for localization when
+        their use is delayed by the program."""
+        return message
+ 
 def bytes_to_str(bytes, format=None):
         """Returns a human-formatted string representing the number of bytes
         in the largest unit possible.  If provided, 'format' should be a string
