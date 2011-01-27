@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -348,6 +349,43 @@ class TestVersion(pkg5unittest.Pkg5TestCase):
                 d = d.replace(microsecond=0)
                 self.v1.set_timestamp(d)
                 self.assert_(self.v1.get_timestamp() == d)
+
+        def testsplit(self):
+                """Verify that split() works as expected."""
+
+                sver = "1.0,5.11-0.156:20101231T161351Z"
+                expected = (("1.0", "5.11", "0.156", "20101231T161351Z"),
+                    "1.0-0.156")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = "1.0:20101231T161351Z"
+                expected = (("1.0", "", None, "20101231T161351Z"), "1.0")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = ":20101231T161351Z"
+                expected = (("", "", None, "20101231T161351Z"), "")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = "1.0,5.11-0.156"
+                expected = (("1.0", "5.11", "0.156", None), "1.0-0.156")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = "-0.156"
+                expected = (("", "", "0.156", None), "-0.156")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = "1.0,5.11"
+                expected = (("1.0", "5.11", None, None), "1.0")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = ",5.11"
+                expected = (("", "5.11", None, None), "")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
+                sver = "1.0"
+                expected = (("1.0", "", None, None), "1.0")
+                self.assertEqualDiff(expected, version.Version.split(sver)) 
+
 
 if __name__ == "__main__":
         unittest.main()

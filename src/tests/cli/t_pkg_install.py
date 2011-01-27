@@ -847,7 +847,9 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 # reinstall idr1, then update to version 2 of base kernel
                 self.pkg("install -v idr1@1.0,5.11-0.1.1.0 idr1_entitlement")
                 self.pkg("list kernel@1.0,5.11-0.1.1.0")
-                self.pkg("update -v --reject 'idr1*' incorp@1.0,5.11-0.2")
+                # Wildcards are purposefully used here for both patterns to
+                # ensure pattern matching works as expected for update.
+                self.pkg("update -v --reject 'idr1*' '*incorp@1.0-0.2'")
                 self.pkg("list  kernel@1.0,5.11-0.2")
 
 

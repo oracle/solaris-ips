@@ -1461,7 +1461,7 @@ add set name=pkg.description value="%(desc)s"
 
                 # Finally, verify that specifying an illegal pattern will
                 # raise an InventoryException.
-                patterns = ["baz@1.*.a", "baz@*-1"]
+                patterns = ["baz@1.*.a"]
                 expected = [
                     version.IllegalVersion(
                         "Bad Version: %s" % p.split("@", 1)[-1])
@@ -1471,7 +1471,7 @@ add set name=pkg.description value="%(desc)s"
                         returned = self.__get_returned(api_obj.LIST_ALL,
                             api_obj=api_obj, patterns=patterns, variants=True)
                 except api_errors.InventoryException, e:
-                        self.assertEqualDiff(e.illegal, expected)
+                        self.assertEqualDiff(expected, e.illegal)
                 else:
                         raise RuntimeError("InventoryException not raised!")
 

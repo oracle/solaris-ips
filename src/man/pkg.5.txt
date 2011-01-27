@@ -24,6 +24,17 @@ DESCRIPTION
      'opensolaris.org' is the publisher.  'library/libc' is the package
      name.  Although the namespace is hierarchical and arbitrarily deep,
      there is no enforced containment -- the name is essentially arbitrary.
+     The publisher information is optional, but must be preceded by 'pkg://'
+     if present.  An FMRI that includes the publisher is often referred to as
+     being "fully qualified".  If publisher information is not present, then
+     the package name should generally be preceded by 'pkg:/'.
+
+     Packaging clients often allow the scheme of an FMRI to be omitted if it
+     does not contain publisher information.  For example, 'pkg:/library/libc'
+     may be written as 'library/libc'.  If the scheme is omitted, clients also
+     allow omission of all but the last component of a package name for matching
+     purposes.  For example, 'library/libc' could be written as 'libc', which
+     would then match packages named 'libc' or package names ending in '/libc'.
 
      A publisher's identifying name is a forward domain name that can be used
      to identify a person, group of persons, or an organization as the source
@@ -35,32 +46,36 @@ DESCRIPTION
      The version follows the package name, separated by an '@'.  It
      consists of four sequences of numbers, separated by punctuation.  The
      elements in the first three sequences are separated by dots, and the
-     sequences are arbitrarily long.
+     sequences are arbitrarily long.  Leading zeros in version components
+     (e.g. 01.1 or 1.01) are not permitted, although trailing zeros are
+     (e.g. 1.10).
 
      The first part is the component version.  For components tightly bound
-     to OpenSolaris, this will usually be the value of 'uname -r' for that
-     version of OpenSolaris.  For a component with its own development
-     lifecycle, this sequence will be the dotted release number, such as
-     '2.4.10'.
+     to the operating system, this will usually be the value of 'uname -r'
+     for that version of the operating system.  For a component with its own
+     development lifecycle, this sequence will be the dotted release number,
+     such as '2.4.10'.
 
-     The second part, following the comma, is the build version, specifying
-     what version of OpenSolaris the contents of the package were built on,
-     providing a minimum bound on which OpenSolaris version the contents can be
-     expected to run successfully.
+     The second part, which if present must follow a comma, is the build
+     version, specifying what version of the operating system the contents
+     of the package were built on, providing a minimum bound on which
+     operating system version the contents can be expected to run
+     successfully.
 
-     The third part, following the dash, is the branch version, a
-     versioning component, providing vendor-specific information.  This may
-     be incremented when the packaging metadata is changed, independently
-     of the component, may contain a build number, or some other
-     information.
+     The third part, which if present must follow a dash, is the branch
+     version, a versioning component, providing vendor-specific information.
+     This may be incremented when the packaging metadata is changed,
+     independently of the component, may contain a build number, or some
+     other information.
 
-     The fourth part, following the colon, is a timestamp.  It represents
-     when the package was published.
+     The fourth part, which if present must follow a colon, is a timestamp.
+     It represents when the package was published.
 
      Many parts of the system, when appropriate, will contract FMRIs when
-     displaying them to reduce the volume of information provided.
-     Typically, the scheme, publisher, build version, and timestamp will be
-     elided, and sometimes the versioning information altogether.
+     displaying them, and accept input in shorter forms to reduce the volume
+     of information displayed or required.  Typically, the scheme, publisher,
+     build version, and timestamp can be elided, and sometimes the versioning
+     information altogether.
 
   Actions
      Actions represent the installable objects on a system.  They are
@@ -227,27 +242,28 @@ DESCRIPTION
            become constrained.  See 'Constraints and Freezing' below.
 
            If the value is 'require-any', then any one of multiple dependent
-	   packages as specified by multiple 'fmri' attributes will satisfy 
+           packages as specified by multiple 'fmri' attributes will satisfy
            the dependency
 
-	   If the value is 'conditional', the dependency is required
-	   only if the package defined by the predicate attribute is present
-	   on the system.
+           If the value is 'conditional', the dependency is required
+           only if the package defined by the predicate attribute is present
+           on the system.
 
-	   If the value is 'origin', the dependency must, if present,
-	   be at the specified value or better on the image to be modified
-           prior to installation.  If the value of the 'root-image' attribute 
-           is 'true', the dependency must be present on the image rooted at '/' 
+           If the value is 'origin', the dependency must, if present,
+           be at the specified value or better on the image to be modified
+           prior to installation.  If the value of the 'root-image' attribute
+           is 'true', the dependency must be present on the image rooted at '/'
            in order to install this package.
 
-     fmri  The FMRI representing the depended-upon package.  In the case
-           of require-any dependencies, there may be multiple values.  This
-	   is the dependency action's key attribute.
+     fmri  The FMRI representing the depended-upon package.  It must not
+           include the publisher.  In the case of require-any dependencies,
+           there may be multiple values.  This is the dependency action's
+           key attribute.
 
      predicate  The FMRI representing the predicate for 'conditional'
-           dependencies
+           dependencies.
 
-     root-image Has an effect only for origin dependencies as mentioned 
+     root-image Has an effect only for origin dependencies as mentioned
            above.
 
   License actions

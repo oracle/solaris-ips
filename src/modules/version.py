@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -548,7 +547,7 @@ class Version(object):
 
         @classmethod
         def split(self, ver):
-                """Takes an assumed valid version string and asplits it into
+                """Takes an assumed valid version string and splits it into
                 its components as a tuple of the form ((release, build_release,
                 branch, timestr), short_ver)."""
 
@@ -599,27 +598,11 @@ class MatchingVersion(Version):
                 if version_string is None or not len(version_string):
                         raise IllegalVersion, "Version cannot be empty"
 
-                release = None
-                build_release = None
-                branch = None
-                timestr = None
-                try:
-                        release, rem = version_string.split(",")
 
-                except ValueError:
-                        release = version_string
-                else:
-                        try:
-                                build_release, rem = rem.split("-")
-                        except ValueError:
-                                build_release = rem
-                        else:
-                                try:
-                                        branch, rem = rem.split(":")
-                                except (TypeError, ValueError):
-                                        branch = rem
-                                else:
-                                        timestr = rem
+                (release, build_release, branch, timestr), ignored = \
+                    self.split(version_string)
+                if not build_release:
+                        build_release = build_string
 
                 #
                 # Error checking and conversion from strings to objects
@@ -632,12 +615,11 @@ class MatchingVersion(Version):
                         #
                         for attr, vals in (
                             ('release', (release,)),
-                            ('build_release', (build_release, build_string,
-                            "*")),
+                            ('build_release', (build_release, "*")),
                             ('branch', (branch, "*")),
                             ('timestr', (timestr, "*"))):
                                 for val in vals:
-                                        if val is None:
+                                        if not val:
                                                 continue
                                         if attr != 'timestr':
                                                 val = MatchingDotSequence(val)
