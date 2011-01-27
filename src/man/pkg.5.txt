@@ -154,6 +154,12 @@ DESCRIPTION
                    file of that name if it is deleted as part of the same
                    packaging operation.
 
+     revert-tag This attribute is used to tag editable files that should
+                be reverted as a set.  Multiple revert-tag values may
+                be specified; the file will revert to its manifest-defined
+                state when pkg revert is invoked with any of those tags
+                specified.  See pkg(1).
+
   Directory Actions
      The 'dir' action is like the file action in that it represents a
      filesystem object, but a directory instead of an ordinary file.  It

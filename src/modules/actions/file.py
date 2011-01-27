@@ -245,6 +245,7 @@ class FileAction(generic.Action):
 
                 if abort:
                         assert errors
+                        self.replace_required = True
                         return errors, warnings, info
 
                 if path.lower().endswith("/bobcat") and args["verbose"] == True:

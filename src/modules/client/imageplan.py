@@ -48,6 +48,7 @@ import pkg.version
 import sys
 
 from pkg.client.debugvalues import DebugValues
+from collections import defaultdict
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -70,6 +71,7 @@ class ImagePlan(object):
         PLANNED_UPDATE    = "update"
         PLANNED_FIX       = "fix"
         PLANNED_VARIANT   = "change-variant"
+        PLANNED_REVERT    = "revert"
 
         MATCH_ALL           = 0
         MATCH_INST_VERSIONS = 1
@@ -368,6 +370,82 @@ class ImagePlan(object):
 
                 self.state = EVALUATED_PKGS
 
+        def plan_revert(self, args, tagged):
+                """Plan reverting the specifed files or files tagged as
+                specified.  We create the pkgplans here rather than in
+                evaluate; by keeping the list of changed_fmris empty we
+                skip most of the processing in evaluate"""
+
+                self.__plan_op(self.PLANNED_REVERT)
+
+                revert_dict = defaultdict(list)
+
+                if tagged:
+                        # look through all the files on the system; any files
+                        # tagged w/ revert-tag set to any of the values on
+                        # the command line need to be checked and reverted if
+                        # they differ from the manifests.  Note we don't care
+                        # if the file is editable or not.
+
+                        tag_set = set(args)
+                        for f in self.image.gen_installed_pkgs():
+                                self.__progtrack.evaluate_progress()
+                                m = self.image.get_manifest(f)
+                                for act in m.gen_actions_by_type("file",
+                                    self.__new_excludes):
+                                        if "revert-tag" in act.attrs and \
+                                            (set(act.attrlist("revert-tag")) &
+                                             tag_set):
+                                                revert_dict[(f,m)].append(act)
+                else:
+                        # look through all the packages, looking for our files
+                        # we could use search for this.
+
+                        def peelslash(a):
+                                if os.path.isabs(a):
+                                        return a[1:]
+                                return a
+                        revertpaths = set([peelslash(a) for a in args])
+                        for f in self.image.gen_installed_pkgs():
+                                self.__progtrack.evaluate_progress()
+                                m = self.image.get_manifest(f)
+                                for act in m.gen_actions_by_type("file",
+                                    self.__new_excludes):
+                                        if act.attrs["path"] in revertpaths:
+                                                revert_dict[(f,m)].append(act)
+                                                revertpaths.remove(
+                                                    act.attrs["path"])
+                        if revertpaths:
+                                raise api_errors.PlanCreationException(
+                                    nofiles=list(revertpaths))
+
+                for f, m in revert_dict.keys():
+                        # build list of actions that will need to be reverted
+                        # no sense in replacing files that are original already
+                        needs_change = []
+                        self.__progtrack.evaluate_progress()
+                        for act in revert_dict[(f,m)]:
+                                # delete preserve attribute to both find and
+                                # enable replacement of modified editable files.
+                                act.attrs.pop("preserve", None)
+                                act.verify(self.image, forever=True)
+                                if act.replace_required == True:
+                                        needs_change.append(act)
+                        if needs_change:
+                                pp = pkgplan.PkgPlan(self.image,
+                                    self.__progtrack, self.__check_cancelation)
+                                pp.propose_repair(f, m, needs_change)
+                                pp.evaluate(self.__new_excludes, self.__new_excludes)
+                                self.pkg_plans.append(pp)
+
+                self.__fmri_changes = []
+                self.state = EVALUATED_PKGS
+
+        def plan_fix(self, pkgs_to_fix):
+                """Create the list of pkgs to fix"""
+                self.__plan_op(self.PLANNED_FIX)
+
+
         @staticmethod
         def __fmris2dict(fmri_list):
                 return  dict([
@@ -381,11 +459,6 @@ class ImagePlan(object):
                     (olddict.get(k, None), newdict.get(k, None))
                     for k in set(olddict.keys() + newdict.keys())
                 ]
-
-        def plan_fix(self, pkgs_to_fix):
-                """Create the list of pkgs to fix"""
-                self.__plan_op(self.PLANNED_FIX)
-                # XXX complete this
 
         def plan_change_varcets(self, variants, facets):
                 """Determine the fmri changes needed to change
@@ -1036,7 +1109,7 @@ class ImagePlan(object):
                 # handle case w/ -n no verbose
                 if self.state == EVALUATED_PKGS:
                         return not (self.__fmri_changes or self.__new_variants
-                            or self.__new_facets)
+                            or self.__new_facets or self.pkg_plans)
                 elif self.state >= EVALUATED_OK:
                         return not (self.pkg_plans or self.__new_variants or
                             self.__new_facets)

@@ -65,7 +65,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 49
+CURRENT_API_VERSION = 50
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -104,9 +104,13 @@ class ImageInterface(object):
         MATCH_GLOB = 2
 
         # Private constants used for tracking which type of plan was made.
-        __INSTALL = 1
+        __INSTALL   = 1
         __UNINSTALL = 2
-        __UPDATE = 3
+        __UPDATE    = 3
+        __VARCET    = 4
+        __REVERT    = 5
+        __valid_plan_types = (1, 2, 3, 4, 5)
+
 
         def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name, exact_match=True):
@@ -139,7 +143,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([46, 47, 48, CURRENT_API_VERSION])
+                compatible_versions = set([46, 47, 48, 49, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -713,7 +717,7 @@ class ImageInterface(object):
                         self.__disable_cancel()
 
                         if not noexecute:
-                                self.__plan_type = self.__UPDATE
+                                self.__plan_type = self.__VARCET
 
                         self.__plan_desc = PlanDescription(self.__img, self.__new_be)
 
@@ -729,6 +733,48 @@ class ImageInterface(object):
 
                 except:
                         self.__plan_common_exception()
+                        # NOTREACHED
+
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
+                return res
+
+        def plan_revert(self, args, tagged=False, noexecute=True, be_name=None,
+            new_be=None):
+                """Plan to revert either files or all files tagged with
+                specified values.  Args contains either path names or tag names
+                to be reverted, tagged is True if args contains tags. 
+
+                For all other parameters, refer to the 'plan_install' function
+                for an explanation of their usage and effects."""
+
+                self.__plan_common_start("revert", noexecute, new_be, be_name)
+                try:
+                        self.__img.make_revert_plan(args,
+                            tagged,
+                            self.__progresstracker,
+                            self.__check_cancelation,
+                            noexecute)
+
+                        assert self.__img.imageplan
+
+                        self.__disable_cancel()
+
+                        if not noexecute:
+                                self.__plan_type = self.__REVERT
+
+                        self.__set_new_be()
+
+                        self.__plan_desc = PlanDescription(self.__img, self.__new_be)
+                        if self.__img.imageplan.nothingtodo() or noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+
+                        self.__img.imageplan.update_index = False
+                except:
+                        self.__plan_common_exception(log_op_end=[
+                            apx.CanceledException, fmri.IllegalFmri,
+                            Exception])
                         # NOTREACHED
 
                 self.__plan_common_finish()
@@ -760,9 +806,8 @@ class ImageInterface(object):
 
                         if self.__prepared:
                                 raise apx.AlreadyPreparedException()
-                        assert self.__plan_type == self.__INSTALL or \
-                            self.__plan_type == self.__UNINSTALL or \
-                            self.__plan_type == self.__UPDATE
+
+                        assert self.__plan_type in self.__valid_plan_types
 
                         self.__enable_cancel()
 
@@ -835,9 +880,7 @@ class ImageInterface(object):
                         if self.__executed:
                                 raise apx.AlreadyExecutedException()
 
-                        assert self.__plan_type == self.__INSTALL or \
-                            self.__plan_type == self.__UNINSTALL or \
-                            self.__plan_type == self.__UPDATE
+                        assert self.__plan_type in self.__valid_plan_types
 
                         try:
                                 be = bootenv.BootEnv(self.__img)

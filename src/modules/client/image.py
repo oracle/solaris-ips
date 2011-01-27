@@ -3075,6 +3075,15 @@ class Image(object):
                 self.__make_plan_common("update", progtrack,
                     check_cancelation, noexecute, pkg_list, reject_list)
 
+        def make_revert_plan(self, args, tagged, progtrack, check_cancelation,
+            noexecute):
+                """Revert the specified files, or all files tagged as specified
+                in args to their manifest definitions.
+                """
+
+                self.__make_plan_common("revert", progtrack, check_cancelation,
+                    noexecute, args, tagged)
+
         def ipkg_is_up_to_date(self, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):
                 """Test whether the packaging system is updated to the latest

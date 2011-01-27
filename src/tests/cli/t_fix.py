@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -93,6 +93,8 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add dir path=/tmp mode=755 owner=root group=root
             add dir mode=0755 owner=root group=root path=/var
             add dir mode=0755 owner=root group=root path=/var/run
+            add dir mode=0755 owner=root group=root path=/system
+            add dir mode=0755 owner=root group=root path=/system/volatile
             add file tmp/empty path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
             add file tmp/empty path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add file tmp/empty path=/etc/driver_classes mode=644 owner=root group=sys

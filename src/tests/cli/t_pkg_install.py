@@ -1251,6 +1251,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             open dricon@1
             add dir path=var mode=755 owner=root group=root
             add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -1262,6 +1264,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             open dricon@2
             add dir path=var mode=755 owner=root group=root
             add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
@@ -1287,6 +1291,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             open dripol@1
             add dir path=var mode=755 owner=root group=root
             add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
@@ -1301,6 +1307,8 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             open dripol@2
             add dir path=var mode=755 owner=root group=root
             add dir path=var/run mode=755 owner=root group=root
+            add dir mode=0755 owner=root group=root path=system
+            add dir mode=0755 owner=root group=root path=system/volatile
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
@@ -2365,6 +2373,8 @@ adm:NP:6445::::::
                     open devicebase@1.0,5.11-0
                     add dir mode=0755 owner=root group=root path=/var
                     add dir mode=0755 owner=root group=root path=/var/run
+                    add dir mode=0755 owner=root group=root path=system
+                    add dir mode=0755 owner=root group=root path=system/volatile
                     add dir mode=0755 owner=root group=root path=/tmp
                     add dir mode=0755 owner=root group=root path=/etc
                     add dir mode=0755 owner=root group=root path=/etc/security

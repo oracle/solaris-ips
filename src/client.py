@@ -172,12 +172,16 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         basic_usage["refresh"] = _("[--full] [publisher ...]")
         basic_usage["version"] = ""
 
-        advanced_cmds = ["info", "search", "verify", "fix", "contents",
-            "image-create", "change-variant", "change-facet", "variant",
-            "facet", "set-property", "add-property-value",
+        advanced_cmds = ["info", "search", "verify", "fix", "revert",
+            "contents", "image-create", "change-variant", "change-facet",
+            "variant", "facet", "set-property", "add-property-value",
             "remove-property-value", "unset-property", "property", "",
             "set-publisher", "unset-publisher", "publisher", "history",
             "purge-history", "rebuild-index"]
+
+        adv_usage["revert"] = _(
+            "[-nv] [--be-name name] [--deny-new-be | --require-new-be]\n"
+            "            (--tagged tag-name ... | path-to-file ...)")
 
         adv_usage["info"] = _("[-lr] [--license] [pkg_fmri_pattern ...]")
         adv_usage["search"] = _(
@@ -1650,6 +1654,69 @@ def update(api_inst, args):
 
         return ret_code
 
+def revert(api_inst, args):
+        """Attempt to revert files to their original state, either
+        via explicit path names or via tagged contents."""
+
+        op = "revert"
+        opts, pargs = getopt.getopt(args, "nvq", ["tagged", "deny-new-be",
+            "require-new-be", "be-name="])
+
+        quiet = tagged = noexecute = False
+        verbose = 0
+        new_be = None
+        be_name = None
+
+        for opt, arg in opts:
+                if opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = verbose + 1
+                elif opt == "-q":
+                        quiet = True
+                elif opt == "--deny-new-be":
+                        new_be = False
+                elif opt == "--require-new-be":
+                        new_be = True
+                elif opt == "--be-name":
+                        be_name = arg
+                elif opt == "--tagged":
+                        tagged = True
+
+        if not pargs:
+                usage(_("at least one file path or tag name required"), cmd=op)
+
+        api_inst.progresstracker = get_tracker(quiet)
+
+        stuff_to_do = None
+        try:
+                stuff_to_do = api_inst.plan_revert(pargs, tagged=tagged,
+                    noexecute=noexecute, be_name=be_name, new_be=new_be)
+        except:
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
+
+        if not stuff_to_do:
+                msg(_("No files need to be reverted."))
+                return EXIT_NOP
+
+        if not quiet:
+                display_plan(api_inst, verbose)
+
+        if noexecute:
+                return EXIT_OK
+
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        ret_code = __api_prepare(op, api_inst, accept=False)
+        if ret_code != EXIT_OK:
+                return ret_code
+
+        ret_code = __api_execute_plan(op, api_inst)
+
+        return ret_code
 
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
@@ -4455,6 +4522,7 @@ def main_func():
             "rebuild-index"    : rebuild_index,
             "refresh"          : publisher_refresh,
             "remove-property-value" : property_remove_value,
+            "revert"           : revert,
             "search"           : search,
             "set-authority"    : publisher_set,
             "set-property"     : property_set,

@@ -45,7 +45,7 @@ class ApiException(Exception):
 
         def add_verbose_info(self, info):
                 self.__verbose_info.extend(info)
-        
+
         @property
         def verbose_info(self):
                 return self.__verbose_info
@@ -344,7 +344,7 @@ class PlanCreationException(ApiException):
             missing_matches=EmptyI, illegal=EmptyI,
             badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
             no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
-            wrong_publishers=EmptyI, obsolete=EmptyI):
+            wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris       = unmatched_fmris
                 self.multiple_matches      = multiple_matches
@@ -358,6 +358,7 @@ class PlanCreationException(ApiException):
                 self.no_version            = no_version
                 self.missing_dependency    = missing_dependency
                 self.wrong_publishers      = wrong_publishers
+                self.nofiles               = nofiles
 
         def __str__(self):
                 res = []
@@ -430,6 +431,9 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                             "%(dep)s") %
                             {"pkg": self.missing_dependency[0],
                              "dep": self.missing_dependency[1]}]
+                if self.nofiles:
+                        res += [_("The following files are not packaged in this image:")]
+                        res += ["\t%s" % f for f in self.nofiles]
 
                 return "\n".join(res)
 
@@ -1463,7 +1467,7 @@ class BadFileFormat(SigningException):
 
         def __str__(self):
                 return self.txt
-       
+
 
 class UnsupportedSignatureVersion(SigningException):
         """Exception used when a signature reports a version which this version
@@ -1495,7 +1499,7 @@ class ModifiedCertificateException(CertificateException):
         def __init__(self, cert, path, pfmri=None):
                 CertificateException.__init__(self, cert, pfmri)
                 self.path = path
-        
+
         def __str__(self):
                 return _("Certificate %s has been modified on disk. Its hash "
                     "value is not what was expected.") % self.path
@@ -1517,7 +1521,7 @@ class BrokenChain(CertificateException):
         def __init__(self, cert, cert_exceptions, *args, **kwargs):
                 CertificateException.__init__(self, cert, *args, **kwargs)
                 self.ext_exs = cert_exceptions
-        
+
         def __str__(self):
                 s = ""
                 if self.ext_exs:

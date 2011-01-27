@@ -11,8 +11,8 @@ SYNOPSIS
          [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
          [--reject pkg_fmri_pattern] pkg_fmri_pattern ...
 
-     /usr/bin/pkg uninstall [-nrvq] [--no-index] 
-         [--deny-new-be | --require-new-be] [--be-name name] 
+     /usr/bin/pkg uninstall [-nrvq] [--no-index]
+         [--deny-new-be | --require-new-be] [--be-name name]
          pkg_fmri_pattern ...
 
      /usr/bin/pkg update [-fnvq] [--accept] [--be-name name]
@@ -31,6 +31,8 @@ SYNOPSIS
 
      /usr/bin/pkg verify [-Hqv] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
+     /usr/bin/pkg revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
+         (--tagged tag-name ... | path-to-file ...)
 
      /usr/bin/pkg image-create [-FPUfz] [--force]
          [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
@@ -186,7 +188,7 @@ SUBCOMMANDS
           incremental update.
 
      install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-       [--deny-new-be | --require-new-be] [--be-name] 
+       [--deny-new-be | --require-new-be] [--be-name]
        [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
 
           Installs and updates packages to the newest version that match
@@ -202,8 +204,9 @@ SUBCOMMANDS
           no persistent changes to the image.
 
           With the -v option, issue verbose progress messages during
-          the requested operation.  With the -q option, issue no
-          progress messages during the requested operation.
+          the requested operation.  This option may be repeated for
+          increased effect.  With the -q option, issue no progress
+          messages during the requested operation.
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or
@@ -237,7 +240,7 @@ SUBCOMMANDS
 
           With --reject, prevent packages matching the given pattern from
           being installed.  If matching packages are already installed, they
-          will be removed as part of the operation. 
+          will be removed as part of the operation.
 
      uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be]
        [--be-name name] pkg_fmri_pattern ...
@@ -281,6 +284,18 @@ SUBCOMMANDS
 
           With the -f option, don't execute the client up to date check
           when updating all installed packages.
+
+          For all other options, refer to the install command above for
+          usage and their effects.
+
+     revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
+         (--tagged tag-name ... | path-to-file ...)
+          Revert files to their as-delivered condition.  Either all
+          files tagged with a particular value, or individual files 
+          may be reverted. File ownership and protections are also 
+          restored. Caution: reverting some editable files to their 
+          default values may make the system unbootable, or cause
+	  other malfunctions.
 
           For all other options, refer to the install command above for
           usage and their effects.
@@ -395,9 +410,9 @@ SUBCOMMANDS
           By default, and with -a, perform the search and display information
           about the matching actions.
 
-          By default, search prunes results from packages older than the 
-          currently installed version and from package versions excluded by 
-          current incorporations.  Use -f to show all results, regardless of 
+          By default, search prunes results from packages older than the
+          currently installed version and from package versions excluded by
+          current incorporations.  Use -f to show all results, regardless of
           package version.
 
           With -l, search the image's installed packages.
@@ -414,9 +429,9 @@ SUBCOMMANDS
           search.match_type     Corresponds to the attribute which contained
                                 the string that matched the search query.
 
-          With -p, display packages which have some actions that match each 
-          query term.  Using this option is equivalent to putting '<>' around 
-          each term  in the query.  (For a description of the '<>' operator, 
+          With -p, display packages which have some actions that match each
+          query term.  Using this option is equivalent to putting '<>' around
+          each term  in the query.  (For a description of the '<>' operator,
           please see below.)
 
           By default, and with -r, search the repositories corresponding
@@ -562,7 +577,7 @@ SUBCOMMANDS
 
           With --require-new-be, always create a new boot environment.  Without
           this option, a new boot environment is only created if needed.
-          
+
           With --deny-new-be, disallow creation of a new boot environment;
           the operation will not be performed if a new boot environment is
           required.
@@ -599,7 +614,7 @@ SUBCOMMANDS
 
           With --require-new-be, always create a new boot environment.  Without
           this option, a new boot environment is only created if needed.
-          
+
           With --deny-new-be, disallow creation of a new boot environment;
           the operation will not be performed if a new boot environment is
           required.
@@ -632,7 +647,7 @@ SUBCOMMANDS
           set-publisher.
 
      remove-property-value propname propvalue
-          Remove a value from an existing image property; except for 
+          Remove a value from an existing image property; except for
           preferred-publisher, which can only be changed using set-publisher.
 
      unset-property propname ...
@@ -692,7 +707,7 @@ SUBCOMMANDS
           the publisher being modified is now searched after the specified
           publisher.
 
-          With --approve-ca-cert, add the given certificate as a CA certificate 
+          With --approve-ca-cert, add the given certificate as a CA certificate
           that is trusted.  The hashes of the user approved CA certificates are
           listed in the output of the detailed pkg publisher view for a
           publisher.
@@ -705,13 +720,13 @@ SUBCOMMANDS
           With --unset-ca-cert, remove the certificate with the given hash from
           the list of approved and the list of revoked certificates.
 
-          With --set-property, update an existing publisher property or add a 
+          With --set-property, update an existing publisher property or add a
           new publisher property.
 
-          With --add-property-value, add a value to an existing publisher 
+          With --add-property-value, add a value to an existing publisher
           property or add a new publisher property.
 
-          With --remove-property-value, remove a value from an existing 
+          With --remove-property-value, remove a value from an existing
           publisher property.
 
           With --unset-property, remove an existing publisher property.
@@ -761,7 +776,7 @@ SUBCOMMANDS
           in order of search preference.  If specific publishers are
           requested, display the configuration values, including
           mirrors, associated with those publishers.
-          
+
           With -H, omit the headers from the listing.
 
           With -P, display only the preferred publisher.
@@ -770,7 +785,7 @@ SUBCOMMANDS
 
      history [-Hl] [-t [time|time-time],...] [-n number] [-o column,...]
 
-          Display the command history of the applicable image.  
+          Display the command history of the applicable image.
 
           With -H, omit the headers from the listing.
 
@@ -792,7 +807,7 @@ SUBCOMMANDS
 
           With -o, display output using the specified comma-separated list of
           column names.  Valid column names are:
-          
+
           be            The name of the boot environment this operation was
                         started on
           be_uuid       The uuid of the boot environment this operation was
@@ -897,37 +912,37 @@ IMAGE PROPERTIES
 
      signature-policy
           (string)  Determine what checks will be performed on manifests
-          when installing a package into this image.  The final policy 
-          applied to a  package depends on the combination of image policy 
-          and publisher policy.  The combination will be at least as strict 
-          as the stricter of the two policies taken individually.  The 
+          when installing a package into this image.  The final policy
+          applied to a  package depends on the combination of image policy
+          and publisher policy.  The combination will be at least as strict
+          as the stricter of the two policies taken individually.  The
           following are the valid values for this property.
 
           ignore
                Ignore signatures for all manifests.
           verify
                Verify that all manifests with signatures are validly
-               signed, but do not require all installed packages to be 
+               signed, but do not require all installed packages to be
                signed.
           require-signatures
                Require that all newly installed packages have at least
                one valid signature.  'pkg fix' and 'pkg verify' will also
-               warn if an installed package does not have a valid 
+               warn if an installed package does not have a valid
                signature.
           require-names
                Follow the same requirements as 'require-signatures' but
-               also require that the strings listed in the 
+               also require that the strings listed in the
                'signature-required-names' property appear as a common
                name of the certificates used to verifiy the chains
                of trust of the signatures.
 
      signature-required-names
           (list of strings)  A list of names which must be seen as common
-          names of certificates while validating the signatures of a 
+          names of certificates while validating the signatures of a
           package.
 
      trust-anchor-directory
-          (string)  The pathname of the directory that contains the trust 
+          (string)  The pathname of the directory that contains the trust
           anchors for the image.  This path is relative to the image.
 
 PUBLISHER PROPERTIES
@@ -940,8 +955,8 @@ PUBLISHER PROPERTIES
           from the particular publisher.
 
      signature-required-names
-          (list of strings)  This property functions identically to the 
-          image property of the same name except it only applies to 
+          (list of strings)  This property functions identically to the
+          image property of the same name except it only applies to
           packages from the particular publisher.
 
 EXAMPLES
@@ -1072,7 +1087,7 @@ EXAMPLES
 
      $ pkg set-publisher --set-property signature-policy=require-signatures
 
-     Example 16:  Add the string "foo" to the image's list of common names that 
+     Example 16:  Add the string "foo" to the image's list of common names that
      must be seen in a signature's chain of trust to be considered valid.
 
      $ pkg add-property-value signature-require-names foo
@@ -1088,7 +1103,7 @@ EXAMPLES
 
      $ pkg set-publisher --approve-ca-cert /tmp/example_file.pem
 
-     Example 19:  Revoke the certificate with the hash a12345 for publisher 
+     Example 19:  Revoke the certificate with the hash a12345 for publisher
      test, preventing it from validating any signatures for packages from test.
 
      $ pkg set-publisher --revoke-ca-cert a12345
@@ -1103,7 +1118,7 @@ EXAMPLES
 
      $ pkg update foo@1.0
 
-     Example 22:  In the case of two conflicting packages, change which 
+     Example 22:  In the case of two conflicting packages, change which
      package is installed.  Suppose package A depends on either package B
      or package C, and B and C are mutually exclusive.  If A and B are
      installed, we can go to using C without uninstalling A via:
