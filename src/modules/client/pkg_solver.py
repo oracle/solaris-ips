@@ -1075,7 +1075,9 @@ class PkgSolver(object):
                     self.__get_incorp_nonmatch_dict(f, excludes)
                     for f in fmri_list
                 ]
-                all_keys = reduce(set.union, (set(d.keys()) for d in dict_list))
+                # The following ignores constraints that appear in only some of
+                # the versions.  This also handles obsoletions & renames.
+                all_keys = reduce(set.intersection, (set(d.keys()) for d in dict_list))
 
                 return dict(
                         (k,
