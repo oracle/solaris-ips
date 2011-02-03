@@ -120,16 +120,15 @@ DESCRIPTION
      and user images, which contain only relocatable packages.  (See
      NOTES on user images.)
 
-     pkg(1) attempts to determine, based on its working directory, in
-     what image it has been invoked.  If no image metadata can be found
-     in the parent directories, the invocation will fail.
-
 OPTIONS
      The following options are supported:
 
      -R dir
           Operate on the image rooted at dir, rather than the one discovered
-          automatically.
+          automatically.  By default, pkg(1) attempts to determine, based on
+          its working directory, in what image it has been invoked.  If no
+          image metadata can be found in the parent directories, the
+          invocation will fail.  See also ENVIRONMENT VARIABLES.  
 
      --help or -?
           Displays a usage message.
@@ -1124,6 +1123,34 @@ EXAMPLES
      installed, we can go to using C without uninstalling A via:
 
      $ pkg install --reject B C
+
+ENVIRONMENT VARIABLES
+     PKG_IMAGE
+          Specifies the directory containing the image to use for package
+          operations; ignored if -R is specified.
+
+     PKG_CLIENT_CONNECT_TIMEOUT
+          Seconds to wait trying to connect during transport operations
+          (for each attempt) before client aborts the operation.  The
+          default value is 60.
+
+     PKG_CLIENT_LOWSPEED_TIMEOUT
+          Seconds below lowspeed limit (1024 bytes/sec) during transport
+          operations before client aborts the operation.  The default
+          value is 30.
+
+     PKG_CLIENT_MAX_CONSECUTIVE_ERROR
+          Maximum number of transient transport errors before client aborts
+          the operation.  The default value is 4.
+
+     PKG_CLIENT_MAX_REDIRECT
+          Maximum number of HTTP(S) redirects allowed during transport
+          operations before a connection is aborted.  The default value
+          is 5.
+
+     PKG_CLIENT_MAX_TIMEOUT   
+          Maximum number of transport attempts per-host before client
+          aborts the operation.  The default value is 4.
 
 EXIT STATUS
      The following exit values are returned:

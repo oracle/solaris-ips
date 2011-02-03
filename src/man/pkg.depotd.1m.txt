@@ -166,7 +166,10 @@ DESCRIPTION
 
      pkg/threads                (count) The number of threads that
                                 will be started to serve requests.
-                                The default value is 10.
+                                The default value is 60; suitable only
+                                for small deployments.  This value should
+                                be approximately 20 * number of concurrent
+                                clients and has a maximum of 5000.
 
      pkg/writable_root          (astring) The file system path to a
                                 directory to which the program has

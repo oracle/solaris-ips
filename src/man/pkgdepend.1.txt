@@ -57,8 +57,11 @@ OPTIONS
      The following options are supported:
 
      -R dir
-          Operate on the image rooted at dir, rather than the one
-          discovered automatically.
+          Operate on the image rooted at dir, rather than the one discovered
+          automatically.  By default, pkgdepend(1) attempts to determine,
+          based on its working directory, in what image it has been invoked.
+          If no image metadata can be found in the parent directories, the
+          invocation will fail.  See also ENVIRONMENT VARIABLES.  
 
      --help or -?
           Displays a usage message.
@@ -154,6 +157,11 @@ EXAMPLES
      in foo whose content directory is in /.
 
      $ pkgdepend generate -k /kmod foo /
+
+ENVIRONMENT VARIABLES
+     PKG_IMAGE
+          Specifies the directory containing the image to use for package
+          operations; ignored if -R is specified.
 
 EXIT STATUS
      The following exit values are returned:
