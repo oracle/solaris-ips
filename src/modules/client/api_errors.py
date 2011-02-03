@@ -344,7 +344,8 @@ class PlanCreationException(ApiException):
             missing_matches=EmptyI, illegal=EmptyI,
             badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
             no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
-            wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI):
+            wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI,
+            solver_errors=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris       = unmatched_fmris
                 self.multiple_matches      = multiple_matches
@@ -353,12 +354,13 @@ class PlanCreationException(ApiException):
                 self.badarch               = badarch
                 self.installed             = installed
                 self.multispec             = multispec
-                self.obsolete = obsolete
+                self.obsolete              = obsolete
                 self.no_solution           = no_solution
                 self.no_version            = no_version
                 self.missing_dependency    = missing_dependency
                 self.wrong_publishers      = wrong_publishers
                 self.nofiles               = nofiles
+                self.solver_errors         = solver_errors
 
         def __str__(self):
                 res = []
@@ -422,7 +424,7 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [_("No solution was found to satisfy constraints")]
                         if isinstance(self.no_solution, list):
                                 res.extend(self.no_solution)
-                        
+
                 if self.no_version:
                         res += self.no_version
 
@@ -434,6 +436,11 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                 if self.nofiles:
                         res += [_("The following files are not packaged in this image:")]
                         res += ["\t%s" % f for f in self.nofiles]
+
+                if self.solver_errors:
+                        res += ["\n"]
+                        res += [_("Solver dependency errors:")]
+                        res.extend(self.solver_errors)
 
                 return "\n".join(res)
 

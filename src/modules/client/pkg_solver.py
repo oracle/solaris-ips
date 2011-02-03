@@ -31,6 +31,7 @@ import pkg.version           as version
 import time
 
 from collections import defaultdict
+from pkg.client.debugvalues import DebugValues
 from pkg.misc import EmptyI, EmptyDict, N_
 
 SOLVER_INIT    = "Initialized"
@@ -147,7 +148,6 @@ class PkgSolver(object):
                 self.__publisher = None
                 self.__possible_dict = None
                 self.__pub_ranks = None
-                self.__trim_dict = None
                 self.__pub_trim = None
                 self.__publisher = None
                 self.__id2fmri = None
@@ -164,6 +164,12 @@ class PkgSolver(object):
                 self.__start_time = None
                 self.__dep_dict = None
                 self.__dependents = None
+
+                if DebugValues["plan"]:
+                        # Remaining data must be kept.
+                        return rval
+
+                self.__trim_dict = None
                 return rval
 
         def __timeit(self, phase=None):
@@ -302,8 +308,11 @@ class PkgSolver(object):
                                 ret = [_("No matching version of %s can be "
                                     "installed:") % name]
                                 ret.extend(self.__fmri_list_errors(proposed_dict[name]))
+                                solver_errors = None
+                                if DebugValues["plan"]:
+                                        solver_errors = self.get_trim_errors()
                                 raise api_errors.PlanCreationException(
-                                    no_version=ret)
+                                    no_version=ret, solver_errors=solver_errors)
                         proposed_dict[name] = tv
 
                 self.__progtrack.evaluate_progress()
@@ -343,8 +352,11 @@ class PkgSolver(object):
                                     "installed:") % name]
 
                                 ret.extend(self.__fmri_list_errors(proposed_dict[name]))
+                                solver_errors = None
+                                if DebugValues["plan"]:
+                                        solver_errors = self.get_trim_errors()
                                 raise api_errors.PlanCreationException(
-                                    no_version=ret)
+                                    no_version=ret, solver_errors=solver_errors)
 
                         proposed_dict[name] = tv
 
@@ -371,11 +383,6 @@ class PkgSolver(object):
                                             fmri, da))
 
                 self.__timeit("phase 10")
-
-                # Save a solver instance to check for inherited obsolete pkgs
-                # in case we upgraded to a pkg version that now supports
-                # obsoletion.
-                obsolete_check_solver = self.__save_solver()
 
                 # generate clauses for proposed and installed pkgs
                 # note that we create clauses that require one of the
@@ -443,6 +450,10 @@ class PkgSolver(object):
                                 info.append(_("Try specifying expected results to obtain more detailed error messages."))
                                 info.append(_("Include specific version of packages you wish installed."))
                         exp.no_solution = incs + info
+
+                        solver_errors = None
+                        if DebugValues["plan"]:
+                                exp.solver_errors = self.get_trim_errors()
                         raise exp
 
                 self.__timeit("phase 11")
@@ -645,7 +656,12 @@ class PkgSolver(object):
                                         info.append(_("Dependency analysis is unable to determine exact cause."))
                                         info.append(_("Try specifying expected results to obtain more detailed error messages."))
 
-                                raise api_errors.PlanCreationException(no_solution=info)
+                                solver_errors = None
+                                if DebugValues["plan"]:
+                                        solver_errors = self.get_trim_errors()
+                                raise api_errors.PlanCreationException(
+                                    no_solution=info,
+                                    solver_errors=solver_errors)
 
                 return self.__cleanup(self.__elide_possible_renames(solution,
                     excludes))
@@ -780,7 +796,11 @@ class PkgSolver(object):
                         self.__addclauses([[-i for i in solution_vector]])
 
                 if not self.__iterations:
-                        raise api_errors.PlanCreationException(no_solution=True)
+                        solver_errors = None
+                        if DebugValues["plan"]:
+                                solver_errors = self.get_trim_errors()
+                        raise api_errors.PlanCreationException(no_solution=True,
+                            solver_errors=solver_errors)
 
                 self.__state = SOLVER_SUCCESS
 
@@ -1239,7 +1259,7 @@ class PkgSolver(object):
                             matching)
 
         def __generate_dependency_errors(self, fmri_list, excludes=EmptyI):
-                """ generate a list of strings describing why fmris cannot
+                """ Returns a list of strings describing why fmris cannot
                 be installed, or returns an empty list if installation
                 is possible. """
                 ret = []
@@ -1255,6 +1275,18 @@ class PkgSolver(object):
                         already_processed.add(fmri)
                         needs_processing |= newfmris - already_processed
                 return ret
+
+        def get_trim_errors(self):
+                """Returns a list of strings for all FMRIs evaluated by the
+                solver explaining why they were rejected.  (All packages
+                found in solver's trim database.)"""
+
+                # At a minimum, a solve_*() method must have been called first.
+                assert self.__state != SOLVER_INIT
+                assert DebugValues["plan"]
+
+                return self.__fmri_list_errors(self.__trim_dict.iterkeys(),
+                    already_seen=set())
 
         def __check_installed(self):
                 """Generate list of strings describing why currently

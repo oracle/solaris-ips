@@ -1,3 +1,10 @@
+Version 51:
+Compatible with clients using versions 46-50:
+    pkg.client.api.PlanDescription has changed as follows:
+        * get_solver_errors() was added to allow retrieval of extended
+          error information for plan_*() functions.  See 'pydoc
+          pkg.client.api' for details.
+
 Version 49:
 Compatible with clients using versions 46-48:
     pkg.client.api.ImageInterface has changed as follows:

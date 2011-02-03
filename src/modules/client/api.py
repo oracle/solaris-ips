@@ -62,10 +62,11 @@ import pkg.version
 
 from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
+from pkg.client.debugvalues import DebugValues
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 50
+CURRENT_API_VERSION = 51
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -143,7 +144,8 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([46, 47, 48, 49, CURRENT_API_VERSION])
+                compatible_versions = set([46, 47, 48, 49, 50,
+                    CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -3090,6 +3092,18 @@ class PlanDescription(object):
                 the package plans"""
                 for pp in self.__plan.pkg_plans:
                         yield str(pp)
+        
+        def get_solver_errors(self):
+                """Returns a list of strings for all FMRIs evaluated by the
+                solver explaining why they were rejected.  (All packages
+                found in solver's trim database.)  Only available if 
+                DebugValues["plan"] was set when the plan was created.
+                """
+
+                if not DebugValues["plan"]:
+                        return []
+
+                return self.__plan.get_solver_errors()
 
         def get_licenses(self, pfmri=None):
                 """A generator function that yields information about the

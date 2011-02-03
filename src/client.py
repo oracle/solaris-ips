@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 49
+CLIENT_API_VERSION = 51
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -749,6 +749,8 @@ def verify_image(api_inst, args):
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="verify")
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         # XXX verify should be part of pkg.client.api
         any_errors = False
@@ -859,7 +861,8 @@ def accept_plan_licenses(api_inst):
                 api_inst.set_plan_license_status(pfmri, dest.license,
                     accepted=True)
 
-display_plan_options = ["basic", "fmris", "variants/facets", "services", "actions", "boot-archive"]
+display_plan_options = ["basic", "fmris", "variants/facets", "services",
+    "actions", "boot-archive"]
 
 def display_plan(api_inst, verbose):
         """Helper function to display plan to the desired degree.
@@ -869,11 +872,17 @@ def display_plan(api_inst, verbose):
         if isinstance(verbose, int):
                 disp = ["basic"]
                 if verbose > 0:
-                        disp.extend(["fmris", "services", "variants/facets", "boot-archive"])
+                        disp.extend(["fmris", "services", "variants/facets",
+                            "boot-archive"])
                 if verbose > 1:
-                        disp.extend(["actions"])
+                        disp.append("actions")
+                if verbose > 2:
+                        disp.append("solver-errors")
         else:
                 disp = verbose
+
+        if DebugValues["plan"] and "solver-errors" not in disp:
+                disp.append("solver-errors")
 
         plan = api_inst.describe()
 
@@ -912,7 +921,8 @@ def display_plan(api_inst, verbose):
                 logger.info(_("           Create boot environment: %5s") % s)
 
                 if not plan.new_be:
-                        cond_show(_("               Services to restart: %5d"), len(plan.get_services()))
+                        cond_show(_("               Services to restart: %5d"),
+                            len(plan.get_services()))
 
         if "boot-archive" in disp:
                 if plan.update_boot_archive:
@@ -926,6 +936,11 @@ def display_plan(api_inst, verbose):
                 logger.info(_("Changed variants/facets:"))
                 for x in v:
                         logger.info("  %s" % x)
+
+        if "solver-errors" in disp:
+                logger.info(_("Solver dependency errors:"))
+                for l in plan.get_solver_errors():
+                        logger.info(l)
 
         if "fmris" in disp:
                 if len(c) + len(r) + len(i) > 0:
@@ -946,6 +961,7 @@ def display_plan(api_inst, verbose):
                                         logger.info("  %s" % a)
                         else:
                                 logger.info(_("  None"))
+
         if "actions" in disp:
                 logger.info("Actions")
                 for a in plan.get_actions():
@@ -1242,6 +1258,8 @@ def change_variant(api_inst, args):
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         if not pargs:
                 usage(_("%s: no variants specified") % op)
@@ -1327,6 +1345,8 @@ def change_facet(api_inst, args):
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         if not pargs:
                 usage(_("%s: no facets specified") % op)
@@ -1441,6 +1461,8 @@ def install(api_inst, args):
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         api_inst.progresstracker = get_tracker(quiet)
 
@@ -1523,6 +1545,8 @@ def uninstall(api_inst, args):
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         api_inst.progresstracker = get_tracker(quiet)
 
@@ -1600,6 +1624,8 @@ def update(api_inst, args):
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd=op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         api_inst.progresstracker = get_tracker(quiet)
 
@@ -1697,6 +1723,8 @@ def revert(api_inst, args):
 
         if not pargs:
                 usage(_("at least one file path or tag name required"), cmd=op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
 
         api_inst.progresstracker = get_tracker(quiet)
 

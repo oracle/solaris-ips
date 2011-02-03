@@ -520,6 +520,14 @@ class ImagePlan(object):
                 assert self.state >= MERGED_OK
                 return self.__need_boot_archive
 
+        def get_solver_errors(self):
+                """Returns a list of strings for all FMRIs evaluated by the
+                solver explaining why they were rejected.  (All packages
+                found in solver's trim database.)"""
+
+                assert self.state >= EVALUATED_PKGS
+                return self.__pkg_solver.get_trim_errors()
+
         def get_plan(self, full=True):
                 if full:
                         return str(self)
