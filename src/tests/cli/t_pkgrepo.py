@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -32,6 +32,7 @@ import pkg5unittest
 from pkg.server.query_parser import Query
 import os
 import pkg
+import pkg.catalog
 import pkg.depotcontroller as dc
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -960,14 +961,38 @@ test\t3\tonline\t%sZ
                 result = list(e for e in [r for r in repo.search([query])][0])
                 self.assertEqualDiff([], result)
 
+                # Store time all packages in catalog were added.
+                cat = repo.get_catalog("test")
+                uname = [part for part in cat.updates][0]
+                ulog = pkg.catalog.CatalogUpdate(uname, meta_root=cat.meta_root)
+                expected = set()
+                for pfmri, op_type, op_time, metadata in ulog.updates():
+                        expected.add((str(pfmri), op_time))
+
                 # Finally, run refresh once more and verify that all packages
-                # are now visible in the catalog.
+                # are now visible in the catalog and that refresh was
+                # incremental.
                 self.pkgrepo("refresh -s %s" % repo_uri)
                 self.wait_repo(repo_path)
                 repo = self.get_repo(repo_path, read_only=True)
                 self.assertEqual(plist, list(
                     str(f) for f in repo.get_catalog("test").fmris(ordered=True)
                 ))
+
+                # Get time all packages in catalog were added.
+                cat = repo.get_catalog("test")
+                uname = [part for part in cat.updates][0]
+                ulog = pkg.catalog.CatalogUpdate(uname, meta_root=cat.meta_root)
+                returned = set()
+                for pfmri, op_type, op_time, metadata in ulog.updates():
+                        if pfmri.pkg_name == "zoo":
+                                continue
+                        returned.add((str(pfmri), op_time))
+
+                # Entries for all packages (except zoo) should have the same
+                # operation timestamp (when they were added) before the pkgrepo
+                # refresh in update log.
+                self.assertEqualDiff(expected, returned)
 
         def test_05_refresh(self):
                 """Verify pkgrepo refresh works as expected."""

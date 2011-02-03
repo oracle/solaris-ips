@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import cStringIO
 import codecs
@@ -274,6 +274,7 @@ class _RepoStore(object):
                 self.__catalog_root = None
                 self.__file_root = None
                 self.__in_flight_trans = {}
+                self.__read_only = read_only
                 self.__root = None
                 self.__sort_file_max_size = sort_file_max_size
                 self.__tmp_root = None
@@ -286,7 +287,6 @@ class _RepoStore(object):
                 self.log_obj = log_obj
                 self.mirror = mirror
                 self.publisher = pub
-                self.read_only = read_only
 
                 # Set before root, since it's possible to have the
                 # file_root in an entirely different location.  The root
@@ -323,6 +323,11 @@ class _RepoStore(object):
                         self.__init_state()
                 finally:
                         self.__unlock_rstore()
+
+        def __set_read_only(self, value):
+                self.__read_only = value
+                if self.__catalog:
+                        self.__catalog.read_only = value
 
         def __mkdtemp(self):
                 """Create a temp directory under repository directory for
@@ -579,7 +584,8 @@ class _RepoStore(object):
                         return
 
                 if build_catalog:
-                        self.__destroy_catalog()
+                        if not incremental:
+                                self.__destroy_catalog()
                         default_pub = self.publisher
                         if self.read_only:
                                 # Temporarily mark catalog as not read-only so
@@ -1582,6 +1588,7 @@ class _RepoStore(object):
 
         catalog_root = property(lambda self: self.__catalog_root)
         file_root = property(lambda self: self.__file_root)
+        read_only = property(lambda self: self.__read_only, __set_read_only)
         root = property(lambda self: self.__root)
         writable_root = property(lambda self: self.__writable_root)
 
