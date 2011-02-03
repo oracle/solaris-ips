@@ -20,10 +20,7 @@
 # CDDL HEADER END
 #
 
-#
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 
 """module describing a directory packaging object
 
@@ -224,10 +221,10 @@ class DirectoryAction(generic.Action):
                 generic.py for a more detailed explanation."""
 
                 return [
-                    ("directory", "basename",
+                    (self.name, "basename",
                     os.path.basename(self.attrs["path"].rstrip(os.path.sep)),
                     None),
-                    ("directory", "path", os.path.sep + self.attrs["path"],
+                    (self.name, "path", os.path.sep + self.attrs["path"],
                     None)
                 ]
 

@@ -463,6 +463,10 @@ close
             'set name=opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default')
         ])
 
+        res_dir = set([
+            ('pkg:/example_pkg@1.0-0', 'path',
+            'dir group=bin mode=0755 owner=root path=bin/example_dir')])
+
         fast_add_after_second_update = set(["VERSION: 2\n"])
 
         fast_remove_after_second_update = set(["VERSION: 2\n"])
@@ -752,6 +756,11 @@ close
                     self.res_smf_svc)
                 # Test that a single escaped colon doesn't cause a traceback.
                 self._search_op(api_obj, True, "\:", set())
+
+                # Test that doing a search restricted to dir actions works
+                # correctly.  This is a test for bug 17645.
+                self._search_op(api_obj, True, "dir::/bin/example_dir",
+                    self.res_dir)
                 
         def _run_remote_tests(self, api_obj):
                 self._search_op(api_obj, True, "example_pkg",
@@ -975,6 +984,11 @@ close
                 # was found during development. These tests prevent regression
                 # back to that bug.
                 self._search_op(api_obj, False, "a_non_existent_token", set())
+
+                # Test that doing a search restricted to dir actions works
+                # correctly.  This is a test for bug 17645.
+                self._search_op(api_obj, False, "dir::/bin/example_dir",
+                    self.res_dir)
 
         def _run_degraded_local_tests(self, api_obj):
                 outfile = os.path.join(self.testdata_dir, "res")
