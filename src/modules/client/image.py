@@ -730,6 +730,12 @@ class Image(object):
                             "incoming-%d" % os.getpid())
 
                 if self.version < 4:
+                        self.__action_cache_dir = self.temporary_dir()
+                else:
+                        self.__action_cache_dir = os.path.join(self.imgdir,
+                            "cache")
+
+                if self.version < 4:
                         if not self.__user_cache_dir:
                                 self.__write_cache_dir = os.path.join(
                                     self.imgdir, "download")
@@ -1761,7 +1767,18 @@ class Image(object):
                 if self.history.operation_name:
                         self.history.operation_start_state = ip.get_plan()
 
-                ip.evaluate()
+                try:
+                        ip.evaluate()
+                except apx.ConflictingActionErrors:
+                        # Image plan evaluation can fail because of duplicate
+                        # action discovery, but we still want to be able to
+                        # display and log the solved FMRI changes.
+                        self.imageplan = ip
+                        if self.history.operation_name:
+                                self.history.operation_end_state = \
+                                    "Unevaluated: merged plan had errors\n" + \
+                                    ip.get_plan(full=False)
+                        raise
 
                 self.imageplan = ip
 
@@ -2019,6 +2036,8 @@ class Image(object):
                 added = set()
                 removed = set()
                 for add_pkg, rem_pkg in pkg_pairs:
+                        if add_pkg == rem_pkg:
+                                continue
                         if add_pkg:
                                 added.add(add_pkg)
                         if rem_pkg:
@@ -2072,7 +2091,6 @@ class Image(object):
                 # Remove manifests of packages that were removed from the
                 # system.  Some packages may have only had facets or
                 # variants changed, so don't remove those.
-                removed = [e for e in removed if e not in added]
                 progtrack.item_set_goal(_("Package Cache Update Phase"),
                     len(removed))
                 for pfmri in removed:
@@ -2796,6 +2814,185 @@ class Image(object):
                 for f in cat.fmris():
                         yield f
 
+        def _create_fast_lookups(self):
+                """Create an on-disk database mapping action name and key
+                attribute value to the action string comprising the unique
+                attributes of the action, for all installed actions.  This is
+                done with a file mapping the tuple to an offset into a second
+                file, where those actions are kept.  Once the offsets are loaded
+                into memory, it is simple to seek into the second file to the
+                given offset and read until you hit an action that doesn't
+                match."""
+
+                stripped_path = os.path.join(self.__action_cache_dir,
+                    "actions.stripped")
+                offsets_path = os.path.join(self.__action_cache_dir,
+                    "actions.offsets")
+
+                excludes = self.list_excludes()
+                heap = []
+
+                from heapq import heappush, heappop
+
+                for pfmri in self.gen_installed_pkgs():
+                        m = self.get_manifest(pfmri, all_variants=True)
+                        for act in m.gen_actions(excludes):
+                                if not act.globally_identical:
+                                        continue
+                                for key in act.attrs.keys():
+                                        if (act.unique_attrs and
+                                            key not in act.unique_attrs) or \
+                                            key.startswith("variant.") or \
+                                            key.startswith("facet."):
+                                                del act.attrs[key]
+                                heappush(heap, (act.name,
+                                    act.attrs[act.key_attr], pfmri, act))
+
+                # Don't worry if we can't write the temporary files.
+                try:
+                        actdict = {}
+                        sf, sp = self.temporary_file(close=False)
+                        of, op = self.temporary_file(close=False)
+
+                        sf = os.fdopen(sf, "wb")
+                        of = os.fdopen(of, "wb")
+
+                        # We need to make sure the files are coordinated.
+                        t = int(time.time())
+                        sf.write("VERSION 1\n%s\n" % t)
+                        of.write("VERSION 1\n%s\n" % t)
+
+                        last_name, last_key = None, None
+                        while heap:
+                                item = heappop(heap)
+                                fmri, act = item[2:]
+                                offset = sf.tell()
+                                sf.write("%s %s\n" % (fmri, act))
+                                key = act.attrs[act.key_attr]
+                                if act.name != last_name or key != last_key:
+                                        of.write("%s %s %s\n" % (act.name, offset, key))
+                                        actdict[(act.name, key)] = offset
+                                        last_name, last_key = act.name, key
+                        sf.close()
+                        of.close()
+                        os.chmod(sp, misc.PKG_FILE_MODE)
+                        os.chmod(op, misc.PKG_FILE_MODE)
+                except BaseException, e:
+                        try:
+                                os.unlink(sp)
+                                os.unlink(op)
+                        except:
+                                if isinstance(e, KeyboardInterrupt):
+                                        raise
+                                return actdict
+                        if isinstance(e, KeyboardInterrupt):
+                                raise
+                        return
+
+                # Finally, rename the temporary files into their final place.
+                # If we have any problems, do our best to remove them, and we'll
+                # try to recreate them on the read-side.
+                try:
+                        portable.rename(sp, stripped_path)
+                        portable.rename(op, offsets_path)
+                        return actdict
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                self.__action_cache_dir = self.temporary_dir()
+                                stripped_path = os.path.join(
+                                    self.__action_cache_dir, "actions.stripped")
+                                offsets_path = os.path.join(
+                                    self.__action_cache_dir, "actions.offsets")
+                                portable.rename(sp, stripped_path)
+                                portable.rename(op, offsets_path)
+                                return actdict
+                        try:
+                                os.unlink(stripped_path)
+                                os.unlink(offsets_path)
+                        except:
+                                pass
+
+        def _load_actdict(self):
+                """Read the file of offsets created in _create_fast_lookups()
+                and return the dictionary mapping action name and key value to
+                offset."""
+
+                actdict = {}
+
+                try:
+                        of = open(os.path.join(self.__action_cache_dir,
+                            "actions.offsets"), "rb")
+                except IOError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+
+                        actdict = self._create_fast_lookups()
+                        if actdict is not None:
+                                return actdict
+
+                # Make sure the files are paired, and try to create them if not.
+                oversion = of.readline().rstrip()
+                otimestamp = of.readline().rstrip()
+                sversion, stimestamp = self._get_stripped_actions_file(internal=True)
+
+                # If we recognize neither file's version or their timestamps
+                # don't match, then we blow them away and try again.
+                if oversion != "VERSION 1" or sversion != "VERSION 1" or \
+                    stimestamp != otimestamp:
+                        of.close()
+                        actdict = self._create_fast_lookups()
+                        if actdict is not None:
+                                return actdict
+                        of = file(os.path.join(self.__action_cache_dir,
+                            "actions.offsets"), "rb")
+                        oversion = of.readline().rstrip()
+                        otimestamp = of.readline().rstrip()
+
+                for line in of:
+                        actname, offset, key_attr = line.rstrip().split(None, 2)
+                        actdict[(actname, key_attr)] = int(offset)
+
+                of.close()
+                return actdict
+
+        def _get_stripped_actions_file(self, internal=False):
+                """Open the actions file described in _create_fast_lookups() and
+                return the corresponding file object."""
+
+                sf = file(os.path.join(self.__action_cache_dir,
+                    "actions.stripped"), "rb")
+                sversion = sf.readline().rstrip()
+                stimestamp = sf.readline().rstrip()
+                if internal:
+                        sf.close()
+                        return sversion, stimestamp
+
+                return sf
+
+        def gen_installed_actions_bytype(self, atype, implicit_dirs=False):
+                """Iterates through the installed actions of type 'atype'.  If
+                'implicit_dirs' is True and 'atype' is 'dir', then include
+                directories only implicitly defined by other filesystem
+                actions."""
+
+                if implicit_dirs and atype != "dir":
+                        implicit_dirs = False
+
+                excludes = self.list_excludes()
+
+                for pfmri in self.gen_installed_pkgs():
+                        m = self.get_manifest(pfmri)
+                        dirs = set()
+                        for act in m.gen_actions_by_type(atype, excludes):
+                                if implicit_dirs:
+                                        dirs.add(act.attrs["path"])
+                                yield act, pfmri
+                        if implicit_dirs:
+                                da = pkg.actions.directory.DirectoryAction
+                                for d in m.get_directories(excludes):
+                                        if d not in dirs:
+                                                yield da(path=d, implicit="true"), pfmri
+
         def get_installed_pubs(self):
                 """Returns a set containing the prefixes of all publishers with
                 installed packages."""
@@ -2924,10 +3121,19 @@ class Image(object):
                             "during operation - preserved in %s" % (path, sdir))
 
         def temporary_dir(self):
-                """create a temp directory under image directory for various
-                purposes"""
+                """Create a temp directory under the image directory for various
+                purposes.  If the process is unable to create a directory in the
+                image's temporary directory, a replacement location is found."""
 
-                misc.makedirs(self.__tmpdir)
+                try:
+                        misc.makedirs(self.__tmpdir)
+                except (apx.PermissionsException,
+                    apx.ReadOnlyFileSystemException):
+                        self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
+                        atexit.register(shutil.rmtree,
+                            self.__tmpdir, ignore_errors=True)
+                        return self.temporary_dir()
+
                 try:
                         rval = tempfile.mkdtemp(dir=self.__tmpdir)
 
@@ -2935,19 +3141,45 @@ class Image(object):
                         os.chmod(rval, misc.PKG_DIR_MODE)
                         return rval
                 except EnvironmentError, e:
+                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
+                                atexit.register(shutil.rmtree,
+                                    self.__tmpdir, ignore_errors=True)
+                                return self.temporary_dir()
                         raise apx._convert_error(e)
 
-        def temporary_file(self):
-                """create a temp file under image directory for various
-                purposes"""
+        def temporary_file(self, close=True):
+                """Create a temporary file under the image directory for various
+                purposes.  If 'close' is True, close the file descriptor;
+                otherwise leave it open.  If the process is unable to create a
+                file in the image's temporary directory, a replacement is
+                found."""
 
-                misc.makedirs(self.__tmpdir)
+                try:
+                        misc.makedirs(self.__tmpdir)
+                except (apx.PermissionsException,
+                    apx.ReadOnlyFileSystemException):
+                        self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
+                        atexit.register(shutil.rmtree,
+                            self.__tmpdir, ignore_errors=True)
+                        return self.temporary_file(close=close)
+
                 try:
                         fd, name = tempfile.mkstemp(dir=self.__tmpdir)
-                        os.close(fd)
+                        if close:
+                                os.close(fd)
                 except EnvironmentError, e:
+                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                self.__tmpdir = tempfile.mkdtemp(prefix="pkg5tmp-")
+                                atexit.register(shutil.rmtree,
+                                    self.__tmpdir, ignore_errors=True)
+                                return self.temporary_file(close=close)
                         raise apx._convert_error(e)
-                return name
+
+                if close:
+                        return name
+                else:
+                        return fd, name
 
         def __filter_install_matches(self, matches):
                 """Attempts to eliminate redundant matches found during

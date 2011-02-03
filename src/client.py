@@ -683,7 +683,8 @@ def fix_image(api_inst, args):
                     api_errors.ActionExecutionError,
                     api_errors.PermissionsException,
                     api_errors.SigningException,
-                    api_errors.InvalidResourceLocation), e:
+                    api_errors.InvalidResourceLocation,
+                    api_errors.ConflictingActionErrors), e:
                         logger.error("\n")
                         logger.error(str(e))
                 except api_errors.ImageFormatUpdateNeeded, e:
@@ -1156,6 +1157,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 return EXIT_OOPS
         if e_type in (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
+            api_errors.ConflictingActionErrors,
             api_errors.InvalidPackageErrors):
                 error("\n" + str(e), cmd=op)
                 return EXIT_OOPS
@@ -1455,9 +1457,13 @@ def install(api_inst, args):
                 stuff_to_do = api_inst.plan_install(pargs,
                     refresh_catalogs, noexecute, update_index=update_index,
                     be_name=be_name, new_be=new_be, reject_list=reject_pats)
-        except:
+        except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
+
+                if isinstance(e, api_errors.ConflictingActionErrors) and verbose:
+                        display_plan(api_inst, verbose)
+
                 if ret_code != EXIT_OK:
                         return ret_code
 
@@ -1529,9 +1535,11 @@ def uninstall(api_inst, args):
                     noexecute, update_index=update_index, be_name=be_name,
                     new_be=new_be):
                         assert 0
-        except:
+        except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
+                if isinstance(e, api_errors.ConflictingActionErrors) and verbose:
+                        display_plan(api_inst, verbose)
                 if ret_code != EXIT_OK:
                         return ret_code
 
@@ -1624,9 +1632,13 @@ def update(api_inst, args):
                                 be_name=be_name, new_be=new_be, force=force,
                                 update_index=update_index,
                                 reject_list=reject_pats)
-        except:
+        except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
+
+                if isinstance(e, api_errors.ConflictingActionErrors) and verbose:
+                        display_plan(api_inst, verbose)
+
                 if ret_code != EXIT_OK:
                         return ret_code
 

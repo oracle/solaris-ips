@@ -923,6 +923,15 @@ class LintEngine(object):
                         except base.LintException, err:
                                 self.error(err)
                 self.checkers = []
+
+                # Reset the API object before destroying it; because it does a
+                # chdir(), we need to save and restore our cwd.
+                cwd = os.getcwd()
+                if self.lint_api_inst:
+                        self.lint_api_inst.reset()
+                os.chdir(cwd)
+                self.lint_api_inst = None
+
                 if clear_cache:
                         shutil.rmtree(self.basedir)
 

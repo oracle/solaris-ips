@@ -887,20 +887,20 @@ class FactoredManifest(Manifest):
                                 self.__load()
                         # generate actions that contain directories
                         alist = [
-                                actions.fromstr(s.strip())
-                                for s in self.__gen_dirs_to_str(
-                                    self.__actions_to_dirs())
-                                ]
+                            actions.fromstr(s.strip())
+                            for s in self.__gen_dirs_to_str(
+                                self.__actions_to_dirs())
+                        ]
                 else:
                         # we have cached copy on disk; use it
                         f = file(mpath)
                         alist = [actions.fromstr(s.strip()) for s in f]
                         f.close()
                 s = set([
-                         a.attrs["path"]
-                         for a in alist
-                         if a.include_this(excludes)
-                         ])
+                    a.attrs["path"]
+                    for a in alist
+                    if a.include_this(excludes)
+                ])
                 return list(s)
 
         def gen_actions_by_type(self, atype, excludes=EmptyI):
@@ -915,6 +915,9 @@ class FactoredManifest(Manifest):
                                 yield a
                         return
 
+                # This checks if we've already written out the factorerd
+                # manifest files.  If so, we'll use it, and if not, then
+                # we'll load the full manifest.
                 mpath = self.__cache_path("manifest.dircache")
 
                 if not os.path.exists(mpath):

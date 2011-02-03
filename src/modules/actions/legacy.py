@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a legacy packaging object
@@ -46,6 +45,10 @@ class LegacyAction(generic.Action):
 
         name = "legacy"
         key_attr = "pkg"
+        unique_attrs = ("category", "desc", "hotline", "name", "pkg", "vendor",
+            "version", "basedir", "pkginst", "pstamp", "sunw_prodvers")
+        refcountable = True
+        globally_identical = True
 
         def directory_references(self):
                 return [os.path.normpath(os.path.join("var/sadm/pkg",

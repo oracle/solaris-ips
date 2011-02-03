@@ -394,9 +394,11 @@ class ImageInterface(object):
 
                 if exc_type == apx.PlanCreationException:
                         self.__set_history_PlanCreationException(exc_value)
-
                 elif exc_type == apx.CanceledException:
                         self.__cancel_done()
+                elif exc_type == apx.ConflictingActionErrors:
+                        self.log_operation_end(error=str(exc_value),
+                            result=history.RESULT_CONFLICTING_ACTIONS)
                 elif not log_op_end or exc_type in log_op_end:
                         self.log_operation_end(error=exc_value)
 
@@ -413,7 +415,19 @@ class ImageInterface(object):
                         # is supplied.
                         pass
 
+                # In the case of duplicate actions, we want to save off the plan
+                # description for display to the client (if they requested it),
+                # as once the solver's done its job, there's interesting
+                # information in the plan.  We have to save it here and restore
+                # it later because __reset_unlock() torches it.
+                if exc_type == apx.ConflictingActionErrors:
+                        plan_desc = PlanDescription(self.__img, self.__new_be)
+
                 self.__reset_unlock()
+
+                if exc_type == apx.ConflictingActionErrors:
+                        self.__plan_desc = plan_desc
+
                 self.__activity_lock.release()
                 raise
 

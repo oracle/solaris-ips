@@ -47,7 +47,7 @@ class UserAction(generic.Action):
 
         name = "user"
         key_attr = "username"
-        globally_unique = True
+        globally_identical = True
 
         # if these values are different on disk than in action
         # prefer on-disk version
@@ -275,6 +275,10 @@ class UserAction(generic.Action):
                         pw.writefile()
                         gr.writefile()
                         ftp.writefile()
+                except KeyError, e:
+                        # Already gone; don't care.
+                        if e.args[0] != (self.attrs["username"],):
+                                raise
                 finally:
                         pw.unlock()
 

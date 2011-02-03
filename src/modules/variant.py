@@ -78,23 +78,25 @@ class Variants(dict):
         # Methods which are unique to variants
         def allow_action(self, action):
                 """ determine if variants permit this action """
-                aset = set([k for k in action.attrs.keys() if k.startswith("variant.")])
+                avars = dict((
+                    (k, v)
+                    for k, v in action.attrs.iteritems()
+                    if k[:8] == "variant."
+                ))
 
-                unknown_variants = aset - self.__keyset
-
-                # handle variant.debug
-
-                for u in unknown_variants:
-                        # install only unknown variant.debug
-                        # actions tagged w/ "false"
-                        if u.startswith("variant.debug.") and \
-                            action.attrs[u] != "false":
+                for k, v in avars.iteritems():
+                        # Handle arbitrary debug variants: allow the install
+                        # if the value is "false".
+                        if k not in self.__keyset and \
+                            k[:14] == "variant.debug." and v != "false":
                                 return False
-                        # could assert here for other
-                        # unknown variants... best course TBD
-                for a in aset & self.__keyset:
-                        if self[a] != action.attrs[a]:
+
+                        # For all other variants, prevent the install if the
+                        # value doesn't match the system value.  We might want
+                        # to do something different for unknown variants.
+                        if self.get(k, v) != v:
                                 return False
+
                 return True
 
 # The two classes which follow are used during dependency calculation when

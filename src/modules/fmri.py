@@ -112,7 +112,7 @@ class PkgFmri(object):
         # Stored in a class variable so that subclasses can override
         valid_pkg_name = g_valid_pkg_name
 
-        __slots__ = ["version", "publisher", "pkg_name"]
+        __slots__ = ["version", "publisher", "pkg_name", "_hash"]
 
         def __init__(self, fmri, build_release = None, publisher = None):
                 """XXX pkg:/?pkg_name@version not presently supported."""
@@ -147,6 +147,8 @@ class PkgFmri(object):
                 if not self.valid_pkg_name.match(self.pkg_name):
                         raise IllegalFmri(fmri, IllegalFmri.BAD_PACKAGENAME,
                             detail=self.pkg_name)
+
+                self._hash = None
 
         def copy(self):
                 return PkgFmri(str(self))
@@ -240,9 +242,11 @@ class PkgFmri(object):
 
         def set_name(self, name):
                 self.pkg_name = name
+                self._hash = None
 
         def set_timestamp(self, new_ts):
                 self.version.set_timestamp(new_ts)
+                self._hash = None
 
         def get_timestamp(self):
                 return self.version.get_timestamp()
@@ -343,15 +347,12 @@ class PkgFmri(object):
                 # __hash__ need not generate a unique hash value for all
                 # possible objects-- it must simply guarantee that two
                 # items which are equal (i.e. cmp(a,b) == 0) always hash to
-                # the same value.  When timestamps are available we use
-                # those, as a short and fairly unique string.  If not,
-                # we punt to the package name, the fastest-to-hash thing
-                # we have at our disposal.
+                # the same value.
                 #
-                if self.version and self.version.timestr:
-                        return hash(self.version.timestr)
-                else:
-                        return hash(self.pkg_name)
+                h = self._hash
+                if h is None:
+                        h = self._hash = hash(self.version) + hash(self.pkg_name)
+                return h
 
         def __cmp__(self, other):
                 if not other:

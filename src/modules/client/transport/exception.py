@@ -129,6 +129,7 @@ class TransportFailures(TransportException):
                         if x.count > 1:
                                 s += " (happened %d times)" % x.count
                         s += "\n"
+                s += self._str_autofix()
                 return s
 
         def __len__(self):
@@ -208,6 +209,7 @@ class TransportFrameworkError(TransportException):
                         s += " reason: %s" % self.reason
                 if self.url:
                         s += "\nURL: '%s'." % self.url
+                s += self._str_autofix()
                 return s
 
         def __cmp__(self, other):

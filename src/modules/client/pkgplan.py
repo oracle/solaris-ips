@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -46,10 +46,13 @@ class PkgPlan(object):
         If the destination FMRI is None, the package is removed.
         """
 
-        __slots__ = ["actions", "check_cancelation", "destination_fmri",
-            "image", "origin_fmri", "pkg_summary", "__destination_mfst",
+        __slots__ = [
+            "actions", "check_cancelation", "destination_fmri", "image",
+            "origin_fmri", "pkg_summary", "__destination_mfst",
             "__license_status", "__origin_mfst", "__progtrack",
-            "__repair_actions", "__xferfiles", "__xfersize"]
+            "__repair_actions", "__xferfiles", "__xfersize",
+            "_autofix_pkgs"
+        ]
 
         def __init__(self, image, progtrack, check_cancelation):
                 self.destination_fmri = None
@@ -68,6 +71,7 @@ class PkgPlan(object):
                 self.__repair_actions = []
                 self.__xferfiles = -1
                 self.__xfersize = -1
+                self._autofix_pkgs = []
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -99,7 +103,7 @@ class PkgPlan(object):
                 self.destination_fmri = df
                 self.__destination_mfst = dm
 
-        def propose_repair(self, fmri, mfst, actions):
+        def propose_repair(self, fmri, mfst, actions, autofix=False):
                 self.propose(fmri, mfst, fmri, mfst)
                 # self.origin_fmri = None
                 # I'd like a cleaner solution than this; we need to actually
@@ -113,6 +117,9 @@ class PkgPlan(object):
 
                 # Only install actions, no update or remove
                 self.__repair_actions = lst
+
+                if autofix:
+                        self._autofix_pkgs.append(fmri)
 
         def get_actions(self):
                 raise NotImplementedError()
@@ -133,12 +140,6 @@ class PkgPlan(object):
 
         def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI):
                 """Determine the actions required to transition the package."""
-
-                # Assume that origin actions are unique, but make sure that
-                # destination ones are.
-                ddups = self.__destination_mfst.duplicates(new_excludes)
-                if ddups:
-                        raise RuntimeError(["Duplicate actions", ddups])
 
                 # If new actions are being installed, check the destination
                 # manifest for signatures.

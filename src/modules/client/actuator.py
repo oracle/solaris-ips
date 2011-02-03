@@ -136,6 +136,9 @@ class Actuator(GenericActuator):
                 self.do_nothing = True
                 self.cmd_path = ""
 
+        def __bool__(self):
+                return self.install or self.removal or self.update
+
         def get_list(self):
                 """Returns a list of actuator value pairs, suitable for printing"""
                 def check_val(dfmri):

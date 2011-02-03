@@ -26,6 +26,7 @@
 
 from collections import namedtuple
 import errno
+import itertools
 import operator
 import os
 import traceback
@@ -52,11 +53,14 @@ from collections import defaultdict
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
-EVALUATED_OK      = 2 # ready to execute
-PREEXECUTED_OK    = 3 # finished w/ preexecute
-PREEXECUTED_ERROR = 4 # whoops
-EXECUTED_OK       = 5 # finished execution
-EXECUTED_ERROR    = 6 # failed
+MERGED_OK         = 2 # created single merged plan
+EVALUATED_OK      = 3 # ready to execute
+PREEXECUTED_OK    = 4 # finished w/ preexecute
+PREEXECUTED_ERROR = 5 # whoops
+EXECUTED_OK       = 6 # finished execution
+EXECUTED_ERROR    = 7 # failed
+
+ActionPlan = namedtuple("ActionPlan", "p src dst")
 
 class ImagePlan(object):
         """ImagePlan object contains the plan for changing the image...
@@ -115,6 +119,8 @@ class ImagePlan(object):
                 self.__directories = None  # implement ref counting
                 self.__symlinks = None     # for dirs and links and
                 self.__hardlinks = None    # hardlinks
+                self.__licenses = None
+                self.__legacy = None
                 self.__cached_actions = {}
 
                 self.__old_excludes = image.list_excludes()
@@ -122,7 +128,7 @@ class ImagePlan(object):
 
                 self.__check_cancelation = check_cancel
 
-                self.__actuators = None
+                self.__actuators = actuator.Actuator()
 
                 self.update_index = True
 
@@ -163,8 +169,10 @@ class ImagePlan(object):
         @property
         def services(self):
                 """Returns a list of strings describing affected services"""
-                return ["%s: %s" % (fmri, smf)
-                    for fmri, smf in self.__actuators.get_services_list()]
+                return [
+                    "%s: %s" % (fmri, smf)
+                    for fmri, smf in self.__actuators.get_services_list()
+                ]
 
         @property
         def varcets(self):
@@ -504,12 +512,12 @@ class ImagePlan(object):
 
         def reboot_needed(self):
                 """Check if evaluated imageplan requires a reboot"""
-                assert self.state >= EVALUATED_OK
+                assert self.state >= MERGED_OK
                 return self.__actuators.reboot_needed()
 
         def boot_archive_needed(self):
                 """True if boot archive needs to be rebuilt"""
-                assert self.state >= EVALUATED_OK
+                assert self.state >= MERGED_OK
                 return self.__need_boot_archive
 
         def get_plan(self, full=True):
@@ -528,7 +536,7 @@ class ImagePlan(object):
                         logger.info(str(self))
 
         def gen_new_installed_pkgs(self):
-                """ generates all the fmris in the new set of installed pkgs"""
+                """Generates all the fmris which will be in the new image."""
                 assert self.state >= EVALUATED_PKGS
                 fmri_set = set(self.image.gen_installed_pkgs())
 
@@ -538,24 +546,72 @@ class ImagePlan(object):
                 for pfmri in fmri_set:
                         yield pfmri
 
-        def gen_new_installed_actions(self):
-                """generates actions in new installed image"""
+        def gen_only_new_installed_pkgs(self):
+                """Generates all the fmris which are being installed (or fixed,
+                etc.)."""
                 assert self.state >= EVALUATED_PKGS
-                for pfmri in self.gen_new_installed_pkgs():
-                        m = self.image.get_manifest(pfmri)
-                        for act in m.gen_actions(self.__new_excludes):
-                                yield act
 
-        def gen_new_installed_actions_bytype(self, atype):
-                """generates actions in new installed image"""
+                for p in self.pkg_plans:
+                        if p.destination_fmri:
+                                yield p.destination_fmri
+
+        def gen_outgoing_pkgs(self):
+                """Generates all the fmris which are being removed."""
                 assert self.state >= EVALUATED_PKGS
-                for pfmri in self.gen_new_installed_pkgs():
+
+                for p in self.pkg_plans:
+                        if p.origin_fmri and p.origin_fmri != p.destination_fmri:
+                                yield p.origin_fmri
+
+        def gen_new_installed_actions_bytype(self, atype, implicit_dirs=False):
+                """Generates actions of type 'atype' from the packages in the
+                future image."""
+
+                return self.__gen_star_actions_bytype(atype,
+                    self.gen_new_installed_pkgs, implicit_dirs=implicit_dirs)
+
+        def gen_only_new_installed_actions_bytype(self, atype, implicit_dirs=False):
+                """Generates actions of type 'atype' from packages being
+                installed."""
+
+                return self.__gen_star_actions_bytype(atype,
+                    self.gen_only_new_installed_pkgs, implicit_dirs=implicit_dirs)
+
+        def gen_outgoing_actions_bytype(self, atype, implicit_dirs=False):
+                """Generates actions of type 'atype' from packages being
+                removed (not necessarily actions being removed)."""
+
+                return self.__gen_star_actions_bytype(atype,
+                    self.gen_outgoing_pkgs, implicit_dirs=implicit_dirs)
+
+        def __gen_star_actions_bytype(self, atype, generator, implicit_dirs=False):
+                """Generate installed actions of type 'atype' from the package
+                fmris emitted by 'generator'.  If 'implicit_dirs' is True, then
+                when 'atype' is 'dir', directories only implicitly delivered
+                in the image will be emitted as well."""
+
+                assert self.state >= EVALUATED_PKGS
+
+                # Don't bother accounting for implicit directories if we're not
+                # looking for them.
+                if implicit_dirs and atype != "dir":
+                        implicit_dirs = False
+
+                for pfmri in generator():
                         m = self.image.get_manifest(pfmri)
+                        dirs = set() # Keep track of explicit dirs
                         for act in m.gen_actions_by_type(atype,
                             self.__new_excludes):
-                                yield act
+                                if implicit_dirs:
+                                        dirs.add(act.attrs["path"])
+                                yield act, pfmri
+                        if implicit_dirs:
+                                da = pkg.actions.directory.DirectoryAction
+                                for d in m.get_directories(self.__new_excludes):
+                                        if d not in dirs:
+                                                yield da(path=d, implicit="true"), pfmri
 
-        def get_directories(self):
+        def __get_directories(self):
                 """ return set of all directories in target image """
                 # always consider var and the image directory fixed in image...
                 if self.__directories == None:
@@ -563,10 +619,11 @@ class ImagePlan(object):
                                     "var",
                                     "var/sadm",
                                     "var/sadm/install"])
-                        for pfmri in self.gen_new_installed_pkgs():
-                                m = self.image.get_manifest(pfmri)
-                                for d in m.get_directories(self.__new_excludes):
-                                        dirs.add(os.path.normpath(d))
+                        dirs.update((
+                            os.path.normpath(d[0].attrs["path"])
+                            for d in self.gen_new_installed_actions_bytype("dir",
+                                implicit_dirs=True)
+                        ))
                         self.__directories = dirs
                 return self.__directories
 
@@ -575,7 +632,7 @@ class ImagePlan(object):
                 if self.__symlinks == None:
                         self.__symlinks = set((
                             a.attrs["path"]
-                            for a in self.gen_new_installed_actions_bytype("link")
+                            for a, pfmri in self.gen_new_installed_actions_bytype("link")
                         ))
                 return self.__symlinks
 
@@ -584,9 +641,440 @@ class ImagePlan(object):
                 if self.__hardlinks == None:
                         self.__hardlinks = set((
                             a.attrs["path"]
-                            for a in self.gen_new_installed_actions_bytype("hardlink")
+                            for a, pfmri in self.gen_new_installed_actions_bytype("hardlink")
                         ))
                 return self.__hardlinks
+
+        def __get_licenses(self):
+                """ return a set of all licenses in target image"""
+                if self.__licenses == None:
+                        self.__licenses = set((
+                            a.attrs["license"]
+                            for a, pfmri in self.gen_new_installed_actions_bytype("license")
+                        ))
+                return self.__licenses
+
+        def __get_legacy(self):
+                """ return a set of all legacy actions in target image"""
+                if self.__legacy == None:
+                        self.__legacy = set((
+                            a.attrs["pkg"]
+                            for a, pfmri in self.gen_new_installed_actions_bytype("legacy")
+                        ))
+                return self.__legacy
+
+        def __check_inconsistent_types(self, actions, oactions):
+                """Check whether multiple action types within a namespace group
+                deliver to a given name in that space."""
+
+                ntypes = set((a[0].name for a in actions))
+                otypes = set((a[0].name for a in oactions))
+
+                # We end up with nothing at this path, or start and end with one
+                # of the same type, or we just add one type to an empty path.
+                if len(ntypes) == 0 or (len(ntypes) == 1 and (otypes == ntypes
+                    or len(otypes) == 0)):
+                        return None
+
+                # We have fewer types, so actions are getting removed.
+                if len(ntypes) < len(otypes):
+                        # If we still end up in a broken state, signal the
+                        # caller that we should move forward, but not remove
+                        # anything at this path.  Note that the type on the
+                        # filesystem may not match any of the remaining types.
+                        if len(ntypes) > 1:
+                                return "nothing", None
+
+                        assert len(ntypes) == 1
+
+                        # If we end up in a sane state, signal the caller that
+                        # we should make sure the right contents are in place.
+                        # This implies that the actions remove() method should
+                        # handle when the action isn't present.
+                        if actions[0][0].name != "dir":
+                                return "fixup", actions[0]
+
+                        # If we end up with a directory, then we need to be
+                        # careful to choose a non-implicit directory as the
+                        # fixup action.
+                        for a in actions:
+                                if "implicit" not in a[0].attrs:
+                                        return "fixup", a
+                        else:
+                                # If we only have implicit directories left,
+                                # make up the rest of the attributes.
+                                a[0].attrs.update({"mode": "0755", "owner":
+                                    "root", "group": "root"})
+                                return "fixup", a
+
+                # If the broken packages remain unchanged across the plan, then
+                # we can ignore it.  We just check that the packages haven't
+                # changed.
+                sort_key = operator.itemgetter(1)
+                actions = sorted(actions, key=sort_key)
+                oactions = sorted(oactions, key=sort_key)
+                if ntypes == otypes and \
+                    all(o[1] == n[1] for o, n in zip(oactions, actions)):
+                        return "nothing", None
+
+                return "error", actions
+
+        def __check_duplicate_actions(self, actions, oactions):
+                """Check whether we deliver more than one action with a given
+                key attribute value if only a single action of that type and
+                value may be delivered."""
+
+                # We end up with no actions or start with one or none and end
+                # with exactly one.
+                if len(actions) == 0 or (len(oactions) <= len(actions) == 1):
+                        return None
+
+                # Removing actions.
+                if len(actions) < len(oactions):
+                        # If we still end up in a broken state, signal the
+                        # caller that we should move forward, but not remove
+                        # any actions.
+                        if len(actions) > 1:
+                                return "nothing", None
+                        # If we end up in a sane state, signal the caller that
+                        # we should make sure the right contents are in place.
+                        # This implies that the action's remove() method should
+                        # handle when the action isn't present.
+                        return "fixup", actions[0]
+
+                # If the broken paths remain unchanged across the plan, then we
+                # can ignore it.  We have to resort to stringifying the actions
+                # in order to sort them since the usual sort is much lighter
+                # weight.
+                oactions.sort(key=lambda x: str(x[0]))
+                actions.sort(key=lambda x: str(x[0]))
+                if len(oactions) == len(actions) and \
+                    all(o[0] == n[0] for o, n, in zip(oactions, actions)):
+                        return "nothing", None
+
+                # Some very rare cases require us to allow two actions to be
+                # delivered at a single point in their namespace.  Don't use
+                # this unless you know you're supposed to!
+                if DebugValues["allow-overlays"] and \
+                    any(act[0].attrs.get("overlay") == "true" for act in actions):
+                        return None
+
+                return "error", actions
+
+        def __check_inconsistent_attrs(self, actions, oactions):
+                """Check whether we have non-identical actions delivering to the
+                same point in their namespace."""
+
+                # We iterate over all pairs of actions to see if any conflict
+                # with the rest.  If two actions are "safe" together, then we
+                # can ignore one of them for the rest of the run, since we can
+                # compare the rest of the actions against just one copy of
+                # essentially identical actions.
+                seen = set()
+                nproblems = []
+                for a1, a2 in itertools.combinations(actions, 2):
+                        if a2 in seen:
+                                continue
+
+                        # Find the attributes which are different between the
+                        # two actions, and if there are none, skip the action.
+                        # We have to treat "implicit" specially for implicit
+                        # directories because none of the attributes except for
+                        # "path" will exist.
+                        diffs = a1[0].differences(a2[0])
+                        if not (diffs and "implicit" not in diffs):
+                                seen.add(a2)
+                                continue
+
+                        # If none of the different attributes is one that must
+                        # be identical, then we can skip this action.
+                        if not any(d for d in diffs if d in a1[0].unique_attrs):
+                                seen.add(a2)
+                                continue
+
+                        nproblems.append((a1, a2))
+
+                # If we're attempting to move to a state which has no problems,
+                # then we should gather some information about what problems
+                # might exist currently, so that we can fix things up properly.
+                if not nproblems:
+                        seen = set()
+                        oproblems = []
+                        for a1, a2 in itertools.combinations(oactions, 2):
+                                if a2 in seen:
+                                        continue
+
+                                diffs = a1[0].differences(a2[0])
+                                if not (diffs and "implicit" not in diffs):
+                                        seen.add(a2)
+                                        continue
+
+                                if not any(d for d in diffs if d in a1[0].unique_attrs):
+                                        seen.add(a2)
+                                        continue
+
+                                oproblems.append((a1, a2))
+
+                        if oproblems:
+                                if actions[0][0].name != "dir":
+                                        return "fixup", actions[0]
+
+                                # Find a non-implicit directory action to use
+                                for a in actions:
+                                        if "implicit" not in a[0].attrs:
+                                                return "fixup", a
+                                else:
+                                        return "nothing", None
+                else:
+                        return "error", actions
+
+        def __propose_fixup(self, action, pfmri):
+                """Add to the current plan a pseudo repair plan to fix up
+                correctable conflicts."""
+
+                pp, al = self.__fixups.get(pfmri, (None, []))
+                if pp is None:
+                        # XXX The lambda: False is temporary until fix is moved
+                        # into the API and self.__check_cancelation can be used.
+                        pp = pkgplan.PkgPlan(self.image, self.__progtrack,
+                            lambda: False)
+                        self.__fixups[pfmri] = pp, [action]
+                else:
+                        al.append(action)
+
+        def __evaluate_fixups(self):
+                nfm = manifest.NullFactoredManifest
+                for pfmri, (pp, al) in self.__fixups.items():
+                        pp.propose_repair(pfmri, nfm, al, autofix=True)
+                        pp.evaluate(self.__old_excludes, self.__new_excludes)
+                        self.pkg_plans.append(pp)
+
+                        # Repairs end up going into the package plan's update
+                        # list, so we need to append ActionPlans for each action
+                        # in this fixup pkgplan to the list of update actions.
+                        for action in al:
+                                self.update_actions.append(ActionPlan(pp, None,
+                                    action))
+
+        def __process_conflicts(self, key, func, actions, oactions, errclass, errs):
+                """The conflicting action checking functions all need to be
+                dealt with in a similar fashion, so we do that work in one
+                place."""
+
+                ret = func(actions, oactions)
+                if ret is None:
+                        return False
+
+                msg, actions = ret
+
+                if not isinstance(msg, basestring):
+                        return False
+
+                if msg == "nothing":
+                        for i, ap in enumerate(self.removal_actions):
+                                if ap.src.attrs.get(ap.src.key_attr, None) == key:
+                                        self.removal_actions[i] = None
+                elif msg == "fixup":
+                        self.__propose_fixup(*actions)
+                elif msg == "error":
+                        errs.append(errclass(actions))
+                else:
+                        assert False, "%s() returned something other than " \
+                            "'nothing', 'error', or 'fixup': '%s'" % \
+                            (func.__name__, msg)
+
+                return True
+
+
+        def __find_all_conflicts(self):
+                """Find all instances of conflicting actions.
+
+                There are three categories of conflicting actions.  The first
+                involves the notion of a 'namespace group': a set of action
+                classes which install into the same namespace.  The only example
+                of this is the set of filesystem actions: file, dir, link, and
+                hardlink.  If more than one action delivers to a given pathname,
+                all of those actions need to be of the same type.
+
+                The second category involves actions which cannot be delivered
+                multiple times to the same point in their namespace.  For
+                example, files must be delivered exactly once, as must users,
+                but directories or symlinks can be delivered multiple times, and
+                we refcount them.
+
+                The third category involves actions which may be delivered
+                multiple times, but all of those actions must be identical in
+                their core attributes.
+                """
+
+                # We need to be able to create broken images from the testsuite.
+                if DebugValues["broken-conflicting-action-handling"]:
+                        return
+
+                # Group action types by namespace groups
+                kf = operator.attrgetter("namespace_group")
+                types = sorted(pkg.actions.types.itervalues(), key=kf)
+
+                namespace_dict = dict(
+                    (ns, list(action_classes))
+                    for ns, action_classes in itertools.groupby(types, kf)
+                )
+
+                # Give each non-namespaced action it's own pseudo-namespace.
+                namespace_dict.update(dict(
+                    (n, [i])
+                    for n, i in enumerate(namespace_dict[None])
+                ))
+                namespace_dict.pop(None)
+
+                self.__fixups = {}
+                errs = []
+
+                old_fmris = set(self.image.gen_installed_pkgs())
+                new_fmris = set(self.gen_new_installed_pkgs())
+                gone_fmris = old_fmris - new_fmris
+
+                # If we're removing all packages, there won't be any conflicts.
+                if not new_fmris:
+                        return
+
+                # Load information about the actions currently on the system.
+                actdict = self.image._load_actdict()
+                sf = self.image._get_stripped_actions_file()
+
+                # Iterate over action types in namespace groups first; our first
+                # check should be for action type consistency.
+                for ns, action_classes in namespace_dict.iteritems():
+                        # There's no sense in checking actions which have no
+                        # limits
+                        if all(not c.globally_identical for c in action_classes):
+                                continue
+
+                        # The 'new' dict contains information about the system
+                        # as it will be.  We start by accumulating actions from
+                        # the manifests of the packages being installed.
+                        new = {}
+                        for klass in action_classes:
+                                for a, pfmri in self.gen_only_new_installed_actions_bytype(klass.name, implicit_dirs=True):
+                                        self.__progtrack.evaluate_progress()
+                                        new.setdefault(a.attrs[klass.key_attr], []).append((a, pfmri))
+
+                        # The 'old' dict contains information about the system
+                        # as it is now.  We start by accumulating actions from
+                        # the manifests of the packages being removed.
+                        old = {}
+                        for klass in action_classes:
+                                for a, pfmri in self.gen_outgoing_actions_bytype(klass.name, implicit_dirs=True):
+                                        self.__progtrack.evaluate_progress()
+                                        old.setdefault(a.attrs[klass.key_attr], []).append((a, pfmri))
+
+                        # Update 'old' with all actions from the action cache
+                        # which could conflict with the new actions being
+                        # installed, or with actions already installed, but not
+                        # getting removed.
+                        for key in set(itertools.chain(new.iterkeys(), old.keys())):
+                                offsets = []
+                                for klass in action_classes:
+                                        offset = actdict.get((klass.name, key), None)
+                                        if offset is not None:
+                                                offsets.append(offset)
+
+                                for offset in offsets:
+                                        sf.seek(offset)
+                                        for line in sf:
+                                                fmristr, actstr = line.rstrip().split(None, 1)
+                                                act = pkg.actions.fromstr(actstr)
+                                                if act.attrs[act.key_attr] != key:
+                                                        break
+                                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                                                if pfmri not in gone_fmris:
+                                                        old.setdefault(key, []).append((act, pfmri))
+
+                        # Now update 'new' with all actions from the action
+                        # cache which are staying on the system, and could
+                        # conflict with the actions being installed.
+                        for key in old.iterkeys():
+                                # If we're not changing any fmris, as in the
+                                # case of a change-facet/variant, revert, or
+                                # fix, then we need to skip modifying new, as
+                                # it'll just end up with incorrect duplicates.
+                                if self.planned_op in ("fix", "change-variant",
+                                    "revert"):
+                                        break
+                                offsets = []
+                                for klass in action_classes:
+                                        offset = actdict.get((klass.name, key), None)
+                                        if offset is not None:
+                                                offsets.append(offset)
+
+                                for offset in offsets:
+                                        sf.seek(offset)
+                                        for line in sf:
+                                                fmristr, actstr = line.rstrip().split(None, 1)
+                                                act = pkg.actions.fromstr(actstr)
+                                                if act.attrs[act.key_attr] != key:
+                                                        break
+                                                pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
+                                                if pfmri not in gone_fmris:
+                                                        new.setdefault(key, []).append((act, pfmri))
+
+                        for key, actions in new.iteritems():
+                                offsets = []
+                                for klass in action_classes:
+                                        offset = actdict.get((klass.name, key), None)
+                                        if offset is not None:
+                                                offsets.append(offset)
+
+                                oactions = old.get(key, [])
+
+                                self.__progtrack.evaluate_progress()
+
+                                if len(actions) == 1 and len(oactions) < 2:
+                                        continue
+
+                                # Actions delivering to the same point in a
+                                # namespace group's namespace should have the
+                                # same type.
+                                if type(ns) != int:
+                                        if self.__process_conflicts(key,
+                                            self.__check_inconsistent_types,
+                                            actions, oactions,
+                                            api_errors.InconsistentActionTypeError,
+                                            errs):
+                                                continue
+
+                                # By virtue of the above check, all actions at
+                                # this point in this namespace are the same.
+                                assert(len(set(a[0].name for a in actions)) <= 1)
+                                assert(len(set(a[0].name for a in oactions)) <= 1)
+
+                                # Multiple non-refcountable actions delivered to
+                                # the same name is an error.
+                                if not actions[0][0].refcountable and \
+                                    actions[0][0].globally_identical:
+                                        if self.__process_conflicts(key,
+                                            self.__check_duplicate_actions,
+                                            actions, oactions,
+                                            api_errors.DuplicateActionError,
+                                            errs):
+                                                continue
+
+                                # Multiple refcountable but globally unique
+                                # actions delivered to the same name must be
+                                # identical.
+                                elif actions[0][0].globally_identical:
+                                        if self.__process_conflicts(key,
+                                            self.__check_inconsistent_attrs,
+                                            actions, oactions,
+                                            api_errors.InconsistentActionAttributeError,
+                                            errs):
+                                                continue
+
+                sf.close()
+                self.__evaluate_fixups()
+
+                if errs:
+                        raise api_errors.ConflictingActionErrors(errs)
 
         @staticmethod
         def default_keyfunc(name, act):
@@ -617,7 +1105,7 @@ class ImagePlan(object):
                         return self.__cached_actions[(name, key)]
 
                 d = {}
-                for act in self.gen_new_installed_actions_bytype(name):
+                for act, pfmri in self.gen_new_installed_actions_bytype(name):
                         t = key(name, act)
                         d.setdefault(t, []).append(act)
                 self.__cached_actions[(name, key)] = d
@@ -784,8 +1272,6 @@ class ImagePlan(object):
                 # step upgrade operation, and handle editable files moving from
                 # package to package.  See theory comment in execute, below.
 
-                ActionPlan = namedtuple("ActionPlan", "p src dst")
-
                 self.removal_actions = []
                 for p in self.pkg_plans:
                         for src, dest in p.gen_removal_actions():
@@ -833,7 +1319,9 @@ class ImagePlan(object):
                         if entry in self.removed_users:
                                 del self.removed_users[entry]
 
-                self.__actuators = actuator.Actuator()
+                self.state = MERGED_OK
+
+                self.__find_all_conflicts()
 
                 ConsolidationEntry = namedtuple("ConsolidationEntry", "idx id")
 
@@ -857,31 +1345,41 @@ class ImagePlan(object):
                                 return v
 
                 for i, ap in enumerate(self.removal_actions):
+                        if ap is None:
+                                continue
+
                         self.__progtrack.evaluate_progress()
-                        # remove dir removals if dir is still in final image
+
+                        # If the action type needs to be reference-counted, make
+                        # sure it doesn't get removed if another instance
+                        # remains in the target image.
                         if ap.src.name == "dir" and \
                             os.path.normpath(ap.src.attrs["path"]) in \
-                            self.get_directories():
+                            self.__get_directories():
                                 self.removal_actions[i] = None
                                 continue
-                        # remove link removal if link is still in final image
-                        # (implement reference count on removal due to borked pkgs)
-                        if ap.src.name == "link" and \
+                        elif ap.src.name == "link" and \
                             os.path.normpath(ap.src.attrs["path"]) in \
                             self.__get_symlinks():
                                 self.removal_actions[i] = None
                                 continue
-                        # discard hardlink removal if hardlink is still in final
-                        # image.
-                        if ap.src.name == "hardlink" and \
+                        elif ap.src.name == "hardlink" and \
                             os.path.normpath(ap.src.attrs["path"]) in \
                             self.__get_hardlinks():
+                                self.removal_actions[i] = None
+                                continue
+                        elif ap.src.name == "license" and \
+                            ap.src.attrs["license"] in self.__get_licenses():
+                                self.removal_actions[i] = None
+                                continue
+                        elif ap.src.name == "legacy" and \
+                            ap.src.attrs["pkg"] in self.__get_legacy():
                                 self.removal_actions[i] = None
                                 continue
 
                         # store names of files being removed under own name
                         # or original name if specified
-                        if ap.src.globally_unique:
+                        if ap.src.globally_identical:
                                 attrs = ap.src.attrs
                                 # Store the index into removal_actions and the
                                 # id of the action object in that slot.
@@ -1221,6 +1719,11 @@ class ImagePlan(object):
                                         raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
                                 raise
+                        except (api_errors.InvalidDepotResponseException,
+                            api_errors.TransportError), e:
+                                if p._autofix_pkgs:
+                                        e._autofix_pkgs = p._autofix_pkgs
+                                raise
 
                         self.__progtrack.download_done()
                         self.image.transport.shutdown()
@@ -1399,6 +1902,8 @@ class ImagePlan(object):
                 else:
                         self.__actuators.exec_post_actuators(self.image)
 
+                self.image._create_fast_lookups()
+
                 self.state = EXECUTED_OK
 
                 # reduce memory consumption
@@ -1410,10 +1915,12 @@ class ImagePlan(object):
                 self.valid_directories = set()
                 self.__fmri_changes  = []
                 self.__directories   = []
-                self.__actuators     = []
+                self.__actuators     = actuator.Actuator()
                 self.__cached_actions = {}
                 self.__symlinks = None
                 self.__hardlinks = None
+                self.__licenses = None
+                self.__legacy = None
 
                 # Clear out the primordial user and group caches.
                 self.image._users = set()

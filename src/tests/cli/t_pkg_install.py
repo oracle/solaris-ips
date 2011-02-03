@@ -29,10 +29,12 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import errno
 import os
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.portable as portable
+import platform
 import re
 import shutil
 import stat
@@ -1329,7 +1331,6 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             open liveroot@2.0
             add dir path=/etc mode=755 owner=root group=root
             add file tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
-            add file tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
             close
         """
 
@@ -2302,8 +2303,6 @@ adm:NP:6445::::::
                     add file shadow mode=0400 owner=root group=sys path=etc/shadow preserve=true
                     add file group mode=0644 owner=root group=sys path=etc/group preserve=true
                     add file ftpusers mode=0644 owner=root group=sys path=etc/ftpd/ftpusers preserve=true
-                    add file empty mode=0644 owner=root group=sys path=etc/name_to_major preserve=true
-                    add file empty mode=0644 owner=root group=sys path=etc/driver_aliases preserve=true
                     add dir mode=0755 owner=root group=sys path=etc
                     add dir mode=0755 owner=root group=sys path=etc/ftpd
                     close """
@@ -2371,19 +2370,19 @@ adm:NP:6445::::::
 
                 self.devicebase = """
                     open devicebase@1.0,5.11-0
-                    add dir mode=0755 owner=root group=root path=/var
-                    add dir mode=0755 owner=root group=root path=/var/run
+                    add dir mode=0755 owner=root group=sys path=/var
+                    add dir mode=0755 owner=root group=sys path=/var/run
                     add dir mode=0755 owner=root group=root path=system
                     add dir mode=0755 owner=root group=root path=system/volatile
-                    add dir mode=0755 owner=root group=root path=/tmp
-                    add dir mode=0755 owner=root group=root path=/etc
-                    add dir mode=0755 owner=root group=root path=/etc/security
-                    add file empty mode=0600 owner=root group=root path=/etc/devlink.tab preserve=true
+                    add dir mode=0755 owner=root group=sys path=/tmp
+                    add dir mode=0755 owner=root group=sys path=/etc
+                    add dir mode=0755 owner=root group=sys path=/etc/security
+                    add file empty mode=0600 owner=root group=sys path=/etc/devlink.tab preserve=true
                     add file empty mode=0644 owner=root group=sys path=/etc/name_to_major preserve=true
                     add file empty mode=0644 owner=root group=sys path=/etc/driver_aliases preserve=true
                     add file empty mode=0644 owner=root group=sys path=/etc/driver_classes preserve=true
                     add file empty mode=0644 owner=root group=sys path=/etc/minor_perm preserve=true
-                    add file empty mode=0644 owner=root group=root path=/etc/security/device_policy preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/security/device_policy preserve=true
                     add file empty mode=0644 owner=root group=sys path=/etc/security/extra_privs preserve=true
                     close
                 """
@@ -5489,6 +5488,1000 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh --full")
                 self.pkg("install foo@1.0 unsupported@1.0")
                 self.pkg("uninstall foo unsupported")
+
+
+class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
+        """This set of tests verifies that packages which deliver conflicting
+        actions into the same name in a namespace cannot be installed
+        simultaneously."""
+
+        pkg_dupfiles = """
+            open dupfiles@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
+            add file tmp/file2 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesp1 = """
+            open dupfilesp1@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesp2 = """
+            open dupfilesp2@0,5.11-0
+            add file tmp/file2 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesp2v2 = """
+            open dupfilesp2@2,5.11-0
+            close
+        """
+
+        pkg_dupfilesp3 = """
+            open dupfilesp3@0,5.11-0
+            add file tmp/file2 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesp4 = """
+            open dupfilesp4@0,5.11-0
+            add file tmp/file3 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupotherfilesp1 = """
+            open dupotherfilesp1@0,5.11-0
+            add file tmp/file1 path=dir/namepath mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupotherfilesp2 = """
+            open dupotherfilesp2@0,5.11-0
+            add file tmp/file2 path=dir/namepath mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_identicalfiles = """
+            open identicalfiles@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_overlaid = """
+            open overlaid@0,5.11-0
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true
+            close
+        """
+
+        pkg_overlayer = """
+            open overlayer@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+        """
+
+        pkgremote_pkg1 = """
+            open pkg1@0,5.11-0
+            add file tmp/file1 path=remote mode=644 owner=root group=sys
+            close
+        """
+
+        pkgremote_pkg2 = """
+            open pkg2@0,5.11-0
+            add file tmp/file2 path=remote mode=644 owner=root group=sys
+            close
+        """
+
+        pkg_dupfilesv1 = """
+            open dupfilesv1@0,5.11-0
+            add dir path=dir/pathname mode=0755 owner=root group=bin variant.arch=i386
+            close
+        """
+
+        pkg_dupfilesv2 = """
+            open dupfilesv2@0,5.11-0
+            add dir path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesv3 = """
+            open dupfilesv3@0,5.11-0
+            add dir path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
+            close
+        """
+
+        pkg_dupfilesv4 = """
+            open dupfilesv4@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
+            add file tmp/file2 path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
+            add file tmp/file3 path=dir/pathname mode=0777 owner=root group=bin variant.arch=i386
+            close
+        """
+
+        pkg_dupfilesf1 = """
+            open dupfilesf1@0,5.11-0
+            add dir path=dir/pathname mode=0755 owner=root group=bin facet.devel=true
+            close
+        """
+
+        pkg_dupfilesf2 = """
+            open dupfilesf2@0,5.11-0
+            add dir path=dir/pathname mode=0755 owner=root group=bin facet.devel=false
+            close
+        """
+
+        pkg_dupfilesf3 = """
+            open dupfilesf3@0,5.11-0
+            add dir path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupfilesf4 = """
+            open dupfilesf4@0,5.11-0
+            add file tmp/file1 path=dir/pumpkin mode=0755 owner=root group=bin
+            add file tmp/file2 path=dir/pumpkin mode=0755 owner=root group=bin facet.devel=true
+            close
+        """
+
+        pkg_duppathfilelink = """
+            open duppath-filelink@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
+            add link path=dir/pathname target=dir/other
+            close
+        """
+
+        pkg_duplink = """
+            open duplink@0,5.11-0
+            add link path=dir/pathname target=dir/other
+            close
+        """
+
+        pkg_dupmultitypes1 = """
+            open dupmultitypes@1,5.11-0
+            add link path=multitypepath target=dir/other
+            add file tmp/file1 path=multitypepath mode=0644 owner=root group=bin
+            add dir path=multitypepath mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_dupmultitypes2 = """
+            open dupmultitypes@2,5.11-0
+            add dir path=multitypepath mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_duppathnonidenticallinks = """
+            open duppath-nonidenticallinks@0,5.11-0
+            add link path=dir/pathname target=dir/something
+            add link path=dir/pathname target=dir/other
+            close
+        """
+
+        pkg_duppathnonidenticallinksp1 = """
+            open duppath-nonidenticallinksp1@0,5.11-0
+            add link path=dir/pathname target=dir/something
+            close
+        """
+
+        pkg_duppathnonidenticallinksp2 = """
+            open duppath-nonidenticallinksp2@0,5.11-0
+            add link path=dir/pathname target=dir/other
+            close
+        """
+
+        pkg_duppathnonidenticallinksp2v1 = """
+            open duppath-nonidenticallinksp2@1,5.11-0
+            close
+        """
+
+        pkg_duppathnonidenticaldirs = """
+            open duppath-nonidenticaldirs@0,5.11-0
+            add dir path=dir/pathname owner=root group=root mode=0755
+            add dir path=dir/pathname owner=root group=bin mode=0711
+            close
+        """
+
+        pkg_duppathalmostidenticaldirs = """
+            open duppath-almostidenticaldirs@0,5.11-0
+            add dir path=dir/pathname owner=root group=root mode=0755
+            add dir path=dir/pathname owner=root group=root mode=755
+            close
+        """
+
+        pkg_implicitdirs = """
+            open implicitdirs@0,5.11-0
+            add file tmp/file1 path=usr/bin/something mode=0755 owner=root group=bin
+            add file tmp/file2 path=usr/bin mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_implicitdirs2 = """
+            open implicitdirs2@0,5.11-0
+            add file tmp/file1 path=usr/bin/something mode=0755 owner=root group=bin
+            add dir path=usr/bin mode=0700 owner=root group=bin
+            close
+        """
+
+        pkg_implicitdirs3 = """
+            open implicitdirs3@0,5.11-0
+            add file tmp/file1 path=usr/bin/other mode=0755 owner=root group=bin
+            close
+        """
+
+        pkg_implicitdirs4 = """
+            open implicitdirs4@0,5.11-0
+            add file tmp/file1 path=usr/bin/something mode=0755 owner=root group=bin
+        """
+
+        pkg_implicitdirs5 = """
+            open implicitdirs5@0,5.11-0
+            add dir path=usr/bin mode=0755 owner=root group=sys
+        """
+
+        pkg_implicitdirs6 = """
+            open implicitdirs6@0,5.11-0
+            add dir path=usr/bin mode=0755 owner=root group=bin
+        """
+
+        pkg_implicitdirs7 = """
+            open implicitdirs7@0,5.11-0
+            add file tmp/file1 path=usr/bin mode=0755 owner=root group=bin
+        """
+
+        pkg_dupdir = """
+            open dupdir@0,5.11-0
+            add dir path=dir/pathname owner=root group=bin mode=0755
+            close
+        """
+
+        pkg_dupdirv1 = """
+            open dupdir@1,5.11-0
+            close
+        """
+
+        pkg_dupdirnowhere = """
+            open dupdirnowhere@0,5.11-0
+            add dir path=dir/pathname owner=root group=bin mode=0755
+            close
+        """
+
+        pkg_dupdirp1 = """
+                open dupdirp1@1,5.11-0
+                add dir path=dir owner=root group=bin mode=0755
+                close
+        """
+
+        pkg_dupdirp2 = """
+                open dupdirp2@1,5.11-0
+                add dir path=dir owner=root group=sys mode=0755
+                close
+        """
+
+        pkg_dupdirp3 = """
+                open dupdirp3@1,5.11-0
+                add dir path=dir owner=root group=bin mode=0750
+                close
+        """
+
+        pkg_dupdirp4 = """
+                open dupdirp4@1,5.11-0
+                add dir path=dir owner=root group=sys mode=0750
+                close
+        """
+
+        pkg_userdb = """
+                open userdb@0,5.11-0
+                add file tmp/passwd mode=0644 owner=root group=bin path=etc/passwd preserve=true
+                add file tmp/group mode=0644 owner=root group=bin path=etc/group preserve=true
+                add file tmp/shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
+                add file tmp/ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
+                close
+        """
+
+        userdb_files = {
+            "tmp/passwd": """\
+root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
+adm:x:4:4:Admin:/var/adm:
+""",
+            "tmp/group": """\
+root::0:
+other::1:root
+bin::2:root,daemon
+sys::3:root,bin,adm
+adm::4:root,daemon
+""",
+            "tmp/shadow": """\
+root:9EIfTNBp9elws:13817::::::
+daemon:NP:6445::::::
+bin:NP:6445::::::
+sys:NP:6445::::::
+adm:NP:6445::::::
+""",
+            "tmp/ftpusers": """\
+root
+bin
+sys
+adm
+"""
+        }
+
+        pkg_dupuser = """
+                open dupuser@0,5.11-0
+                add user username=kermit group=adm gcos-field="kermit 1"
+                add user username=kermit group=adm gcos-field="kermit 2"
+                close
+        """
+
+        pkg_dupuserp1 = """
+                open dupuserp1@0,5.11-0
+                add user username=kermit group=adm gcos-field="kermit 1"
+                close
+        """
+
+        pkg_dupuserp2 = """
+                open dupuserp2@0,5.11-0
+                add user username=kermit group=adm gcos-field="kermit 2"
+                close
+        """
+
+        pkg_dupuserp2v2 = """
+                open dupuserp2@1,5.11-0
+                close
+        """
+
+        pkg_dupuserp3 = """
+                open dupuserp3@0,5.11-0
+                add user username=kermit group=adm gcos-field="kermit 2"
+                close
+        """
+
+        pkg_dupuserp4 = """
+                open dupuserp4@0,5.11-0
+                add user username=kermit group=adm gcos-field="kermit 4"
+                close
+        """
+
+        pkg_otheruser = """
+                open otheruser@0,5.11-0
+                add user username=fozzie group=adm home-dir=/export/home/fozzie
+                close
+        """
+
+        pkg_driverdb = """
+                open driverdb@0,5.11-0
+                add file tmp/devlink.tab path=etc/devlink.tab mode=0644 owner=root group=bin
+                add file tmp/driver_aliases path=etc/driver_aliases mode=0644 owner=root group=bin
+                add file tmp/driver_classes path=etc/driver_classes mode=0644 owner=root group=bin
+                add file tmp/minor_perm path=etc/minor_perm mode=0644 owner=root group=bin
+                add file tmp/name_to_major path=etc/name_to_major mode=0644 owner=root group=bin
+                add file tmp/device_policy path=etc/security/device_policy mode=0644 owner=root group=bin
+                add file tmp/extra_privs path=etc/security/extra_privs mode=0644 owner=root group=bin
+                close
+        """
+
+        driverdb_files = {
+            "tmp/devlink.tab": "",
+            "tmp/driver_aliases": "",
+            "tmp/driver_classes": "",
+            "tmp/minor_perm": "",
+            "tmp/name_to_major": "",
+            "tmp/device_policy": "",
+            "tmp/extra_privs": ""
+        }
+
+        pkg_dupdrv = """
+                open dupdriver@0,5.11-0
+                add driver name=asy perms="* 0666 root sys" perms="*,cu 0600 uucp uucp"
+                add driver name=asy perms="* 0666 root sys" alias=pci11c1,480
+                close
+        """
+
+        pkg_dupdepend1 = """
+                open dupdepend1@0,5.11-0
+                add depend type=require fmri=dupfilesp1
+                add depend type=require fmri=dupfilesp1
+                close
+        """
+
+        pkg_dupdepend2 = """
+                open dupdepend2@0,5.11-0
+                add depend type=require fmri=dupfilesp1
+                add depend type=incorporate fmri=dupfilesp1
+                close
+        """
+
+        pkg_dupdepend3 = """
+                open dupdepend3@0,5.11-0
+                add depend type=require fmri=dupfilesp1@0-0
+                add depend type=require fmri=dupfilesp1@0-0
+                close
+        """
+
+        pkg_dupdepend4 = """
+                open dupdepend4@0,5.11-0
+                add depend type=require fmri=dupfilesp1@0-0
+                add depend type=incorporate fmri=dupfilesp1@0-0
+                close
+        """
+
+        misc_files = ["tmp/file1", "tmp/file2", "tmp/file3"]
+
+        # Keep the depots around for the duration of the entire class
+        persistent_setup = True
+
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.make_misc_files(self.userdb_files)
+                self.make_misc_files(self.driverdb_files)
+
+                pkgs = []
+                for objname in dir(self.__class__):
+                        obj = getattr(self, objname)
+                        if objname.startswith("pkg_") and type(obj) == str:
+                                pkgs.append(obj)
+
+                for i in xrange(20):
+                        s = """
+                                open massivedupdir%d@0,5.11-0
+                                add dir path=usr owner=root group=%%s mode=%%s zig=%%s
+                                close
+                        """ % i
+
+                        if i == 14:
+                                s = s % ("root", "0750", "zag")
+                        elif i in (1, 9):
+                                s = s % ("sys", "0750", "zag")
+                        elif i in (3, 8, 12, 17):
+                                s = s % ("root", "0755", "zag")
+                        else:
+                                s = s % ("sys", "0755", "zig")
+
+                        pkgs.append(s)
+
+                self.pkgsend_bulk(self.rurl, pkgs)
+
+        def test_multiple_files(self):
+                """Test the behavior of pkg(1) when multiple file actions
+                deliver to the same pathname."""
+
+                self.image_create(self.rurl)
+
+                # Duplicate files in the same package
+                self.pkg("install dupfiles", exit=1)
+
+                # Duplicate files in different packages, but in the same
+                # transaction
+                self.pkg("install dupfilesp1 dupfilesp2@0", exit=1)
+
+                # Duplicate files in different packages, in different
+                # transactions
+                self.pkg("install dupfilesp1")
+                self.pkg("install dupfilesp2@0", exit=1)
+
+                # Test that being in a duplicate file situation doesn't break
+                # you completely and allows you to add and remove other packages
+                self.pkg("-D broken-conflicting-action-handling=1 install dupfilesp2@0")
+                self.pkg("install implicitdirs2")
+                self.pkg("uninstall implicitdirs2")
+
+                # If the packages involved get upgraded but leave the actions
+                # themselves alone, we should be okay.
+                self.pkg("install dupfilesp2 dupfilesp3")
+                self.pkg("verify", exit=1)
+
+                # Test that removing one of two offending actions reverts the
+                # system to a clean state.
+                self.pkg("uninstall dupfilesp3")
+                self.pkg("verify")
+
+                # You should be able to upgrade to a fixed set of packages in
+                # order to move past the problem, too.
+                self.pkg("uninstall dupfilesp2")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupfilesp2@0")
+                self.pkg("update")
+                self.pkg("verify")
+
+                # If we upgrade to a version of a conflicting package that no
+                # longer has the conflict, but at the same time introduce a new
+                # file action at the path with different contents, we should
+                # fail.
+                self.pkg("uninstall dupfilesp2")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupfilesp2@0")
+                self.pkg("install dupfilesp2 dupfilesp4", exit=1)
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1 dupfilesp2@0 dupfilesp3")
+                # XXX The checks here rely on verify failing due to hashes being
+                # wrong; they should probably report a duplicate action instead.
+                self.pkg("verify", exit=1)
+                out1, err1 = self.output, self.errout
+                self.pkg("uninstall dupfilesp3")
+                # Because we removed dupfilesp3, the error output in this verify
+                # won't exactly match that from the previous one, but the one
+                # remaining failing package should give the same output since we
+                # didn't modify the FS, so search for the current output in the
+                # old.
+                self.pkg("verify", exit=1)
+                out2 = self.output
+                # Strip the first (header) line; this error might not have been
+                # first in the previous output.
+                out2 = out2[out2.index("\n") + 1:]
+                self.assert_(out2 in out1)
+
+                # Removing all but one of the offending actions should get us
+                # back to sanity.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1 dupfilesp2@0 dupfilesp3")
+                self.pkg("uninstall dupfilesp3 dupfilesp2")
+                self.pkg("verify")
+
+                # Make sure we handle cleaning up multiple files properly.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1 dupfilesp2@0 dupotherfilesp1 dupotherfilesp2")
+                self.pkg("uninstall dupfilesp2 dupotherfilesp2")
+                self.pkg("verify")
+
+                # Make sure the overlay hack works.
+                self.pkg("install overlaid")
+                self.pkg("install overlayer", exit=1)
+                self.pkg("-D allow-overlays=1 install overlayer")
+
+                # Make sure we get rid of all implicit directories.
+                self.pkg("uninstall '*'")
+                self.pkg("install implicitdirs3 implicitdirs4")
+                self.pkg("uninstall implicitdirs3 implicitdirs4")
+
+                if os.path.isdir(os.path.join(self.get_img_path(), "usr/bin")):
+                        self.assert_(False, "Directory 'usr/bin' should not exist")
+
+                if os.path.isdir(os.path.join(self.get_img_path(), "usr")):
+                        self.assert_(False, "Directory 'usr' should not exist")
+
+                # Make sure identical actions don't cause problems
+                self.pkg("install -nv identicalfiles", exit=1)
+
+                # If an uninstall causes a fixup to happen and we can't because
+                # we lost the cached files and the repo is down, make sure we
+                # fail before actually uninstalling anything.
+                self.dc.start()
+                self.pkgsend_bulk(self.durl, (self.pkgremote_pkg1,
+                    self.pkgremote_pkg2))
+                self.image_create(self.durl)
+                self.pkg("set-property flush-content-cache-on-success True")
+                self.pkg("install pkg1")
+                self.pkg("-D broken-conflicting-action-handling=1 install pkg2")
+                self.pkg("verify pkg2")
+                self.dc.stop()
+                self.pkg("uninstall pkg2", exit=1)
+                self.pkg("verify pkg2")
+
+        def test_different_types(self):
+                """Test the behavior of pkg(1) when multiple actions of
+                different types deliver to the same pathname."""
+
+                self.image_create(self.rurl)
+
+                # In the same package
+                self.pkg("install duppath-filelink", exit=1)
+
+                # In different packages, in the same transaction
+                self.pkg("install dupfilesp1 duplink", exit=1)
+
+                # In different packages, in different transactions
+                self.pkg("install dupfilesp1")
+                self.pkg("install duplink", exit=1)
+
+                # Does removal of one of the busted packages get us out of the
+                # situation?
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupfilesp1 duplink")
+                self.pkg("verify", exit=1)
+                self.pkg("uninstall dupfilesp1")
+                self.pkg("verify")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupfilesp1")
+                self.pkg("uninstall duplink")
+                self.pkg("verify")
+
+                # Implicit directory conflicts with a file
+                self.pkg("uninstall '*'")
+                self.pkg("install implicitdirs", exit=1)
+
+                # Implicit directory coincides with a delivered directory
+                self.pkg("install implicitdirs2")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action.
+                self.pkg("uninstall '*'")
+                self.pkg("install implicitdirs4")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "implicitdirs7")
+                self.pkg("uninstall implicitdirs7")
+                # XXX We don't currently fix up anything beneath a directory
+                # that was restored, so we have to do it by hand.
+                os.mkdir("%s/usr/bin" % self.img_path)
+                shutil.copy("%s/tmp/file1" % self.test_root,
+                    "%s/usr/bin/something" % self.img_path)
+                owner = portable.get_user_by_name("root", self.img_path, True)
+                group = portable.get_group_by_name("bin", self.img_path, True)
+                os.chown("%s/usr/bin/something" % self.img_path, owner, group)
+                os.chmod("%s/usr/bin/something" % self.img_path, 0755)
+                self.pkg("verify")
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1 duplink dupdir@0")
+                tmap = {
+                    stat.S_IFIFO: "fifo",
+                    stat.S_IFCHR: "character device",
+                    stat.S_IFDIR: "directory",
+                    stat.S_IFBLK: "block device",
+                    stat.S_IFREG: "regular file",
+                    stat.S_IFLNK: "symbolic link",
+                    stat.S_IFSOCK: "socket",
+                }
+                thepath = "%s/dir/pathname" % self.img_path
+                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                # XXX The checks here rely on verify failing due to action types
+                # not matching what's on the system; they should probably report
+                # duplicate actions instead.  Checking the output text is a bit
+                # ugly, too, but we do need to make sure that the two problems
+                # become one.
+                self.pkg("verify", exit=1)
+                verify_type_re = "File Type: '(.*?)' should be '(.*?)'"
+                matches = re.findall(verify_type_re, self.output)
+                # We make sure that what got reported is correct -- two actions
+                # of different types in conflict with whatever actually got laid
+                # down.
+                self.assert_(len(matches) == 2)
+                whatis = matches[0][0]
+                self.assert_(matches[1][0] == whatis)
+                self.assert_(whatis == tmap[fmt])
+                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
+                    set([whatis])
+                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                # Now we uninstall one of the packages delivering a type which
+                # isn't what's on the filesystem.  The filesystem should remain
+                # unchanged, but one of the errors should go away.
+                if whatis == "directory":
+                        self.pkg("uninstall duplink")
+                else:
+                        self.pkg("uninstall dupdir")
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 1)
+                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.assert_(nfmt == fmt)
+
+                # Now we do the same thing, but we uninstall the package
+                # delivering the type which *is* what's on the filesystem.  This
+                # should also leave the filesystem alone, even though what's
+                # there will match *neither* of the remaining installed
+                # packages.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1 duplink dupdir@0")
+                fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 2)
+                whatis = matches[0][0]
+                self.assert_(matches[1][0] == whatis)
+                self.assert_(whatis == tmap[fmt])
+                shouldbe = set(["symbolic link", "regular file", "directory"]) - \
+                    set([whatis])
+                self.assert_(set([matches[0][1], matches[1][1]]) == shouldbe)
+                if whatis == "directory":
+                        self.pkg("uninstall dupdir")
+                elif whatis == "symbolic link":
+                        self.pkg("uninstall duplink")
+                elif whatis == "regular file":
+                        self.pkg("uninstall dupfilesp1")
+                self.pkg("verify", exit=1)
+                matches = re.findall(verify_type_re, self.output)
+                self.assert_(len(matches) == 2)
+                nfmt = stat.S_IFMT(os.lstat(thepath).st_mode)
+                self.assert_(nfmt == fmt)
+
+                # Go from multiple conflicting types down to just one type.
+                # This also tests the case where a package version being newly
+                # installed gets fixed at the same time.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupmultitypes@1")
+                self.pkg("install dupmultitypes")
+                self.pkg("verify")
+
+        def test_conflicting_attrs_fs(self):
+                """Test the behavior of pkg(1) when multiple non-file actions of
+                the same type deliver to the same pathname, but whose other
+                attributes differ."""
+
+                self.image_create(self.rurl)
+
+                # One package, two links with different targets
+                self.pkg("install duppath-nonidenticallinks", exit=1)
+
+                # One package, two directories with different perms
+                self.pkg("install duppath-nonidenticaldirs", exit=1)
+
+                # One package, two dirs with same modes expressed two ways
+                self.pkg("install duppath-almostidenticaldirs")
+
+                # One package delivers a directory explicitly, another
+                # implicitly.
+                self.pkg("install implicitdirs2 implicitdirs3")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "implicitdirs4 implicitdirs5 implicitdirs6")
+                self.pkg("uninstall implicitdirs5")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # Make sure that we don't die trying to fixup a directory using
+                # an implicit directory action when that's all that's left.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "implicitdirs4 implicitdirs5 implicitdirs6")
+                self.pkg("uninstall implicitdirs5 implicitdirs6")
+                self.pkg("verify")
+
+                self.pkg("uninstall '*'")
+
+                # Two packages, two links with different targets, installed at
+                # once
+                self.pkg("install duppath-nonidenticallinksp1 "
+                    "duppath-nonidenticallinksp2@0", exit=1)
+
+                # Two packages, two links with different targets, installed
+                # separately
+                self.pkg("install duppath-nonidenticallinksp1")
+                self.pkg("install duppath-nonidenticallinksp2@0", exit=1)
+
+                self.pkg("uninstall '*'")
+
+                # If we get into a broken state, can we get out of it?
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "duppath-nonidenticallinksp1 duppath-nonidenticallinksp2@0")
+                self.pkg("verify", exit=1)
+                self.pkg("install duppath-nonidenticallinksp2")
+                self.pkg("verify")
+
+                # How about removing one of the conflicting packages?  We'll
+                # remove the package which doesn't match the state on disk.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "duppath-nonidenticallinksp1 duppath-nonidenticallinksp2@0")
+                link = os.readlink("%s/dir/pathname" % self.img_path)
+                if link == "dir/something":
+                        self.pkg("uninstall duppath-nonidenticallinksp2")
+                else:
+                        self.pkg("uninstall duppath-nonidenticallinksp1")
+                self.pkg("verify")
+
+                # Now we'll try tremoving the package which *does* match the
+                # state on disk.  The code should clean up after us.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "duppath-nonidenticallinksp1 duppath-nonidenticallinksp2@0")
+                link = os.readlink("%s/dir/pathname" % self.img_path)
+                if link == "dir/something":
+                        self.pkg("uninstall duppath-nonidenticallinksp1")
+                else:
+                        self.pkg("uninstall duppath-nonidenticallinksp2")
+                self.pkg("verify")
+
+                # Let's try a duplicate directory delivered with all sorts of
+                # crazy conflicts!
+                self.pkg("uninstall '*'")
+                self.pkg("install dupdirp1 dupdirp2 dupdirp3 dupdirp4", exit=1)
+
+                pkgs = " ".join("massivedupdir%d" % x for x in xrange(20))
+                self.pkg("install %s" % pkgs, exit=1)
+
+        def test_conflicting_attrs_fs_varcets(self):
+                """Test the behavior of pkg(1) when multiple non-file actions of
+                the same type deliver to the same pathname, but differ in their
+                variants or facets."""
+
+                self.image_create(self.rurl)
+
+                # Two packages delivering the same directory, one under the
+                # current architecture, the other not tagged with an arch
+                # variant.
+                self.pkg("install dupfilesv1 dupfilesv2")
+                self.dir_exists("dir/pathname")
+
+                # Two packages delivering the same directory with different
+                # attributes -- one under the current architecture, the other
+                # tagged with another arch variant.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupfilesv1 dupfilesv3")
+                if platform.processor() == "sparc":
+                        self.dir_exists("dir/pathname", mode=0777)
+                else:
+                        self.dir_exists("dir/pathname", mode=0755)
+
+                # Two packages delivering the same directory, one with the
+                # devel facet false, the other true.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupfilesf1 dupfilesf2")
+                self.dir_exists("dir/pathname")
+
+                # Two packages delivering the same directory, one with the
+                # devel facet true, the other without.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupfilesf1 dupfilesf3")
+                self.dir_exists("dir/pathname")
+
+                # Two packages delivering the same directory, one with the
+                # devel facet false, the other without.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupfilesf2 dupfilesf3")
+                self.dir_exists("dir/pathname")
+
+        def test_change_varcet(self):
+                """Test the behavior of pkg(1) when changing a variant or a
+                facet would cause the new image to contain conflicting
+                actions."""
+
+                # Create the image as an x86 image, as the first test only works
+                # changing variant from x86 to sparc.
+                self.image_create(self.rurl, variants={"variant.arch": "i386"})
+
+                # The x86 variant is safe, but the sparc variant has two files
+                # with the same pathname.
+                self.pkg("install dupfilesv4")
+                self.pkg("change-variant arch=sparc", exit=1)
+
+                # With the devel facet turned off, the package is safe, but
+                # turning it on would cause a duplicate file to be added.
+                self.pkg("change-facet devel=false")
+                self.pkg("install dupfilesf4")
+                self.pkg("change-facet devel=true", exit=1)
+
+        def dir_exists(self, path, mode=None, owner=None, group=None):
+                dir_path = os.path.join(self.get_img_path(), path)
+                try:
+                        st = os.stat(dir_path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                self.assert_(False, "Directory %s does not exist" % path)
+                        else:
+                                raise
+                if mode is not None:
+                        self.assert_(stat.S_IMODE(st.st_mode) == mode)
+                if owner is not None:
+                        self.assert_(st.st_uid == owner)
+                if group is not None:
+                        self.assert_(st.st_gid == group)
+
+        def test_multiple_users(self):
+                """Test the behavior of pkg(1) when multiple user actions
+                deliver the same user."""
+
+                # This is largely identical to test_multiple_files; we may want
+                # to commonize in the future.
+
+                self.image_create(self.rurl)
+
+                self.pkg("install userdb")
+
+                # Duplicate users in the same package
+                self.pkg("install dupuser", exit=1)
+
+                # Duplicate users in different packages, but in the same
+                # transaction
+                self.pkg("install dupuserp1 dupuserp2@0", exit=1)
+
+                # Duplicate users in different packages, in different
+                # transactions
+                self.pkg("install dupuserp1")
+                self.pkg("install dupuserp2@0", exit=1)
+
+                # Test that being in a duplicate user situation doesn't break
+                # you completely and allows you to add and remove other packages
+                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("verify", exit=1)
+                self.pkg("install otheruser")
+                self.pkg("uninstall otheruser")
+                self.pkg("verify", exit=1)
+
+                # If the packages involved get upgraded but leave the actions
+                # themselves alone, we should be okay.
+                self.pkg("install dupuserp2 dupuserp3")
+                self.pkg("verify", exit=1)
+
+                # Test that removing one of two offending actions reverts the
+                # system to a clean state.
+                self.pkg("uninstall dupuserp3")
+                self.pkg("verify")
+
+                # You should be able to upgrade to a fixed set of packages in
+                # order to move past the problem, too.
+                self.pkg("uninstall dupuserp2")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("update")
+                self.pkg("verify")
+
+                # If we upgrade to a version of a conflicting package that no
+                # longer has the conflict, but at the same time introduce a new
+                # conflicting user action, we should fail.
+                self.pkg("uninstall dupuserp2")
+                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("install dupuserp2 dupuserp4", exit=1)
+
+                # Removing one of more than two offending actions can't do much
+                # of anything, but should leave the system alone.
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("install userdb")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupuserp1 dupuserp2@0 dupuserp3")
+                self.pkg("verify", exit=1)
+                out1 = self.output
+                self.pkg("uninstall dupuserp3")
+                self.pkg("verify", exit=1)
+                out2 = self.output
+                out2 = out2[out2.index("\n") + 1:]
+                self.assert_(out2 in out1)
+
+                # Removing all but one of the offending actions should get us
+                # back to sanity.
+                self.image_destroy()
+                self.image_create(self.rurl)
+                self.pkg("install userdb")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupuserp1 dupuserp2@0 dupuserp3")
+                self.pkg("uninstall dupuserp3 dupuserp2")
+                self.pkg("verify")
+
+        def test_multiple_drivers(self):
+                """Test the behavior of pkg(1) when multiple driver actions
+                deliver the same driver."""
+
+                self.image_create(self.rurl)
+
+                self.pkg("install driverdb")
+
+                self.pkg("install dupdriver", exit=1)
+
+        def test_multiple_depend(self):
+                """Test to make sure we can have multiple depend actions on
+                (more or less) the same fmri"""
+
+                self.image_create(self.rurl)
+
+                # Two identical unversioned require dependencies
+                self.pkg("install dupdepend1")
+
+                # Two dependencies of different types on an identical
+                # unversioned fmri
+                self.pkg("install dupdepend2")
+
+                # Two identical versioned require dependencies
+                self.pkg("install dupdepend3")
+
+                # Two dependencies of different types on an identical versioned
+                # fmri
+                self.pkg("install dupdepend4")
 
 
 if __name__ == "__main__":

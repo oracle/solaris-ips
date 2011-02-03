@@ -150,6 +150,8 @@ _fromstr(PyObject *self, PyObject *args)
 		return (NULL);
 	}
 
+	PyString_InternInPlace(&type);
+
 	ks = vs = s - str;
 	state = WS;
 	if ((attrs = PyDict_New()) == NULL) {
@@ -292,6 +294,7 @@ _fromstr(PyObject *self, PyObject *args)
 					}
 				}
 
+				PyString_InternInPlace(&attr);
 				if (add_to_attrs(attrs, key, attr) == -1) {
 					CLEANUP_REFS;
 					return (NULL);
@@ -302,6 +305,7 @@ _fromstr(PyObject *self, PyObject *args)
 				state = WS;
 				Py_XDECREF(attr);
 				attr = PyString_FromStringAndSize(&str[vs], i - vs);
+				PyString_InternInPlace(&attr);
 				if (add_to_attrs(attrs, key, attr) == -1) {
 					CLEANUP_REFS;
 					return (NULL);
@@ -337,6 +341,7 @@ _fromstr(PyObject *self, PyObject *args)
 	if (state == UQVAL) {
 		Py_XDECREF(attr);
 		attr = PyString_FromStringAndSize(&str[vs], i - vs);
+		PyString_InternInPlace(&attr);
 		if (add_to_attrs(attrs, key, attr) == -1) {
 			CLEANUP_REFS;
 			return (NULL);

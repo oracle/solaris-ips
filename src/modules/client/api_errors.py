@@ -437,6 +437,178 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
 
                 return "\n".join(res)
 
+class ConflictingActionError(ApiException):
+        """Used to indicate that the imageplan would result in one or more sets
+        of conflicting actions, meaning that more than one action would exist on
+        the system with the same key attribute value in the same namespace.
+        There are three categories, each with its own subclass:
+
+          - multiple files delivered to the same path or drivers, users, groups,
+            etc, delivered with the same key attribute;
+
+          - multiple objects delivered to the same path which aren't the same
+            type;
+
+          - multiple directories, links, or hardlinks delivered to the same path
+            but with conflicting attributes.
+        """
+
+        def __init__(self, data):
+                self._data = data
+
+class ConflictingActionErrors(ApiException):
+        """A container for multiple ConflictingActionError exception objects
+        that can be raised as a single exception."""
+
+        def __init__(self, errors):
+                self.__errors = errors
+
+        def __str__(self):
+                return "\n\n".join((str(err) for err in self.__errors))
+
+class DuplicateActionError(ConflictingActionError):
+        """Multiple actions of the same type have been delivered with the same
+        key attribute (when not allowed)."""
+
+        def __str__(self):
+                pfmris = set((a[1] for a in self._data))
+                kv = self._data[0][0].attrs[self._data[0][0].key_attr]
+                action = self._data[0][0].name
+                if len(pfmris) > 1:
+                        s = _("The following packages all deliver %(action)s "
+                            "actions to %(kv)s:\n") % locals()
+                        for a, p in self._data:
+                                s += "\n  %s" % p
+                        s += _("\n\nThese packages may not be installed together. "
+                            "Any non-conflicting set may\nbe, or the packages "
+                            "must be corrected before they can be installed.")
+                else:
+                        pfmri = pfmris.pop()
+                        s = _("The package %(pfmri)s delivers multiple copies "
+                            "of %(action)s %(kv)s") % locals()
+                        s += _("\nThis package must be corrected before it "
+                            "can be installed.")
+
+                return s
+
+class InconsistentActionTypeError(ConflictingActionError):
+        """Multiple actions of different types have been delivered with the same
+        'path' attribute.  While this exception could represent other action
+        groups which share a single namespace, none such exist."""
+
+        def __str__(self):
+                ad = {}
+                pfmris = set()
+                kv = self._data[0][0].attrs[self._data[0][0].key_attr]
+                for a, p in self._data:
+                        ad.setdefault(a.name, []).append(p)
+                        pfmris.add(p)
+
+                if len(pfmris) > 1:
+                        s = _("The following packages deliver conflicting "
+                            "action types to %s:\n") % kv
+                        for name, pl in ad.iteritems():
+                                s += "\n  %s:" % name
+                                s += "".join("\n    %s" % p for p in pl)
+                        s += _("\n\nThese packages may not be installed together. "
+                            "Any non-conflicting set may\nbe, or the packages "
+                            "must be corrected before they can be installed.")
+                else:
+                        pfmri = pfmris.pop()
+                        types = list_to_lang(ad.keys())
+                        s = _("The package %(pfmri)s delivers conflicting "
+                            "action types (%(types)s) to %(kv)s") % locals()
+                        s += _("\nThis package must be corrected before it "
+                            "can be installed.")
+                return s
+
+class InconsistentActionAttributeError(ConflictingActionError):
+        """Multiple actions of the same type representing the same object have
+        have been delivered, but with conflicting attributes, such as two
+        directories at /usr with groups 'root' and 'sys', or two 'root' users
+        with uids '0' and '7'."""
+
+        def __str__(self):
+                actions = self._data
+                keyattr = actions[0][0].attrs[actions[0][0].key_attr]
+                actname = actions[0][0].name
+
+                # Trim the action's attributes to only those required to be
+                # unique.
+                def ou(action):
+                        ua = dict(
+                            (k, v)
+                            for k, v in action.attrs.iteritems()
+                            if k in action.unique_attrs
+                        )
+                        action.attrs = ua
+                        return action
+
+                d = {}
+                for a in actions:
+                        d.setdefault(str(ou(a[0])), set()).add(a[1])
+                l = sorted([
+                    (len(pkglist), action, pkglist)
+                    for action, pkglist in d.iteritems()
+                ])
+
+                s = _("The requested change to the system attempts to install "
+                    "multiple actions\nfor %(a)s '%(k)s' with conflicting "
+                    "attributes:\n\n") % {"a": actname, "k": keyattr}
+                allpkgs = set()
+                for num, action, pkglist in l:
+                        allpkgs.update(pkglist)
+                        if num <= 5:
+                                if num == 1:
+                                        t = _("    %(n)d package delivers '%(a)s':\n")
+                                else:
+                                        t = _("    %(n)d packages deliver '%(a)s':\n")
+                                s += t % {"n": num, "a": action}
+                                for pkg in sorted(pkglist):
+                                        s += _("        %s\n") % pkg
+                        else:
+                                t = _("    %d packages deliver '%s', including:\n")
+                                s += t % (num, action)
+                                for pkg in sorted(pkglist)[:5]:
+                                        s += _("        %s\n") % pkg
+
+                if len(allpkgs) == 1:
+                        s += _("\n\nThis package must be corrected before it "
+                            "can be installed.")
+                else:
+                        s += _("\n\nThese packages may not be installed together."
+                            "  Any non-conflicting set may\nbe, or the packages "
+                            "must be corrected before they can be installed.")
+
+                return s
+
+def list_to_lang(l):
+        """Takes a list of items and puts them into a string, with commas in
+        between items, and an "and" between the last two items.  Special cases
+        for lists of two or fewer items, and uses the Oxford comma."""
+
+        if not l:
+                return ""
+        if len(l) == 1:
+                return l[0]
+        if len(l) == 2:
+                # Used for a two-element list
+                return _("%(penultimate)s and %(ultimate)s") % {
+                    "penultimate": l[0],
+                    "ultimate": l[1]
+                }
+        # In order to properly i18n this construct, we create two templates:
+        # one for each element save the last, and one that tacks on the last
+        # element.
+        # 'elementtemplate' is for each element through the penultimate
+        elementtemplate = _("%s, ")
+        # 'listtemplate' concatenates the concatenation of non-ultimate elements
+        # and the ultimate element.
+        listtemplate = _("%(list)sand %(tail)s")
+        return listtemplate % {
+            "list": "".join(elementtemplate % i for i in l[:-1]),
+            "tail": l[-1]
+        }
 
 class ActionExecutionError(ApiException):
         """Used to indicate that action execution (such as install, remove,
@@ -916,6 +1088,18 @@ class NonLeafPackageException(ApiException):
                 self.fmri = args[0]
                 self.dependents = args[1]
 
+def _str_autofix(self):
+
+        if getattr(self, "_autofix_pkgs", []):
+                s = _("\nThis is happening because the following "
+                    "packages needed to be repaired as\npart of this "
+                    "operation:\n\n    ")
+                s += "\n    ".join(str(f) for f in self._autofix_pkgs)
+                s += _("\n\nYou will need to reestablish your access to the "
+                        "repository or remove the\npackages in the list above.")
+                return s
+        return ""
+
 class InvalidDepotResponseException(ApiException):
         """Raised when the depot doesn't have versions of operations
         that the client needs to operate successfully."""
@@ -925,12 +1109,15 @@ class InvalidDepotResponseException(ApiException):
                 self.data = data
 
         def __str__(self):
-                s = "Unable to contact valid package repository"
+                s = _("Unable to contact valid package repository")
                 if self.url:
-                        s += ": %s" % self.url
+                        s += _(": %s") % self.url
                 if self.data:
-                        s += "\nEncountered the following error(s):\n%s" % \
+                        s += ("\nEncountered the following error(s):\n%s") % \
                             self.data
+
+                s += _str_autofix(self)
+
                 return s
 
 class DataError(ApiException):
@@ -976,6 +1163,9 @@ class TransportError(ApiException):
 
         def __str__(self):
                 raise NotImplementedError()
+
+        def _str_autofix(self):
+                return _str_autofix(self)
 
 
 class RetrievalError(ApiException):

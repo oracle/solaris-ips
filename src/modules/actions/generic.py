@@ -62,10 +62,19 @@ class Action(object):
         # key_attr would be the driver name.  When 'key_attr' is None, it means
         # that all attributes of the action are distinguishing.
         key_attr = None
-        # 'globally_unique' is True if the key attribute of the action
-        # represents a key which must be unique in the space of all installed
-        # actions of that type.
-        globally_unique = False
+        # 'globally_identical' is True if all actions representing a single
+        # object on a system must be identical.
+        globally_identical = False
+        # 'refcountable' is True if the action type can safely be delivered
+        # multiple times.
+        refcountable = False
+        # 'namespace_group' is a string whose value is shared by actions which
+        # share a common namespace.
+        namespace_group = None
+        # 'unique_attrs' is a tuple listing the attributes which must be
+        # identical in order for an action to be safely delivered multiple times
+        # (for those that can be).
+        unique_attrs = ()
 
         # the following establishes the sort order between action types.
         # Directories must precede all
@@ -248,6 +257,10 @@ class Action(object):
                                 out += " " + k + "=" + v
                 return out
 
+        def __repr__(self):
+                return "<%s object at %#x: %s>" % (self.__class__, id(self),
+                    self)
+
         def sig_str(self, a, ver):
                 """Create a stable string representation of an action that
                 is deterministic in its creation.  If creating a string from an
@@ -300,6 +313,22 @@ class Action(object):
 
                 return out
 
+        def __eq__(self, other):
+                if self.name == other.name and \
+                    getattr(self, "hash", None) == \
+                        getattr(other, "hash", None) and \
+                    self.attrs == other.attrs:
+                        return True
+                return False
+
+        def __ne__(self, other):
+                if self.name == other.name and \
+                    getattr(self, "hash", None) == \
+                        getattr(other, "hash", None) and \
+                    self.attrs == other.attrs:
+                        return False
+                return True
+
         def __cmp__(self, other):
                 """Compare actions for ordering.  The ordinality of a
                    given action is computed and stored at action
@@ -351,18 +380,18 @@ class Action(object):
                 return False
 
         def differences(self, other):
-                """Returns a list of attributes that have different values
-                between other and self"""
+                """Returns the attributes that have different values between
+                other and self."""
                 sset = set(self.attrs.keys())
                 oset = set(other.attrs.keys())
-                l = list(sset.symmetric_difference(oset))
+                l = sset.symmetric_difference(oset)
                 for k in sset & oset: # over attrs in both dicts
-                        if isinstance(self.attrs[k], list) and \
-                            isinstance(other.attrs[k], list):
+                        if type(self.attrs[k]) == list and \
+                            type(other.attrs[k]) == list:
                                 if sorted(self.attrs[k]) != sorted(other.attrs[k]):
-                                        l.append(k)
+                                        l.add(k)
                         elif self.attrs[k] != other.attrs[k]:
-                                l.append(k)
+                                l.add(k)
                 return (l)
 
         def consolidate_attrs(self):

@@ -47,7 +47,10 @@ class LicenseAction(generic.Action):
 
         name = "license"
         key_attr = "license"
+        unique_attrs = ("license", )
         reverse_indices = ("license", )
+        refcountable = True
+        globally_identical = True
 
         has_payload = True
 

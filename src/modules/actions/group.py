@@ -49,7 +49,7 @@ class GroupAction(generic.Action):
 
         name = "group"
         key_attr = "groupname"
-        globally_unique = True
+        globally_identical = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
@@ -160,8 +160,13 @@ class GroupAction(generic.Action):
                 cur_attrs = gr.getvalue(self.attrs)
                 # groups need to be first added, last removed
                 if not cur_attrs["user-list"]:
-                        gr.removevalue(self.attrs)
-                        gr.writefile()
+                        try:
+                                gr.removevalue(self.attrs)
+                        except KeyError, e:
+                                # Already gone; don't care.
+                                pass
+                        else:
+                                gr.writefile()
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

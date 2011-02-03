@@ -51,7 +51,9 @@ class FileAction(generic.Action):
 
         name = "file"
         key_attr = "path"
-        globally_unique = True
+        unique_attrs = "path", "mode", "owner", "group"
+        globally_identical = True
+        namespace_group = "path"
 
         has_payload = True
 

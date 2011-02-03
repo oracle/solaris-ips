@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -2038,6 +2038,10 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
         def test_bug_16013_installed_combinations(self):
                 """Test various combinations of installed and delivered
                 packages."""
+
+                # We need to explicitly set the image variant or we'll blow up
+                # due to conflicting actions.
+                self.pkg("change-variant variant.foo=b")
 
                 self.make_proto_text_file("c/bin/perl")
                 self.make_proto_text_file("b/bin/perl")

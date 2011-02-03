@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -72,6 +72,8 @@ RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 RESULT_FAILED_ACTUATOR = ["Failed", "Actuator"]
 # Indicates that the operation failed due to not enough memory
 RESULT_FAILED_OUTOFMEMORY = ["Failed", "Out of Memory"]
+# Indicates that the operation failed because of conflicting actions
+RESULT_CONFLICTING_ACTIONS = ["Failed", "Conflicting Actions"]
 # Indicates that the operation failed for an unknown reason.
 RESULT_FAILED_UNKNOWN = ["Failed", "Unknown"]
 
@@ -96,6 +98,7 @@ error_results = {
     api_errors.NonLeafPackageException: RESULT_FAILED_CONSTRAINED,
     api_errors.IpkgOutOfDateException: RESULT_FAILED_CONSTRAINED,
     api_errors.InvalidDepotResponseException: RESULT_FAILED_TRANSPORT,
+    api_errors.ConflictingActionErrors: RESULT_CONFLICTING_ACTIONS,
     fmri.IllegalFmri: RESULT_FAILED_BAD_REQUEST,
     KeyboardInterrupt: RESULT_CANCELED,
     MemoryError: RESULT_FAILED_OUTOFMEMORY,
@@ -105,7 +108,7 @@ misc.setlocale(locale.LC_ALL, "")
 gettext.install("pkg", "/usr/share/locale")
 
 # since we store english text in our XML files, we need a way for clients
-# get obtain a translated version of these messages.
+# obtain a translated version of these messages.
 result_l10n = {
     "Canceled": _("Canceled"),
     "Failed": _("Failed"),
@@ -121,6 +124,7 @@ result_l10n = {
     "Transport": _("Transport"),
     "Actuator": _("Actuator"),
     "Out of Memory": _("Out of Memory"),
+    "Conflicting Actions": _("Conflicting Actions"),
     "Unknown": _("Unknown"),
     "None": _("None")
 }
@@ -814,7 +818,9 @@ class History(object):
                                         output = traceback.format_exc()
                                         use_current_stack = False
 
-                        if use_current_stack:
+                        if isinstance(error, basestring):
+                                output = error
+                        elif use_current_stack:
                                 # Assume the current stack is more useful if
                                 # the error doesn't inherit from Exception or
                                 # we can't use the last exception's stack.

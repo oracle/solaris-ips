@@ -20,7 +20,9 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+#
 
 """module describing a directory packaging object
 
@@ -42,7 +44,10 @@ class DirectoryAction(generic.Action):
 
         name = "dir"
         key_attr = "path"
-        globally_unique = True
+        unique_attrs = "path", "mode", "owner", "group"
+        globally_identical = True
+        refcountable = True
+        namespace_group = "path"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
@@ -55,6 +60,21 @@ class DirectoryAction(generic.Action):
 
         def compare(self, other):
                 return cmp(self.attrs["path"], other.attrs["path"])
+
+        def differences(self, other):
+                """Returns a list of attributes that have different values
+                between 'other' and 'self'.  This differs from the generic
+                Action's differences() method in that it normalizes the 'mode'
+                attribute so that, say, '0755' and '755' are treated as
+                identical."""
+
+                diffs = generic.Action.differences(self, other)
+
+                if "mode" in diffs and \
+                    int(self.attrs.get("mode", "0"), 8) == int(other.attrs.get("mode", "0"), 8):
+                        diffs.remove("mode")
+
+                return diffs
 
         def directory_references(self):
                 return [os.path.normpath(self.attrs["path"])]

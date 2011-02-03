@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (symbolic) link packaging object
@@ -45,7 +44,10 @@ class LinkAction(generic.Action):
 
         name = "link"
         key_attr = "path"
-        globally_unique = True
+        unique_attrs = "path", "target"
+        globally_identical = True
+        refcountable = True
+        namespace_group = "path"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
