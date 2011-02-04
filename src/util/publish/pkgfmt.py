@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -43,6 +43,7 @@ import sys
 import shlex
 import tempfile
 import traceback
+from difflib import unified_diff
 
 import pkg
 import pkg.actions
@@ -50,6 +51,7 @@ from pkg.misc import emsg, PipeError
 
 opt_unwrap = False
 opt_check = False
+opt_diffs = False
 
 def usage(errmsg="", exitcode=2):
         """Emit a usage message and optionally prefix it with a more specific
@@ -60,7 +62,7 @@ def usage(errmsg="", exitcode=2):
 
         print >> sys.stderr, _("""\
 Usage:
-        pkgfmt [-cu] [file1] ... """)
+        pkgfmt [-cdu] [file1] ... """)
 
         sys.exit(exitcode)
 
@@ -243,22 +245,29 @@ def main_func():
         gettext.install("pkg", "/usr/share/locale")
         global opt_unwrap
         global opt_check
+        global opt_diffs
 
         ret = 0
+        opt_set = set()
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "cu", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "cdu", ["help"])
                 for opt, arg in opts:
+                        opt_set.add(opt)
                         if opt == "-u":
                                 opt_unwrap = True
                         if opt == "-c":
                                 opt_check = True
+                        if opt == "-d":
+                                opt_diffs = True
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
-
+        if len(opt_set) > 1:
+                usage(_("only one of [cdu] may be specified"))
+                        
         flist = pargs
         if not flist:
                 fmt_file(sys.stdin, sys.stdout)
@@ -271,7 +280,7 @@ def main_func():
                         # something goes wrong.
                         path = os.path.abspath(fname)
                         pathdir = None
-                        if not opt_check:
+                        if not opt_check and not opt_diffs:
                                 # By only setting pathdir in the replacement
                                 # case, this ensures that the temporary file
                                 # will live somewhere unprivileged users can
@@ -288,15 +297,23 @@ def main_func():
                         f.close()
                         t.close()
 
-                        if opt_check:
+                        if opt_check or opt_diffs:
                                 f1 = open(fname, "r")
-                                whole_f1 = f1.read()
+                                whole_f1 = f1.readlines()
                                 f2 = open(tname, "r")
-                                whole_f2 = f2.read()
+                                whole_f2 = f2.readlines()
                                 if whole_f1 == whole_f2:
                                         ret = 0
+                                elif opt_diffs:
+                                        for s in unified_diff(whole_f2,
+                                            whole_f1):
+                                                sys.stdout.write(s)
+                                        ret = 1
                                 else:
-                                        error("%s: not in pkgfmt form" % fname,
+                                        error(_("%s: not in pkgfmt form; "
+                                                "run pkgfmt on file w/o -c "
+                                                "option to reformat manifest"
+                                                " in place") % fname,
                                              exitcode=None)
                                         ret = 1
                                 os.unlink(tname)

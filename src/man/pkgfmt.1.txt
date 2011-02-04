@@ -5,7 +5,7 @@ NAME
      pkgfmt - format a package manifest
 
 SYNOPSIS
-     /usr/bin/pkgfmt [package-manifest-file]
+     /usr/bin/pkgfmt [-c|-d|-u] [package-manifest-file]
 
 
 DESCRIPTION
@@ -13,7 +13,7 @@ DESCRIPTION
      Pkgfmt without the -c option will format a package 
      manifest in a consistent manner, wrapping lines at 
      80 characters, sorting actions by type, placing key 
-     attributes first, etc.  Pkgfmt tries to be robust
+     attributes first, etc.  pkgfmt tries to be robust
      in the case of lines that don't parse into actions;
      such lines will not appear in sorted order.
 
@@ -22,12 +22,17 @@ DESCRIPTION
      stdout.  Any manifests specified on the command line
      are formatted in place.
 
-     Pkgfmt with the -c option will check to make sure the
-     manifest(s) are formatted in pkgfmt style.
+     pkgfmt with the -c option will check to make sure the
+     manifest(s) are formatted in pkgfmt style; the -d option
+     will display those differences if the file is not properly
+     formatted.
 
 OPTIONS
      
      -c   Check if the manifest is formatted in the pkgfmt style.
+
+     -d   Display differences with respect to formatted version in 
+          unified form.
 
      -u   Do not wrap lines at 80 characters; this is useful for
           applying traditional text processing tools to package
@@ -38,8 +43,8 @@ EXIT STATUS
 
      0     Normal execution
 
-     1     The -c option was specified, and one or more manifests
-           are not in pkgfmt-normal form.
+     1     The -c or -d options were specified, and one or more 
+           manifests are not in pkgfmt-normal form.
 
      99    An unanticipated exception occurred
 
