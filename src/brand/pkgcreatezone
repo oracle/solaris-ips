@@ -510,11 +510,10 @@ pkglist="$pkglist
 
 #
 # Needed for 'whois', 'snoop' I think; also provides rup, rmt, rsh etc.
-# ftp package is needed for ping (sigh).
 #
 pkglist="$pkglist
 	pkg:///service/network/network-clients
-	pkg:///network/ftp"
+	pkg:///network/ping"
 
 #
 # Get at least one sensible shell, vim, ssh, ssh key utils, sshd.
