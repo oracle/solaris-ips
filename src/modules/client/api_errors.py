@@ -345,7 +345,7 @@ class PlanCreationException(ApiException):
             badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
             no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
             wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI,
-            solver_errors=EmptyI):
+            solver_errors=EmptyI, wrong_variants=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris       = unmatched_fmris
                 self.multiple_matches      = multiple_matches
@@ -359,6 +359,7 @@ class PlanCreationException(ApiException):
                 self.no_version            = no_version
                 self.missing_dependency    = missing_dependency
                 self.wrong_publishers      = wrong_publishers
+                self.wrong_variants        = wrong_variants
                 self.nofiles               = nofiles
                 self.solver_errors         = solver_errors
 
@@ -370,6 +371,13 @@ The following pattern(s) did not match any packages in the current catalog.
 Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [s]
                         res += ["\t%s" % p for p in self.unmatched_fmris]
+
+                if self.wrong_variants:
+                        s = _("""\
+The following pattern(s) only matched packages that are not available
+for the current image's architecture, zone type, and/or other variant:""")
+                        res += [s]
+                        res += ["\t%s" % p for p in self.wrong_variants]
 
                 if self.wrong_publishers:
                         s = _("The following patterns only matched packages "

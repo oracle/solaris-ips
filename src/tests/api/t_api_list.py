@@ -32,7 +32,6 @@ import pkg5unittest
 import calendar
 import difflib
 import os
-import platform
 import pprint
 import re
 import shutil
@@ -72,6 +71,8 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
             "quux@1.0",
             "qux@0.9",
             "qux@1.0",
+            "zoo@1.0",
+            "zoo@2.0",
         ]
 
         @staticmethod
@@ -88,24 +89,18 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
                 bver = version.Version(bver, "5.11")
                 return cmp(aver, bver) * -1
 
-        @staticmethod
-        def __get_pkg_arch(stem, ver):
-                # Attempt to determine current arch and opposite arch.
-                # This is so that the tests will see the set of packages
-                # they expect to be omitted.
-                parch = platform.processor()
-                if parch == "i386":
-                        oparch = "sparc"
-                else:
-                        oparch = "i386"
-
+        def __get_pkg_variant(self, stem, ver):
+                var = "true"
+                opvar = "false"
                 if stem == "apple":
-                        return [parch]
+                        return [var]
                 elif stem in ("entire", "bat/bar", "obsolete"):
                         return
                 elif stem in ("corge", "grault", "qux", "quux"):
-                        return [parch, oparch]
-                return [oparch]
+                        return [var, opvar]
+                elif stem == "zoo" and ver.startswith("1.0"):
+                        return [var]
+                return [opvar]
 
         @staticmethod
         def __get_pkg_cats(stem, ver):
@@ -157,6 +152,12 @@ class TestApiList(pkg5unittest.ManyDepotTestCase):
                                 states.append(api.PackageInfo.UPGRADABLE)
                         if ver == nver:
                                 states.append(api.PackageInfo.RENAMED)
+                elif stem == "zoo":
+                        # Compare with newest version entry for this stem.
+                        nver = str(self.dlist1[20].version)
+                        if ver != nver:
+                                states.append(api.PackageInfo.UPGRADABLE)
+
                 return frozenset(states)
 
         def __get_pub_entry(self, pub, idx, name, ver):
@@ -207,11 +208,11 @@ add set name=pkg.description value="%(desc)s"
                                         pkg_data += ' value="%s"' % cat
                                 pkg_data += "\n"
 
-                        arch = self.__get_pkg_arch(stem, sver)
-                        if arch:
+                        var = self.__get_pkg_variant(stem, sver)
+                        if var:
                                 adata = "value="
-                                adata += " value=".join(arch)
-                                pkg_data += "add set name=variant.arch " \
+                                adata += " value=".join(var)
+                                pkg_data += "add set name=variant.mumble " \
                                     "%s\n" % adata
 
                         if stem == "corge" and sver.startswith("1.0"):
@@ -267,7 +268,8 @@ add set name=pkg.description value="%(desc)s"
                 # published to.
 
                 # Next, create the image and configure publishers.
-                self.image_create(rurl1, prefix="test1")
+                self.image_create(rurl1, prefix="test1",
+                    variants={ "variant.mumble": "true" })
                 rurl2 = self.dcs[2].get_repo_url()
                 self.pkg("set-publisher -g " + rurl2 + " test2")
 
@@ -315,8 +317,16 @@ add set name=pkg.description value="%(desc)s"
                         for plist in (self.dlist1, self.dlist2):
                                 for f in plist:
                                         pstem = f.get_pkg_stem()
+                                        pub, stem, ver = f.tuple()
+                                        ver = str(f.version)
+                                        sver = ver.split(":", 1)[0]
+
+                                        var = self.__get_pkg_variant(stem, sver)
                                         if pstem not in nlist:
                                                 nlist[pstem] = f
+                                        elif not variants and var and \
+                                            "true" not in var:
+                                                continue
                                         elif f.version > nlist[pstem]:
                                                 nlist[pstem] = f
                 nlist = sorted(nlist.values())
@@ -330,9 +340,8 @@ add set name=pkg.description value="%(desc)s"
                                         continue
 
                                 sver = ver.split(":", 1)[0]
-                                arch = self.__get_pkg_arch(stem, sver)
-                                parch = platform.processor()
-                                if not variants and arch and parch not in arch:
+                                var = self.__get_pkg_variant(stem, sver)
+                                if not variants and var and "true" not in var:
                                         continue
 
                                 if newest and f not in nlist:
@@ -472,15 +481,18 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
                     self.__get_exp_pub_entry("test2", 18, "qux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
+                    self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 38)
+                self.assertEqual(len(returned), 42)
 
                 # Next, check no variants case (which has to be done
-                # programatically to deal with unit test running on
-                # different platforms).
+                # programatically).
                 self.__test_list(api.ImageInterface.LIST_ALL, api_obj=api_obj,
-                    num_expected=32, variants=False)
+                    num_expected=34, variants=False)
 
         def test_list_02_newest(self):
                 """Verify the sort order and content of a list excluding
@@ -488,14 +500,15 @@ add set name=pkg.description value="%(desc)s"
                 the newest versions of each package for each publisher."""
 
                 self.__test_list(api.ImageInterface.LIST_NEWEST,
-                    num_expected=16, variants=False)
+                    num_expected=18, variants=False)
 
                 # Verify that LIST_NEWEST will allow version-specific
                 # patterns such that the newest version allowed by the
                 # pattern is what is listed.
                 progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = api.ImageInterface(self.get_img_path(),
+                    CLIENT_API_VERSION, progresstracker, lambda x: False,
+                    PKG_CLIENT_NAME)
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
                     api_obj=api_obj, patterns=["baz@1.0", "bat/bar",
@@ -544,7 +557,7 @@ add set name=pkg.description value="%(desc)s"
                     ([
                         ("", "food")
                     ], 2),
-                    ([], 16) # Only packages with no category assigned.
+                    ([], 18) # Only packages with no category assigned.
                 ]
 
                 for combo, expected in combos:
@@ -556,16 +569,16 @@ add set name=pkg.description value="%(desc)s"
                 various publisher and variant combinations."""
 
                 combos = [
-                    (["test1", "test2"], 32, False),
-                    (["test1", "test2"], 38, True),
-                    (["test2"], 16, False),
-                    (["test2"], 19, True),
-                    (["test1"], 16, False),
-                    (["test1"], 19, True),
+                    (["test1", "test2"], 34, False),
+                    (["test1", "test2"], 42, True),
+                    (["test2"], 17, False),
+                    (["test2"], 21, True),
+                    (["test1"], 17, False),
+                    (["test1"], 21, True),
                     (["test3"], 0, False),
                     (["test3"], 0, True),
-                    ([], 32, False),
-                    ([], 38, True)
+                    ([], 34, False),
+                    ([], 42, True)
                 ]
 
                 for combo, expected, variants in combos:
@@ -628,9 +641,7 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
                         installed=False),
                     self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
-
                         installed=False),
-
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
@@ -641,9 +652,13 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11",
+                        installed=False),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11",
+                        installed=False),
                 ]
 
-                self.assertEqual(len(returned), 10)
+                self.assertEqual(len(returned), 12)
                 self.assertPrettyEqual(returned, expected)
 
                 # Re-test, including variants.
@@ -673,8 +688,11 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
+                    self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11",
+                        installed=False),
+                    self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11",
+                        installed=False),
                 ]
-                self.assertEqual(len(returned), 12)
                 self.assertPrettyEqual(returned, expected)
 
                 # Verify results of LIST_INSTALLED_NEWEST when not including
@@ -689,9 +707,10 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo",
+                        "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 3)
 
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj)
@@ -717,9 +736,12 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
+                    self.__get_exp_pub_entry("test1", 19, "zoo",
+                        "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo",
+                        "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 10)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # uninstalling 'quux' and 'qux'.
@@ -751,9 +773,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 10)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
@@ -788,9 +811,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 18, "qux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 16)
 
                 # Re-test, including variants.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -822,17 +846,19 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 18, "qux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 18)
 
                 # Re-test, including only a specific package version, which
                 # should show the requested versions even though newer
                 # versions are available.  'baz' should be omitted because
-                # it doesn't apply to the current image variants.
+                # it doesn't apply to the current image variants; so should
+                # zoo@2.0.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj, patterns=["apple@1.0,5.11.0", "baz",
-                        "qux@0.9"])
+                        "qux@0.9", "zoo@2.0"])
 
                 expected = [
                     self.__get_exp_pub_entry("test1", 1, "apple", "1.0,5.11-0"),
@@ -841,15 +867,14 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 4)
 
                 # Re-test, including only a specific package version, which
                 # should show the requested versions even though newer
                 # versions are available, and all variants.  'baz' should be
-                # included this time.
+                # included this time; as should zoo@2.0.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj, patterns=["apple@1.0,5.11.0", "baz",
-                        "qux@0.9"], variants=True)
+                        "qux@0.9", "zoo@2.0"], variants=True)
 
                 expected = [
                     self.__get_exp_pub_entry("test1", 1, "apple", "1.0,5.11-0"),
@@ -858,9 +883,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 10, "baz", "1.3,5.11"),
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11"),
                     self.__get_exp_pub_entry("test2", 17, "qux", "0.9,5.11"),
+                    self.__get_exp_pub_entry("test1", 20, "zoo", "2.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 20, "zoo", "2.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 6)
 
                 # Test results after installing packages and only listing the
                 # installed packages.
@@ -908,9 +934,10 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11",
                         installed=True),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 9)
 
                 # Re-test last but specify patterns for versions newer than
                 # what is installed; nothing should be returned as
@@ -922,27 +949,18 @@ add set name=pkg.description value="%(desc)s"
                         "corge@1.0", "qux@1.0"])
                 expected = []
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 0)
 
                 # Remove corge, install grault, retest for
                 # LIST_INSTALLED_NEWEST.  corge, grault, qux, and
                 # quux should be listed since none of them are
                 # listed in an installed incorporation.
-
-                # XXX due to bug 12898 attempting to install
-                # any more packages after this would result
-                # in quux being installed even when the
-                # requested packages do not have quux as a
-                # dependency.  As such, uninstall all packages
-                # here and then install apple, qux and grault.
-                api_obj.plan_uninstall(["*"], False)
+                api_obj.plan_uninstall(["corge"], False)
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
 
                 af = self.__get_pub_entry("test1", 1, "apple", "1.0,5.11-0")[0]
-                api_obj.plan_install([af.get_fmri(), "qux@0.9",
-                    "pkg://test2/grault"])
+                api_obj.plan_install(["pkg://test2/grault"])
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -969,9 +987,10 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 17, "qux", "0.9,5.11",
                         installed=True),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 11)
 
                 # Now verify that publisher search order determines the entries
                 # that are listed when those entries are part of an installed
@@ -1014,9 +1033,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 11)
 
                 # Re-test, specifying versions older than the newest, with
                 # some older than that allowed by the incorporation (should
@@ -1030,7 +1050,6 @@ add set name=pkg.description value="%(desc)s"
                         "1.2.0,5.11-0"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 1)
 
                 # Re-test, specifying versions newer than that allowed by the
                 # incorporation.
@@ -1054,9 +1073,9 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test1", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 7)
 
                 # Re-test, only including test2's packages.  Since none of
                 # the other packages are installed for test1, and they meet
@@ -1075,9 +1094,9 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 6)
 
                 # Change test2 to be ranked higher than test1.
                 api_obj.set_pub_search_before("test2", "test1")
@@ -1105,9 +1124,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 11)
 
                 # Now install one of the incorporated packages and check
                 # that test2 is still listed for the remaining package
@@ -1138,9 +1158,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 11)
 
                 # Reset publisher search order and re-test.
                 api_obj.set_pub_search_before("test1", "test2")
@@ -1166,9 +1187,10 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test1", 19, "zoo", "1.0,5.11"),
+                    self.__get_exp_pub_entry("test2", 19, "zoo", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 11)
 
                 # Reset image state for following tests.
                 api_obj.plan_uninstall(["*"], False)
@@ -1284,19 +1306,13 @@ add set name=pkg.description value="%(desc)s"
                 ]
 
                 for combo in combos:
-                        import time
-                        self.debug("combo: %s, time: %s" % (combo, time.ctime()))
                         pkgs = [
                             f.get_fmri(anarchy=True, include_scheme=False)
                             for f in combo
                         ]
-                        self.debug("plan install: %s" % time.ctime())
                         api_obj.plan_install(pkgs)
-                        self.debug("prepare install: %s" % time.ctime())
                         api_obj.prepare()
-                        self.debug("execute install: %s" % time.ctime())
                         api_obj.execute_plan()
-                        self.debug("1reset: %s" % time.ctime())
                         api_obj.reset()
 
                         returned = api_obj.get_pkg_categories(installed=True)
@@ -1308,20 +1324,15 @@ add set name=pkg.description value="%(desc)s"
                         self.assertPrettyEqual(returned, expected)
 
                         # Prepare for next test.
-                        self.debug("plan uninstall: %s" % time.ctime())
                         # skip corge since it's renamed
                         api_obj.plan_uninstall([
                                                 p
                                                 for p in pkgs
                                                 if not p.startswith("corge@1.0")
                                                 ], False)
-                        self.debug("prepare uninstall: %s" % time.ctime())
                         api_obj.prepare()
-                        self.debug("execute uninstall: %s" % time.ctime())
                         api_obj.execute_plan()
-                        self.debug("2reset: %s" % time.ctime())
                         api_obj.reset()
-                self.debug("test finished: %s" % time.ctime())
 
         def test_list_08_patterns(self):
                 """Verify that pattern filtering works as expected."""

@@ -24,7 +24,7 @@
 # Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 import errno
 import itertools
 import operator
@@ -2055,6 +2055,7 @@ class ImagePlan(object):
                 not_installed = []
                 multispec     = []
                 wrongpub      = []
+                wrongvar      = set()
 
                 matchers = []
                 fmris    = []
@@ -2063,7 +2064,7 @@ class ImagePlan(object):
 
                 wildcard_patterns = []
 
-                renamed_fmris = {}
+                renamed_fmris = defaultdict(set)
                 obsolete_fmris = []
 
                 # ignore dups
@@ -2099,6 +2100,9 @@ class ImagePlan(object):
                 # dictionary of pkg names & fmris that match that pattern.
                 ret = dict(zip(patterns, [dict() for i in patterns]))
 
+                # Track patterns rejected due to variants.
+                rejected_vars = set()
+
                 # keep track of publishers we reject due to implict selection
                 # of installed publisher to produce better error message.
                 rejected_pubs = {}
@@ -2112,6 +2116,7 @@ class ImagePlan(object):
                             self.image.IMG_CATALOG_INSTALLED)
                         info_needed = []
 
+                variants = self.image.get_variants()
                 for name in cat.names():
                         for pat, matcher, fmri, version, pub in \
                             zip(patterns, matchers, fmris, versions, pubs):
@@ -2123,7 +2128,7 @@ class ImagePlan(object):
                                             pkg.version.CONSTRAINT_AUTO):
                                                 continue # version doesn't match
                                         for f, metadata in entries:
-                                                fpub = f.get_publisher()
+                                                fpub = f.publisher
                                                 if pub and pub != fpub:
                                                         continue # specified pubs conflict
                                                 elif not pub and match_type != self.MATCH_INST_VERSIONS and \
@@ -2140,14 +2145,67 @@ class ImagePlan(object):
                                                         # in list of installed
                                                         # stems.
                                                         continue
+
+                                                states = metadata["metadata"]["states"]
+                                                ren_deps = []
+                                                omit_package = False
+                                                for astr in metadata.get("actions",
+                                                    misc.EmptyI):
+                                                        try:
+                                                                a = pkg.actions.fromstr(
+                                                                    astr)
+                                                        except pkg.actions.ActionError:
+                                                                # Unsupported or
+                                                                # invalid package;
+                                                                # drive on and
+                                                                # filter as much as
+                                                                # possible.  The
+                                                                # solver will reject
+                                                                # this package later.
+                                                                continue
+
+                                                        if self.image.PKG_STATE_RENAMED in states and \
+                                                            a.name == "depend" and \
+                                                            a.attrs["type"] == "require":
+                                                                ren_deps.append(pkg.fmri.PkgFmri(
+                                                                    a.attrs["fmri"], "5.11"))
+                                                                continue
+                                                        elif a.name != "set":
+                                                                continue
+
+                                                        atname = a.attrs["name"]
+                                                        if not atname.startswith("variant."):
+                                                                continue
+
+                                                        # For all variants set
+                                                        # in the image, elide
+                                                        # packages that are not
+                                                        # for a matching variant
+                                                        # value.
+                                                        atvalue = a.attrs["value"]
+                                                        is_list = type(atvalue) == list
+                                                        for vn, vv in variants.iteritems():
+                                                                if vn == atname and \
+                                                                    ((is_list and
+                                                                    vv not in atvalue) or \
+                                                                    (not is_list and
+                                                                    vv != atvalue)):
+                                                                        omit_package = True
+                                                                        break
+
+                                                if omit_package:
+                                                        # Package skipped due to
+                                                        # variant.
+                                                        rejected_vars.add(pat)
+                                                        continue
+
                                                 ret[pat].setdefault(f.pkg_name,
                                                     []).append(f)
                                                 states = metadata["metadata"]["states"]
                                                 if self.image.PKG_STATE_OBSOLETE in states:
                                                         obsolete_fmris.append(f)
-                                                if self.image.PKG_STATE_RENAMED in states and \
-                                                    "actions" in metadata:
-                                                        renamed_fmris[f] = metadata["actions"]
+                                                if self.image.PKG_STATE_RENAMED in states:
+                                                        renamed_fmris[f] = ren_deps
 
                 # remove multiple matches if all versions are obsolete
                 for p in patterns:
@@ -2176,16 +2234,11 @@ class ImagePlan(object):
                                     for pfmri in ret[p][pkg_name]
                                     if pfmri in renamed_fmris
                                     )
-                                for f in renamed_matches:
-                                        for a in renamed_fmris[f]:
-                                                a = pkg.actions.fromstr(a)
-                                                if a.name != "depend":
-                                                        continue
-                                                if a.attrs["type"] != "require":
-                                                        continue
-                                                targets.append(pkg.fmri.PkgFmri(
-                                                    a.attrs["fmri"], "5.11"
-                                                    ).pkg_name)
+                                targets.extend(
+                                    pf.pkg_name
+                                    for pf in renamed_fmris[f]
+                                    for f in renamed_matches
+                                )
 
                                 for pkg_name in ret[p].keys():
                                         if pkg_name in targets:
@@ -2195,7 +2248,9 @@ class ImagePlan(object):
                 for p in patterns:
                         l = len(ret[p])
                         if l == 0: # no matches at all
-                                if match_type != self.MATCH_INST_VERSIONS or \
+                                if p in rejected_vars:
+                                        wrongvar.add(p)
+                                elif match_type != self.MATCH_INST_VERSIONS or \
                                     p not in rejected_pubs:
                                         nonmatch.append(p)
                                 elif p in rejected_pubs:
@@ -2222,12 +2277,12 @@ class ImagePlan(object):
                         not_installed, nonmatch = nonmatch, not_installed
 
                 if illegals or nonmatch or multimatch or not_installed or \
-                    multispec or wrongpub:
+                    multispec or wrongpub or wrongvar:
                         raise api_errors.PlanCreationException(
                             unmatched_fmris=nonmatch,
                             multiple_matches=multimatch, illegal=illegals,
                             missing_matches=not_installed, multispec=multispec,
-                            wrong_publishers=wrongpub)
+                            wrong_publishers=wrongpub, wrong_variants=wrongvar)
 
                 # merge patterns together now that there are no conflicts
                 proposed_dict = {}
@@ -2239,9 +2294,9 @@ class ImagePlan(object):
                         # no point for installed pkgs....
                         for pkg_name in proposed_dict:
                                 pubs_found = set([
-                                                f.get_publisher()
-                                                for f in proposed_dict[pkg_name]
-                                                ])
+                                    f.publisher
+                                    for f in proposed_dict[pkg_name]
+                                ])
                                 # 1000 is hack for installed but unconfigured
                                 # publishers
                                 best_pub = sorted([

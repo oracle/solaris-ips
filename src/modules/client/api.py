@@ -1549,17 +1549,17 @@ class ImageInterface(object):
                         # Filtering needs to be applied.
                         filter_cb = check_state
 
-                arch = self.__img.get_arch()
                 excludes = self.__img.list_excludes()
-                is_zone = self.__img.is_zone()
+                img_variants = self.__img.get_variants()
 
                 matched_pats = set()
                 pkg_matching_pats = None
 
                 # Retrieve only the newest package versions for LIST_NEWEST if
-                # none of the patterns have version information.  (This cuts
-                # down on the number of entries that have to be filtered.)
-                use_last = newest and not pat_versioned
+                # none of the patterns have version information and variants are
+                # included.  (This cuts down on the number of entries that have
+                # to be filtered.)
+                use_last = newest and not pat_versioned and variants
 
                 for t, entry, actions in img_cat.entry_actions(cat_info,
                     cb=filter_cb, excludes=excludes, last=use_last,
@@ -1570,9 +1570,8 @@ class ImageInterface(object):
                         omit_package = None
 
                         pkg_stem = "!".join((pub, stem))
-                        if newest and pat_versioned and pkg_stem in nlist:
-                                # A newer version has already been listed and
-                                # because a pattern with a version was specified
+                        if newest and pkg_stem in nlist:
+                                # A newer version has already been listed, so
                                 # any additional entries need to be marked for
                                 # omission before continuing.
                                 omit_package = True
@@ -1674,6 +1673,7 @@ class ImageInterface(object):
                         summ = None
                         targets = set()
 
+                        omit_var = False
                         states = entry["metadata"]["states"]
                         pkgi = self.__img.PKG_STATE_INSTALLED in states
                         try:
@@ -1715,29 +1715,24 @@ class ImageInterface(object):
                                                         pkgr = True
                                                 continue
 
-                                        if variants:
-                                                # No variant filtering.
+                                        if variants or \
+                                            not atname.startswith("variant."):
+                                                # No variant filtering required.
                                                 continue
 
+                                        # For all variants explicitly set in the
+                                        # image, elide packages that are not for
+                                        # a matching variant value.
                                         is_list = type(atvalue) == list
-                                        if atname == "variant.arch":
-                                                if (is_list and
-                                                    arch not in atvalue) or \
-                                                   (not is_list and
-                                                   arch != atvalue):
-                                                        # Package is not for the
-                                                        # image's architecture.
+                                        for vn, vv in img_variants.iteritems():
+                                                if vn == atname and \
+                                                    ((is_list and
+                                                    vv not in atvalue) or \
+                                                    (not is_list and
+                                                    vv != atvalue)):
                                                         omit_package = True
-                                                        continue
-
-                                        if atname == "variant.opensolaris.zone":
-                                                if (is_zone and is_list and
-                                                    "nonglobal" not in atvalue) or \
-                                                   (is_zone and not is_list and
-                                                    atvalue != "nonglobal"):
-                                                        # Package is for zones
-                                                        # only.
-                                                        omit_package = True
+                                                        omit_var = True
+                                                        break
                         except apx.InvalidPackageErrors:
                                 # Ignore errors for packages that have invalid
                                 # or unsupported metadata.  This is necessary so
@@ -1764,7 +1759,16 @@ class ImageInterface(object):
                                                 tgt = ren_stems.get(tgt, None)
 
                         if omit_package:
-                                # Package didn't match critera; skip it.
+                                # Package didn't match criteria; skip it.
+                                if (filter_cb is not None or newest) and \
+                                    omit_var and nlist[pkg_stem] == 1:
+                                        # If omitting because of variant, and
+                                        # no other versions have been returned
+                                        # yet for this stem, then discard
+                                        # tracking entry so that other
+                                        # versions will be listed.
+                                        del nlist[pkg_stem]
+                                        slist.discard(stem)
                                 continue
 
                         if cats is not None:
