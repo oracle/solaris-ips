@@ -5600,6 +5600,18 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg_dupfilesv5 = """
+            open dupfilesv5@0,5.11-0
+            add file tmp/file1 path=dir/pathname mode=0777 owner=root group=bin variant.opensolaris.zone=nonglobal
+            close
+        """
+
+        pkg_dupfilesv6 = """
+            open dupfilesv6@0,5.11-0
+            add file tmp/file2 path=dir/pathname mode=0755 owner=root group=bin
+            close
+        """
+
         pkg_dupfilesf1 = """
             open dupfilesf1@0,5.11-0
             add dir path=dir/pathname mode=0755 owner=root group=bin facet.devel=true
@@ -6318,6 +6330,22 @@ adm
                         self.dir_exists("dir/pathname", mode=0777)
                 else:
                         self.dir_exists("dir/pathname", mode=0755)
+
+                # Two packages delivering a file at the same path where one is
+                # tagged only for non-global zones should install successfully
+                # together in a global zone.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupfilesv5 dupfilesv6")
+                path = os.path.join(self.get_img_path(), "dir/pathname")
+                try:
+                        f = open(path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                self.assert_(False, "File dir/pathname does not exist")
+                        else:
+                                raise
+                self.assertEqual(f.read().rstrip(), "tmp/file2")
+                f.close()
 
                 # Two packages delivering the same directory, one with the
                 # devel facet false, the other true.
