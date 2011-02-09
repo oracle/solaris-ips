@@ -23,6 +23,7 @@
 
 set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
 set name=pkg.summary value="Update Manager for Image Packaging System"
+set name=pkg.description value="The Update Manager is a simplified graphical interface to the Image Packaging System which simply updates all packages installed on your system.  There is also a desktop widget which notifies you when updates are available."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=opensolaris.smf.fmri value=svc:/application/pkg/update:default
 
