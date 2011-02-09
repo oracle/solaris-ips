@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # OpenSSL configuration file for use with generate_certs.py.
@@ -89,12 +89,46 @@ authorityKeyIdentifier=keyid,issuer:always
 # Extensions to add to a certificate request
 
 basicConstraints = critical,CA:FALSE
-keyUsage = digitalSignature
+keyUsage = critical, digitalSignature
+
+[ v3_confused_cs ]
+
+# Have CA be true, but don't have keyUsage allow certificate signing to created
+# a confused certificate
+
+basicConstraints = critical,CA:true
+keyUsage = critical, digitalSignature
+
+[ v3_no_keyUsage ]
+
+# The extensions to use for a code signing certificate without a keyUsage
+# extension
+
+basicConstraints = critical,CA:FALSE
 
 [ v3_ca ]
 
-
 # Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true
+keyUsage = critical, keyCertSign, cRLSign
+
+[ v3_ca_no_crl ]
+
+# Extensions for a CA which cannot sign a CRL.
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true
+keyUsage = critical, keyCertSign
+
+[ v3_ca_no_keyUsage ]
+
+# Extensions for a CA without keyUsage information.
 
 # PKIX recommendation.
 subjectKeyIdentifier=hash
@@ -115,6 +149,20 @@ issuerAltName = critical,issuer:copy
 basicConstraints = critical,CA:TRUE
 issuerAltName = critical,issuer:copy
 
+[ issuer_ext_non_critical ]
+
+# Used to test a recognized non-critical extension with an unrecognized value
+
+basicConstraints = critical,CA:FALSE
+keyUsage = encipherOnly
+
+[ issuer_ext_bad_val ]
+
+# Used to test a recognized critical extension with an unrecognized value
+
+basicConstraints = critical,CA:FALSE
+keyUsage = critical, encipherOnly
+
 [ crl_ext ]
 
 # Used for testing certificate revocation.
@@ -128,6 +176,13 @@ crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA1_ta4_crl.pem
 
 basicConstraints = critical,CA:FALSE
 crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA1_ta1_crl.pem
+
+[ pubCA2_ta4_crl ]
+
+# Used for testing certificate revocation.
+
+basicConstraints = critical,CA:FALSE
+crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA2_ta4_crl.pem
 
 [ ch1_ta1_crl ]
 
@@ -145,6 +200,7 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 basicConstraints = critical,CA:true
 crlDistributionPoints = URI:http://localhost:12001/file/0/ta5_crl.pem
+keyUsage = critical, keyCertSign, cRLSign
 
 [ bad_crl ]
 

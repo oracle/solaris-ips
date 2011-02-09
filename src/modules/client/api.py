@@ -66,7 +66,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 51
+CURRENT_API_VERSION = 52
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -144,8 +144,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([46, 47, 48, 49, 50,
-                    CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,

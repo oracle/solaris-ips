@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -92,6 +92,28 @@ URI_SORT_PRIORITY = "priority"
 URI_SORT_POLICIES = {
     URI_SORT_PRIORITY: lambda obj: (obj.priority, obj.uri),
 }
+
+# This dictionary records the recognized values of extensions.
+SUPPORTED_EXTENSION_VALUES = {
+    "basicConstraints": ("CA:TRUE", "CA:FALSE"),
+    "keyUsage": ("DIGITAL SIGNATURE", "CERTIFICATE SIGN", "CRL SIGN")
+}
+
+# These dictionaries map uses into their extensions.
+CODE_SIGNING_USE = {
+    "keyUsage": ["DIGITAL SIGNATURE"]
+}
+
+CERT_SIGNING_USE = {
+    "basicConstraints": ["CA:TRUE"],
+    "keyUsage": ["CERTIFICATE SIGN"]
+}
+
+CRL_SIGNING_USE = {
+    "keyUsage": ["CRL SIGN"]
+}
+
+POSSIBLE_USES = [CODE_SIGNING_USE, CERT_SIGNING_USE, CRL_SIGNING_USE]
 
 class RepositoryURI(object):
         """Class representing a repository URI and any transport-related
@@ -1685,7 +1707,7 @@ pkg unset-publisher %s
                 old_verification_value = self.__verified_cas
                 # Mark that not all CA certs have been verified.
                 self.__verified_cas = False
-                hsh = self.add_cert(cert)
+                hsh = self.__add_cert(cert)
                 self.signing_ca_certs.append(hsh)
                 # If the user had previously removed this certificate, remove
                 # the certificate from that list.
@@ -1731,7 +1753,7 @@ pkg unset-publisher %s
                         t.remove(s)
                         self.revoked_ca_certs = list(t)
 
-        def add_cert(self, s):
+        def __add_cert(self, s):
                 """Add the certificate stored as a string in 's' to the
                 certificates this publisher knows about."""
 
@@ -1795,7 +1817,7 @@ pkg unset-publisher %s
                 assert not (verify_hash and only_retrieve)
                 pth = os.path.join(self.cert_root, pkg_hash)
                 if not os.path.exists(pth):
-                        self.add_cert(self.transport.get_content(self,
+                        self.__add_cert(self.transport.get_content(self,
                             pkg_hash))
                 if only_retrieve:
                         return None
@@ -1811,7 +1833,7 @@ pkg unset-publisher %s
                                     pth)
                 return c
 
-        def get_certs_by_name(self, name):
+        def __get_certs_by_name(self, name):
                 """Given 'name', a M2Crypto X509_Name, return the certs with
                 that name as a subject."""
 
@@ -1920,7 +1942,8 @@ pkg unset-publisher %s
                     set(self.revoked_ca_certs):
                         cert = self.get_cert_by_hash(c, verify_hash=True)
                         try:
-                                self.verify_chain(cert, trust_anchors)
+                                self.verify_chain(cert, trust_anchors,
+                                    usages=CERT_SIGNING_USE)
                         except api_errors.CertificateException:
                                 # If the cert couldn't be verified, add it to
                                 # the certs to ignore for this operation but
@@ -1956,7 +1979,7 @@ pkg unset-publisher %s
                                     "%s is not in a recognized format.") %
                                     pth)
 
-        def get_crl(self, uri):
+        def __get_crl(self, uri):
                 """Given a URI (for now only http URIs are supported), return
                 the CRL object created from the file stored at that uri."""
 
@@ -2025,7 +2048,7 @@ pkg unset-publisher %s
                 except LookupError, e:
                         return True
                 uri = ext.get_value()
-                crl = self.get_crl(uri)
+                crl = self.__get_crl(uri)
                 # If we couldn't retrieve a CRL from the distribution point
                 # and no CRL is cached on disk, assume the cert has not been
                 # revoked.  It's possible that this should be an image or
@@ -2039,14 +2062,24 @@ pkg unset-publisher %s
                 crl_issuer = crl.get_issuer()
                 tas = ca_dict.get(crl_issuer.as_hash(), [])
                 for t in tas:
-                        if crl.verify(t.get_pubkey()):
-                                verified_crl = True
+                        try:
+                                if crl.verify(t.get_pubkey()):
+                                        # If t isn't approved for signing crls,
+                                        # the exception __check_extensions
+                                        # raises will take the code to the
+                                        # except below.
+                                        self.__check_extensions(t,
+                                            CRL_SIGNING_USE)
+                                        verified_crl = True
+                        except api_errors.SigningException:
+                                pass
                 if not verified_crl:
-                        crl_cas = self.get_certs_by_name(crl_issuer)
+                        crl_cas = self.__get_certs_by_name(crl_issuer)
                         for c in crl_cas:
                                 if crl.verify(c.get_pubkey()):
                                         try:
-                                                self.verify_chain(c, ca_dict)
+                                                self.verify_chain(c, ca_dict,
+                                                    usages=CRL_SIGNING_USE)
                                         except api_errors.SigningException:
                                                 pass
                                         else:
@@ -2060,27 +2093,43 @@ pkg unset-publisher %s
                 if rev:
                         raise api_errors.RevokedCertificate(cert, rev[1])
 
-        def check_critical(self, ext):
-                """Check whether this criticial extension is supported."""
-
-                if ext.get_name() != "basicConstraints":
-                        return False
-                v = ext.get_value()
-                if v.upper() not in ("CA:TRUE", "CA:FALSE"):
-                        return False
-                return True
-
-        def check_extensions(self, cert):
+        def __check_extensions(self, cert, usages):
                 """Check whether the critical extensions in this certificate
-                are supported."""
+                are supported and allow the provided use(s)."""
 
                 for i in range(0, cert.get_ext_count()):
                         ext = cert.get_ext_at(i)
-                        if not ext.get_critical() or self.check_critical(ext):
-                                continue
-                        raise api_errors.UnsupportedCriticalExtension(cert, ext)
+                        name = ext.get_name()
+                        v = ext.get_value().upper()
+                        # Check whether the extension name is recognized.
+                        if name in SUPPORTED_EXTENSION_VALUES:
+                                supported_vs = \
+                                    SUPPORTED_EXTENSION_VALUES[name]
+                                vs = [s.strip() for s in v.split(",")]
+                                # Check whether the values for the extension are
+                                # recognized.
+                                for v in vs:
+                                        if v not in supported_vs:
+                                                if len(vs) < 2:
+                                                        raise api_errors.UnsupportedExtensionValue(cert, ext)
+                                                else:
+                                                        raise api_errors.UnsupportedExtensionValue(cert, ext, v)
+                                uses = usages.get(name, [])
+                                if isinstance(uses, basestring):
+                                        uses = [uses]
+                                # For each use, check to see whether it's
+                                # permitted by the certificate's extension
+                                # values.
+                                for u in uses:
+                                        if u not in vs:
+                                                raise api_errors.InappropriateCertificateUse(cert, ext, u)
+                        # If the extension name is unrecognized and critical,
+                        # then the chain cannot be verified.
+                        elif ext.get_critical():
+                                raise api_errors.UnsupportedCriticalExtension(
+                                    cert, ext)
         
-        def verify_chain(self, cert, ca_dict, required_names=None):
+        def verify_chain(self, cert, ca_dict, required_names=None, usages=None):
                 """Validates the certificate against the given trust anchors.
 
                 The 'cert' parameter is the certificate to validate.
@@ -2097,8 +2146,23 @@ pkg unset-publisher %s
                 continue_loop = True
                 certs_with_problems = []
 
+                def merge_dicts(d1, d2):
+                        """Function for merging usage dictionaries."""
+                        res = copy.deepcopy(d1)
+                        for k in d2:
+                                if k in res:
+                                        res[k].extend(d2[k])
+                                else:
+                                        res[k] = d2[k]
+                        return res
+
+                if not usages:
+                        usages = {}
+                        for u in POSSIBLE_USES:
+                                usages = merge_dicts(usages, u)
+
                 # Check whether we can validate this certificate.
-                self.check_extensions(cert)
+                self.__check_extensions(cert, usages)
 
                 # Check whether this certificate has been revoked.
                 self.__check_crls(cert, ca_dict)
@@ -2152,12 +2216,14 @@ pkg unset-publisher %s
                                 # this certificate but had critical extensions
                                 # we can't handle yet for error reporting.
                                 certs_with_problems = []
-                                for c in self.get_certs_by_name(issuer):
+                                for c in self.__get_certs_by_name(issuer):
                                         # If the certificate is approved to
                                         # sign another certificate, verifies
                                         # the current certificate, and hasn't
                                         # been revoked, consider it as the
-                                        # next link in the chain.
+                                        # next link in the chain.  check_ca
+                                        # checks both the basicConstraints
+                                        # extension and the keyUsage extension.
                                         if c.check_ca() and \
                                             cert.verify(c.get_pubkey()):
                                                 problem = False
@@ -2165,7 +2231,8 @@ pkg unset-publisher %s
                                                 # has a critical extension we
                                                 # don't understand.
                                                 try:
-                                                        self.check_extensions(c)
+                                                        self.__check_extensions(
+                                                            c, CERT_SIGNING_USE)
                                                         self.__check_crls(c,
                                                             ca_dict)
                                                 except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate), e:

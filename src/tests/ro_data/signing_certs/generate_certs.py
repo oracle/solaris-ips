@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -234,6 +234,23 @@ if __name__ == "__main__":
         # Add a certificate to the length 3 chain that is in the future.
         make_cs_cert("code_signing_certs", "cs4_p1_ta3",
             "publisher_cas", "pubCA1_ta3", future=True)
+        # Add a certificate to the length 3 chain that has an unknown value for
+        # a recognized non-critical extension.
+        make_cs_cert("code_signing_certs", "cs5_p1_ta3",
+            "publisher_cas", "pubCA1_ta3", ext="issuer_ext_non_critical")
+        # Add a certificate to the length 3 chain that has an unknown value for
+        # a recognized critical extension.
+        make_cs_cert("code_signing_certs", "cs6_p1_ta3",
+            "publisher_cas", "pubCA1_ta3", ext="issuer_ext_bad_val")
+        # Add a certificate to the length 3 chain that has keyUsage information
+        # but cannot be used to sign code.
+        make_cs_cert("code_signing_certs", "cs7_p1_ta3",
+            "publisher_cas", "pubCA1_ta3", ext="v3_no_keyUsage")
+        # Make a chain where a CS is used to sign another CS.
+        make_cs_cert("code_signing_certs", "cs8_p1_ta3",
+            "publisher_cas", "pubCA1_ta3", ext="v3_confused_cs")
+        make_cs_cert("code_signing_certs", "cs1_cs8_p1_ta3",
+            "code_signing_certs", "cs8_p1_ta3")
         # Make a chain where the CA has an unsupported critical extension.
         make_ca_cert("publisher_cas", "pubCA2_ta3", "trust_anchors", "ta3",
             ext="issuer_ext_ca")
@@ -249,6 +266,11 @@ if __name__ == "__main__":
             future=True)
         make_cs_cert("code_signing_certs", "cs1_p4_ta3",
             "publisher_cas", "pubCA4_ta3")
+        # Make a chain where the CA does not have keyUsage set.
+        make_ca_cert("publisher_cas", "pubCA5_ta3", "trust_anchors", "ta3",
+            future=True, ext="v3_ca_no_keyUsage")
+        make_cs_cert("code_signing_certs", "cs1_p5_ta3",
+            "publisher_cas", "pubCA5_ta3")
 
         # Revoke a code signing certificate from the publisher.
         make_trust_anchor("ta4")
@@ -260,6 +282,13 @@ if __name__ == "__main__":
             "publisher_cas", "pubCA1_ta4", ext="bad_crl")
         make_cs_cert("code_signing_certs", "cs3_ta4",
             "publisher_cas", "pubCA1_ta4", ext="bad_crl_loc")
+        # Revoke a code signing certificate but sign the CRL with a CA
+        # certificate that does not have that keyUsage set.
+        make_ca_cert("publisher_cas", "pubCA2_ta4", "trust_anchors", "ta4",
+            ext="v3_ca_no_crl")
+        make_cs_cert("code_signing_certs", "cs1_p2_ta4",
+            "publisher_cas", "pubCA2_ta4", ext="pubCA2_ta4_crl")
+        revoke_cert("pubCA2_ta4", "cs1_p2_ta4", ca_dir="publisher_cas")
 
         # Revoke a CA cert from the trust anchor
         make_trust_anchor("ta5")

@@ -1,9 +1,27 @@
+Version 52:
+Incompatible with clients using versions 0-50:
+    pkg.client.publisher.Publisher has changed as follows:
+        * The following functions have been made private:
+            add_cert, get_certs_by_name, get_crl, check_extensions
+        * check_critical was removed.
+        * verify_chain had an additional, optional, argument added to it.  The
+          usages paramter defines what uses the certificate needs to allow.
+          If this parameter isn't set, then it's assumed that the certificate
+          should be able to be used for all known uses.
+        * The following constants were added to be used as values to the usages
+          parameter for verify chain.
+
 Version 51:
 Compatible with clients using versions 46-50:
     pkg.client.api.PlanDescription has changed as follows:
         * get_solver_errors() was added to allow retrieval of extended
           error information for plan_*() functions.  See 'pydoc
           pkg.client.api' for details.
+
+Version 50:
+Compatible with clients using versions 46-50:
+    pkg.client.api.ImageInterface has changed as follows:
+        * plan_revert was added
 
 Version 49:
 Compatible with clients using versions 46-48:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1036,9 +1036,222 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
                     ["example_pkg"])
-                # Test that the cli handles a BrokenChain exception which
-                # contains other exceptions.
+
+        def test_inappropriate_use_of_code_signing_cert(self):
+                """Test that signing a certificate with a code signing
+                certificate results in a broken chain."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_cs8_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_cs8_p1_ta3_cert.pem"),
+                        "i1": os.path.join(self.cs_dir,
+                            "cs8_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                # This raises a BrokenChain exception because the certificate
+                # check_ca method checks the keyUsage extension if it's set
+                # as well as the basicConstraints extension.
+                self.assertRaises(apx.BrokenChain, self._api_install, api_obj,
+                    ["example_pkg"])
+                self.pkg("set-property signature-policy ignore")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_inappropriate_use_of_cert_signing_cert(self):
+                """Test that using a CA cert without the digitalSignature
+                value for the keyUsage extension to sign a package means
+                that the package's signature doesn't verify."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "pubCA1_ta3_key.pem"),
+                        "cert": os.path.join(self.pub_cas_dir,
+                            "pubCA1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.InappropriateCertificateUse,
+                    self._api_install, api_obj, ["example_pkg"])
+                # Tests that the cli can handle an InappropriateCertificateUse
+                # exception.
                 self.pkg("install example_pkg", exit=1)
+                self.pkg("set-property signature-policy ignore")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_no_crlsign_on_revoking_ca(self):
+                """Test that if a CRL is signed with a CA that has the keyUsage
+                extension but not the cRLSign value is not considered a valid
+                CRL."""
+                
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA2_ta4_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                rstore = r.get_pub_rstore(pub="test")
+                os.makedirs(os.path.join(rstore.file_root, "pu"))
+                portable.copyfile(os.path.join(self.crl_dir,
+                    "pubCA2_ta4_crl.pem"),
+                    os.path.join(rstore.file_root, "pu", "pubCA2_ta4_crl.pem"))
+                
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_p2_ta4_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_p2_ta4_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.dcs[1].start()
+                
+                self.pkg_image_create(self.durl1)
+                self.seed_ta_dir("ta4")
+
+                self.pkg("set-property signature-policy require-signatures")
+                api_obj = self.get_img_api_obj()
+                # This succeeds because the CA which signed the revoking CRL
+                # did not have the cRLSign keyUsage extension set.
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_unknown_value_for_non_critical_extension(self):
+                """Test that an unknown value for a recognized non-critical
+                extension causes an exception to be raised."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs5_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs5_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.UnsupportedExtensionValue,
+                    self._api_install, api_obj, ["example_pkg"])
+                # Tests that the cli can handle an UnsupportedCriticalExtension.
+                self.pkg("install example_pkg", exit=1)
+                self.pkg("set-property signature-policy ignore")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_unknown_value_for_critical_extension(self):
+                """Test that an unknown value for a recognized critical
+                extension causes an exception to be raised."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs6_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs6_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.UnsupportedExtensionValue,
+                    self._api_install, api_obj, ["example_pkg"])
+                self.pkg("set-property signature-policy ignore")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_unset_keyUsage_for_code_signing(self):
+                """Test that if keyUsage has not been set, the code signing
+                certificate is considered valid."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA1_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs7_p1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs7_p1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+
+        def test_unset_keyUsage_for_cert_signing(self):
+                """Test that if keyUsage has not been set, the CA certificate is
+                considered valid."""
+
+                ca_path = os.path.join(os.path.join(self.pub_cas_dir,
+                    "pubCA5_ta3_cert.pem"))
+                r = self.get_repo(self.dcs[1].get_repodir())
+                r.add_signing_certs([ca_path], ca=True)
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_p5_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir, "cs1_p5_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+
+                self.pkg("set-property signature-policy verify")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
 
         def test_sign_no_server_update(self):
                 """Test that packages signed using private keys function

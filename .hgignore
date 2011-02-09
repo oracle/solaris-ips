@@ -33,6 +33,9 @@
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
 ^src/tests/.figleaf$
+^src/tests/ro_data/signing_certs/produced/.*/.*\.csr
+^src/tests/ro_data/signing_certs/produced/.*\.old
+^src/tests/ro_data/signing_certs/produced/.*\.tmp
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$
 ^src/um/data/updatemanager.png$

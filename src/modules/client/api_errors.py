@@ -1835,7 +1835,48 @@ class UnsupportedCriticalExtension(SigningException):
                     "value:%(val)s") % {"cert": self.cert.get_subject(),
                     "name":self.ext.get_name(), "val":self.ext.get_value()}
 
+class UnsupportedExtensionValue(SigningException):
+        """Exception used when a certificate in the chain of trust has an
+        extension with a value pkg5 doesn't understand."""
 
+        def __init__(self, cert, ext, bad_val=None):
+                SigningException.__init__(self)
+                self.cert = cert
+                self.ext = ext
+                self.bad_val = bad_val
+
+        def __str__(self):
+                s = _("The certificate whose subject is %(cert)s could not be "
+                    "verified because it has an extension with a value that "
+                    "pkg(5) does not understand."
+                    "\nExtension name:%(name)s\nExtension value:%(val)s") % \
+                    {"cert": self.cert.get_subject(),
+                    "name":self.ext.get_name(), "val":self.ext.get_value()}
+                if self.bad_val:
+                        s += _("\nProblematic Value:%s") % (self.bad_val,)
+                return s
+
+class InappropriateCertificateUse(SigningException):
+        """Exception used when a certificate in the chain of trust has been used
+        inappropriately.  An example would be a certificate which was only
+        supposed to be used to sign code being used to sign other certificates.
+        """
+
+        def __init__(self, cert, ext, use):
+                SigningException.__init__(self)
+                self.cert = cert
+                self.ext = ext
+                self.use = use
+
+        def __str__(self):
+                return _("The certificate whose subject is %(cert)s could not "
+                    "be verified because it has been used inappropriately.  "
+                    "The way it is used means that the value for extension "
+                    "%(name)s must include '%(use)s' but the value was "
+                    "'%(val)s'.") % {"cert": self.cert.get_subject(),
+                    "use": self.use, "name":self.ext.get_name(),
+                    "val":self.ext.get_value()}
+                
 class InvalidPropertyValue(ApiException):
         """Exception used when a property was set to an invalid value."""
 

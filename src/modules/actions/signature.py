@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -276,9 +276,13 @@ class SignatureAction(generic.Action):
                 # to validate this signature are present.
                 self.get_chain_certs(pub)
                 try:
+                        # This import is placed here to break a circular
+                        # import seen when merge.py is used.
+                        from pkg.client.publisher import CODE_SIGNING_USE
                         # Verify the certificate whose key created this
                         # signature action.
-                        pub.verify_chain(cert, ca_dict, required_names)
+                        pub.verify_chain(cert, ca_dict, required_names,
+                            usages=CODE_SIGNING_USE)
                 except apx.SigningException, e:
                         e.act = self
                         raise

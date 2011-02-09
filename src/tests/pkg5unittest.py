@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 49
+CLIENT_API_VERSION = 51
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
