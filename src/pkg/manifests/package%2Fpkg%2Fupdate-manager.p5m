@@ -18,12 +18,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
 set name=pkg.summary value="Update Manager for Image Packaging System"
-set name=pkg.description value="Update Manager for Image Packaging System"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=opensolaris.smf.fmri value=svc:/application/pkg/update:default
 
