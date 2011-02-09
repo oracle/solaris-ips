@@ -117,7 +117,6 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
 
         def missing_attrs(self, manifest, engine, pkglint_id="001"):
                 """Various checks for missing attributes
-                * warn when a package doesn't have a pkg.description
                 * error when a package doesn't have a pkg.summary
                 * warn when a package doesn't have an org.opensolaris.consolidation
                 * warn when a package doesn't have an info.classification'
@@ -128,22 +127,23 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 if "pkg.obsolete" in manifest:
                         return
 
-                for key in ["pkg.description", "org.opensolaris.consolidation",
+                for key in ["org.opensolaris.consolidation",
                     "info.classification"]:
                         if key not in manifest:
                                 engine.warning(
-                                    _("Missing key %(key)s from %(pkg)s") %
-                                    {"key": key,
-                                    "pkg": manifest.fmri},
+                                    _("Missing attribute '%(key)s' in %(pkg)s") %
+                                    {"key": key, "pkg": manifest.fmri},
                                     msgid="%s%s.1" % (self.name, pkglint_id))
 
                 if "pkg.summary" not in manifest:
-                        engine.error(_("Missing key pkg.summary from %s") %
+                        engine.error(_("Missing attribute 'pkg.summary' in %s") %
                             manifest.fmri,
                             msgid="%s%s.2" % (self.name, pkglint_id))
 
         missing_attrs.pkglint_desc = _(
             "Standard package attributes should be present.")
+
+        # opensolaris.manifest002 is obsolete and should not be reused.
 
         def info_classification(self, manifest, engine, pkglint_id="003"):
                 """Checks that the info.classification attribute is valid."""
@@ -244,3 +244,22 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                     "path": self.classification_path,
                     "ref_cats": ref_cats },
                     msgid="%s.6" % msgid)
+
+        def bogus_description(self, manifest, engine, pkglint_id="004"):
+                """Warns when a package has an empty description or one which is
+                identical to the summary."""
+
+                desc = manifest.get("pkg.description", None)
+                summ = manifest.get("pkg.summary", None)
+
+                if desc == "":
+                        engine.warning(_("Empty description in %s") %
+                            manifest.fmri,
+                            msgid="%s%s.1" % (self.name, pkglint_id))
+                elif desc == summ and desc is not None:
+                        engine.warning(_("Description matches summary in %s") %
+                            manifest.fmri,
+                            msgid="%s%s.2" % (self.name, pkglint_id))
+
+        bogus_description.pkglint_desc = _(
+            "A package's description should not match its summary.")

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -128,7 +128,7 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.other value=carrots
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -150,7 +150,7 @@ broken_manifests["dup-depend-vars.mf"] = \
 #
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
 set name=org.opensolaris.consolidation value=sfw
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -194,7 +194,7 @@ broken_manifests["dup-depend-versions.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
 set name=org.opensolaris.consolidation value=sfw
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -216,7 +216,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:2010
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -244,7 +244,7 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.other value=carrots
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -270,7 +270,7 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
 set name=variant.other value=carrots
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -296,7 +296,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:2010
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -366,7 +366,7 @@ broken_manifests["info_class_valid.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=description value="Pkglint test package"
 set name=pkg.summary value="Pkglint test package"
@@ -382,8 +382,23 @@ broken_manifests["info_class_missing.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
+set name=pkg.summary value="Pkglint test package"
+set name=variant.arch value=i386 value=sparc
+"""
+
+expected_failures["silly_description.mf"] = ["opensolaris.manifest004.2"]
+broken_manifests["silly_description.mf"] = \
+"""
+#
+# we deliver package where the description is the same as the summary
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
@@ -398,7 +413,7 @@ broken_manifests["info_class_many_values.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Noodles value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Pkglint test package"
@@ -414,7 +429,7 @@ broken_manifests["info_class_wrong_prefix.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2010:System/Core
 set name=pkg.summary value="Pkglint test package"
@@ -431,7 +446,7 @@ broken_manifests["info_class_no_category.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:
 set name=pkg.summary value="Pkglint test package"
@@ -447,7 +462,7 @@ broken_manifests["info_class_wrong_category.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.149:20100917T003411Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:Rubbish/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -509,7 +524,7 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.other value=carrots
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -538,7 +553,7 @@ set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.other value=carrots
 # set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -580,7 +595,7 @@ broken_manifests["no_dup-allowed-vars.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -607,7 +622,7 @@ broken_manifests["no_dup-types-different-vars.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -635,7 +650,7 @@ broken_manifests["nodup-depend-okvars.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
 set name=org.opensolaris.consolidation value=sfw
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -658,7 +673,7 @@ broken_manifests["novariant_arch.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
 set name=org.opensolaris.consolidation value=sfw
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -775,7 +790,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:2010
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -795,7 +810,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:2010
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
 set name=variant.arch value=i386 value=sparc
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
@@ -830,7 +845,7 @@ broken_manifests["unusual_mode_noexecdir.mf"] = \
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
 set name=variant.opensolaris.zone value=global value=nonglobal
-set name=pkg.description value="Pkglint test package"
+set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
