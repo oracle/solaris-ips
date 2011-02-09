@@ -97,7 +97,8 @@ def setup_environment(path_to_proto, covdir=None, debug=False):
 
         # Use "keys"; otherwise we'll change dictionary size during iteration.
         for k in os.environ.keys():
-                if k.startswith("PKG_"):
+                if k.startswith("PKG_") or k in ("http_proxy", "HTTP_PROXY",
+                    "https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"):
                         del os.environ[k]
 
         #
