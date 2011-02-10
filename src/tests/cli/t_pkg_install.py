@@ -357,13 +357,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.dc.stop()
 
         def test_basics_5(self):
-                """ Add bar@1.1, install bar@1.0. """
-
-                self.pkgsend_bulk(self.rurl, self.xbar11)
-                self.image_create(self.rurl)
-                self.pkg("install xbar@1.0", exit=1)
-
-        def test_basics_6(self):
                 """ Install bar@1.0, upgrade to bar@1.1.
                 Boring should be left alone, while
                 foo gets upgraded as needed"""
@@ -379,6 +372,25 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v bar@1.1") # upgrade bar
                 self.pkg("list")
                 self.pkg("list bar@1.1 foo@1.2 boring@1.0")
+
+        def test_basics_6(self):
+                """Verify that '@latest' will install the latest version
+                of a package."""
+
+                self.pkgsend_bulk(self.rurl, (self.bar10, self.bar11,
+                    self.foo10, self.foo11, self.foo12, self.boring10,
+                    self.boring11))
+                self.image_create(self.rurl)
+
+                self.pkg("install '*@latest'")
+                self.pkg("info bar@1.1 foo@1.2 boring@1.1")
+
+        def test_basics_7(self):
+                """ Add bar@1.1, install bar@1.0. """
+
+                self.pkgsend_bulk(self.rurl, self.xbar11)
+                self.image_create(self.rurl)
+                self.pkg("install xbar@1.0", exit=1)
 
         def test_basics_mdns(self):
                 """ Send empty package foo@1.0, install and uninstall """
@@ -1548,6 +1560,10 @@ adm
                 # demonstrate that incorp@1.0 prevents package movement
                 self.pkg("install bronze@2.0 amber@2.0", exit=1)
 
+                # ...again, but using @latest.
+                self.pkg("install bronze@latest amber@latest", exit=1)
+                self.pkg("update bronze@latest amber@latest", exit=1)
+
                 # Now update to get new versions of amber and bronze
                 self.pkg("update")
 
@@ -2258,7 +2274,7 @@ adm:NP:6445::::::
         pkg_name_valid_chars = {
             "never": " `~!@#$%^&*()=[{]}\\|;:\",<>?",
             "always": "09azAZ",
-            "after-first": "_/-.+",
+            "after-first": "_-.+",
             "at-end": "09azAZ_-.+",
         }
 

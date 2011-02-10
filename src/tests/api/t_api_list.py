@@ -415,6 +415,7 @@ add set name=pkg.description value="%(desc)s"
                 # Compare returned and expected.
                 self.assertPrettyEqual(returned, expected)
 
+                self.debug(pprint.pformat(returned))
                 if num_expected is not None:
                         self.assertEqual(len(returned), num_expected)
 

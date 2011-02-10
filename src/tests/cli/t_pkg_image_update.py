@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -251,6 +251,14 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
                 self.pkg("info bar@1.0 foo@1.0 incorp@1.0")
 
                 self.pkg("update '*@*'")
+                self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
+
+                # Now rollback everything to 1.0, and then verify that
+                # '@latest' will take everything to the latest version.
+                self.pkg("update '*@1.0'")
+                self.pkg("info bar@1.0 foo@1.0 incorp@1.0")
+
+                self.pkg("update '*@latest'")
                 self.pkg("info bar@1.1 foo@1.1 incorp@1.1")
 
 

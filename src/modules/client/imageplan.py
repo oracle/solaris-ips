@@ -2061,7 +2061,7 @@ class ImagePlan(object):
                 pubs     = []
                 versions = []
 
-                wildcard_patterns = []
+                wildcard_patterns = set()
 
                 renamed_fmris = defaultdict(set)
                 obsolete_fmris = []
@@ -2071,29 +2071,56 @@ class ImagePlan(object):
                 # print patterns, match_type, pub_ranks, installed_pubs
 
                 # figure out which kind of matching rules to employ
-                try:
-                        for pat in patterns:
-                                if "*" in pat or "?" in pat:
+                brelease = self.image.attrs["Build-Release"]
+                latest_pats = set()
+                for pat in patterns:
+                        try:
+                                parts = pat.split("@", 1)
+                                pat_stem = parts[0]
+                                pat_ver = None
+                                if len(parts) > 1:
+                                        pat_ver = parts[1]
+
+                                if "*" in pat_stem or "?" in pat_stem:
                                         matcher = pkg.fmri.glob_match
-                                        fmri = pkg.fmri.MatchingPkgFmri(
-                                                                pat, "5.11")
-                                        wildcard_patterns.append(pat)
-                                elif pat.startswith("pkg:/"):
+                                        wildcard_patterns.add(pat)
+                                elif pat_stem.startswith("pkg:/") or \
+                                    pat_stem.startswith("/"):
                                         matcher = pkg.fmri.exact_name_match
-                                        fmri = pkg.fmri.PkgFmri(pat,
-                                                            "5.11")
                                 else:
                                         matcher = pkg.fmri.fmri_match
-                                        fmri = pkg.fmri.PkgFmri(pat,
-                                                            "5.11")
+
+                                if matcher == pkg.fmri.glob_match:
+                                        fmri = pkg.fmri.MatchingPkgFmri(
+                                            pat_stem, brelease)
+                                else:
+                                        fmri = pkg.fmri.PkgFmri(
+                                            pat_stem, brelease)
+
+                                if not pat_ver:
+                                        # Do nothing.
+                                        pass
+                                elif "*" in pat_ver or "?" in pat_ver or \
+                                    pat_ver == "latest":
+                                        fmri.version = \
+                                            pkg.version.MatchingVersion(pat_ver,
+                                                brelease)
+                                else:
+                                        fmri.version = \
+                                            pkg.version.Version(pat_ver,
+                                                brelease)
+
+                                if pat_ver and \
+                                    getattr(fmri.version, "match_latest", None):
+                                        latest_pats.add(pat)
 
                                 matchers.append(matcher)
-                                pubs.append(fmri.get_publisher())
+                                pubs.append(fmri.publisher)
                                 versions.append(fmri.version)
                                 fmris.append(fmri)
-
-                except pkg.fmri.IllegalFmri, e:
-                        illegals.append(e)
+                        except (pkg.fmri.FmriError,
+                            pkg.version.VersionError), e:
+                                illegals.append(e)
 
                 # Create a dictionary of patterns, with each value being a
                 # dictionary of pkg names & fmris that match that pattern.
@@ -2243,6 +2270,39 @@ class ImagePlan(object):
                                         if pkg_name in targets:
                                                 del ret[p][pkg_name]
 
+                # Discard all but the newest version of each match.
+                if latest_pats:
+                        # Rebuild ret based on latest version of every package.
+                        latest = {}
+                        nret = {}
+                        for p in patterns:
+                                if p not in latest_pats or not ret[p]:
+                                        nret[p] = ret[p]
+                                        continue
+
+                                nret[p] = {}
+                                for pkg_name in ret[p]:
+                                        nret[p].setdefault(pkg_name, [])
+                                        for f in ret[p][pkg_name]:
+                                                nver = latest.get(f.pkg_name,
+                                                    None)
+                                                latest[f.pkg_name] = max(nver,
+                                                    f.version)
+                                                if f.version == latest[f.pkg_name]:
+                                                        # Allow for multiple
+                                                        # FMRIs of the same
+                                                        # latest version.
+                                                        nret[p][pkg_name] = [
+                                                            e for e in nret[p][pkg_name]
+                                                            if e.version == f.version
+                                                        ]
+                                                        nret[p][pkg_name].append(f)
+
+                        # Assign new version of ret and discard latest list.
+                        ret = nret
+                        del latest
+
+                # Determine match failures.
                 matchdict = {}
                 for p in patterns:
                         l = len(ret[p])

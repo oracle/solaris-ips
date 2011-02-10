@@ -131,6 +131,13 @@ class MatchingDotSequence(DotSequence):
         """A subclass of DotSequence with (much) weaker rules about its format.
         This is intended to accept user input with wildcard characters."""
 
+        #
+        # We employ the Flyweight design pattern for dotsequences, since they
+        # are used immutably, are highly repetitive (0.5.11 over and over) and,
+        # for what they contain, are relatively expensive memory-wise.
+        #
+        __matching_dotseq_pool = weakref.WeakValueDictionary()
+
         @staticmethod
         def dotsequence_val(elem):
                 # Do this first; if the string is zero chars or non-numeric
@@ -139,6 +146,16 @@ class MatchingDotSequence(DotSequence):
                         return elem
 
                 return DotSequence.dotsequence_val(elem)
+
+        def __new__(cls, dotstring):
+                ds = MatchingDotSequence.__matching_dotseq_pool.get(dotstring,
+                    None)
+                if ds is not None:
+                        return ds
+
+                ds = list.__new__(cls)
+                cls.__matching_dotseq_pool[dotstring] = ds
+                return ds
 
         def __init__(self, dotstring):
                 try:
@@ -486,20 +503,20 @@ class Version(object):
                                 if not other.release.is_subsequence(
                                     self.release):
                                         return False
-                        elif other.release and other.release != "*":
+                        elif other.release and str(other.release) != "*":
                                 return False
 
                         if other.branch and self.branch:
                                 if not other.branch.is_subsequence(self.branch):
                                         return False
-                        elif other.branch and other.branch != "*":
+                        elif other.branch and str(other.branch) != "*":
                                 return False
 
                         if self.timestr and other.timestr:
                                 if not (other.timestr == self.timestr or \
                                     other.timestr == "*"):
                                         return False
-                        elif other.timestr and other.timestr != "*":
+                        elif other.timestr and str(other.timestr) != "*":
                                 return False
 
                         return True
@@ -592,12 +609,20 @@ class MatchingVersion(Version):
         """An alternative for Version with (much) weaker rules about its format.
         This is intended to accept user input with globbing characters."""
 
-        def __init__(self, version_string, build_string):
-                # XXX If illegally formatted, raise exception.
 
+        __slots__ = ["match_latest", "__original"]
+
+        def __init__(self, version_string, build_string):
                 if version_string is None or not len(version_string):
                         raise IllegalVersion, "Version cannot be empty"
 
+                if version_string == "latest":
+                        # Treat special "latest" syntax as equivalent to '*' for
+                        # version comparison purposes.
+                        self.match_latest = True
+                        version_string = "*"
+                else:
+                        self.match_latest = False
 
                 (release, build_release, branch, timestr), ignored = \
                     self.split(version_string)
@@ -641,6 +666,8 @@ class MatchingVersion(Version):
                 self.__original = outstr
 
         def __str__(self):
+                if self.match_latest:
+                        return "latest"
                 return self.__original
 
         def get_timestamp(self):
@@ -682,21 +709,22 @@ class MatchingVersion(Version):
                 if not isinstance(other, Version):
                         return False
 
-                if self.release == "*" and other.release != "*":
+                if str(self.release) == "*" and str(other.release) != "*":
                         return True
                 if self.release < other.release:
                         return True
                 if self.release != other.release:
                         return False
 
-                if self.build_release == "*" and other.build_release != "*":
+                if str(self.build_release) == "*" and \
+                    str(other.build_release) != "*":
                         return True
                 if self.build_release < other.build_release:
                         return True
                 if self.build_release != other.build_release:
                         return False
 
-                if self.branch == "*" and other.branch != "*":
+                if str(self.branch) == "*" and str(other.branch) != "*":
                         return True
                 if self.branch < other.branch:
                         return True
@@ -718,21 +746,22 @@ class MatchingVersion(Version):
                 if not isinstance(other, Version):
                         return True
 
-                if self.release == "*" and other.release != "*":
+                if str(self.release) == "*" and str(other.release) != "*":
                         return False
                 if self.release > other.release:
                         return True
                 if self.release != other.release:
                         return False
 
-                if self.build_release == "*" and other.build_release != "*":
+                if str(self.build_release) == "*" and \
+                    str(other.build_release) != "*":
                         return False
                 if self.build_release > other.build_release:
                         return True
                 if self.build_release != other.build_release:
                         return False
 
-                if self.branch == "*" and other.branch != "*":
+                if str(self.branch) == "*" and str(other.branch) != "*":
                         return False
                 if self.branch > other.branch:
                         return True

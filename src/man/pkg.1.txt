@@ -158,7 +158,8 @@ SUBCOMMANDS
 
           Installs and updates packages to the newest version that match
           pkg_fmri_pattern allowed by the packages installed in the
-          image.
+          image.  To explicitly request the latest version of a package,
+          use 'latest' for the pattern version (e.g. 'vim@latest').
 
           Some configuration files may be renamed or replaced during the
           install process.  For more information on how the package system
@@ -233,7 +234,9 @@ SUBCOMMANDS
           With no arguments, or if '*' is one of the patterns provided,
           update all installed packages in the current image to the newest
           version allowed by the constraints imposed on the system by
-          installed packages and publisher configuration.
+          installed packages and publisher configuration.  To explicitly
+          request the latest version of a package, use 'latest' for the
+          pattern version (e.g. 'vim@latest').
 
           If pkg_fmri_pattern is provided, update will replace packages
           that are installed, and that match pkg_fmri_pattern, with the
@@ -314,7 +317,9 @@ SUBCOMMANDS
 
           With -f and -a, list all versions of all packages for all
           variants regardless of incorporation constraints or installed
-          state.
+          state.  To explicitly list the latest version of a package when
+          using these options, use 'latest' for the pattern version (e.g.
+          'vim@latest').
 
           With -g, use the specified package repository or archive as the
           source of package data for the operation.  This option may be

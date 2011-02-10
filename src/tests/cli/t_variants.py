@@ -67,6 +67,14 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         add set name=variant.mumble value=false
         close"""
 
+        mumblefratz = """
+        open mumblefratz@1.0,5.11-0
+        add set name=variant.mumble value=true
+        close
+        open mumblefratz@2.0,5.11-0
+        add set name=variant.mumble value=false
+        close"""
+
         misc_files = [ 
             "tmp/bronze_sparc/etc/motd",
             "tmp/bronze_i386/etc/motd",
@@ -86,6 +94,7 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.pkgsend_bulk(self.rurl, self.mumble10)
+                self.pkgsend_bulk(self.rurl, self.mumblefratz)
                 self.make_misc_files(self.misc_files)
 
         def test_variant_1(self):
@@ -100,6 +109,22 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install \*")
                 self.pkg("info mumble-true", exit=1)
                 self.pkg("info mumble-false")
+
+        def test_variant_3_latest(self):
+                """Verify that install matching for '@latest' matches the
+                newest version allowed by image variants."""
+
+                self.image_create(self.rurl,
+                    variants={ "variant.mumble": "true" })
+                self.pkg("install mumblefratz@latest")
+                self.pkg("info mumblefratz@1.0")
+                self.pkg("info mumblefratz@2.0", exit=1)
+
+                self.image_create(self.rurl,
+                    variants={ "variant.mumble": "false" })
+                self.pkg("install mumblefratz@latest")
+                self.pkg("info mumblefratz@1.0", exit=1)
+                self.pkg("info mumblefratz@2.0")
 
         def test_old_zones_pkgs(self):
                 self.__test_common("variant.opensolaris.zone",

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -42,7 +41,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
             "never": " `~!@#$%^&*()=[{]}\\|;:\",<>?",
             "always": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
                 "0123456789",
-            "after-first": "_/-.+",
+            "after-first": "_-.+",
         }
 
         def setUp(self):
@@ -225,13 +224,20 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                                     (char, char2)
                                 fmri.PkgFmri(valid_name)
 
+                # Test '/' == 'pkg:/'; '//' == 'pkg://'.
+                for vn in ("/test@1.0,5.11-0", "//publisher/test@1.0,5.11-0"):
+                        pfmri = fmri.PkgFmri(vn)
+                        self.assertEqual(pfmri.pkg_name, "test")
+                        if vn.startswith("//"):
+                                self.assertEqual(pfmri.publisher, "publisher")
+                        else:
+                                self.assertEqual(pfmri.publisher, None)
+
         def testbadfmri_pkgname(self):
                 self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                     "application//office@0.5.11,5.11-0.96")
                 self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                     "application/office/@0.5.11,5.11-0.96")
-                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
-                    "/application@0.5.11,5.11-0.96")
                 self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                     "app/.cool@0.5.11,5.11-0.96")
 

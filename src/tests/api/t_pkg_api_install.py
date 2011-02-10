@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -794,7 +794,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["/foo"], False)
+                    check_illegal, api_obj.plan_uninstall, ["_foo"], False)
 
                 self.pkgsend_bulk(self.rurl, self.foo10)
 
@@ -804,7 +804,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["/foo"], False)
+                    check_illegal, api_obj.plan_uninstall, ["_foo"], False)
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
@@ -834,7 +834,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_install, ["/foo"])
+                    check_illegal, api_obj.plan_install, ["_foo"])
 
         def test_catalog_v0(self):
                 """Test install from a publisher's repository that only supports

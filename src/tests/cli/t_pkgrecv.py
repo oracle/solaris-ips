@@ -379,7 +379,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # Retrieve bronze using -m all-timestamps and a version pattern.
                 # This should only retrieve bronze20_1 and bronze20_2.
                 self.pkgrecv(self.durl1, "--raw -m all-timestamps -r -k "
-                    "-d %s %s" % (self.tempdir, "bronze@2.0"))
+                    "-d %s %s" % (self.tempdir, "/bronze@2.0"))
 
                 # Verify that only expected packages were retrieved.
                 expected = [
@@ -494,7 +494,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 expected."""
 
                 # Setup a repository with packages from multiple publishers.
-                amber = self.amber10.replace("open ", "open pkg://test2/")
+                amber = self.amber10.replace("open ", "open //test2/")
                 self.pkgsend_bulk(self.durl3, amber)
                 self.pkgrecv(self.durl1, "-d %s amber@1.0 bronze@1.0" %
                     self.durl3)
@@ -603,6 +603,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(arc_path, "-d %s pkg://test2/amber bronze" %
                     self.durl4)
                 repo = self.dcs[4].get_repo()
+                self.wait_repo(repo.root)
+                self.pkgrecv(repo.root, "--newest")
 
                 # Check for expected publishers.
                 expected = set(["test1", "test2"])

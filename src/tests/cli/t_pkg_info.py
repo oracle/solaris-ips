@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -94,8 +94,8 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info pkg:/man@", exit=1)
 
                 # Bug 4878
-                self.pkg("info -r /usr/bin/stunnel", exit=1)
-                self.pkg("info /usr/bin/stunnel", exit=1)
+                self.pkg("info -r _usr/bin/stunnel", exit=1)
+                self.pkg("info _usr/bin/stunnel", exit=1)
 
 		# bad version
                 self.pkg("install jade")

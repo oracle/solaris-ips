@@ -1931,42 +1931,21 @@ class ImageInterface(object):
                 illegals = []
                 pat_tuples = {}
                 pat_versioned = False
-                for pat in patterns:
-                        try:
-                                if "@" in pat:
-                                        # Mark that a pattern containing
-                                        # version information was found.
-                                        pat_versioned = True
+                latest_pats = set()
+                for pat, error, pfmri, matcher in self.parse_fmri_patterns(
+                    patterns):
+                        if error:
+                                illegals.append(error)
+                                continue
 
-                                if "*" in pat or "?" in pat:
-                                        matcher = self.MATCH_GLOB
-
-                                        # XXX By default, matching FMRIs
-                                        # currently do not also use
-                                        # MatchingVersion.  If that changes,
-                                        # this should change too.
-                                        parts = pat.split("@", 1)
-                                        if len(parts) == 1:
-                                                npat = pkg.fmri.MatchingPkgFmri(
-                                                    pat, brelease)
-                                        else:
-                                                npat = pkg.fmri.MatchingPkgFmri(
-                                                    parts[0], brelease)
-                                                npat.version = \
-                                                    pkg.version.MatchingVersion(
-                                                    str(parts[1]), brelease)
-                                elif pat.startswith("pkg:/"):
-                                        matcher = self.MATCH_EXACT
-                                        npat = pkg.fmri.PkgFmri(pat,
-                                            brelease)
-                                else:
-                                        matcher = self.MATCH_FMRI
-                                        npat = pkg.fmri.PkgFmri(pat,
-                                            brelease)
-                                pat_tuples[pat] = (npat.tuple(), matcher)
-                        except (pkg.fmri.FmriError,
-                            pkg.version.VersionError), e:
-                                illegals.append(e)
+                        if "@" in pat:
+                                # Mark that a pattern contained version
+                                # information.  This is used for a listing
+                                # optimization later on.
+                                pat_versioned = True
+                        if getattr(pfmri.version, "match_latest", None):
+                                latest_pats.add(pat)
+                        pat_tuples[pat] = (pfmri.tuple(), matcher)
 
                 if illegals:
                         raise apx.InventoryException(illegal=illegals)
@@ -2173,6 +2152,16 @@ class ImageInterface(object):
                                                                     True
                                                         omit_ver = True
                                                         continue
+
+                                        if pat in latest_pats and \
+                                            nlist[pkg_stem] > 1:
+                                                # Package allowed by pattern,
+                                                # but isn't the "latest"
+                                                # version.
+                                                if omit_package is None:
+                                                        omit_package = True
+                                                omit_ver = True
+                                                continue
 
                                         # If this entry matched at least one
                                         # pattern, then ensure it is returned.
@@ -3476,28 +3465,39 @@ class ImageInterface(object):
                         matcher = None
                         npat = None
                         try:
-                                if "*" in pat or "?" in pat:
-                                        # XXX By default, matching FMRIs
-                                        # currently do not also use
-                                        # MatchingVersion.  If that changes,
-                                        # this should  change too.
-                                        parts = pat.split("@", 1)
-                                        if len(parts) == 1:
-                                                npat = fmri.MatchingPkgFmri(pat,
-                                                    brelease)
-                                        else:
-                                                npat = fmri.MatchingPkgFmri(
-                                                    parts[0], brelease)
-                                                npat.version = \
-                                                    pkg.version.MatchingVersion(
-                                                    str(parts[1]), brelease)
+                                parts = pat.split("@", 1)
+                                pat_stem = parts[0]
+                                pat_ver = None
+                                if len(parts) > 1:
+                                        pat_ver = parts[1]
+
+                                if "*" in pat_stem or "?" in pat_stem:
                                         matcher = self.MATCH_GLOB
-                                elif pat.startswith("pkg:/"):
-                                        npat = fmri.PkgFmri(pat, brelease)
+                                elif pat_stem.startswith("pkg:/") or \
+                                    pat_stem.startswith("/"):
                                         matcher = self.MATCH_EXACT
                                 else:
-                                        npat = pkg.fmri.PkgFmri(pat, brelease)
                                         matcher = self.MATCH_FMRI
+
+                                if matcher == self.MATCH_GLOB:
+                                        npat = fmri.MatchingPkgFmri(pat_stem,
+                                            brelease)
+                                else:
+                                        npat = fmri.PkgFmri(pat_stem, brelease)
+
+                                if not pat_ver:
+                                        # Do nothing.
+                                        pass
+                                elif "*" in pat_ver or "?" in pat_ver or \
+                                    pat_ver == "latest":
+                                        npat.version = \
+                                            pkg.version.MatchingVersion(pat_ver,
+                                                brelease)
+                                else:
+                                        npat.version = \
+                                            pkg.version.Version(pat_ver,
+                                                brelease)
+
                         except (fmri.FmriError, pkg.version.VersionError), e:
                                 # Whatever the error was, return it.
                                 error = e

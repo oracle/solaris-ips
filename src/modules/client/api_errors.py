@@ -419,7 +419,7 @@ for the current image's architecture, zone type, and/or other variant:""")
                         res += ["\t%s" % p for p in self.installed]
 
                 if self.multispec:
-                        s = _("The following different patterns specify the"
+                        s = _("The following different patterns specify the "
                               "same package(s):")
                         res += [s]
                         for t in self.multispec:

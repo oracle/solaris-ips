@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import fnmatch
@@ -114,11 +114,10 @@ class PkgFmri(object):
 
         __slots__ = ["version", "publisher", "pkg_name", "_hash"]
 
-        def __init__(self, fmri, build_release = None, publisher = None):
-                """XXX pkg:/?pkg_name@version not presently supported."""
+        def __init__(self, fmri, build_release=None, publisher=None):
                 fmri = fmri.rstrip()
 
-                veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
+                veridx, nameidx, pubidx = PkgFmri._gen_fmri_indexes(fmri)
 
                 if veridx != None:
                         try:
@@ -131,9 +130,10 @@ class PkgFmri(object):
                 else:
                         self.version = veridx = None
 
-                self.publisher = publisher
-                if fmri.startswith("pkg://"):
-                        self.publisher = fmri[6:nameidx - 1]
+                if pubidx != None:
+                        self.publisher = fmri[pubidx:nameidx - 1]
+                else:
+                        self.publisher = publisher
 
                 if veridx != None:
                         self.pkg_name = fmri[nameidx:veridx]
@@ -154,7 +154,7 @@ class PkgFmri(object):
                 return PkgFmri(str(self))
 
         @staticmethod
-        def gen_fmri_indexes(fmri):
+        def _gen_fmri_indexes(fmri):
                 """Return a tuple of offsets, used to extract different
                 components of the FMRI."""
 
@@ -162,20 +162,44 @@ class PkgFmri(object):
                 if veridx == -1:
                         veridx = None
 
+                pubidx = None
                 if fmri.startswith("pkg://"):
-                        nameidx = fmri.find("/", 6)
+                        nameidx = fmri.find("/", 6, veridx)
                         if nameidx == -1:
                                 raise IllegalFmri(fmri,
                                     IllegalFmri.SYNTAX_ERROR,
-                                    detail="Missing '/' after publisher name")
+                                    detail=_("Missing '/' after "
+                                        "publisher name"))
+
+                        # Publisher starts after //.
+                        pubidx = 6
+
                         # Name starts after / which terminates publisher
                         nameidx += 1
+
                 elif fmri.startswith("pkg:/"):
+                        # Name starts after / which terminates scheme
                         nameidx = 5
+                elif fmri.startswith("//"):
+                        nameidx = fmri.find("/", 2, veridx)
+                        if nameidx == -1:
+                                raise IllegalFmri(fmri,
+                                    IllegalFmri.SYNTAX_ERROR,
+                                    detail=_("Missing '/' after "
+                                        "publisher name"))
+
+                        # Publisher starts after //.
+                        pubidx = 2
+
+                        # Name starts after / which terminates publisher
+                        nameidx += 1
+                elif fmri.startswith("/"):
+                        # Name starts after / which terminates scheme
+                        nameidx = 1
                 else:
                         nameidx = 0
 
-                return (veridx, nameidx)
+                return (veridx, nameidx, pubidx)
 
         def get_publisher(self):
                 """Return the name of the publisher that is contained
@@ -475,7 +499,7 @@ def extract_pkg_name(fmri):
         substring that is the FMRI's pkg_name."""
         fmri = fmri.rstrip()
 
-        veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
+        veridx, nameidx, pubidx = PkgFmri._gen_fmri_indexes(fmri)
 
         if veridx:
                 pkg_name = fmri[nameidx:veridx]
