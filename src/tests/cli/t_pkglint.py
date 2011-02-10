@@ -78,18 +78,25 @@ set name=org.opensolaris.consolidation value=ON
 set name=variant.arch value=i386 value=sparc
 """
 
+        # for the rcfiles below, we also need to point the
+        # info_classification_path field to the sections file we deliver in the
+        # proto area
         module_exclusion_rc = """
 [pkglint]
 pkglint.exclude: pkg.lint.pkglint_manifest.PkgManifestChecker
+info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 """
 
         method_exclusion_rc = """
 [pkglint]
 pkglint.exclude: pkg.lint.pkglint_manifest.PkgManifestChecker.duplicate_sets
+info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 """
+
         low_noise_rc = """
 [pkglint]
 log_level = CRITICAL
+info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 """
 
         def setUp(self):                
@@ -146,8 +153,10 @@ log_level = CRITICAL
                 in the CLI.
                 """
                 mpath1 = self.make_manifest(self.broken_manifest)
-                self.make_misc_files({"rcfile": self.module_exclusion_rc})
-                self.make_misc_files({"rcfile1": self.method_exclusion_rc})
+                self.make_misc_files({"rcfile": self.module_exclusion_rc %
+                    pkg5unittest.g_proto_area})
+                self.make_misc_files({"rcfile1": self.method_exclusion_rc %
+                    pkg5unittest.g_proto_area})
 
                 # verify we fail first
                 self.pkglint("%s" % mpath1, exit=1)
