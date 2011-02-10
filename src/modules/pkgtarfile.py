@@ -21,10 +21,8 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
-
 
 import os
 import stat
@@ -46,10 +44,9 @@ class PkgTarFile(tarfile.TarFile):
         XXX - Push these changes upstream to Python maintainers?
         """
 
-        def __init__(self, name=None, mode="r", fileobj=None, errorlevel=2):
-
-                tarfile.TarFile.__init__(self, name, mode, fileobj)
-                self.errorlevel = errorlevel
+        def __init__(self, *args, **kwargs):
+                kwargs.setdefault("errorlevel", 2)
+                tarfile.TarFile.__init__(self, *args, **kwargs)
 
         def extract_to(self, member, path="", filename=""):
                 """Extract a member from the TarFile archive.  This

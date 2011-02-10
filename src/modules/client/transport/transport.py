@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
+import copy
 import errno
 import httplib
 import os
@@ -65,6 +66,8 @@ class TransportCfg(object):
 
         def __init__(self):
                 self.__caches = {}
+                self.pkg_pub_map = None
+                self.alt_pubs = None
 
         def add_cache(self, path, pub=None, readonly=True):
                 """Adds the directory specified by 'path' as a location to read
@@ -502,8 +505,9 @@ class Transport(object):
                 # of origins for a publisher without incurring the significant
                 # overhead of performing file-based search unless the network-
                 # based resource is unavailable.
-                for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    prefer_remote=True, alt_repo=alt_repo):
+                for d, v in self.__gen_repo(pub, retry_count, origin_only=True,
+                    prefer_remote=True, alt_repo=alt_repo, operation="search",
+                    versions=[0, 1]):
 
                         try:
                                 fobj = d.do_search(data, header,
@@ -900,18 +904,45 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
-        def get_content(self, pub, fhash, ccancel=None):
-                """Given a fmri and fhash, return the uncompressed content
-                from the remote object.  This is similar to get_datstream,
-                except that the transport handles retrieving and decompressing
-                the content."""
+        def get_content(self, pub, fhash, fmri=None, ccancel=None):
+                """Given a fhash, return the uncompressed content content from
+                the remote object.  This is similar to get_datastream, except
+                that the transport handles retrieving and decompressing the
+                content.
+
+                'fmri' If the fhash corresponds to a known package, the fmri
+                should be specified for optimal transport performance.
+                """
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
+                alt_repo = None
+                if not fmri and self.cfg.alt_pubs:
+                        # No FMRI was provided, but alternate package sources
+                        # are available, so create a new repository object
+                        # that composites the repository information returned
+                        # from the image with the alternate sources for this
+                        # publisher.
+                        alt_repo = pub.selected_repository
+                        if alt_repo:
+                                alt_repo = copy.copy(alt_repo)
+                        else:
+                                alt_repo = publisher.Repository()
+
+                        for tpub in self.cfg.alt_pubs:
+                                if tpub.prefix != pub.prefix:
+                                        continue
+                                for o in tpub.selected_repository.origins:
+                                        if not alt_repo.has_origin(o):
+                                                alt_repo.add_origin(o)
+                elif self.cfg.pkg_pub_map:
+                        alt_repo = self.__get_alt_repo(fmri,
+                            self.cfg.pkg_pub_map)
+
                 for d, v in self.__gen_repo(pub, retry_count, operation="file",
-                    versions=[0, 1]):
+                    versions=[0, 1], alt_repo=alt_repo):
 
                         url = d.get_url()
 
@@ -1013,12 +1044,16 @@ class Transport(object):
                 as intent."""
 
                 failures = tx.TransportFailures()
-                pub_prefix = fmri.get_publisher()
+                pub_prefix = fmri.publisher
                 pub = self.cfg.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
+
+                pmap = self.cfg.pkg_pub_map
+                if not alt_repo and pmap:
+                        alt_repo = self.__get_alt_repo(fmri, pmap)
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -1053,7 +1088,7 @@ class Transport(object):
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
-                pub_prefix = fmri.get_publisher()
+                pub_prefix = fmri.publisher
                 download_dir = self.cfg.incoming_root
                 mcontent = None
                 header = None
@@ -1077,6 +1112,10 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
 
+                pmap = self.cfg.pkg_pub_map
+                if not alt_repo and pmap:
+                        alt_repo = self.__get_alt_repo(fmri, pmap)
+
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
 
@@ -1088,7 +1127,7 @@ class Transport(object):
                                 mcontent = resp.read()
 
                                 verified = self._verify_manifest(fmri,
-                                    content=mcontent)
+                                    content=mcontent, pub=pub)
 
                                 if content_only:
                                         return mcontent
@@ -1123,6 +1162,15 @@ class Transport(object):
                                 failures.append(te)
 
                 raise failures
+
+        def __get_alt_repo(self, pfmri, pmap):
+                # Package data should be retrieved from an
+                # alternate location.
+                pfx, stem, ver = pfmri.tuple()
+                sver = str(ver)
+                if pfx in pmap and stem in pmap[pfx] and \
+                    sver in pmap[pfx][stem]:
+                        return pmap[pfx][stem][sver].selected_repository
 
         @LockedTransport()
         def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
@@ -1178,24 +1226,45 @@ class Transport(object):
                 # instance for each publisher's worth of requests that
                 # this routine must process.
                 mx_pub = {}
+
+                pmap = None
+                if not alt_repo:
+                        pmap = self.cfg.pkg_pub_map
+
                 for fmri, intent in fetchlist:
-                        pub_prefix = fmri.get_publisher()
-                        pub = self.cfg.get_publisher(pub_prefix)
+                        if pmap:
+                                alt_repo = self.__get_alt_repo(fmri, pmap)
+
+                        # Multi transfer object must be created for each unique
+                        # publisher or repository.
+                        if alt_repo:
+                                eid = id(alt_repo)
+                        else:
+                                eid = fmri.publisher
+
+                        pub = self.cfg.get_publisher(fmri.publisher)
                         header = self.__build_header(intent=intent,
                             uuid=self.__get_uuid(pub))
-                        if pub_prefix not in mx_pub:
-                                mx_pub[pub_prefix] = MultiXfr(pub,
+
+                        if eid not in mx_pub:
+                                mx_pub[eid] = MultiXfr(pub,
                                     progtrack=progtrack,
-                                    ccancel=ccancel)
+                                    ccancel=ccancel,
+                                    alt_repo=alt_repo)
+
                         # Add requests keyed by requested package
                         # fmri.  Value contains (header, fmri) tuple.
-                        mx_pub[pub_prefix].add_hash(
-                            fmri, (header, fmri))
+                        mx_pub[eid].add_hash(fmri, (header, fmri))
+
+                        # Must reset every cycle if pmap is set.
+                        if pmap:
+                                alt_repo = None
 
                 for mxfr in mx_pub.values():
                         namelist = [k for k in mxfr]
                         while namelist:
                                 chunksz = self.__chunk_size(pub,
+                                    alt_repo=mxfr.get_alt_repo(),
                                     origin_only=True)
                                 mfstlist = [
                                     (n, mxfr[n][0])
@@ -1205,13 +1274,11 @@ class Transport(object):
 
                                 try:
                                         self._prefetch_manifests_list(mxfr,
-                                            mfstlist, excludes,
-                                            alt_repo=alt_repo)
+                                            mfstlist, excludes)
                                 except apx.PermissionsException:
                                         return
 
-        def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI,
-            alt_repo=None):
+        def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI):
                 """Perform bulk manifest prefetch.  This is the routine
                 that downloads initiates the downloads in chunks
                 determined by its caller _prefetch_manifests.  The mxfr
@@ -1228,7 +1295,7 @@ class Transport(object):
                 download_dir = self.cfg.incoming_root
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
-                    alt_repo=alt_repo):
+                    alt_repo=mxfr.get_alt_repo()):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -1319,7 +1386,8 @@ class Transport(object):
                                         continue
 
                                 os.remove(dl_path)
-                                progtrack.evaluate_progress(fmri)
+                                if progtrack:
+                                        progtrack.evaluate_progress(fmri)
                                 mxfr.del_hash(s)
 
                         # If there were failures, re-generate list for just
@@ -1335,7 +1403,7 @@ class Transport(object):
                         else:
                                 return
 
-        def _verify_manifest(self, fmri, mfstpath=None, content=None):
+        def _verify_manifest(self, fmri, mfstpath=None, content=None, pub=None):
                 """Verify a manifest.  The caller must supply the FMRI
                 for the package in 'fmri', as well as the path to the
                 manifest file that will be verified.  If signature information
@@ -1349,11 +1417,12 @@ class Transport(object):
                 the manifest content in 'content'.  One of these arguments
                 must be used."""
 
-                # Get publisher information from FMRI.
-                try:
-                        pub = self.cfg.get_publisher(fmri.get_publisher())
-                except apx.UnknownPublisher:
-                        return False
+                if not isinstance(pub, publisher.Publisher):
+                        # Get publisher using information from FMRI.
+                        try:
+                                pub = self.cfg.get_publisher(fmri.publisher)
+                        except apx.UnknownPublisher:
+                                return False
 
                 # Handle case where publisher has no Catalog.
                 if not pub.catalog:
@@ -1602,7 +1671,8 @@ class Transport(object):
                 while mfile:
 
                         filelist = []
-                        chunksz = self.__chunk_size(pub)
+                        chunksz = self.__chunk_size(pub,
+                            alt_repo=mfile.get_alt_repo())
 
                         for i, v in enumerate(mfile):
                                 if i >= chunksz:
@@ -1779,6 +1849,7 @@ class Transport(object):
                         repo = alt_repo
                 elif isinstance(pub, publisher.Publisher):
                         repo = pub.selected_repository
+                        assert repo
 
                 if repo and origin_only:
                         repolist = repo.origins
@@ -1856,13 +1927,20 @@ class Transport(object):
                         if not repo_found and fail:
                                 raise fail
                         if not repo_found and operation and versions:
+                                if not origins and \
+                                    isinstance(pub, publisher.Publisher):
+                                        # Special error case; no transport
+                                        # configuration available for this
+                                        # publisher.
+                                        raise apx.NoPublisherRepositories(pub)
+
                                 # If a versioned operation was requested and
                                 # wasn't found, then raise an unsupported
                                 # exception using the newest version allowed.
                                 raise apx.UnsupportedRepositoryOperation(pub,
                                     "%s/%d" % (operation, versions[-1]))
 
-        def __chunk_size(self, pub, origin_only=False):
+        def __chunk_size(self, pub, alt_repo=None, origin_only=False):
                 """Determine the chunk size based upon how many of the known
                 mirrors have been visited.  If not all mirrors have been
                 visited, choose a small size so that if it ends up being
@@ -1875,14 +1953,18 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                if isinstance(pub, publisher.Publisher):
+                if alt_repo:
+                        repolist = alt_repo.origins[:]
+                        if not origin_only:
+                                repolist.extend(alt_repo.mirrors)
+                elif isinstance(pub, publisher.Publisher):
                         repo = pub.selected_repository
                         repolist = repo.origins[:]
                         if not origin_only:
                                 repolist.extend(repo.mirrors)
                 else:
                         # If caller passed RepositoryURI object in as
-                        # pub argument, repolist is the RepoURI
+                        # pub argument, repolist is the RepoURI.
                         repolist = [pub]
 
                 n = len(repolist)
@@ -2024,8 +2106,13 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                publisher = self.cfg.get_publisher(fmri.get_publisher())
-                mfile = MultiFile(publisher, self, progtrack, ccancel)
+                pmap = self.cfg.pkg_pub_map
+                if not alt_repo and pmap:
+                        alt_repo = self.__get_alt_repo(fmri, pmap)
+
+                publisher = self.cfg.get_publisher(fmri.publisher)
+                mfile = MultiFile(publisher, self, progtrack, ccancel,
+                    alt_repo=alt_repo)
 
                 return mfile
 
@@ -2043,8 +2130,7 @@ class Transport(object):
                         self.__setup()
 
                 mfile = MultiFileNI(publisher, self, final_dir,
-                    decompress=decompress, progtrack=progtrack, ccancel=ccancel,
-                    alt_repo=alt_repo)
+                    decompress=decompress, progtrack=progtrack, ccancel=ccancel)
 
                 return mfile
 
@@ -2701,7 +2787,7 @@ class MultiFileNI(MultiFile):
 
         def add_action(self, action):
                 """The multiple file retrieval operation is asynchronous.
-                Add files to retrieve with this function.   The caller
+                Add files to retrieve with this function.  The caller
                 should pass the action, which causes its file to
                 be added to an internal retrieval list."""
 

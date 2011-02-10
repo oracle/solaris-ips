@@ -762,12 +762,19 @@ class Publisher(object):
         # from during __copy__.
         _source_object_id = None
 
-        def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
-            meta_root=None, repositories=None, selected_repository=None,
-            transport=None, sticky=True, ca_certs=EmptyI,
-            intermediate_certs=EmptyI, props=None, revoked_ca_certs=EmptyI,
-            approved_ca_certs=EmptyI):
-                """Initialize a new publisher object."""
+        def __init__(self, prefix, alias=None, catalog=None, client_uuid=None,
+            disabled=False, meta_root=None, repositories=None,
+            selected_repository=None, transport=None, sticky=True,
+            ca_certs=EmptyI, intermediate_certs=EmptyI, props=None,
+            revoked_ca_certs=EmptyI, approved_ca_certs=EmptyI):
+                """Initialize a new publisher object.
+
+                'catalog' is an optional Catalog object to use in place of
+                retrieving one from the publisher's meta_root.  This option
+                may only be used when meta_root is not provided.
+                """
+
+                assert not (catalog and meta_root)
 
                 if client_uuid is None:
                         self.reset_client_uuid()
@@ -833,6 +840,9 @@ class Publisher(object):
 
                 self.__verified_cas = False
                 self.__bad_ca_certs = set()
+
+                # Must be done last.
+                self.__catalog = catalog
 
         def __cmp__(self, other):
                 if other is None:
@@ -1133,6 +1143,8 @@ pkg unset-publisher %s
                 selected repository, or None if available."""
 
                 if not self.meta_root:
+                        if self.__catalog:
+                                return self.__catalog
                         return None
 
                 if not self.__catalog:
@@ -1497,6 +1509,10 @@ pkg unset-publisher %s
                         if not immediate and not self.needs_refresh:
                                 # No refresh needed.
                                 return False
+
+                if not self.selected_repository.origins:
+                        # Nothing to do.
+                        return False
 
                 # Create temporary directory for assembly of catalog pieces.
                 try:

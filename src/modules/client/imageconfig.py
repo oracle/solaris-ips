@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -499,31 +499,32 @@ class ImageConfig(cfg.FileConfig):
                                 self.set_property(section, prop,
                                     getattr(pub, prop))
 
-                        # For now, write out "origin" for compatibility with
-                        # older clients in addition to "origins".  Older
-                        # clients may drop the "origins" when rewriting the
-                        # configuration, but that doesn't really break
-                        # anything.
-                        repo = pub.selected_repository
-                        self.set_property(section, "origin",
-                            repo.origins[0].uri)
-
                         #
                         # For zones, where the reachability of an absolute path
                         # changes depending on whether you're in the zone or
                         # not.  So we have a different policy: ssl_key and
                         # ssl_cert are treated as zone root relative.
                         #
+                        repo = pub.selected_repository
                         ngz = self.variants.get("variant.opensolaris.zone",
                             "global") == "nonglobal"
-                        p = str(pub["ssl_key"])
+
+                        p = ""
+                        for o in repo.origins:
+                                if o.ssl_key:
+                                        p = str(o.ssl_key)
+                                        break
                         if ngz and self.__imgroot != os.sep and p != "None":
                                 # Trim the imageroot from the path.
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
                         self.set_property(section, "ssl_key", p)
 
-                        p = str(pub["ssl_cert"])
+                        p = ""
+                        for o in repo.origins:
+                                if o.ssl_cert:
+                                        p = str(o.ssl_cert)
+                                        break
                         if ngz and self.__imgroot != os.sep and p != "None":
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]

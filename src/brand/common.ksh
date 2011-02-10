@@ -362,7 +362,9 @@ get_publisher_attrs() {
 	typeset utype=$2
 
 	LC_ALL=C $PKG publisher -HF tsv| \
-	    nawk '$5 == "'"$utype"'" && $1 == "'"$pname"'" \
+	    nawk '($5 == "'"$utype"'" || \
+	    ("'"$utype"'" == "origin" && $5 == "")) \
+	    && $1 == "'"$pname"'" \
 	    {printf "%s %s %s\n", $2, $3, $4;}'
 	return 0
 }
@@ -427,11 +429,17 @@ get_publisher_urls() {
 	fi
 
 	LC_ALL=C $PKG publisher -HF tsv | \
-		nawk '$5 == "'"$utype"'" && \
-		$6 == "online" && \
+		nawk '($5 == "'"$utype"'" || \
+		("'"$utype"'" == "origin" && $5 == "")) && \
 		( "'"$ptype_filter"'" == "" || $3 == "'"$ptype_filter"'" ) \
 		{printf "%s %s\n", $1, $7;}' |
 		while IFS=" " read __publisher __publisher_url; do
+			if [[ "$utype" == "origin" && \
+			    -z "$__publisher_url" ]]; then
+				# Publisher without origins.
+				__publisher_url="None"
+			fi
+
 			if [[ -n "$__pub_prefix" && \
 				"$__pub_prefix" != "$__publisher" ]]; then
 				# Different publisher so emit accumulation and

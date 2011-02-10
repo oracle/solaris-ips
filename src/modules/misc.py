@@ -747,14 +747,21 @@ def config_temp_root():
 
         return default_root
 
-def parse_uri(uri):
+def parse_uri(uri, cwd=None):
         """Parse the repository location provided and attempt to transform it
         into a valid repository URI.
+
+        'cwd' is the working directory to use to turn paths into an absolute
+        path.  If not provided, the current working directory is used.
         """
 
         if uri.find("://") == -1 and not uri.startswith("file:/"):
                 # Convert the file path to a URI.
-                uri = os.path.abspath(uri)
+                if not cwd:
+                        uri = os.path.abspath(uri)
+                elif not os.path.isabs(uri):
+                        uri = os.path.join(cwd, uri)
+
                 uri = urlparse.urlunparse(("file", "",
                     urllib.pathname2url(uri), "", "", ""))
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -424,8 +424,9 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                     self.bogus_url), exit=1)
                 self.pkg("set-publisher %s http://%s5 test11" % (add_opt,
                     self.bogus_url), exit=1)
-                self.pkg("set-publisher %s %s7 test1" % (add_opt,
-                    self.bogus_url), exit=1)
+                if etype == "origin":
+                        self.pkg("set-publisher %s %s7 test1" % (add_opt,
+                            self.bogus_url), exit=1)
 
                 # Test single remove.
                 self.pkg("set-publisher %s http://%s1 test1" % (remove_opt,
@@ -684,7 +685,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -P test2", exit=1)
                 self.pkg("publisher test2")
                 self.pkg("set-publisher -e test2")
-                self.pkg("publisher | grep test2")
+                self.pkg("publisher -n | grep test2")
                 self.pkg("list -a bar")
 
                 self.pkg("set-publisher --disable test2")
@@ -693,7 +694,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -a bar", exit=1)
                 self.pkg("publisher -a | grep test2")
                 self.pkg("set-publisher --enable test2")
-                self.pkg("publisher | grep test2")
+                self.pkg("publisher -n | grep test2")
                 self.pkg("list -a bar")
 
                 # should fail because test is the preferred publisher
@@ -707,7 +708,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -H | head -1 | egrep test1")
                 self.pkg("publisher -H | head -2 | egrep test2")
                 self.pkg("publisher -H | head -3 | egrep test3")
-                # make test2 disabled, make sure order is preserved                
+                # make test2 disabled, make sure order is preserved
                 self.pkg("set-publisher --disable test2")
                 self.pkg("publisher") # ease debugging
                 self.pkg("publisher -H | head -1 | egrep test1")
@@ -722,13 +723,13 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -H | head -3 | egrep test2")
                 # move test3 after test1
                 self.pkg("set-publisher --search-after=test1 test3")
-                self.pkg("publisher") # ease debugging              
+                self.pkg("publisher") # ease debugging
                 self.pkg("publisher -H | head -1 | egrep test1")
                 self.pkg("publisher -H | head -2 | egrep test3")
                 self.pkg("publisher -H | head -3 | egrep test2")
                 # move test2 before test3
                 self.pkg("set-publisher --search-before=test3 test2")
-                self.pkg("publisher") # ease debugging              
+                self.pkg("publisher") # ease debugging
                 self.pkg("publisher -H | head -1 | egrep test1")
                 self.pkg("publisher -H | head -2 | egrep test2")
                 self.pkg("publisher -H | head -3 | egrep test3")
@@ -745,7 +746,7 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
                 self.image_create(self.rurl1, prefix="test1")
-                
+
         def test_new_publisher_ca_certs_with_refresh(self):
                 """Check that approving and revoking CA certs is reflected in
                 the output of pkg publisher and that setting the CA certs when

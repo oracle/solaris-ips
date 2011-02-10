@@ -23,7 +23,8 @@ DESCRIPTION
      structured as a transaction; multiple invocations of pkgsend
      through a transaction allow the addition of resources and the
      transaction submission.  To create or manage repositories, see
-     pkgrepo(1).
+     pkgrepo(1).  To create package archives from packages in an
+     existing repository, see pkgrecv(1).
 
 OPTIONS
      The following options are supported:

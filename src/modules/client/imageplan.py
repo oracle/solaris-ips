@@ -1244,7 +1244,6 @@ class ImagePlan(object):
                 self.__references = None
 
                 self.image.transport.prefetch_manifests(prefetch_mfsts,
-                    progtrack=self.__progtrack,
                     ccancel=self.__check_cancelation)
 
                 # No longer needed.

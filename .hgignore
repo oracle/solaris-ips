@@ -32,7 +32,8 @@
 ^src/man/.*\.(1m?|5)$
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
-^src/tests/.figleaf$
+^src/tests/.coverage$
+^src/tests/htmlcov$
 ^src/tests/ro_data/signing_certs/produced/.*/.*\.csr
 ^src/tests/ro_data/signing_certs/produced/.*\.old
 ^src/tests/ro_data/signing_certs/produced/.*\.tmp

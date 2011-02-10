@@ -25,6 +25,7 @@
 #
 
 import atexit
+import copy
 import datetime
 import errno
 import os
@@ -104,6 +105,12 @@ class Image(object):
         IMG_CATALOG_KNOWN = "known"
         IMG_CATALOG_INSTALLED = "installed"
 
+        # This is a transitory state used for temporary package sources to
+        # indicate that the package entry should be removed if it does not
+        # also have PKG_STATE_INSTALLED.  This state must not be written
+        # to disk.
+        PKG_STATE_ALT_SOURCE = 99
+
         # Please note that the values of these PKG_STATE constants should not
         # be changed as it would invalidate existing catalog data stored in the
         # image.  This means that if a constant is removed, the values of the
@@ -150,6 +157,12 @@ class Image(object):
                         assert(not force)
                 else:
                         assert(imgtype is not None)
+
+                # Alternate package sources.
+                self.__alt_pkg_pub_map = None
+                self.__alt_pubs = None
+                self.__alt_known_cat = None
+                self.__alt_pkg_sources_loaded = False
 
                 # Indicates whether automatic image format upgrades of the
                 # on-disk format are allowed.
@@ -249,6 +262,7 @@ class Image(object):
 
                 # This is used to cache image catalogs.
                 self.__catalogs = {}
+                self.__alt_pkg_sources_loaded = False
 
         @property
         def signature_policy(self):
@@ -1412,7 +1426,63 @@ class Image(object):
         def gen_publishers(self, inc_disabled=False):
                 if not self.cfg:
                         raise apx.ImageCfgEmptyError(self.root)
-                for pfx, pub in self.cfg.publishers.iteritems():
+
+                alt_pubs = {}
+                if self.__alt_pkg_pub_map:
+                        alt_src_pubs = dict(
+                            (p.prefix, p)
+                            for p in self.__alt_pubs
+                        )
+
+                        for pfx in self.__alt_known_cat.publishers():
+                                # Include alternate package source publishers
+                                # in result, and temporarily enable any
+                                # disabled publishers that already exist in
+                                # the image configuration.
+                                try:
+                                        img_pub = self.cfg.publishers[pfx]
+
+                                        # A blind merge of the signing certs
+                                        # is required since which ones are
+                                        # needed isn't known in advance.
+                                        for attr in ("signing_ca_certs",
+                                            "intermediate_certs"):
+                                                ocerts = set(getattr(img_pub,
+                                                    attr))
+                                                ncerts = getattr(
+                                                    alt_src_pubs[pfx], attr)
+                                                setattr(img_pub, attr,
+                                                    list(ocerts.union(ncerts)))
+
+                                        if not img_pub.disabled:
+                                                # No override needed.
+                                                continue
+                                        new_pub = copy.copy(img_pub)
+                                        new_pub.disabled = False
+
+                                        # Discard origins and mirrors to prevent
+                                        # their accidental use.
+                                        repo = new_pub.selected_repository
+                                        repo.reset_origins()
+                                        repo.reset_mirrors()
+                                except KeyError:
+                                        new_pub = alt_src_pubs[pfx]
+                                        new_pub.meta_root = \
+                                            self._get_publisher_meta_root(pfx)
+                                        new_pub.transport = self.transport
+
+                                alt_pubs[pfx] = new_pub
+
+                publishers = [
+                    alt_pubs.get(p.prefix, p)
+                    for p in self.cfg.publishers.values()
+                ]
+                publishers.extend((
+                    p for p in alt_pubs.values()
+                    if p not in publishers
+                ))
+
+                for pub in publishers:
                         if inc_disabled or not pub.disabled:
                                 yield pub
 
@@ -1424,7 +1494,11 @@ class Image(object):
                 whether or not the publisher is enabled"""
 
                 # automatically make disabled publishers not sticky
-                so = self.cfg.get_property("property", "publisher-search-order")
+                so = copy.copy(self.cfg.get_property("property",
+                    "publisher-search-order"))
+
+                pubs = list(self.gen_publishers())
+                so.extend((p.prefix for p in pubs if p.prefix not in so))
 
                 ret = dict([
                     (p.prefix, (so.index(p.prefix), p.sticky, True))
@@ -1483,16 +1557,18 @@ class Image(object):
                         self.save_config()
 
         def get_publishers(self):
-                return self.cfg.publishers
+                return dict(
+                    (p.prefix, p)
+                    for p in self.gen_publishers(inc_disabled=True)
+                )
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
-                publishers = [p for p in self.cfg.publishers.values()]
-                for pub in publishers:
+                for pub in self.gen_publishers(inc_disabled=True):
                         if prefix and prefix == pub.prefix:
                                 return pub
                         elif alias and alias == pub.alias:
                                 return pub
-                        elif origin and \
+                        elif origin and pub.selected_repository and \
                             pub.selected_repository.has_origin(origin):
                                 return pub
                 raise apx.UnknownPublisher(max(prefix, alias, origin))
@@ -1533,6 +1609,88 @@ class Image(object):
         def get_preferred_publisher(self):
                 """Returns the prefix of the preferred publisher."""
                 return self.cfg.get_property("property", "preferred-publisher")
+
+        def __apply_alt_pkg_sources(self, img_kcat):
+                pkg_pub_map = self.__alt_pkg_pub_map
+                if not pkg_pub_map or self.__alt_pkg_sources_loaded:
+                        # No alternate sources to merge.
+                        return
+
+                # Temporarily merge the package metadata in the alternate
+                # known package catalog for packages not listed in the
+                # image's known catalog.
+                def merge_check(alt_kcat, pfmri, new_entry):
+                        states = new_entry["metadata"]["states"]
+                        if self.PKG_STATE_INSTALLED in states:
+                                # Not interesting; already installed.
+                                return False, None
+                        img_entry = img_kcat.get_entry(pfmri=pfmri)
+                        if not img_entry is None:
+                                # Already in image known catalog.
+                                return False, None
+                        return True, new_entry
+
+                img_kcat.append(self.__alt_known_cat, cb=merge_check)
+                img_kcat.finalize()
+
+                self.__alt_pkg_sources_loaded = True
+                self.transport.cfg.pkg_pub_map = self.__alt_pkg_pub_map
+                self.transport.cfg.alt_pubs = self.__alt_pubs
+                self.transport.cfg.reset_caches()
+
+        def __cleanup_alt_pkg_certs(self):
+                """Private helper function to cleanup package certificate
+                information after use of temporary package data."""
+
+                if not self.__alt_pubs:
+                        return
+
+                # Cleanup publisher cert information; any certs not retrieved
+                # retrieved during temporary publisher use need to be expunged
+                # from the image configuration.
+                for pub in self.__alt_pubs:
+                        try:
+                                ipub = self.cfg.publishers[pub.prefix]
+                        except KeyError:
+                                # Nothing to do.
+                                continue
+
+                        # Elide any certs that were not retrieved and that came
+                        # from temporary package sources.
+                        for hattr in ("signing_ca_certs", "intermediate_certs"):
+                                certs = set(getattr(ipub, hattr))
+                                tcerts = set(getattr(pub, hattr))
+                                for chash in (tcerts & certs):
+                                        cpath = os.path.join(ipub.cert_root,
+                                            chash)
+                                        if not os.path.exists(cpath):
+                                                certs.discard(chash)
+                                setattr(ipub, hattr, list(certs))
+
+        def set_alt_pkg_sources(self, alt_sources):
+                """Specifies an alternate source of package metadata to be
+                temporarily merged with image state so that it can be used
+                as part of packaging operations."""
+
+                if not alt_sources:
+                        self.__init_catalogs()
+                        self.__alt_pkg_pub_map = None
+                        self.__alt_pubs = None
+                        self.__alt_known_cat = None
+                        self.__alt_pkg_sources_loaded = False
+                        self.transport.cfg.pkg_pub_map = None
+                        self.transport.cfg.alt_pubs = None
+                        self.transport.cfg.reset_caches()
+                        return
+                elif self.__alt_pkg_sources_loaded:
+                        # Ensure existing alternate package source data
+                        # is not part of temporary image state.
+                        self.__init_catalogs()
+
+                pkg_pub_map, alt_pubs, alt_kcat, ignored = alt_sources
+                self.__alt_pkg_pub_map = pkg_pub_map
+                self.__alt_pubs = alt_pubs
+                self.__alt_known_cat = alt_kcat
 
         def set_preferred_publisher(self, prefix=None, alias=None, pub=None):
                 """Sets the preferred publisher for packaging operations.
@@ -1635,82 +1793,88 @@ class Image(object):
 
                 'progtrack' is an optional ProgressTracker object."""
 
-                # API consumer error.
-                repo = pub.selected_repository
-                assert repo and repo.origins
+                with self.locked_op("add-publisher"):
+                        return self.__add_publisher(pub,
+                            refresh_allowed=refresh_allowed,
+                            progtrack=progtrack, approved_cas=EmptyI,
+                            revoked_cas=EmptyI, unset_cas=EmptyI)
+
+        def __add_publisher(self, pub, refresh_allowed=True, progtrack=None,
+            approved_cas=EmptyI, revoked_cas=EmptyI, unset_cas=EmptyI):
+                """Private version of add_publisher(); caller is responsible
+                for locking."""
 
                 if self.version < self.CURRENT_VERSION:
                         raise apx.ImageFormatUpdateNeeded(self.root)
 
-                with self.locked_op("add-publisher"):
-                        for p in self.cfg.publishers.values():
-                                if pub.prefix == p.prefix or \
-                                    pub.prefix == p.alias or \
-                                    pub.alias and (pub.alias == p.alias or
-                                    pub.alias == p.prefix):
-                                        raise apx.DuplicatePublisher(pub)
+                for p in self.cfg.publishers.values():
+                        if pub.prefix == p.prefix or \
+                            pub.prefix == p.alias or \
+                            pub.alias and (pub.alias == p.alias or
+                            pub.alias == p.prefix):
+                                raise apx.DuplicatePublisher(pub)
 
-                        if not progtrack:
-                                progtrack = progress.QuietProgressTracker()
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
 
-                        # Must assign this first before performing operations.
-                        pub.meta_root = self._get_publisher_meta_root(
-                            pub.prefix)
-                        pub.transport = self.transport
-                        self.cfg.publishers[pub.prefix] = pub
+                # Must assign this first before performing operations.
+                pub.meta_root = self._get_publisher_meta_root(
+                    pub.prefix)
+                pub.transport = self.transport
+                self.cfg.publishers[pub.prefix] = pub
 
-                        # Ensure that if the publisher's meta directory already
-                        # exists for some reason that the data within is not
-                        # used.
-                        self.remove_publisher_metadata(pub, progtrack=progtrack,
-                            rebuild=False)
+                # Ensure that if the publisher's meta directory already
+                # exists for some reason that the data within is not
+                # used.
+                self.remove_publisher_metadata(pub, progtrack=progtrack,
+                    rebuild=False)
 
-                        if refresh_allowed:
-                                try:
-                                        # First, verify that the publisher has a
-                                        # valid pkg(5) repository.
-                                        self.transport.valid_publisher_test(pub)
-                                        pub.validate_config()
-                                        self.refresh_publishers(pubs=[pub],
-                                            progtrack=progtrack)
-                                        # Check that all CA certs claimed by
-                                        # this publisher validate against the
-                                        # trust anchors for this image.
-                                        self.signature_policy.check_cas(pub,
-                                            self.trust_anchors)
-                                except Exception, e:
-                                        # Remove the newly added publisher since
-                                        # it is invalid or the retrieval failed.
-                                        self.cfg.remove_publisher(pub.prefix)
-                                        raise
-                                except:
-                                        # Remove the newly added publisher since
-                                        # the retrieval failed.
-                                        self.cfg.remove_publisher(pub.prefix)
-                                        raise
+                repo = pub.selected_repository
+                if refresh_allowed and repo.origins:
+                        try:
+                                # First, verify that the publisher has a
+                                # valid pkg(5) repository.
+                                self.transport.valid_publisher_test(pub)
+                                pub.validate_config()
+                                self.refresh_publishers(pubs=[pub],
+                                    progtrack=progtrack)
+                                # Check that all CA certs claimed by
+                                # this publisher validate against the
+                                # trust anchors for this image.
+                                self.signature_policy.check_cas(pub,
+                                    self.trust_anchors)
+                        except Exception, e:
+                                # Remove the newly added publisher since
+                                # it is invalid or the retrieval failed.
+                                self.cfg.remove_publisher(pub.prefix)
+                                raise
+                        except:
+                                # Remove the newly added publisher since
+                                # the retrieval failed.
+                                self.cfg.remove_publisher(pub.prefix)
+                                raise
 
-                        for ca in approved_cas:
-                                try:
-                                        ca = os.path.abspath(ca)
-                                        fh = open(ca, "rb")
-                                        s = fh.read()
-                                        fh.close()
-                                except EnvironmentError, e:
-                                        if e.errno == errno.ENOENT:
-                                                raise apx.MissingFileArgumentException(
-                                                    ca)
-                                        raise apx._convert_error(e)
-                                pub.approve_ca_cert(s, manual=True)
+                for ca in approved_cas:
+                        try:
+                                ca = os.path.abspath(ca)
+                                fh = open(ca, "rb")
+                                s = fh.read()
+                                fh.close()
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        raise apx.MissingFileArgumentException(
+                                            ca)
+                                raise apx._convert_error(e)
+                        pub.approve_ca_cert(s, manual=True)
 
-                        for hsh in revoked_cas:
-                                pub.revoke_ca_cert(hsh)
+                for hsh in revoked_cas:
+                        pub.revoke_ca_cert(hsh)
 
-                        for hsh in unset_cas:
-                                pub.unset_ca_cert(hsh)
+                for hsh in unset_cas:
+                        pub.unset_ca_cert(hsh)
 
-
-                        # Only after success should the configuration be saved.
-                        self.save_config()
+                # Only after success should the configuration be saved.
+                self.save_config()
 
         def verify(self, fmri, progresstracker, **args):
                 """Generator that returns a tuple of the form (action, errors,
@@ -1970,7 +2134,8 @@ class Image(object):
                 return os.path.join(self.get_manifest_dir(pfmri),
                     "manifest")
 
-        def __get_manifest(self, fmri, excludes=EmptyI, intent=None):
+        def __get_manifest(self, fmri, excludes=EmptyI, intent=None,
+            alt_pub=None):
                 """Find on-disk manifest and create in-memory Manifest
                 object.... grab from server if needed"""
 
@@ -1983,9 +2148,12 @@ class Image(object):
                         # if we have a intent string, let depot
                         # know for what we're using the cached manifest
                         if intent:
+                                alt_repo = None
+                                if alt_pub:
+                                        alt_repo = alt_pub.selected_repository
                                 try:
                                         self.transport.touch_manifest(fmri,
-                                            intent)
+                                            intent, alt_repo=alt_repo)
                                 except (apx.UnknownPublisher,
                                     apx.TransportError):
                                         # It's not fatal if we can't find
@@ -1993,10 +2161,11 @@ class Image(object):
                                         pass
                 except KeyError:
                         ret = self.transport.get_manifest(fmri, excludes,
-                            intent)
+                            intent, pub=alt_pub)
                 return ret
 
-        def get_manifest(self, fmri, all_variants=False, intent=None):
+        def get_manifest(self, fmri, all_variants=False, intent=None,
+            alt_pub=None):
                 """return manifest; uses cached version if available.
                 all_variants controls whether manifest contains actions
                 for all variants"""
@@ -2010,7 +2179,7 @@ class Image(object):
 
                 try:
                         m = self.__get_manifest(fmri, excludes=excludes,
-                            intent=intent)
+                            intent=intent, alt_pub=alt_pub)
                 except apx.ActionExecutionError, e:
                         raise
                 except pkg.actions.ActionError, e:
@@ -2057,6 +2226,13 @@ class Image(object):
 
                         if pfmri in added:
                                 states.add(self.PKG_STATE_INSTALLED)
+                                if self.PKG_STATE_ALT_SOURCE in states:
+                                        states.discard(
+                                            self.PKG_STATE_UPGRADABLE)
+                                        states.discard(
+                                            self.PKG_STATE_ALT_SOURCE)
+                                        states.discard(
+                                            self.PKG_STATE_KNOWN)
                         elif self.PKG_STATE_KNOWN not in states:
                                 # This entry is no longer available and has no
                                 # meaningful state information, so should be
@@ -2087,6 +2263,50 @@ class Image(object):
                         entry = mdata = states = None
                         progtrack.item_add_progress()
                 progtrack.item_done()
+
+                # Discard entries for alternate source packages that weren't
+                # installed as part of the operation.
+                if self.__alt_pkg_pub_map:
+                        for pfmri in self.__alt_known_cat.fmris():
+                                if pfmri in added:
+                                        # Nothing to do.
+                                        continue
+
+                                entry = kcat.get_entry(pfmri)
+                                if not entry:
+                                        # The only reason that the entry should
+                                        # not exist in the 'known' part is
+                                        # because it was removed during the
+                                        # operation.
+                                        assert pfmri in removed
+                                        continue
+
+                                states = entry.get("metadata", {}).get("states",
+                                    EmptyI)
+                                if self.PKG_STATE_ALT_SOURCE in states:
+                                        kcat.remove_package(pfmri)
+
+                        # Now add the publishers of packages that were installed
+                        # from temporary sources that did not previously exist
+                        # to the image's configuration.  (But without any
+                        # origins, sticky, and enabled.)
+                        cfgpubs = set(self.cfg.publishers.keys())
+                        instpubs = set(f.publisher for f in added)
+                        altpubs = self.__alt_known_cat.publishers()
+
+                        # List of publishers that need to be added is the
+                        # intersection of installed and alternate minus
+                        # the already configured.
+                        newpubs = (instpubs & altpubs) - cfgpubs
+                        for pfx in newpubs:
+                                npub = publisher.Publisher(pfx,
+                                    repositories=[publisher.Repository()])
+                                self.__add_publisher(npub,
+                                    refresh_allowed=False)
+
+                        # Ensure image configuration reflects new information.
+                        self.__cleanup_alt_pkg_certs()
+                        self.save_config()
 
                 # Remove manifests of packages that were removed from the
                 # system.  Some packages may have only had facets or
@@ -2170,13 +2390,22 @@ class Image(object):
                 if not self.imgdir:
                         raise RuntimeError("self.imgdir must be set")
 
+                cat = None
                 try:
-                        return self.__catalogs[name]
+                        cat = self.__catalogs[name]
                 except KeyError:
                         pass
 
-                cat = self.__get_catalog(name)
-                self.__catalogs[name] = cat
+
+                if not cat:
+                        cat = self.__get_catalog(name)
+                        self.__catalogs[name] = cat
+
+                if name == self.IMG_CATALOG_KNOWN:
+                        # Apply alternate package source data every time that
+                        # the known catalog is requested.
+                        self.__apply_alt_pkg_sources(cat)
+
                 return cat
 
         def _manifest_cb(self, cat, f):
@@ -3262,21 +3491,24 @@ class Image(object):
                 self.__init_catalogs()
 
                 try:
-                        pfunc = getattr(ip, "plan_%s" % plan_name)
-                        pfunc(*args)
-                except apx.ActionExecutionError, e:
-                        raise
-                except pkg.actions.ActionError, e:
-                        raise apx.InvalidPackageErrors([e])
-                except apx.ApiException:
-                        raise
+                        try:
+                                pfunc = getattr(ip, "plan_%s" % plan_name)
+                                pfunc(*args)
+                        except apx.ActionExecutionError, e:
+                                raise
+                        except pkg.actions.ActionError, e:
+                                raise apx.InvalidPackageErrors([e])
+                        except apx.ApiException:
+                                raise
 
-                try:
-                        self.__call_imageplan_evaluate(ip)
-                except apx.ActionExecutionError, e:
-                        raise
-                except pkg.actions.ActionError, e:
-                        raise apx.InvalidPackageErrors([e])
+                        try:
+                                self.__call_imageplan_evaluate(ip)
+                        except apx.ActionExecutionError, e:
+                                raise
+                        except pkg.actions.ActionError, e:
+                                raise apx.InvalidPackageErrors([e])
+                finally:
+                        self.__cleanup_alt_pkg_certs()
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
             noexecute, reject_list=EmptyI):

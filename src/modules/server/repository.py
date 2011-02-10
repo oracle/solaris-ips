@@ -1648,6 +1648,13 @@ class Repository(object):
                 validity.
                 """
 
+                try:
+                        if not create and self.root and \
+                            os.path.isfile(self.root):
+                                raise RepositoryInvalidError(self.root)
+                except EnvironmentError, e:
+                        raise apx._convert_error(e)
+
                 cfgpathname = None
                 if self.__cfgpathname:
                         # Use the custom configuration.
@@ -2373,6 +2380,7 @@ class Repository(object):
                                 # file created to do this is moved into place
                                 # by the insert.
                                 fd, pth = tempfile.mkstemp()
+                                os.fchmod(fd, misc.PKG_FILE_MODE)
                                 gfh = PkgGzipFile(filename=pth, mode="wb")
                                 gfh.write(s)
                                 gfh.close()

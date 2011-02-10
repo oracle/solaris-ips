@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cStringIO
@@ -37,9 +37,9 @@ import urllib
 import pkg
 import pkg.p5i as p5i
 import pkg.client.api_errors as apx
-import pkg.client.publisher as publisher
 import pkg.client.transport.exception as tx
 import pkg.config as cfg
+import pkg.p5p
 import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
@@ -838,16 +838,6 @@ class HTTPRepo(TransportRepo):
                 return self.__start_trans(baseurl, header, client_release,
                     pkg_name)
 
-        def publish_refresh_index(self, header=None):
-                """If the Repo points to a Repository that has a refresh-able
-                index, refresh the index."""
-
-                requesturl = self.__get_request_url("admin/0", query={
-                    "cmd": "rebuild" }, pub=pub)
-                fobj = self._fetch_url(requesturl, header=header,
-                    failonerror=False)
-                self.__check_response_body(fobj)
-
         def publish_rebuild(self, header=None, pub=None):
                 """Attempt to rebuild the package data and search data in the
                 repository."""
@@ -985,7 +975,10 @@ class HTTPSRepo(HTTPRepo):
                     data_fp=data_fp, failonerror=failonerror)
 
 
-class FileRepo(TransportRepo):
+class _FilesystemRepo(TransportRepo):
+        """Private implementation of transport repository logic for filesystem
+        repositories.
+        """
 
         def __init__(self, repostats, repouri, engine, frepo=None):
                 """Create a file repo.  Repostats is a RepoStats object.
@@ -1647,6 +1640,314 @@ class FileRepo(TransportRepo):
                 """No-op for file://."""
 
                 return True
+
+class _ArchiveRepo(TransportRepo):
+        """Private implementation of transport repository logic for repositories
+        contained within an archive.
+        """
+
+        def __init__(self, repostats, repouri, engine):
+                """Create a file repo.  Repostats is a RepoStats object.
+                Repouri is a RepositoryURI object.  Engine is a transport
+                engine object.
+
+                The convenience function new_repo() can be used to create
+                the correct repo."""
+
+                self._arc = None
+                self._url = repostats.url
+                self._repouri = repouri
+                self._engine = engine
+                self._verdata = None
+                self.__stats = repostats
+
+                try:
+                        scheme, netloc, path, params, query, fragment = \
+                            urlparse.urlparse(self._repouri.uri, "file",
+                            allow_fragments=0)
+                        # Path must be rstripped of separators to be used as
+                        # a file.
+                        path = urllib.url2pathname(path.rstrip(os.path.sep))
+                        self._arc = pkg.p5p.Archive(path, mode="r")
+                except pkg.p5p.InvalidArchive, e:
+                        ex = tx.TransportProtoError("file", errno.EINVAL,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+        def __record_proto_error(self, ex):
+                """Private helper function that records a protocol error that
+                was raised by the class instead of the transport engine.  It
+                records both that a transaction was initiated and that an
+                error occurred."""
+
+                self.__stats.record_tx()
+                self.__stats.record_error(decayable=ex.decayable)
+
+        def add_version_data(self, verdict):
+                """Cache the information about what versions a repository
+                supports."""
+
+                self._verdata = verdict
+
+        def get_catalog1(self, filelist, destloc, header=None, ts=None,
+            progtrack=None, pub=None, revalidate=False, redownload=False):
+                """Get the files that make up the catalog components
+                that are listed in 'filelist'.  Download the files to
+                the directory specified in 'destloc'.  The caller
+                may optionally specify a dictionary with header
+                elements in 'header'.  If a conditional get is
+                to be performed, 'ts' should contain a floating point
+                value of seconds since the epoch.  This protocol
+                doesn't implment revalidate and redownload.  The options
+                are ignored."""
+
+                pub_prefix = getattr(pub, "prefix", None)
+                errors = []
+                for f in filelist:
+                        try:
+                                self._arc.extract_catalog1(f, destloc,
+                                   pub=pub_prefix)
+                                if progtrack:
+                                        fs = os.stat(os.path.join(destloc, f))
+                                        progtrack.download_add_progress(1,
+                                            fs.st_size)
+                        except pkg.p5p.UnknownArchiveFiles, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.ENOENT, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                        except Exception, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                return errors
+
+        def get_datastream(self, fhash, version, header=None, ccancel=None,
+            pub=None):
+                """Get a datastream from a repo.  The name of the file is given
+                in fhash."""
+
+                pub_prefix = getattr(pub, "prefix", None)
+                try:
+                        return self._arc.get_package_file(fhash,
+                            pub=pub_prefix)
+                except pkg.p5p.UnknownArchiveFiles, e:
+                        ex = tx.TransportProtoError("file", errno.ENOENT,
+                            reason=str(e), repourl=self._url, request=fhash)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url, request=fhash)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+        def get_publisherinfo(self, header=None, ccancel=None):
+                """Get publisher information from the repository."""
+
+                try:
+                        pubs = self._arc.get_publishers()
+                        buf = cStringIO.StringIO()
+                        p5i.write(buf, pubs)
+                except Exception, e:
+                        reason = "Unable to retrieve publisher configuration " \
+                            "data:\n%s" % e
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=reason, repourl=self._url)
+                        self.__record_proto_error(ex)
+                        raise ex
+                buf.seek(0)
+                return buf
+
+        def get_manifest(self, fmri, header=None, ccancel=None, pub=None):
+                """Get a manifest from repo.  The fmri of the package for the
+                manifest is given in fmri."""
+
+                try:
+                        return self._arc.get_package_manifest(fmri, raw=True)
+                except pkg.p5p.UnknownPackageManifest, e:
+                        ex = tx.TransportProtoError("file", errno.ENOENT,
+                            reason=str(e), repourl=self._url, request=fmri)
+                        self.__record_proto_error(ex)
+                        raise ex
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=self._url, request=fmri)
+                        self.__record_proto_error(ex)
+                        raise ex
+
+        def get_manifests(self, mfstlist, dest, progtrack=None, pub=None):
+                """Get manifests named in list.  The mfstlist argument contains
+                tuples (fmri, header).  This is so that each manifest may have
+                unique header information.  The destination directory is spec-
+                ified in the dest argument."""
+
+                errors = []
+                for fmri, h in mfstlist:
+                        try:
+                                self._arc.extract_package_manifest(fmri, dest,
+                                   filename=fmri.get_url_path())
+                                if progtrack:
+                                        fs = os.stat(os.path.join(dest,
+                                            fmri.get_url_path()))
+                                        progtrack.download_add_progress(1,
+                                            fs.st_size)
+                        except pkg.p5p.UnknownPackageManifest, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.ENOENT, reason=str(e),
+                                    repourl=self._url, request=fmri)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                        except Exception, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=fmri)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                return errors
+
+        def get_files(self, filelist, dest, progtrack, version, header=None, pub=None):
+                """Get multiple files from the repo at once.
+                The files are named by hash and supplied in filelist.
+                If dest is specified, download to the destination
+                directory that is given.  If progtrack is not None,
+                it contains a ProgressTracker object for the
+                downloads."""
+
+                pub_prefix = getattr(pub, "prefix", None)
+                errors = []
+                for f in filelist:
+                        try:
+                                self._arc.extract_package_files([f], dest,
+                                    pub=pub_prefix)
+                                if progtrack:
+                                        fs = os.stat(os.path.join(dest, f))
+                                        progtrack.download_add_progress(1,
+                                            fs.st_size)
+                        except pkg.p5p.UnknownArchiveFiles, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.ENOENT, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                        except Exception, e:
+                                ex = tx.TransportProtoError("file",
+                                    errno.EPROTO, reason=str(e),
+                                    repourl=self._url, request=f)
+                                self.__record_proto_error(ex)
+                                errors.append(ex)
+                                continue
+                return errors
+
+        def get_url(self):
+                """Returns the repo's url."""
+
+                return self._url
+
+        def get_versions(self, header=None, ccancel=None):
+                """Query the repo for versions information.
+                Returns a file-like object."""
+
+                buf = cStringIO.StringIO()
+                vops = {
+                    "catalog": ["1"],
+                    "file": ["0"],
+                    "manifest": ["0"],
+                    "publisher": ["0", "1"],
+                    "versions": ["0"],
+                }
+
+                buf.write("pkg-server %s\n" % pkg.VERSION)
+                buf.write("\n".join(
+                    "%s %s" % (op, " ".join(vers))
+                    for op, vers in vops.iteritems()
+                ) + "\n")
+                buf.seek(0)
+                self.__stats.record_tx()
+                return buf
+
+        def has_version_data(self):
+                """Returns true if this repo knows its version information."""
+
+                return self._verdata is not None
+
+        def supports_version(self, op, verlist):
+                """Returns version-id of highest supported version.
+                If the version is not supported, or no data is available,
+                -1 is returned instead."""
+
+                if not self.has_version_data() or op not in self._verdata:
+                        return -1
+
+                # This code assumes that both the verlist and verdata
+                # are sorted in reverse order.  This behavior is currently
+                # implemented in the transport code.
+
+                for v in verlist:
+                        if v in self._verdata[op]:
+                                return v
+                return -1
+
+        def touch_manifest(self, mfst, header=None, ccancel=None, pub=None):
+                """No-op."""
+                return True
+
+
+class FileRepo(object):
+        """Factory class for creating transport repository objects for
+        filesystem-based repository sources.
+        """
+
+        def __new__(cls, repostats, repouri, engine, frepo=None):
+                """Returns a new transport repository object based on the
+                provided information.
+
+                'repostats' is a RepoStats object.
+
+                'repouri' is a RepositoryURI object.
+                
+                'engine' is a transport engine object.
+
+                'frepo' is an optional Repository object to use instead
+                of creating one.
+
+                The convenience function new_repo() can be used to create
+                the correct repo."""
+
+                try:
+                        scheme, netloc, path, params, query, fragment = \
+                            urlparse.urlparse(repouri.uri, "file",
+                            allow_fragments=0)
+                        path = urllib.url2pathname(path)
+                except Exception, e:
+                        ex = tx.TransportProtoError("file", errno.EPROTO,
+                            reason=str(e), repourl=repostats.url)
+                        repostats.record_tx()
+                        repostats.record_error(decayable=ex.decayable)
+                        raise ex
+
+                # Path must be rstripped of separators for this check to
+                # succeed.
+                if not frepo and os.path.isfile(path.rstrip(os.path.sep)):
+                        # Assume target is a repository archive.
+                        return _ArchiveRepo(repostats, repouri, engine)
+
+                # Assume target is a filesystem repository.
+                return _FilesystemRepo(repostats, repouri, engine, frepo=frepo)
 
 
 # ProgressCallback objects that bridge the interfaces between ProgressTracker,

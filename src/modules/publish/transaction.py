@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """Provides a set of publishing interfaces for interacting with a pkg(5)
@@ -226,7 +226,7 @@ class TransportTransaction(object):
 
                 if create_repo:
                         try:
-                                # For compatbility reasons, assume that
+                                # For compatibility reasons, assume that
                                 # repositories created using pkgsend
                                 # should be in version 3 format (single
                                 # publisher only).

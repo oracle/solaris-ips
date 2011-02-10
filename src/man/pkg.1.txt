@@ -7,25 +7,28 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-index]
-         [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
-         [--reject pkg_fmri_pattern] pkg_fmri_pattern ...
+     /usr/bin/pkg refresh [--full] [publisher ...]
+
+     /usr/bin/pkg install [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
+         [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
+         [--be-name name] [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
 
      /usr/bin/pkg uninstall [-nrvq] [--no-index]
          [--deny-new-be | --require-new-be] [--be-name name]
          pkg_fmri_pattern ...
 
-     /usr/bin/pkg update [-fnvq] [--accept] [--be-name name]
-         [--deny-new-be | --require-new-be] [--licenses] [--no-index]
-         [--no-refresh] [--reject pkg_fmri_pattern] [pkg_fmri_pattern ...]
-
-     /usr/bin/pkg refresh [--full] [publisher ...]
-
-     /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...]
-         [-o attribute ...] [-s sort_key] [-t action_type ...]
+     /usr/bin/pkg update [-fnvq] [-g path_or_uri ...] [--accept] [--licenses]
+         [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
+         [--be-name name] [--reject pkg_fmri_pattern ...]
          [pkg_fmri_pattern ...]
-     /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
+
+     /usr/bin/pkg list [-Hafnsuv] [-g path_or_uri ...] [--no-refresh]
+         [pkg_fmri_pattern ...]
+     /usr/bin/pkg info [-lr] [-g path_or_uri ...] [--license]
+         [pkg_fmri_pattern ...]
+     /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...]
+         [-g path_or_uri ...] [-o attribute ...] [-s sort_key]
+         [-t action_type ...] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-HIaflpr] [-o attribute ...] [-s repo_uri]
          query
 
@@ -34,29 +37,23 @@ SYNOPSIS
      /usr/bin/pkg revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
          (--tagged tag-name ... | path-to-file ...)
 
-     /usr/bin/pkg image-create [-FPUfz] [--force]
-         [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
-         [--no-refresh] [--variant <variant_spec>=<instance> ...]
-         [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
-         [--facet <facet_spec>=[True|False] ...]
-         (-p|--publisher) [<name>=]<repo_uri> dir
-
      /usr/bin/pkg variant [-H] [<variant_spec>]
-     /usr/bin/pkg change-variant [-nvq] [--accept]
-         [--deny-new-be | --require-new-be] [--be-name name]
-         [--licenses] <variant_spec>=<instance> ...
+     /usr/bin/pkg change-variant [-nvq] [-g path_or_uri ...] [--accept]
+         [--licenses] [--deny-new-be | --require-new-be] [--be-name name]
+         <variant_spec>=<instance> ...
 
      /usr/bin/pkg facet [-H] [<facet_spec>]
-     /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name]
-         [--deny-new-be | --require-new-be]
-         [--licenses] <facet_spec>=[True|False|None] ...
+     /usr/bin/pkg change-facet [-nvq] [-g path_or_uri ...] [--accept]
+         [--licenses] [--deny-new-be | --require-new-be] [--be-name name]
+         <facet_spec>=[True|False|None] ...
 
+     /usr/bin/pkg property [-H] [propname ...]
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg add-property-value propname propvalue
      /usr/bin/pkg remove-property-value propname propvalue
      /usr/bin/pkg unset-property propname ...
-     /usr/bin/pkg property [-H] [propname ...]
 
+     /usr/bin/pkg publisher [-HPn] [publisher ...]
      /usr/bin/pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
          [-g origin_to_add|--add-origin=origin_to_add ...]
          [-G origin_to_remove|--remove-origin=origin_to_remove ...]
@@ -74,9 +71,9 @@ SYNOPSIS
          [--unset-property name_of_property_to_delete]
          [publisher]
      /usr/bin/pkg unset-publisher publisher ...
-     /usr/bin/pkg publisher [-HPn] [publisher ...]
 
-     /usr/bin/pkg history [-Hl] [-t [time|time-time],...] [-o column,...] [-n number]
+     /usr/bin/pkg history [-Hl] [-t [time|time-time],...] [-o column,...]
+         [-n number]
      /usr/bin/pkg purge-history
 
      /usr/bin/pkg rebuild-index
@@ -86,14 +83,21 @@ SYNOPSIS
      /usr/bin/pkg version
      /usr/bin/pkg help
 
+     /usr/bin/pkg image-create [-FPUfz] [--force]
+         [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
+         [--no-refresh] [--variant <variant_spec>=<instance> ...]
+         [-g path_or_uri|--origin=path_or_uri ...]
+         [-m uri|--mirror=uri ...] [--facet <facet_spec>=[True|False] ...]
+         (-p|--publisher) [<name>=]<repo_uri> dir
+
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With
      a valid configuration, pkg can be invoked to create locations for
      packages to be installed, called 'images', and install packages
      into those images.  Packages are published by publishers, who may
-     make their packages available at one or more repositories.  pkg,
-     then, retrieves packages from a publisher's repository and
-     installs them into an image.
+     make their packages available at one or more repositories, or in
+     package archives.  pkg, then, retrieves packages from a publisher's
+     repository or package archives and installs them into an image.
 
      A publisher is a forward domain name that can be used to identify a
      person, group of persons, or an organization as the source of one or
@@ -110,9 +114,9 @@ DESCRIPTION
      "http://example.org/repository".
 
      pkg can also uninstall packages, refresh publisher metadata (such as
-     catalogs), validate package installation in an image, and query the
-     image for various tokens.  These queries can also be made of pkg(5)
-     repositories.
+     the list of available packages), validate package installation in an
+     image, and query the image for various tokens.  These queries can also
+     be made of pkg(5) repositories.
 
      Images can be of three types: full images, capable of providing a
      complete system; partial images, which are linked to a full image
@@ -136,58 +140,20 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
-       [-k ssl_key] [-c ssl_cert] [--no-refresh]
-       [--variant <variant_spec>=<instance> ...]
-       [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
-       [--facet <facet_spec>=[True|False] ...]
-       (-p|--publisher) [<name>=]<repo_uri> dir
-          Create, at location given by dir, an image suitable for package
-          operations.  The default image type is user, as given by the -U
-          (--user) option.  The image type may be set to a full image (-F
-          or --full) or to a partial image (-P or --partial) linked to the
-          full image enclosing the given dir path.  Additional origins can
-          be specified using -g or --origin, while additional mirrors can
-          be specified using -m or --mirror.
-
-          A package repository URI must be provided using the -p or
-          --publisher option.  If a publisher name is also provided, then
-          only that publisher will be added when the image is created.  If
-          a publisher name is not provided, then all publishers known by the
-          specified repository will be added to the image.  An attempt to
-          retrieve the catalog associated with this publisher will be made
-          following the initial creation operations.
-
-          For publishers using client SSL authentication, a client key and
-          client certificate may be registered via the -c and -k options,
-          and will be used for all publishers added during image creation.
-
-          If the image is to be run within nonglobal zone context, then
-          the -z (--zone) option can be used to set an appropriate filter.
-
-          With -f (--force), force the creation of an image over an existing
-          image.  This option should be used with care; any existing image
-          metadata found will be lost (such as cached packages) except for
-          SSL certificates and keys used by the client.
-
-          With --no-refresh, do not attempt to contact the repositories for
-          the image's publishers to retrieve publisher metadata (e.g.
-          catalogs).
-
-          With --variant, set the specified variant to the indicated value.
-
-          With --facet, set the specified facet to the indicated value.
-
      refresh [--full] [publisher ...]
-          Retrieve updates to the metadata (e.g. catalogs) for each publisher
-          specified.  When given no arguments, retrieves updates for each
-          publisher registered within the image.
 
-          With --full, retrieve all publisher metadata instead of attempting an
-          incremental update.
+          Updates the client's list of available packages and publisher
+          metadata for each publisher specified.  If no publishers are
+          specified, the operation will be performed for all publishers.
 
-     install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-       [--deny-new-be | --require-new-be] [--be-name]
+          With --full, force a full retrieval of all publisher metadata,
+          instead of attempting an incremental update, and request that
+          any proxies used during the operation ignore cached data.  This
+          option only exists for troubleshooting purposes and should not
+          be used on a regular basis.
+
+     install [-nvq] [-g path_or_uri ...] [--accept] [--licenses] [--no-index]
+       [--no-refresh] [--deny-new-be | --require-new-be] [--be-name]
        [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
 
           Installs and updates packages to the newest version that match
@@ -199,13 +165,19 @@ SUBCOMMANDS
           determines which files to preserve, and how they are preserved
           during package operations, see "File Actions" in pkg(5).
 
-          With the -n option, execute the requested operation but make
-          no persistent changes to the image.
+          With -g, use the specified package repository or archive as an
+          additional source of package data for the operation.  This option
+          may be specified multiple times.
 
-          With the -v option, issue verbose progress messages during
-          the requested operation.  This option may be repeated for
-          increased effect.  With the -q option, issue no progress
-          messages during the requested operation.
+          With -n, perform a trial run of the operation with no package
+          changes made.
+
+          With -q, hide progress messages during the requested operation.
+
+          With -v, issue verbose progress messages during the requested
+          operation and display detailed planning information.  This
+          option may be specified multiple times to increase the amount
+          of planning information displayed.
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or
@@ -220,9 +192,9 @@ SUBCOMMANDS
           With --no-index, do not update the search indices after the
           operation has completed successfully.
 
-          With --no-refresh, do not attempt to contact the
-          repositories for the image's publishers to retrieve
-          publisher metadata (e.g. catalogs).
+          With --no-refresh, do not attempt to contact the repositories
+          for the image's publishers to retrieve the newest list of
+          available packages and other metadata.
 
           With --be-name, rename the newly created boot environment to
           be the argument given.  This option is only valid if a new
@@ -254,8 +226,8 @@ SUBCOMMANDS
           For all other options, refer to the install command above
           for usage and their effects.
 
-     update [-fnvq] [--accept] [--be-name name] [--licenses]
-       [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
+     update [-fnvq] [-g path_or_uri ...] [--accept] [--licenses] [--no-index]
+       [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
        [--reject pkg_fmri_pattern ... ] [pkg_fmri_pattern ...]
 
           With no arguments, or if '*' is one of the patterns provided,
@@ -287,181 +259,9 @@ SUBCOMMANDS
           For all other options, refer to the install command above for
           usage and their effects.
 
-     revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
-         (--tagged tag-name ... | path-to-file ...)
-          Revert files to their as-delivered condition.  Either all
-          files tagged with a particular value, or individual files 
-          may be reverted. File ownership and protections are also 
-          restored. Caution: reverting some editable files to their 
-          default values may make the system unbootable, or cause
-	  other malfunctions.
+     list [-Hafnsuv] [-g path_or_uri ...] [--no-refresh]
+       [pkg_fmri_pattern ...]
 
-          For all other options, refer to the install command above for
-          usage and their effects.
-
-     info [-lr] [--license] [pkg_fmri_pattern ...]
-          Display information about packages in a human-readable form.
-          Multiple FMRI patterns may be specified; with no patterns,
-          display information on all installed packages in the image.
-
-          With -l, use the data available from locally installed packages.
-          This is the default.
-
-          With -r, retrieve the data from the repositories of the image's
-          configured publishers.  Note that you must specify one or more
-          package patterns in this case.
-
-          With --license, print out the license text(s) for the package.
-          This may be combined with -l or -r.
-
-     contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
-       [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
-          Display the contents (action attributes) of packages in the
-          current image.  By default, only the path attribute is displayed,
-          but the attribute set may be determined with the -o option.  The
-          -o option may be specified multiple times, or multiple attributes
-          may be specified as the argument to one -o option by separating
-          the attribute names with commas.  Only actions which have the
-          requested attributes will be displayed.  The -m option may
-          also be used, as a shorthand for '-Ho action.raw'.
-
-          The -a option allows you to limit the output to those actions
-          which have an attribute named in the option argument the value of
-          which matches the (glob) pattern in the option argument
-          (following the attribute name with an equals sign).  If multiple
-          -a options are given, then actions matching any of them will be
-          displayed.
-
-          The -s option specifies the attribute by which the listing should
-          be sorted.
-
-          The -t option limits the action types which will be displayed.
-
-          The -H option causes the headers to be omitted.
-
-          The -r option retrieves the requested data from the repositories
-          of the image's configured publishers.  This option is intended
-          to be used when the named packages are not already installed.
-
-          With no arguments, the output includes all installed packages.
-          Alternatively, multiple FMRI patterns may be specified, which
-          restricts the display to the contents of the matching packages.
-          When using -r, one or more pkg_fmri_patterns must be specified.
-
-          Several special "pseudo" attribute names are available for
-          convenience:
-
-          action.hash           Corresponds to the value of the action's
-                                hash, if the action carries a payload.
-
-          action.key            Corresponds to the value of the action's
-                                key attribute.  For example, for a file
-                                action, this is the path to the file.
-
-          action.name           Corresponds to the name of the action.
-                                For example, for a file action, this is
-                                "file"
-
-          action.raw            Corresponds to the complete contents of
-                                the action as represented in the package
-                                manifest.  This corresponds to the
-                                lines of output of 'pkg contents -m'
-
-          pkg.fmri              Corresponds to the full form FMRI of the
-                                package containing the action, such as
-                                pkg://extra/virtualbox@3.0.0,5.11-0.101:20090702T175410Z
-
-          pkg.name              Corresponds to the name of the package
-                                containing the action, such as "SUNWcs"
-
-          pkg.publisher         Corresponds to the publisher of the
-                                the package containing the action, such
-                                as "opensolaris.org"
-
-          pkg.shortfmri         Corresponds to the short form FMRI of the
-                                package containing the action, such as
-                                pkg://opensolaris.org/SUNWzone@0.5.11-0.79
-
-          The contents and search subcommands are related: both are used to
-          query the system for the contents of packages.  The contents
-          subcommand displays actions in one or more packages, filtering
-          the output based on the options chosen by the user.  The search
-          subcommand approaches the query from the other direction, looking
-          for packages which contain a user-supplied token.
-
-          Each subcommand is capable of formulating some queries of which
-          the other is capable.  Care should be taken in choosing the
-          subcommand, as a given query may be more naturally formulated in
-          one than in the other.
-
-     search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
-          Search for matches to the query, and display the results.
-          Which tokens are indexed are action-dependent, but may
-          include content hashes and pathnames.  By default, queries are
-          interpreted as a series of terms to be matched exactly.  The
-          '?' and '*' characters can be used as glob(3C)-style
-          wildcards, allowing more flexible query matches.
-
-          With -H, omit the headers.
-
-          With -I, use a case-sensitive search.
-
-          By default, and with -a, perform the search and display information
-          about the matching actions.
-
-          By default, search prunes results from packages older than the
-          currently installed version and from package versions excluded by
-          current incorporations.  Use -f to show all results, regardless of
-          package version.
-
-          With -l, search the image's installed packages.
-
-          With -o, the columns of the results may be controlled.  The
-          -o option may be specified multiple times, or multiple attributes
-          may be specified as the argument to one -o option by separating
-          the attribute names with commas.  In addition to the "pseudo"
-          attributes outlined above, more are defined for search results:
-
-          search.match          Corresponds to the string which matched the
-                                search query.
-
-          search.match_type     Corresponds to the attribute which contained
-                                the string that matched the search query.
-
-          With -p, display packages which have some actions that match each
-          query term.  Using this option is equivalent to putting '<>' around
-          each term  in the query.  (For a description of the '<>' operator,
-          please see below.)
-
-          By default, and with -r, search the repositories corresponding
-          to the image's publishers.
-
-          With -s, search the pkg(5) repository located at the given URI.
-          This may be specified multiple times.
-
-          Both -l and -r (or -s) may be specified together, in which case both
-          local and remote searches will be performed.
-
-          In addition to simple token matching and wildcard search, a more
-          complicated query language is supported.  Phrases may be searched for
-          by using ' or ".  Note: Please make sure to take your shell into
-          account so that pkg actually sees the ' or ".
-
-          Boolean search using AND and OR is supported.  Field, or structured,
-          queries are supported.  The syntax for these is
-          pkg_name:action_type:key:token.  Missing fields are implicitly
-          wildcarded.  A search for :basename:pkg would match all actions
-          types in all packages with a key of basename and which matched
-          the token 'pkg'.  Explicit wildcards are supported in the pkg_name
-          and token fields, action_type and key must match exactly.
-
-          To convert actions to the packages which contain those actions,
-          use '<>'.  With the -a option, Searching for 'token' results in
-          information about the actions matching token, while searching for
-          '<token>' results in a list of packages containing actions which
-          matched token.
-
-     list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
           Display a list of packages in the current image, including
           state and other information.  By default, package variants
           for a different architecture or zone type are excluded.
@@ -516,24 +316,214 @@ SUBCOMMANDS
           variants regardless of incorporation constraints or installed
           state.
 
+          With -g, use the specified package repository or archive as the
+          source of package data for the operation.  This option may be
+          specified multiple times.  Use of -g implies -a if -n is not
+          specified.
+
           With -n, display the newest versions of all known packages,
           regardless of installed state.
 
           With -s, display a one-line short-form giving the package name
-          and description.  This option may be used with -a, -n, -u or
-          -v.
+          and summary.  This option may be used with -a, -n, -u or -v.
 
-          With -u, list only packages with newer versions available.
+          With -u, list only packages with newer versions available.  This
+          option may not be used with -g.
 
           With -v, show full package FMRIs, including publisher and
           complete version, all in the first column (the VERSION column
           disappears).  This option may be used with -a, -n, or -u.
 
           With --no-refresh, do not attempt to contact the repositories
-          for the image's publishers to retrieve publisher metadata (e.g.
-          catalogs).
+          for the image's publishers to retrieve the newest list of
+          available packages.
+
+     info [-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]
+
+          Display information about packages in a human-readable form.
+          Multiple FMRI patterns may be specified; with no patterns,
+          display information on all installed packages in the image.
+
+          With -g, use the specified package repository or archive as the
+          source of package data for the operation.  This option may be
+          specified multiple times.  Use of -g implies -r.
+
+          With -l, only display information for installed packages.  This
+          is the default.
+
+          With -r, match packages based on the newest available versions,
+          retrieving information for packages not currently installed (if
+          necessary) from the repositories of the image's configured
+          publishers.  At least one package must be specified when using
+          this option.  Without -r, only installed packages are displayed
+          by default.
+
+          With --license, display the license texts for the packages.
+          This may be combined with -l or -r.
+
+     contents [-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]
+       [-o attribute ...] [-s sort_key] [-t action_type ...]
+       [pkg_fmri_pattern ...]
+
+          Display the contents (action attributes) of packages in the
+          current image.  By default, only the path attribute is displayed,
+          but the attribute set may be determined with the -o option.  The
+          -o option may be specified multiple times, or multiple attributes
+          may be specified as the argument to one -o option by separating
+          the attribute names with commas.  Only actions which have the
+          requested attributes will be displayed.  The -m option may
+          also be used, as a shorthand for '-Ho action.raw'.
+
+          With -a, limit the output to those actions which have an attribute
+          named in the option argument with a value that matches the (glob)
+          pattern in the option argument (following the attribute name with
+          an equals sign).  If multiple -a options are given, then actions
+          matching any of them will be displayed.
+
+          With -g, use the specified package repository or archive as the
+          source of package data for the operation.  This option may be
+          specified multiple times.  Use of -g implies -r.
+
+          With -r, match packages based on the newest available versions,
+          retrieving information for packages not currently installed (if
+          necessary) from the repositories of the image's configured
+          publishers.  At least one package must be specified when using
+          this option.  Without -r, only installed packages are displayed
+          by default.
+
+          With -s, sort actions by the specified action attribute.  If not
+          provided, the default is to sort by path.  This option may be
+          specified multiple times.
+
+          With -t, only list actions of the type specified.  Multiple types
+          may be specified in a comma-separated list.  This option may be
+          specified multiple times.
+
+          With -H, omit the headers from the listing.
+
+          With no arguments, the output includes all installed packages.
+          Alternatively, multiple FMRI patterns may be specified, which
+          restricts the display to the contents of the matching packages.
+          When using -r, one or more pkg_fmri_patterns must be specified.
+
+          Several special "pseudo" attribute names are available for
+          convenience:
+
+          action.hash           Corresponds to the value of the action's
+                                hash, if the action carries a payload.
+
+          action.key            Corresponds to the value of the action's
+                                key attribute.  For example, for a file
+                                action, this is the path to the file.
+
+          action.name           Corresponds to the name of the action.
+                                For example, for a file action, this is
+                                "file"
+
+          action.raw            Corresponds to the complete contents of
+                                the action as represented in the package
+                                manifest.  This corresponds to the
+                                lines of output of 'pkg contents -m'.
+
+          pkg.fmri              Corresponds to the full form FMRI of the
+                                package containing the action, such as
+                                pkg://extra/virtualbox@3.0.0,5.11-0.101:
+                                20090702T175410Z.
+
+          pkg.name              Corresponds to the name of the package
+                                containing the action, such as "SUNWcs".
+
+          pkg.publisher         Corresponds to the publisher of the
+                                the package containing the action, such
+                                as "opensolaris.org".
+
+          pkg.shortfmri         Corresponds to the short form FMRI of the
+                                package containing the action, such as
+                                pkg://opensolaris.org/SUNWzone@0.5.11-0.79.
+
+          The contents and search subcommands are related: both are used to
+          query the system for the contents of packages.  The contents
+          subcommand displays actions in one or more packages, filtering
+          the output based on the options chosen by the user.  The search
+          subcommand approaches the query from the other direction, looking
+          for packages which contain a user-supplied token.
+
+          Each subcommand is capable of formulating some queries of which
+          the other is capable.  Care should be taken in choosing the
+          subcommand, as a given query may be more naturally formulated in
+          one than in the other.
+
+     search [-HIaflpr] [-o attribute ...] [-s repo_uri] query
+
+          Search for matches to the query, and display the results.
+          Which tokens are indexed are action-dependent, but may
+          include content hashes and pathnames.  By default, queries are
+          interpreted as a series of terms to be matched exactly.  The
+          '?' and '*' characters can be used as glob(3C)-style
+          wildcards, allowing more flexible query matches.
+
+          With -H, omit the headers.
+
+          With -I, use a case-sensitive search.
+
+          By default, and with -a, perform the search and display information
+          about the matching actions.
+
+          By default, search prunes results from packages older than the
+          currently installed version and from package versions excluded by
+          current incorporations.  Use -f to show all results, regardless of
+          package version.
+
+          With -l, search the image's installed packages.
+
+          With -o, the columns of the results may be controlled.  The
+          -o option may be specified multiple times, or multiple attributes
+          may be specified as the argument to one -o option by separating
+          the attribute names with commas.  In addition to the "pseudo"
+          attributes outlined above, more are defined for search results:
+
+          search.match          Corresponds to the string which matched the
+                                search query.
+
+          search.match_type     Corresponds to the attribute which contained
+                                the string that matched the search query.
+
+          With -p, display packages which have some actions that match each
+          query term.  Using this option is equivalent to putting '<>' around
+          each term  in the query.  (For a description of the '<>' operator,
+          please see below.)
+
+          By default, and with -r, search the repositories corresponding
+          to the image's publishers.
+
+          With -s, search the pkg(5) repository located at the given URI.
+          This may be specified multiple times.  Package archives are not
+          supported.
+
+          Both -l and -r (or -s) may be specified together, in which case both
+          local and remote searches will be performed.
+
+          In addition to simple token matching and wildcard search, a more
+          complicated query language is supported.  Phrases may be searched for
+          by using ' or ".  Note: Please make sure to take your shell into
+          account so that pkg actually sees the ' or ".
+
+          Boolean search using AND and OR is supported.  Field, or structured,
+          queries are supported.  The syntax for these is
+          pkg_name:action_type:key:token.  Missing fields are implicitly
+          wildcarded.  A search for :basename:pkg would match all actions
+          types in all packages with a key of basename and which matched
+          the token 'pkg'.  Explicit wildcards are supported in the pkg_name
+          and token fields, action_type and key must match exactly.
+
+          To convert actions to the packages which contain those actions,
+          use '<>'.  With the -a option, Searching for 'token' results in
+          information about the actions matching token, while searching for
+          '<token>' results in a list of packages containing actions which
+          matched token.
 
      verify [-Hqv] [pkg_fmri_pattern ...]
+
           Validate the installation of packages in the current image.
           Please note that verification of installed package content is
           based on a custom content analysis that may return different
@@ -546,15 +536,49 @@ SUBCOMMANDS
 
           With -v, include informational messages regarding packages.
 
+     fix [--accept] [--licenses] [pkg_fmri_pattern ...]
+
+          Fix any errors reported by pkg verify.  Please note that
+          verification of installed package content is based on a
+          custom content analysis that may return different results
+          than those of other programs.
+
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
+
+     revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
+          (--tagged tag-name ... | path-to-file ...)
+          Revert files to their as-delivered condition.  Either all
+          files tagged with a particular value, or individual files
+          may be reverted. File ownership and protections are also
+          restored. Caution: reverting some editable files to their
+          default values may make the system unbootable, or cause
+          other malfunctions.
+
+          For all other options, refer to the install command above for
+          usage and their effects.
+
      variant [-H] [<variant_spec> ...]
+
           Display the current values of all variants, or with arguments,
           only the variants specified
 
           With -H, omit the headers from the listing.
 
-     change-variant [-nvq] [--accept] [--be-name name] [--licenses]
+     change-variant [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
+       [--deny-new-be | --require-new-be] [--be-name name]
        <variant_spec>=<instance> ...
+
           Change the specified variants in the current image.
+
+          With -g, use the specified package repository or archive as an
+          additional source of package data for the operation.  This option
+          may be specified multiple times.
 
           With the -n option, plan the requested operation but make
           no actual changes.
@@ -582,16 +606,22 @@ SUBCOMMANDS
           required.
 
      facet [-H] [<facet_spec> ...]
+
           Without arguments, displays the current values of all facets.  With
           argument(s), evaluate if each facet would be true or false and print
           the result.
 
           With -H, omit the headers from the listing.
 
-     change-facet [-nvq] [--accept] [--be-name name] [--licenses]
+     change-facet [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
+       [--deny-new-be | --require-new-be] [--be-name name]
        <facet_spec>=[True|False|None] ...
 
           Change the specified facets in the current image.
+
+          With -g, use the specified package repository or archive as an
+          additional source of package data for the operation.  This option
+          may be specified multiple times.
 
           With the -n option, plan the requested operation but make
           no actual changes.
@@ -621,46 +651,51 @@ SUBCOMMANDS
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.
 
-     fix [--accept] [--licenses] [pkg_fmri_pattern ...]
-          Fix any errors reported by pkg verify.  Please note that
-          verification of installed package content is based on a
-          custom content analysis that may return different results
-          than those of other programs.
-
-          With --accept, you indicate that you agree to and accept the
-          terms of the licenses of the packages that are updated or
-          installed.  If you do not provide this option, and any package
-          licenses require acceptance, the operation will fail.
-
-          With --licenses, display all of the licenses for the packages that
-          will be installed or updated as part of this operation.
-
-     set-property propname propvalue
-          Update an existing image property or add a new image property;
-          except for preferred-publisher, which can only be changed using
-          set-publisher.
-
-     add-property-value propname propvalue
-          Add a value to an existing image property or add a new image property;
-          except for preferred-publisher, which can only be changed using
-          set-publisher.
-
-     remove-property-value propname propvalue
-          Remove a value from an existing image property; except for
-          preferred-publisher, which can only be changed using set-publisher.
-
-     unset-property propname ...
-          Remove an existing image property or properties; except for
-          preferred-publisher, which can only be changed using
-          set-publisher.
-
      property [-H] [propname ...]
+
           Display image property information.  With no argument, display the
           names and values for all image properties.  If a specific list of
           property names is requested, display the names and values for those
           properties.
 
           With -H, omit the headers from the listing.
+
+     set-property propname propvalue
+
+          Update an existing image property or add a new image property;
+          except for preferred-publisher, which can only be changed using
+          set-publisher.
+
+     add-property-value propname propvalue
+
+          Add a value to an existing image property or add a new image property;
+          except for preferred-publisher, which can only be changed using
+          set-publisher.
+
+     remove-property-value propname propvalue
+
+          Remove a value from an existing image property; except for
+          preferred-publisher, which can only be changed using set-publisher.
+
+     unset-property propname ...
+
+          Remove an existing image property or properties; except for
+          preferred-publisher, which can only be changed using
+          set-publisher.
+
+     publisher [-HPn] [publisher ...]
+
+          Display publisher information.  With no arguments, display
+          the list of all publishers, their origin URIs, and mirrors
+          in order of search preference.  If specific publishers are
+          requested, display the configuration values, including
+          mirrors, associated with those publishers.
+
+          With -H, omit the headers from the listing.
+
+          With -P, display only the preferred publisher.
+
+          With -n, display only enabled publishers.
 
      set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
        [-g origin_to_add|--add-origin=origin_to_add ...]
@@ -732,14 +767,16 @@ SUBCOMMANDS
 
           With -c and -k, specify client SSL certificate and key respectively.
 
-          With -g (--add-origin), add the URI as an origin for the given
-          publisher.  This should be the location of a package repository.
+          With -g (--add-origin), add the specified URI or path as an origin
+          for the given publisher.  This should be the location of a package
+          repository or archive.
 
-          With -G (--remove-origin), remove the URI from the list of origins
-          for the given publisher.
+          With -G (--remove-origin), remove the URI or path from the list of
+          origins for the given publisher.
 
-          With --no-refresh, do not attempt to contact the publisher
-          specified to retrieve its metadata (e.g. catalog).
+          With --no-refresh, do not attempt to contact the repositories
+          for the image's publishers to retrieve the newest list of
+          available packages and other metadata.
 
           With --reset-uuid, choose a new unique identifier that identifies
           this image to its publisher.
@@ -766,21 +803,9 @@ SUBCOMMANDS
           disabled.
 
      unset-publisher publisher ...
+
           Remove the configuration associated with the given publisher
           or publishers.
-
-     publisher [-HPn] [publisher ...]
-          Display publisher information.  With no arguments, display
-          the list of all publishers, their origin URIs, and mirrors
-          in order of search preference.  If specific publishers are
-          requested, display the configuration values, including
-          mirrors, associated with those publishers.
-
-          With -H, omit the headers from the listing.
-
-          With -P, display only the preferred publisher.
-
-          With -n, display only enabled publishers.
 
      history [-Hl] [-t [time|time-time],...] [-n number] [-o column,...]
 
@@ -845,21 +870,66 @@ SUBCOMMANDS
           are those recorded at the time of the pkg operation.
 
      purge-history
+
           Deletes all existing history information.
 
      rebuild-index
+
           Rebuilds the index used by 'pkg search'.  This is a recovery operation
           not intended for general use.
 
      update-format
+
           Updates the format of the image to the current version.  Once
           this operation has completed, the image may no longer be used
           with older versions of the pkg(5) system.
 
      version
+
           Display a unique string identifying the version of pkg(1).  This
           string is not guaranteed to be comparable in any fashion between
           versions.
+
+     image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
+       [-k ssl_key] [-c ssl_cert] [--no-refresh]
+       [--variant <variant_spec>=<instance> ...]
+       [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
+       [--facet <facet_spec>=[True|False] ...]
+       (-p|--publisher) [<name>=]<repo_uri> dir
+
+          Create, at location given by dir, an image suitable for package
+          operations.  The default image type is user, as given by the -U
+          (--user) option.  The image type may be set to a full image (-F
+          or --full) or to a partial image (-P or --partial) linked to the
+          full image enclosing the given dir path.  Additional origins can
+          be specified using -g or --origin, while additional mirrors can
+          be specified using -m or --mirror.
+
+          A package repository URI must be provided using the -p or
+          --publisher option.  If a publisher name is also provided, then
+          only that publisher will be added when the image is created.  If
+          a publisher name is not provided, then all publishers known by the
+          specified repository will be added to the image.  An attempt to
+          retrieve the catalog associated with this publisher will be made
+          following the initial creation operations.
+
+          For publishers using client SSL authentication, a client key and
+          client certificate may be registered via the -c and -k options,
+          and will be used for all publishers added during image creation.
+
+          If the image is to be run within non-global zone context, then
+          the -z (--zone) option can be used to set an appropriate variant.
+
+          With -f (--force), force the creation of an image over an existing
+          image.  This option should be used with care.
+
+          With --no-refresh, do not attempt to contact the repositories
+          for the image's publishers to retrieve the newest list of
+          available packages and other metadata.
+
+          With --variant, set the specified variant to the indicated value.
+
+          With --facet, set the specified facet to the indicated value.
 
 IMAGE PROPERTIES
      The following properties are part of the image and may be set using
@@ -912,7 +982,7 @@ IMAGE PROPERTIES
      signature-policy
           (string)  Determine what checks will be performed on manifests
           when installing a package into this image.  The final policy
-          applied to a  package depends on the combination of image policy
+          applied to a package depends on the combination of image policy
           and publisher policy.  The combination will be at least as strict
           as the stricter of the two policies taken individually.  The
           following are the valid values for this property.
@@ -1008,7 +1078,7 @@ EXAMPLES
      limiting the display to just the package name and path attributes of
      actions whose "path" attribute ends in ".desktop" or ".png".
 
-     $ pkg contents contents -o pkg.name,path -a path=\*.desktop \
+     $ pkg contents -o pkg.name,path -a path=\*.desktop \
          -a path=\*.png SUNWfirefox SUNWthunderbird
      PKG.NAME        PATH
      SUNWfirefox     usr/lib/firefox/chrome/icons/default/default16.png
@@ -1123,6 +1193,24 @@ EXAMPLES
      installed, we can go to using C without uninstalling A via:
 
      $ pkg install --reject B C
+
+     Example 23:  List all versions of all packages in a package archive:
+
+     $ pkg list -g /my/archive.p5p -f
+
+     Example 24:  List all versions of all packages in a repository:
+
+     $ pkg list -g http://example.com:10000 -f
+
+     Example 25:  Display the package information for the latest version of
+     a package in a package archive that may not be currently installed:
+
+     $ pkg info -g /my/archive.p5p pkg_name
+
+     Example 26:  Display the contents of a package in a package archive
+     that is not currently installed:
+
+     $ pkg contents -g /my/archive.p5p pkg_name
 
 ENVIRONMENT VARIABLES
      PKG_IMAGE

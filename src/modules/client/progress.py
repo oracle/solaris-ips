@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -98,7 +98,9 @@ class ProgressTracker(object):
                 self.ind_phase_last = "None"
 
                 self.item_cur_nitems = 0
+                self.item_cur_nbytes = 0
                 self.item_goal_nitems = 0
+                self.item_goal_nbytes = 0
                 self.item_phase = "None"
                 self.item_phase_last = "None"
 
@@ -180,6 +182,34 @@ class ProgressTracker(object):
         def verify_done(self):
                 self.ver_cur_fmri = None
                 self.ver_output_done()
+
+        def archive_set_goal(self, arcname, nitems, nbytes):
+                self.item_phase = arcname
+                self.item_goal_nitems = nitems
+                self.item_goal_nbytes = nbytes
+
+        def archive_add_progress(self, nitems, nbytes):
+                self.item_cur_nitems += nitems
+                self.item_cur_nbytes += nbytes
+                if self.item_goal_nitems > 0:
+                        self.archive_output()
+
+        def archive_done(self):
+                """ Call when all archiving is finished """
+                if self.item_goal_nitems != 0:
+                        self.archive_output_done()
+
+                if self.item_cur_nitems != self.item_goal_nitems:
+                        logger.error("\nExpected %s files, archived %s files "
+                            "instead." % (self.item_goal_nitems,
+                            self.item_cur_nitems))
+                if self.item_cur_nbytes != self.item_goal_nbytes:
+                        logger.error("\nExpected %s bytes, archived %s bytes "
+                            "instead." % (self.item_goal_nbytes,
+                            self.item_cur_nbytes))
+
+                assert self.item_cur_nitems == self.item_goal_nitems
+                assert self.item_cur_nbytes == self.item_goal_nbytes
 
         def download_set_goal(self, npkgs, nfiles, nbytes):
                 self.dl_goal_npkgs = npkgs
@@ -292,12 +322,12 @@ class ProgressTracker(object):
 
         def republish_start_pkg(self, pkgname):
                 self.cur_pkg = pkgname
-                if self.dl_goal_nbytes != 0:
+                if self.item_goal_nitems != 0:
                         self.republish_output()
 
         def republish_end_pkg(self):
                 self.item_cur_nitems += 1
-                if self.dl_goal_nbytes != 0:
+                if self.item_goal_nitems != 0:
                         self.republish_output()
 
         def upload_add_progress(self, nbytes):
@@ -309,7 +339,7 @@ class ProgressTracker(object):
 
         def republish_done(self):
                 """ Call when all downloading is finished """
-                if self.dl_goal_nbytes != 0:
+                if self.item_goal_nitems != 0:
                         self.republish_output_done()
 
         #
@@ -381,6 +411,14 @@ class ProgressTracker(object):
         def ver_output_done(self):
                 raise NotImplementedError("ver_output_done() not implemented "
                     "in superclass")
+
+        def archive_output(self):
+                raise NotImplementedError("archive_output() not implemented in "
+                    "superclass")
+
+        def archive_output_done(self):
+                raise NotImplementedError("archive_output_done() not "
+                    "implemented in superclass")
 
         def dl_output(self):
                 raise NotImplementedError("dl_output() not implemented in "
@@ -484,6 +522,12 @@ class QuietProgressTracker(ProgressTracker):
                 return
 
         def ver_output_info(self, actname, info):
+                return
+
+        def archive_output(self):
+                return
+
+        def archive_output_done(self):
                 return
 
         def dl_output(self):
@@ -603,7 +647,7 @@ class CommandLineProgressTracker(ProgressTracker):
                 self.__generic_pkg_output(_("Download: %s ... "))
 
         def republish_output(self):
-                self.__generic_pkg_output(_("Republish : %s ... "))
+                self.__generic_pkg_output(_("Republish: %s ... "))
 
         def __generic_done(self):
                 try:
@@ -633,6 +677,13 @@ class CommandLineProgressTracker(ProgressTracker):
                                         raise PipeError, e
                                 raise
                         setattr(self, last_phase_attr, pattr)
+
+        def archive_output(self, force=False):
+                self.__generic_output("item_phase", "item_phase_last",
+                    force=force)
+
+        def archive_output_done(self):
+                self.__generic_done()
 
         def act_output(self, force=False):
                 self.__generic_output("act_phase", "act_phase_last",
@@ -880,6 +931,43 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
+
+        def archive_output(self, force=False):
+                if self.item_started and not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
+                        return
+
+                self.last_print_time = time.time()
+                try:
+                        # The first time, emit header.
+                        if not self.item_started:
+                                self.item_started = True
+                                if self.last_print_time:
+                                        print
+                                print "%-45s %11s %12s" % (_("ARCHIVE"),
+                                    _("FILES"), _("STORE (MB)"))
+                        else:
+                                print self.cr,
+
+                        s = "%-45.45s %11s %12s" % \
+                            (self.item_phase,
+                                "%d/%d" % \
+                                (self.item_cur_nitems,
+                                self.item_goal_nitems),
+                            "%.1f/%.1f" % \
+                                ((self.item_cur_nbytes / 1024.0 / 1024.0),
+                                (self.item_goal_nbytes / 1024.0 / 1024.0)))
+                        sys.stdout.write(s + self.clear_eol)
+                        self.needs_cr = True
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def archive_output_done(self):
+                self.archive_output(force=True)
+                self.__generic_simple_done()
 
         def dl_output(self, force=False):
                 if self.dl_started and not force and \

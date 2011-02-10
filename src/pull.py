@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -33,20 +33,17 @@ import sys
 import tempfile
 import traceback
 import urllib
-import urlparse
 import warnings
 
 import pkg.catalog as catalog
 import pkg.client.progress as progress
-import pkg.config as cfg
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as apx
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
+import pkg.p5p
 import pkg.publish.transaction as trans
-import pkg.search_errors as search_errors
-import pkg.server.repository as sr
 import pkg.version as version
 
 from pkg.client import global_settings
@@ -88,12 +85,17 @@ def usage(usage_error=None, retcode=2):
 
         msg(_("""\
 Usage:
-        pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
+        pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
             [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
             (fmri|pattern) ...
         pkgrecv [-s src_repo_uri] --newest 
 
 Options:
+        -a              Store the retrieved package data in a pkg(5) archive
+                        at the location specified by -d.  The file may not
+                        already exist, and this option may only be used with
+                        filesystem-based destinations.
+
         -c cache_dir    The path to a directory that will be used to cache
                         downloaded content.  If one is not supplied, the
                         client will automatically pick a cache directory.
@@ -192,11 +194,11 @@ def get_tracker(quiet=False):
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
-def get_manifest(pfmri, basedir, contents=False):
+def get_manifest(pfmri, xport_cfg, contents=False):
 
         m = None
-        pkgdir = os.path.join(basedir, pfmri.get_dir_path())
-        mpath = os.path.join(pkgdir, "manifest")
+        pkgdir = xport_cfg.get_pkg_dir(pfmri)
+        mpath = xport_cfg.get_pkg_pathname(pfmri)
 
         if not os.path.exists(mpath):
                 m = xport.get_manifest(pfmri)
@@ -228,7 +230,6 @@ def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
 def expand_matching_fmris(fmri_list, pfmri_strings):
         """find matching fmris using pattern matching and
         constraint auto."""
-        counthash = {}
 
         try:
                 patterns = [
@@ -238,11 +239,14 @@ def expand_matching_fmris(fmri_list, pfmri_strings):
         except pkg.fmri.FmriError, e:
                 abort(err=e)
 
-        return catalog.extract_matching_fmris(fmri_list,
-            patterns=patterns, constraint=version.CONSTRAINT_AUTO,
-            matcher=pkg.fmri.glob_match)
+        matched_pats = {}
 
-def get_dependencies(src_uri, fmri_list, basedir, tracker):
+        matches, unmatched = catalog.extract_matching_fmris(fmri_list,
+            patterns=patterns, constraint=version.CONSTRAINT_AUTO,
+            matcher=pkg.fmri.glob_match, counthash=matched_pats)
+        return matched_pats, matches, unmatched
+
+def get_dependencies(src_uri, fmri_list, xport_cfg, tracker):
 
         old_limit = sys.getrecursionlimit()
         # The user may be recursing 'entire' or 'redistributable'.
@@ -251,40 +255,45 @@ def get_dependencies(src_uri, fmri_list, basedir, tracker):
         s = set()
         for f in fmri_list:
                 pfmri = expand_fmri(f)
-                _get_dependencies(src_uri, s, pfmri, basedir, tracker)
+                _get_dependencies(src_uri, s, pfmri, xport_cfg, tracker)
 
         # Restore the previous default.
         sys.setrecursionlimit(old_limit)
 
         return list(s)
 
-def _get_dependencies(src_uri, s, pfmri, basedir, tracker):
+def _get_dependencies(src_uri, s, pfmri, xport_cfg, tracker):
         """Expand all dependencies."""
         tracker.evaluate_progress(fmri=pfmri)
         s.add(pfmri)
 
-        m = get_manifest(pfmri, basedir)
+        m = get_manifest(pfmri, xport_cfg)
         for a in m.gen_actions_by_type("depend"):
                 new_fmri = expand_fmri(a.attrs["fmri"])
                 if new_fmri and new_fmri not in s:
-                        _get_dependencies(src_uri, s, new_fmri, basedir,
+                        _get_dependencies(src_uri, s, new_fmri, xport_cfg,
                             tracker)
         return s
 
 def add_hashes_to_multi(mfst, multi):
-        """Takes a manifest and a multi object. Adds the hashes to the
-        multi object, returns (get_bytes, send_bytes) tuple."""
+        """Takes a manifest and a multi object. Adds the hashes to the multi
+        object, returns (get_bytes, get_files, send_bytes, send_comp_bytes)
+        tuple."""
 
         getb = 0
+        getf = 0
         sendb = 0
+        sendcb = 0
 
         for atype in ("file", "license"):
                 for a in mfst.gen_actions_by_type(atype):
                         if a.needsdata(None, None):
                                 multi.add_action(a)
                                 getb += get_pkg_otw_size(a)
+                                getf += 1
                                 sendb += int(a.attrs.get("pkg.size", 0))
-        return getb, sendb
+                                sendcb += int(a.attrs.get("pkg.csize", 0))
+        return getb, getf, sendb, sendcb
 
 def prune(fmri_list, all_versions, all_timestamps):
         """Returns a filtered version of fmri_list based on the provided
@@ -365,7 +374,9 @@ def fetch_catalog(src_pub, tracker, txport):
         return fmri_list
 
 def main_func():
-        global cache_dir, download_start, xport, xport_cfg, dest_xport, targ_pub
+        global cache_dir, download_start, xport, xport_cfg, dest_xport, \
+            temp_root, targ_pub
+
         all_timestamps = False
         all_versions = False
         dry_run = False
@@ -376,6 +387,7 @@ def main_func():
         target = None
         incoming_dir = None
         src_pub = None
+        archive = False
         raw = False
         key = None
         cert = None
@@ -389,13 +401,15 @@ def main_func():
         src_uri = os.environ.get("PKG_SRC", None)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "c:d:hkm:nrs:", 
-                    ["key=", "cert=", "newest", "raw"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "ac:d:hkm:nrs:", 
+                    ["cert=", "key=", "newest", "raw"])
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt)
 
         for opt, arg in opts:
-                if opt == "-c":
+                if opt == "-a":
+                        archive = True
+                elif opt == "-c":
                         cache_dir = arg
                 elif opt == "-d":
                         target = arg
@@ -421,7 +435,7 @@ def main_func():
                 elif opt == "--raw":
                         raw = True
                 elif opt == "--key":
-                        key= arg
+                        key = arg
                 elif opt == "--cert":
                         cert = arg
 
@@ -446,10 +460,10 @@ def main_func():
         xport_cfg.add_cache(cache_dir, readonly=False)
         xport_cfg.incoming_root = incoming_dir
 
-        # Since publication destionations may only have one repository
-        # configured per publisher, create destination as separate transport
-        # in case source and destination have identical publisher configuration
-        # but different repository endpoints.
+        # Since publication destinations may only have one repository configured
+        # per publisher, create destination as separate transport in case source
+        # and destination have identical publisher configuration but different
+        # repository endpoints.
         dest_xport, dest_xport_cfg = transport.setup_transport()
         dest_xport_cfg.add_cache(cache_dir, readonly=False)
         dest_xport_cfg.incoming_root = incoming_dir
@@ -458,7 +472,219 @@ def main_func():
         transport.setup_publisher(src_uri, "source", xport, xport_cfg,
             remote_prefix=True, ssl_key=key, ssl_cert=cert)
 
+        args = (pargs, target, list_newest, all_versions,
+            all_timestamps, keep_compressed, raw, recursive, dry_run,
+            dest_xport_cfg, src_uri)
+
+        if archive:
+                # Retrieving package data for archival requires a different mode
+                # of operation so gets its own routine.  Notably, it requires
+                # that all package data be retrieved before the archival process
+                # is started.
+                return archive_pkgs(*args)
+
+        # Normal package transfer allows operations on a per-package basis.
+        return transfer_pkgs(*args)
+
+def check_processed(any_matched, any_unmatched, total_processed):
+        # Reduce unmatched patterns to those that were unmatched for all
+        # publishers.
+        unmatched = {}
+        for pub_unmatched in any_unmatched:
+                if not pub_unmatched:
+                        # If any publisher matched all patterns, then treat
+                        # the operation as successful.
+                        unmatched = {}
+                        break
+
+                for k in pub_unmatched:
+                        unmatched.setdefault(k, set()).update(pub_unmatched[k])
+
+        for k in unmatched:
+                map(unmatched[k].discard, any_matched)
+
+        # Prune types of matching that didn't have any match failures.
+        for k, v in unmatched.items():
+                if not v:
+                        del unmatched[k]
+
+        if unmatched:
+                # If any match failures remain, abort with an error.
+                match_err = apx.InventoryException(**unmatched)
+                emsg(match_err)
+                if total_processed > 0:
+                        # Partial failure.
+                        abort(retcode=3)
+                abort()
+
+def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
+    keep_compresed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
+        """Retrieve source package data completely and then archive it."""
+
+        global cache_dir, download_start, xport, xport_cfg, dest_xport, targ_pub
+
+        target = os.path.abspath(target)
+        if os.path.exists(target):
+                error(_("Target archive '%s' already "
+                    "exists.") % target)
+                abort()
+
+        # Open the archive early so that permissions failures, etc. can be
+        # detected before actual work is started.
+        pkg_arc = pkg.p5p.Archive(target, mode="w")
+
+        basedir = tempfile.mkdtemp(dir=temp_root,
+            prefix=global_settings.client_name + "-")
+        tmpdirs.append(basedir)
+
+        # Retrieve package data for all publishers.
         any_unmatched = []
+        any_matched = []
+        total_processed = 0
+        arc_bytes = 0
+        archive_list = []
+        for src_pub in xport_cfg.gen_publishers():
+                # Root must be per publisher on the off chance that multiple
+                # publishers have the same package.
+                xport_cfg.pkg_root = os.path.join(basedir, src_pub.prefix)
+
+                tracker = get_tracker()
+                msg(_("Retrieving packages for publisher %s ...") %
+                    src_pub.prefix)
+                if pargs == None or len(pargs) == 0:
+                        usage(_("must specify at least one pkgfmri"))
+
+                all_fmris = fetch_catalog(src_pub, tracker, xport)
+                fmri_arguments = pargs
+                matched_pats, matches, unmatched = expand_matching_fmris(
+                    all_fmris, fmri_arguments)
+
+                # Track anything that failed to match.
+                any_unmatched.append(unmatched)
+                any_matched.extend(matched_pats.keys())
+                if not matches:
+                        # No matches at all; nothing to do for this publisher.
+                        continue
+
+                fmri_list = prune(list(set(matches)), all_versions,
+                    all_timestamps)
+
+                if recursive:
+                        msg(_("Retrieving manifests for dependency "
+                            "evaluation ..."))
+                        tracker.evaluate_start()
+                        fmri_list = prune(get_dependencies(src_uri, fmri_list,
+                            xport_cfg, tracker), all_versions, all_timestamps)
+                        tracker.evaluate_done()
+
+                def get_basename(pfmri):
+                        open_time = pfmri.get_timestamp()
+                        return "%d_%s" % \
+                            (calendar.timegm(open_time.utctimetuple()),
+                            urllib.quote(str(pfmri), ""))
+
+                # First, retrieve the manifests and calculate package transfer
+                # sizes.
+                npkgs = len(fmri_list)
+                get_bytes = 0
+                get_files = 0
+
+                if not recursive:
+                        msg(_("Retrieving and evaluating %d package(s)...") %
+                            npkgs)
+
+                tracker.evaluate_start(npkgs=npkgs)
+                skipped = False
+                retrieve_list = []
+                while fmri_list:
+                        f = fmri_list.pop()
+
+                        m = get_manifest(f, xport_cfg)
+                        pkgdir = xport_cfg.get_pkg_dir(f)
+                        mfile = xport.multi_file_ni(src_pub, pkgdir,
+                            progtrack=tracker)
+         
+                        getb, getf, arcb, arccb = add_hashes_to_multi(m, mfile)
+                        get_bytes += getb
+                        get_files += getf
+
+                        # Since files are going into the archive, progress
+                        # can be tracked in terms of compressed bytes for
+                        # the package files themselves.
+                        arc_bytes += arccb
+
+                        # Also include the the manifest file itself in the
+                        # amount of bytes to archive.
+                        try:
+                                fs = os.stat(m.pathname)
+                                arc_bytes += fs.st_size
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+
+                        retrieve_list.append((f, mfile))
+                        if not dry_run:
+                                archive_list.append((f, m.pathname, pkgdir))
+                        tracker.evaluate_progress(fmri=f)
+
+                tracker.evaluate_done()
+
+                # Next, retrieve the content for this publisher's packages.
+                tracker.download_set_goal(len(retrieve_list), get_files,
+                    get_bytes)
+
+                if dry_run:
+                        # Don't call download_done here; it would cause an
+                        # assertion failure since nothing was downloaded.
+                        # Instead, call the method that simply finishes
+                        # up the progress output.
+                        tracker.dl_output_done()
+                        cleanup()
+                        continue
+
+                processed = 0
+                while retrieve_list:
+                        f, mfile = retrieve_list.pop()
+                        tracker.download_start_pkg(f.pkg_name)
+
+                        if mfile:
+                                download_start = True
+                                mfile.wait_files()
+
+                        # Nothing more to do for this package.
+                        tracker.download_end_pkg()
+
+                tracker.download_done()
+                tracker.reset()
+
+        # Check processed patterns and abort with failure if some were
+        # unmatched.
+        check_processed(any_matched, any_unmatched, total_processed)
+
+        if dry_run:
+                # Dump all temporary data.
+                cleanup()
+                return 0
+
+        # Now create archive and then archive retrieved package data.
+        while archive_list:
+                pfmri, mpath, pkgdir = archive_list.pop()
+                pkg_arc.add_package(pfmri, mpath, pkgdir)
+        pkg_arc.close(progtrack=tracker)
+
+        # Dump all temporary data.
+        cleanup()
+        return 0
+
+def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
+    keep_compressed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
+        """Retrieve source package data and optionally republish it as each
+        package is retrieved.
+        """
+
+        global cache_dir, download_start, xport, xport_cfg, dest_xport, targ_pub
+
+        any_unmatched = []
+        any_matched = []
         total_processed = 0
         for src_pub in xport_cfg.gen_publishers():
                 tracker = get_tracker()
@@ -517,7 +743,7 @@ def main_func():
                                 except trans.TransactionError, e:
                                         abort(err=e)
                 else:
-                        basedir = target
+                        basedir = target = os.path.abspath(target)
                         if not os.path.exists(basedir):
                                 try:
                                         os.makedirs(basedir, misc.PKG_DIR_MODE)
@@ -530,15 +756,17 @@ def main_func():
                 dest_xport_cfg.pkg_root = basedir
 
                 if republish:
-                        targ_fmris = fetch_catalog(targ_pub, tracker, dest_xport)
+                        targ_fmris = fetch_catalog(targ_pub, tracker,
+                            dest_xport)
 
                 all_fmris = fetch_catalog(src_pub, tracker, xport)
                 fmri_arguments = pargs
-                matches, unmatched = expand_matching_fmris(all_fmris,
-                    fmri_arguments)
+                matched_pats, matches, unmatched = expand_matching_fmris(
+                    all_fmris, fmri_arguments)
 
                 # Track anything that failed to match.
                 any_unmatched.append(unmatched)
+                any_matched.extend(matched_pats.keys())
                 if not matches:
                         # No matches at all; nothing to do for this publisher.
                         continue
@@ -551,7 +779,7 @@ def main_func():
                             "evaluation ..."))
                         tracker.evaluate_start()
                         fmri_list = prune(get_dependencies(src_uri, fmri_list,
-                            basedir, tracker), all_versions, all_timestamps)
+                            xport_cfg, tracker), all_versions, all_timestamps)
                         tracker.evaluate_done()
 
                 def get_basename(pfmri):
@@ -586,14 +814,18 @@ def main_func():
                                 skipped = True
                                 continue
 
-                        m = get_manifest(f, basedir)
+                        m = get_manifest(f, xport_cfg)
                         pkgdir = xport_cfg.get_pkg_dir(f)
                         mfile = xport.multi_file_ni(src_pub, pkgdir,
                             not keep_compressed, tracker)
          
-                        getb, sendb = add_hashes_to_multi(m, mfile)
+                        getb, getf, sendb, sendcb = add_hashes_to_multi(m,
+                            mfile)
                         get_bytes += getb
                         if republish:
+                                # For now, normal republication always uses
+                                # uncompressed data as already compressed data
+                                # is not supported for publication.
                                 send_bytes += sendb
 
                         retrieve_list.append((f, mfile))
@@ -624,12 +856,12 @@ def main_func():
                                 tracker.republish_end_pkg()
                                 continue
 
-                        m = get_manifest(f, basedir)
+                        m = get_manifest(f, xport_cfg)
 
                         # Get first line of original manifest so that inclusion
                         # of the scheme can be determined.
                         use_scheme = True
-                        contents = get_manifest(f, basedir, contents=True)
+                        contents = get_manifest(f, xport_cfg, contents=True)
                         if contents.splitlines()[0].find("pkg:/") == -1:
                                 use_scheme = False
 
@@ -702,38 +934,9 @@ def main_func():
                 # Prevent further use.
                 targ_pub = None
 
-        # Find the intersection of patterns that failed to match.
-        unmatched = {}
-        for pub_unmatched in any_unmatched:
-                if not pub_unmatched:
-                        # If any publisher matched all patterns, then treat
-                        # the operation as successful.
-                        unmatched = {}
-                        break
-
-                # Otherwise, find the intersection of unmatched patterns so far.
-                for k in pub_unmatched:
-                        try:
-                                src = set(unmatched[k])
-                                unmatched[k] = \
-                                    src.intersection(pub_unmatched[k])
-                        except KeyError:
-                                # Nothing to intersect with; assign instead.
-                                unmatched[k] = pub_unmatched[k]
-
-        # Prune types of matching that didn't have any match failures.
-        for k, v in unmatched.items():
-                if not v:
-                        del unmatched[k]
-
-        if unmatched:
-                # If any match failures remain, abort with an error.
-                match_err = apx.InventoryException(**unmatched)
-                emsg(match_err)
-                if total_processed > 0:
-                        # Partial failure.
-                        abort(retcode=3)
-                abort()
+        # Check processed patterns and abort with failure if some were
+        # unmatched.
+        check_processed(any_matched, any_unmatched, total_processed)
 
         # Dump all temporary data.
         cleanup()
@@ -746,9 +949,11 @@ if __name__ == "__main__":
 
         try:
                 __ret = main_func()
-        except (pkg.actions.ActionError, trans.TransactionError,
-            RuntimeError, apx.TransportError, apx.BadRepositoryURI,
-            apx.UnsupportedRepositoryURI), _e:
+        except (KeyboardInterrupt, apx.CanceledException):
+                cleanup(True)
+                __ret = 1
+        except (pkg.actions.ActionError, trans.TransactionError, RuntimeError,
+            apx.ApiException), _e:
                 error(_e)
                 cleanup(True)
                 __ret = 1
@@ -756,9 +961,6 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 cleanup(False)
-                __ret = 1
-        except (KeyboardInterrupt, apx.CanceledException):
-                cleanup(True)
                 __ret = 1
         except SystemExit, _e:
                 cleanup(False)

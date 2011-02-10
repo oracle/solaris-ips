@@ -126,8 +126,7 @@ ON-DISK FORMAT PROPOSAL
 2086 validate that a repository is really a repository in pkg.depotd
 6335 publisher repo with invalid certificate information shouldn't
     prevent querying other repos
-6576 pkg install/image-update support for temporary publisher origins
-    desired
+6576 pkg install/update support for temporary publisher origins desired
 6940 depot support for file:// URI desired
 7213 ability to remove published packages
 7273 manifests should be arranged in a hierarchy by publisher
@@ -532,11 +531,21 @@ ON-DISK FORMAT PROPOSAL
             will stand for 'pkg(5) package'.  The format of these
             archives matches that defined by IEEE Std 1003.1, 2004 for
             the pax Interchange Format, with the exception that the
-            first archive entry must not use the optional pax headers
-            allowed by the format, and must contain the index file
-            for the package archive.  The layout can be visualised as
-            follows:
+            first archive entry is tagged with an extended pax archive
+            header that specifies the archive version and the version
+            of the pkg(5) API that was used to write it.  In addition,
+            the file for the first archive entry must be the index
+            file file for the package archive.  The layout can be
+            visualised as follows:
 
+            .--------------------------------------------------------.
+            | ustar header for pax header global archive data        |
+            .--------------------------------------------------------.
+            | pax global extended header data for archive            |
+            .--------------------------------------------------------.
+            | ustar header for pax header for archive index file     |
+            .--------------------------------------------------------.
+            | pax extended header data for archive index file        |
             .--------------------------------------------------------.
             | ustar header for package archive index file            |
             .--------------------------------------------------------.
@@ -545,29 +554,41 @@ ON-DISK FORMAT PROPOSAL
             | remaining archive data                                 |
             .________________________________________________________.
 
+            The archive and API version is stored in the header of the
+            index file instead of the global header for two reasons:
+            first, any headers in the global header are treated as
+            though they apply to every entry in the archive, and
+            secondly, the pax specification states that global headers
+            should not be used with interchange media that could suffer
+            partial data loss during transport.  Since the archive
+            version primarily serves as a way for clients to reliably
+            determine if a "standard" pax archive versus one with an
+            index is being read, this approach seems reasonable.
+
             The reason for this limitation is to ensure that clients
             performing selective archive extraction can be guaranteed
             to find the location and size of the package archive index
             file without knowing the size of the header for the index
-            file in advance (ustar headers are always 512 bytes in
-            size).
+            file in advance (this layout ensures that clients can
+            find the archive index and/or identify the archive in
+            the first 2048 bytes).
 
             In addition, pkg(5) archives in this format make remote,
             selective archive access possible.  For example, a client
-            could request the first 512 bytes of a pkg(5) archive file
-            from a remote repository, then retrieve the archive index
-            file.  Once it has the archive index file, it can then
-            perform a HTTP/1.1 byte-ranges request to selectively
-            transfer the data for a set of specific files from the
-            archive.  This convention also optimises access to the
-            archive for sources that are heavily biased towards
-            sequential reads.
+            could request the first 2048 bytes of a pkg(5) archive file
+            from a remote repository, identify the offsets of the index
+            and then retrieve it using a HTTP/1.1 byte-ranges request.
+            Once it has the archive index file, it can then perform
+            additional byte-range requests to selectively transfer the
+            the data for a set of specific files from the archive.  This
+            convention also optimises access to the archive for sources
+            that are heavily biased towards sequential reads.
 
             The index file must be named using the following template
             and be compressed using the gzip format described by RFCs
             1951 and 1952, and formatted according to section 4.3.8:
 
-                p5p.index.<index_file_number>.<index_version>.gz
+                p5p.index.<index_file_number>.v<index_version>.gz
 
                 <index_file_number> is an integer in string form that
                 indicates which index file this is.  The number only
@@ -579,27 +600,18 @@ ON-DISK FORMAT PROPOSAL
                 indicates the version of the index file.  The initial
                 version for this proposal will be '0'.
 
-            If the first file in the archive is found not to be in the
-            layout or format shown above, or any of the index files in
-            the archive are found to not be in a format supported by
-            the client (version too old or too new), the archive will
-            be treated as a standard pax archive and some operations
-            may not be possible or experience degraded performance.
-            The same is also true if the index file is found to not
-            match the archive contents.
+            However, if the first file in the archive is found to not
+            use the layout or format shown above, or any of the index
+            files in the archive are not in a format supported by the
+            client (version too old or too new), the archive must be
+            treated as a standard pax archive and some operations may
+            not be possible or experience degraded performance.  The
+            same is also true if the index file is found to not match
+            the archive contents.
 
-            When creating the archive, or adding to an existing archive,
-            new index gzip files should be zero-padded with an extra 256
-            bytes at the end.  This reserved space is used for fast
-            additions to existing package archives by updating the
-            previous index file with an entry for the new index file.
-            For example, the first index file's last entry should
-            contain the name and offset of the second index file,
-            and so on.
-
-            All pathnames after the first in the archive (if the first
-            file is the archive index file) must conform to the repo-
-            sitory layout specified in section 4.2.2 of this proposal.
+            All entries in the archive (excluding any archive index
+            files) must conform to the repository layout specified in
+            section 4.2.2 of this proposal.
 
             Since a pkg(5) repository can contain one or more packages,
             pkg(5) archive files can also contain the data for one or
@@ -618,7 +630,8 @@ ON-DISK FORMAT PROPOSAL
             following format (also referred to as index format version
             0):
 
-                <name>NUL<offset>NUL<entry_size>NUL<size>NUL<typeflag>NL
+                <name>NUL<offset>NUL<entry_size>NUL<size>NUL<typeflag>
+                NULNL
 
                 <name> is a string containing the pathname of the file
                 in the archive using only ascii characters.  It can be
@@ -651,9 +664,9 @@ ON-DISK FORMAT PROPOSAL
 
             An example set of entries would appear as follows:
 
-                pkg5.repositoryNUL0NUL546NUL2560NUL0
-                pkgNUL2560NUL0NUL1536NUL5
-                pkg/service%2Ffault-managementNUL4096NUL0NUL1536NUL5
+                pkg5.repositoryNUL0NUL546NUL2560NUL0NUL
+                pkgNUL2560NUL0NUL1536NUL5NUL
+                pkg/service%2Ffault-managementNUL4096NUL0NUL1536NUL5NUL
 
             It should be noted that other possible formats were
             evaluated for the index file, including those based
@@ -666,7 +679,11 @@ ON-DISK FORMAT PROPOSAL
             - no streaming support (required entire index file be
               loaded into memory)
 
-            - significantly greater parsing times
+            - significantly greater parsing times using currently
+              available Python libraries
+
+            - required developing an envelope format that could
+              contain the encoded data
 
 5. Proposed Changes:
 
@@ -907,8 +924,8 @@ ON-DISK FORMAT PROPOSAL
         data.
 
         To support the specification of temporary origins, the install
-        and image-update subcommands will be modified by adding a '-g'
-        option to specify additional temporary package origin URIs or
+        and update subcommands will be modified by adding a '-g' option
+        to specify additional temporary package origin URIs or
         the path to a pkg(5) archive file or pkg(5) info file.  The
         '-g' option may be specified multiple times.  As an example:
 
@@ -917,11 +934,9 @@ ON-DISK FORMAT PROPOSAL
                 -g file:/path/to/bar.p5p \
                 foo bar localpkg
 
-            $ pkg image-update -g /path/to/foo.p5p
-
         pkg(5) archive files used as a source of package data during an
-        install or image-update operation will have their content cached
-        by the client before the operation begins.  Any publishers found
+        install or update operation will have their content cached by
+        the client before the operation begins.  Any publishers found
         in the archive will be temporarily added to the image if they do
         not already exist.  Publishers that were temporarily added but
         not used during the operation will be removed after operation

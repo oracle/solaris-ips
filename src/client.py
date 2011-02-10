@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 52
+CLIENT_API_VERSION = 53
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -152,47 +152,49 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         basic_usage = {}
         adv_usage = {}
 
-        basic_cmds = ["install", "uninstall", "update", "list",
-            "refresh", "version"]
+        basic_cmds = ["refresh", "install", "uninstall", "update", "list",
+            "version"]
 
         basic_usage["install"] = _(
-            "[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]\n"
-            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            [--reject pkg_fmri_patter ... ] pkg_fmri_pattern ...")
+            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
+            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]\n"
+            "            [--be-name name] [--reject pkg_fmri_pattern ... ]\n"
+            "            pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
             "[-nrvq] [--no-index] [--deny-new-be | --require-new-be]\n"
             "            [--be-name name] pkg_fmri_pattern ...")
         basic_usage["update"] = _(
-            "[-fnvq] [--accept] [--be-name name] [--licenses]\n"
-            "            [--deny-new-be | --require-new-be] [--no-index]\n"
-            "            [--no-refresh] [--reject pkg_fmri_pattern ...]"
+            "[-fnvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
+            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]\n"
+            "            [--be-name name] [--reject pkg_fmri_pattern ...]\n"
             "            [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
-            "[-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]")
+            "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
+            "            [pkg_fmri_pattern ...]")
         basic_usage["refresh"] = _("[--full] [publisher ...]")
         basic_usage["version"] = ""
 
-        advanced_cmds = ["info", "search", "verify", "fix", "revert",
-            "contents", "image-create", "change-variant", "change-facet",
-            "variant", "facet", "set-property", "add-property-value",
-            "remove-property-value", "unset-property", "property", "",
-            "set-publisher", "unset-publisher", "publisher", "history",
-            "purge-history", "rebuild-index"]
+        advanced_cmds = ["info", "contents", "search", "", "verify", "fix",
+            "revert", "", "variant", "change-variant", "", "facet",
+            "change-facet", "", "property", "set-property",
+            "add-property-value", "remove-property-value", "unset-property", "",
+            "publisher", "set-publisher", "unset-publisher", "", "history",
+            "purge-history", "", "rebuild-index", "update-format"]
 
-        adv_usage["revert"] = _(
-            "[-nv] [--be-name name] [--deny-new-be | --require-new-be]\n"
-            "            (--tagged tag-name ... | path-to-file ...)")
-
-        adv_usage["info"] = _("[-lr] [--license] [pkg_fmri_pattern ...]")
+        adv_usage["info"] = \
+            _("[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]")
+        adv_usage["contents"] = _(
+            "[-Hmr] [-a attribute=pattern ...] [-g path_or_uri ...]\n"
+            "            [-o attribute ...] [-s sort_key] [-t action_type ...]\n"
+            "            [pkg_fmri_pattern ...]")
         adv_usage["search"] = _(
             "[-HIaflpr] [-o attribute ...] [-s repo_uri] query")
 
         adv_usage["verify"] = _("[-Hqv] [pkg_fmri_pattern ...]")
         adv_usage["fix"] = _("[--accept] [--licenses] [pkg_fmri_pattern ...]")
-
-        adv_usage["contents"] = _(
-            "[-Hmr] [-a attribute=pattern ...] [-o attribute ...]\n"
-            "            [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]")
+        adv_usage["revert"] = _(
+            "[-nv] [--be-name name] [--deny-new-be | --require-new-be]\n"
+            "            (--tagged tag-name ... | path-to-file ...)")
 
         adv_usage["image-create"] = _(
             "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
@@ -202,12 +204,14 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
             "            [--facet <facet_spec>=[True|False] ...]\n"
             "            (-p|--publisher) [<name>=]<repo_uri> dir")
         adv_usage["change-variant"] = _(
-            "[-nvq] [--accept] [--be-name name] [--licenses]\n"
-            "            [--deny-new-be | --require-new-be] <variant_spec>=<instance> ...")
+            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <variant_spec>=<instance> ...")
 
         adv_usage["change-facet"] = _(
-            "[-nvq] [--accept] [--be-name name] [--licenses]\n"
-            "            [--deny-new-be | --require-new-be] <facet_spec>=[True|False|None] ...")
+            "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <facet_spec>=[True|False|None] ...")
 
         adv_usage["variant"] = _("[-H] [<variant_spec>]")
         adv_usage["facet"] = ("[-H] [<facet_spec>]")
@@ -318,9 +322,10 @@ def get_fmri_args(api_inst, args, cmd=None):
 def list_inventory(api_inst, args):
         """List packages."""
 
-        opts, pargs = getopt.getopt(args, "Hafnsuv", ["no-refresh"])
+        opts, pargs = getopt.getopt(args, "Hafg:nsuv", ["no-refresh"])
 
         display_headers = True
+        origins = set()
         refresh_catalogs = True
         pkg_list = api.ImageInterface.LIST_INSTALLED
         summary = False
@@ -336,6 +341,8 @@ def list_inventory(api_inst, args):
                 elif opt == "-f":
                         ltypes.add(opt)
                         variants = True
+                elif opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-n":
                         ltypes.add(opt)
                 elif opt == "-s":
@@ -352,6 +359,10 @@ def list_inventory(api_inst, args):
             ("-u", ("-s", "-v")),
             ("-n", ("-s", "-v")),
         ]
+
+        if origins and "-n" not in ltypes:
+                # Use of -g implies -a unless -n is provided.
+                ltypes.add("-a")
 
         if "-f" in ltypes and "-a" not in ltypes:
                 usage(_("-f may only be used in combination with -a"),
@@ -439,7 +450,7 @@ def list_inventory(api_inst, args):
         ppub = api_inst.get_preferred_publisher().prefix
         try:
                 res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
-                    raise_unmatched=True, variants=variants)
+                    raise_unmatched=True, repos=origins, variants=variants)
                 for pt, summ, cats, states in res:
                         found = True
                         if display_headers:
@@ -1231,15 +1242,18 @@ def change_variant(api_inst, args):
         the image contents as necessary."""
 
         op = "change-variant"
-        opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
+        opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "be-name=",
             "licenses", "deny-new-be", "require-new-be"])
 
         accept = quiet = noexecute = show_licenses = False
+        origins = set()
         verbose = 0
         be_name = None
         new_be = None
         for opt, arg in opts:
-                if opt == "-n":
+                if opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
+                elif opt == "-n":
                         noexecute = True
                 elif opt == "-v":
                         verbose = verbose + 1
@@ -1286,7 +1300,7 @@ def change_variant(api_inst, args):
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants,
                     facets=None, noexecute=noexecute, be_name=be_name,
-                    new_be=new_be)
+                    new_be=new_be, repos=origins)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1318,15 +1332,18 @@ def change_facet(api_inst, args):
         image as necessary"""
 
         op = "change-facet"
-        opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
+        opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "be-name=",
             "licenses", "deny-new-be", "require-new-be"])
 
         accept = quiet = noexecute = show_licenses = False
+        origins = set()
         verbose = 0
         be_name = None
         new_be = None
         for opt, arg in opts:
-                if opt == "-n":
+                if opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
+                elif opt == "-n":
                         noexecute = True
                 elif opt == "-v":
                         verbose = verbose + 1
@@ -1388,7 +1405,7 @@ def change_facet(api_inst, args):
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants=None,
                     facets=facets, noexecute=noexecute, be_name=be_name,
-                    new_be=new_be)
+                    new_be=new_be, repos=origins)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1419,21 +1436,23 @@ def install(api_inst, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
-        # XXX Publisher-catalog issues.
         op = "install"
-        opts, pargs = getopt.getopt(args, "nvq", ["accept", "licenses",
+        opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "licenses",
             "no-refresh", "no-index", "deny-new-be", "require-new-be",
             "be-name=", "reject="])
 
         accept = quiet = noexecute = show_licenses = False
         verbose = 0
+        origins = set()
         refresh_catalogs = update_index = True
         new_be = None
         be_name = None
         reject_pats = []
 
         for opt, arg in opts:
-                if opt == "-n":
+                if opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
+                elif opt == "-n":
                         noexecute = True
                 elif opt == "-v":
                         verbose = verbose + 1
@@ -1478,7 +1497,8 @@ def install(api_inst, args):
         try:
                 stuff_to_do = api_inst.plan_install(pargs,
                     refresh_catalogs, noexecute, update_index=update_index,
-                    be_name=be_name, new_be=new_be, reject_list=reject_pats)
+                    be_name=be_name, new_be=new_be, reject_list=reject_pats,
+                    repos=origins)
         except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1586,19 +1606,23 @@ def update(api_inst, args):
         The operands are interpreted as glob patterns."""
 
         op = "update"
-        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=", "reject=",
-            "licenses", "no-refresh", "no-index", "deny-new-be", "require-new-be"])
+        opts, pargs = getopt.getopt(args, "fg:nvq", ["accept", "be-name=",
+            "reject=", "licenses", "no-refresh", "no-index", "deny-new-be",
+            "require-new-be"])
 
         accept = force = quiet = noexecute = show_licenses = False
         verbose = 0
         refresh_catalogs = update_index = True
         be_name = None
         new_be = None
+        origins = set()
         reject_pats = []
 
         for opt, arg in opts:
                 if opt == "-f":
                         force = True
+                elif opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-n":
                         noexecute = True
                 elif opt == "-v":
@@ -1645,19 +1669,22 @@ def update(api_inst, args):
                         # allowed by the patterns specified.  (The versions
                         # specified can be older than what is installed.)
                         stuff_to_do = api_inst.plan_update(pargs,
-                            refresh_catalogs=refresh_catalogs, noexecute=noexecute,
-                            be_name=be_name, new_be=new_be, update_index=update_index,
-                            reject_list=reject_pats)
+                            refresh_catalogs=refresh_catalogs,
+                            noexecute=noexecute, be_name=be_name, new_be=new_be,
+                            update_index=update_index, reject_list=reject_pats,
+                            repos=origins)
                 else:
                         # If no packages were specified, or '*' was one of
                         # the patterns provided, attempt to update all
                         # installed packages.
                         stuff_to_do, opensolaris_image = \
                             api_inst.plan_update_all(
-                                refresh_catalogs=refresh_catalogs, noexecute=noexecute,
-                                be_name=be_name, new_be=new_be, force=force,
+                                refresh_catalogs=refresh_catalogs,
+                                noexecute=noexecute, be_name=be_name,
+                                new_be=new_be, force=force,
                                 update_index=update_index,
-                                reject_list=reject_pats)
+                                reject_list=reject_pats,
+                                repos=origins)
         except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1889,15 +1916,9 @@ def search(api_inst, args):
                 elif opt == "-r":
                         remote = True
                 elif opt == "-s":
-                        if not misc.valid_pub_url(arg):
-                                orig_arg = arg
-                                arg = "http://" + arg
-                                if not misc.valid_pub_url(arg):
-                                        error(_("%s is not a valid "
-                                            "repository URL.") % orig_arg)
-                                        return EXIT_OOPS
                         remote = True
-                        servers.append({"origin": arg})
+                        servers.append({
+                            "origin": misc.parse_uri(arg, cwd=orig_cwd) })
                 elif opt == "-I":
                         case_sensitive = True
 
@@ -2075,10 +2096,14 @@ def info(api_inst, args):
         display_license = False
         info_local = False
         info_remote = False
+        origins = set()
 
-        opts, pargs = getopt.getopt(args, "lr", ["license"])
+        opts, pargs = getopt.getopt(args, "g:lr", ["license"])
         for opt, arg in opts:
-                if opt == "-l":
+                if opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
+                        info_remote = True
+                elif opt == "-l":
                         info_local = True
                 elif opt == "-r":
                         info_remote = True
@@ -2106,19 +2131,16 @@ def info(api_inst, args):
         info_needed |= frozenset([api.PackageInfo.DEPENDENCIES])
 
         try:
-                ret = api_inst.info(pargs, info_local, info_needed)
+                ret = api_inst.info(pargs, info_local, info_needed,
+                    repos=origins)
         except api_errors.ImageFormatUpdateNeeded, e:
                 format_update_error(e)
                 return EXIT_OOPS
-        except (api_errors.InvalidPackageErrors,
-            api_errors.ActionExecutionError,
-            api_errors.UnrecognizedOptionsToInfo,
-            api_errors.UnknownErrors,
-            api_errors.PermissionsException), e:
-                error(e)
-                return EXIT_OOPS
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
+                return EXIT_OOPS
+        except api_errors.ApiException, e:
+                error(e)
                 return EXIT_OOPS
 
         pis = ret[api.ImageInterface.INFO_FOUND]
@@ -2479,14 +2501,12 @@ def list_contents(api_inst, args):
         attributes to display; with -s, specify attributes to sort on; with -t,
         specify which action types to list."""
 
-        # XXX Need remote-info option, to request equivalent information
-        # from repository.
-
-        opts, pargs = getopt.getopt(args, "Ha:o:s:t:mfr")
+        opts, pargs = getopt.getopt(args, "Ha:g:o:s:t:mfr")
 
         subcommand = "contents"
         display_headers = True
         display_raw = False
+        origins = set()
         output_fields = False
         remote = False
         local = False
@@ -2504,6 +2524,8 @@ def list_contents(api_inst, args):
                                 usage(_("-a takes an argument of the form "
                                     "<attribute>=<pattern>"), cmd=subcommand)
                         attr_match.setdefault(attr, []).append(match)
+                elif opt == "-g":
+                        origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-o":
                         output_fields = True
                         attrs.extend(arg.split(","))
@@ -2516,10 +2538,10 @@ def list_contents(api_inst, args):
                 elif opt == "-m":
                         display_raw = True
 
-        if not remote and not local:
+        if origins:
+                remote = True
+        elif not remote:
                 local = True
-        elif local and remote:
-                usage(_("-l and -r may not be combined"), cmd=subcommand)
 
         if remote and not pargs:
                 usage(_("contents: must request remote contents for specific "
@@ -2601,12 +2623,13 @@ def list_contents(api_inst, args):
         notfound = EmptyI
         try:
                 res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
-                    raise_unmatched=True, return_fmris=True, variants=True)
+                    raise_unmatched=True, return_fmris=True, variants=True,
+                    repos=origins)
                 manifests = []
 
                 for pfmri, summ, cats, states in res:
                         manifests.append(api_inst.get_manifest(pfmri,
-                            all_variants=display_raw))
+                            all_variants=display_raw, repos=origins))
         except api_errors.ImageFormatUpdateNeeded, e:
                 format_update_error(e)
                 return EXIT_OOPS
@@ -2867,10 +2890,9 @@ def publisher_set(api_inst, args):
         unset_props = set()
 
         opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
-            ["add-mirror=", "remove-mirror=", "add-origin=",
-            "remove-origin=", "no-refresh", "reset-uuid",
-            "enable", "disable", "sticky", "non-sticky", "search-before=",
-            "search-after=", "approve-ca-cert=",
+            ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
+            "no-refresh", "reset-uuid", "enable", "disable", "sticky",
+            "non-sticky", "search-before=", "search-after=", "approve-ca-cert=",
             "revoke-ca-cert=", "unset-ca-cert=", "set-property=",
             "add-property-value=", "remove-property-value=", "unset-property="])
 
@@ -2882,19 +2904,19 @@ def publisher_set(api_inst, args):
                 elif opt == "-e" or opt == "--enable":
                         disable = False
                 elif opt == "-g" or opt == "--add-origin":
-                        add_origins.add(arg)
+                        add_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-G" or opt == "--remove-origin":
-                        remove_origins.add(arg)
+                        remove_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-k":
                         ssl_key = arg
                 elif opt == "-O":
                         origin_uri = arg
                 elif opt == "-m" or opt == "--add-mirror":
-                        add_mirrors.add(arg)
+                        add_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-M" or opt == "--remove-mirror":
-                        remove_mirrors.add(arg)
+                        remove_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-p":
-                        repo_uri = arg
+                        repo_uri = misc.parse_uri(arg, cwd=orig_cwd)
                 elif opt == "-P":
                         preferred = True
                 elif opt == "--reset-uuid":
@@ -2949,8 +2971,8 @@ def publisher_set(api_inst, args):
         if len(pargs) == 0 and not repo_uri:
                 usage(_("requires a publisher name"), cmd="set-publisher")
         elif len(pargs) > 1:
-                usage( _("only one publisher name may be specified"),
-                    cmd="set-publisher",)
+                usage(_("only one publisher name may be specified"),
+                    cmd="set-publisher")
         elif pargs:
                 name = pargs[0]
 
@@ -2963,8 +2985,8 @@ def publisher_set(api_inst, args):
                     "options may not be combined"), cmd="set-publisher")
 
         if search_before and search_after:
-                usage(_("search_before and search_after may not be combined"),
-                      cmd="set-publisher")
+                usage(_("--search-before and --search-after may not be "
+                    "combined"), cmd="set-publisher")
 
         if repo_uri and (add_origins or add_mirrors or remove_origins or
             remove_mirrors or disable != None or not refresh_allowed or
@@ -3089,7 +3111,8 @@ assistance."""))
                             duplicate=True)
                         dest_repo = dest_pub.selected_repository
 
-                        if not dest_repo.has_origin(repo_uri):
+                        if dest_repo.origins and \
+                            not dest_repo.has_origin(repo_uri):
                                 failed.append((prefix, _("""\
     The specified repository location is not a known source of publisher
     configuration updates for '%s'.
@@ -3105,8 +3128,11 @@ assistance."""))
                                 # assumed to match the URI that the user
                                 # provided.  Since this is an update case,
                                 # nothing special needs to be done.
+                                if not dest_repo.origins:
+                                        add_origins = [repo_uri]
+                                else:
+                                        add_origins = []
                                 add_mirrors = []
-                                add_origins = []
                         else:
                                 # Avoid duplicates by adding only those mirrors
                                 # or origins not already known.
@@ -3204,11 +3230,12 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                         if reset_uuid:
                                 pub.reset_client_uuid()
                         repo = pub.selected_repository
-                except api_errors.UnknownPublisher:
-                        if not origin_uri and not add_origins:
-                                return EXIT_OOPS, _("publisher does not exist. "
-                                    "Use -g to define origin URI for new "
-                                    "publisher.")
+                except api_errors.UnknownPublisher, e:
+                        if not origin_uri and not add_origins and \
+                            (remove_origins or remove_mirrors or
+                            remove_prop_values or add_mirrors):
+                                return EXIT_OOPS, str(e)
+
                         # No pre-existing, so create a new one.
                         repo = publisher.Repository()
                         pub = publisher.Publisher(prefix, repositories=[repo])
@@ -3473,7 +3500,6 @@ def publisher_list(api_inst, args):
 
         retcode = EXIT_OK
         if len(pargs) == 0:
-
                 pref_pub = api_inst.get_preferred_publisher()
                 if preferred_only:
                         pubs = [pref_pub]
@@ -3488,10 +3514,10 @@ def publisher_list(api_inst, args):
                         so = api_inst.get_pub_search_order()
                         pub_dict = dict([(p.prefix, p) for p in pubs])
                         pubs = [
-                                pub_dict[name]
-                                for name in so
-                                if name in pub_dict
-                                ]
+                            pub_dict[name]
+                            for name in so
+                            if name in pub_dict
+                        ]
                 # Create a formatting string for the default output
                 # format
                 if format == "default":
@@ -3564,9 +3590,11 @@ def publisher_list(api_inst, args):
                                 set_value(field_data["status"], _("online"))
                                 set_value(field_data["uri"], str(uri))
                                 values = map(get_value,
-                                             sorted(filter(filter_func,
-                                             field_data.values()), sort_fields))
+                                    sorted(filter(filter_func,
+                                    field_data.values()), sort_fields)
+                                )
                                 msg(fmt % tuple(values))
+
                         # Update field_data for each mirror and output
                         # a publisher record in our desired format.
                         for uri in r.mirrors:
@@ -3575,9 +3603,21 @@ def publisher_list(api_inst, args):
                                 set_value(field_data["status"], _("online"))
                                 set_value(field_data["uri"], str(uri))
                                 values = map(get_value,
-                                             sorted(filter(filter_func,
-                                             field_data.values()), sort_fields))
+                                    sorted(filter(filter_func,
+                                    field_data.values()), sort_fields)
+                                )
                                 msg(fmt % tuple(values))
+
+                        if not r.origins and not r.mirrors:
+                                set_value(field_data["type"], "")
+                                set_value(field_data["status"], "")
+                                set_value(field_data["uri"], "")
+                                values = map(get_value,
+                                    sorted(filter(filter_func,
+                                    field_data.values()), sort_fields)
+                                )
+                                msg(fmt % tuple(values))
+
         else:
                 def display_ssl_info(uri):
                         retcode = EXIT_OK
@@ -4532,8 +4572,8 @@ def main_func():
                                         key, value = arg.split("=", 1)
                                 except (AttributeError, ValueError):
                                         usage(_("%(opt)s takes argument of form "
-                                            "name=value, not %(arg)s") % { "opt":  opt,
-                                            "arg": arg })
+                                            "name=value, not %(arg)s") % {
+                                            "opt":  opt, "arg": arg })
                         DebugValues.set_value(key, value)
                 elif opt == "-R":
                         mydir = arg

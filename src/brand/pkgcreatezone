@@ -220,9 +220,13 @@ if [[ -n $propagate_extra ]]; then
 	# mirror level, then this will have to be changed.
 	get_publisher_urls non-preferred origin | \
 	    while IFS="=" read pub pub_urls; do
-		# skip extra publishers that need a key/cert
-		[[ "`get_pub_secinfo $pub`" != "None None" ]] && \
-		    continue
+		if [[ "$pub_urls" != "None" ]]; then
+			# skip extra publishers that need a key/cert
+			[[ "`get_pub_secinfo $pub`" != "None None" ]] && \
+			    continue
+		else
+			pub_urls=""
+		fi
 
 		if [[ -z "$publishers_extra_origins" ]]; then
 			publishers_extra_origins="$pub=$pub_urls"

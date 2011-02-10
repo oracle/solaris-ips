@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import calendar
@@ -651,5 +651,7 @@ class Transaction(object):
                 # Move each file to file_root, with appropriate directory
                 # structure.
                 for f in os.listdir(self.dir):
+                        if f == "append":
+                                continue
                         src_path = os.path.join(self.dir, f)
                         self.rstore.cache_store.insert(f, src_path)

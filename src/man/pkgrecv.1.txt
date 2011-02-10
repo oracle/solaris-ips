@@ -5,19 +5,28 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-c cache_dir]
+     /usr/bin/pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
          [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
          (fmri|pattern) ...
      /usr/bin/pkgrecv [-s src_uri] --newest
 
 DESCRIPTION
-     pkgrecv allows the user to retrieve the contents of a package
-     from a pkg(5) repository.  With the default options, the contents
-     are retrieved in a repository format suitable for use with
-     pkg.depotd(1M).
+     pkgrecv allows the user to retrieve packages from a pkg(5) repository
+     or package archive.  It can also optionally republish the retreived
+     packages to a different package repository or archive them.  By
+     default, packages are retrieved in package repository format suitable
+     for use with pkg(1), pkg.depotd(1M), and package publication tools.
 
 OPTIONS
      The following options are supported:
+
+     -a              Store the retrieved package data in a pkg(5) archive
+                     at the location specified by -d.  The file may not
+                     already exist, and this option may only be used with
+                     filesystem-based destinations.  Although not required,
+                     it is strongly suggested that a file extension of
+                     '.p5p' is used (e.g. 'archive.p5p').  This option may
+                     not be combined with --raw.
 
      -c cache_dir    The path to a directory that will be used to cache
                      downloaded content.  If one is not supplied, the
@@ -30,7 +39,8 @@ OPTIONS
                      republish packages to.  If not provided, the default
                      value is the current working directory.  The target
                      must already exist.  New repositories can be created
-                     using pkgrepo(1).
+                     using pkgrepo(1).  If -a is specified, the target is
+                     assumed to be a new package archive.
 
      -h              Display usage message.
 
@@ -68,7 +78,8 @@ OPTIONS
                      based destinations.  This can be used with pkgsend(1)
                      include to conveniently modify and republish packages,
                      perhaps by correcting file contents or providing
-                     additional package metadata.
+                     additional package metadata.  This option may not be
+                     combined with -a.
 
 
 
@@ -124,16 +135,28 @@ EXAMPLES
 
      $ pkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'
 
+     Example 9: Create a package archive containing the package "SUNWemacs"
+     and all of its dependencies from the repository located at
+     http://example.com:10000:
+
+     $ pkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs
+
+     Example 10: Copy all of the packages in a package archive to an
+     existing repository located at '/export/repo':
+
+     $ pkgrecv -s /my/archive.p5p -d /export/repo '*'
+
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
 
      PKG_DEST           The path of a directory to save the retrieved
-                        package to, or the URI of a repository to
-                        republish it to.  If not provided, the default
-                        value is the current working directory.
+                        package to, or the filesystem path or URI of a
+                        repository to republish it to.  If not provided,
+                        the default value is the current working directory.
 
-     PKG_SRC            A URI representing the location of a pkg(5)
-                        repository to retrieve package data from.
+     PKG_SRC            A URI or filesystem path representing the location
+                        of a pkg(5) repository or package archive to
+                        retrieve package data from.
 
 EXIT STATUS
      The following exit values are returned:

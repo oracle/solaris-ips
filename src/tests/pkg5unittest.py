@@ -98,7 +98,7 @@ import pkg.client.progress
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 52
+CLIENT_API_VERSION = 53
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -207,6 +207,18 @@ class Pkg5TestCase(unittest.TestCase):
         def __str__(self):
                 return "%s.py %s.%s" % (self.__class__.__module__,
                     self.__class__.__name__, self._testMethodName)
+
+        def assertRaisesStringify(self, excClass, callableObj, *args, **kwargs):
+                """Perform the same logic as assertRaises, but then verify that
+                the exception raised can be stringified."""
+
+                try:
+                        callableObj(*args, **kwargs)
+                except excClass, e:
+                        str(e)
+                        return
+                else:
+                        raise self.failureException, "%s not raised" % excClass
 
         #
         # Uses property() to implements test_root as a read-only attribute.

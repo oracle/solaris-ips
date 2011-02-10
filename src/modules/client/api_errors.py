@@ -1436,14 +1436,14 @@ class DuplicateRepositoryOrigin(PublisherError):
                     "publisher.") % self.data
 
 
-class PublisherOriginRequired(PublisherError):
-        """Used to indicate that the specified publisher must have at least one
-        repository with at least one origin URI."""
+class NoPublisherRepositories(PublisherError):
+        """Used to indicate that a Publisher has no repository information
+        configured and so transport operations cannot be performed."""
 
         def __str__(self):
-                return _("At least one origin is required for %s.  You must "
-                "add a new origin before attempting to remove the specified "
-                "origin(s).") % self.data
+                return _("Unable to retrieve requested package data for "
+                    "publisher %s; no repositories are currently configured "
+                    "for use with this publisher.") % self.data
 
 
 class RemovePreferredPublisher(PublisherError):

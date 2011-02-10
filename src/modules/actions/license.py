@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a license packaging object
@@ -171,7 +171,8 @@ class LicenseAction(generic.Action):
 
                 try:
                         pub = img.get_publisher(pfmri.publisher)
-                        return img.transport.get_content(pub, self.hash)
+                        return img.transport.get_content(pub, self.hash,
+                            fmri=pfmri)
                 finally:
                         img.cleanup_downloads()
 

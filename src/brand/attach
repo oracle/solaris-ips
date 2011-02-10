@@ -177,7 +177,11 @@ gather_zone_publisher_details() {
 		if [[ -z $origin ]]; then
 			origin=$name
 			name=${publisher.name}
+		elif [[ "$origin" == "None" ]]; then
+			# Publisher with no origins.
+			origin=""
 		fi
+
 		# Use a compound variable to store all the data
 		# relating to a publisher.
 		if [[ -z ${publishers[$name]} ]]; then
@@ -195,14 +199,22 @@ gather_zone_publisher_details() {
 			get_publisher_attrs ${publisher.name} origin | \
 			    IFS=" " read publisher.sticky publisher.preferred \
 			    publisher.enabled
-			get_pub_secinfo ${publisher.name} | \
-			    read publisher.keyfile publisher.certfile
-			[[ ${publisher.keyfile} != "None" && \
-			    ! -f ${PKG_IMAGE}/${publisher.keyfile} ]] && \
-			    fail_usage "$f_nosuch_key" ${publisher.keyfile}
-			[[ ${publisher.certfile} != "None" && \
-			    ! -f ${PKG_IMAGE}/${publisher.certfile} ]] && \
-			    fail_usage "$f_nosuch_cert" ${publisher.certfile}
+			if [[ -n "$origin" ]]; then
+				get_pub_secinfo ${publisher.name} | \
+				    read publisher.keyfile publisher.certfile
+				[[ ${publisher.keyfile} != "None" && \
+				    ! -f ${PKG_IMAGE}/${publisher.keyfile} ]] && \
+				    fail_usage "$f_nosuch_key" \
+				        ${publisher.keyfile}
+				[[ ${publisher.certfile} != "None" && \
+				    ! -f ${PKG_IMAGE}/${publisher.certfile} ]] && \
+				    fail_usage "$f_nosuch_cert" \
+				        ${publisher.certfile}
+			else
+				# Publisher has no origins.
+				publisher.keyfile="None"
+				publisher.certfile="None"
+			fi
 			publisher_count=publisher_count+1
 			url_count=0
 		fi
