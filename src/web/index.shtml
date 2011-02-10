@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 ##
 <%!
         import os.path
@@ -57,10 +57,16 @@
                 # Ignore publisher component of path.
                 rpath = rpath.replace(pub, "").strip("/")
 
+        prefix = ""
         if rpath == "":
+                # Because the redirect is relative if the original request
+                # didn't end with a '/', special care has to be taken for
+                # this particular case.
+                if pub and not request.path_info.endswith("/"):
+                        prefix = pub + "/"
                 rpath = "index.shtml"
 
         # Finally, redirect the client to the content appropriate for their
         # language and region.
-        raise api_errors.RedirectException("%s/%s" % (dlang, rpath))
+        raise api_errors.RedirectException("%s%s/%s" % (prefix, dlang, rpath))
 %>\
