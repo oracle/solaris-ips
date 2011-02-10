@@ -470,13 +470,14 @@ def gen_actions(files, timestamp_files, target_files):
         for filename in files:
                 bundle = pkg.bundle.make_bundle(filename, target_files)
                 for action in bundle:
-                        if action.name == "file":
+                        if action.name in ("file", "dir"):
                                 basename = os.path.basename(action.attrs["path"])
                                 for pattern in timestamp_files:
                                         if fnmatch.fnmatch(basename, pattern):
                                                 break
                                 else:
                                         action.attrs.pop("timestamp", None)
+                        action.attrs.pop("pkg.size", None)
 
                         yield action, action.name in nopub_actions
 
