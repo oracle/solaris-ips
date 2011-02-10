@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -59,7 +59,9 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
             "pkg_path":
                 "usr/lib/python2.6/vendor-packages/pkg_test/client/__init__.py",
             "script_path": "lib/svc/method/svc-pkg-depot",
-            "syslog_path": "var/log/syslog"
+            "syslog_path": "var/log/syslog",
+            "py_mod_path": "usr/lib/python2.6/vendor-packages/cProfile.py",
+            "py_mod_path24": "usr/lib/python2.4/vendor-packages/cProfile.py"
         }
 
         smf_paths = {
@@ -120,6 +122,11 @@ file NOHASH group=bin mode=0755 owner=root path=%(indexer_path)s
 file NOHASH group=bin mode=0755 owner=root path=%(pkg_path)s
 """ % paths
 
+        python_mod_manf = """ \
+file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path)s
+file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path24)s
+""" % paths
+
         variant_manf_1 = """ \
 set name=variant.arch value=foo value=bar value=baz
 file NOHASH group=bin mode=0755 owner=root path=%(script_path)s
@@ -165,6 +172,15 @@ import sys
 import pkg_test.indexer_test.foobar as indexer
 import pkg.search_storage as ss
 from pkg_test.misc_test import EmptyI
+"""
+        # a python module that causes slightly different behaviour in
+        # modulefinder.py
+        python_module_text = """\
+#! /usr/bin/python
+
+class Foo(object):
+        def run(self):
+                import __main__
 """
 
         smf_fmris = {}
@@ -691,6 +707,8 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 self.make_proto_text_file(
                     "%s/pkg_test/indexer_test/__init__.py" % pdir,
                     "#!/usr/bin/python")
+                self.make_proto_text_file("%s/cProfile.py" % pdir,
+                    self.python_module_text)
                 
 	def make_smf_test_files(self):
                 for manifest in self.smf_paths.keys():
@@ -1071,6 +1089,20 @@ file NOHASH group=sys mode=0644 owner=root path=%(service_unknown)s
                 _check_all_res(dependencies.list_implicit_deps(t_path,
                     [self.proto_dir], {}, [], remove_internal_deps=False,
                     convert=False))
+
+        def test_python_imp_main(self):
+                """Ensure we can generate a dependency from a python module
+                known to cause different behaviour in modulefinder, where
+                we try to import __main__"""
+
+                t_path = self.make_manifest(self.python_mod_manf)
+                self.make_python_test_files(2.4)
+                self.make_python_test_files(2.6)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], convert=False)
+                self.assert_(es != 0, "Unexpected errors reported: %s" % es)
+                self.assert_(ds != 2, "Unexpected deps reported: %s" % ds)
 
         def test_variants_1(self):
                 """Test that a file which satisfies a dependency only under a

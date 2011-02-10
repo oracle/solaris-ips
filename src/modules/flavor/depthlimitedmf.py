@@ -2,8 +2,7 @@
 # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Python
 # Software Foundation; All Rights Reserved
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 
 """A version of ModuleFinder which limits the depth of exploration for loaded
@@ -120,7 +119,13 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         if self.replace_paths:
                                 co = self.replace_paths_in_code(co)
                         m.__code__ = co
-                        res.extend(self.scan_code(co, m))
+                        try:
+                                res.extend(self.scan_code(co, m))
+                        except ImportError, msg:
+                                self.msg(2, "ImportError:", str(msg), fqname,
+                                    pathname)
+                                self._add_badmodule(fqname, m)
+
                 self.msgout(2, "load_module ->", m)
                 return res
 
@@ -179,7 +184,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 res = []
                 if name in self.badmodules:
                         self._add_badmodule(name, caller)
-                        return
+                        return []
                 try:
                         res.extend(self.import_hook(name, caller, level=level))
                 except ImportError, msg:
@@ -206,8 +211,20 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         # doesn't live in the normal module space and it's part
                         # of python itself, which is handled by a different
                         # kind of dependency.
-                        if q.builtin:
+                        if isinstance(q, ModuleInfo) and q.builtin:
                                 return []
+                        elif isinstance(q, modulefinder.Module):
+                                name = q.__name__
+                                path = q.__path__
+                                # some Module objects don't get a path
+                                if not path:
+                                        if name in sys.builtin_module_names or \
+                                            name == "__future__":
+                                                return [ModuleInfo(name, [],
+                                                    builtin=True)]
+                                        else:
+                                                return [ModuleInfo(name, [])]
+                                return [ModuleInfo(name, path)]
                         else:
                                 return [q]
                 res = self.load_tail(name, q, tail)
@@ -247,7 +264,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 """Calculate the potential paths on the file system where the
                 module could be found."""
 
-                if path is None:
+                if not path:
                     if name in sys.builtin_module_names or name == "__future__":
                             return ModuleInfo(name, [], builtin=True)
                     path = self.path
