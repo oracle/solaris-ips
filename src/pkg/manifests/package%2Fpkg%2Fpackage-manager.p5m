@@ -199,7 +199,6 @@ dir path=usr/share/mime/packages
 file path=usr/share/mime/packages/packagemanager-info.xml
 dir path=usr/share/package-manager
 dir path=usr/share/package-manager/data
-file path=usr/share/package-manager/data/opensolaris.org.sections
 dir path=usr/share/package-manager/data/startpagebase
 dir path=usr/share/package-manager/data/startpagebase/C
 file path=usr/share/package-manager/data/startpagebase/C/dialog-information.png

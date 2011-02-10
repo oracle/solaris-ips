@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 MACH:sh = uname -p
@@ -90,9 +90,6 @@ APPHIGHICONS = \
 
 APPHIGHINVICONS = \
    data/icons/HighContrastInverse/48x48/packagemanager.png
-
-CATALOG = \
-   data/opensolaris.org.sections
 
 DESKTOP = \
    data/packagemanager.desktop \
@@ -252,8 +249,6 @@ ROOTAPPICONS = $(APPICONS:data/icons/48x48/%=$(ROOTAPPICONSHARE)/%)
 ROOTAPPHIGHICONS = $(APPHIGHICONS:data/icons/HighContrast/48x48/%=$(ROOTAPPHIGHICONSHARE)/%)
 ROOTAPPHIGHINVICONS = $(APPHIGHINVICONS:data/icons/HighContrastInverse/48x48/%=$(ROOTAPPHIGHINVICONSHARE)/%)
 
-ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
-
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
@@ -300,7 +295,6 @@ ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
    $(ROOTAPPHIGHICONS) \
    $(ROOTAPPHIGHINVICONS) \
-   $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTHELPFILES) \

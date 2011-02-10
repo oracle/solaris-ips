@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -331,6 +331,7 @@ smf_files = [
         'svc/pkg-update.xml',
         ]
 resource_files = [
+        'util/opensolaris.org.sections',
         'util/pkglintrc',
         ]
 execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']

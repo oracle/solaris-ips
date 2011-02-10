@@ -366,7 +366,7 @@ class Pkg5TestCase(unittest.TestCase):
                 self.configure_rcfile( "%s/usr/share/lib/pkg/pkglintrc" %
                     g_proto_area,
                     {"info_classification_path":
-                    "%s/usr/share/package-manager/data/opensolaris.org.sections" %
+                    "%s/usr/share/lib/pkg/opensolaris.org.sections" %
                     g_proto_area}, self.test_root, section="pkglint")
 
         def impl_tearDown(self):

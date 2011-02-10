@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
@@ -196,6 +196,7 @@ dir path=usr/share
 dir path=usr/share/lib
 dir path=usr/share/lib/pkg
 file path=usr/share/lib/pkg/pkglintrc
+file path=usr/share/lib/pkg/opensolaris.org.sections
 dir path=usr/share/lib/pkg/web
 dir path=usr/share/lib/pkg/web/_themes
 dir path=usr/share/lib/pkg/web/_themes/default

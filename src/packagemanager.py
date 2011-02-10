@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
@@ -3949,7 +3949,7 @@ class PackageManager:
                 #ImageInfo for categories
                 sectioninfo = imageinfo.ImageInfo()
                 share_path = os.path.join(self.application_dir, 
-                        "usr/share/package-manager/data")
+                        "usr/share/lib/pkg")
                 if len(pubs) == 0:
                         section = sectioninfo.read(os.path.join(share_path,
                                     "opensolaris.org.sections"))

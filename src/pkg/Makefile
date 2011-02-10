@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKGVERS_COMPONENT = 0.5.11
@@ -38,7 +38,7 @@ PDIR              = pkgtmp
 PWD:sh            = pwd
 PKGDEST           = $(PWD)/../../packages/$(ARCH)
 PKGROOT           = ../../proto/root_$(ARCH)
-PKGLINT           = $(PKGROOT)/usr/bin/pkglint -f $(PKGROOT)/usr/share/lib/pkg/pkglintrc
+PKGLINT           = $(PKGROOT)/usr/bin/pkglint
 
 PKGPUBLISHER      = pkg5-nightly
 
@@ -147,16 +147,19 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 # If new warnings/errors appear in the lint output, we return an error.
 #
 lint: repository-metadata
-	# Ensure that the shipped pkglint_whitelist.txt is self-consistent.
-	# That is, when sorting it in the C locale and diffing the output
-	# against itself, we should see no differences.
-	# (This catches whitelist putbacks that aren't correctly sorted)
-	env LC_ALL=C sort pkglint_whitelist.txt | diff - pkglint_whitelist.txt
+	@sed -e "s#/usr/share/lib/pkg/opensolaris.org.sections#$(PKGROOT)&#" \
+		< $(PKGROOT)/usr/share/lib/pkg/pkglintrc > $(PDIR)/pkglintrc
+
+	@# Ensure that the shipped pkglint_whitelist.txt is self-consistent.
+	@# That is, when sorting it in the C locale and diffing the output
+	@# against itself, we should see no differences.
+	@# (This catches whitelist putbacks that aren't correctly sorted)
+	@env LC_ALL=C sort pkglint_whitelist.txt | diff - pkglint_whitelist.txt
 	@echo "Running pkglint"
 	@rm -rf $(PDIR)/pkglint-cache
 	@rm -f $(PDIR)/pkglint-out*
 	@if [ -n "$(PKGLINT_REF_REPO)" ]; then				\
-		$(PKGLINT) -c $(PDIR)/pkglint-cache 			\
+		$(PKGLINT) -f $(PDIR)/pkglintrc -c $(PDIR)/pkglint-cache\
 			-r $(PKGLINT_REF_REPO) -l file://$(PKGDEST)/repo; \
 	fi
 	-@if [ -z "$(PKGLINT_REF_REPO)" ]; then 			\

@@ -35,7 +35,7 @@ defaults = {
     "do_pub_checks": "True",
     "ignore_different_publishers": "True",
     "info_classification_path":
-        "/usr/share/package-manager/data/opensolaris.org.sections",
+        "/usr/share/lib/pkg/opensolaris.org.sections",
     "use_progress_tracker": "True",
     "pkglint.ext.opensolaris": "pkg.lint.opensolaris",
     "pkglint.ext.pkglint_actions": "pkg.lint.pkglint_action",

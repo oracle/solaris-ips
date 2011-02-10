@@ -19,12 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This script generates l10n.py from opensolaris.org.sections
-CATEGORY_FILE=opensolaris.org.sections
+CATEGORY_FILE=../../util/opensolaris.org.sections
 OUTPUT_FILE=l10n.py
 LANG=C
 
