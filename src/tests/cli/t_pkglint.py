@@ -217,7 +217,8 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 
                 # override log setting in config file
                 self.make_misc_files(
-                    {"low_noise_rc": self.low_noise_rc})
+                    {"low_noise_rc": self.low_noise_rc %
+                    pkg5unittest.g_proto_area})
                 ret, output, err = self.pkglint("-f %s/low_noise_rc %s" %
                     (self.test_root, mpath), exit=0)
                 self.assert_("Total number of checks found" not in output,
