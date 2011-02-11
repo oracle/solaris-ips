@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 MACH:sh = uname -p
@@ -63,6 +63,7 @@ ROOTFILES = \
 	$(ROOTBRANDPKG)/prestate \
 	$(ROOTBRANDPKG)/smf_disable.lst \
 	$(ROOTBRANDPKG)/support \
+	$(ROOTBRANDPKG)/sysboot \
 	$(ROOTBRANDPKG)/uninstall
 
 BIN = \

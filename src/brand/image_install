@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -97,14 +98,8 @@ trap trap_exit EXIT
 # If we weren't passed at least two arguments, exit now.
 (( $# < 2 )) && exit $ZONE_SUBPROC_USAGE
 
-ZONENAME="$1"
-ZONEPATH="$2"
-# XXX shared/common script currently uses lower case zonename & zonepath
-zonename="$ZONENAME"
-zonepath="$ZONEPATH"
-
-ZONEROOT="$ZONEPATH/root"
-
+init_zone zone "$1" "$2"
+eval $(bind_legacy_zone_globals zone)
 shift; shift	# remove zonename and zonepath from arguments array
 
 unset inst_type
@@ -204,8 +199,7 @@ exec 2>>$LOGFILE
 
 if (( $p2v_result != 0 )); then
 	log "$p2v_fail"
-	log ""
-	log "$install_fail"
+	log "\n$install_fail"
 	log "$install_log" "$LOGFILE"
 	exit $ZONE_SUBPROC_FATAL
 fi
@@ -224,10 +218,9 @@ rm -f $LOGFILE
 
 # Mount active dataset on the root.
 is_brand_labeled
-(( $? == 0 )) && mount_active_ds
+(( $? == 0 )) && mount_active_be -c zone
 
-log ""
-log "$m_complete" ${SECONDS}
+log "\n$m_complete" ${SECONDS}
 printf "$install_log\n" "$ZONEROOT/var/log/$ZONENAME.install$$.log"
 printf "$m_postnote\n"
 printf "$m_postnote2\n"

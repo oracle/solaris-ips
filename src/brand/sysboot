@@ -21,36 +21,18 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
 
-m_usage=$(gettext  "detach [-n ].")
+typeset zone
+init_zone zone "$1" "$2" || {
+	error "Usage: %s zone zonepath" "$0"
+	exit $ZONE_SUBPROC_USAGE
+}
 
-noexecute=0
-
-# Other brand detach options are invalid for this brand.
-while getopts "nR:z:" opt; do
-	case $opt in
-		n)	noexecute=1 ;;
-		R)	ZONEPATH="$OPTARG" ;;
-		z)	ZONENAME="$OPTARG" ;;
-		?)	fail_usage "" ;;
-		*)	fail_usage "";;
-	esac
-done
-shift $((OPTIND-1))
-
-init_zone zone "$ZONENAME" "$ZONEPATH"
-eval $(bind_legacy_zone_globals zone)
-
-if (( $noexecute == 1 )); then
-	cat /etc/zones/$ZONENAME.xml
-	exit $ZONE_SUBPROC_OK
-fi
-
-# All of the hard stuff is done in commmon code.
-detach_zone zone
+# Mount the active boot environment on the zoneroot.
+mount_active_be -c zone || exit $ZONE_SUBPROC_NOTCOMPLETE
 
 exit $ZONE_SUBPROC_OK

@@ -19,15 +19,10 @@
 #
 # CDDL HEADER END
 #
-#
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
 
 #
-# get script name (bname) and path (dname)
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
-bname=`basename $0`
 
 #
 # common shell script functions
@@ -38,16 +33,13 @@ bname=`basename $0`
 #
 # options processing
 #
-zonename=$1
-if [ -z "$zonename" ]; then
-	printf "$f_abort\n" >&2
-	exit $ZONE_SUBPROC_FATAL
-fi
-zonepath=$2
-if [ -z "$zonepath" ]; then
-	printf "$f_abort" >&2
-	exit $ZONE_SUBPROC_FATAL
-fi
+
+# If we weren't passed at least two arguments, exit now.
+(( $# < 2 )) && fail_fatal "$f_abort"
+
+typeset zone
+init_zone zone "$1" "$2"
+eval $(bind_legacy_zone_globals zone)
 shift 2
 
 options="FhHnv"
@@ -101,7 +93,6 @@ shift `expr $OPTIND - 1`
 #
 # main
 #
-zoneroot=$zonepath/root
 
 nop=""
 if [[ -n "$opt_n" ]]; then
@@ -113,49 +104,28 @@ if [[ -n "$opt_n" ]]; then
 	ZONE_SUBPROC_OK=$ZONE_SUBPROC_FATAL
 fi
 
-#
-# We want uninstall to work in the face of various problems, such as a
-# zone with no delegated root dataset or multiple active datasets, so we
-# don't use the common functions.  Instead, we do our own work here and
-# are tolerant of errors.
-#
-
 # get_current_gzbe
-CURRENT_GZBE=`/sbin/beadm list -H | /bin/nawk -F\; '{
-	# Field 3 is the BE status.  'N' is the active BE.
-	if ($3 ~ "N")
-		# Field 2 is the BE UUID
-		print $2
-	}'`
+get_current_gzbe || fail_fatal "$f_no_gzbe"
 
-if [ -z "$CURRENT_GZBE" ]; then
-	print "$f_no_gzbe"
-fi
+# find all the zone BEs associated with this global zone BE.
+typeset -a belist
+if [[ -n "$CURRENT_GZBE" ]]; then
+	zfs list -H -t filesystem -o $PROP_PARENT,name -r -d 1 \
+	    ${zone.ROOT_ds} 2>/dev/null | while IFS=$'\t' read uid fs; do
 
-uninstall_get_zonepath_ds
-uninstall_get_zonepath_root_ds
+		# Skip the ROOT dataset
+		[[ "$fs" == "${zone.ROOT_ds}" ]] && continue
 
-# find all the zone BEs datasets associated with this global zone BE.
-unset fs_all
-(( fs_all_c = 0 ))
-if [ -n "$CURRENT_GZBE" ]; then
-	/sbin/zfs list -H -t filesystem -o $PROP_PARENT,name \
-	    -r $ZONEPATH_RDS |
-	    while IFS="	" read uid fs; do
-
-		# only look at filesystems directly below $ZONEPATH_RDS
-		[[ "$fs" != ~()($ZONEPATH_RDS/+([^/])) ]] &&
-			continue
-
-		# match by PROP_PARENT uuid
-		[[ "$uid" != ${CURRENT_GZBE} ]] &&
-			continue
-
-		fs_all[$fs_all_c]=$fs
-		(( fs_all_c = $fs_all_c + 1 ))
+		#
+		# match by PROP_PARENT uuid.  If the uuid is not set ("-"), the
+		# BE is invalid (interrupted install?) and should be deleted.
+		#
+		if [[ $uid == "-" || $uid == "${CURRENT_GZBE}" ]] ; then
+			a_push belist "$(basename "$fs")"
+		fi
 	done
 fi
 
-destroy_zone_datasets
+destroy_zone_datasets zone -b belist
 
 exit $ZONE_SUBPROC_OK

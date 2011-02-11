@@ -19,9 +19,7 @@
 #
 # CDDL HEADER END
 #
-#
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
@@ -32,7 +30,7 @@ f_nosource=$(gettext "Error: unable to determine source zone dataset.")
 # Clean up on failure
 trap_exit()
 {
-	if (( $ZONE_IS_MOUNTED != 0 )); then
+	if (( ZONE_IS_MOUNTED != 0 )); then
 		error "$v_unmount"
 		zoneadm -z $ZONENAME unmount
 	fi
@@ -40,108 +38,39 @@ trap_exit()
 	exit $ZONE_SUBPROC_INCOMPLETE
 }
 
-# Set up ZFS dataset hierarchy for the zone.
-
-ROOT="rpool/ROOT"
-
+# Source and destination zones
+typeset src dst	
 # Other brand clone options are invalid for this brand.
 while getopts "R:z:" opt; do
 	case $opt in
-		R)	ZONEPATH="$OPTARG" ;;
-		z)	ZONENAME="$OPTARG" ;;
+		R)	opt_R="$OPTARG" ;;
+		z)	opt_z="$OPTARG" ;;
 		*)	fail_usage "";;
 	esac
 done
 shift $((OPTIND-1))
 
-if [ $# -ne 1 ]; then
+if (($# != 1)); then
 	fail_usage "";
 fi
 
-sourcezone=$1
-
-# Find the active source zone dataset to clone.
-sourcezonepath=`/usr/sbin/zoneadm -z $sourcezone list -p | awk -F: '{print $4}'`
-if [ -z "$sourcezonepath" ]; then
-	fail_fatal "$f_nosource"
-fi
+init_zone dst "$opt_z" "$opt_R"
+init_zone src "$1"
 
 get_current_gzbe
-get_zonepath_ds $sourcezonepath
-get_active_ds $CURRENT_GZBE $ZONEPATH_DS
+get_active_be src || fatal "$e_no_active_be"
 
-#
-# Now set up the zone's datasets
-#
+# From here on out the global variables referenced are for the destination zone
+eval $(bind_legacy_zone_globals dst)
 
-#
-# First make the top-level dataset.
-#
+# Make dataset snapshots
+snapshot_zone_rpool src "${dst}_snap%02d" snapname \
+    || fail_incomplete "$f_zfs_snapshot"
 
-pdir=`/usr/bin/dirname $ZONEPATH`
-zpname=`/usr/bin/basename $ZONEPATH`
+# Make dataset clones
+clone_zone_rpool src dst "$snapname" || fail_incomplete "$f_zone_clone"
 
-get_zonepath_ds $pdir
-zpds=$ZONEPATH_DS
-
-fail_zonepath_in_rootds $zpds
-
-#
-# We need to tolerate errors while creating the datasets and making the
-# mountpoint, since these could already exist from some other BE.
-#
-
-/usr/sbin/zfs create $zpds/$zpname
-
-/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $zpds/$zpname/ROOT
-
-# make snapshot
-SNAPNAME=${ZONENAME}_snap
-SNAPNUM=0
-while [ $SNAPNUM -lt 100 ]; do
-	/usr/sbin/zfs snapshot $ACTIVE_DS@$SNAPNAME
-        if [ $? = 0 ]; then
-                break
-	fi
-	SNAPNUM=`expr $SNAPNUM + 1`
-	SNAPNAME="${ZONENAME}_snap$SNAPNUM"
-done
-
-if [ $SNAPNUM -ge 100 ]; then
-	fail_fatal "$f_zfs_create"
-fi
-
-# do clone
-BENAME=zbe
-BENUM=0
-while [ $BENUM -lt 100 ]; do
-	/usr/sbin/zfs clone $ACTIVE_DS@$SNAPNAME $zpds/$zpname/ROOT/$BENAME
-	if [ $? = 0 ]; then
-		break
-	fi
-	BENUM=`expr $BENUM + 1`
-	BENAME="zbe-$BENUM"
-done
-
-if [ $BENUM -ge 100 ]; then
-	fail_fatal "$f_zfs_create"
-fi
-
-/usr/sbin/zfs set $PROP_ACTIVE=on $zpds/$zpname/ROOT/$BENAME || \
-	fail_incomplete "$f_zfs_create"
-
-/usr/sbin/zfs set $PROP_PARENT=$CURRENT_GZBE $zpds/$zpname/ROOT/$BENAME || \
-	fail_incomplete "$f_zfs_create"
-
-/usr/sbin/zfs set canmount=noauto $zpds/$zpname/ROOT/$BENAME || \
-	fail_incomplete "$f_zfs_create"
-
-if [ ! -d $ZONEPATH/root ]; then
-	/usr/bin/mkdir -p $ZONEPATH/root
-	/usr/bin/chmod 700 $ZONEPATH
-fi
-
-ZONE_IS_MOUNTED=0
+ZONE_IS_MOUNTED=1
 trap trap_exit EXIT
 
 #

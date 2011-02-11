@@ -23,14 +23,20 @@
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
+#
+# Only change PATH if you give full consideration to GNU or other variants
+# of common commands having different arguments and output.  Setting PATH is
+# and not using the full path to executables provides a performance improvement
+# by using the ksh builtin equivalent of many common commands.
+#
+export PATH=/usr/bin:/usr/sbin
 unset LD_LIBRARY_PATH
-PATH=/usr/bin:/usr/sbin
-export PATH
 
 . /usr/lib/brand/shared/common.ksh
 
 PROP_PARENT="org.opensolaris.libbe:parentbe"
 PROP_ACTIVE="org.opensolaris.libbe:active"
+PROP_BE_HANDLE="com.oracle.libbe:nbe_handle"
 
 f_incompat_options=$(gettext "cannot specify both %s and %s options")
 f_sanity_detail=$(gettext  "Missing %s at %s")
@@ -40,10 +46,8 @@ sanity_fail=$(gettext   "  Sanity Check: FAILED (see log for details).")
 sanity_fail_vers=$(gettext  "  Sanity Check: the Solaris image (release %s) is not an OpenSolaris image and cannot be installed in this type of branded zone.")
 install_fail=$(gettext  "        Result: *** Installation FAILED ***")
 f_zfs_in_root=$(gettext "Installing a zone inside of the root pool's 'ROOT' dataset is unsupported.")
-f_zfs_create=$(gettext "Unable to create the zone's ZFS dataset.")
 f_root_create=$(gettext "Unable to create the zone's ZFS dataset mountpoint.")
 f_no_gzbe=$(gettext "unable to determine global zone boot environment.")
-f_no_ds=$(gettext "the zonepath must be a ZFS dataset.\nThe parent directory of the zonepath must be a ZFS dataset so that the\nzonepath ZFS dataset can be created properly.")
 f_multiple_ds=$(gettext "multiple active datasets.")
 f_no_active_ds=$(gettext "no active dataset.")
 f_zfs_unmount=$(gettext "Unable to unmount the zone's root ZFS dataset (%s).\nIs there a global zone process inside the zone root?\nThe current zone boot environment will remain mounted.\n")
@@ -67,23 +71,8 @@ m_complete=$(gettext    "        Done: Installation completed in %s seconds.")
 m_postnote=$(gettext    "  Next Steps: Boot the zone, then log into the zone console (zlogin -C)")
 m_postnote2=$(gettext "              to complete the configuration process.")
 
-fail_incomplete() {
-	printf "ERROR: " 1>&2
-	printf "$@" 1>&2
-	printf "\n" 1>&2
-	exit $ZONE_SUBPROC_NOTCOMPLETE
-}
-
-fail_usage() {
-	printf "$@" 1>&2
-	printf "\n" 1>&2
-	printf "$m_brnd_usage" 1>&2
-	printf "$m_usage\n" 1>&2
-	exit $ZONE_SUBPROC_USAGE
-}
-
 is_brand_labeled() {
-	if [ -z $ALTROOT ]; then
+	if [[ -z $ALTROOT ]]; then
 		AR_OPTIONS=""
 	else
 		AR_OPTIONS="-R $ALTROOT"
@@ -140,7 +129,7 @@ sanity_check() {
 	vlog "$sanity_ok"
 }
 
-get_current_gzbe() {
+function get_current_gzbe {
 	#
 	# If there is no alternate root (normal case) then set the
 	# global zone boot environment by finding the boot environment
@@ -148,156 +137,97 @@ get_current_gzbe() {
 	# If a zone exists in a boot environment mounted on an alternate root,
 	# then find the boot environment where the alternate root is mounted.
 	#
-	if [ -x /usr/sbin/beadm ]; then
-		CURRENT_GZBE=`/usr/sbin/beadm list -H | /usr/bin/nawk \
-				-v alt=$ALTROOT -F\; '{
-			if (length(alt) == 0) {
-			    # Field 3 is the BE status.  'N' is the active BE.
-			    if ($3 !~ "N")
-				next
-			} else {
-			    # Field 4 is the BE mountpoint.
-			    if ($4 != alt)
-				next
-			}
-			# Field 2 is the BE UUID
-			print $2
-		}'`
-	else
-		# If there is no beadm command then the system doesn't really
-		# support multiple boot environments.  We still want zones to
-		# work so simulate the existence of a single boot environment.
-		CURRENT_GZBE="opensolaris"
-	fi
-
-	if [ -z "$CURRENT_GZBE" ]; then
-		fail_fatal "$f_no_gzbe"
-	fi
-}
-
-# Find the active dataset under the zonepath dataset to mount on zonepath/root.
-# $1 CURRENT_GZBE
-# $2 ZONEPATH_DS
-get_active_ds() {
-	ACTIVE_DS=`/usr/sbin/zfs list -H -r -t filesystem \
-	    -o name,$PROP_PARENT,$PROP_ACTIVE $2/ROOT | \
-	    /usr/bin/nawk -v gzbe=$1 ' {
-		if ($1 ~ /ROOT\/[^\/]+$/ && $2 == gzbe && $3 == "on") {
-			print $1
-			if (found == 1)
-				exit 1
-			found = 1
+	CURRENT_GZBE=$(beadm list -H | nawk -v alt=$ALTROOT -F\; '{
+		if (length(alt) == 0) {
+		    # Field 3 is the BE status.  'N' is the active BE.
+		    if ($3 !~ "N")
+			next
+		} else {
+		    # Field 4 is the BE mountpoint.
+		    if ($4 != alt)
+		next
 		}
-	    }'`
-
-	if [ $? -ne 0 ]; then
-		fail_fatal "$f_multiple_ds"
+		# Field 2 is the BE UUID
+		print $2
+	    }')
+	if [ -z "$CURRENT_GZBE" ]; then
+		return 1
 	fi
-
-	if [ -z "$ACTIVE_DS" ]; then
-		fail_fatal "$f_no_active_ds"
-	fi
-}
-
-# Check that zone is not in the ROOT dataset.
-fail_zonepath_in_rootds() {
-	case $1 in
-		rpool/ROOT/*)
-			fail_fatal "$f_zfs_in_root"
-			break;
-			;;
-		*)
-			break;
-			;;
-	esac
+	return 0
 }
 
 #
-# Make sure the active dataset is mounted for the zone.  There are several
-# cases to consider:
-# 1) First boot of the zone, nothing is mounted
-# 2) Zone is halting, active dataset remains the same.
-# 3) Zone is halting, there is a new active dataset to mount.
+# get_active_be zone
 #
-mount_active_ds() {
-	mount -p | cut -d' ' -f3 | egrep -s "^$ZONEPATH/root$"
-	if (( $? == 0 )); then
-		# Umount current dataset on the root (it might be an old BE).
-		umount $ZONEPATH/root
-		if (( $? != 0 )); then
-			# The umount failed, leave the old BE mounted.
-			# Warn about gz process preventing umount.
-			printf "$f_zfs_unmount" "$ZONEPATH/root"
-			return
+# Finds the active boot environment for the given zone.
+#
+# Arguments:
+#
+#  zone		zone structure initialized with init_zone
+#
+# Globals:
+#
+#  CURRENT_GZBE	Current global zone boot environment.  If not already set,
+#		it will be set.
+#
+# Returns:
+#
+#  0 on success, else 1.
+#
+function get_active_be {
+	typeset -n zone=$1
+	typeset active_ds=
+	typeset tab=$(printf "\t")
+
+	[[ -z "$CURRENT_GZBE" ]] && get_current_gzbe
+
+	typeset name parent active
+	zfs list -H -r -d 1 -t filesystem -o name,$PROP_PARENT,$PROP_ACTIVE \
+	    ${zone.ROOT_ds} | while IFS=$tab read name parent active ; do
+		[[ $parent == "$CURRENT_GZBE" ]] || continue
+		[[ $active == on ]] || continue
+		vlog "Found active dataset %s" "$name"
+		if [[ -n "$active_ds" ]] ; then
+			error "$f_multiple_ds"
+			return 1
 		fi
+		active_ds=$name
+	done
+	if [[ -z $active_ds ]]; then
+		error "$f_no_active_ds"
+		return 1
 	fi
 
-	# Mount active dataset on the root.
-	get_current_gzbe
-	get_zonepath_ds $ZONEPATH
-	get_active_ds $CURRENT_GZBE $ZONEPATH_DS
-
-	mount -F zfs $ACTIVE_DS $ZONEPATH/root || fail_fatal "$f_zfs_mount"
+	zone.active_ds=$active_ds
 }
 
-#
-# Set up ZFS dataset hierarchy for the zone root dataset.
-#
-create_active_ds() {
-	get_current_gzbe
+function set_active_be {
+	typeset -n zone="$1"
+	typeset be="$2"
+
+	[[ -z "$CURRENT_GZBE" ]] && get_current_gzbe
 
 	#
-	# Find the zone's current dataset.  This should have been created by
-	# zoneadm.
+	# Turn off the active property on BE's with the same GZBE
 	#
-	get_zonepath_ds $zonepath
-
-	# Check that zone is not in the ROOT dataset.
-	fail_zonepath_in_rootds $ZONEPATH_DS
-
-	#
-	# From here on, errors should cause the zone to be incomplete.
-	#
-	int_code=$ZONE_SUBPROC_FATAL
-
-	#
-	# We need to tolerate errors while creating the datasets and making the
-	# mountpoint, since these could already exist from some other BE.
-	#
-
-	/usr/sbin/zfs list -H -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
-	if (( $? != 0 )); then
-		/usr/sbin/zfs create -o mountpoint=legacy \
-		    -o zoned=on $ZONEPATH_DS/ROOT
-		if (( $? != 0 )); then
-			fail_fatal "$f_zfs_create"
-		fi
-	fi
-
-	BENAME=zbe
-	BENUM=0
-	# Try 100 different names before giving up.
-	while [ $BENUM -lt 100 ]; do
-       		/usr/sbin/zfs create -o $PROP_ACTIVE=on \
-		    -o $PROP_PARENT=$CURRENT_GZBE \
-		    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME >/dev/null 2>&1
-		if (( $? == 0 )); then
-			break
-		fi
-		BENUM=`expr $BENUM + 1`
-		BENAME="zbe-$BENUM"
+	zfs list -H -r -d 1 -t filesystem -o name,$PROP_PARENT,$PROP_ACTIVE \
+	    ${zone.ROOT_ds} | while IFS=$tab read name parent active ; do
+		[[ $parent == "$CURRENT_GZBE" ]] || continue
+		[[ $active == on ]] || continue
+		[[ $name ==  "${zone.ROOT_ds}/$be" ]] && continue
+		vlog "Deactivating active dataset %s" "$name"
+		zfs set $PROP_ACTIVE=off "$name" || return 1
 	done
 
-	if [ $BENUM -ge 100 ]; then
-		fail_fatal "$f_zfs_create"
-	fi
+	zone.active_ds="${zone.ROOT_ds}/$be"
 
-	if [ ! -d $ZONEROOT ]; then
-		/usr/bin/mkdir $ZONEROOT
-	fi
+	zfs set "$PROP_PARENT=$CURRENT_GZBE" ${zone.active_ds} \
+	    || return 1
+	zfs set "$PROP_ACTIVE=on" ${zone.active_ds} || return 1
 
-	/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/$BENAME $ZONEROOT || \
-	    fail_incomplete "$f_zfs_mount"
+	zfs set "$PROP_BE_HANDLE=on" "${zone.rpool_ds}" || return 1
+
+	return 0
 }
 
 #

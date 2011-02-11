@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
@@ -48,17 +48,20 @@ state=$3
 cmd=$4
 ALTROOT=$5
 
+typeset zone
+init_zone zone "$ZONENAME" "$ZONEPATH"
+eval $(bind_legacy_zone_globals zone)
+
 # If we're not halting the zone, then just return.
 if [ $cmd -eq 4 ]; then
-	is_brand_labeled
+	is_brand_labeled	# Note: return value is C-style, not shell-style
 	if (( $? == 0 )); then
-		# Leave the active dataset mounted after halting (this might be
-		# a different dataset than what was mounted).
-		mount_active_ds
+		# Leave the active boot environment mounted after halting (this
+		# might be a different dataset than what was mounted).
+		mount_active_be -c zone
 	else
 		# Umount dataset on the root.
-		zoneroot="$ZONEPATH/root"
-		umount $zoneroot || printf "$f_zfs_unmount" "$zoneroot"
+		unmount_be zone
 	fi
 fi
 

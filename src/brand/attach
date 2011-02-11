@@ -55,6 +55,9 @@ f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
 f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
 f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
+e_dataset_disappeared=$(gettext "Dataset %s was unexpectedly unmounted")
+e_dataset_not_mounted=$(gettext "Dataset %s exists in boot environment but not mounted")
+e_dataset_not_in_be=$(gettext "Dataset %s mountpoint %s is not under zone root %s")
 
 # Clean up on interrupt
 trap_cleanup() {
@@ -82,15 +85,20 @@ trap_exit() {
 			# Restore the zone properties for the pre-existing
 			# dataset.
 			if [[ -n "$ACTIVE_DS" ]]; then
+				zfs set canmount=off $ACTIVE_DS
+				(( $? != 0 )) && error "$f_ds_config" \
+				    "$ACTIVE_DS" "canmount=on"
 				zfs set zoned=off $ACTIVE_DS
 				(( $? != 0 )) && error "$f_ds_config" \
 				    "$ACTIVE_DS" "zoned=off"
-				zfs set canmount=on $ACTIVE_DS
-				(( $? != 0 )) && error "$f_ds_config" \
-				    "$ACTIVE_DS" "canmount=on"
 				zfs set mountpoint=$ZONEROOT $ACTIVE_DS
 				(( $? != 0 )) && error "$f_ds_config" \
 				    "$ACTIVE_DS" "mountpoint=$ZONEROOT"
+				zfs set canmount=on $ACTIVE_DS
+				(( $? != 0 )) && error "$f_ds_config" \
+				    "$ACTIVE_DS" "canmount=on"
+				zfs mount "$ACTIVE_DS" || \
+				    error "$e_mount1_failed" "$ACTIVE_DS"
 			fi
 		fi
 		log "$m_failed"
@@ -105,23 +113,19 @@ install_media="-"
 trap trap_cleanup INT
 trap trap_exit EXIT
 
-#set -o xtrace
-
 PKG="/usr/bin/pkg"
 KEYDIR=/var/pkg/ssl
 
 # If we weren't passed at least two arguments, exit now.
 (( $# < 2 )) && exit $ZONE_SUBPROC_USAGE
 
-ZONENAME="$1"
-ZONEPATH="$2"
-# XXX shared/common script currently uses lower case zonename & zonepath
-zonename="$ZONENAME"
-zonepath="$ZONEPATH"
+zone=
+init_zone zone "$1" "$2"
+# Set ZONEPATH, etc.
+eval $(bind_legacy_zone_globals zone)
 
 shift; shift	# remove ZONENAME and ZONEPATH from arguments array
 
-ZONEROOT="$ZONEPATH/root"
 logdir="$ZONEROOT/var/log"
 
 #
@@ -190,8 +194,8 @@ gather_zone_publisher_details() {
 			typeset publisher.sticky=""
 			typeset publisher.preferred=""
 			typeset publisher.enabled=""
-			typeset -a publisher.origins=""
-			typeset -a publisher.mirrors=""
+			typeset -a publisher.origins
+			typeset -a publisher.mirrors
 			typeset publisher.name=$name
 			typeset publisher.keyfile=""
 			typeset publisher.certfile=""
@@ -297,11 +301,11 @@ print_publisher_pkg_defn() {
 		args="$args -P"
 	fi
 
-	for origin in ${publisher.origins[*]}; do
+	for origin in "${publisher.origins[@]}"; do
 		args="$args -g $origin"
 	done
 
-	for mirror in ${publisher.mirrors[*]}; do
+	for mirror in "${publisher.mirrors[@]}"; do
 		args="$args -m $mirror"
 	done
 
@@ -370,125 +374,17 @@ if [ $noexecute -eq 1 ]; then
 	exit $ZONE_SUBPROC_OK
 fi
 
-LOGFILE=$(/usr/bin/mktemp -t -p /var/tmp $ZONENAME.attach_log.XXXXXX)
+LOGFILE=$(/usr/bin/mktemp -t -p /var/tmp ${zone.name}.attach_log.XXXXXX)
 if [[ -z "$LOGFILE" ]]; then
 	fatal "$e_tmpfile"
 fi
 exec 2>>"$LOGFILE"
-
 log "$m_attach_log" "$LOGFILE"
 
-#
-# TODO - once sxce is gone, move the following block into
-# usr/lib/brand/shared/common.ksh code to share with other brands using
-# the same zfs dataset logic for attach. This currently uses get_current_gzbe
-# so we can't move it yet since beadm isn't in sxce.
-#
-
-# Validate that the zonepath is not in the root dataset.
-pdir=`dirname $ZONEPATH`
-get_zonepath_ds $pdir
-fail_zonepath_in_rootds $ZONEPATH_DS
-
-EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
-
-if [[ "$install_media" == "-" ]]; then
-	#
-	# Since we're using a pre-existing dataset, the dataset currently
-	# mounted on the {zonepath}/root becomes the active dataset.  We
-	# can't depend on the usual dataset attributes to detect this since
-	# the dataset could be a detached zone or one that the user set up by
-	# hand and lacking the proper attributes.  However, since the zone is
-	# not attached yet, the 'install_media == -' means the dataset must be
-	# mounted at this point.
-	#
-	ACTIVE_DS=`mount -p | nawk -v zroot=$ZONEROOT '{
-	    if ($3 == zroot && $4 == "zfs")
-		    print $1
-	}'`
-
-	[[ -z "$ACTIVE_DS" ]] && fatal "$f_no_active_ds_mounted" $ZONEROOT
-
-	# Set up proper attributes on the ROOT dataset.
-	get_zonepath_ds $ZONEPATH
-	zfs list -H -t filesystem -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
-	(( $? != 0 )) && fatal "$f_no_active_ds"
-
-	# need to ensure zoned is off to set mountpoint=legacy.
-	zfs set zoned=off $ZONEPATH_DS/ROOT
-	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT "zoned=off"
-
-	zfs set mountpoint=legacy $ZONEPATH_DS/ROOT
-	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT \
-	    "mountpoint=legacy"
-	zfs set zoned=on $ZONEPATH_DS/ROOT
-	(( $? != 0 )) && fatal "$f_ds_config" $ZONEPATH_DS/ROOT "zoned=on"
-
-	#
-	# We're typically using a pre-existing mounted dataset so setting the
-	# following propery changes will cause the {zonepath}/root dataset to
-	# be unmounted.  However, a p2v with an update-on-attach will have
-	# created the dataset with the correct properties, so setting these
-	# attributes won't unmount the dataset.  Thus, we check the mount
-	# and attempt the remount if necessary.
-	#
-	get_current_gzbe
-	zfs set $PROP_PARENT=$CURRENT_GZBE $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS \
-	    "$PROP_PARENT=$CURRENT_GZBE"
-	zfs set $PROP_ACTIVE=on $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "$PROP_ACTIVE=on"
-	zfs set canmount=noauto $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "canmount=noauto"
-	zfs set zoned=off $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "zoned=off"
-	zfs inherit mountpoint $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "'inherit mountpoint'"
-	zfs inherit zoned $ACTIVE_DS
-	(( $? != 0 )) && fatal "$f_ds_config" $ACTIVE_DS "'inherit zoned'"
-
-	mounted_ds=`mount -p | nawk -v zroot=$ZONEROOT '{
-	    if ($3 == zroot && $4 == "zfs")
-		    print $1
-	}'`
-
-	if [[ -z $mounted_ds ]]; then
-		mount -F zfs $ACTIVE_DS $ZONEROOT || fatal "$f_zfs_mount"
-	fi
-else
-	#
-	# Since we're not using a pre-existing ZFS dataset layout, create
-	# the zone datasets and mount them.  Start by creating the zonepath
-	# dataset, similar to what zoneadm would do for an initial install.
-	#
-	zds=$(zfs list -H -t filesystem -o name $pdir 2>/dev/null)
-	if (( $? == 0 )); then
-		pnm=$(/usr/bin/basename $ZONEPATH)
-		# The zonepath dataset might already exist.
-		zfs list -H -t filesystem -o name $zds/$pnm >/dev/null 2>&1
-		if (( $? != 0 )); then
-			zfs create "$zds/$pnm"
-			(( $? != 0 )) && fatal "$f_zfs_create"
-			vlog "$m_zfs"
-		fi
-	fi
-
-	create_active_ds
-fi
-
-#
-# The zone's datasets are now in place.
-#
-
-log "$m_attach_root" "$ZONEROOT"
-# note \n to add whitespace
-log "$m_attach_ds\n" "$ACTIVE_DS"
-
-install_image "$inst_type" "$install_media"
-
-#
-# End of TODO block to move to common code.
-#
+# Remember what was mounted on the zone root in case the attach fails.
+get_ds_from_path "${zone.root}" ACTIVE_DS
+attach_datasets -t "$inst_type" -m "$install_media" zone
+migrate_export zone
 
 #
 # Perform a sanity check to confirm that the image is not a global zone.

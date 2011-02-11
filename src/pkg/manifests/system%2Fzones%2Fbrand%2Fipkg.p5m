@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 set name=pkg.fmri value=pkg:/system/zones/brand/ipkg@$(PKGVERS)
@@ -51,6 +51,7 @@ file path=usr/lib/brand/ipkg/poststate mode=0755
 file path=usr/lib/brand/ipkg/prestate mode=0755
 file path=usr/lib/brand/ipkg/smf_disable.lst
 file path=usr/lib/brand/ipkg/support mode=0755
+file path=usr/lib/brand/ipkg/sysboot mode=0755
 file path=usr/lib/brand/ipkg/uninstall mode=0755
 license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-brand version=0.0.0
