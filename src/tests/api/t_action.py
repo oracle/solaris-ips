@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -210,6 +210,11 @@ Incorrect attribute list.
                     'and Distribution License 1.0 (CDDL)')
                 self.assertAttributeValue(a, "custom", "foo")
                 self.assertAttributeValue(a, "bool_val", "true")
+
+                # Really long actions with lots of backslash-escaped quotes
+                # should work.
+                a = action.fromstr(r'set name=pkg.description value="Sphinx is a tool that makes it easy to create intelligent \"and beautiful documentation f\"or Python projects (or \"other documents consisting of\" multiple reStructuredText so\"urces), written by Georg Bran\"dl. It was originally created\" to translate the new Python \"documentation, but has now be\"en cleaned up in the hope tha\"t it will be useful to many o\"ther projects. Sphinx uses re\"StructuredText as its markup \"language, and many of its str\"engths come from the power an\"d straightforwardness of reSt\"ructuredText and its parsing \"and translating suite, the Do\"cutils. Although it is still \"under constant development, t\"he following features are alr\"eady present, work fine and c\"an be seen \"in action\" \"in the Python docs: * Output \"formats: HTML (including Wind\"ows HTML Help) and LaTeX, for\" printable PDF versions * Ext\"ensive cross-references: sema\"ntic markup and automatic lin\"ks for functions, classes, gl\"ossary terms and similar piec\"es of information * Hierarchi\"cal structure: easy definitio\"n of a document tree, with au\"tomatic links to siblings, pa\"rents and children * Automati\"c indices: general index as w\"ell as a module index * Code \"handling: automatic highlight\"ing using the Pygments highli\"ghter * Various extensions ar\"e available, e.g. for automat\"ic testing of snippets and in\"clusion of appropriately formatted docstrings."')
+                self.assert_(a.attrs["value"].count('"') == 45)
 
         def test_action_license(self):
                 """Test license action attributes."""

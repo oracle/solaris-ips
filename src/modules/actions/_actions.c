@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include <Python.h>
@@ -92,9 +92,10 @@ _fromstr(PyObject *self, PyObject *args)
 	char *s = NULL;
 	char *str = NULL;
 	char *keystr = NULL;
-	char *slashmap = NULL;
+	int *slashmap = NULL;
 	int strl;
 	int i, ks, vs, keysize;
+	int smlen, smpos;
 	char quote;
 	PyObject *type = NULL;
 	PyObject *hash = NULL;
@@ -231,15 +232,28 @@ _fromstr(PyObject *self, PyObject *args)
 				if (i == strl - 1)
 					break;
 				/*
-				 * "slashmap" is a simple bitmap (bytemap?)
-				 * keeping track of what characters are
-				 * backslashes that need to be removed
-				 * from the final attribute string.
-				 * All other bytes are NUL bytes.
+				 * "slashmap" is a list of the positions of the
+				 * backslashes that need to be removed from the
+				 * final attribute string.
 				 */
 				if (slashmap == NULL) {
-					int smlen = strl - (i - vs);
-					slashmap = calloc(1, smlen + 1);
+					smlen = 16;
+					slashmap = calloc(smlen, sizeof(int));
+					if (slashmap == NULL) {
+						PyMem_Free(str);
+						return (PyErr_NoMemory());
+					}
+					smpos = 0;
+					/*
+					 * Terminate slashmap with an invalid
+					 * value so we don't think there's a
+					 * slash right at the beginning.
+					 */
+					slashmap[smpos] = -1;
+				} else if (smpos == smlen - 1) {
+					smlen *= 2;
+					slashmap = realloc(slashmap,
+						smlen * sizeof(int));
 					if (slashmap == NULL) {
 						PyMem_Free(str);
 						return (PyErr_NoMemory());
@@ -247,7 +261,13 @@ _fromstr(PyObject *self, PyObject *args)
 				}
 				i++;
 				if (str[i] == '\\' || str[i] == quote) {
-					slashmap[i - 1 - vs] = '\\';
+					slashmap[smpos++] = i - 1 - vs;
+					/*
+					 * Keep slashmap properly terminated so
+					 * that a realloc()ed array doesn't give
+					 * us random slash positions.
+					 */
+					slashmap[smpos] = -1;
 				}
 			} else if (str[i] == quote) {
 				state = WS;
@@ -268,7 +288,7 @@ _fromstr(PyObject *self, PyObject *args)
 					 * slashmap indicates we should.
 					 */
 					for (j = 0, o = 0; j < attrlen; j++) {
-						if (slashmap[j] == '\\') {
+						if (slashmap[o] == j) {
 							o++;
 							continue;
 						}
