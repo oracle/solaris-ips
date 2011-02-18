@@ -572,7 +572,8 @@ class InconsistentActionAttributeError(ConflictingActionError):
 
                 d = {}
                 for a in actions:
-                        d.setdefault(str(ou(a[0])), set()).add(a[1])
+                        if a[0].attrs.get("implicit", "false") == "false":
+                                d.setdefault(str(ou(a[0])), set()).add(a[1])
                 l = sorted([
                     (len(pkglist), action, pkglist)
                     for action, pkglist in d.iteritems()

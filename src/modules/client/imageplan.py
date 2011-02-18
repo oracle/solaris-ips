@@ -681,8 +681,7 @@ class ImagePlan(object):
 
                 # We end up with nothing at this path, or start and end with one
                 # of the same type, or we just add one type to an empty path.
-                if len(ntypes) == 0 or (len(ntypes) == 1 and (otypes == ntypes
-                    or len(otypes) == 0)):
+                if len(ntypes) == 0 or (len(ntypes) == 1 and len(otypes) <= 1):
                         return None
 
                 # We have fewer types, so actions are getting removed.

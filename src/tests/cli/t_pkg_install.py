@@ -5711,6 +5711,20 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg_dupmultitypes3_0 = """
+            open dupmultitypes3@0,5.11-0
+            add link path=multitypepath target=blah
+            add link path=multitypepath target=blah
+            close
+        """
+
+        pkg_dupmultitypes3_1 = """
+            open dupmultitypes3@1,5.11-0
+            add dir path=multitypepath mode=0755 owner=root group=bin
+            add dir path=multitypepath mode=0755 owner=root group=bin
+            close
+        """
+
         pkg_duppathnonidenticallinks = """
             open duppath-nonidenticallinks@0,5.11-0
             add link path=dir/pathname target=dir/something
@@ -6263,6 +6277,13 @@ adm
                 self.pkg("install dupmultitypes")
                 self.pkg("verify")
 
+                # Upgrading from multiple instances of one refcounted type to
+                # multiple instances of another (here, link to directory) should
+                # succeed.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupmultitypes3@0")
+                self.pkg("update")
+
         def test_conflicting_attrs_fs(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
                 the same type deliver to the same pathname, but whose other
@@ -6303,6 +6324,13 @@ adm
                 self.pkg("verify")
 
                 self.pkg("uninstall '*'")
+
+                # If two packages deliver conflicting directories and another
+                # package delivers that directory implicitly, make sure the
+                # third package isn't blamed.
+                self.pkg("install implicitdirs4 implicitdirs5 implicitdirs6",
+                    exit=1)
+                self.assert_("implicitdirs4" not in self.errout)
 
                 # Two packages, two links with different targets, installed at
                 # once
