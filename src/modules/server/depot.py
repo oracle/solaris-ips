@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import cherrypy
@@ -2196,6 +2196,7 @@ class DepotConfig(object):
         __defs = {
             4: [
                 cfg.PropertySection("pkg", [
+                    cfg.PropList("address"),
                     cfg.PropDefined("cfg_file", allowed=["", "<pathname>"]),
                     cfg.Property("content_root"),
                     cfg.PropList("debug", allowed=["", "headers"]),

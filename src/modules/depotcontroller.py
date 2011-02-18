@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import httplib
@@ -59,6 +59,7 @@ class DepotController(object):
                 self.__logpath = "/tmp/depot.log"
                 self.__mirror = False
                 self.__output = None
+                self.__address = None
                 self.__port = -1
                 self.__props = {}
                 self.__readonly = False
@@ -99,6 +100,12 @@ class DepotController(object):
 
         def set_auto_port(self):
                 self.__auto_port = True
+
+        def set_address(self, address):
+                self.__address = address
+
+        def get_address(self):
+                return self.__address
 
         def set_port(self, port):
                 self.__auto_port = False
@@ -189,7 +196,14 @@ class DepotController(object):
                 return self.__cfg_file
 
         def get_depot_url(self):
-                return "http://localhost:%d" % self.__port
+                if self.__address:
+                        host = self.__address
+                        if ":" in host:
+                                # Special syntax needed for IPv6 addresses.
+                                host = "[%s]" % host
+                else:
+                        host = "localhost"
+                return "http://%s:%d" % (host, self.__port)
 
         def set_writable_root(self, wr):
                 self.__writable_root = wr
@@ -266,6 +280,9 @@ class DepotController(object):
                 if self.__depot_content_root:
                         args.append("--content-root")
                         args.append(self.__depot_content_root)
+                if self.__address:
+                        args.append("-a")
+                        args.append("%s" % self.__address)
                 if self.__port != -1:
                         args.append("-p")
                         args.append("%d" % self.__port)

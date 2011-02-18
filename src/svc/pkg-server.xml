@@ -19,7 +19,7 @@
 
 	CDDL HEADER END
 
-	Copyright (c) 2009, 2010 Oracle and/or its affiliates.  All rights reserved.
+	Copyright (c) 2009, 2011 Oracle and/or its affiliates.  All rights reserved.
 
 	NOTE:  This service manifest is not editable; its contents will
 	be overwritten by package or patch operations, including
@@ -119,6 +119,7 @@
 		<propval name='writable_root' type='astring' value=''/>
 		<propval name='sort_file_max_size' type='astring' value=''/>
 		<propval name='file_root' type='astring' value='' />
+		<property name='address' type='net_address'/>
 	</property_group>
 
 	<property_group name='pkg_bui' type='application'>

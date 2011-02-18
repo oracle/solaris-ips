@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -980,6 +980,21 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                     "en/advanced_search.shtml?token=*&show=a&rpp=50&"
                     "action=Advanced+Search")
                 urllib2.urlopen(surl).read()
+
+        def test_address(self):
+                """Verify that depot address can be set."""
+
+                # Check that IPv6 address can be used.
+                self.dc.set_address("::1")
+                self.dc.set_port(12000)
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+
+                # Check that we can retrieve something.
+                durl = self.dc.get_depot_url()
+                verdata = urllib2.urlopen("%s/versions/0/" % durl)
 
 
 if __name__ == "__main__":

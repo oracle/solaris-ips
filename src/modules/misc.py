@@ -124,8 +124,8 @@ def user_agent_str(img, client_name):
 
         return useragent
 
-_hostname_re = re.compile("^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9]+\.?)*$")
-_invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.]+")
+_hostname_re = re.compile("^[a-zA-Z0-9\[](?:[a-zA-Z0-9\-:]*[a-zA-Z0-9:\]]+\.?)*$")
+_invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.:\[\]]+")
 _valid_proto = ["file", "http", "https"]
 
 def valid_pub_prefix(prefix):

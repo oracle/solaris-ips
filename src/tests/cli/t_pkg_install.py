@@ -410,6 +410,30 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall foo")
                 self.pkg("verify")
 
+        def test_basics_ipv6(self):
+                """Verify package operations can be performed using a depot
+                server being addressed via IPv6."""
+
+                # This test needs to use the depot to be able to test
+                # IPv6 connectivity.
+                self.dc.set_address("::1")
+                self.dc.start()
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, (self.foo10, self.foo12))
+                self.wait_repo(self.dc.get_repodir())
+                self.image_create(durl)
+
+                self.pkg("install foo@1.0")
+                self.pkg("info foo@1.0")
+
+                self.pkg("update")
+                self.pkg("list")
+                self.pkg("info foo@1.2")
+                self.pkg("uninstall '*'")
+                self.dc.stop()
+                self.dc.set_address(None)
+
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install
                     bar@1.0.  List all packages.  Upgrade image. """

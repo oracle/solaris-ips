@@ -5,7 +5,7 @@ NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
+     /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
          [-t socket_timeout] [--add-content] [--cfg] [--content-root]
          [--debug feature_list] [--disable-ops=<op[/1]>[,...]] [--log-access]
          [--log-errors] [--mirror] [--proxy-base url] [--readonly]
@@ -45,11 +45,17 @@ DESCRIPTION
      properties associated with its service.  The following
      properties are recognized:
 
-     pkg/content_root           (astring) The file system path at
-                                which
-                                the instance should find its static
-                                and other web content.  The default
-                                value is /usr/share/lib/pkg.
+     pkg/address                (net_address) The IP address on which to
+                                listen for connections.  The default value
+                                is 0.0.0.0 (INADDR_ANY) which will listen
+                                on all active interfaces.  To listen on all
+                                active IPv6 interfaces, use '::'.  Only the
+                                first value will be used.
+
+     pkg/content_root           (astring) The file system path at which
+                                the instance should find its static and
+                                other web content.  The default value is
+                                /usr/share/lib/pkg.
 
      pkg/debug                  (astring) A comma-separated list of
                                 debug features to enable.  Possible
@@ -254,6 +260,8 @@ OPTIONS
      override values read from a provided configuration file using
      '--cfg', the following options can be used to alter the default
      behavior of the depot server:
+
+     -a address                 See pkg/address above.
 
      -d inst_root               See pkg/inst_root above.
 

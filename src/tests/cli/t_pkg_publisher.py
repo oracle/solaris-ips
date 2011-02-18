@@ -669,6 +669,25 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s test1" %
                     self.dcs[1].get_repo_url())
 
+                # Now verify that publishers using origins or mirrors that have
+                # IPv6 addresses can be added and removed.
+                self.pkg("set-publisher -g http://[::1] "
+                    "-m http://[::FFFF:129.144.52.38]:80 "
+                    "-m http://[2010:836B:4179::836B:4179] "
+                    "-g http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80 "
+                    "--no-refresh testipv6")
+                self.pkg("publisher | "
+                    "grep 'http://\[::FFFF:129.144.52.38\]:80/'")
+                self.pkg("set-publisher -G http://[::1] "
+                    "-M http://[::FFFF:129.144.52.38]:80 "
+                    "-M http://[2010:836B:4179::836B:4179] "
+                    "-G http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80 "
+                    "-g http://[::192.9.5.5]/dev "
+                    "--no-refresh testipv6")
+                self.pkg("publisher | "
+                    "grep 'http://\[::FFFF:129.144.52.38\]:80/'", exit=1)
+                self.pkg("unset-publisher testipv6")
+
         def test_enable_disable(self):
                 """Test enable and disable."""
 
@@ -736,6 +755,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # make sure we cannot get ahead or behind of ourselves
                 self.pkg("set-publisher --search-before=test3 test3", exit=1)
                 self.pkg("set-publisher --search-after=test3 test3", exit=1)
+
 
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
 
@@ -846,6 +866,7 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                                             "%s and %s as revoked certs. "
                                             "Output was:\n%s" % (rev1_h,
                                             rev2_h, self.output))
+
 
 if __name__ == "__main__":
         unittest.main()

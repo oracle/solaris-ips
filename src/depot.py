@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 # pkg.depotd - package repository daemon
@@ -124,7 +124,7 @@ def usage(text=None, retcode=2, full=False):
                 sys.exit(retcode)
 
         print """\
-Usage: /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
+Usage: /usr/lib/pkg.depotd [-a address] [-d inst_root] [-p port] [-s threads]
            [-t socket_timeout] [--cfg] [--content-root]
            [--disable-ops op[/1][,...]] [--debug feature_list]
            [--file-root dir] [--log-access dest] [--log-errors dest]
@@ -132,6 +132,10 @@ Usage: /usr/lib/pkg.depotd [-d inst_root] [-p port] [-s threads]
            [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
            [--sort-file-max-size size] [--writable-root dir]
 
+        -a address      The IP address on which to listen for connections.  The
+                        default value is 0.0.0.0 (INADDR_ANY) which will listen
+                        on all active interfaces.  To listen on all active IPv6
+                        interfaces, use '::'.
         -d inst_root    The file system path at which the server should find its
                         repository data.  Required unless PKG_REPO has been set
                         in the environment.
@@ -228,10 +232,8 @@ if __name__ == "__main__":
 
         add_content = False
         exit_ready = False
-        mirror = False
         rebuild = False
         reindex = False
-        ll_mirror = False
         nasty = False
         nasty_value = 0
 
@@ -252,6 +254,7 @@ if __name__ == "__main__":
                         pass
 
         opt = None
+        addresses = set()
         debug_features = []
         disable_ops = []
         repo_props = {}
@@ -266,12 +269,14 @@ if __name__ == "__main__":
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
                     "sort-file-max-size=", "writable-root="]
 
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:?",
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:d:np:s:t:?",
                     long_opts)
 
                 show_usage = False
                 for opt, arg in opts:
-                        if opt == "-n":
+                        if opt == "-a":
+                                addresses.add(arg)
+                        elif opt == "-n":
                                 sys.exit(0)
                         elif opt == "-d":
                                 ivalues["pkg"]["inst_root"] = arg
@@ -475,6 +480,8 @@ if __name__ == "__main__":
                         ivalues["pkg"]["debug"] = debug_features
                 if disable_ops:
                         ivalues["pkg"]["disable_ops"] = disable_ops
+                if addresses:
+                        ivalues["pkg"]["address"] = list(addresses)
 
                 # Build configuration object.
                 dconf = ds.DepotConfig(target=user_cfg, overrides=ivalues)
@@ -504,6 +511,7 @@ if __name__ == "__main__":
 
         # Check for invalid option combinations.
         mirror = dconf.get_property("pkg", "mirror")
+        ll_mirror = dconf.get_property("pkg", "ll_mirror")
         readonly = dconf.get_property("pkg", "readonly")
         writable_root = dconf.get_property("pkg", "writable_root")
         if rebuild and add_content:
@@ -520,6 +528,16 @@ if __name__ == "__main__":
                     "--writable-root is used")
 
         # Set any values using defaults if they weren't provided.
+
+        # Only use the first value for now; multiple bind addresses may be
+        # supported later.
+        address = dconf.get_property("pkg", "address")
+        if address:
+                address = address[0]
+        elif not address:
+                dconf.set_property("pkg", "address", [HOST_DEFAULT])
+                address = dconf.get_property("pkg", "address")[0]
+
         inst_root = dconf.get_property("pkg", "inst_root")
         file_root = dconf.get_property("pkg", "file_root")
         if not inst_root and not file_root:
@@ -560,7 +578,7 @@ if __name__ == "__main__":
         # the program will not bind to a port.
         if not exit_ready:
                 try:
-                        cherrypy.process.servers.check_port(HOST_DEFAULT, port)
+                        cherrypy.process.servers.check_port(address, port)
                 except Exception, e:
                         emsg("pkg.depotd: unable to bind to the specified "
                             "port: %d. Reason: %s" % (port, e))
@@ -673,7 +691,7 @@ if __name__ == "__main__":
             "log.screen": False,
             "server.max_request_body_size": MAX_REQUEST_BODY_SIZE,
             "server.shutdown_timeout": 0,
-            "server.socket_host": HOST_DEFAULT,
+            "server.socket_host": address,
             "server.socket_port": port,
             "server.socket_timeout": socket_timeout,
             "server.ssl_certificate": ssl_cert_file,
@@ -851,7 +869,7 @@ if __name__ == "__main__":
                         conf["/"][entry] = proxy_conf[entry]
 
         if ll_mirror:
-                ds.DNSSD_Plugin(cherrypy.engine, conf, gconf).subscribe()
+                ds.DNSSD_Plugin(cherrypy.engine, gconf).subscribe()
 
         if reindex:
                 # Tell depot to update search indexes when possible;
