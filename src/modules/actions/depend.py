@@ -36,7 +36,7 @@ import pkg.fmri as fmri
 import pkg.version
 
 known_types = ("optional", "require", "exclude", "incorporate", 
-    "conditional", "require-any", "origin")
+    "conditional", "require-any", "origin", "group")
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -64,7 +64,11 @@ class DependencyAction(generic.Action):
         non-specified portion of version is free to float.
 
         exclude - package may not be installed together with named version 
-        or higher - reverse logic of require."""
+        or higher - reverse logic of require.
+
+        group - a version of package is required unless stem is in image
+        avoid list; version part of fmri is ignored.  Obsolete packages
+        are assumed to satisfy dependency."""
 
         __slots__ = []
 
@@ -290,6 +294,10 @@ class DependencyAction(generic.Action):
                             installed_cversion.is_successor(cfmri):
                                 min_fmri = pfmri
                                 required = True
+                elif ctype == "group":
+                        if pfmri.pkg_name not in \
+                            (image.avoid_set_get() | image.obsolete_set_get()):
+                                required = True
                 elif ctype == "require-any":
                         for ifmri, pfmri in zip(installed_versions, pfmris):
                                 e = self.__check_installed(image, ifmri, pfmri, None, True, ctype)
@@ -299,8 +307,8 @@ class DependencyAction(generic.Action):
                                         errors.extend(e)
 
                         if not errors: # none was installed
-                                errors.append(_("Required dependency on one of %s not met"),
-                                    ", ".join(pfmris))
+                                errors.append(_("Required dependency on one of %s not met") %
+                                    ", ".join((str(p) for p in pfmris)))
                         return errors, warnings, info
 
                 # do checking for other dependency types

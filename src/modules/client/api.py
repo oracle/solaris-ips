@@ -68,7 +68,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 53
+CURRENT_API_VERSION = 54
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -249,7 +249,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([53, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -492,6 +492,30 @@ class ImageInterface(object):
                                 raise apx.ImageUpdateOnLiveImageException()
                 else:
                         self.__new_be = False
+
+        def avoid_pkgs(self, fmri_strings, unavoid=False):
+                """Avoid/Unavoid one or more packages.  It is an error to
+                avoid an installed package, or unavoid one that would
+                be installed."""
+
+                self._acquire_activity_lock()
+                try:
+                        if not unavoid:
+                                self._img.avoid_pkgs(fmri_strings,
+                                    progtrack=self.__progresstracker,
+                                    check_cancelation=self.__check_cancelation)
+                        else:
+                                self._img.unavoid_pkgs(fmri_strings,
+                                    progtrack=self.__progresstracker,
+                                    check_cancelation=self.__check_cancelation)
+                finally:
+                        self._activity_lock.release()
+                return True
+
+        def get_avoid_list(self):
+                """Return list of tuples of (pkg stem, pkgs w/ group
+                dependencies on this) """
+                return [a for a in self._img.get_avoid_dict().iteritems()]
 
         def __plan_common_exception(self, log_op_end=None):
                 """Deal with exceptions that can occur while planning an
@@ -894,7 +918,7 @@ class ImageInterface(object):
             new_be=None):
                 """Plan to revert either files or all files tagged with
                 specified values.  Args contains either path names or tag names
-                to be reverted, tagged is True if args contains tags. 
+                to be reverted, tagged is True if args contains tags.
 
                 For all other parameters, refer to the 'plan_install' function
                 for an explanation of their usage and effects."""
@@ -3619,11 +3643,11 @@ class PlanDescription(object):
                 the package plans"""
                 for pp in self.__plan.pkg_plans:
                         yield str(pp)
-        
+
         def get_solver_errors(self):
                 """Returns a list of strings for all FMRIs evaluated by the
                 solver explaining why they were rejected.  (All packages
-                found in solver's trim database.)  Only available if 
+                found in solver's trim database.)  Only available if
                 DebugValues["plan"] was set when the plan was created.
                 """
 

@@ -122,7 +122,7 @@ class TestPkgRevert(pkg5unittest.SingleDepotTestCase):
                 self.damage_all_files()
 
                 # revert damage to C,D by tag
-                self.pkg("revert --tagged ted")
+                self.pkg("revert -vvv --tagged ted")
                 self.pkg("verify A", exit=1)
                 self.pkg("verify B", exit=1)
                 self.pkg("verify C")

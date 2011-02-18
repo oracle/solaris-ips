@@ -47,6 +47,9 @@ SYNOPSIS
          [--licenses] [--deny-new-be | --require-new-be] [--be-name name]
          <facet_spec>=[True|False|None] ...
 
+     /usr/bin/pkg avoid [pkg_fmri_pattern ... ]
+     /usr/bin/pkg unavoid [pkg_fmri_pattern ... ]
+
      /usr/bin/pkg property [-H] [propname ...]
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg add-property-value propname propvalue
@@ -132,7 +135,7 @@ OPTIONS
           automatically.  By default, pkg(1) attempts to determine, based on
           its working directory, in what image it has been invoked.  If no
           image metadata can be found in the parent directories, the
-          invocation will fail.  See also ENVIRONMENT VARIABLES.  
+          invocation will fail.  See also ENVIRONMENT VARIABLES.
 
      --help or -?
           Displays a usage message.
@@ -165,6 +168,9 @@ SUBCOMMANDS
           install process.  For more information on how the package system
           determines which files to preserve, and how they are preserved
           during package operations, see "File Actions" in pkg(5).
+
+          If a package is on the avoid list, installing it will remove
+	  it from that list.
 
           With -g, use the specified package repository or archive as an
           additional source of package data for the operation.  This option
@@ -210,9 +216,11 @@ SUBCOMMANDS
           environment; the operation will not be performed if
           a new boot environment is required.
 
-          With --reject, prevent packages matching the given pattern from
-          being installed.  If matching packages are already installed, they
-          will be removed as part of the operation.
+          With --reject, prevent packages with names matching the given
+          pattern from being installed.  If matching packages are
+          already installed, they will be removed as part of the
+          operation.  Rejected packages that are the target of group
+          dependencies will be placed on the avoid list.
 
      uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be]
        [--be-name name] pkg_fmri_pattern ...
@@ -223,6 +231,10 @@ SUBCOMMANDS
           'require' dependencies on the initial package.  (Packages
           containing 'optional' or 'incorporate' dependencies are
           not included in the removal.)
+
+    	  If a package is the subject of a group dependency, uninstalling
+          it will place it on the avoid list.  See the avoid subcommand
+          below.
 
           For all other options, refer to the install command above
           for usage and their effects.
@@ -655,6 +667,30 @@ SUBCOMMANDS
 
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.
+
+     avoid [pkg_fmri_pattern ...]
+          Avoids the specified packages if they are the target of a group
+          dependency by placing the package names that currently match
+          the specified patterns on the avoid list.  Only packages that
+          are not current installed may be avoided; if a package is currently
+          the target of a group dependency, uninstalling it will place it
+	  on the avoid list.
+
+	  Without any arguments, display each avoided package along with
+          any packages that have a group dependency on that package.
+
+          Packages that are on the avoid list will be installed if needed
+	  to satisfy a required dependency.  Should that dependency be removed,
+          the package will be uninstalled.
+
+     unavoid [pkg_fmri_pattern ...]
+          Remove the specified packages from the avoid list.  Packages
+          on the avoid list that match an installed package's group
+          dependency cannot be removed using this subcommand.  To remove
+          a package from the avoid list that matches a group dependency,
+          install the package.
+
+	  Without any arguments, display the list of avoided packages.
 
      property [-H] [propname ...]
 
@@ -1241,7 +1277,7 @@ ENVIRONMENT VARIABLES
           operations before a connection is aborted.  The default value
           is 5.
 
-     PKG_CLIENT_MAX_TIMEOUT   
+     PKG_CLIENT_MAX_TIMEOUT
           Maximum number of transport attempts per-host before client
           aborts the operation.  The default value is 4.
 

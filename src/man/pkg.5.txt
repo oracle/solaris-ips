@@ -236,12 +236,12 @@ DESCRIPTION
            dependency is required.  A package cannot be installed if any of
            its required dependencies cannot be satisfied.
 
-           If the value is 'optional', then the dependency is optional.
-           Optional dependencies are followed or not depending on image
-           policy (see 'Policy' below).
+           If the value is 'optional', then the dependency, if present, must
+	   be at the specified version level or greater.
 
-           If the value is 'exclude', then the package is non-functional if
-           the dependent package is present on the system.
+           If the value is 'exclude', then the containing package cannot
+	   be installed if the dependency is present at the specified
+	   version level or greater.
 
            If the value is 'incorporate', then the dependency is
            optional, but the version of the dependent package will
@@ -260,6 +260,11 @@ DESCRIPTION
            prior to installation.  If the value of the 'root-image' attribute
            is 'true', the dependency must be present on the image rooted at '/'
            in order to install this package.
+
+           If the value is 'group', the dependency is required unless the
+	   package is on the image avoid list.  Note that obsolete packages
+	   silently satisfy the group dependency.  See the avoid subcommand
+           in pkg(1).
 
      fmri  The FMRI representing the depended-upon package.  It must not
            include the publisher.  In the case of require-any dependencies,

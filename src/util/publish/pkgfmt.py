@@ -139,6 +139,9 @@ def read_line(f):
 
                 comments = []
 
+        if comments:
+                yield None, "", comments
+
 def cmplines(a, b):
         """Compare two line tuples for sorting"""
         # we know that all lines that reach here have actions
@@ -267,7 +270,7 @@ def main_func():
                 usage(_("illegal global option -- %s") % e.opt)
         if len(opt_set) > 1:
                 usage(_("only one of [cdu] may be specified"))
-                        
+
         flist = pargs
         if not flist:
                 fmt_file(sys.stdin, sys.stdout)
@@ -345,8 +348,14 @@ def main_func():
 
 def fmt_file(in_file, out_file):
         lines = []
+        saw_action = False
+        trailing_comments = []
+
         for tp in read_line(in_file):
                 if tp[0] is None:
+                        if saw_action:
+                                trailing_comments.extend(tp[2])
+                                continue
                         for l in tp[2]: # print any leading comment
                                         # or transforms or unparseables
                                 print >> out_file, l
@@ -354,12 +363,15 @@ def fmt_file(in_file, out_file):
                                 print >> out_file, tp[1]
                 else:
                         lines.append(tp)
+                        saw_action = True
 
         lines.sort(cmp=cmplines)
 
         for l in lines:
                 write_line(l, out_file)
 
+        for l in trailing_comments:
+                print >> out_file, l
 
 if __name__ == "__main__":
         try:

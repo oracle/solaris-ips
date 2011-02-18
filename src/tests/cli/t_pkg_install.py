@@ -3529,6 +3529,13 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list pkg8@1.1 pkg9@1.1")
                 self.pkg("uninstall '*'")
 
+                # test to see if uninstall is clever enough
+                self.pkg("install pkg8@1.0 pkg9@1.0")  # install pkg
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg9@1.0")
+                self.pkg("uninstall pkg9@1.0")
+                self.pkg("list pkg2@1.1")
+                self.pkg("verify")
         def test_origin_dependencies(self):
                 """Get origin dependencies working"""
                 self.image_create(self.rurl)

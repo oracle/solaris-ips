@@ -38,6 +38,7 @@ import unittest
 class TestPkgFmt(pkg5unittest.CliTestCase):
         pkgcontents = \
             """
+#Begin Comment
 set name=pkg.fmri value=pkg:/system/kernel@$(PKGVERS)
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=pkg.summary value="Core Solaris Kernel"
@@ -86,6 +87,7 @@ dir path=lib/svc
 dir path=lib/svc/method
 dir path=lib/svc/manifest group=sys
 dir path=lib/svc/manifest/system group=sys
+#Middle Comment
 $(i386_ONLY)driver name=acpi_drv perms="* 0666 root sys"
 driver name=aggr perms="* 0666 root sys"
 driver name=arp perms="arp 0666 root sys"
@@ -935,6 +937,7 @@ link path=dev/dld target=../devices/pseudo/dld@0:ctl
 link path=kernel/misc/$(ARCH64)/des target=../../../kernel/crypto/$(ARCH64)/des
 $(i386_ONLY)link path=kernel/misc/des target=../../kernel/crypto/des
 $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
+#End Comment
 """
 
         def setUp(self):
@@ -952,7 +955,14 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
                 """display that pkgfmt makes no diff in manifest"""
                 source_file = os.path.join(self.test_root, "source_file")
                 mod_file = os.path.join(self.test_root, "mod_file")
-
+                # Remove comments from source file; they don't sort
+                # since pkgfmt tries to maintain comment position in
+                # file.
+                self.cmdline_run("sed '/^#/d' < %s > %s; mv %s %s" % (
+                                source_file,
+                                mod_file,
+                                mod_file,
+                                source_file))
                 # remove backslashes in place
                 self.pkgfmt("-u < %s > %s" % (source_file, mod_file))
                 # sort into alternate order and format
@@ -976,3 +986,12 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
 
                 # Should not fail even though user is unprivileged.
                 self.pkgfmt("-c %s" % source_file, su_wrap=True)
+
+        def test_3_handle_comments(self):
+                """Verify pkgfmt handles comments, does stdin"""
+                source_file = os.path.join(self.test_root, "source_file")
+                self.pkgfmt("< %s" % source_file)
+                assert "Begin Comment" in self.output
+                assert "Bobcat" not in self.output
+                assert "Middle Comment" in self.output
+                assert "End Comment" in self.output

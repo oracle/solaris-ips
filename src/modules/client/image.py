@@ -63,6 +63,7 @@ import pkg.server.catalog
 import pkg.pkgsubprocess                as subprocess
 import pkg.version
 import M2Crypto as m2
+import simplejson as json
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
@@ -211,6 +212,14 @@ class Image(object):
                 self._groups = set()
                 self._usersbyname = {}
                 self._groupsbyname = {}
+
+                # Set of pkg stems being avoided
+                self.__avoid_set = None
+                self.__avoid_set_altered = False
+
+                # set of pkg stems subject to group
+                # dependency but removed because obsolete
+                self.__group_obsolete = None
 
                 # Transport operations for this image
                 self.transport = transport.Transport(
@@ -811,6 +820,9 @@ class Image(object):
                 # Finally, upgrade the image's format if needed.
                 self.update_format(allow_unprivileged=True,
                     progtrack=progtrack)
+
+                # load image avoid pkg set
+                self.__avoid_set_load()
 
         def update_format(self, allow_unprivileged=False, progtrack=None):
                 """Transform the existing image structure and its data to
@@ -2347,6 +2359,13 @@ class Image(object):
                         del cat, name
                         self.__init_catalogs()
 
+                        # copy any other state files from current state
+                        # dir into new state dir.
+                        for p in os.listdir(self._statedir):
+                                fp = os.path.join(self._statedir, p)
+                                if os.path.isfile(fp):
+                                        portable.copyfile(fp, os.path.join(tmp_state_root, p))
+
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
                         orig_state_root = self.__salvage(self._statedir)
@@ -2591,6 +2610,12 @@ class Image(object):
                 # that failure or interruption will cause the image to be
                 # left in an inconsistent state).
                 tmp_state_root = self.temporary_dir()
+
+                # Copy any regular files placed in the state directory
+                for p in os.listdir(self._statedir):
+                        fp = os.path.join(self._statedir, p)
+                        if os.path.isfile(fp):
+                                portable.copyfile(fp, os.path.join(tmp_state_root, p))
 
                 kcat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
@@ -3043,6 +3068,20 @@ class Image(object):
                 for f in cat.fmris():
                         yield f
 
+        def gen_tracked_stems(self):
+                """Return an iteration through all the tracked pkg stems
+                in the set of currently installed packages.  Return value
+                is group pkg fmri, stem"""
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                excludes = self.list_excludes()
+
+                for f in cat.fmris():
+                        for a in cat.get_entry_actions(f,
+                            [pkg.catalog.Catalog.DEPENDENCY], excludes=excludes):
+                                if a.name == "depend" and a.attrs["type"] == "group":
+                                        yield (f, self.strtofmri(
+                                            a.attrs["fmri"]).pkg_name)
+
         def _create_fast_lookups(self):
                 """Create an on-disk database mapping action name and key
                 attribute value to the action string comprising the unique
@@ -3473,6 +3512,52 @@ class Image(object):
 
                 return olist, onames
 
+        def avoid_pkgs(self, pat_list, progtrack, check_cancelation):
+                """Avoid the specified packages... use pattern matching on
+                names; ignore versions."""
+
+                with self.locked_op("avoid"):
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                            noexecute=False)
+
+                        self._avoid_set_save(self.avoid_set_get() |
+                            set(ip.match_user_stems(pat_list, ip.MATCH_UNINSTALLED)))
+
+        def unavoid_pkgs(self, pat_list, progtrack, check_cancelation):
+                """Unavoid the specified packages... use pattern matching on
+                names; ignore versions."""
+
+                with self.locked_op("unavoid"):
+
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                            noexecute=False)
+                        unavoid_set = set(ip.match_user_stems(pat_list, ip.MATCH_ALL))
+                        current_set = self.avoid_set_get()
+                        not_avoided = unavoid_set - current_set
+                        if not_avoided:
+                                raise apx.PlanCreationException(not_avoided=not_avoided)
+
+                        would_install = [
+                            a
+                            for f, a in self.gen_tracked_stems()
+                            if a in unavoid_set
+                        ]
+
+                        if would_install:
+                                raise apx.PlanCreationException(would_install=would_install)
+
+                        self._avoid_set_save(current_set - unavoid_set)
+
+        def get_avoid_dict(self):
+                """ return dict of lists (avoided stem, pkgs w/ group
+                dependencies on this pkg)"""
+                ret = dict((a, list()) for a in self.avoid_set_get())
+                for fmri, group in self.gen_tracked_stems():
+                        if group in ret:
+                                ret[group].append(fmri.pkg_name)
+                return ret
+
+
         def __make_plan_common(self, plan_name, progtrack, check_cancelation,
             noexecute, *args):
                 """Private helper function to perform base plan creation and
@@ -3500,7 +3585,6 @@ class Image(object):
                                 raise apx.InvalidPackageErrors([e])
                         except apx.ApiException:
                                 raise
-
                         try:
                                 self.__call_imageplan_evaluate(ip)
                         except apx.ActionExecutionError, e:
@@ -3621,3 +3705,72 @@ class Image(object):
                     check_cancelation, True)
 
                 return img.imageplan.nothingtodo()
+
+        # avoid set implementation uses simplejson to store a
+        # set of pkg_stems being avoided, and a set of tracked
+        # stems that are obsolete.
+        #
+        # format is (version, dict((pkg stem, "avoid" or "obsolete"))
+
+        __AVOID_SET_VERSION = 1
+
+        def avoid_set_get(self):
+                """Return copy of avoid set"""
+                return self.__avoid_set.copy()
+
+        def obsolete_set_get(self):
+                """Return copy of tracked obsolete pkgs"""
+                return self.__group_obsolete.copy()
+
+        def __avoid_set_load(self):
+                """Load avoid set fron image state directory"""
+                state_file = os.path.join(self._statedir, "avoid_set")
+                self.__avoid_set = set()
+                self.__group_obsolete = set()
+                if os.path.isfile(state_file):
+                        version, d = json.load(file(state_file))
+                        assert version == self.__AVOID_SET_VERSION
+                        for stem in d:
+                                if d[stem] == "avoid":
+                                        self.__avoid_set.add(stem)
+                                elif d[stem] == "obsolete":
+                                        self.__group_obsolete.add(stem)
+                                else:
+                                        logger.warn("Corrupted avoid list - ignoring")
+                                        self.__avoid_set = set()
+                                        self.__group_obsolete = set()
+                                        self.__avoid_set_altered = True
+                else:
+                        self.__avoid_set_altered = True
+
+        def _avoid_set_save(self, new_set=None, obsolete=None):
+                """Store avoid set to image state directory"""
+                if new_set is not None:
+                        self.__avoid_set_altered = True
+                        self.__avoid_set = new_set
+
+                if obsolete is not None:
+                        self.__group_obsolete = obsolete
+                        self.__avoid_set_altered = True
+
+                if not self.__avoid_set_altered:
+                        return
+                
+
+                state_file = os.path.join(self._statedir, "avoid_set")
+                tmp_file   = os.path.join(self._statedir, "avoid_set.new")
+                tf = file(tmp_file, "w")
+
+                d = dict((a, "avoid") for a in self.__avoid_set)
+                d.update((a, "obsolete") for a in self.__group_obsolete)
+
+                try:
+                        json.dump((self.__AVOID_SET_VERSION, d), tf)
+                        tf.close()
+                        portable.rename(tmp_file, state_file)
+
+                except Exception, e:
+                        logger.warn("Cannot save avoid list: %s" % str(e))
+                        return
+
+                self.__avoid_set_altered = False

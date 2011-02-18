@@ -345,7 +345,8 @@ class PlanCreationException(ApiException):
             badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
             no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
             wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI,
-            solver_errors=EmptyI, wrong_variants=EmptyI):
+            solver_errors=EmptyI, already_installed=EmptyI,
+            would_install=EmptyI, wrong_variants=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris       = unmatched_fmris
                 self.multiple_matches      = multiple_matches
@@ -362,7 +363,8 @@ class PlanCreationException(ApiException):
                 self.wrong_variants        = wrong_variants
                 self.nofiles               = nofiles
                 self.solver_errors         = solver_errors
-
+                self.already_installed     = already_installed
+                self.would_install         = would_install
         def __str__(self):
                 res = []
                 if self.unmatched_fmris:
@@ -450,7 +452,16 @@ for the current image's architecture, zone type, and/or other variant:""")
                         res += [_("Solver dependency errors:")]
                         res.extend(self.solver_errors)
 
+                if self.already_installed:
+                        res += [_("The following packages are already installed in this image; use uninstall to avoid these:")]
+                        res += [ "\t%s" % s for s in self.already_installed]
+
+                if self.would_install:
+                        res += [_("The following packages are a target of group dependencies; use install to unavoid these:")]
+                        res += [ "\t%s" % s for s in self.would_install]
+
                 return "\n".join(res)
+
 
 class ConflictingActionError(ApiException):
         """Used to indicate that the imageplan would result in one or more sets

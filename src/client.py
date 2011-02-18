@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 53
+CLIENT_API_VERSION = 54
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -176,7 +176,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         advanced_cmds = ["info", "contents", "search", "", "verify", "fix",
             "revert", "", "variant", "change-variant", "", "facet",
-            "change-facet", "", "property", "set-property",
+            "change-facet", "", "avoid", "unavoid", "", "property", "set-property",
             "add-property-value", "remove-property-value", "unset-property", "",
             "publisher", "set-publisher", "unset-publisher", "", "history",
             "purge-history", "", "rebuild-index", "update-format"]
@@ -215,6 +215,8 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         adv_usage["variant"] = _("[-H] [<variant_spec>]")
         adv_usage["facet"] = ("[-H] [<facet_spec>]")
+        adv_usage["avoid"] = _("[pkg_fmri_pattern] ...")
+        adv_usage["unavoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["set-property"] = _("propname propvalue")
         adv_usage["add-property-value"] = _("propname propvalue")
         adv_usage["remove-property-value"] = _("propname propvalue")
@@ -1784,6 +1786,41 @@ def revert(api_inst, args):
         ret_code = __api_execute_plan(op, api_inst)
 
         return ret_code
+
+def avoid(api_inst, args):
+        """Place the specified packages on the avoid list"""
+        if not args:
+                return __display_avoids(api_inst)
+
+        try:
+                api_inst.avoid_pkgs(args)
+                return EXIT_OK
+        except:
+                return __api_plan_exception("avoid", api_inst, False, 0)
+
+def unavoid(api_inst, args):
+        """Remove the specified packages from the avoid list"""
+        if not args:
+                return __display_avoids(api_inst)
+
+        try:
+                api_inst.avoid_pkgs(args, unavoid=True)
+                return EXIT_OK
+        except:
+                return __api_plan_exception("unavoid", api_inst, False, 0)
+
+def __display_avoids(api_inst):
+        """Display the current avoid list, and the pkgs that are tracking
+        that pkg"""
+        for a in api_inst.get_avoid_list():
+                tracking = " ".join(a[1])
+                if tracking:
+                        logger.info(_("    %s (group dependency of '%s')")
+                            % (a[0], tracking))
+                else:
+                        logger.info("    %s" % a[0])
+
+        return EXIT_OK
 
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
@@ -4585,6 +4622,7 @@ def main_func():
         cmds = {
             "add-property-value" : property_add_value,
             "authority"        : publisher_list,
+            "avoid"            : avoid,
             "change-facet"     : change_facet,
             "change-variant"   : change_variant,
             "contents"         : list_contents,
@@ -4607,6 +4645,7 @@ def main_func():
             "set-authority"    : publisher_set,
             "set-property"     : property_set,
             "set-publisher"    : publisher_set,
+            "unavoid"          : unavoid,
             "uninstall"        : uninstall,
             "unset-authority"  : publisher_unset,
             "unset-property"   : property_unset,

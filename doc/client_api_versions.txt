@@ -1,3 +1,11 @@
+Version 54:
+Compatible with clients using versions 53-54:
+
+     pkg.client.api.ImageInterface has changed as follows:
+
+	* added avoid_pkgs, get_avoid_list functions to client
+	  interface to manage group dependency behavior.
+
 Version 53:
 Incompatible with clients using versions 0-52:
 
@@ -128,10 +136,10 @@ Version 46:
 Incompatible with clients using versions 0-45.
 
     pkg.client.api.ImageInterface has changed as follows:
-         
-        * The actual_cmd parameter is no longer a parameter to the 
+
+        * The actual_cmd parameter is no longer a parameter to the
           plan_update_all function.  Instead that information is stored in the
-          global_settings object.  It's used when looking for the trust anchors 
+          global_settings object.  It's used when looking for the trust anchors
           of the image from which pkg was run.
 
 Version 45:
@@ -389,14 +397,14 @@ Changes:
         * A new constant named 'KNOWN' has been added.  It indicates
           that the package is currently available from a publisher's
            repository.
-     
+
          * A new constant named 'UPGRADABLE' has been added. It
            indicates that a new version of the package is available.
- 
+
      The following new api functions were added to ImageInterface (see
      'pydoc pkg.client.api.ImageInterface' for more information):
          * get_pkg_categories
- 
+
          * get_pkg_list
 
 Version 24:
@@ -451,7 +459,7 @@ Version 18:
 Compatible with clients using versions 15-17.
 Changes:
    The following exceptions were added to pkg.client.api_errors:
-    
+
     class SetDisabledPublisherPreferred(PublisherError):
         """Used to indicate an attempt to set a disabled publisher as
         the preferred publisher was made."""
@@ -470,7 +478,7 @@ Version 16:
 Compatible with clients using version 15.
 Changes:
    The following exceptions were added to pkg.client.api_errors:
-    
+
     class NoSuchKey(CertificateError):
         """Used to indicate that a key could not be found."""
 
@@ -478,7 +486,7 @@ Version 15:
 Incompatible with clients using versions 0-14.
 Changes:
     The unfound_fmris variable in the
-    pkg.client.api_errors.PlanCreationException class is now called 
+    pkg.client.api_errors.PlanCreationException class is now called
     unmatched_fmris.
 
 Version 14:
@@ -630,7 +638,7 @@ Changes:
         def log_operation_start(self, name):
                 """Marks the start of an operation to be recorded in image
                 history."""
- 
+
         def parse_p5i(self, fileobj=None, location=None):
                 """Reads the pkg(5) publisher json formatted data at 'location'
                 or from the provided file-like object 'fileobj' and returns a
@@ -697,7 +705,7 @@ Changes:
 Version 6:
 Compatible with clients using versions 0-5
 Changes:
-Adds a new field to PackageInfo, category_info_list, which is a list of 
+Adds a new field to PackageInfo, category_info_list, which is a list of
      PackageCategory objects. These objects contain the scheme and category
      information for packages.
 
@@ -710,7 +718,7 @@ plan_install and plan_update_all can now raise PermissionsException.
 Version 4:
 Compatible with clients using versions 1, 2, and 3
 Changes:
-Modifies where certain progress tracking calls were made, calling 
+Modifies where certain progress tracking calls were made, calling
     evaluate_start much sooner.
 Adds refresh tracking to progress.py. This allows for active feedback when
     the catalogs of authorities are being refreshed.
@@ -726,14 +734,14 @@ Adds the following new fields to PackageInfo objects: links, hardlinks,
 Version 2:
 Compatible with clients using Version 1
 Changes:
-Adds the optional argument update_index to plan_install, plan_uninstall, and 
+Adds the optional argument update_index to plan_install, plan_uninstall, and
     plan_update_all. When the argument is false, no automatic update to the
     index occurs. By default, the argument is true.
 
 Version 1:
 Incompatible with clients using Version 0
 Changes:
-plan_install now returns a tuple of whether there is anything to do and 
+plan_install now returns a tuple of whether there is anything to do and
     a catalog refresh exception, if one was caught. In this, it mirrors the
     first and third return values from plan_update_all.
 
