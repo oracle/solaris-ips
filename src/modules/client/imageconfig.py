@@ -499,6 +499,15 @@ class ImageConfig(cfg.FileConfig):
                                 self.set_property(section, prop,
                                     getattr(pub, prop))
 
+                        # Force removal of origin property when writing.  It
+                        # should only exist when configuration is loaded if
+                        # the client is using an older image.
+                        try:
+                                self.remove_property(section, "origin")
+                        except cfg.UnknownPropertyError:
+                                # Already gone.
+                                pass
+
                         #
                         # For zones, where the reachability of an absolute path
                         # changes depending on whether you're in the zone or

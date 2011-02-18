@@ -460,6 +460,13 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 newcfg._version = 2
                 newcfg.set_property("image", "version", 2)
 
+                # Older clients stored origin information in 'origin' instead of
+                # 'origins'.
+                for pfx in ("test1", "test2"):
+                        origin = newcfg.get_property("authority_%s" % pfx,
+                            "origins")[2:-2]
+                        newcfg.set_property("authority_%s" % pfx, "origin",
+                            origin)
 
                 # Older clients store disabled authorities in separate config
                 # file.
@@ -511,6 +518,29 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         # If there any other files but catalog files here, then
                         # the old state information didn't get properly removed.
                         self.assert_(pl.startswith("catalog."))
+
+                # Verify origin configuration is intact.
+                expected = """\
+test1\ttrue\ttrue\ttrue\torigin\tonline\t%s/
+test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
+""" % (self.rurl1, self.rurl2)
+                self.pkg("publisher -HF tsv")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # Verify origin information matches expected if configuration
+                # changes are made.
+                expected = """\
+test1\ttrue\ttrue\ttrue\torigin\tonline\t%s/
+test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
+""" % (self.rurl2, self.rurl2)
+                self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl2)
+                self.pkg("publisher -HF tsv")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # Reset configuration.
+                self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl1)
 
                 # Now convert the v4 image to a v3 image.
                 link_manifests()
