@@ -536,7 +536,8 @@ class PkgActionChecker(base.ActionChecker):
                                 if key in ["original_name", "refresh_fmri",
                                     "restart_fmri", "suspend_fmri",
                                     "disable_fmri", "clone_perms",
-                                    "reboot_needed"]:
+                                    "reboot_needed"] or \
+                                        key.startswith("facet.locale."):
                                         continue
                                 engine.warning(
                                     _("underscore in attribute name %(key)s in "
