@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -29,7 +29,7 @@ import os
 import pkg.elf as elf
 import pkg.flavor.base as base
 
-from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR
+from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_DEFAULT_RUNPATH
 
 class BadElfFile(base.DependencyAnalysisError):
         """Exception that is raised when the elf dependency checker is given
@@ -144,8 +144,8 @@ def expand_variables(paths, dyn_tok_conv):
 
 default_run_paths = ["/lib", "/usr/lib"]
 
-def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
-    kernel_paths, **kwargs):
+def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
+    **kwargs):
         """Produce the elf dependencies for the file delivered in the action
         provided.
 
@@ -157,7 +157,7 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
         'dyn_tok_conv' is the dictionary which maps the dynamic tokens, like
         $PLATFORM, to the values they should be expanded to.
 
-        'kernel_paths' contains the run paths which kernel modules should use.
+        'run_paths' contains the run paths which elf binaries should use.
         """
 
         if not action.name == "file":
@@ -209,7 +209,7 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
                         for p in dyn_tok_conv.get("$PLATFORM", []):
                                 rp.append("/platform/%s/kernel" % p)
                 # Default kernel search path
-                rp.extend(kernel_paths)
+                rp.extend(["/kernel", "/usr/kernel"])
                 # What subdirectory should we look in for 64-bit kernel modules?
                 if ei["bits"] == 64:
                         if ei["arch"] == "i386":
@@ -224,12 +224,17 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
                         if p not in rp:
                                 rp.append(p)
 
-        rp, elist = expand_variables(rp, dyn_tok_conv)
+        elist = []
+        if run_paths:
+                # add our detected runpaths into the user-supplied one (if any)
+                rp = base.insert_default_runpath(rp, run_paths)
 
-        elist = [
+        rp, errs = expand_variables(rp, dyn_tok_conv)
+
+        elist.extend([
             UnsupportedDynamicToken(proto_file, installed_path, p, tok)
-            for p, tok in elist
-        ]
+            for p, tok in errs
+        ])
 
         res = []
 
@@ -242,7 +247,9 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv,
                                 # XXX We don't resolve dependencies found in
                                 # /platform, since we don't know where under
                                 # /platform to look.
-                                deppath = os.path.join(p, pn, kernel64, fn)[1:]
+                                deppath = \
+                                    os.path.join(p, pn, kernel64, fn).lstrip(
+                                    os.path.sep)
                         else:
                                 # This is a hack for when a runpath uses the 64
                                 # symlink to the actual 64-bit directory.

@@ -11,8 +11,10 @@ which path contains a module to be loaded."""
 
 import modulefinder
 import os
+import pkg.flavor.base as base
 import sys
 
+from pkg.portable import PD_DEFAULT_RUNPATH
 python_path = "PYTHONPATH"
 
 class ModuleInfo(object):
@@ -32,7 +34,8 @@ class ModuleInfo(object):
 
                 self.name = name
                 self.builtin = builtin
-                self.suffixes = [".py", ".pyc", ".pyo", "/__init__.py"]
+                self.suffixes = [".py", ".pyc", ".pyo", "/__init__.py", ".so",
+                    "module.so"]
                 self.dirs = sorted(dirs)
 
         def make_package(self):
@@ -62,7 +65,13 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
         def __init__(self, proto_dir, *args, **kwargs):
                 """Produce a module finder that ignores PYTHONPATH and only
-                reports the direct imports of a module."""
+                reports the direct imports of a module.
+
+                run_paths as a keyword argument specifies a list of additional
+                paths to use when searching for modules."""
+
+                # ModuleFinder.__init__ doesn't expect run_paths
+                run_paths = kwargs.pop("run_paths", [])
 
                 # Check to see whether a python path has been set.
                 if python_path in os.environ:
@@ -80,7 +89,13 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                     if not self.startswith_path(fp, py_path)
                 ]
 
-                # Map the standard system paths into the proto area.
+                if run_paths:
+                        # add our detected runpath into the user-supplied one
+                        # (if any)
+                        new_path = base.insert_default_runpath(new_path,
+                            run_paths)
+
+                # Map the run paths into the proto area.
                 new_path = [
                     os.path.join(proto_dir, fp.lstrip("/"))
                     for fp in new_path
@@ -227,7 +242,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                                 return [ModuleInfo(name, path)]
                         else:
                                 return [q]
-                res = self.load_tail(name, q, tail)
+                res = self.load_tail(q, tail)
                 q.make_package()
                 res.append(q)
                 return res
@@ -270,24 +285,28 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                     path = self.path
                 return ModuleInfo(name, path)
 
-        def load_tail(self, name, q, tail):
+        def load_tail(self, q, tail):
                 """Determine where each component of a multilevel import would
                 be found on the file system."""
 
                 self.msgin(4, "load_tail", q, tail)
-                m = q
                 res = []
+                name = q.name
+                cur_parent = q
                 while tail:
                         i = tail.find('.')
                         if i < 0: i = len(tail)
                         head, tail = tail[:i], tail[i+1:]
                         new_name = "%s.%s" % (name, head)
-                        r = self.import_module(head, new_name, q)
+                        r = self.import_module(head, new_name, cur_parent)
                         res.append(r)
                         name = new_name
+                        cur_parent = r
+
                 # All but the last module found must be packages because they
                 # contained other packages.
                 for i in range(0, len(res) - 1):
                         res[i].make_package()
-                self.msgout(4, "load_tail ->", m)
+
+                self.msgout(4, "load_tail ->", q)
                 return res

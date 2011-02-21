@@ -182,6 +182,44 @@ file NOHASH path=platform/foo/baz/no_such_named_file
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
 depend fmri=__TBD pkg.debug.depend.file=search_storage.py pkg.debug.depend.file=search_storage.pyc pkg.debug.depend.file=search_storage/__init__.py pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py pkg.debug.depend.type=python type=require
 """
+
+        multi_file_dep_fullpath_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage.py \
+        pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage.pyc \
+    pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage.pyc \
+        pkg.debug.depend.fullpath=usr/lib/python2.6/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-dynload/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-old/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/lib-tk/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/plat-sunos5/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/site-packages/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gst-0.10/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg/search_storage/__init__.py \
+    pkg.debug.depend.fullpath=usr/lib/python26.zip/pkg/search_storage/__init__.py \
+    pkg.debug.depend.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py \
+    pkg.debug.depend.type=python type=require
+"""
+
         multi_file_sat_both = """\
 set name=fmri value=pkg:/sat_both
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.py
@@ -473,6 +511,9 @@ close
                 self.assertEqual(vnums, set())
 
         def test_multi_file_dependencies(self):
+                """This checks manifests with multiple files, both with
+                pkg.debug.depend.file/path combinations, as well as
+                with pkg.debug.depend.fullpath lists."""
                 def __check_results(pkg_deps, errs, exp_pkg, no_deps, one_dep):
                         if errs:
                                 raise RuntimeError("Got the following "
@@ -484,16 +525,18 @@ close
                                 raise RuntimeError("Got more than one "
                                     "dependency:\n%s" %
                                     "\n".join(
-                                        [str(d) for d in pkg_deps[col_path]]))
+                                        [str(d) for d in pkg_deps[one_dep]]))
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
 
                 col_path = self.make_manifest(self.multi_file_dep_manf)
-                # This manifest provides two files that satisfy col_path's
+                # the following manifest is logically equivalent to col_path
+                col_fullpath_path = self.make_manifest(self.multi_file_dep_manf)
+                # This manifest provides two files that satisfy col*_path's
                 # file dependencies.
                 both_path = self.make_manifest(self.multi_file_sat_both)
                 # This manifest provides a file that satisfies the dependency
-                # in col_path by delivering a py or pyc file..
+                # in col*_path by delivering a py or pyc file..
                 py_path = self.make_manifest(self.multi_file_sat_py)
                 pyc_path = self.make_manifest(self.multi_file_sat_pyc)
 
@@ -501,61 +544,62 @@ close
                 # package delivers both files which could satisfy the dependency
                 # or only one package which delivers the dependency is being
                 # resolved against.
-                pkg_deps, errs = dependencies.resolve_deps(
-                    [col_path, both_path], self.api_obj)
-                __check_results(pkg_deps, errs, "pkg:/sat_both", both_path,
-                    col_path)
+                for mf_path in [col_path, col_fullpath_path]:
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [mf_path, both_path], self.api_obj)
+                        __check_results(pkg_deps, errs, "pkg:/sat_both", both_path,
+                            mf_path)
 
-                pkg_deps, errs = dependencies.resolve_deps(
-                    [col_path, py_path], self.api_obj)
-                __check_results(pkg_deps, errs, "pkg:/sat_py", py_path,
-                    col_path)
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [mf_path, py_path], self.api_obj)
+                        __check_results(pkg_deps, errs, "pkg:/sat_py", py_path,
+                            mf_path)
 
-                pkg_deps, errs = dependencies.resolve_deps(
-                    [col_path, pyc_path], self.api_obj)
-                __check_results(pkg_deps, errs, "pkg:/sat_pyc", pyc_path,
-                    col_path)
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [mf_path, pyc_path], self.api_obj)
+                        __check_results(pkg_deps, errs, "pkg:/sat_pyc", pyc_path,
+                            mf_path)
 
-                # This resolution should fail because files which satisfy the
-                # dependency are delivered in two packages.
-                pkg_deps, errs = dependencies.resolve_deps(
-                    [col_path, py_path, pyc_path], self.api_obj)
-                self.assertEqual(len(pkg_deps), 3)
-                for k in pkg_deps:
-                        if pkg_deps[k]:
-                                raise RuntimeError("Got the following "
-                                    "unexpected dependencies:\n%s" %
-                                    "\n".join(["%s\n%s" %
-                                        (k,"\n".join([
-                                            "\t%s" % d for d in pkg_deps[k]]))
-                                            for k in pkg_deps
-                                        ]))
-                if len(errs) != 2:
-                        raise RuntimeError("Didn't get two errors:\n%s" %
-                            "\n".join(str(e) for e in errs))
-                for e in errs:
-                        if isinstance(e,
-                            dependencies.MultiplePackagesPathError):
-                                for d in e.res:
-                                        if d.attrs["fmri"] not in \
-                                            ("pkg:/sat_py",
-                                            "pkg:/sat_pyc"):
-                                                raise RuntimeError("Unexpected "
-                                                    "dependency action:%s" % d)
-                                self.assertEqual(
-                                    e.source.attrs["%s.file" % self.depend_dp],
-                                    ["search_storage.py", "search_storage.pyc",
-                                    "search_storage/__init__.py"])
-                        elif isinstance(e,
-                            dependencies.UnresolvedDependencyError):
-                                self.assertEqual(e.path, col_path)
-                                self.assertEqual(
-                                    e.file_dep.attrs[
-                                        "%s.file" % self.depend_dp],
-                                    ["search_storage.py", "search_storage.pyc",
-                                    "search_storage/__init__.py"])
-                        else:
-                                raise RuntimeError("Unexpected error:%s" % e)
+                        # This resolution should fail because files which satisfy the
+                        # dependency are delivered in two packages.
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [mf_path, py_path, pyc_path], self.api_obj)
+                        self.assertEqual(len(pkg_deps), 3)
+                        for k in pkg_deps:
+                                if pkg_deps[k]:
+                                        raise RuntimeError("Got the following "
+                                            "unexpected dependencies:\n%s" %
+                                            "\n".join(["%s\n%s" %
+                                                (k,"\n".join([
+                                                    "\t%s" % d for d in pkg_deps[k]]))
+                                                    for k in pkg_deps
+                                                ]))
+                        if len(errs) != 2:
+                                raise RuntimeError("Didn't get two errors:\n%s" %
+                                    "\n".join(str(e) for e in errs))
+                        for e in errs:
+                                if isinstance(e,
+                                    dependencies.MultiplePackagesPathError):
+                                        for d in e.res:
+                                                if d.attrs["fmri"] not in \
+                                                    ("pkg:/sat_py",
+                                                    "pkg:/sat_pyc"):
+                                                        raise RuntimeError("Unexpected "
+                                                            "dependency action:%s" % d)
+                                        self.assertEqual(
+                                            e.source.attrs["%s.file" % self.depend_dp],
+                                            ["search_storage.py", "search_storage.pyc",
+                                            "search_storage/__init__.py"])
+                                elif isinstance(e,
+                                    dependencies.UnresolvedDependencyError):
+                                        self.assertEqual(e.path, mf_path)
+                                        self.assertEqual(
+                                            e.file_dep.attrs[
+                                                "%s.file" % self.depend_dp],
+                                            ["search_storage.py", "search_storage.pyc",
+                                            "search_storage/__init__.py"])
+                                else:
+                                        raise RuntimeError("Unexpected error:%s" % e)
 
 
         def test_bug_11518(self):

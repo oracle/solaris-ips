@@ -26,6 +26,11 @@ import sys
 from modulefinder import LOAD_CONST, IMPORT_NAME, STORE_NAME, STORE_GLOBAL, \
     STORE_OPS
 
+# A string used as a component of the pkg.depend.runpath value as a special
+# token to determine where to insert the runpath that pkgdepend generates itself
+# (duplicated from pkg.portable.__init__ for reasons above)
+PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
+
 python_path = "PYTHONPATH"
 
 class ModuleInfo(object):
@@ -45,7 +50,8 @@ class ModuleInfo(object):
 
                 self.name = name
                 self.builtin = builtin
-                self.suffixes = [".py", ".pyc", ".pyo", "/__init__.py"]
+                self.suffixes = [".py", ".pyc", ".pyo", "/__init__.py", ".so",
+                    "module.so"]
                 self.dirs = sorted(dirs)
 
         def make_package(self):
@@ -71,11 +77,30 @@ class ModuleInfo(object):
                 return "name:%s suffixes:%s dirs:%s" % (self.name,
                     " ".join(self.suffixes), len(self.dirs))
 
+class MultipleDefaultRunPaths(Exception):
+
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
+        def __str__(self):
+                return _(
+                    "More than one $PKGDEPEND_RUNPATH token was set on the "
+                    "same action in this manifest.")
+
 class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
         def __init__(self, proto_dir, *args, **kwargs):
                 """Produce a module finder that ignores PYTHONPATH and only
-                reports the direct imports of a module."""
+                reports the direct imports of a module.
+
+                run_paths as a keyword argument specifies a list of additional
+                paths to use when searching for modules."""
+
+                # ModuleFinder.__init__ doesn't expect run_paths
+                run_paths = kwargs.pop("run_paths", [])
 
                 # Check to see whether a python path has been set.
                 if python_path in os.environ:
@@ -92,6 +117,22 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                     for fp in sys.path
                     if not self.startswith_path(fp, py_path)
                 ]
+
+                if run_paths:
+                        # insert our default search path where the
+                        # PD_DEFAULT_RUNPATH token was found
+                        try:
+                                index = run_paths.index(PD_DEFAULT_RUNPATH)
+                                if index >= 0:
+                                        run_paths = run_paths[:index] + \
+                                            new_path + run_paths[index + 1:]
+                                if PD_DEFAULT_RUNPATH in run_paths:
+                                        raise MultipleDefaultRunPaths()
+                        except ValueError:
+                                # no PD_DEFAULT_PATH token, so we override the
+                                # whole default search path
+                                pass
+                        new_path = run_paths
 
                 # Map the standard system paths into the proto area.
                 new_path = [
@@ -235,7 +276,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                                 return [ModuleInfo(name, path)]
                         else:
                                 return [q]
-                res = self.load_tail(name, q, tail)
+                res = self.load_tail(q, tail)
                 q.make_package()
                 res.append(q)
                 return res
@@ -278,36 +319,49 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                     path = self.path
                 return ModuleInfo(name, path)
 
-        def load_tail(self, name, q, tail):
+        def load_tail(self, q, tail):
                 """Determine where each component of a multilevel import would
                 be found on the file system."""
 
                 self.msgin(4, "load_tail", q, tail)
-                m = q
                 res = []
+                name = q.name
+                cur_parent = q
                 while tail:
                         i = tail.find('.')
                         if i < 0: i = len(tail)
                         head, tail = tail[:i], tail[i+1:]
                         new_name = "%s.%s" % (name, head)
-                        r = self.import_module(head, new_name, q)
+                        r = self.import_module(head, new_name, cur_parent)
                         res.append(r)
                         name = new_name
+                        cur_parent = r
+
                 # All but the last module found must be packages because they
                 # contained other packages.
                 for i in range(0, len(res) - 1):
                         res[i].make_package()
-                self.msgout(4, "load_tail ->", m)
+
+                self.msgout(4, "load_tail ->", q)
                 return res
 
 
 if __name__ == "__main__":
-        mf = DepthLimitedModuleFinder(sys.argv[1])
-        loaded_modules = mf.run_script(sys.argv[2])
-        for res in set([
-            (tuple(m.get_file_names()), tuple(m.dirs)) for m in loaded_modules
-        ]):
-                print "DEP %s" % (res,)
-        missing, maybe =  mf.any_missing_maybe()
-        for name in missing:
-                print "ERR %s" % name,
+        """Usage:
+              depthlimitedmf24.py <proto_dir> <script> [ run_path run_path ... ]
+        """
+        run_paths = sys.argv[3:]
+        try:
+                mf = DepthLimitedModuleFinder(sys.argv[1], run_paths=run_paths)
+                loaded_modules = mf.run_script(sys.argv[2])
+                for res in set([
+                    (tuple(m.get_file_names()), tuple(m.dirs)) for m in loaded_modules
+                ]):
+                        print "DEP %s" % (res,)
+                missing, maybe =  mf.any_missing_maybe()
+                for name in missing:
+                        print "ERR %s" % name,
+        except ValueError, e:
+                print "ERR %s" % e
+        except MultipleDefaultRunPaths, e:
+                print e

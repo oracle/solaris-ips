@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -127,7 +127,7 @@ class PythonDependency(base.PublishingDependency):
 py_bin_re = re.compile(r"^\#\!\s*/usr/bin/python(?P<major>\d+)\.(?P<minor>\d+)")
 py_lib_re = re.compile(r"^usr/lib/python(?P<major>\d+)\.(?P<minor>\d+)/")
 
-def process_python_dependencies(action, pkg_vars, script_path):
+def process_python_dependencies(action, pkg_vars, script_path, run_paths):
         """Analyze the file delivered by the action for any python dependencies.
 
         The 'action' parameter contain the action which delivers the file.
@@ -137,6 +137,9 @@ def process_python_dependencies(action, pkg_vars, script_path):
 
         The 'script_path' parameter is None of the file is not executable, or
         is the path for the binary which is used to execute the file.
+
+        The 'run_paths' parameter is a list of paths that should be searched
+        for modules.
         """
 
         # There are three conditions which determine whether python dependency
@@ -224,7 +227,7 @@ def process_python_dependencies(action, pkg_vars, script_path):
         # of python running, use the default analyzer and don't fork and exec.
         if cur_major == analysis_major and cur_minor == analysis_minor:
                 mf = modulefinder.DepthLimitedModuleFinder(
-                    action.attrs[PD_PROTO_DIR])
+                    action.attrs[PD_PROTO_DIR], run_paths=run_paths)
                 loaded_modules = mf.run_script(local_file)
 
                 for names, dirs in set([
@@ -247,6 +250,9 @@ def process_python_dependencies(action, pkg_vars, script_path):
             "depthlimitedmf%s%s.py" % (analysis_major, analysis_minor))
         cmd = ["python%s.%s" % (analysis_major, analysis_minor), exec_file,
             action.attrs[PD_PROTO_DIR], local_file]
+
+        if run_paths:
+                cmd.extend(run_paths)
         try:
                 sp = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)

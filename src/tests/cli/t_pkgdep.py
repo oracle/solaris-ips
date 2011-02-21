@@ -563,7 +563,9 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz"""
                     "%(pfx)s.file=indexer.py "
                     "%(pfx)s.file=indexer.pyc "
                     "%(pfx)s.file=indexer.pyo "
-                    "%(pfx)s.file=indexer/__init__.py " +
+                    "%(pfx)s.file=indexer.so "
+                    "%(pfx)s.file=indexer/__init__.py "
+                    "%(pfx)s.file=indexermodule.so " +
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
@@ -572,7 +574,10 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz"""
                     "%(pfx)s.file=misc.py "
                     "%(pfx)s.file=misc.pyc "
                     "%(pfx)s.file=misc.pyo "
-                    "%(pfx)s.file=misc/__init__.py " +
+                    "%(pfx)s.file=misc.so "
+                    "%(pfx)s.file=misc/__init__.py "
+                    "%(pfx)s.file=miscmodule.so " +
+
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
@@ -587,7 +592,10 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz"""
                     "%(pfx)s.file=search_storage.py "
                     "%(pfx)s.file=search_storage.pyc "
                     "%(pfx)s.file=search_storage.pyo "
-                    "%(pfx)s.file=search_storage/__init__.py " +
+                    "%(pfx)s.file=search_storage.so "
+                    "%(pfx)s.file=search_storage/__init__.py "
+                    "%(pfx)s.file=search_storagemodule.so " +
+
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n") % {
@@ -651,7 +659,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 file NOHASH group=bin mode=0755 owner=root path=var/log/syslog variant.opensolaris.zone=global
 hardlink path=var/log/foobar target=syslog
 """
-        
+
         bug_15958_manf = """\
 set name=variant.opensolaris.zone value=global value=nonglobal
 """ + bug_16808_manf
@@ -2357,6 +2365,24 @@ file NOHASH group=bin mode=0755 owner=root path=etc/libc.so.1
                 self.assertEqual(d.attrs["fmri"], "pkg:/b@0.5.11-0.151")
                 self.assertEqual(d.attrs[dependencies.type_prefix], "elf")
 
+        def test_multiple_run_paths(self):
+                """Test that specifying multiple $PKGDEPEND_RUNPATH tokens
+                results in an error."""
+
+                mf = """\
+set name=pkg.fmri value=pkg:/a@0.5.11,5.11-0.160
+file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
+    pkg.depend.runpath=$PKGDEPEND_RUNPATH:$PKGDEPEND_RUNPATH
+    """
+                self.make_proto_text_file("etc/file.py", "#!/usr/bin/python2.6")
+                tp = self.make_manifest(mf)
+                self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
+                    exit=1)
+                expected = (
+                    "More than one $PKGDEPEND_RUNPATH token was set on the "
+                    "same action in this manifest.")
+                self.check_res(expected, self.errout)
+                self.check_res("", self.output)
 
 if __name__ == "__main__":
         unittest.main()

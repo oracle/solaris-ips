@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -78,6 +78,7 @@ def process_script_deps(action, pkg_vars, **kwargs):
         pkg_attrs = {}
 
         script_path = None
+        run_paths = kwargs.get("run_paths", [])
         # add #! dependency
         if l.startswith("#!"):
                 # Determine whether the file will be delivered executable.
@@ -101,7 +102,7 @@ def process_script_deps(action, pkg_vars, **kwargs):
                                 script_path = l
                 if "python" in l:
                         ds, errs, py_attrs = python.process_python_dependencies(
-                            action, pkg_vars, script_path)
+                            action, pkg_vars, script_path, run_paths)
                         elist.extend(errs)
                         deps.extend(ds)
                         for key in py_attrs:

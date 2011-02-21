@@ -111,7 +111,7 @@ def generate(args):
         show_missing = False
         show_usage = False
         isa_paths = []
-        kernel_paths = []
+        run_paths = []
         platform_paths = []
         dyn_tok_conv = {}
         proto_dirs = []
@@ -135,7 +135,7 @@ def generate(args):
                 elif opt == "-I":
                         remove_internal_deps = False
                 elif opt == "-k":
-                        kernel_paths.append(arg)
+                        run_paths.append(arg)
                 elif opt == "-m":
                         echo_manf = True
                 elif opt == "-M":
@@ -146,9 +146,6 @@ def generate(args):
                 usage(retcode=0)
         if len(pargs) > 2 or len(pargs) < 1:
                 usage(_("Generate only accepts one or two arguments."))
-
-        if not kernel_paths:
-                kernel_paths = ["/kernel", "/usr/kernel"]
 
         if "$ORIGIN" in dyn_tok_conv:
                 usage(_("ORIGIN may not be specified using -D. It will be "
@@ -173,8 +170,7 @@ def generate(args):
 
         try:
                 ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(manf,
-                    proto_dirs, dyn_tok_conv, kernel_paths,
-                    remove_internal_deps)
+                    proto_dirs, dyn_tok_conv, run_paths, remove_internal_deps)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse manifest %(manifest)s because of the "
                     "following line:\n%(line)s") % { 'manifest': manf ,

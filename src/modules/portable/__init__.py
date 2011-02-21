@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # The portable module provide access to methods that require operating system-
@@ -216,6 +216,22 @@ ELF, EXEC, UNFOUND, SMF_MANIFEST = range(0, 4)
 PD_LOCAL_PATH = "pkg.internal.depend.localpath"
 PD_PROTO_DIR = "pkg.internal.depend.protodir"
 PD_PROTO_DIR_LIST = "pkg.internal.depend.protodirlist"
+
+# A String to be used for an action attribute created for pkgdepend, indicating
+# module or run paths that can be used to specify the paths that it should use
+# when searching for dependencies on given files.  For example setting the
+# elf runpath for elf binaries, or $PYTHONPATH (or sys.path) for python modules.
+PD_RUN_PATH = "pkg.depend.runpath"
+
+# A string used as a component of the pkg.depend.runpath value as a special
+# token to determine where to insert the runpath that pkgdepend automatically
+# generates.
+PD_DEFAULT_RUNPATH = "$PKGDEPEND_RUNPATH"
+
+# A String used for an action attribute to allow pkgdepend to bypass generation
+# of dependencies against a given filename, eg. don't try to generate a
+# dependency on dtracestubs from platform/i86pc/kernel/amd64/unix
+PD_BYPASS_GENERATE = "pkg.depend.bypass-generate"
 
 import platform
 import util as os_util

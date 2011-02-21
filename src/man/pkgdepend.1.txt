@@ -88,9 +88,45 @@ SUBCOMMANDS
           For each -D, add the 'value' as a way to expand the token
           'name' in run paths for elf file dependencies.
 
-          For each -k, add the path given to the list of paths in which
-          to look for kernel modules.  Using the -k argument removes the
-          default paths which are /kernel and /usr/kernel.
+          For each -k, add the path given to the list of run paths
+          declared in which to look for kernel modules.  Using the -k
+          argument removes the default paths which are /kernel and 
+          /usr/kernel.
+
+          Run paths, such as those specified by the -k option, can also
+          be specified on per-action or per-manifest basis using the
+          action or manifest attribute "pkg.depend.runpath" with a
+          single value set to a colon-separated string of the paths
+          that should be used.
+
+          The use of -k is overridden by any pkg.depend.runpath
+          attributes set in the manifest or action.
+
+	  The special token "$PKGDEPEND_RUNPATH" can be used as one
+          component of the pkg.depend.runpath attribute value in order
+          to include the standard system run path for the file
+          being analyzed.
+
+          In some cases, it may be necessary to prevent automatic
+          generation of dependencies.  An example where this may be
+          needed is if a package delivers a sample Python script that
+          imports a set of modules: those modules may not be considered
+          to be real dependencies for that package.
+
+          The action or manifest attribute "pkg.depend.bypass-generate"
+          can be used to indicate that we should not generate dependencies
+          against given files.
+
+          pkg.depend.bypass-generate values are perl5 regular expressions,
+          used to match file names.  The regular expressions are implicitly
+          anchored at the start and end of the file path,
+
+          eg.
+               pkg.depend.bypass-generate=this/that
+          matches:
+               this/that
+          but not:
+               something/this/that/the/other
 
      resolve [-mov] [-d output_dir] [-s suffix] manifest_path ...
           Transform dependencies on files into dependencies on the
@@ -147,7 +183,7 @@ EXAMPLES
      $ ls ./res foo     bar
 
      Example 4: Replace all $PLATFORM tokens in the run paths in elf
-     files with sun4v and sun4u while generating the dependences for the
+     files with sun4v and sun4u while generating the dependencies for the
      manifest written in foo whose content directory is in /.
 
      $ pkgdepend generate -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo /
@@ -157,6 +193,33 @@ EXAMPLES
      in foo whose content directory is in /.
 
      $ pkgdepend generate -k /kmod foo /
+
+     Example 6: Append opt/python to the standard Python run path for a given
+     python script, and bypass dependency generation against all Python
+     modules called "test" for a file delivered as opt/python/foo/file.py.
+
+     We also avoid generating dependencies against any file delivered in
+     usr/lib/python2.6/vendor-packages/xdg.
+
+     $ cat manifest.py
+     set name=pkg.fmri value=pkg:/mypackage@1.0,1.0
+     set name=pkg.summary value="My test package"
+     dir path=opt mode=0755 group=sys owner=root
+     dir path=opt/python mode=0755 group=sys owner=root
+     dir path=opt/python/foo mode=0755 group=sys owner=root
+     file NOHASH path=opt/python/__init__.py mode=0644 group=sys owner=root
+     file NOHASH path=opt/python/foo/__init__.py mode=0644 group=sys owner=root
+     #
+     # We add runpath and bypass-generate attributes below:
+     #
+     file NOHASH path=opt/python/foo/file.py mode=0644 group=sys owner=root \
+         pkg.depend.bypass-generate=^.*/test.py.*$ \
+         pkg.depend.bypass-generate=^.*/testmodule.so$ \
+         pkg.depend.bypass-generate=^.*/test.so$ \
+         pkg.depend.bypass-generate=^usr/lib/python2.6/vendor-packages/xdg/.*$ \
+         pkg.depend.runpath=$PKGDEPEND_RUNPATH:/opt/python
+
+     $ pkgdepend generate -d proto manifest.py
 
 ENVIRONMENT VARIABLES
      PKG_IMAGE
