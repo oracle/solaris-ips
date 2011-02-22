@@ -5,7 +5,7 @@ NAME
      pkgdiff - compare pkg manifests
 
 SYNOPSIS
-     /usr/bin/pkgdiff [-i attribute] [-o attribute] ...  file1 file2
+     /usr/bin/pkgdiff [-i attribute ...] [-o attribute] [-v name=value ...] file1 file2
 
 
 DESCRIPTION
@@ -33,11 +33,18 @@ OPTIONS
 
      -i attribute    Ignore this attribute if present during comparisons
                      File hash values may be ignored with -i hash.  May
-                     not be used with -o option.
+                     not be used with -o option.  This option may be repeated.
 
      -o attribute    Only report differences in this attribute.   May
                      not be used with -i option.  Will elide any action
                      changes that don't affect this attribute on an action.
+
+     -v name=value   Only compute differences for this variant value.
+                     An example would be -v arch=sparc.  Note that this
+                     variant tag will be removed for all actions before
+                     comparison, and that only one value may be specified
+                     per variant, but this option may be repeated for
+                     different variants.
 
 EXIT STATUS
      The following exit values are returned:

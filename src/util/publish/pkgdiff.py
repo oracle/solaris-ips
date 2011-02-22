@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -30,10 +30,11 @@ import sys
 import traceback
 
 import pkg.actions
+import pkg.variant as variant
 import pkg.client.api_errors as apx
 import pkg.manifest as manifest
 from pkg.misc import PipeError
-
+from collections import defaultdict
 
 def usage(errmsg="", exitcode=2):
         """Emit a usage message and optionally prefix it with a more specific
@@ -43,7 +44,7 @@ def usage(errmsg="", exitcode=2):
                 print >> sys.stderr, "pkgdiff: %s" % errmsg
 
         print _(
-            "/usr/bin/pkgdiff [-i attribute] [-o attribute]  file1 file2")
+            "/usr/bin/pkgdiff [-i attribute ...] [-o attribute] [-v variant=value ...] file1 file2")
         sys.exit(exitcode)
 
 def error(text, exitcode=1):
@@ -59,14 +60,22 @@ def main_func():
 
         ignoreattrs = []
         onlyattrs = []
+        varattrs = defaultdict(set)
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "i:o:v:", ["help"])
                 for opt, arg in opts:
                         if opt == "-i":
                                 ignoreattrs.append(arg)
                         if opt == "-o":
                                 onlyattrs.append(arg)
+                        if opt == "-v":
+                                args = arg.split("=")
+                                if len(args) != 2:
+                                        usage(_("variant option incorrect %s") % arg)
+                                if not args[0].startswith("variant."):
+                                        args[0] = "variant." + args[0]
+                                varattrs[args[0]].add(args[1])
                         if opt in ("--help", "-?"):
                                 usage(exitcode=0)
 
@@ -74,36 +83,60 @@ def main_func():
                 usage(_("illegal global option -- %s") % e.opt)
 
         if len(pargs) != 2:
-                usage(_("two file arguments are required"))
+                usage(_("two file arguments are required."))
 
         if ignoreattrs and onlyattrs:
-                usage(_("-i and -o options may not be used at the same time"))
+                usage(_("-i and -o options may not be used at the same time."))
+
+        for v in varattrs:
+                if len(varattrs[v]) > 1:
+                        usage(_("For any variant, only one value may be specified."))
+                varattrs[v] = varattrs[v].pop()
 
         ignoreattrs = set(ignoreattrs)
         onlyattrs = set(onlyattrs)
 
+        manifest1 = manifest.Manifest()
+        manifest2 = manifest.Manifest()
         try:
-                manifest1 = manifest.Manifest()
-                manifest1.set_content(pathname=pargs[0])
+                for p, m in zip(pargs, (manifest1, manifest2)):
+                        m.set_content(pathname=p)
+        except (pkg.actions.ActionError, apx.InvalidPackageErrors), e:
+                error(_("Action error in file %(p)s: %(e)s") % locals())
         except (EnvironmentError, apx.ApiException), e:
                 error(e)
-        except pkg.actions.ActionError, e:
-                error(_("Action error in file %s: %s") % (pargs[0], e))
 
-        try:
-                manifest2 = manifest.Manifest()
-                manifest2.set_content(pathname=pargs[1])
-        except (EnvironmentError, apx.ApiException), e:
-                error(e)
-        except pkg.actions.ActionError, e:
-                error(_("Action error in file %s: %s") % (pargs[1], e))
+        v1 = manifest1.get_all_variants()
+        v2 = manifest2.get_all_variants()
+
+        # implement manifest filtering
+        for vname in varattrs:
+                for path, v, m in zip(pargs, (v1, v2), (manifest1, manifest2)):
+                        if vname not in v:
+                                continue
+                        filt = varattrs[vname]
+                        if filt not in v[vname]:
+                                usage(_("Manifest %(path)s doesn't support variant %(vname)s=%(filt)s" %
+                                    locals()))
+                        # remove the variant tag
+                        def rip(a):
+                                a.attrs.pop(vname, None)
+                                return a
+                        m.set_content([
+                            rip(a)
+                            for a in m.gen_actions(excludes=[
+                            variant.Variants({vname: filt}).allow_action])
+                        ])
+                        m[vname] = filt
+        if varattrs:
+                # need to rebuild these if we're filtering variants
+                v1 = manifest1.get_all_variants()
+                v2 = manifest2.get_all_variants()
 
         # we need to be a little clever about variants, since
         # we can have multiple actions w/ the same key attributes
         # in each manifest in that case.  First, make sure any variants
         # of the same name have the same values defined.
-        v1 = manifest1.get_all_variants()
-        v2 = manifest2.get_all_variants()
         for k in set(v1.keys()) & set(v2.keys()):
                 if v1[k] != v2[k]:
                         error(_("Manifests support different variants %s %s") % (v1, v2))
