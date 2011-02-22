@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 from collections import namedtuple
@@ -423,13 +423,18 @@ class Manifest(object):
                 # append any variants and facets to manifest dict
                 v_list, f_list = action.get_varcet_keys()
 
-                if v_list or f_list:
+                if not (v_list or f_list):
+                        return
+
+                try:
                         for v, d in zip(v_list, repeat(self.variants)) \
                             + zip(f_list, repeat(self.facets)):
-                                if v not in d:
-                                        d[v] = set([action.attrs[v]])
-                                else:
-                                        d[v].add(action.attrs[v])
+                                d.setdefault(v, set()).add(action.attrs[v])
+                except TypeError:
+                        # Lists can't be set elements.
+                        raise actions.InvalidActionError(action,
+                            _("%(forv)s '%(v)s' specified multiple times") %
+                            {"forv": v.split(".", 1)[0], "v": v})
 
         def fill_attributes(self, action):
                 """Fill attribute array w/ set action contents."""
