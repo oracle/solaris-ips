@@ -1,0 +1,7 @@
+package library/desktop/libgdata
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWlibgdata
+import SUNWlibgdata-devel
+version 0.6.5
+end package

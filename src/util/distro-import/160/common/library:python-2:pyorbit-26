@@ -1,0 +1,6 @@
+package library/python-2/pyorbit-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpyorbit26
+import SUNWpyorbit26-devel
+end package

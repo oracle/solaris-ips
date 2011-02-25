@@ -1,0 +1,13 @@
+package crypto/gnupg
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWgnupg
+version 2.0.17
+end package
+
+package SUNWgnupg
+consolidation "sfw"
+renamed 133
+depend crypto/gnupg
+version 2.0.13
+end package

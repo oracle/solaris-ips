@@ -1,0 +1,9 @@
+package system/library/libvirt
+consolidation "xvm"
+obsoleted 160
+end package
+
+package SUNWlibvirt
+consolidation "xvm"
+obsoleted 160
+end package

@@ -1,0 +1,21 @@
+package desktop/studio/jokosher
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWjokosher
+depend library/audio/gstreamer
+depend library/audio/gstreamer/plugin/gnonlin
+depend library/python-2/pycairo-26
+depend library/python-2/pygobject-26
+depend library/python-2/pygtk2-26
+depend library/python-2/python-dbus-26
+depend library/python-2/python-gnome-26
+depend library/python-2/python-gst-26
+depend library/python-2/python-xdg-26
+depend library/python-2/setuptools-26
+end package
+
+package SUNWjokosher
+consolidation "gnome"
+renamed 133
+depend desktop/studio/jokosher
+end package

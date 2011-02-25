@@ -1,0 +1,6 @@
+package library/python-2/pygtk2-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpygtk2-26
+import SUNWpygtk2-26-devel
+end package

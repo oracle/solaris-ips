@@ -1,0 +1,11 @@
+package web/urlgrabber
+consolidation "xvm"
+obsoleted 160
+version 3.1.0
+end package
+
+package SUNWurlgrabber
+consolidation "xvm"
+obsoleted 160
+version 3.1.0
+end package

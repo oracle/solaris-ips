@@ -1,0 +1,15 @@
+package web/browser/firefox/plugin/firefox-flashplayer
+consolidation "gnome"
+classification "Applications/Plug-ins and Run-times"
+summary "Adobe® Flash® Player plugin"
+description "Adobe® Flash® Player software is a cross-platform browser plug-in that displays the application/x-shockwave-flash and application/futuresplash media types."
+import SUNWflash-player-plugin
+add depend fmri=pkg:/web/firefox/plugin/flash@10.1.82.76-1 type=optional
+version 10.1.102.64
+end package
+
+package web/firefox/plugin/flash
+renamed 151
+depend web/browser/firefox/plugin/firefox-flashplayer
+version 10.1.82.76-1
+end package

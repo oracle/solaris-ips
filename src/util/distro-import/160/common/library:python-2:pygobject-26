@@ -1,0 +1,6 @@
+package library/python-2/pygobject-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpygobject26
+import SUNWpygobject26-devel
+end package

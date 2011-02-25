@@ -1,0 +1,5 @@
+package gnome/config/gconf/multi-user-desktop
+consolidation "gnome"
+classification "Applications/Configuration and Preferences"
+import SUNWgnome-config-multi-user
+end package

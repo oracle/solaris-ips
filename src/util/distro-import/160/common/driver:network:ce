@@ -1,0 +1,30 @@
+package driver/network/ce
+consolidation "nspg"
+classification "Drivers/Networking"
+import SUNWced
+import SUNWcedu
+import SUNWcea
+
+add driver name=ce \
+    perms="* 0600 root sys" \
+    alias="pci108e,abba" \
+    alias="pci100b,35"
+end package
+
+package SUNWced
+consolidation "nspg"
+renamed 133
+depend driver/network/ce
+end package
+
+package developer/debug/mdb/module/module-ce
+consolidation "nspg"
+renamed 160
+depend driver/network/ce
+end package
+
+package SUNWcea
+consolidation "nspg"
+renamed 133
+depend developer/debug/mdb/module/module-ce
+end package

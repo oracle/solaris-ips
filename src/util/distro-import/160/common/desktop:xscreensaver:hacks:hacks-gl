@@ -1,0 +1,12 @@
+package desktop/xscreensaver/hacks/hacks-gl
+consolidation "gnome"
+classification "System/X11"
+import SUNWxscreensaver-hacks-gl
+version 5.12
+end package
+
+package SUNWxscreensaver-hacks-gl
+consolidation "gnome"
+renamed 133
+depend desktop/xscreensaver/hacks/hacks-gl
+end package

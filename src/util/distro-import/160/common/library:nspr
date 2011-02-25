@@ -1,0 +1,24 @@
+package library/nspr
+consolidation "sic_team"
+classification "System/Libraries"
+import SUNWpr
+import SUNWprd
+end package
+
+package SUNWpr
+consolidation "sic_team"
+renamed 133
+depend library/nspr
+end package
+
+package library/nspr/header-nspr
+consolidation "sic_team"
+renamed 160
+depend library/nspr
+end package
+
+package SUNWprd
+consolidation "sic_team"
+renamed 133
+depend library/nspr/header-nspr
+end package

@@ -1,0 +1,11 @@
+package system/xvm/header-xvm
+consolidation "xvm"
+obsoleted 160
+version 3.4.2
+end package
+
+package SUNWxvm
+consolidation "xvm"
+obsoleted 160
+version 3.4.2
+end package
