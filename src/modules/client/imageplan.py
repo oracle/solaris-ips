@@ -769,9 +769,9 @@ class ImagePlan(object):
 
                 return "error", actions
 
-        def __check_inconsistent_attrs(self, actions, oactions):
-                """Check whether we have non-identical actions delivering to the
-                same point in their namespace."""
+        @staticmethod
+        def __find_inconsistent_attrs(actions):
+                """Find all the problem action pairs."""
 
                 # We iterate over all pairs of actions to see if any conflict
                 # with the rest.  If two actions are "safe" together, then we
@@ -779,8 +779,12 @@ class ImagePlan(object):
                 # compare the rest of the actions against just one copy of
                 # essentially identical actions.
                 seen = set()
-                nproblems = []
+                problems = []
                 for a1, a2 in itertools.combinations(actions, 2):
+                        # Implicit directories don't contribute to problems.
+                        if a1[0].name == "dir" and "implicit" in a1[0].attrs:
+                                continue
+
                         if a2 in seen:
                                 continue
 
@@ -790,7 +794,7 @@ class ImagePlan(object):
                         # directories because none of the attributes except for
                         # "path" will exist.
                         diffs = a1[0].differences(a2[0])
-                        if not (diffs and "implicit" not in diffs):
+                        if not diffs or "implicit" in diffs:
                                 seen.add(a2)
                                 continue
 
@@ -800,41 +804,37 @@ class ImagePlan(object):
                                 seen.add(a2)
                                 continue
 
-                        nproblems.append((a1, a2))
+                        problems.append((a1, a2))
 
-                # If we're attempting to move to a state which has no problems,
-                # then we should gather some information about what problems
-                # might exist currently, so that we can fix things up properly.
-                if not nproblems:
-                        seen = set()
-                        oproblems = []
-                        for a1, a2 in itertools.combinations(oactions, 2):
-                                if a2 in seen:
-                                        continue
+                return problems
 
-                                diffs = a1[0].differences(a2[0])
-                                if not (diffs and "implicit" not in diffs):
-                                        seen.add(a2)
-                                        continue
+        def __check_inconsistent_attrs(self, actions, oactions):
+                """Check whether we have non-identical actions delivering to the
+                same point in their namespace."""
 
-                                if not any(d for d in diffs if d in a1[0].unique_attrs):
-                                        seen.add(a2)
-                                        continue
+                nproblems = self.__find_inconsistent_attrs(actions)
+                oproblems = self.__find_inconsistent_attrs(oactions)
 
-                                oproblems.append((a1, a2))
-
-                        if oproblems:
-                                if actions[0][0].name != "dir":
-                                        return "fixup", actions[0]
-
-                                # Find a non-implicit directory action to use
-                                for a in actions:
-                                        if "implicit" not in a[0].attrs:
-                                                return "fixup", a
-                                else:
-                                        return "nothing", None
-                else:
+                # If we end up with more problems than we started with, we
+                # should error out.  If we end up with the same number as
+                # before, then we simply leave things alone.  And if we end up
+                # with fewer, then we try to clean up.
+                if len(nproblems) > len(oproblems):
                         return "error", actions
+                elif not nproblems and not oproblems:
+                        return
+                elif len(nproblems) == len(oproblems):
+                        return "nothing", None
+                else:
+                        if actions[0][0].name != "dir":
+                                return "fixup", actions[0]
+
+                        # Find a non-implicit directory action to use
+                        for a in actions:
+                                if "implicit" not in a[0].attrs:
+                                        return "fixup", a
+                        else:
+                                return "nothing", None
 
         def __propose_fixup(self, action, pfmri):
                 """Add to the current plan a pseudo repair plan to fix up

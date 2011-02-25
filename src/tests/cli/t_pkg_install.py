@@ -5832,6 +5832,12 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
                 close
         """
 
+        pkg_dupdirp2_2 = """
+                open dupdirp2@2,5.11-0
+                add dir path=dir owner=root group=bin mode=0755
+                close
+        """
+
         pkg_dupdirp3 = """
                 open dupdirp3@1,5.11-0
                 add dir path=dir owner=root group=bin mode=0750
@@ -5841,6 +5847,36 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
         pkg_dupdirp4 = """
                 open dupdirp4@1,5.11-0
                 add dir path=dir owner=root group=sys mode=0750
+                close
+        """
+
+        pkg_dupdirp5 = """
+                open dupdirp5@1,5.11-0
+                add dir path=dir owner=root group=other mode=0755
+                close
+        """
+
+        pkg_dupdirp6 = """
+                open dupdirp6@1,5.11-0
+                add dir path=dir owner=root group=other mode=0755
+                close
+        """
+
+        pkg_dupdirp7 = """
+                open dupdirp7@1,5.11-0
+                add file tmp/file1 path=dir/file owner=root group=other mode=0755
+                close
+        """
+
+        pkg_dupdirp8 = """
+                open dupdirp8@1,5.11-0
+                add dir path=dir owner=root group=bin mode=0755
+                close
+        """
+
+        pkg_dupdirp8_2 = """
+                open dupdirp8@2,5.11-0
+                add dir path=dir owner=root group=sys mode=0755
                 close
         """
 
@@ -6351,6 +6387,57 @@ adm
                 self.pkg("install duppath-nonidenticallinksp2")
                 self.pkg("verify")
 
+                # If we get into a broken state, can we make it a little bit
+                # better by uninstalling one of the packages?  Removing dupdir5
+                # here won't reduce the number of different groups under which
+                # dir is delivered, but does reduce the number of actions
+                # delivering it.
+                self.pkg("uninstall '*'")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp1 dupdirp2@1 dupdirp5 dupdirp6")
+                self.pkg("uninstall dupdirp5")
+                self.pkg("verify", exit=1)
+
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp5")
+                # Make sure we can install a package delivering an implicit
+                # directory that's currently in conflict.
+                self.pkg("install dupdirp7")
+                # And make sure we can uninstall it again.
+                self.pkg("uninstall dupdirp7")
+
+                # Removing the remaining conflicts in a couple of steps should
+                # result in a verifiable system.
+                self.pkg("uninstall dupdirp2")
+                self.pkg("uninstall dupdirp5 dupdirp6")
+                self.pkg("verify")
+
+                # Add everything back in, remove everything but one variant of
+                # the directory and an implicit directory, and verify.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp2@1 dupdirp5 dupdirp6 dupdirp7")
+                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
+                self.pkg("verify")
+
+                # Get us into a saner state by upgrading.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp2@1 dupdirp5 dupdirp6")
+                self.pkg("update dupdirp2@2")
+
+                # Get us into a sane state by upgrading.
+                self.pkg("uninstall dupdirp2 dupdirp5 dupdirp6")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp2@1")
+                self.pkg("update dupdirp2@2")
+                self.pkg("verify")
+
+                # We start in a sane state, but the update would result in
+                # conflict, though no more actions deliver the path in
+                # question.
+                self.pkg("uninstall '*'")
+                self.pkg("install dupdirp1 dupdirp8@1")
+                self.pkg("update", exit=1)
+
                 # How about removing one of the conflicting packages?  We'll
                 # remove the package which doesn't match the state on disk.
                 self.pkg("uninstall '*'")
@@ -6363,7 +6450,7 @@ adm
                         self.pkg("uninstall duppath-nonidenticallinksp1")
                 self.pkg("verify")
 
-                # Now we'll try tremoving the package which *does* match the
+                # Now we'll try removing the package which *does* match the
                 # state on disk.  The code should clean up after us.
                 self.pkg("uninstall '*'")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
@@ -6378,7 +6465,7 @@ adm
                 # Let's try a duplicate directory delivered with all sorts of
                 # crazy conflicts!
                 self.pkg("uninstall '*'")
-                self.pkg("install dupdirp1 dupdirp2 dupdirp3 dupdirp4", exit=1)
+                self.pkg("install dupdirp1 dupdirp2@1 dupdirp3 dupdirp4", exit=1)
 
                 pkgs = " ".join("massivedupdir%d" % x for x in xrange(20))
                 self.pkg("install %s" % pkgs, exit=1)

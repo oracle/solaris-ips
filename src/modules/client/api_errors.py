@@ -600,10 +600,10 @@ class InconsistentActionAttributeError(ConflictingActionError):
                                         s += _("        %s\n") % pkg
 
                 if len(allpkgs) == 1:
-                        s += _("\n\nThis package must be corrected before it "
+                        s += _("\nThis package must be corrected before it "
                             "can be installed.")
                 else:
-                        s += _("\n\nThese packages may not be installed together."
+                        s += _("\nThese packages may not be installed together."
                             "  Any non-conflicting set may\nbe, or the packages "
                             "must be corrected before they can be installed.")
 
