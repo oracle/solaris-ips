@@ -1,0 +1,159 @@
+User Commands                                            pkgmerge(1)
+
+
+NAME
+     pkgmerge - image packaging system package merging utility
+
+SYNOPSIS
+     /usr/bin/pkgmerge [-n] -d dest_repo -s variant=value[,...],src_repo
+          ... [pkg_fmri_pattern ...]
+
+DESCRIPTION
+     pkgmerge is a package publication tool for creating multi-variant
+     packages.  It does this by merging packages with identical names and
+     versions (excluding timestamp), tagging actions that are unique
+     in the versions being merged with the specified variant name and value
+     for the given source, and then publishing the new packages to the
+     target repository.  Only the newest version of every package from each
+     source is used.
+
+OPTIONS
+     The following options are supported:
+
+     -d dest_repo
+          The filesystem path or URI of the target repository to publish
+          the merged packages to.  The target repository must already
+          exist; new repositories can be created using pkgrepo(1).
+
+     -n
+          Perform a trial run with no changes made to the target
+          repository.
+
+     -s variant=value[,...],src_repo
+          The variant name and value to use for packages from this source,
+          followed by the filesystem path or URI of the source repository
+          or package archive to retrieve packages from.  Multiple variants
+          may be specified separated by commas.  The same variants must
+          be named for all sources.  This option may be specified multiple
+          times.
+
+     --help or -?
+          Displays a usage message.
+
+ENVIRONMENT VARIABLES
+     The following environment variables are supported:
+
+     TMPDIR, TEMP, TMP
+          The absolute path of the directory where temporary data should be
+          stored during program execution.  If not set, the default is to
+          store temporary data in /var/tmp.
+
+EXAMPLES
+     Example 1:  Tag each package found in the specified source with the
+     given variant name and value specified for the source it was retrieved
+     from:
+
+     $ pkgmerge -s arch=sparc,http://src.example.com \
+         -d http://dest.example.com
+
+        Sample package:
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+          dir group=sys mode=0755 owner=root path=usr
+
+        Sample package after operation:
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+          set name=variant.arch value=sparc
+          dir group=sys mode=0755 owner=root path=usr
+
+     Example 2:  Merge the newest version of each package from the given
+     sources and publish the new packages to the target repository:
+
+     $ pkgmerge -s arch=sparc,http://src1.example.com \
+          -s arch=i386,http://src2.example.com \
+          -d /path/to/target/repository
+
+        Sample package from source 1 (sparc):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+          file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Sample package from source 2 (i386):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+          file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Merged package:
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+          set name=variant.arch value=sparc value=i386
+          file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc
+          file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386
+          dir group=sys mode=0755 owner=root path=usr
+
+     Example 3:  Merge the newest version of each package in a set of debug
+     and non-debug repositories for i386 and sparc systems:
+
+     $ pkgmerge -s arch=sparc,debug=false,/repo/sparc-nondebug \
+         -s arch=sparc,debug=true,/repo/sparc-debug \
+         -s arch=i386,debug=false,/repo/i386-nondebug \
+         -s arch=i386,debug=true,/repo/i386-debug \
+         -d /path/to/target/repository
+
+        Sample package from source 1 (sparc non-debug):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+          file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Sample package from source 2 (sparc debug):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121411Z
+          file dd5eac1aab628317f9c088d21e4afda9c754aa70 mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Sample package from source 3 (i386 non-debug):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+          file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Sample package from source 4 (i386 debug):
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+          file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root group=bin path=usr/bin/foo
+          dir group=sys mode=0755 owner=root path=usr
+
+        Merged package:
+          set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+          set name=variant.arch value=sparc value=i386
+          set name=variant.debug value=false value=true
+          file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=false
+          file dd5eac1aab628317f9c088d21e4afda9c754aa70 mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=true
+          file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=false
+          file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=true
+          dir group=sys mode=0755 owner=root path=usr
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0    Command succeeded.
+
+     1    An error occurred.
+
+     2    Invalid command line options were specified.
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the following attributes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkgrepo(1), pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all
+     subject to change.  Development is hosted in the OpenSolaris
+     community at:
+
+     http://hub.opensolaris.org/bin/view/Project+pkg/

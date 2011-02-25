@@ -320,8 +320,22 @@ class ProgressTracker(object):
                 self.send_cur_nbytes = 0
                 self.send_goal_nbytes = nsendbytes
 
-        def republish_start_pkg(self, pkgname):
+        def republish_start_pkg(self, pkgname, getbytes=None, sendbytes=None):
                 self.cur_pkg = pkgname
+
+                if getbytes is not None:
+                        # Allow reset of GET and SEND amounts on a per-package
+                        # basis.  This allows the user to monitor the overall
+                        # progress of the operation in terms of total packages
+                        # while not requiring the program to pre-process all
+                        # packages to determine total byte sizes before starting
+                        # the operation.
+                        assert sendbytes is not None
+                        self.dl_cur_nbytes = 0
+                        self.dl_goal_nbytes = getbytes
+                        self.send_cur_nbytes = 0
+                        self.send_goal_nbytes = sendbytes
+
                 if self.item_goal_nitems != 0:
                         self.republish_output()
 

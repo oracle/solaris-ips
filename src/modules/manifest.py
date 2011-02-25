@@ -25,7 +25,6 @@
 #
 
 from collections import namedtuple
-import copy
 import errno
 import hashlib
 import os
@@ -174,23 +173,46 @@ class Manifest(object):
                 return ManifestDifference(added, changed, removed)
 
         @staticmethod
-        def comm(*compare_m):
+        def comm(compare_m):
                 """Like the unix utility comm, except that this function
                 takes an arbitrary number of manifests and compares them,
                 returning a tuple consisting of each manifest's actions
                 that are not the same for all manifests, followed by a
                 list of actions that are the same in each manifest."""
 
+                # Must specify at least one manifest.
+                assert compare_m
+
                 # construct list of dictionaries of actions in each
-                # manifest, indexed by unique keys
-                m_dicts = [
-                    dict(
-                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
-                    for a in m.actions)
-                    for m in compare_m
-                ]
+                # manifest, indexed by unique key and variant combination
+                m_dicts = []
+                for m in compare_m:
+                        m_dict = {}
+                        for a in m.gen_actions():
+                                # The unique key for each action is based on its
+                                # type, key attribute, and unique variants set
+                                # on the action.
+                                try:
+                                        key = set([a.attrs[a.key_attr]])
+                                        key.update(
+                                            "%s=%s" % (v, a.attrs[v])
+                                            for v in a.get_varcet_keys()[0]
+                                        )
+                                        key = tuple(key)
+                                except KeyError:
+                                        # If there is no key attribute for the
+                                        # action, then fallback to the object
+                                        # id for the action as its identifier.
+                                        key = (id(a),)
+
+                                # Only use the first action found for each
+                                # unique combination; this does mean that
+                                # duplicate actions will be silently discarded
+                                # for each manifest.
+                                m_dict.setdefault((a.name, key), a)
+                        m_dicts.append(m_dict)
+
                 # construct list of key sets in each dict
-                #
                 m_sets = [
                     set(m.keys())
                     for m in m_dicts
@@ -215,7 +237,6 @@ class Manifest(object):
                         [ m_dicts[0][k] for k in common_keys ]
                     ]
                 )
-
 
         def combined_difference(self, origin, ov=EmptyI, sv=EmptyI):
                 """Where difference() returns three lists, combined_difference()

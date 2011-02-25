@@ -1496,6 +1496,11 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     out=out)
 
+        def pkgmerge(self, args, comment="", exit=0, su_wrap=False):
+                cmdline = "%s/usr/bin/pkgmerge %s" % (g_proto_area, args)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap)
+
         def pkgrepo(self, command, comment="", exit=0, su_wrap=False):
                 cmdline = "%s/usr/bin/pkgrepo %s" % (g_proto_area, command)
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
