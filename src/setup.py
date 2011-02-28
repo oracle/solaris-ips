@@ -696,8 +696,18 @@ def syntax_check(filename):
         try:
                 py_compile.compile(filename, os.devnull, doraise=True)
         except py_compile.PyCompileError, e:
-                raise DistutilsError("%s: failed syntax check: %s" %
-                    (filename, e))
+                res = ""
+                for err in e.exc_value:
+                        if isinstance(err, basestring):
+                                res += err + "\n"
+                                continue
+
+                        # Assume it's a tuple of (filename, lineno, col, code)
+                        fname, line, col, code = err
+                        res += "line %d, column %d, in %s:\n%s" % (line, col,
+                            fname, code)
+
+                raise DistutilsError(res)
 
 
 class build_py_func(_build_py):
