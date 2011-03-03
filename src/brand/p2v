@@ -466,6 +466,13 @@ if (( $brand_labeled == 1 )); then
 	mount_active_be zone
 fi
 
+#
+# Update the image format before running other commands so that they are not
+# thrown off by having old image metadata.
+#
+log "$v_update_format"
+pkg -R "$ZONEROOT" update-format || pkg_err_check "$e_update_format"
+
 # Change the pkging variant from global zone to non-global zone.
 log "$v_change_var"
 pkg -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \

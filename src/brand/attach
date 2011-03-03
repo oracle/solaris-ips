@@ -34,6 +34,7 @@ m_attach_ds=$(gettext   "        Attach ZFS Dataset: %s")
 m_gzinc=$(gettext       "       Global zone version: %s")
 m_zinc=$(gettext        "   Non-Global zone version: %s")
 m_need_update=$(gettext "                Evaluation: Packages in zone %s are out of sync with the global zone. To proceed, retry with the -u flag.")
+m_need_nonsticky=$(gettext "                Evaluation: Publisher %s in zone %s needs to be set to non-sticky")
 m_cache=$(gettext       "                     Cache: Using %s.")
 m_updating=$(gettext    "  Updating non-global zone: Output follows")
 m_sync_done=$(gettext   "  Updating non-global zone: Zone updated.")
@@ -55,6 +56,7 @@ f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
 f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
 f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
+f_nonsticky=$(gettext "Could not set legacy publisher to non-sticky")
 e_dataset_disappeared=$(gettext "Dataset %s was unexpectedly unmounted")
 e_dataset_not_mounted=$(gettext "Dataset %s exists in boot environment but not mounted")
 e_dataset_not_in_be=$(gettext "Dataset %s mountpoint %s is not under zone root %s")
@@ -475,6 +477,15 @@ fi
 log "$m_updating"
 
 #
+# pkg update-format doesn't allow a dry run or provide any other way to
+# see if an update is needed.
+#
+log "$v_update_format"
+if [[ $allow_update == 1 ]]; then
+	$PKG update-format || pkg_err_check "$e_update_format"
+fi
+
+#
 # The NGZ publishers must be a superset of the GZ publisher. Process
 # the GZ publishers and make the NGZ publishers match them.
 # You can't remove a preferred publisher, so temporarily create
@@ -528,6 +539,16 @@ done
 # Now remove our temporary publisher
 #
 LC_ALL=C $PKG unset-publisher $ZNAME
+
+#
+# Make sure that the solaris publisher can update packages that first
+# came from opensolaris.org.
+#
+if [[ $allow_update == 1 ]] && \
+    $PKG publisher opensolaris.org >/dev/null 2>&1; then
+	LC_ALL=C $PKG set-publisher --no-refresh --non-sticky \
+	    opensolaris.org || pkg_err_check "$f_nonsticky"
+fi
 
 #
 # Bring the ngz entire incorporation into sync with the gz as follows:

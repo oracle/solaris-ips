@@ -66,6 +66,8 @@ e_badmount=$(gettext "Zone mount failed")
 v_unmount=$(gettext "Unmounting zone")
 e_badunmount=$(gettext "Zone unmount failed")
 e_exitfail=$(gettext "Postprocessing failed.")
+v_update_format=$(gettext "Updating image format")
+e_update_format=$(gettext "Updating image format failed")
 
 m_complete=$(gettext    "        Done: Installation completed in %s seconds.")
 m_postnote=$(gettext    "  Next Steps: Boot the zone, then log into the zone console (zlogin -C)")
