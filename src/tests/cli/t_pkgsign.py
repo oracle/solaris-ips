@@ -258,7 +258,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "cs1_p1_ta3_key.pem"),
                         "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
                 }
+                td = os.environ["TMPDIR"]
+                sd = os.path.join(td, "tmp_sign")
+                os.makedirs(sd)
+                os.environ["TMPDIR"] = sd
                 self.pkgsign(self.rurl1, sign_args)
+                # Ensure that all temp files from signing have been removed.
+                self.assertEqual(os.listdir(sd), [])
+                os.environ["TMPDIR"] = td
 
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")

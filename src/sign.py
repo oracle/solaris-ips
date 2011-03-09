@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -293,8 +293,7 @@ def main_func():
                 error(e)
                 return EXIT_OOPS
         finally:
-                shutil.rmtree(cache_dir)
-                shutil.rmtree(incoming_dir)
+                shutil.rmtree(temp_root)
 
 #
 # Establish a specific exit status which means: "python barfed an exception"
