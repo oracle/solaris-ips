@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 DEFAULT_CONFIRMATION_WIDTH = 550        # Width & height of single confirmation
@@ -78,7 +78,7 @@ class InstallUpdate(progress.GuiProgressTracker):
             action = -1, parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
             confirmation_list = None, show_confirmation = False, api_lock = None,
-            gconf = None):
+            gconf = None, facets = None):
                 if action == -1:
                         return
                 self.gconf = gconf
@@ -91,6 +91,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.web_install_all_installed = False
                 self.parent = parent
                 self.api_lock = api_lock
+                self.facets = facets
                 self.api_o = gui_misc.get_api_object(image_directory,
                     self, main_window)
                 if self.api_o == None:
@@ -427,6 +428,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 elif self.action == enumerations.IMAGE_UPDATE:
                         if not self.top_level:
                                 self.w_dialog.set_title(_("Updates"))
+                        self.__proceed_with_stages()
+                elif self.action == enumerations.UPDATE_FACETS:
+                        if not self.top_level:
+                                self.w_dialog.set_title(
+                                    _("Update Optional Components"))
                         self.__proceed_with_stages()
                 else:
                         if self.title != None:
@@ -922,6 +928,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 done_text = _("No updates necessary")
                         elif self.action == enumerations.IMAGE_UPDATE:
                                 done_text = _("No updates available")
+                        elif self.action == enumerations.UPDATE_FACETS:
+                                done_text = _("All features already installed")
                         gobject.idle_add(self.__operations_done, done_text)
 
         def __show_image_update_confirmation(self):
@@ -1349,6 +1357,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                             noexecute = False, force = True,
                             be_name = None, new_be = None) # Create BE if required
                         self.pylint_stub = opensolaris_image
+                elif self.action == enumerations.UPDATE_FACETS:
+                        stuff_to_do = self.api_o.plan_change_varcets(
+                                variants = None, facets = self.facets,
+                                noexecute = False, be_name = None, new_be = None)
                 return stuff_to_do
 
         def __operations_done(self, alternate_done_txt = None):
@@ -1359,6 +1371,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         done_txt = _("Packages removed successfully")
                 elif self.action == enumerations.IMAGE_UPDATE:
                         done_txt = _("Packages updated successfully")
+                elif self.action == enumerations.UPDATE_FACETS:
+                        done_txt = _("Optional components updated successfully")
                 if alternate_done_txt != None:
                         done_txt = alternate_done_txt
                 self.w_stages_box.hide()
@@ -1375,7 +1389,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__set_dialog_size(self.dlg_width, self.dlg_done_collapsed_h)
                 if self.parent != None:
                         if not self.web_install and not self.ips_update \
-                            and not self.action == enumerations.IMAGE_UPDATE:
+                            and not self.action == enumerations.IMAGE_UPDATE \
+                            and not self.action == enumerations.UPDATE_FACETS:
                                 self.parent.update_package_list(self.update_list)
                         if self.web_install:
                                 if done_txt == \
@@ -1389,7 +1404,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.ips_update:
                         self.w_dialog.hide()
                         self.parent.restart_after_ips_update()
-                elif self.action == enumerations.IMAGE_UPDATE:
+                elif self.action == enumerations.IMAGE_UPDATE or \
+                        self.action == enumerations.UPDATE_FACETS:
                         if self.uarenamebe_o:
                                 be_rename_dialog = \
                                     self.uarenamebe_o.show_rename_dialog(
@@ -1446,6 +1462,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         self.update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(origin_fmri)
                                 self.update_details_text(pkg_a+"\n", "level1")
+
+                v = plan_desc.get_varcets()
+                if v == None or len(v) == 0:
+                        self.update_details_text("\n")
+                        return
+                txt = _("Optional components\n")
+                self.update_details_text(txt, "bold")
+                txt = _("Number of facets set: %s\n" % (len(v)))
+                self.update_details_text(txt, "level1")
+                for x in v:
+                        self.update_details_text("%s\n" % x, "level1")
                 self.update_details_text("\n")
 
         def __get_pkgstr_from_pkginfo(self, pkginfo):

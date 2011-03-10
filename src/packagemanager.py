@@ -388,7 +388,7 @@ class PackageManager:
                 self.exportconfirm = exportconfirm.ExportConfirm(self.builder,
                     self.window_icon, self.gconf, self)
                 self.logging = logging.PMLogging(self.builder, self.window_icon)
-                self.preferences = preferences.Preferences(self.builder,
+                self.preferences = preferences.Preferences(self, self.builder,
                     self.window_icon, self.gconf)
                 self.searcherror = searcherror.SearchError(self.builder,
                     self.gconf, self)
@@ -613,7 +613,7 @@ class PackageManager:
                 # Theme: setup Main list Selection icon for Theme
                 if self.application_select_column:
                         self.application_select_column.set_widget(
-                            self.__get_theme_selection_coloumn_image())
+                            self.get_theme_selection_coloumn_image())
 
                 # Theme: setup Main list status icons
                 self.__reset_application_list_status_icons(self.application_list)
@@ -624,7 +624,7 @@ class PackageManager:
                 if self.selected_pkgstem != None:
                         self.__process_package_selection()
 
-        def __get_theme_selection_coloumn_image(self):
+        def get_theme_selection_coloumn_image(self):
                 select_image = gtk.Image()
                 select_image.set_from_pixbuf(gui_misc.get_icon(
                     self.icon_theme, 'selection'))
@@ -1025,7 +1025,7 @@ class PackageManager:
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, self)
                 column.set_clickable(True)
                 column.connect('clicked', self.__select_column_clicked)
-                select_image = self.__get_theme_selection_coloumn_image()
+                select_image = self.get_theme_selection_coloumn_image()
                 column.set_widget(select_image)
                 self.w_application_treeview.append_column(column)
                 self.application_select_column = column
@@ -1795,10 +1795,11 @@ class PackageManager:
                 last_name = ""
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
+                # pylint: disable-msg=C0321
                 try:
                         searches.append(self.api_o.remote_search(
                             [api.Query(" ".join(pargs), case_sensitive, return_actions)],
-                            servers=servers))
+                                servers=servers))
                         if debug:
                                 print "Search Args: %s : cs: %s : retact: %s" % \
                                         ("".join(pargs), case_sensitive, return_actions)
@@ -2880,7 +2881,7 @@ class PackageManager:
                 gui_misc.release_lock(self.api_lock)
 
         def __get_info_without_lock(self, pkg_stem, name):
-                if not self.__do_api_reset():
+                if not self.do_api_reset():
                         return
                 try:
                         if self.versioninfo.get_info(pkg_stem, name):
@@ -2892,7 +2893,7 @@ class PackageManager:
                         gobject.idle_add(self.unset_busy_cursor)
                 return
 
-        def __do_api_reset(self):
+        def do_api_reset(self):
                 if self.api_o == None:
                         return False
                 try:
@@ -2905,7 +2906,7 @@ class PackageManager:
                 return True
 
         def __on_install_update(self, widget):
-                if not self.__do_api_reset():
+                if not self.do_api_reset():
                         return
                 install_update = []
                 install_confirmation_list = []
@@ -2925,7 +2926,7 @@ class PackageManager:
                     gconf = self.gconf)
 
         def __on_update_all(self, widget):
-                if not self.__do_api_reset():
+                if not self.do_api_reset():
                         return
                 self.installupdate = installupdate.InstallUpdate([], self,
                     self.image_directory, action = enumerations.IMAGE_UPDATE,
@@ -2971,7 +2972,7 @@ class PackageManager:
                                                     desc, status, pkg_stem])
 
         def __on_remove(self, widget):
-                if not self.__do_api_reset():
+                if not self.do_api_reset():
                         return
                 remove_list = []
                 remove_confirmation_list = []
@@ -4549,6 +4550,20 @@ class PackageManager:
                 self.force_reload_packages = False
                 self.__do_reload(None)
 
+        def update_facets(self, facets_to_set):
+                if facets_to_set == None or \
+                        len(facets_to_set.keys()) == 0:
+                        return
+                gobject.idle_add(self.__update_facets, facets_to_set)
+
+        def __update_facets(self, facets_to_set):
+                installupdate.InstallUpdate([], self,
+                    self.image_directory,
+                    action = enumerations.UPDATE_FACETS,
+                    main_window = self.w_main_window,
+                    api_lock = self.api_lock,
+                    facets = facets_to_set)
+
         def is_busy_cursor_set(self):
                 return self.gdk_window.is_visible()
 
@@ -4798,7 +4813,7 @@ class PackageManager:
 
         def install_version(self, version):
                 ''' Installed specified version of selected package'''
-                if not self.__do_api_reset():
+                if not self.do_api_reset():
                         return
                 to_install = "%s@%s" % (self.selected_pkgstem, version)
                 install_update = [to_install]

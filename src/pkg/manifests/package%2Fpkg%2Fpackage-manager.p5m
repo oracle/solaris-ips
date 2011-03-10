@@ -332,6 +332,7 @@ legacy pkg=SUNWipkg-gui version=0.1.1
 
 depend type=require fmri=desktop/gksu
 depend type=require fmri=gnome/theme/hicolor-icon-theme
+depend type=require fmri=library/python-2/locale-services
 depend type=require fmri=library/python-2/python-gnome-libs-26
 depend type=require fmri=package/pkg
 depend type=require fmri=runtime/python-26@2.6.4

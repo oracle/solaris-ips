@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 """
@@ -95,8 +95,9 @@ REPOSITORY_ALIAS,
 (
 INSTALL_UPDATE,
 REMOVE,
-IMAGE_UPDATE
-) = range(3)
+IMAGE_UPDATE,
+UPDATE_FACETS
+) = range(4)
 
 # Info Cache entries
 (
@@ -163,3 +164,13 @@ VERSION_DISPLAY_NAME,
 VERSION_NAME,
 VERSION_STATUS
 ) = range(4)
+
+# Locale List in Preferences Dialog - Language Tab
+(
+LOCALE_NAME,        # <language> (territory)
+LOCALE_LANGUAGE,    # Display <language> name
+LOCALE_TERRITORY,   # Display <territory> name
+LOCALE,             # <language>_<territory>(<codeset>)
+LOCALE_SELECTED,    # selected
+) = range(5)
+
