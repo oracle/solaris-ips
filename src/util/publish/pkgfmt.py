@@ -133,7 +133,7 @@ def read_line(f):
                     pkg.actions.UnknownActionError,
                     pkg.actions.InvalidActionError), e:
                         # cannot convert; treat as special macro
-                        yield None, actstr, comments
+                        yield None, macro + actstr, comments
                         continue
                 yield act, macro, comments
 

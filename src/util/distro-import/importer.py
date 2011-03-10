@@ -1047,6 +1047,11 @@ def expand_fmri(server_pub, fmri_string, constraint=version.CONSTRAINT_AUTO):
                         return f
         return None
 
+def get_latest_fmris(server_pub):
+        """From specified server, get latest version of all fmris"""
+        if server_pub not in catalog_dict:
+                load_catalog(server_pub)
+        return set(catalog_dict[server_pub][f][-1] for f in catalog_dict[server_pub])
 
 def get_dependencies(server_pub, fmri_list):
         s = set()
@@ -1695,7 +1700,12 @@ def main_func():
                         server, fmri_string = uri.split("@", 1)
                         server_pub = transport.setup_publisher(server,
                             "reference", xport, xport_cfg, remote_prefix=True)
-                        for pfmri in get_dependencies(server_pub, [fmri_string]):
+                        if fmri_string == "*":
+                                fmri_set = get_latest_fmris(server_pub)
+                        else:
+                                fmri_set = get_dependencies(server_pub, [fmri_string])
+
+                        for pfmri in fmri_set:
                                 if pfmri is None:
                                         continue
                                 if pfmri.get_name() in pkgdict:
