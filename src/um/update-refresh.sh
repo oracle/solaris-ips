@@ -19,10 +19,20 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 # ##########################################################################
-# This script is run as part of a cron job at 0:30, 9:30, 12:30, 18:30, 21:30
+# This script is run as part of a cron job.
+# The cron job is managed by the SMF service:
+#     svc:/application/pkg/update:default
+#
+# It can be disabled by disabling the pkg/update service:
+# $ /usr/sbin/svcadm disable svc:/application/pkg/update
+#  or 
+# By removing the pkg/update-manager package:
+# $ pkg uninstall package/pkg/update-manager
+#
+# The script performs the following tasks:
 # 1. Refresh the IPS catalog
 #
 # 2. Call /usr/lib/pm-checkforupdates to check and cache whether updates
