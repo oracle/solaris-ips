@@ -61,11 +61,6 @@ class FileAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
                 self.replace_required = False
-                if "path" in self.attrs:
-                        self.attrs["path"] = self.attrs["path"].lstrip("/")
-                        if not self.attrs["path"]:
-                                raise pkg.actions.InvalidActionError(
-                                    str(self), _("Empty path attribute"))
 
         # this check is only needed on Windows
         if portable.ostype == "windows":

@@ -90,6 +90,9 @@ class Action(object):
         # Most types of actions do not have a payload.
         has_payload = False
 
+        # By default, leading slashes should be stripped from "path" attribute.
+        _strip_path = True
+
         def loadorderdict(self):
                 ol = [
                         "set",
@@ -137,6 +140,20 @@ class Action(object):
                         self.data = None
                 else:
                         self.set_data(data)
+
+                if not self._strip_path or "path" not in self.attrs:
+                        return
+
+                try:
+                        self.attrs["path"] = self.attrs["path"].lstrip("/")
+                except AttributeError:
+                        raise pkg.actions.InvalidActionError(
+                            str(self), _("path attribute specified multiple "
+                                "times"))
+
+                if not self.attrs["path"]:
+                        raise pkg.actions.InvalidActionError(
+                            str(self), _("Empty path attribute"))
 
         def set_data(self, data):
                 """This function sets the data field of the action.

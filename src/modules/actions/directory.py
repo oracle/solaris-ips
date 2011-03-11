@@ -49,15 +49,6 @@ class DirectoryAction(generic.Action):
         refcountable = True
         namespace_group = "path"
 
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
-                if "path" in self.attrs:
-                        self.attrs["path"] = self.attrs["path"].lstrip(
-                            os.path.sep)
-                        if not self.attrs["path"]:
-                                raise pkg.actions.InvalidActionError(
-                                    str(self), _("Empty path attribute"))
-
         def compare(self, other):
                 return cmp(self.attrs["path"], other.attrs["path"])
 

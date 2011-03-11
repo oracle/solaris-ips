@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (symbolic) link packaging object
@@ -48,15 +48,6 @@ class LinkAction(generic.Action):
         globally_identical = True
         refcountable = True
         namespace_group = "path"
-
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
-                if "path" in self.attrs:
-                        self.attrs["path"] = self.attrs["path"].lstrip(
-                            os.path.sep)
-                        if not self.attrs["path"]:
-                                raise pkg.actions.InvalidActionError(
-                                    str(self), _("Empty path attribute"))
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a link."""

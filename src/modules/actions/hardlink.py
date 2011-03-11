@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a (hard) link packaging object
@@ -46,8 +46,9 @@ class HardLinkAction(link.LinkAction):
 
         name = "hardlink"
 
-        def __init__(self, data=None, **attrs):
-                link.LinkAction.__init__(self, data, **attrs)
+        # Tells parent class that leading slash should not be stripped
+        # from "path" attribute.
+        _strip_path = False
 
         def get_target_path(self):
                 """ return a path for target that is relative to image"""

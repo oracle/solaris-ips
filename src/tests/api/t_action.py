@@ -361,6 +361,11 @@ Incorrect attribute list.
                 # Missing key attribute 'fmri'.
                 self.assertInvalid("depend type=require")
 
+                # 'path' attribute specified multiple times
+                self.assertInvalid("file 1234 path=foo path=foo mode=777 owner=root group=root")
+                self.assertInvalid("link path=foo path=foo target=link")
+                self.assertInvalid("dir path=foo path=foo mode=777 owner=root group=root")
+
                 # 'data' used as an attribute key
                 self.assertInvalid("file 1234 path=/tmp/foo data=rubbish")
 
