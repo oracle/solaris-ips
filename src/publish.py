@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # pkgsend - publish package transactions
@@ -466,7 +466,7 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 return 0
 
-def gen_actions(files, timestamp_files, target_files):
+def gen_actions(files, timestamp_files, target_files, minimal=False):
         for filename in files:
                 bundle = pkg.bundle.make_bundle(filename, target_files)
                 for action in bundle:
@@ -477,7 +477,17 @@ def gen_actions(files, timestamp_files, target_files):
                                                 break
                                 else:
                                         action.attrs.pop("timestamp", None)
-                        action.attrs.pop("pkg.size", None)
+
+                        if minimal:
+                                # pkgsend import needs attributes such as size
+                                # retained so that the publication modules know
+                                # how many bytes to read from the .data prop.
+                                # However, pkgsend generate attempts to
+                                # minimize the attributes output for each
+                                # action to only those necessary for use
+                                # so that the resulting manifest remains valid
+                                # even after mogrification or changing content.
+                                action.attrs.pop("pkg.size", None)
 
                         yield action, action.name in nopub_actions
 
@@ -548,7 +558,7 @@ def trans_generate(args):
 
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
-                    target_files):
+                    target_files, minimal=True):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]

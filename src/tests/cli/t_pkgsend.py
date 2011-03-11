@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -666,17 +666,27 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 published to a repo and installed to an image."""
                 rootdir = self.test_root
                 self.create_sysv_package(rootdir)
-                url = self.dc.get_depot_url()
 
-                self.pkgsend(url, "open nopkg@1.0")
-                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"))
-                self.pkgsend(url, "close")
+                def test_import(url):
+                        self.pkgsend(url, "open nopkg@1.0")
+                        self.pkgsend(url, "import %s" % os.path.join(rootdir,
+                            "nopkg"))
+                        self.pkgsend(url, "close")
 
-                self.image_create(url)
-                self.pkg("install nopkg")
-                self.validate_sysv_contents("nopkg")
-                self.pkg("verify")
-                self.image_destroy()
+                        self.image_create(url)
+                        self.pkg("install nopkg")
+                        self.validate_sysv_contents("nopkg")
+                        self.pkg("verify")
+                        self.image_destroy()
+
+                # Test both HTTP and file-based access since there are subtle
+                # differences in action publication.
+                test_import(self.dc.get_depot_url())
+
+                repodir = os.path.join(self.test_root, "test11-repo")
+                self.create_repo(repodir,
+                    properties={ "publisher": { "prefix": "test" } })
+                test_import("file://%s" % repodir)
 
         def test_12_bundle_sysv_datastream(self):
                 """ A SVR4 datastream package can be imported, its contents published to
