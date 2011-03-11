@@ -497,7 +497,7 @@
 <listitem><para>Use the <literal>beadm create</literal> command.</para>
 </listitem>
 </itemizedlist>
-<para>Often a new BE is created when you execute the <literal>pkg image-update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available.</para>
+<para>Often a new BE is created when you execute the <literal>pkg update</literal> command or use the <guibutton>Updates</guibutton> button to update all packages that have updates available.</para>
 </sect1>
 <sect1 id="activate-be"><title>Activating a BE</title>
 <para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> menu option to open the Manage Boot Environments window. Each BE is listed in the window. The BE that you are currently booted into shows a check mark to the left of the BE name.</para>

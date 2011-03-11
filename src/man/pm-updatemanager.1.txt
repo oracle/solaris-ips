@@ -71,7 +71,7 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at:
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/
 
      When operating on an image you do not own pm-updatemanager needs to be invoked
      with enough privilege. You will normally invoke pm-updatemanager using
