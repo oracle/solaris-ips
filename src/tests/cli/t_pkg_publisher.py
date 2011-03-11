@@ -452,6 +452,15 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher | grep %s.*%s" % (etype, durl5))
                 self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
                 self.pkg("set-publisher %s %s test1" % (remove_opt, durl5))
+                self.pkg("set-publisher %s %s %s %s %s \* test1" % (add_opt,
+                    durl4, add_opt, durl5, remove_opt))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
+                self.pkg("set-publisher %s \* test1" % remove_opt)
+                if etype == "origin":
+                        self.pkg("set-publisher %s %s test1" % (add_opt, durl1))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
+                self.pkg("publisher | grep %s.*%s" % (etype, durl5), exit=1)
 
                 # Verify that if one of multiple URLs is not a valid URL, pkg
                 # will exit with an error, and does not add the valid one.

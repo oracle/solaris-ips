@@ -813,7 +813,8 @@ SUBCOMMANDS
           repository or archive.
 
           With -G (--remove-origin), remove the URI or path from the list of
-          origins for the given publisher.
+          origins for the given publisher.  The special value '*' may be used
+          to remove all origins.
 
           With --no-refresh, do not attempt to contact the repositories
           for the image's publishers to retrieve the newest list of
@@ -826,7 +827,8 @@ SUBCOMMANDS
           publisher.
 
           With -M (--remove-mirror), remove the URI from the list of mirrors
-          for the given publisher.
+          for the given publisher.  The special value '*' may be used to
+          remove all mirrors.
 
           With -p, retrieve publisher configuration information from the
           specified repository URI.  If a publisher is specified, then only
@@ -1252,6 +1254,12 @@ EXAMPLES
      that is not currently installed:
 
      $ pkg contents -g /my/archive.p5p pkg_name
+
+     Example 27:  Remove all of the origins and mirrors for a publisher
+     and add a new origin:
+
+     $ pkg set-publisher -G '*' -M '*' -g http://example.com:10000 \
+          example.com
 
 ENVIRONMENT VARIABLES
      PKG_IMAGE

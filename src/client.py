@@ -2943,7 +2943,13 @@ def publisher_set(api_inst, args):
                 elif opt == "-g" or opt == "--add-origin":
                         add_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-G" or opt == "--remove-origin":
-                        remove_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
+                        if arg == "*":
+                                # Allow wildcard to support an easy, scriptable
+                                # way of removing all existing entries.
+                                remove_origins.add("*")
+                        else:
+                                remove_origins.add(misc.parse_uri(arg,
+                                    cwd=orig_cwd))
                 elif opt == "-k":
                         ssl_key = arg
                 elif opt == "-O":
@@ -2951,7 +2957,13 @@ def publisher_set(api_inst, args):
                 elif opt == "-m" or opt == "--add-mirror":
                         add_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-M" or opt == "--remove-mirror":
-                        remove_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
+                        if arg == "*":
+                                # Allow wildcard to support an easy, scriptable
+                                # way of removing all existing entries.
+                                remove_mirrors.add("*")
+                        else:
+                                remove_mirrors.add(misc.parse_uri(arg,
+                                    cwd=orig_cwd))
                 elif opt == "-p":
                         repo_uri = misc.parse_uri(arg, cwd=orig_cwd)
                 elif opt == "-P":
@@ -3325,10 +3337,14 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                 # XXX once image configuration supports storing this
                 # information at the uri level, ssl info should be set
                 # here.
+                if "*" in remove:
+                        getattr(repo, "reset_%ss" % etype)()
+                else:
+                        for u in remove:
+                                getattr(repo, "remove_%s" % etype)(u)
+
                 for u in add:
                         getattr(repo, "add_%s" % etype)(u)
-                for u in remove:
-                        getattr(repo, "remove_%s" % etype)(u)
 
         # None is checked for here so that a client can unset a ssl_cert or
         # ssl_key by using -k "" or -c "".
