@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of the
@@ -216,6 +216,7 @@ def get_minimal_unique_name(dic, name, special_table):
                 return name_table[0]
         elif len_name_table == 1:
                 return name
+        name_table.reverse()
         max_special_level = 0
         for special_name in special_table:
                 if name.endswith(special_name):
@@ -223,16 +224,20 @@ def get_minimal_unique_name(dic, name, special_table):
                         if level > max_special_level:
                                 max_special_level = level
         for special_category in SPECIAL_CATEGORIES:
-                pos = name.find(special_category)
-                if pos != -1:
-                        level = len(name[pos:].split("/"))
+                found = False
+                level = 1
+                while  level < len_name_table:
+                        if special_category == name_table[level - 1]:
+                                found = True
+                                break
+                        level += 1 
+                if found:
                         if level > max_special_level:
                                 max_special_level = level
 
         if len_name_table < max_special_level:
                 return name
 
-        name_table.reverse()
         new_name = []
         i = 0
         for entry in name_table:
