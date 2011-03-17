@@ -3,6 +3,8 @@ consolidation "sunpro"
 classification "System/Libraries"
 import SUNWlibms
 import SUNWlibmsr
+import SUNWlibm
+import SUNWlibmr
 end package
 
 package SUNWlibms
