@@ -614,21 +614,14 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %
     "bin_ver": "%(bin_ver)s"
 }
 
-        pyver_25_script_full_manf_1 = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
-""" % {
-    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri": base.Dependency.DUMMY_FMRI
-}
-
         def pyver_res_full_manf_1(self, ver, proto):
                 """Build the full manifest results for the pyver tests."""
 
                 if ver == "2.4":
                         tmp = self.pyver_24_script_full_manf_1
                 else:
-                        tmp = self.pyver_25_script_full_manf_1
+                        raise RuntimeError("Unexcepted version for "
+                            "pyver_res_full_manf_1 %s" % ver)
                 return tmp + self.make_pyver_python_res(ver, proto)
 
         pyver_resolve_dep_manf = """
@@ -1135,7 +1128,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 """Test that python modules written for a version of python
                 other than the current system version are analyzed correctly."""
 
-                for py_ver in ["2.4", "2.5"]:
+                for py_ver in ["2.4"]:
 
                         # Set up the files for generate.
                         tp = self.make_manifest(

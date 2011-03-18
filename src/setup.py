@@ -187,10 +187,7 @@ authattrd_dir = 'etc/security/auth_attr.d'
 
 # A list of source, destination tuples of modules which should be hardlinked
 # together if the os supports it and otherwise copied.
-hardlink_modules = [
-    ("%s/pkg/flavor/depthlimitedmf24" % py_install_dir,
-    "%s/pkg/flavor/depthlimitedmf25" % py_install_dir)
-]
+hardlink_modules = []
 
 scripts_sunos = {
         scripts_dir: [

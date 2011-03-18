@@ -8,12 +8,12 @@
 """A standalone version of ModuleFinder which limits the depth of exploration
 for loaded modules and discovers where a module might be loaded instead of
 determining which path contains a module to be loaded.  It is designed to be run
-by python2.4 or python2.5 against 2.4 or 2.5 modules.  To communicate its
-results to the process which ran it, it prints output to stdout.  The format is
-to start a line with 'DEP ' if it contains information about a dependency, and
-'ERR ' if it contains information about a module it couldn't analyze."""
+by python2.4 against 2.4 modules.  To communicate its results to the process
+which ran it, it prints output to stdout.  The format is to start a line with
+'DEP ' if it contains information about a dependency, and 'ERR ' if it contains
+information about a module it couldn't analyze."""
 
-# This module cannot import other pkg modules because running the 2.4 or 2.5
+# This module cannot import other pkg modules because running the 2.4
 # interpreter will overwrite the pyc files for some of the other flavor modules.
 # With 2.6, the -B option can be added to the command line invocation for the
 # subprocess and the interpreter won't overwrite pyc files.
