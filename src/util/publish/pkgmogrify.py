@@ -544,7 +544,8 @@ def apply_transforms(action, pkg_attrs, verbose, act_filename, act_lineno):
                 if not isinstance(act, basestring):
                         c, al = apply_transforms(act, pkg_attrs, verbose,
                             act_filename, act_lineno)
-                        comments.append(c)
+                        if c:
+                                comments.append(c)
                         newnewactions += [a for a in al if a is not None]
                 else:
                         newnewactions.append(act)
