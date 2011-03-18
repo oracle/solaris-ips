@@ -144,11 +144,11 @@ if osname in ("sunos", "linux", "darwin"):
 
 M2C = 'M2Crypto'
 M2CIDIR = 'm2crypto'
-M2CVER = '0.20.2'
+M2CVER = '0.21.1'
 M2CARC = '%s-%s.tar.gz' % (M2C, M2CVER)
 M2CDIR = '%s-%s' % (M2C, M2CVER)
 M2CURL = 'http://pypi.python.org/packages/source/M/M2Crypto/%s' % (M2CARC)
-M2CHASH = '6e85d7035971c353db74a497fca0ec2eaea4dea0'
+M2CHASH = '3c7135b952092e4f2eee7a94c5153319cccba94e'
 
 pwd = os.path.normpath(sys.path[0])
 

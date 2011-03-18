@@ -1999,6 +1999,10 @@ pkg unset-publisher %s
                 """Given a URI (for now only http URIs are supported), return
                 the CRL object created from the file stored at that uri."""
 
+                uri = uri.strip()
+                if uri.startswith("Full Name:"):
+                        uri = uri[len("Full Name:"):]
+                        uri = uri.strip()
                 if uri.startswith("URI:"):
                         uri = uri[4:]
                 if not uri.startswith("http://") and \
