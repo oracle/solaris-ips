@@ -1903,21 +1903,32 @@ class Image(object):
                 'args' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
-                pub = self.get_publisher(prefix=fmri.get_publisher())
-                manf = self.get_manifest(fmri)
                 try:
+                        pub = self.get_publisher(prefix=fmri.publisher)
+                except apx.UnknownPublisher:
+                        # Since user removed publisher, assume this is the same
+                        # as if they had set signature-policy ignore for the
+                        # publisher.
+                        sig_pol = None
+                else:
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
-                        sig_pol.check_cas(pub, self.trust_anchors)
-                        sig_pol.process_signatures(
-                            manf.gen_actions_by_type(
-                                "signature", self.list_excludes()),
-                            manf.gen_actions(), pub)
-                except apx.SigningException, e:
-                        e.pfmri = fmri
-                        yield e.sig, [e], [], []
-                except apx.InvalidResourceLocation, e:
-                        yield [], [e], [], []
+
+                manf = self.get_manifest(fmri)
+                sigs = list(manf.gen_actions_by_type("signature",
+                    self.list_excludes()))
+                if sig_pol and (sigs or sig_pol.name != "ignore"):
+                        # Only perform signature verification logic if there are
+                        # signatures or if signature-policy is not 'ignore'.
+                        try:
+                                sig_pol.check_cas(pub, self.trust_anchors)
+                                sig_pol.process_signatures(sigs,
+                                    manf.gen_actions(), pub)
+                        except apx.SigningException, e:
+                                e.pfmri = fmri
+                                yield e.sig, [e], [], []
+                        except apx.InvalidResourceLocation, e:
+                                yield [], [e], [], []
 
                 for act in manf.gen_actions(
                     self.list_excludes()):

@@ -2110,8 +2110,17 @@ class Transport(object):
                 if not alt_repo and pmap:
                         alt_repo = self.__get_alt_repo(fmri, pmap)
 
-                publisher = self.cfg.get_publisher(fmri.publisher)
-                mfile = MultiFile(publisher, self, progtrack, ccancel,
+                try:
+                        pub = self.cfg.get_publisher(fmri.publisher)
+                except apx.UnknownPublisher:
+                        # Allow publishers that don't exist in configuration
+                        # to be used so that if data exists in the cache for
+                        # them, the operation will still succeed.  This only
+                        # needs to be done here as multi_file_ni is only used
+                        # for publication tools.
+                        pub = publisher.Publisher(fmri.publisher)
+
+                mfile = MultiFile(pub, self, progtrack, ccancel,
                     alt_repo=alt_repo)
 
                 return mfile

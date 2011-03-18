@@ -91,6 +91,10 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # needs to be added somewhere else appropriate.
                 self.image_create(self.rurl)
 
+                # Create a dummy publisher so that test publisher can be removed
+                # and added back as needed.
+                self.pkg("set-publisher -P ignored")
+
                 # Should fail since foo is not installed.
                 self.pkg("verify foo", exit=1)
 
@@ -101,8 +105,25 @@ class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
                 # fatal.
                 self.pkg("verify foo")
 
+                # Should not fail if publisher is disabled and package is ok.
+                self.pkg("set-publisher -d test")
+                self.pkg("verify foo")
+
+                # Should not fail if publisher is removed and package is ok.
+                self.pkg("unset-publisher test")
+                self.pkg("verify foo")
+
+                # Should fail with exit code 1 if publisher is removed and
+                # package is not ok.
+                portable.remove(os.path.join(self.get_img_path(), "usr", "bin",
+                    "bobcat"))
+                self.pkg("verify foo", exit=1)
+                self.pkg("set-publisher -p %s" % self.rurl)
+                self.pkg("fix foo")
+
                 # Informational messages should not be output unless -v
                 # is provided.
+                self.pkg("set-publisher -p %s" % self.rurl)
                 self.pkg("verify foo | grep bobcat", exit=1)
                 self.pkg("verify -v foo | grep bobcat")
 

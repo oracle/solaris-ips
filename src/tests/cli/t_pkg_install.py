@@ -6535,6 +6535,24 @@ adm
                 self.pkg("install dupfilesf2 dupfilesf3")
                 self.dir_exists("dir/pathname")
 
+        def test_conflicting_uninstall_publisher(self):
+                """Test the behaviour of pkg(1) when attempting to remove
+                conflicting packages from a publisher which has also been
+                removed."""
+
+                self.image_create(self.rurl)
+                # Dummy publisher so test publisher can be removed.
+                self.pkg("set-publisher -P ignored")
+
+                # If packages with conflicting actions are found during
+                # uninstall, and the publisher of the package has been
+                # removed, uninstall should still succeed.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp1 dupdirp2@1")
+                self.pkg("unset-publisher test")
+                self.pkg("uninstall dupdirp2")
+                self.pkg("verify")
+
         def test_change_varcet(self):
                 """Test the behavior of pkg(1) when changing a variant or a
                 facet would cause the new image to contain conflicting
