@@ -848,7 +848,7 @@ def verify_image(api_inst, args):
                         logger.error(" ")
 
                 error(_("no packages matching '%s' installed") % \
-                    ", ".join(notfound), cmd="fix")
+                    ", ".join(notfound), cmd="verify")
 
                 if processed:
                         if any_errors:

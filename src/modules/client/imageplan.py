@@ -49,7 +49,6 @@ import pkg.version
 import sys
 
 from pkg.client.debugvalues import DebugValues
-from collections import defaultdict
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -2056,7 +2055,8 @@ class ImagePlan(object):
                 # print patterns, match_type, pub_ranks
 
                 # figure out which kind of matching rules to employ
-
+                seen = set()
+                npatterns = []
                 for pat in patterns:
                         try:
                                 parts = pat.split("@", 1)
@@ -2078,11 +2078,24 @@ class ImagePlan(object):
                                         fmri = pkg.fmri.PkgFmri(
                                             pat_stem, brelease)
 
+                                sfmri = str(fmri)
+                                if sfmri in seen:
+                                        # A different form of the same pattern
+                                        # was specified already; ignore this
+                                        # one (e.g. pkg:/network/ping,
+                                        # /network/ping).
+                                        wildcard_patterns.discard(pat)
+                                        continue
+
+                                seen.add(sfmri)
+                                npatterns.append(pat)
                                 matchers.append(matcher)
                                 pubs.append(fmri.publisher)
                                 fmris.append(fmri)
                         except pkg.fmri.FmriError, e:
                                 illegals.append(e)
+                patterns = npatterns
+                del npatterns, seen
 
                 # Create a dictionary of patterns, with each value being a
                 # set of pkg names that match that pattern.
@@ -2105,7 +2118,6 @@ class ImagePlan(object):
                                         ret[pat].add(name)
 
                 matchdict = {}
-
                 for p in patterns:
                         l = len(ret[p])
                         if l == 0: # no matches at all
@@ -2219,6 +2231,8 @@ class ImagePlan(object):
                 # figure out which kind of matching rules to employ
                 brelease = self.image.attrs["Build-Release"]
                 latest_pats = set()
+                seen = set()
+                npatterns = []
                 for pat in patterns:
                         try:
                                 parts = pat.split("@", 1)
@@ -2256,6 +2270,17 @@ class ImagePlan(object):
                                             pkg.version.Version(pat_ver,
                                                 brelease)
 
+                                sfmri = str(fmri)
+                                if sfmri in seen:
+                                        # A different form of the same pattern
+                                        # was specified already; ignore this
+                                        # one (e.g. pkg:/network/ping,
+                                        # /network/ping).
+                                        wildcard_patterns.discard(pat)
+                                        continue
+
+                                seen.add(sfmri)
+                                npatterns.append(pat)
                                 if pat_ver and \
                                     getattr(fmri.version, "match_latest", None):
                                         latest_pats.add(pat)
@@ -2267,6 +2292,8 @@ class ImagePlan(object):
                         except (pkg.fmri.FmriError,
                             pkg.version.VersionError), e:
                                 illegals.append(e)
+                patterns = npatterns
+                del npatterns, seen
 
                 # Create a dictionary of patterns, with each value being a
                 # dictionary of pkg names & fmris that match that pattern.

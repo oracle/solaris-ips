@@ -581,6 +581,14 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list baz", exit=0)
                 self.pkg("uninstall 'b*' 'f*'")
 
+                # However, multiple forms of the same pattern should simply be
+                # coalesced and allowed.
+                self.pkg("install pkg:/foo /foo ///foo pkg:///foo")
+                self.pkg("list")
+                self.pkg("verify pkg:/foo /foo ///foo pkg:///foo")
+                self.pkg("uninstall pkg:/foo /foo ///foo "
+                    "pkg:///foo")
+
         def test_bad_package_actions(self):
                 """Test the install of packages that have actions that are
                 invalid."""

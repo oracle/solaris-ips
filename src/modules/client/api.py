@@ -1956,11 +1956,26 @@ class ImageInterface(object):
                 pat_tuples = {}
                 pat_versioned = False
                 latest_pats = set()
+                seen = set()
+                npatterns = set()
                 for pat, error, pfmri, matcher in self.parse_fmri_patterns(
                     patterns):
                         if error:
                                 illegals.append(error)
                                 continue
+
+                        # Duplicate patterns are ignored.
+                        sfmri = str(pfmri)
+                        if sfmri in seen:
+                                # A different form of the same pattern
+                                # was specified already; ignore this
+                                # one (e.g. pkg:/network/ping,
+                                # /network/ping).
+                                continue
+
+                        # Track used patterns.
+                        seen.add(sfmri)
+                        npatterns.add(pat)
 
                         if "@" in pat:
                                 # Mark that a pattern contained version
@@ -1970,6 +1985,9 @@ class ImageInterface(object):
                         if getattr(pfmri.version, "match_latest", None):
                                 latest_pats.add(pat)
                         pat_tuples[pat] = (pfmri.tuple(), matcher)
+
+                patterns = npatterns
+                del npatterns, seen
 
                 if illegals:
                         raise apx.InventoryException(illegal=illegals)
