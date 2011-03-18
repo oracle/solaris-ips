@@ -131,9 +131,15 @@ class PkgFmri(object):
                         self.version = veridx = None
 
                 if pubidx != None:
-                        self.publisher = fmri[pubidx:nameidx - 1]
-                else:
+                        # Always use publisher information provided in FMRI
+                        # string.  (It could be ""; pkg:///name is valid.)
+                        publisher = fmri[pubidx:nameidx - 1]
+
+                # Ensure publisher is always None if one was not specified.
+                if publisher:
                         self.publisher = publisher
+                else:
+                        self.publisher = None
 
                 if veridx != None:
                         self.pkg_name = fmri[nameidx:veridx]

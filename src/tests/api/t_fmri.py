@@ -282,6 +282,18 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(f.has_version())
                 self.assertFalse(f.has_publisher())
 
+        def testpublisher(self):
+                """Verify that different ways of specifying the publisher
+                information in an FMRI produce the same results."""
+
+                for s in ("pkg:///name", "pkg:/name", "///name", "/name"):
+                        f = fmri.PkgFmri(s)
+                        self.assertEqual(f.publisher, None)
+
+                for s in ("pkg://test/name", "//test/name"):
+                        f = fmri.PkgFmri(s)
+                        self.assertEqual(f.publisher, "test")
+
         def testunsupported(self):
                 """Verify that unsupported operations on a partial FMRI raise
                 the correct exceptions."""
