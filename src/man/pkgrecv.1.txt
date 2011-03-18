@@ -6,7 +6,7 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkgrecv [-s src_uri] [-a] [-d (path|dest_uri)] [-c cache_dir]
-         [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile] 
+         [-kr] [-m match] [-n] [--raw] [--key keyfile --cert certfile]
          (fmri|pattern) ...
      /usr/bin/pkgrecv [-s src_uri] --newest
 
@@ -33,7 +33,9 @@ OPTIONS
                      client will automatically pick a cache directory.
                      In the case where a download is interrupted, and a
                      cache directory was automatically chosen, use this
-                     option to resume the download.
+                     option to resume the download.  See ENVIRONMENT
+                     VARIABLES below for details on how to set the location
+                     used for temporary data storage.
 
      -d path_or_uri  The filesystem path or URI of the target repository to
                      republish packages to.  If not provided, the default
@@ -62,7 +64,7 @@ OPTIONS
      -s src_repo_uri A URI representing the location of a pkg(5) repository
                      from which to receive package data.
 
-     --cert file     Specify a client SSL certificate file to use for package 
+     --cert file     Specify a client SSL certificate file to use for package
                      retrieval from an HTTPS repository.
 
      --key file      Specify a client SSL key file to use for package retrieval
@@ -149,14 +151,20 @@ EXAMPLES
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
 
-     PKG_DEST           The path of a directory to save the retrieved
-                        package to, or the filesystem path or URI of a
-                        repository to republish it to.  If not provided,
-                        the default value is the current working directory.
+     PKG_DEST
+          The path of a directory to save the retrieved packages to, or the
+          filesystem path or URI of a repository where the packages will be
+          copied.  If not provided, the default value is the current
+          working directory.
 
-     PKG_SRC            A URI or filesystem path representing the location
-                        of a pkg(5) repository or package archive to
-                        retrieve package data from.
+     PKG_SRC
+          A URI or filesystem path representing the location of a pkg(5)
+          repository or package archive from which to retrieve packages.
+
+     TMPDIR
+          The absolute path of the directory where temporary data should be
+          stored during program execution.  If not set, the default is to
+          store temporary data in /var/tmp.
 
 EXIT STATUS
      The following exit values are returned:

@@ -27,7 +27,7 @@ DESCRIPTION
      Currently, the reference set of packages is defined as the packages
      currently installed on the publisher's system.
 
-     Several aspects of delivered files are used as sources of 
+     Several aspects of delivered files are used as sources of
      dependency information:
 
      ELF             ELF headers in delivered files are analyzed for
@@ -48,7 +48,7 @@ DESCRIPTION
                      dependency on the package that delivers the link
                      target.
 
-     SMF             SMF service manifests delivered that include 
+     SMF             SMF service manifests delivered that include
                      "require_all" dependencies will result in
                      dependencies on the packages that deliver the SMF
                      manifests that provide those FMRIs.
@@ -61,7 +61,7 @@ OPTIONS
           automatically.  By default, pkgdepend(1) attempts to determine,
           based on its working directory, in what image it has been invoked.
           If no image metadata can be found in the parent directories, the
-          invocation will fail.  See also ENVIRONMENT VARIABLES.  
+          invocation will fail.  See also ENVIRONMENT VARIABLES.
 
      --help or -?
           Displays a usage message.
@@ -82,7 +82,7 @@ SUBCOMMANDS
           With -m, the original manifest will be repeated with any
           discovered dependencies added after.
 
-          With -d, add the directory provided to a list of directories 
+          With -d, add the directory provided to a list of directories
           to search for the manifest's files.
 
           For each -D, add the 'value' as a way to expand the token
@@ -90,7 +90,7 @@ SUBCOMMANDS
 
           For each -k, add the path given to the list of run paths
           declared in which to look for kernel modules.  Using the -k
-          argument removes the default paths which are /kernel and 
+          argument removes the default paths which are /kernel and
           /usr/kernel.
 
           Run paths, such as those specified by the -k option, can also
@@ -102,7 +102,7 @@ SUBCOMMANDS
           The use of -k is overridden by any pkg.depend.runpath
           attributes set in the manifest or action.
 
-	  The special token "$PKGDEPEND_RUNPATH" can be used as one
+          The special token "$PKGDEPEND_RUNPATH" can be used as one
           component of the pkg.depend.runpath attribute value in order
           to include the standard system run path for the file
           being analyzed.

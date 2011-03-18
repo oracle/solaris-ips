@@ -10,9 +10,9 @@ SYNOPSIS
 
 DESCRIPTION
 
-     Pkgfmt without the -c option will format a package 
-     manifest in a consistent manner, wrapping lines at 
-     80 characters, sorting actions by type, placing key 
+     pkgfmt without the -c option will format a package
+     manifest in a consistent manner, wrapping lines at
+     80 characters, sorting actions by type, placing key
      attributes first, etc.  pkgfmt tries to be robust
      in the case of lines that don't parse into actions;
      such lines will not appear in sorted order.
@@ -28,10 +28,10 @@ DESCRIPTION
      formatted.
 
 OPTIONS
-     
+
      -c   Check if the manifest is formatted in the pkgfmt style.
 
-     -d   Display differences with respect to formatted version in 
+     -d   Display differences with respect to formatted version in
           unified form.
 
      -u   Do not wrap lines at 80 characters; this is useful for
@@ -43,7 +43,7 @@ EXIT STATUS
 
      0     Normal execution
 
-     1     The -c or -d options were specified, and one or more 
+     1     The -c or -d options were specified, and one or more
            manifests are not in pkgfmt-normal form.
 
      99    An unanticipated exception occurred

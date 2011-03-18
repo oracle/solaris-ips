@@ -74,6 +74,13 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkg("image-create --bozo", exit=2)
                 self.pkg("image-create", exit=2)
 
+                self.pkg("image-create --facet foo=NONE -p test1=%s %s" %
+                    (self.rurl1, self.test_root), exit=2)
+                self.pkg("image-create --facet foo= -p test1=%s %s" %
+                    (self.rurl1, self.test_root), exit=2)
+                self.pkg("image-create --facet foo -p test1=%s %s" %
+                    (self.rurl1, self.test_root), exit=2)
+
                 self.pkg("image-create --set-property foo -p test1=%s %s" %
                     (self.rurl1, self.test_root), exit=2)
                 self.pkg("image-create --set-property foo=bar --set-property "

@@ -233,7 +233,7 @@ SUBCOMMANDS
           With -p, only set property data for the given publisher.  If
           the publisher does not already exist, it will be added.  The
           special value 'all' may be used to set the property for all
-          publishers.  
+          publishers.
 
           With -s, operate on the repository located at the given URI
           or filesystem path.
@@ -306,7 +306,7 @@ SUBCOMMANDS
                     a web page) that provides additional information about
                     the repository.
 
-               repository/legal_uris    
+               repository/legal_uris
                     A list of locations (URIs) for documents that provide
                     additional legal information about the repository.
 

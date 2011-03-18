@@ -140,7 +140,7 @@ SUBCOMMANDS
           With --fmri-in-manifest, use the fmri specified in the package
           manifest with a set action name of "pkg.fmri".  Otherwise the
           fmri must be specified on the command line.
-          
+
           Refer to the close subcommand above for a description of the
           --no-catalog option.
 
@@ -260,7 +260,7 @@ EXAMPLES
          and a pre-existing manifest:
 
      $ pkgsend -s file:///tmp/example_repo -d /tmp/pkg_files \
-         /tmp/pkg_manifest
+         publish --fmri-in-manifest /tmp/pkg_manifest
 
      Example 3:  Create a package that delivers two groups and a user.
 

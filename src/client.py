@@ -201,7 +201,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
             "            [-k ssl_key] [-c ssl_cert] [--no-refresh]\n"
             "            [--variant <variant_spec>=<instance> ...]\n"
             "            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n"
-            "            [--facet <facet_spec>=[True|False] ...]\n"
+            "            [--facet <facet_spec>=(True|False) ...]\n"
             "            (-p|--publisher) [<name>=]<repo_uri> dir")
         adv_usage["change-variant"] = _(
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
@@ -4044,13 +4044,17 @@ def image_create(args):
                 elif opt == "-U" or opt == "--user":
                         imgtype = IMG_TYPE_USER
                 elif opt == "--facet":
-                        allow = { "TRUE":True, "FALSE":False }
-                        f_name, f_value = arg.split("=", 1)
+                        allow = { "TRUE": True, "FALSE": False }
+                        try:
+                                f_name, f_value = arg.split("=", 1)
+                        except ValueError:
+                                f_name = arg
+                                f_value = ""
                         if not f_name.startswith("facet."):
                                 f_name = "facet.%s" % f_name
-                        if f_value.upper() not in allow:
-                                usage(_("Facet arguments must be"
-                                    "form 'facet..=[True|False]'"),
+                        if not f_name or f_value.upper() not in allow:
+                                usage(_("Facet arguments must be of the "
+                                    "form '<name>=(True|False)'"),
                                     cmd=cmd_name)
                         facets[f_name] = allow[f_value.upper()]
                 elif opt == "--no-refresh":

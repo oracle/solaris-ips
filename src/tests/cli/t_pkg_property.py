@@ -89,7 +89,7 @@ class TestPkgPropertyBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("property -H flush-content-cache-on-success |"
                     "grep -i flush-content-cache-on-success.*false$")
 
-        def test_missing_permssions(self):
+        def test_missing_permissions(self):
                 """Bug 2393"""
 
                 self.image_create(self.rurl)

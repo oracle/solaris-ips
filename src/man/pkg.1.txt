@@ -34,8 +34,8 @@ SYNOPSIS
 
      /usr/bin/pkg verify [-Hqv] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
-     /usr/bin/pkg revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
-         (--tagged tag-name ... | path-to-file ...)
+     /usr/bin/pkg revert [-nv] [--be-name name] [--deny-new-be |
+         --require-new-be] (--tagged tag-name ... | path-to-file ...)
 
      /usr/bin/pkg variant [-H] [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [-g path_or_uri ...] [--accept]
@@ -90,7 +90,7 @@ SYNOPSIS
          [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
          [--no-refresh] [--variant <variant_spec>=<instance> ...]
          [-g path_or_uri|--origin=path_or_uri ...]
-         [-m uri|--mirror=uri ...] [--facet <facet_spec>=[True|False] ...]
+         [-m uri|--mirror=uri ...] [--facet <facet_spec>=(True|False) ...]
          (-p|--publisher) [<name>=]<repo_uri> dir
 
 DESCRIPTION
@@ -170,7 +170,7 @@ SUBCOMMANDS
           during package operations, see "File Actions" in pkg(5).
 
           If a package is on the avoid list, installing it will remove
-	  it from that list.
+          it from that list.
 
           With -g, use the specified package repository or archive as an
           additional source of package data for the operation.  This option
@@ -232,7 +232,7 @@ SUBCOMMANDS
           containing 'optional' or 'incorporate' dependencies are
           not included in the removal.)
 
-    	  If a package is the subject of a group dependency, uninstalling
+          If a package is the subject of a group dependency, uninstalling
           it will place it on the avoid list.  See the avoid subcommand
           below.
 
@@ -674,13 +674,13 @@ SUBCOMMANDS
           the specified patterns on the avoid list.  Only packages that
           are not current installed may be avoided; if a package is currently
           the target of a group dependency, uninstalling it will place it
-	  on the avoid list.
+          on the avoid list.
 
-	  Without any arguments, display each avoided package along with
+          Without any arguments, display each avoided package along with
           any packages that have a group dependency on that package.
 
           Packages that are on the avoid list will be installed if needed
-	  to satisfy a required dependency.  Should that dependency be removed,
+          to satisfy a required dependency.  Should that dependency be removed,
           the package will be uninstalled.
 
      unavoid [pkg_fmri_pattern ...]
@@ -690,7 +690,7 @@ SUBCOMMANDS
           a package from the avoid list that matches a group dependency,
           install the package.
 
-	  Without any arguments, display the list of avoided packages.
+          Without any arguments, display the list of avoided packages.
 
      property [-H] [propname ...]
 

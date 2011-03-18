@@ -43,7 +43,7 @@ OPTIONS
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
 
-     TMPDIR, TEMP, TMP
+     TMPDIR
           The absolute path of the directory where temporary data should be
           stored during program execution.  If not set, the default is to
           store temporary data in /var/tmp.

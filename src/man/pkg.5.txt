@@ -237,11 +237,11 @@ DESCRIPTION
            its required dependencies cannot be satisfied.
 
            If the value is 'optional', then the dependency, if present, must
-	   be at the specified version level or greater.
+           be at the specified version level or greater.
 
            If the value is 'exclude', then the containing package cannot
-	   be installed if the dependency is present at the specified
-	   version level or greater.
+           be installed if the dependency is present at the specified
+           version level or greater.
 
            If the value is 'incorporate', then the dependency is
            optional, but the version of the dependent package will
@@ -262,8 +262,8 @@ DESCRIPTION
            in order to install this package.
 
            If the value is 'group', the dependency is required unless the
-	   package is on the image avoid list.  Note that obsolete packages
-	   silently satisfy the group dependency.  See the avoid subcommand
+           package is on the image avoid list.  Note that obsolete packages
+           silently satisfy the group dependency.  See the avoid subcommand
            in pkg(1).
 
      fmri  The FMRI representing the depended-upon package.  It must not
@@ -414,9 +414,9 @@ DESCRIPTION
                  free group under 100.
 
   User actions
-     The 'user' action defines a Unix user as defined in /etc/passwd, /etc/shadow,
-     /etc/group and /etc/ftpd/ftpusers files.  Users defined with this attribute
-     have entries added to the appropriate files.
+     The 'user' action defines a Unix user as defined in /etc/passwd,
+     /etc/shadow, /etc/group and /etc/ftpd/ftpusers files.  Users defined
+     with this attribute have entries added to the appropriate files.
 
      The following attributes are recognized:
 

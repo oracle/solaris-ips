@@ -5,21 +5,21 @@ NAME
      pkgsign - image packaging system signing utility
 
 SYNOPSIS
-     /usr/bin/pkgsign [-a hash_algorithm] [-c path_to_signing_certificate] 
-         [-i path_to_intermediate_cert] ... [-k path_to_private_key] 
+     /usr/bin/pkgsign [-a hash_algorithm] [-c path_to_signing_certificate]
+         [-i path_to_intermediate_cert] ... [-k path_to_private_key]
          [-s src_uri] [--help] [--no-index] [--no-catalog] [--sign-all |
          fmri_with_timestamp ...]
 
 DESCRIPTION
-     pkgsign updates the manifest for the given fmri(s) in place in the 
-     repository by adding a signature action using the provided key and 
+     pkgsign updates the manifest for the given fmri(s) in place in the
+     repository by adding a signature action using the provided key and
      certificates.  The package modified will retain the original timestamp.
 
 OPTIONS
      The following options are supported:
 
-     With -a, use the signature algorithm provided instead of the default, 
-     which is rsa-sha256.  The following are the currently supported signature 
+     With -a, use the signature algorithm provided instead of the default,
+     which is rsa-sha256.  The following are the currently supported signature
      algorithms: rsa-sha256, rsa-sha384, rsa-sha512, sha256, sha384, sha512.
      A signature algorithm which only specifies a hash algorithm will cause the
      signature value to be the hash of the manifest of the package.  A signature
@@ -31,11 +31,11 @@ OPTIONS
      verifying the value of the signature in the action.  It can only be used if
      -k is also used.
 
-     With -i, add the certificate provided as a certificate to use when 
-     validating the certificate given as an argument to -c.  Multiple 
+     With -i, add the certificate provided as a certificate to use when
+     validating the certificate given as an argument to -c.  Multiple
      certificates may be provided by using -i multiple times.
 
-     With -k, use the private key stored in the given path to sign the 
+     With -k, use the private key stored in the given path to sign the
      manifest.  It can only be used if -c is also used.  If -k is not set,
      then the signature value will be the hash of the manifest.
 
@@ -52,15 +52,15 @@ OPTIONS
      With --sign-all, sign all the packages in the repository.
 
 EXAMPLES
-     Example 1:  Sign a package published to http://localhost:10000 using the 
+     Example 1:  Sign a package published to http://localhost:10000 using the
      hash value of the manifest.  This is often useful for testing.
 
      $ pkgsign -s http://localhost:10000 -a sha256 \
           example_pkg@1.0,5.11-0:20100626T030108Z
 
      Example 2: Sign a package published into the file repository in /foo/bar
-     using rsa-sha384 to hash and sign the manifest, the key in /key/usr2.key, 
-     its associated certificate in /key/usr2.cert, and a certificate needed to 
+     using rsa-sha384 to hash and sign the manifest, the key in /key/usr2.key,
+     its associated certificate in /key/usr2.cert, and a certificate needed to
      validate the certificate in /icerts/usr1.cert.
 
      $ pkgsign -s file:///foo/bar/ -a rsa-sha384 -k /key/usr2.key \
