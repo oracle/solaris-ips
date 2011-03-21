@@ -110,6 +110,9 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend(durl, "open -en foo@1.0", exit=2)
                 self.pkgsend(durl, "open -ne foo@1.0", exit=2)
 
+                # A destination repository must be specified.
+                self.pkgsend("", "close", exit=2)
+
         def test_1_pkgsend_abandon(self):
                 """Verify that an abandoned tranasaction is not published."""
 

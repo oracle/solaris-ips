@@ -104,10 +104,8 @@ Options:
                         option to resume the download.
 
         -d path_or_uri  The filesystem path or URI of the target repository to
-                        republish packages to.  If not provided, the default
-                        value is the current working directory.  The target
-                        must already exist.  New repositories can be created
-                        using pkgrepo(1).
+                        republish packages to.  The target must already exist.
+                        New repositories can be created using pkgrepo(1).
 
         -h              Display this usage message.
 
@@ -146,8 +144,8 @@ Options:
         --cert certfile Specify a client SSL certificate file to use for pkg retrieval.
 
 Environment:
-        PKG_DEST        Destination directory or repository URI
-        PKG_SRC         Source repository URI"""))
+        PKG_DEST        Destination directory or URI
+        PKG_SRC         Source URI or path"""))
         sys.exit(retcode)
 
 def cleanup(caller_error=False):
@@ -439,6 +437,9 @@ def main_func():
                 elif opt == "--cert":
                         cert = arg
 
+        if not list_newest and not target:
+                usage(_("a destination must be provided"))
+
         if not src_uri:
                 usage(_("a source repository must be provided"))
         else:
@@ -703,9 +704,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                 republish = False
 
-                if not target:
-                        target = basedir = os.getcwd()
-                elif target and not raw:
+                if not raw:
                         basedir = tempfile.mkdtemp(dir=temp_root,
                             prefix=global_settings.client_name + "-")
                         tmpdirs.append(basedir)

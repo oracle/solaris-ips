@@ -84,7 +84,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
                 error(usage_error, cmd=cmd)
         emsg (_("""\
 Usage:
-        pkgsign [-aciks] [--no-index] [--no-catalog]
+        pkgsign -s path_or_uri [-acik] [--no-index] [--no-catalog]
             [--sign-all | fmri-to-sign ...]
 """))
 
@@ -141,11 +141,7 @@ def main_func():
         set_alg = False
         sign_all = False
 
-        try:
-                repo_uri = os.environ["PKG_REPO"]
-        except KeyError:
-                repo_uri = "http://localhost:10000"
-        
+        repo_uri = os.getenv("PKG_REPO", None)
         for opt, arg in opts:
                 if opt == "-a":
                         sig_alg = arg
@@ -167,7 +163,7 @@ def main_func():
                                 usage(_("%s was expected to be a key file "
                                     "but isn't a file.") % key_path)
                 elif opt == "-s":
-                        repo_uri = arg
+                        repo_uri = misc.parse_uri(arg)
                 elif opt == "--help":
                         show_usage = True
                 elif opt == "--no-catalog":
@@ -177,6 +173,9 @@ def main_func():
 
         if show_usage:
                 usage(retcode=EXIT_OK)
+
+        if not repo_uri:
+                usage(_("a repository must be provided"))
 
         if key_path and not cert_path:
                 usage(_("If a key is given to sign with, its associated "

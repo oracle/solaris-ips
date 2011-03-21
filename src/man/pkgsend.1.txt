@@ -31,13 +31,8 @@ OPTIONS
 
      -s repo_uri    A URI representing the location of the target
                     repository.  Both HTTP and filesystem-based
-                    publication are supported. The default value is
-                    http://localhost:10000/.
-
-                    For filesystem-based publication, the repo_uri
-                    should be specified as follows:
-
-                      file://<absolute_path_to_repository>
+                    publication are supported.  Paths to repositories
+                    may be specified relative or absolute.
 
                     See the NOTES section below for more information
                     about restrictions or suggestions for publication.
@@ -259,8 +254,8 @@ EXAMPLES
      Example 2:  Publish a package using filesystem-based publication
          and a pre-existing manifest:
 
-     $ pkgsend -s file:///tmp/example_repo -d /tmp/pkg_files \
-         publish --fmri-in-manifest /tmp/pkg_manifest
+     $ pkgsend -s /tmp/example_repo -d /tmp/pkg_files publish \
+         --fmri-in-manifest /tmp/pkg_manifest
 
      Example 3:  Create a package that delivers two groups and a user.
 

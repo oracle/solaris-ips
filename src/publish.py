@@ -100,11 +100,11 @@ Packager subcommands:
         pkgsend generate [-T pattern] [--target file] bundlefile ...
 
 Options:
-        -s repo_uri     target repository URI
+        -s repo_uri     target repository path or URI
         --help or -?    display usage message
 
 Environment:
-        PKG_REPO""")
+        PKG_REPO        The path or URI of the destination repository.""")
         sys.exit(retcode)
 
 def trans_create_repository(repo_uri, args):
@@ -606,10 +606,7 @@ def setup_transport_and_pubs(repo_uri, remote=True):
 def main_func():
         gettext.install("pkg", "/usr/share/locale")
 
-        try:
-                repo_uri = os.environ["PKG_REPO"]
-        except KeyError:
-                repo_uri = "http://localhost:10000"
+        repo_uri = os.getenv("PKG_REPO", None)
 
         show_usage = False
         global_settings.client_name = "pkgsend"
@@ -621,7 +618,7 @@ def main_func():
                         elif opt in ("--help", "-?"):
                                 show_usage = True
         except getopt.GetoptError, e:
-                usage(_("pkgsend: illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- %s") % e.opt)
 
         if repo_uri and not repo_uri.startswith("null:"):
                 repo_uri = misc.parse_uri(repo_uri)
@@ -636,6 +633,9 @@ def main_func():
                 usage(retcode=0)
         elif not subcommand:
                 usage()
+
+        if not repo_uri and subcommand not in ("create-repository", "generate"):
+                usage(_("a destination repository must be provided"))
 
         ret = 0
         try:

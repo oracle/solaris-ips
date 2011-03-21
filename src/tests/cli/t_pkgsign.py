@@ -262,7 +262,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 sd = os.path.join(td, "tmp_sign")
                 os.makedirs(sd)
                 os.environ["TMPDIR"] = sd
-                self.pkgsign(self.rurl1, sign_args)
+
+                # Specify location as filesystem path.
+                self.pkgsign(self.dc.get_repodir(), sign_args)
+
                 # Ensure that all temp files from signing have been removed.
                 self.assertEqual(os.listdir(sd), [])
                 os.environ["TMPDIR"] = td
@@ -438,7 +441,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "cs1_p1_ta3_key.pem"),
                         "cert": os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
                 }
-                self.pkgsign(self.rurl1, sign_args)
+
+                # Specify repository location as relative path.
+                cwd = os.getcwd()
+                repodir = self.dc.get_repodir()
+                os.chdir(os.path.dirname(repodir))
+                self.pkgsign(os.path.basename(repodir), sign_args)
+                os.chdir(cwd)
+
                 self.image_create(self.rurl1)
                 self.pkg("set-property signature-policy verify")
 
@@ -662,6 +672,10 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.dcs[1].start()
                 self.pkgsign(self.durl1, "foo@1.2.3", exit=1)
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
+
+                # Test that not specifying a destination repository fails.
+                self.pkgsign("", "--sign-all", exit=2)
+
                 # Test that passing sign-all and a fmri results in an error.
                 self.pkgsign(self.durl1, "--sign-all %(name)s" % {
                       "name": plist[0]

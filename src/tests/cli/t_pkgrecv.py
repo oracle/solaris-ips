@@ -160,10 +160,14 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(self.durl1, "-p foo", exit=2)
                 self.pkgrecv(self.durl1, "-d %s gold@1.0-1" % self.tempdir,
                     exit=1)
-                self.pkgrecv(self.durl1, "invalid.fmri@1.0.a", exit=1)
+                self.pkgrecv(self.durl1, "-d %s invalid.fmri@1.0.a" %
+                    self.tempdir, exit=1)
 
                 # Test help.
                 self.pkgrecv(command="-h", exit=0)
+
+                # Verify that pkgrecv requires a destination repository.
+                self.pkgrecv(self.durl1, "'*'", exit=2)
 
                 # Verify that a non-existent repository results in failure.
                 npath = os.path.join(self.test_root, "nochance")

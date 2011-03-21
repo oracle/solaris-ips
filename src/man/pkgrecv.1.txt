@@ -37,12 +37,11 @@ OPTIONS
                      VARIABLES below for details on how to set the location
                      used for temporary data storage.
 
-     -d path_or_uri  The filesystem path or URI of the target repository to
-                     republish packages to.  If not provided, the default
-                     value is the current working directory.  The target
-                     must already exist.  New repositories can be created
-                     using pkgrepo(1).  If -a is specified, the target is
-                     assumed to be a new package archive.
+     -d path_or_uri  The filesystem path or URI of the target to republish
+                     packages to.  The target must already exist.  New
+                     repositories can be created using pkgrepo(1).  If
+                     -a is specified, the target is assumed to be a new
+                     package archive.
 
      -h              Display usage message.
 
@@ -62,7 +61,7 @@ OPTIONS
                      list of packages.
 
      -s src_repo_uri A URI representing the location of a pkg(5) repository
-                     from which to receive package data.
+                     or package archive from which to receive package data.
 
      --cert file     Specify a client SSL certificate file to use for package
                      retrieval from an HTTPS repository.
@@ -153,9 +152,8 @@ ENVIRONMENT VARIABLES
 
      PKG_DEST
           The path of a directory to save the retrieved packages to, or the
-          filesystem path or URI of a repository where the packages will be
-          copied.  If not provided, the default value is the current
-          working directory.
+          filesystem path or URI of a repository or package archive where
+          the packages will be copied.
 
      PKG_SRC
           A URI or filesystem path representing the location of a pkg(5)

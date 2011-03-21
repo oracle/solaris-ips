@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
      /usr/bin/pkgsign [-a hash_algorithm] [-c path_to_signing_certificate]
          [-i path_to_intermediate_cert] ... [-k path_to_private_key]
-         [-s src_uri] [--help] [--no-index] [--no-catalog] [--sign-all |
+         -s path_or_uri [--help] [--no-index] [--no-catalog] [--sign-all |
          fmri_with_timestamp ...]
 
 DESCRIPTION
@@ -39,7 +39,7 @@ OPTIONS
      manifest.  It can only be used if -c is also used.  If -k is not set,
      then the signature value will be the hash of the manifest.
 
-     With -s, sign packages in the repository at the given URI.
+     With -s, sign packages in the repository at the given path or URI.
 
      With --help, show the usage information for the command.
 
