@@ -535,6 +535,7 @@ class ImageConfig(cfg.FileConfig):
                                         p = str(o.ssl_cert)
                                         break
                         if ngz and self.__imgroot != os.sep and p != "None":
+                                # Trim the imageroot from the path.
                                 if p.startswith(self.__imgroot):
                                         p = p[len(self.__imgroot):]
                         self.set_property(section, "ssl_cert", p)
@@ -668,17 +669,6 @@ class ImageConfig(cfg.FileConfig):
                         repo_data["refresh_seconds"] = \
                             str(REPO_REFRESH_SECONDS_DEFAULT)
 
-                # Guard against invalid configuration for ssl information. If
-                # this isn't done, the user won't be able to load the client
-                # to fix the problem.
-                ssl_key = sec_idx["ssl_key"]
-                ssl_cert = sec_idx["ssl_cert"]
-                for origin in origins:
-                        if not origin.startswith("https"):
-                                ssl_key = None
-                                ssl_cert = None
-                                break
-
                 #
                 # For zones, where the reachability of an absolute path
                 # changes depending on whether you're in the zone or not.  So
@@ -687,6 +677,7 @@ class ImageConfig(cfg.FileConfig):
                 #
                 prefix = sec_idx["prefix"]
                 ngz = self.variants["variant.opensolaris.zone"] == "nonglobal"
+                ssl_key = sec_idx["ssl_key"]
                 if ssl_key:
                         if ngz:
                                 ssl_key = os.path.normpath(self.__imgroot +
@@ -698,6 +689,7 @@ class ImageConfig(cfg.FileConfig):
                                     uri=list(origins)[0], publisher=prefix))
                                 ssl_key = None
 
+                ssl_cert = sec_idx["ssl_cert"]
                 if ssl_cert:
                         if ngz:
                                 ssl_cert = os.path.normpath(self.__imgroot +
@@ -712,8 +704,16 @@ class ImageConfig(cfg.FileConfig):
 
                 r = publisher.Repository(**repo_data)
                 for o in origins:
+                        if not any(o.startswith(scheme + ":")
+                            for scheme in publisher.SSL_SCHEMES):
+                                r.add_origin(o)
+                                continue
                         r.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
                 for m in sec_idx["mirrors"]:
+                        if not any(m.startswith(scheme + ":")
+                            for scheme in publisher.SSL_SCHEMES):
+                                r.add_mirror(m)
+                                continue
                         r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
 
                 pub = publisher.Publisher(prefix, alias=sec_idx["alias"],

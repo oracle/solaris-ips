@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -51,8 +51,8 @@ class RepoChooser(object):
         def dump(self):
                 """Write the repo statistics to stdout."""
 
-                hfmt = "%-21s %-6s %-4s %-4s %-8s %-10s %-5s %-7s %-4s"
-                dfmt = "%-21s %-6s %-4s %-4s %-8s %-10s %-5s %-6f %-4s"
+                hfmt = "%-31.31s %-6s %-4s %-4s %-8s %-10s %-5s %-7s %-4s"
+                dfmt = "%-31.31s %-6s %-4s %-4s %-8s %-10s %-5s %-6f %-4s"
                 misc.msg(hfmt % ("URL", "Good", "Err", "Conn", "Speed", "Size",
                     "Used", "CSpeed", "Qual"))
 
@@ -63,14 +63,7 @@ class RepoChooser(object):
 
                         sizestr = misc.bytes_to_str(ds.bytes_xfr)
 
-                        url_tup = urlparse.urlsplit(ds.url)
-
-                        res_path = url_tup[1]
-                        if not res_path:
-                                # Some schemes don't have a netloc.
-                                res_path = url_tup[2]
-
-                        misc.msg(dfmt % (res_path, ds.success, ds.failures,
+                        misc.msg(dfmt % (ds.url, ds.success, ds.failures,
                             ds.num_connect, speedstr, sizestr, ds.used,
                             ds.connect_time, ds.quality))
 

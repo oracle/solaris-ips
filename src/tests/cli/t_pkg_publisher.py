@@ -152,17 +152,53 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
+                # Set key for test1.
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
+
+                # This should fail since test2 doesn't have any SSL origins or
+                # mirrors.
+                self.pkg("set-publisher --no-refresh -k %s test2" % key_path,
+                    exit=2)
+
+                # Listing publishers should succeed even if key file is gone.
                 os.close(key_fh)
                 os.unlink(key_path)
+                self.pkg("publisher test1")
+
+                # This should fail since key has been removed even though test2
+                # has an https origin.
+                self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
+                    self.bogus_url)
                 self.pkg("set-publisher --no-refresh -k %s test2" % key_path,
                     exit=1)
 
+                # Reset for next test.
+                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
+                    self.bogus_url)
+
+                # Set cert for test1.
                 self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
+
+                # This should fail since test2 doesn't have any SSL origins or
+                # mirrors.
+                self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
+                    exit=2)
+
+                # Listing publishers should succeed even if cert file is gone.
                 os.close(cert_fh)
                 os.unlink(cert_path)
+                self.pkg("publisher test1")
+
+                # This should fail since cert has been removed even though test2
+                # has an https origin.
+                self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
+                    self.bogus_url)
                 self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
                     exit=1)
+
+                # Reset for next test.
+                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
+                    self.bogus_url)
 
                 self.pkg("publisher test1")
                 self.pkg("publisher test3", exit=1)
@@ -407,6 +443,12 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + durl2 + " test2")
                 self.pkg("set-publisher -O " + durl3 + " test3")
 
+                self.path_to_certs = os.path.join(self.ro_data_root,
+                    "signing_certs", "produced")
+                self.keys_dir = os.path.join(self.path_to_certs, "keys")
+                self.cs_dir = os.path.join(self.path_to_certs,
+                    "code_signing_certs")
+
         def __test_mirror_origin(self, etype, add_opt, remove_opt):
                 durl1 = self.dcs[1].get_depot_url()
                 durl4 = self.dcs[4].get_depot_url()
@@ -638,7 +680,47 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 """Test set-publisher functionality for mirrors and origins."""
 
                 durl1 = self.dcs[1].get_depot_url()
+                rurl1 = self.dcs[1].get_repo_url()
                 self.image_create(durl1, prefix="test1")
+
+                # Verify that https origins can be mixed with other types
+                # of origins.
+                self.pkg("set-publisher -g %s test1" % rurl1)
+                self.pkg("set-publisher --no-refresh -g https://test.invalid1 "
+                    "test1")
+
+                # Verify that a cert and key can be set even when non-https
+                # origins are present.
+                key_path = os.path.join(self.keys_dir, "cs1_p1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
+
+                self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
+                    (key_path, cert_path))
+                self.pkg("publisher test1")
+                self.assert_(key_path in self.output)
+                self.assert_(cert_path in self.output)
+
+                # Verify that removing all SSL origins does not leave key
+                # and cert information intact.
+                self.pkg("set-publisher -G '*' -g %s test1" % durl1)
+                self.pkg("publisher test1")
+                self.assert_(key_path not in self.output)
+                self.assert_(cert_path not in self.output)
+
+                # Verify that https mirrors can be mixed with other types of
+                # origins.
+                self.pkg("set-publisher -m %s test1" % rurl1)
+                self.pkg("set-publisher --no-refresh -m https://test.invalid1 "
+                    "test1")
+                self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
+                    (key_path, cert_path))
+
+                # Verify that removing all SSL mirrors does not leave key
+                # and cert information intact.
+                self.pkg("set-publisher -M '*' -m %s test1" % durl1)
+                self.pkg("publisher test1")
+                self.assert_(key_path not in self.output)
+                self.assert_(cert_path not in self.output)
 
                 # Test short options for mirrors.
                 self.__test_mirror_origin("mirror", "-m", "-M")

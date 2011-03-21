@@ -3950,9 +3950,13 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 for p in pubs:
                         repo = p.selected_repository
                         for o in repo.origins:
+                                if o.scheme not in publisher.SSL_SCHEMES:
+                                        continue
                                 o.ssl_cert = ssl_cert
                                 o.ssl_key = ssl_key
                         for m in repo.mirrors:
+                                if m.scheme not in publisher.SSL_SCHEMES:
+                                        continue
                                 m.ssl_cert = ssl_cert
                                 m.ssl_key = ssl_key
 

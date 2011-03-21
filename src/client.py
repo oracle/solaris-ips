@@ -3316,7 +3316,9 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                 # Only use existing cert information if the new URI uses
                 # https for transport.
                 if repo.origins and not (ssl_cert or ssl_key) and \
-                    origin_uri.startswith("https:"):
+                    any(origin_uri.startswith(scheme + ":")
+                        for scheme in publisher.SSL_SCHEMES):
+
                         for uri in repo.origins:
                                 if ssl_cert is None:
                                         ssl_cert = uri.ssl_cert
@@ -3351,17 +3353,31 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
         if ssl_cert is not None or ssl_key is not None:
                 # Assume the user wanted to update the ssl_cert or ssl_key
                 # information for *all* of the currently selected
-                # repository's origins and mirrors.
+                # repository's origins and mirrors that use SSL schemes.
+                found_ssl = False
                 for uri in repo.origins:
+                        if uri.scheme not in publisher.SSL_SCHEMES:
+                                continue
+                        found_ssl = True
                         if ssl_cert is not None:
                                 uri.ssl_cert = ssl_cert
                         if ssl_key is not None:
                                 uri.ssl_key = ssl_key
                 for uri in repo.mirrors:
+                        if uri.scheme not in publisher.SSL_SCHEMES:
+                                continue
+                        found_ssl = True
                         if ssl_cert is not None:
                                 uri.ssl_cert = ssl_cert
                         if ssl_key is not None:
                                 uri.ssl_key = ssl_key
+
+                if (ssl_cert or ssl_key) and not found_ssl:
+                        # None of the origins or mirrors for the publisher
+                        # use SSL schemes so the cert and key information
+                        # won't be retained.
+                        usage(_("Publisher '%s' does not have any SSL-based "
+                            "origins or mirrors.") % prefix)
 
         if set_props or add_prop_values or remove_prop_values or unset_props:
                 pub.update_props(set_props=set_props,
