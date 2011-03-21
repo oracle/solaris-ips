@@ -69,6 +69,7 @@ class Repository(progress.GuiProgressTracker):
                 self.cancel_function = None
                 self.is_alias_valid = True
                 self.is_url_valid = False
+                self.new_pub = None
                 self.priority_changes = []
                 self.url_err = None
                 self.name_error = None
@@ -471,14 +472,41 @@ class Repository(progress.GuiProgressTracker):
                                 publisher_row[enumerations.PUBLISHER_ALIAS] = alias
                                 publisher_row[enumerations.PUBLISHER_OBJECT] = pub
                                 j += 1
+                        # We handle here the case where a publisher was added
+                        if self.new_pub:
+                                pub = self.new_pub
+                                name = pub.prefix
+                                alias = pub.alias
+                                if not alias or len(alias) == 0 or alias == "None":
+                                        alias = name
+                                publisher_row = [j, j, name, alias, not pub.disabled,
+                                    pub.sticky, pub, False, False, False]
+                                model.insert(j, publisher_row)
 
                 self.w_publishers_treeview.set_model(sorted_model)
 
                 if restore_changes:
+                        if self.new_pub:
+                                self.__select_last_publisher()
+                                self.new_pub = None
+                        else:
                         # We do have gtk.SELECTION_SINGLE mode, so if exists, we are
                         # interested only in the first selected path. 
-                        if len(selected_rows) > 1 and len(selected_rows[1]) > 0:
-                                selection.select_path(selected_rows[1][0])
+                                if len(selected_rows) > 1 and len(selected_rows[1]) > 0:
+                                        self.w_publishers_treeview.scroll_to_cell(
+                                            selected_rows[1][0])
+                                        selection.select_path(selected_rows[1][0])
+
+        def __select_last_publisher(self):
+                sorted_model = self.w_publishers_treeview.get_model()
+                itr = sorted_model.get_iter_first()
+                next_itr = sorted_model.iter_next(itr) 
+                while next_itr != None:
+                        itr = next_itr
+                        next_itr = sorted_model.iter_next(itr) 
+                path = sorted_model.get_path(itr)
+                self.w_publishers_treeview.scroll_to_cell(path)
+                self.w_publishers_treeview.get_selection().select_path(path)
 
         def __validate_url(self, url_widget, w_ssl_key = None, w_ssl_cert = None):
                 self.__validate_url_generic(url_widget, self.w_add_error_label, 
@@ -942,6 +970,7 @@ class Repository(progress.GuiProgressTracker):
                 return errors
 
         def __afteradd_confirmation(self, pub):
+                self.new_pub = pub
                 repo = pub.selected_repository
                 origin = repo.origins[0]
                 # Descriptions not available at the moment
@@ -1291,7 +1320,6 @@ class Repository(progress.GuiProgressTracker):
                         self.parent.reload_packages()
                         if self.action == enumerations.MANAGE_PUBLISHERS:
                                 self.__prepare_publisher_list(True)
-                                self.w_publishers_treeview.get_selection().select_path(0)
                 self.__delete_widget_handler_hide(widget, event)
                 return True
 
