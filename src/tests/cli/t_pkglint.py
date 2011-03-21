@@ -326,7 +326,7 @@ dir group=sys mode=0755 owner=root path=etc
         def test_2_badcache(self):
                 """Checks we can deal with bad -c options """
 
-                opts = ["/dev/null", "/home", "/etc/passwd"]
+                opts = ["/dev/null", "/system/contract", "/etc/passwd"]
                 for cache in opts:
                         self.pkglint("-c %s -r %s -l %s" %
                             (cache, self.ref_uri, self.lint_uri), exit=1)
