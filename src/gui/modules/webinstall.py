@@ -158,17 +158,24 @@ class Webinstall:
                 self.w_webinstall_close.show()
                 self.w_webinstall_close.grab_focus()
 
-        @staticmethod
-        def __output_pub_tasks(infobuffer, textiter, pub_tasks):
+        def __output_pub_tasks(self, infobuffer, textiter, pub_tasks):
                 for pub_info in pub_tasks:
                         if pub_info == None:
                                 continue
                         infobuffer.insert_with_tags_by_name(textiter,
                             _("\t%s ") % pub_info.prefix, "bold")
                         repo = pub_info.selected_repository
-                        if repo != None:
+                        if repo != None and repo.origins != None and \
+                                        len(repo.origins) > 0:
                                 infobuffer.insert(textiter,
                                         _(" (%s)\n") % repo.origins[0].uri)
+                        else:
+                                infobuffer.insert(textiter,
+                                    _(" (No origin specified in the p5i file)\n"))
+                                self.w_webinstall_proceed.hide()
+                                msg = _("Publishers can <b>only</b> be added"
+                                    " if they have an origin specified.")
+                                self.w_webinstall_proceed_label.set_markup(msg)
 
         def __output_pkg_install_tasks(self, infobuffer, textiter, num_tasks):
                 if num_tasks == 0:
@@ -275,8 +282,9 @@ class Webinstall:
                                 self.disabled_pubs[pub_info.prefix] = True
 
                         if not pub_registered:
-                                if len(repo) > 0 and repo[0].origins[0] != None and \
-                                    repo[0].origins[0].scheme == "https":
+                                if len(repo) > 0 and repo[0].origins != None and \
+                                        len(repo[0].origins) > 0 and \
+                                        repo[0].origins[0].scheme == "https":
                                         #TBD: check for registration uri as well as scheme
                                         #    repo.registration_uri.uri != None:
                                         pub_new_reg_ssl_tasks.append(pub_info)
@@ -397,7 +405,9 @@ class Webinstall:
                 if debug:
                         print("Add New Publisher:\n\tName: %s" % pub.prefix)
                         repo = pub.selected_repository
-                        print("\tURL: %s" % repo.origins[0].uri)
+                        if repo != None and repo.origins != None and \
+                                        len(repo.origins) > 0:
+                                print("\tURL: %s" % repo.origins[0].uri)
 
                 repo = pub.selected_repository
                 if repo and len(repo.origins) > 0 and self.repo_gui:
@@ -475,9 +485,7 @@ class Webinstall:
                 try:
                         return self.api_o.parse_p5i(location=self.param)
                 except api_errors.ApiException, ex:
-                        self.w_webinstall_proceed.set_sensitive(False)
-                        gui_misc.error_occurred( 
-                            self.w_webinstall_dialog,
-                            str(ex), _("Web Installer Error"))
+                        msg = str(ex)
+                        print _("Web Installer Error: %s") % (msg)
                         sys.exit(1)
                         return None

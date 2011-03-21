@@ -1923,7 +1923,9 @@ class Repository(progress.GuiProgressTracker):
                         return
                 self.repository_modify_publisher = pub
                 repo = pub.selected_repository
-                origin_uri = repo.origins[0].uri
+                origin_uri = ""
+                if repo != None and repo.origins != None and len(repo.origins) > 0:
+                        origin_uri = repo.origins[0].uri
                 if origin_uri != None and origin_uri.startswith("https"):
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
                             parent)
