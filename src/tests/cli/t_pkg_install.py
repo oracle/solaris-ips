@@ -5643,6 +5643,17 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg_dupotherfilesp2v2 = """
+            open dupotherfilesp2@2,5.11-0
+            close
+        """
+
+        pkg_dupotherfilesp3 = """
+            open dupotherfilesp3@0,5.11-0
+            add file tmp/file3 path=dir/namepath mode=0755 owner=root group=bin
+            close
+        """
+
         pkg_identicalfiles = """
             open identicalfiles@0,5.11-0
             add file tmp/file1 path=dir/pathname mode=0755 owner=root group=bin
@@ -5874,72 +5885,100 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
         """
 
         pkg_dupdirp1 = """
-                open dupdirp1@1,5.11-0
-                add dir path=dir owner=root group=bin mode=0755
-                close
+            open dupdirp1@1,5.11-0
+            add dir path=dir owner=root group=bin mode=0755
+            close
         """
 
         pkg_dupdirp2 = """
-                open dupdirp2@1,5.11-0
-                add dir path=dir owner=root group=sys mode=0755
-                close
+            open dupdirp2@1,5.11-0
+            add dir path=dir owner=root group=sys mode=0755
+            close
         """
 
         pkg_dupdirp2_2 = """
-                open dupdirp2@2,5.11-0
-                add dir path=dir owner=root group=bin mode=0755
-                close
+            open dupdirp2@2,5.11-0
+            add dir path=dir owner=root group=bin mode=0755
+            close
         """
 
         pkg_dupdirp3 = """
-                open dupdirp3@1,5.11-0
-                add dir path=dir owner=root group=bin mode=0750
-                close
+            open dupdirp3@1,5.11-0
+            add dir path=dir owner=root group=bin mode=0750
+            close
         """
 
         pkg_dupdirp4 = """
-                open dupdirp4@1,5.11-0
-                add dir path=dir owner=root group=sys mode=0750
-                close
+            open dupdirp4@1,5.11-0
+            add dir path=dir owner=root group=sys mode=0750
+            close
         """
 
         pkg_dupdirp5 = """
-                open dupdirp5@1,5.11-0
-                add dir path=dir owner=root group=other mode=0755
-                close
+            open dupdirp5@1,5.11-0
+            add dir path=dir owner=root group=other mode=0755
+            close
         """
 
         pkg_dupdirp6 = """
-                open dupdirp6@1,5.11-0
-                add dir path=dir owner=root group=other mode=0755
-                close
+            open dupdirp6@1,5.11-0
+            add dir path=dir owner=root group=other mode=0755
+            close
         """
 
         pkg_dupdirp7 = """
-                open dupdirp7@1,5.11-0
-                add file tmp/file1 path=dir/file owner=root group=other mode=0755
-                close
+            open dupdirp7@1,5.11-0
+            add file tmp/file1 path=dir/file owner=root group=other mode=0755
+            close
         """
 
         pkg_dupdirp8 = """
-                open dupdirp8@1,5.11-0
-                add dir path=dir owner=root group=bin mode=0755
-                close
+            open dupdirp8@1,5.11-0
+            add dir path=dir owner=root group=bin mode=0755
+            close
         """
 
         pkg_dupdirp8_2 = """
-                open dupdirp8@2,5.11-0
-                add dir path=dir owner=root group=sys mode=0755
-                close
+            open dupdirp8@2,5.11-0
+            add dir path=dir owner=root group=sys mode=0755
+            close
+        """
+
+        pkg_dupdirp9 = """
+            open dupdirp9@1,5.11-0
+            add dir path=var owner=root group=other mode=0755
+            add dir path=usr owner=root group=other mode=0755
+            close
+        """
+
+        pkg_dupdirp10 = """
+            open dupdirp10@1,5.11-0
+            add dir path=var owner=root group=bin mode=0755
+            add dir path=usr owner=root group=bin mode=0755
+            close
+        """
+
+        pkg_dupdirp11 = """
+            open dupdirp11@1,5.11-0
+            add dir path=usr/bin owner=root group=bin mode=0755
+            add dir path=var/zap owner=root group=bin mode=0755
+            close
+        """
+
+        pkg_dupdirp12 = """
+            open dupdirp12@1,5.11-0
+            add dir path=usr/bin owner=root group=bin mode=0755
+            add legacy pkg=dupdirp9
+            close
         """
 
         pkg_userdb = """
-                open userdb@0,5.11-0
-                add file tmp/passwd mode=0644 owner=root group=bin path=etc/passwd preserve=true
-                add file tmp/group mode=0644 owner=root group=bin path=etc/group preserve=true
-                add file tmp/shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
-                add file tmp/ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
-                close
+            open userdb@0,5.11-0
+            add file tmp/passwd mode=0644 owner=root group=bin path=etc/passwd preserve=true
+            add file tmp/group mode=0644 owner=root group=bin path=etc/group preserve=true
+            add file tmp/shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
+            add file tmp/ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
+            close
         """
 
         userdb_files = {
@@ -5973,57 +6012,71 @@ adm
         }
 
         pkg_dupuser = """
-                open dupuser@0,5.11-0
-                add user username=kermit group=adm gcos-field="kermit 1"
-                add user username=kermit group=adm gcos-field="kermit 2"
-                close
+            open dupuser@0,5.11-0
+            add user username=kermit group=adm gcos-field="kermit 1"
+            add user username=kermit group=adm gcos-field="kermit 2"
+            close
         """
 
         pkg_dupuserp1 = """
-                open dupuserp1@0,5.11-0
-                add user username=kermit group=adm gcos-field="kermit 1"
-                close
+            open dupuserp1@0,5.11-0
+            add user username=kermit group=adm gcos-field="kermit 1"
+            close
         """
 
         pkg_dupuserp2 = """
-                open dupuserp2@0,5.11-0
-                add user username=kermit group=adm gcos-field="kermit 2"
-                close
+            open dupuserp2@0,5.11-0
+            add user username=kermit group=adm gcos-field="kermit 2"
+            close
         """
 
         pkg_dupuserp2v2 = """
-                open dupuserp2@1,5.11-0
-                close
+            open dupuserp2@1,5.11-0
+            close
         """
 
         pkg_dupuserp3 = """
-                open dupuserp3@0,5.11-0
-                add user username=kermit group=adm gcos-field="kermit 2"
-                close
+            open dupuserp3@0,5.11-0
+            add user username=kermit group=adm gcos-field="kermit 2"
+            close
         """
 
         pkg_dupuserp4 = """
-                open dupuserp4@0,5.11-0
-                add user username=kermit group=adm gcos-field="kermit 4"
-                close
+            open dupuserp4@0,5.11-0
+            add user username=kermit group=adm gcos-field="kermit 4"
+            close
         """
 
         pkg_otheruser = """
-                open otheruser@0,5.11-0
-                add user username=fozzie group=adm home-dir=/export/home/fozzie
-                close
+            open otheruser@0,5.11-0
+            add user username=fozzie group=adm home-dir=/export/home/fozzie
+            close
+        """
+
+        pkg_othergroup = """
+            open othergroup@0,5.11-0
+            add group groupname=fozzie gid=87
+            add group groupname=fozzie gid=88
+            add group groupname=fozzie gid=89
+            close
+        """
+
+        pkg_othergroup1 = """
+            open othergroup@1,5.11-0
+            add group groupname=fozzie gid=87
+            close
         """
 
         pkg_driverdb = """
-                open driverdb@0,5.11-0
-                add file tmp/devlink.tab path=etc/devlink.tab mode=0644 owner=root group=bin
-                add file tmp/driver_aliases path=etc/driver_aliases mode=0644 owner=root group=bin
-                add file tmp/driver_classes path=etc/driver_classes mode=0644 owner=root group=bin
-                add file tmp/minor_perm path=etc/minor_perm mode=0644 owner=root group=bin
-                add file tmp/name_to_major path=etc/name_to_major mode=0644 owner=root group=bin
-                add file tmp/device_policy path=etc/security/device_policy mode=0644 owner=root group=bin
-                add file tmp/extra_privs path=etc/security/extra_privs mode=0644 owner=root group=bin
-                close
+            open driverdb@0,5.11-0
+            add file tmp/devlink.tab path=etc/devlink.tab mode=0644 owner=root group=bin
+            add file tmp/driver_aliases path=etc/driver_aliases mode=0644 owner=root group=bin
+            add file tmp/driver_classes path=etc/driver_classes mode=0644 owner=root group=bin
+            add file tmp/minor_perm path=etc/minor_perm mode=0644 owner=root group=bin
+            add file tmp/name_to_major path=etc/name_to_major mode=0644 owner=root group=bin
+            add file tmp/device_policy path=etc/security/device_policy mode=0644 owner=root group=bin
+            add file tmp/extra_privs path=etc/security/extra_privs mode=0644 owner=root group=bin
+            close
         """
 
         driverdb_files = {
@@ -6037,38 +6090,38 @@ adm
         }
 
         pkg_dupdrv = """
-                open dupdriver@0,5.11-0
-                add driver name=asy perms="* 0666 root sys" perms="*,cu 0600 uucp uucp"
-                add driver name=asy perms="* 0666 root sys" alias=pci11c1,480
-                close
+            open dupdriver@0,5.11-0
+            add driver name=asy perms="* 0666 root sys" perms="*,cu 0600 uucp uucp"
+            add driver name=asy perms="* 0666 root sys" alias=pci11c1,480
+            close
         """
 
         pkg_dupdepend1 = """
-                open dupdepend1@0,5.11-0
-                add depend type=require fmri=dupfilesp1
-                add depend type=require fmri=dupfilesp1
-                close
+            open dupdepend1@0,5.11-0
+            add depend type=require fmri=dupfilesp1
+            add depend type=require fmri=dupfilesp1
+            close
         """
 
         pkg_dupdepend2 = """
-                open dupdepend2@0,5.11-0
-                add depend type=require fmri=dupfilesp1
-                add depend type=incorporate fmri=dupfilesp1
-                close
+            open dupdepend2@0,5.11-0
+            add depend type=require fmri=dupfilesp1
+            add depend type=incorporate fmri=dupfilesp1
+            close
         """
 
         pkg_dupdepend3 = """
-                open dupdepend3@0,5.11-0
-                add depend type=require fmri=dupfilesp1@0-0
-                add depend type=require fmri=dupfilesp1@0-0
-                close
+            open dupdepend3@0,5.11-0
+            add depend type=require fmri=dupfilesp1@0-0
+            add depend type=require fmri=dupfilesp1@0-0
+            close
         """
 
         pkg_dupdepend4 = """
-                open dupdepend4@0,5.11-0
-                add depend type=require fmri=dupfilesp1@0-0
-                add depend type=incorporate fmri=dupfilesp1@0-0
-                close
+            open dupdepend4@0,5.11-0
+            add depend type=require fmri=dupfilesp1@0-0
+            add depend type=incorporate fmri=dupfilesp1@0-0
+            close
         """
 
         misc_files = ["tmp/file1", "tmp/file2", "tmp/file3"]
@@ -6233,6 +6286,13 @@ adm
 
                 # Make sure identical actions don't cause problems
                 self.pkg("install -nv identicalfiles", exit=1)
+
+                # Trigger a bug similar to 17943 via duplicate files.
+                self.pkg("publisher")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupfilesp1@0 dupfilesp2@0 dupfilesp3@0 dupotherfilesp1@0 "
+                    "dupotherfilesp2@0 dupotherfilesp3@0")
+                self.pkg("update")
 
                 # If an uninstall causes a fixup to happen and we can't because
                 # we lost the cached files and the repo is down, make sure we
@@ -6544,6 +6604,20 @@ adm
                 pkgs = " ".join("massivedupdir%d" % x for x in xrange(20))
                 self.pkg("install %s" % pkgs, exit=1)
 
+                # Trigger bug 17943: we install packages with conflicts in two
+                # directories (p9, p10).  We also install a package (p11) which
+                # delivers those directories implicitly.  Then remove the last,
+                # triggering the stack trace associated with the bug.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp9 dupdirp10 dupdirp11")
+                self.pkg("uninstall dupdirp11")
+
+                # Do the same, but with a package that delivers var implicitly
+                # via a legacy action.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupdirp12")
+                self.pkg("uninstall dupdirp12")
+
         def test_conflicting_attrs_fs_varcets(self):
                 """Test the behavior of pkg(1) when multiple non-file actions of
                 the same type deliver to the same pathname, but differ in their
@@ -6680,7 +6754,8 @@ adm
 
                 # Test that being in a duplicate user situation doesn't break
                 # you completely and allows you to add and remove other packages
-                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupuserp2@0")
                 self.pkg("verify", exit=1)
                 self.pkg("install otheruser")
                 self.pkg("uninstall otheruser")
@@ -6699,7 +6774,8 @@ adm
                 # You should be able to upgrade to a fixed set of packages in
                 # order to move past the problem, too.
                 self.pkg("uninstall dupuserp2")
-                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupuserp2@0")
                 self.pkg("update")
                 self.pkg("verify")
 
@@ -6707,7 +6783,8 @@ adm
                 # longer has the conflict, but at the same time introduce a new
                 # conflicting user action, we should fail.
                 self.pkg("uninstall dupuserp2")
-                self.pkg("-D broken-conflicting-action-handling=1 install dupuserp2@0")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "dupuserp2@0")
                 self.pkg("install dupuserp2 dupuserp4", exit=1)
 
                 # Removing one of more than two offending actions can't do much
@@ -6734,6 +6811,13 @@ adm
                     "dupuserp1 dupuserp2@0 dupuserp3")
                 self.pkg("uninstall dupuserp3 dupuserp2")
                 self.pkg("verify")
+
+                # Make sure we don't get confused when two actions in different
+                # namespace groups but with the same key attribute value are
+                # adjacent in the action cache.
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "otheruser othergroup@0")
+                self.pkg("update othergroup")
 
         def test_multiple_drivers(self):
                 """Test the behavior of pkg(1) when multiple driver actions

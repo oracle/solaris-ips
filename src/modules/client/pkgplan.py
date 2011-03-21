@@ -194,6 +194,10 @@ class PkgPlan(object):
                 # No longer needed.
                 self.__origin_mfst = None
 
+                # Manifest.get_directories() returns implicit directories, which
+                # means that this computation ends up re-adding all the explicit
+                # directories getting removed to the removed list.  This is
+                # ugly, but safe.
                 if origin_dirs:
                         absent_dirs = origin_dirs - \
                             expanddirs(self.__destination_mfst.get_directories(

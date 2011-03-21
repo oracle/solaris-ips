@@ -43,6 +43,41 @@ import pkg.portable as portable
 import pkg.variant as variant
 import stat
 
+class NSG(type):
+        """This metaclass automatically assigns a subclass of Action a
+        namespace_group member if it hasn't already been specified.  This is a
+        convenience for classes which are the sole members of their group and
+        don't want to hardcode something arbitrary and unique."""
+
+        __nsg = 0
+        def __new__(mcs, name, bases, dict):
+                nsg = None
+
+                # We only look at subclasses of Action, and we ignore multiple
+                # inheritance.
+                if name != "Action" and issubclass(bases[0], Action):
+                        # Iterate through the inheritance chain to see if any
+                        # parent class has a namespace_group member, and grab
+                        # its value.
+                        for c in bases[0].__mro__:
+                                if c == Action:
+                                        break
+                                nsg = getattr(c, "namespace_group", None)
+                                if nsg is not None:
+                                        break
+
+                        # If the class didn't have a namespace_group member
+                        # already, assign one.  If we found one in our traversal
+                        # above, use that, otherwise make one up.
+                        if "namespace_group" not in dict:
+                                if not nsg:
+                                        nsg = NSG.__nsg
+                                        # Prepare for the next class.
+                                        NSG.__nsg += 1
+                                dict["namespace_group"] = nsg
+
+                return type.__new__(mcs, name, bases, dict)
+
 class Action(object):
         """Class representing a generic packaging object.
 
@@ -69,7 +104,9 @@ class Action(object):
         # multiple times.
         refcountable = False
         # 'namespace_group' is a string whose value is shared by actions which
-        # share a common namespace.
+        # share a common namespace.  As a convenience to the classes which are
+        # the sole members of their group, this is set to a non-None value for
+        # subclasses by the NSG metaclass.
         namespace_group = None
         # 'unique_attrs' is a tuple listing the attributes which must be
         # identical in order for an action to be safely delivered multiple times
@@ -92,6 +129,8 @@ class Action(object):
 
         # By default, leading slashes should be stripped from "path" attribute.
         _strip_path = True
+
+        __metaclass__ = NSG
 
         def loadorderdict(self):
                 ol = [

@@ -67,7 +67,8 @@ for modname in __all__:
                     if '.'.join(c[1].__module__.split('.')[:-1]) == __name__
         ]
         for cls in classes:
-                types[cls.name] = cls
+                if hasattr(cls, "name"):
+                        types[cls.name] = cls
 
 # Clean up after ourselves
 del f, modname, module, nvlist, classes, c, cls

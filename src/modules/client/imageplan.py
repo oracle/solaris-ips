@@ -881,7 +881,7 @@ class ImagePlan(object):
 
                 if msg == "nothing":
                         for i, ap in enumerate(self.removal_actions):
-                                if ap.src.attrs.get(ap.src.key_attr, None) == key:
+                                if ap and ap.src.attrs.get(ap.src.key_attr, None) == key:
                                         self.removal_actions[i] = None
                 elif msg == "fixup":
                         self.__propose_fixup(*actions)
@@ -928,13 +928,6 @@ class ImagePlan(object):
                     (ns, list(action_classes))
                     for ns, action_classes in itertools.groupby(types, kf)
                 )
-
-                # Give each non-namespaced action it's own pseudo-namespace.
-                namespace_dict.update(dict(
-                    (n, [i])
-                    for n, i in enumerate(namespace_dict[None])
-                ))
-                namespace_dict.pop(None)
 
                 self.__fixups = {}
                 errs = []
@@ -990,11 +983,15 @@ class ImagePlan(object):
 
                                 for offset in offsets:
                                         sf.seek(offset)
+                                        pns = None
                                         for line in sf:
                                                 fmristr, actstr = line.rstrip().split(None, 1)
                                                 act = pkg.actions.fromstr(actstr)
                                                 if act.attrs[act.key_attr] != key:
                                                         break
+                                                if pns and act.namespace_group != pns:
+                                                        break
+                                                pns = act.namespace_group
                                                 pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
                                                 if pfmri not in gone_fmris:
                                                         old.setdefault(key, []).append((act, pfmri))
@@ -1018,11 +1015,15 @@ class ImagePlan(object):
 
                                 for offset in offsets:
                                         sf.seek(offset)
+                                        pns = None
                                         for line in sf:
                                                 fmristr, actstr = line.rstrip().split(None, 1)
                                                 act = pkg.actions.fromstr(actstr)
                                                 if act.attrs[act.key_attr] != key:
                                                         break
+                                                if pns and act.namespace_group != pns:
+                                                        break
+                                                pns = act.namespace_group
                                                 pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
                                                 if pfmri not in gone_fmris:
                                                         new.setdefault(key, []).append((act, pfmri))
