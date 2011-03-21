@@ -25,6 +25,8 @@ set name=pkg.fmri value=pkg:/package/pkg/package-manager@$(PKGVERS)
 set name=pkg.summary value="GUI for Image Packaging System"
 set name=pkg.description value="The graphical interface for the Image Packaging System allows you to perform many core packaging tasks in a user-friendly fashion."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=info.repository_changeset value=$(CHANGESET)
+set name=info.repository_url value=ssh://hg.opensolaris.org/hg/pkg/gate
 
 dir path=etc
 dir path=etc/gconf

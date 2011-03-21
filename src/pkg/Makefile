@@ -25,6 +25,8 @@ PKGVERS_COMPONENT = 0.5.11
 PKGVERS_BUILTON   = 5.11
 BUILDNUM.cmd      = hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 1; exit}'
 BUILDNUM          = $(BUILDNUM.cmd:sh)
+CHANGESET.cmd     = hg id -i
+CHANGESET         = $(CHANGESET.cmd:sh)
 CURBUILD.cmd      = pkg -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
 CURBUILD          = $(CURBUILD.cmd:sh)
 PKGVERS_BRANCH    = 0.$(BUILDNUM)
@@ -73,7 +75,8 @@ PKGMOG_DEFVALS    = \
 	REV=$(REV) \
 	CURBUILD_BRANCH=0.$(CURBUILD) \
 	PYDIR=usr/lib/python2.6 \
-	PYDIRVP=usr/lib/python2.6/vendor-packages
+	PYDIRVP=usr/lib/python2.6/vendor-packages \
+	CHANGESET=$(CHANGESET)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)
 
 all: $(MOGRIFESTS)

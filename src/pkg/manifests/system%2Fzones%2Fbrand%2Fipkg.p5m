@@ -25,6 +25,8 @@ set name=pkg.fmri value=pkg:/system/zones/brand/ipkg@$(PKGVERS)
 set name=pkg.summary value="Image Packaging System branded zone"
 set name=pkg.description value="A branded zone whose software is managed using the Image Packaging System"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=info.repository_changeset value=$(CHANGESET)
+set name=info.repository_url value=ssh://hg.opensolaris.org/hg/pkg/gate
 set name=variant.arch value=$(ARCH)
 
 dir path=etc
