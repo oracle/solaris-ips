@@ -2443,38 +2443,6 @@ class ImagePlan(object):
                                         if pkg_name in targets:
                                                 del ret[p][pkg_name]
 
-                # Discard all but the newest version of each match.
-                if latest_pats:
-                        # Rebuild ret based on latest version of every package.
-                        latest = {}
-                        nret = {}
-                        for p in patterns:
-                                if p not in latest_pats or not ret[p]:
-                                        nret[p] = ret[p]
-                                        continue
-
-                                nret[p] = {}
-                                for pkg_name in ret[p]:
-                                        nret[p].setdefault(pkg_name, [])
-                                        for f in ret[p][pkg_name]:
-                                                nver = latest.get(f.pkg_name,
-                                                    None)
-                                                latest[f.pkg_name] = max(nver,
-                                                    f.version)
-                                                if f.version == latest[f.pkg_name]:
-                                                        # Allow for multiple
-                                                        # FMRIs of the same
-                                                        # latest version.
-                                                        nret[p][pkg_name] = [
-                                                            e for e in nret[p][pkg_name]
-                                                            if e.version == f.version
-                                                        ]
-                                                        nret[p][pkg_name].append(f)
-
-                        # Assign new version of ret and discard latest list.
-                        ret = nret
-                        del latest
-
                 # Determine match failures.
                 matchdict = {}
                 for p in patterns:
@@ -2570,6 +2538,37 @@ class ImagePlan(object):
                     for p in ret.keys()
                     for flist in ret[p].values()
                     for f in flist
+                    if f in proposed_dict[f.pkg_name]
                 ])
+
+                # Discard all but the newest version of each match.
+                if latest_pats:
+                        # Rebuild proposed_dict based on latest version of every
+                        # package.
+                        for pname, flist in proposed_dict.iteritems():
+                                platest = sorted(flist)[-1]
+                                if references[platest] not in latest_pats:
+                                        # Nothing to do.
+                                        continue
+
+                                # Filter out all versions except the latest for
+                                # each matching package.  Allow for multiple
+                                # FMRIs of the same latest version.  (There
+                                # might be more than one publisher with the
+                                # same version.)
+                                proposed_dict[pname] = [
+                                    f for f in flist
+                                    if f.version == platest.version
+                                ]
+
+                        # Construct references again to match final state
+                        # of proposed_dict.
+                        references = dict([
+                            (f, p)
+                            for p in ret.keys()
+                            for flist in ret[p].values()
+                            for f in flist
+                            if f in proposed_dict[f.pkg_name]
+                        ])
 
                 return proposed_dict, references

@@ -377,13 +377,43 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 """Verify that '@latest' will install the latest version
                 of a package."""
 
-                self.pkgsend_bulk(self.rurl, (self.bar10, self.bar11,
+                # Create a repository for the test publisher.
+                t1dir = os.path.join(self.test_root, "test-repo")
+                self.create_repo(t1dir, properties={ "publisher": {
+                    "prefix": "test" } })
+                self.pkgsend_bulk(t1dir, (self.bar10,
                     self.foo10, self.foo11, self.foo12, self.boring10,
                     self.boring11))
-                self.image_create(self.rurl)
+                self.image_create("file:%s" % t1dir)
 
+                # Create a repository for a different publisher for at
+                # least one of the packages so that we can verify that
+                # publisher search order is accounted for by @latest.
+                t2dir = os.path.join(self.test_root, "test2-repo")
+                self.create_repo(t2dir, properties={ "publisher": {
+                    "prefix": "test2" } })
+                self.pkgsend_bulk(t2dir, self.bar11)
+
+                self.pkg("set-publisher -p %s" % t2dir)
                 self.pkg("install '*@latest'")
-                self.pkg("info bar@1.1 foo@1.2 boring@1.1")
+
+                # 1.0 of bar should be installed here since test2 is a
+                # lower-ranked publisher.
+                self.pkg("list")
+                self.pkg("info bar@1.0 foo@1.2 boring@1.1")
+
+                self.pkg("set-publisher --non-sticky test")
+                self.pkg("set-publisher -P test2")
+                self.pkg("install bar@latest")
+
+                # 1.1 of bar should be installed here since test2 is a
+                # higher-ranked publisher and test is non-sticky.
+                self.pkg("list")
+                self.pkg("info bar@1.1")
+
+                # Cleanup.
+                shutil.rmtree(t1dir)
+                shutil.rmtree(t2dir)
 
         def test_basics_7(self):
                 """ Add bar@1.1, install bar@1.0. """
