@@ -3159,13 +3159,13 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
         pkg80 = """
             open pkg8@1.0,5.11-0
-            add depend type=require-any fmri=pkg:/pkg9@1.0 fmri=pkg:/pkg2@1.1
+            add depend type=require-any fmri=pkg:/pkg9@1.0 fmri=pkg:/pkg2@1.1 fmri=pkg:/nonsuch
             close
         """
 
         pkg81 = """
             open pkg8@1.1,5.11-0
-            add depend type=require-any fmri=pkg:/pkg9@1.1 fmri=pkg:/pkg2@1.1
+            add depend type=require-any fmri=pkg:/pkg9@1.1 fmri=pkg:/pkg2@1.1 fmri=pkg:/nonsuch
             close
         """
 
@@ -3203,6 +3203,18 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
         pkg111 = """
             open pkg11@1.1,5.11-0
             add depend type=origin root-image=true fmri=SUNWcs@0.5.11-1.0
+            close
+        """
+
+        pkg_renames = """
+            open pkg_need_rename@1.0,5.11-0
+            add depend type=require fmri=pkg_rename
+            close
+            open pkg_rename@1.0,5.11-0
+            add set name=pkg.renamed value=true
+            add depend type=require fmri=pkg:/pkg_bar
+            close
+            open pkg_bar@1.0,5.11-0
             close
         """
 
@@ -3379,7 +3391,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                     self.pkg70, self.pkg80, self.pkg81, self.pkg90,
                     self.pkg91, self.bug_7394_incorp,
                     self.pkg100, self.pkg101, self.pkg102,
-                    self.pkg110, self.pkg111))
+                    self.pkg110, self.pkg111, self.pkg_renames))
 
                 for t in self.leaf_expansion:
                         self.pkgsend_bulk(self.rurl, self.leaf_template % t)
@@ -3542,6 +3554,15 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install pkg8@1.0")  # install pkg
                 self.pkg("verify")
                 self.pkg("list pkg8@1.0 pkg9@1.0 pkg2@1.1", exit=3)
+                self.pkg("uninstall '*'")
+
+                # test to see if solver will be happy w/ renamed packages,
+                # already installed dependencies.
+                self.pkg("install pkg:/pkg2@1.1")
+                self.pkg("install pkg_need_rename")
+                self.pkg("install pkg8@1.0")
+                self.pkg("verify")
+                self.pkg("list pkg8@1.0 pkg2@1.1")
                 self.pkg("uninstall '*'")
 
                 # test to see if solver will install new verion of existing

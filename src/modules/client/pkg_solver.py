@@ -1098,12 +1098,16 @@ class PkgSolver(object):
                         already_processed.add(pfmri)
                         for da in self.__get_dependency_actions(pfmri, excludes):
                                 if da.attrs["type"] not in ["incorporate", "optional", "origin"]:
-                                        new_fmri = fmris_by_name[pkg.fmri.PkgFmri(da.attrs["fmri"], "5.11").pkg_name]
-                                        # since new_fmri will not be treated as renamed, make sure
-                                        # we check any dependencies it has
-                                        if new_fmri not in already_processed:
-                                                needs_processing.add(new_fmri)
-                                        renamed_fmris.discard(new_fmri)
+                                        for f in da.attrlist("fmri"):
+                                                name = pkg.fmri.PkgFmri(f, "5.11").pkg_name
+                                                if name not in fmris_by_name:
+                                                        continue
+                                                new_fmri = fmris_by_name[name]
+                                                # since new_fmri will not be treated as renamed, make sure
+                                                # we check any dependencies it has
+                                                if new_fmri not in already_processed:
+                                                        needs_processing.add(new_fmri)
+                                                renamed_fmris.discard(new_fmri)
                 return set(fmris) - renamed_fmris
 
 
