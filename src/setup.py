@@ -781,6 +781,7 @@ class test_func(Command):
             ("genbaseline", 'g', "generate test baseline"),
             ("only=", "o", "only <regex>"),
             ("parseable", 'p', "parseable output"),
+            ("port=", "z", "lowest port to start a depot on"),
             ("timing", "t", "timing file <file>"),
             ("verbosemode", 'v', "run tests in verbose mode"),
             ("stoponerr", 'x', "stop when a baseline mismatch occurs"),
@@ -804,6 +805,7 @@ class test_func(Command):
                 self.showonexpectedfail = 0
                 self.startattest = ""
                 self.archivedir = ""
+                self.port = 12001
 
         def finalize_options(self):
                 pass

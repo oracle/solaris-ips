@@ -50,6 +50,7 @@ import urlparse
 import uuid
 
 from pkg.client import global_settings
+from pkg.client.debugvalues import DebugValues
 logger = global_settings.logger
 
 import pkg.catalog
@@ -2008,6 +2009,15 @@ pkg unset-publisher %s
                 if not uri.startswith("http://") and \
                     not uri.startswith("file://"):
                         raise api_errors.InvalidResourceLocation(uri.strip())
+                crl_host = DebugValues.get_value("crl_host")
+                if crl_host:
+                        orig = urlparse.urlparse(uri)
+                        crl = urlparse.urlparse(crl_host)
+                        uri = urlparse.urlunparse(urlparse.ParseResult(
+                            scheme=crl.scheme, netloc=crl.netloc,
+                            path=orig.path,
+                            params=orig.params, query=orig.params,
+                            fragment=orig.fragment))
                 fn = urllib.quote(uri, "")
                 assert os.path.isdir(self.__crl_root)
                 fpath = os.path.join(self.__crl_root, fn)

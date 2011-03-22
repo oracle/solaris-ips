@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -190,18 +190,19 @@ def usage():
                 "[-o regexp]" % sys.argv[0]
         print >> sys.stderr, \
 """   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
+   -b <filename>  Baseline filename
    -c             Collect code coverage data
    -d             Show debug output, including commands run, and outputs
    -f             Show fail/error information even when test is expected to fail
    -g             Generate result baseline
    -h             This help message
+   -o <regexp>    Run only tests that match regexp
    -p             Parseable output format
+   -s <regexp>    Run tests starting at regexp
    -t             Generate timing info file
    -v             Verbose output
    -x             Stop after the first baseline mismatch
-   -b <filename>  Baseline filename
-   -o <regexp>    Run only tests that match regexp
-   -s <regexp>    Run tests starting at regexp
+   -z <port>      Lowest port the test suite should use
 """
         sys.exit(2)
 
@@ -217,9 +218,9 @@ if __name__ == "__main__":
                 # If you add options here, you need to also update setup.py's
                 # test_func to include said options.
                 #
-                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghptvxb:o:s:",
-                    ["generate-baseline", "parseable", "timing", "verbose",
-                    "baseline-file", "only"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghptvxb:o:s:z:",
+                    ["generate-baseline", "parseable", "port", "timing",
+                    "verbose", "baseline-file", "only"])
         except getopt.GetoptError, e:
                 print >> sys.stderr, "Illegal option -- %s" % e.opt
                 sys.exit(1)
@@ -235,6 +236,7 @@ if __name__ == "__main__":
         debug_output = False
         show_on_expected_fail = False
         archive_dir = None
+        port = 12001
 
         for opt, arg in opts:
                 if opt == "-v":
@@ -261,6 +263,13 @@ if __name__ == "__main__":
                         startattest = arg
                 if opt == "-a":
                         archive_dir = arg
+                if opt == "-z":
+                        try:
+                                port = int(arg)
+                        except ValueError:
+                                print >> sys.stderr, "The provided port must " \
+                                    "be an integer."
+                                usage()
                 if opt == "-h":
 			usage()
         if (bailonfail or startattest) and generate:
@@ -279,6 +288,8 @@ if __name__ == "__main__":
                 archive_dir = os.path.abspath(archive_dir)
                 if not os.path.exists(archive_dir):
                         os.makedirs(archive_dir)
+
+        pkg5unittest.g_base_port = port
 
         import pkg.portable
 

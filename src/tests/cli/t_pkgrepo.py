@@ -47,6 +47,8 @@ import unittest
 class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
         # Cleanup after every test.
         persistent_setup = False
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         tree10 = """
             open tree@1.0,5.11-0

@@ -42,8 +42,12 @@ import pkg.fmri as fmri
 import pkg.portable as portable
 import M2Crypto as m2
 
-class TestPkgSign(pkg5unittest.SingleDepotTestCase):
+from pkg.client.debugvalues import DebugValues
 
+class TestPkgSign(pkg5unittest.SingleDepotTestCase):
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
+        
         example_pkg10 = """
             open example_pkg@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
@@ -107,11 +111,21 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         with open(os.path.join(self.img_path, f), "wb") as fh:
                                 fh.close()
 
+        def pkg(self, command, *args, **kwargs):
+                # The value for crl_host is pulled from DebugValues because
+                # crl__host needs to be set there so the api object calls work
+                # as desired.
+                command = "--debug crl_host=%s %s" % \
+                    (DebugValues["crl_host"], command)
+                return pkg5unittest.SingleDepotTestCase.pkg(self, command,
+                    *args, **kwargs)
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
+                DebugValues["crl_host"] = self.durl1
                 self.ta_dir = None
 
                 self.path_to_certs = os.path.join(self.ro_data_root,

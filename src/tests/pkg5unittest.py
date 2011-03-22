@@ -62,6 +62,9 @@ g_debug_output = False
 if "DEBUG" in os.environ:
         g_debug_output = True
 
+# The lowest port to use in the test suite.
+g_base_port = None
+
 #
 # XXX?
 #
@@ -198,10 +201,13 @@ class Pkg5TestCase(unittest.TestCase):
 
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
+                assert g_base_port
                 self.__test_root = None
                 self.__pid = os.getpid()
                 self.__pwd = os.getcwd()
                 self.__didteardown = False
+                self._base_port = g_base_port
+                self.next_free_port = self._base_port
                 setup_logging(self)
 
         def __str__(self):
@@ -351,8 +357,9 @@ class Pkg5TestCase(unittest.TestCase):
                                 raise e
                 test_relative = os.path.sep.join(["..", "..", "src", "tests"])
                 test_src = os.path.join(g_proto_area, test_relative)
-                shutil.copytree(os.path.join(test_src, "ro_data"),
-                    self.ro_data_root)
+                if getattr(self, "need_ro_data", False):
+                        shutil.copytree(os.path.join(test_src, "ro_data"),
+                            self.ro_data_root)
                 #
                 # TMPDIR affects the behavior of mkdtemp and mkstemp.
                 # Setting this here should ensure that tests will make temp
@@ -1993,9 +2000,11 @@ class ManyDepotTestCase(CliTestCase):
                         # We pick an arbitrary base port.  This could be more
                         # automated in the future.
                         repodir = os.path.join(testdir, "repo_contents%d" % i)
-                        self.dcs[i] = self.prep_depot(12000 + i, repodir,
+                        self.dcs[i] = self.prep_depot(self.next_free_port + n,
+                            repodir,
                             depot_logfile, debug_features=debug_features,
                             properties=props, start=start_depots)
+                        self.next_free_port += 1
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.

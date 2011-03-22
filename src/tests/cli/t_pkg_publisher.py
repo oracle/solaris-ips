@@ -39,6 +39,8 @@ import unittest
 class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         def test_pkg_publisher_bogus_opts(self):
                 """ pkg bogus option checks """
@@ -388,6 +390,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -849,6 +853,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
 
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         def setUp(self):
                 # This test suite needs actual depots.

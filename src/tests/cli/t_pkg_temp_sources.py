@@ -42,6 +42,8 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
         # Don't discard repository or setUp() every test.
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         foo_pkg = """
             open pkg://test/foo@1.0

@@ -51,6 +51,8 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
         # Don't recreate repository and publish packages for every test.
         persistent_setup = True
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         pkgs = """
             open pkg://test/foo@1.0

@@ -443,7 +443,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.__dc.kill()
 
         def testStartStop(self):
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 for i in range(0, 5):
                         self.__dc.start()
                         self.assert_(self.__dc.is_alive())
@@ -454,7 +454,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 cfg_file = os.path.join(self.test_root, "cfg2")
                 fh = open(cfg_file, "w")
                 fh.close()
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 self.__dc.set_cfg_file(cfg_file)
                 self.__dc.start()
 
@@ -507,7 +507,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                                         time.sleep(1)
                         self.assert_(got)
 
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 durl = self.__dc.get_depot_url()
 
                 repo = self.__dc.get_repo()
@@ -551,7 +551,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 self.pkg("search -r cat")
 
         def testBadArgs(self):
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 self.__dc.set_readonly()
                 self.__dc.set_rebuild()
                 self.__dc.set_norefresh_index()
@@ -594,7 +594,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 # For this disabled case, /catalog/1/ should return
                 # a NOT_FOUND error.
                 self.__dc.set_disable_ops(["catalog/1"])
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 self.__dc.start()
                 durl = self.__dc.get_depot_url()
                 try:
@@ -606,7 +606,7 @@ class TestDepotController(pkg5unittest.CliTestCase):
                 # For this disabled case, all /catalog/ operations should return
                 # a NOT_FOUND error.
                 self.__dc.set_disable_ops(["catalog"])
-                self.__dc.set_port(12000)
+                self.__dc.set_port(self.next_free_port)
                 self.__dc.start()
                 durl = self.__dc.get_depot_url()
                 for ver in (0, 1):
@@ -986,7 +986,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
 
                 # Check that IPv6 address can be used.
                 self.dc.set_address("::1")
-                self.dc.set_port(12000)
+                self.dc.set_port(self.next_free_port)
                 self.dc.start()
                 self.assert_(self.dc.is_alive())
                 self.assert_(self.dc.is_alive())

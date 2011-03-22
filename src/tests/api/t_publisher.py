@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -46,6 +46,9 @@ import pkg.misc as misc
 class TestPublisher(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of the pkg.client.publisher module.
         """
+
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         misc_files = [ "test.cert", "test.key", "test2.cert", "test2.key" ]
 
