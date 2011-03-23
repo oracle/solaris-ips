@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # basic variant support
@@ -156,6 +156,11 @@ class VariantCombinationTemplate(Variants):
                 for name in var:
                         if name not in self:
                                 self[name] = var[name]
+
+        def merge_values(self, var):
+                """Pull all unknown values of all keys in var into self."""
+                for name in var:
+                        self.setdefault(name, set([])).update(var[name])
 
         def __repr__(self):
                 return "VariantTemplate(%s)" % dict.__repr__(self)

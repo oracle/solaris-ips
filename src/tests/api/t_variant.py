@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import copy
@@ -56,6 +56,7 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 self.assert_(not vct_1.issubset(vct_2))
                 vct_2.merge_unknown(vct_1)
                 self.assertEqual(vct_2[1], set(["a", "b"]))
+                self.assertEqual(vct_2[2], set(["z", "y"]))
 
                 vct_3 = variant.VariantCombinationTemplate(
                     dict([(1, ["a", "b", "c"])]))
@@ -63,6 +64,23 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 self.assert_(not vct_1.issubset(vct_3))
                 vct_3.merge_unknown(vct_1)
                 self.assertEqual(vct_1, vct_3)
+
+                vct_3 = variant.VariantCombinationTemplate(
+                    dict([(1, ["a", "b", "c"])]))
+                vct_m = variant.VariantCombinationTemplate(set([]))
+                vct_m.merge_values(vct_3)
+                self.assertEqual(vct_m, vct_3)
+                vct_m.merge_values(vct_2)
+                self.assertEqual(vct_m[1], set(["a", "b", "c"]))
+                self.assertEqual(vct_m[2], set(["z", "y"]))
+                self.assertEqual(vct_3[1], set(["a", "b", "c"]))
+                self.assert_(2 not in vct_3)
+                vct_m.merge_values(vct_1)
+                self.assertEqual(str(vct_m), ' 1="a","b","c" 2="x","y","z"')
+                self.assertEqual(vct_2[1], set(["a", "b"]))
+                self.assertEqual(vct_2[2], set(["z", "y"]))
+                vct_m.merge_values(vct_2)
+                self.assertEqual(str(vct_m), ' 1="a","b","c" 2="x","y","z"')
 
         def test_variant_combinations(self):
                 """Test functionality of VariantCombinations."""

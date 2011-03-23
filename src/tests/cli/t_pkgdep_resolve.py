@@ -301,6 +301,52 @@ add file tmp/foo group=bin mode=0755 owner=root path=platform/sun4u/kernel/misc/
 close
 """
 
+        # there's a single variant.arch value set here,
+        # but no variant.opensolaris.zone values
+        installed_18045 = """\
+open runtime/python26@2.6.4,5.11-0.161
+add set name=variant.arch value=i386
+add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
+close
+"""
+        # a file dependency that declares variant.opensolaris.zone values
+        bug_18045_dep = """
+set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
+set name=variant.arch value=i386
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
+"""
+
+        # there's a single variant.arch value set here,
+        # and variant.opensolaris.zone values
+        installed_18045_reverse = """\
+open runtime/python26@2.6.4,5.11-0.161
+add set name=variant.arch value=i386
+add set name=variant.opensolaris.zone value=global value=nonglobal
+add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
+close
+"""
+        # a file dependency that doesn't declare variant.opensolaris.zone values
+        bug_18045_dep_reverse = """
+set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
+set name=variant.arch value=i386
+depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
+"""
+
+        # there's a single variant.arch value set here,
+        # but no variant.opensolaris.zone values
+        installed_18045_mixed = """\
+open runtime/python26@2.6.4,5.11-0.161
+add set name=variant.arch value=i386
+add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
+close
+"""
+        # a file dependency that only declares variant.opensolaris.zone values
+        bug_18045_dep_mixed = """
+set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
+"""
 
         misc_files = ["tmp/foo"]
 
@@ -882,6 +928,73 @@ close
                             dependencies.MultiplePackagesPathError) or
                             isinstance(e,
                             dependencies.UnresolvedDependencyError))
+
+        def test_bug_18045_normal(self):
+                """Test that when a package without variants has a file
+                dependency on a file in a package that declares variants,
+                that dependency is satisfied."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_18045)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["runtime/python26"])
+                dep_path = self.make_manifest(self.bug_18045_dep)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path],
+                    self.api_obj)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join([
+                            "%s" % (e,) for e in errs]))
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[dep_path]), 1)
+                self.debug("fmri:%s" % pkg_deps[dep_path][0].attrs["fmri"])
+                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                    "pkg:/runtime/python26@2.6.4-0.161"))
+
+        def test_bug_18045_reverse(self):
+                """Test that when a package with variants has a file dependency
+                on a file in a package that declares no variants, that
+                dependency is satisfied."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_18045_reverse)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["runtime/python26"])
+                dep_path = self.make_manifest(self.bug_18045_dep_reverse)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path],
+                    self.api_obj)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join([
+                            "%s" % (e,) for e in errs]))
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[dep_path]), 1)
+                self.debug("fmri:%s" % pkg_deps[dep_path][0].attrs["fmri"])
+                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                    "pkg:/runtime/python26@2.6.4-0.161"))
+
+        def test_bug_18045_mixed(self):
+                """Test that when a package with variants has a file dependency
+                on a file in a package that declares a different set of variant
+                types, that dependency is satisfied."""
+
+                self.pkgsend_bulk(self.rurl, self.installed_18045_mixed)
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["runtime/python26"])
+                dep_path = self.make_manifest(self.bug_18045_dep_mixed)
+
+                pkg_deps, errs = dependencies.resolve_deps([dep_path],
+                    self.api_obj)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join([
+                            "%s" % (e,) for e in errs]))
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[dep_path]), 1)
+                self.debug("fmri:%s" % pkg_deps[dep_path][0].attrs["fmri"])
+                self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
+                    "pkg:/runtime/python26@2.6.4-0.161"))
+
 
 if __name__ == "__main__":
         unittest.main()

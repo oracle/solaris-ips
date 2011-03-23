@@ -1102,7 +1102,8 @@ def prune_debug_attrs(action):
                      if not k.startswith(base.Dependency.DEPEND_DEBUG_PREFIX))
         return actions.depend.DependencyAction(**attrs)
 
-def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst):
+def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst,
+    distro_vars=None):
         """Add mappings from path names to FMRIs and variants.
 
         'files_dict' is a dictionary which maps package identity to the files
@@ -1113,11 +1114,16 @@ def add_fmri_path_mapping(files_dict, links_dict, pfmri, mfst):
         the package delivers and the variants under which each link is
         present.
 
-        'pfmri' is the FMRI of the current manifest
+        'pfmri' is the FMRI of the current manifest.
 
-        'mfst' is the manifest to process."""
+        'mfst' is the manifest to process.
+
+        'distro_vars' is a VariantCombinationTemplate which contains all the
+        variant types and values known."""
 
         pvariants = mfst.get_all_variants()
+        if distro_vars:
+                pvariants.merge_unknown(distro_vars)
 
         for f in mfst.gen_actions_by_type("file"):
                 dep_vars = f.get_variant_template()
@@ -1165,25 +1171,52 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         files = Entries({}, {})
         links = Entries({}, {})
 
+        # This records all the variants used in any package known.  It is used
+        # to ensure that all packages live in the same variant universe for
+        # purposes of dependency resolution.
+        distro_vars = variants.VariantCombinationTemplate()
+
+        for mp, name, mfst, pkg_vars, miss_files in manifests:
+                distro_vars.merge_values(pkg_vars)
+
+        pkg_list = None
+        if use_system:
+                # We make this a list because we want to reuse the list of
+                # packages again, and despite it's name, get_pkg_list is a
+                # generator.
+                pkg_list = list(api_inst.get_pkg_list(
+                    api.ImageInterface.LIST_INSTALLED))
+                for (pub, stem, ver), summ, cats, states in pkg_list:
+                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
+                        mfst = api_inst.get_manifest(pfmri, all_variants=True)
+                        distro_vars.merge_values(mfst.get_all_variants())
+
         # Build a list of all files delivered in the manifests being resolved.
         for mp, name, mfst, pkg_vars, miss_files in manifests:
                 pfmri = fmri.PkgFmri(name)
                 add_fmri_path_mapping(files.delivered, links.delivered, pfmri,
-                    mfst)
+                    mfst, distro_vars)
 
         # Build a list of all files delivered in the packages installed on
         # the system.
         if use_system:
-                for (pub, stem, ver), summ, cats, states in \
-                    api_inst.get_pkg_list(api.ImageInterface.LIST_INSTALLED):
+                for (pub, stem, ver), summ, cats, states in pkg_list:
                         pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
                         mfst = api_inst.get_manifest(pfmri, all_variants=True)
                         add_fmri_path_mapping(files.installed, links.installed,
-                            pfmri, mfst)
+                            pfmri, mfst, distro_vars)
+
+        if pkg_list:
+                del pkg_list
 
         pkg_deps = {}
         errs = []
         for mp, name, mfst, pkg_vars, miss_files in manifests:
+                # The add_fmri_path_mapping function moved the actions it found
+                # into the distro_vars universe of variants, so we need to move
+                # pkg_vars (and by extension the variants on depend actions)
+                # into that universe too.
+                pkg_vars.merge_unknown(distro_vars)
                 errs.extend(miss_files)
                 if mfst is None:
                         pkg_deps[mp] = None
