@@ -166,20 +166,5 @@ class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
                 self.file_contains("etc/isdebug", isdebug)
                 self.image_destroy()
 
-        def file_contains(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                try:
-                        f = file(file_path)
-                except:
-                        self.assert_(False, "File %s is missing" % path)
-                for line in f:
-                        if string in line:
-                                f.close()
-                                break
-                else:
-                        f.close()
-                        self.assert_(False, "File %s does not contain %s" % (path, string))
-
-
 if __name__ == "__main__":
         unittest.main()

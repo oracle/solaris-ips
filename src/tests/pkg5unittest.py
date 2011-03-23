@@ -1966,6 +1966,87 @@ class CliTestCase(Pkg5TestCase):
                 api_obj.execute_plan()
                 api_obj.reset()
 
+        def file_inode(self, path):
+                """Return the inode number of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                st = os.stat(file_path)
+                return st.st_ino
+
+        def file_size(self, path):
+                """Return the size of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                st = os.stat(file_path)
+                return st.st_size
+
+        def file_chmod(self, path, mode):
+                """Change the mode of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                os.chmod(file_path, mode)
+
+        def file_exists(self, path):
+                """Assert the existence of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                if not os.path.isfile(file_path):
+                        self.assert_(False, "File %s does not exist" % path)
+
+        def file_doesnt_exist(self, path):
+                """Assert the non-existence of a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                if os.path.exists(file_path):
+                        self.assert_(False, "File %s exists" % path)
+
+        def file_remove(self, path):
+                """Remove a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                portable.remove(file_path)
+
+        def file_contains(self, path, string):
+                """Assert the existence of a string in a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                try:
+                        f = file(file_path)
+                except:
+                        self.assert_(False,
+                            "File %s does not exist or contain %s" %
+                            (path, string))
+
+                for line in f:
+                        if string in line:
+                                f.close()
+                                break
+                else:
+                        f.close()
+                        self.assert_(False, "File %s does not contain %s" %
+                            (path, string))
+
+        def file_doesnt_contain(self, path, string):
+                """Assert the non-existence of a string in a file in the
+                image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                f = file(file_path)
+                for line in f:
+                        if string in line:
+                                f.close()
+                                self.assert_(False, "File %s contains %s" %
+                                    (path, string))
+                else:
+                        f.close()
+
+        def file_append(self, path, string):
+                """Append a line to a file in the image."""
+
+                file_path = os.path.join(self.get_img_path(), path)
+                with open(file_path, "a+") as f:
+                        f.write("\n%s\n" % string)
+
 
 class ManyDepotTestCase(CliTestCase):
 

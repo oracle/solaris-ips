@@ -2158,12 +2158,6 @@ adm
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
 
-        def file_append(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                f = file(file_path, "a+")
-                f.write("\n%s\n" % string)
-                f.close
-
         def dest_file_valid(self, plist, pkg, src, dest):
                 """Used to verify that the dest item's mode, attrs, timestamp,
                 etc. match the src items's matching action as expected."""
@@ -2187,45 +2181,6 @@ adm
                                         # Only want actions with matching path.
                                         continue
                                 self.validate_fsobj_attrs(a, target=dest)
-
-        def file_chmod(self, path, mode):
-                file_path = os.path.join(self.get_img_path(), path)
-                os.chmod(file_path, mode)
-
-        def file_doesnt_exist(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                if os.path.isfile(file_path):
-                        self.assert_(False, "File %s exists" % path)
-
-        def file_exists(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                if not os.path.isfile(file_path):
-                        self.assert_(False, "File %s does not exist" % path)
-
-        def file_contains(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                f = file(file_path)
-                for line in f:
-                        if string in line:
-                                f.close()
-                                break
-                else:
-                        f.close()
-                        self.assert_(False, "File %s does not contain %s" % (path, string))
-
-        def file_doesnt_contain(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                f = file(file_path)
-                for line in f:
-                        if string in line:
-                                f.close()
-                                self.assert_(False, "File %s contains %s" % (path, string))
-                else:
-                        f.close()
-
-        def file_remove(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                portable.remove(file_path)
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):
@@ -6243,6 +6198,27 @@ adm
                 self.pkg("install overlaid")
                 self.pkg("install overlayer", exit=1)
                 self.pkg("-D allow-overlays=1 install overlayer")
+                # Verify won't work here, on a preserve=true file!
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("uninstall overlayer")
+
+                # If we make a change to the file after installing the
+                # overlayer, we shouldn't touch the file on uninstall.
+                self.pkg("-D allow-overlays=1 install overlayer")
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("uninstall overlayer")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Re-use the overlay packages for some preserve testing.
+                self.pkg("revert /etc/pam.conf")
+                self.file_contains("etc/pam.conf", "file1")
+                self.pkg("-D broken-conflicting-action-handling=1 install overlayer")
+                # We may have been able to lay down the package, but because the
+                # file is marked preserve=true, we didn't actually overwrite
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("uninstall overlayer")
+                self.file_contains("etc/pam.conf", "file2")
 
                 # Make sure we get rid of all implicit directories.
                 self.pkg("uninstall '*'")

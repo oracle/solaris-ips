@@ -122,21 +122,6 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                         sfmri = pfmri.get_short_fmri().replace("pkg:/", "")
                         self.plist[sfmri] = pfmri
 
-        def file_inode(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                st = os.stat(file_path)
-                return st.st_ino
-
-        def file_size(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                st = os.stat(file_path)
-                return st.st_size
-
-        def file_append(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                with open(file_path, "a+") as f:
-                        f.write("\n%s\n" % string)
-
         def test_01_basics(self):
                 """Basic fix test: install the amber package, modify one of the
                 files, and make sure it gets fixed.  """

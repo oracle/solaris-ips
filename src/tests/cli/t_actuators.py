@@ -322,7 +322,7 @@ exit $RETURN
                 # test to see to make sure we don't restart disabled service
                 self.pkg(cmdstr + " install basics@1.2")
                 self.pkg("verify")
-                self.file_does_not_exist(svcadm_output)
+                self.file_doesnt_exist(svcadm_output)
 
                 # test to see if services that aren't installed are ignored
                 os.environ["PKG_SVCPROP_EXIT_CODE"] = "1"
@@ -330,7 +330,7 @@ exit $RETURN
                 self.pkg("verify")
                 self.pkg(cmdstr + " install basics@1.2")
                 self.pkg("verify")
-                self.file_does_not_exist(svcadm_output)
+                self.file_doesnt_exist(svcadm_output)
                 os.environ["PKG_SVCPROP_EXIT_CODE"] = "0"
 
                 # make it look like our test service(s) is/are enabled
@@ -379,9 +379,9 @@ exit $RETURN
                 # test that we do nothing for FMRIs with no instance specified
                 self.pkg(cmdstr + " install basics@1.6")
                 self.pkg("verify")
-                self.file_does_not_exist(svcadm_output)
+                self.file_doesnt_exist(svcadm_output)
                 self.pkg(cmdstr + " uninstall basics")
-                self.file_does_not_exist(svcadm_output)
+                self.file_doesnt_exist(svcadm_output)
 
                 # test that we do the right thing for multiple FMRIs with globbing chars
                 self.pkg(cmdstr + " install basics@1.6")
@@ -420,28 +420,6 @@ exit $RETURN
                     "svc:/system/test_multi_svc2:default")
                 os.unlink(svcadm_output)
 
-        def file_does_not_exist(self, path):
-                file_path = os.path.join(self.get_img_path(), path)
-                if os.path.exists(file_path):
-                        self.assert_(False, "File %s exists" % path)
-
-        def file_contains(self, path, string):
-                file_path = os.path.join(self.get_img_path(), path)
-                try:
-                        f = file(file_path)
-                except:
-                        self.assert_(False,
-                            "File %s does not exist or contain %s" %
-                            (path, string))
-
-                for line in f:
-                        if string in line:
-                                f.close()
-                                break
-                else:
-                        f.close()
-                        self.assert_(False, "File %s does not contain %s" %
-                            (path, string))
 
 if __name__ == "__main__":
         unittest.main()

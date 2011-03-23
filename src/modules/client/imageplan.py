@@ -741,8 +741,10 @@ class ImagePlan(object):
                         # If we still end up in a broken state, signal the
                         # caller that we should move forward, but not remove
                         # any actions.
-                        if len(actions) > 1:
+                        if len(actions) > 1 or \
+                            any("preserve" in a[0].attrs for a in actions):
                                 return "nothing", None
+
                         # If we end up in a sane state, signal the caller that
                         # we should make sure the right contents are in place.
                         # This implies that the action's remove() method should

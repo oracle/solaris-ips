@@ -35,6 +35,7 @@ import tempfile
 import stat
 import generic
 import pkg.misc as misc
+from pkg.client.debugvalues import DebugValues
 import pkg.portable as portable
 import pkg.client.api_errors as api_errors
 import pkg.actions
@@ -51,7 +52,7 @@ class FileAction(generic.Action):
 
         name = "file"
         key_attr = "path"
-        unique_attrs = "path", "mode", "owner", "group"
+        unique_attrs = "path", "mode", "owner", "group", "preserve"
         globally_identical = True
         namespace_group = "path"
 
@@ -378,8 +379,10 @@ class FileAction(generic.Action):
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a content hash different from what the
                 # system expected it to be, then we preserve the original file
-                # in some way, depending on the value of preserve.
-                if os.path.isfile(final_path):
+                # in some way, depending on the value of preserve.  If the
+                # action is an overlay, then we always overwrite.
+                overlay = self.attrs.get("overlay", "false") == "true"
+                if os.path.isfile(final_path) and not overlay:
                         chash, cdata = misc.get_data_digest(final_path)
 
                         if not orig or chash != orig.hash:
@@ -388,6 +391,7 @@ class FileAction(generic.Action):
                                         return pres_type
                                 else:
                                         return True
+
                 return pres_type
 
         # If we're not upgrading, or the file contents have changed,
