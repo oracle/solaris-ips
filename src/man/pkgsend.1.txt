@@ -65,8 +65,8 @@ SUBCOMMANDS
           Add each given bundlefile into the current transaction.
           Supported bundle types are:
 
-            - filesystem format SVr4 packages
-            - datastream format SVr4 packages
+            - filesystem format SVR4 packages
+            - datastream format SVR4 packages
             - tar files
             - directories
 
@@ -89,6 +89,24 @@ SUBCOMMANDS
           the --target option.  This option has no effect on other bundle
           types, as they are capable of expressing which pathnames are
           files and which are hardlinks.
+
+          When SVR4 packages are given as the bundlefile, pkgsend(1) will check
+          that no files with class action scripts are present and no preinstall,
+          postinstall, preremove or postremove scripts are present.  An
+          exception is made for any SMF manifests installed with the "manifest"
+          class.
+
+          Any SVR4 package parameters not listed in pkginfo(4) are automatically
+          converted to "set" actions, with the name "pkg.send.convert.<name>"
+          where <name> is the lower case name of the SVR4 package parameter.
+          An exception is made for the SVR4 parameter "SUNW_PKG_HOLLOW", which,
+          if set to "true" will result in all generated actions getting a
+          "pkg.send.convert.sunw-pkg-hollow=true" attribute, allowing future
+          pkgmogrify(1) transforms to be performed on these actions if
+          necessary.
+
+          The SVR4 "DESC" parameter is converted to a pkg.description value.
+          The SVR4 "NAME" parameter is converted to a pkg.summary value.
 
      include [-d basedir] ... [-T pattern] [manifest] ...
           Add resources associated with the multiple actions present in
@@ -147,6 +165,9 @@ SUBCOMMANDS
           subcommand.  Once obtained, the manifest can be annotated, have
           dependencies analyzed, added, etc before being passed to the
           publish or import subcommands.
+
+          See the note under "import" for details on how SVR4 packages are
+          handled.
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -37,6 +37,7 @@ class TarBundle(object):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
                 self.pkgname = os.path.basename(filename)
+                self.pkg = None
 
         def __del__(self):
                 self.tf.close()

@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """SystemV / Solaris packages.
@@ -66,6 +65,7 @@ class PkgMapLine(object):
 			array[0:0] = "1"
 			
 		self.type = array[1]
+                self.klass = None
 
 		if self.type == 'i':
 			(self.pathname, self.size, self.chksum,
@@ -104,6 +104,9 @@ class PkgMapLine(object):
                 else:
                         self.pathname = os.path.join(basedir, self.pathname)
 
+
+class MultiPackageDatastreamException(Exception):
+        pass
 
 # XXX This needs to have a constructor that takes a pkg: FMRI (the new name of
 # the package). - sch
@@ -151,12 +154,9 @@ class SolarisPackage(object):
                                 pkgs += [ line.split()[0] ]
 
                         if len(pkgs) > 1:
-                                # XXX probably want a more generic message, but
-                                # have the package list in the exception payload
-                                # This exception isn't currently raised high in
-                                # the stack, so it isn't important yet.
-                                raise ValueError, "%s contains %s packages" % \
-                                        (path, len(pkgs))
+                                raise MultiPackageDatastreamException(
+                                    "%s contains %s packages" % \
+                                    (path, len(pkgs)))
 
                         # The cpio archive containing all the packages' pkginfo
                         # and pkgmap files starts on the next 512-byte boundary

@@ -37,6 +37,13 @@ __all__ = [
 import os
 import sys
 
+class InvalidBundleException(Exception):
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
 def make_bundle(filename, targetpaths=()):
         """Determines what kind of bundle is at the given filename, and returns
         the appropriate bundle object.

@@ -593,12 +593,16 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             "pkginfo": [ "i", None, None, None, None ],
             "myclass": [ "i", None, None, None, None ],
             "prototype": [ "i", None, None, None, None ],
+            "postinstall": [ "i", None, None, None, None ],
             # pkgmap is not an "i" file, but we still want to
             # check that it is not installed in the image
             "pkgmap": [ "i", None, None, None, None ] }
 
-        sysv_prototype = """i pkginfo
+        # a prototype that uses classes and postinstall scripts, which
+        # pkgsend should complain about
+        sysv_classes_prototype = """i pkginfo
             i copyright
+            i postinstall
             d none foobar 0715 nobody nobody
             f none foobar/bar 0614 root sys
             f myclass foobar/baz 0644 daemon adm
@@ -606,10 +610,20 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             l none foobar/hardlink=baz
             i myclass"""
 
+        sysv_prototype = """i pkginfo
+            i copyright
+            d none foobar 0715 nobody nobody
+            f none foobar/bar 0614 root sys
+            f none foobar/baz 0644 daemon adm
+            s none foobar/symlink=baz
+            l none foobar/hardlink=baz"""
+
         sysv_pkginfo = 'PKG="nopkg"\n'\
             'NAME="No package"\n'\
+            'DESC="This is a sample package"\n'\
             'ARCH="all"\n'\
             'CLASSES="none myclass"\n'\
+            'PKG_CONTENTS="bobcat"\n'\
             'CATEGORY="utility"\n'\
             'VENDOR="nobody"\n'\
             'PSTAMP="7thOct83"\n'\
@@ -617,9 +631,23 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             'RSTATES="S s 1 2 3"\n'\
             'BASEDIR="/"'
 
-        def create_sysv_package(self, rootdir):
+        sysv_pkginfo_2 = 'PKG="nopkgtwo"\n'\
+            'NAME="No package"\n'\
+            'DESC="This is another sample package"\n'\
+            'ARCH="all"\n'\
+            'CLASSES="none myclass"\n'\
+            'PKG_CONTENTS="bobcat"\n'\
+            'CATEGORY="utility"\n'\
+            'VENDOR="nobody"\n'\
+            'PSTAMP="7thOct83"\n'\
+            'ISTATES="S s 1 2 3"\n'\
+            'RSTATES="S s 1 2 3"\n'\
+            'BASEDIR="/"'
+
+        def create_sysv_package(self, rootdir, prototype_contents,
+            pkginfo_contents=sysv_pkginfo):
                 """Create a SVR4 package at a given location using some predefined
-                contents."""
+                contents and a given prototype."""
                 pkgroot = os.path.join(rootdir, "sysvpkg")
                 os.mkdir(pkgroot)
 
@@ -651,12 +679,12 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
 
                 pkginfopath = os.path.join(pkgroot, "pkginfo")
                 pkginfo = file(pkginfopath, "w")
-                pkginfo.write(self.sysv_pkginfo)
+                pkginfo.write(pkginfo_contents)
                 pkginfo.close()
 
                 prototypepath = os.path.join(pkgroot, "prototype")
                 prototype = file(prototypepath, "w")
-                prototype.write(self.sysv_prototype)
+                prototype.write(prototype_contents)
                 prototype.close()
 
                 self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
@@ -668,7 +696,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """ A SVR4 directory-format package can be imported, its contents
                 published to a repo and installed to an image."""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir)
+                self.create_sysv_package(rootdir, self.sysv_prototype)
 
                 def test_import(url):
                         self.pkgsend(url, "open nopkg@1.0")
@@ -695,7 +723,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """ A SVR4 datastream package can be imported, its contents published to
                 a repo and installed to an image."""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir)
+                self.create_sysv_package(rootdir, self.sysv_prototype)
                 self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
                         os.path.join(rootdir, "nopkg.pkg")), coverage=False)
 
@@ -986,6 +1014,83 @@ dir path=foo/bar mode=0755 owner=root group=bin
                     "empty": "",
                 })
                 self.pkgsend(url, "include %s" % " ".join(misc), exit=1)
+
+        def test_18_broken_sysv_dir(self):
+                """ A SVR4 directory-format package containing class action
+                scripts fails to be imported or is generated with errors"""
+                rootdir = self.test_root
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                url = self.dc.get_depot_url()
+
+                self.pkgsend(url, "open nopkg@1.0")
+                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"),
+                    exit=1)
+                self.check_sysv_scripting(self.errout)
+
+                self.pkgsend(url, "generate %s" % os.path.join(rootdir, "nopkg"),
+                    exit=1)
+                self.check_sysv_scripting(self.errout)
+                self.check_sysv_parameters(self.output)
+
+        def test_19_broken_sysv_datastream(self):
+                """ A SVR4 datastream package containing class action scripts
+                fails to be imported or is generated with errors"""
+                rootdir = self.test_root
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
+                        os.path.join(rootdir, "nopkg.pkg")), coverage=False)
+
+                url = self.dc.get_depot_url()
+
+                def check_errors(err):
+                        self.assert_('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
+                        self.assert_("ERROR: script present in nopkg: myclass" in err)
+                        self.assert_("ERROR: script present in nopkg: postinstall" in err)
+
+                self.pkgsend(url, "open nopkg@1.0")
+                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg.pkg"),
+                    exit=1)
+                self.check_sysv_scripting(self.errout)
+
+                self.pkgsend(url, "generate %s" % os.path.join(rootdir,
+                    "nopkg.pkg"), exit=1)
+                self.check_sysv_scripting(self.errout)
+                self.check_sysv_parameters(self.output)
+
+        def check_sysv_scripting(self, err):
+                """Verify we've reported any class action or install scripts"""
+                self.assert_('ERROR: class action script used in nopkg: foobar/baz belongs to "myclass" class' in err)
+                self.assert_("ERROR: script present in nopkg: myclass" in err)
+                self.assert_("ERROR: script present in nopkg: postinstall" in err)
+
+        def check_sysv_parameters(self, output):
+                """Verify we've automatically converted some pkginfo parameters
+                """
+                self.assert_(
+                    "set name=pkg.description value=\"This is a sample package\""
+                    in output)
+                self.assert_("set name=pkg.summary value=\"No package\""
+                    in output)
+                self.assert_("set name=pkg.send.convert.pkg-contents value=bobcat"
+                    in output)
+                # this pkginfo parameter should be ignored
+                self.assert_("rstate" not in output)
+
+        def test_20_multi_pkg_bundle(self):
+                """Verify we return an error for a multi-package datastream."""
+
+                rootdir = self.test_root
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                self.create_sysv_package(rootdir, self.sysv_prototype,
+                    pkginfo_contents=self.sysv_pkginfo_2)
+                url = self.dc.get_depot_url()
+
+                self.cmdline_run("pkgtrans -s %s %s nopkg nopkgtwo" % (rootdir,
+                    os.path.join(rootdir, "nopkg.pkg")), coverage=False)
+                self.pkgsend(url, "generate %s" % os.path.join(rootdir,
+                    "nopkg.pkg"), exit=1)
+                self.assert_("Multi-package datastreams are not supported." in
+                    self.errout)
 
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):

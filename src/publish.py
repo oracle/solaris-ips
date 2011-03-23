@@ -107,6 +107,50 @@ Environment:
         PKG_REPO        The path or URI of the destination repository.""")
         sys.exit(retcode)
 
+class SolarisBundleVisitor(object):
+        """Used to gather information about the SVR4 packages we visit"""
+
+        def __init__(self):
+                # a list of classes for which we do not report warnings
+                self.known_classes = ["none", "manifest"]
+                self.errors = set()
+                self.warnings = set()
+                self.visited = False
+
+        def visit(self, bundle):
+                """visit a pkg.bundle.SolarisPackage*Bundle object"""
+
+                if not bundle.pkg:
+                        return
+
+                if self.visited:
+                        self.warnings.add(_(
+                            "WARNING: Several SVR4 packages detected. "
+                            "Multiple pkg.summary and pkg.description "
+                            "attributes may have been generated."))
+
+                for action in bundle:
+                        if "path" not in action.attrs:
+                                continue
+                        path = action.attrs["path"]
+                        if path in bundle.class_actions_dir:
+                                svr4_class = bundle.class_actions_dir[path]
+                                if svr4_class and \
+                                    svr4_class not in self.known_classes:
+                                        self.errors.add(
+                                            _("ERROR: class action script "
+                                            "used in %(pkg)s: %(path)s belongs "
+                                            "to \"%(class)s\" class") %
+                                            {"pkg": bundle.pkgname,
+                                             "path": path, "class": svr4_class})
+                for script in bundle.scripts:
+                        self.errors.add(
+                            _("ERROR: script present in %(pkg)s: %(script)s") %
+                            {"pkg": bundle.pkgname, "script": script})
+
+                self.visited = True
+
+
 def trans_create_repository(repo_uri, args):
         """Creates a new repository at the location indicated by repo_uri."""
 
@@ -466,9 +510,12 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 return 0
 
-def gen_actions(files, timestamp_files, target_files, minimal=False):
+def gen_actions(files, timestamp_files, target_files, minimal=False, visitors=[]):
         for filename in files:
                 bundle = pkg.bundle.make_bundle(filename, target_files)
+                for visitor in visitors:
+                        visitor.visit(bundle)
+
                 for action in bundle:
                         if action.name in ("file", "dir"):
                                 basename = os.path.basename(action.attrs["path"])
@@ -491,7 +538,7 @@ def gen_actions(files, timestamp_files, target_files, minimal=False):
 
                         yield action, action.name in nopub_actions
 
-def trans_import(repo_uri, args):
+def trans_import(repo_uri, args, visitors=[]):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
@@ -517,16 +564,18 @@ def trans_import(repo_uri, args):
         xport, pub = setup_transport_and_pubs(repo_uri)
         t = trans.Transaction(repo_uri, trans_id=trans_id, xport=xport, pub=pub)
 
+        ret = 0
+        abandon = False
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
-                    target_files):
+                    target_files, visitors=visitors):
                         if err:
                                 error(_("invalid action for publication: %s") %
                                     action, cmd="import")
-                                t.close(abandon=True)
-                                return 1
+                                abandon = True
                         else:
-                                t.add(action)
+                                if not abandon:
+                                        t.add(action)
         except TypeError, e:
                 error(e, cmd="import")
                 return 1
@@ -538,9 +587,16 @@ def trans_import(repo_uri, args):
                 else:
                         raise
 
-        return 0
+        for visitor in visitors:
+                if visitor.errors:
+                        abandon = True
+                        ret = 1
+        if abandon:
+                error("Abandoning transaction due to errors.")
+                t.close(abandon=True)
+        return ret
 
-def trans_generate(args):
+def trans_generate(args, visitors=[]):
         opts, pargs = getopt.getopt(args, "T:", ["target="])
 
         timestamp_files = []
@@ -558,7 +614,7 @@ def trans_generate(args):
 
         try:
                 for action, err in gen_actions(pargs, timestamp_files,
-                    target_files, minimal=True):
+                    target_files, minimal=True, visitors=visitors):
                         if "path" in action.attrs and hasattr(action, "hash") \
                             and action.hash == "NOHASH":
                                 action.hash = action.attrs["path"]
@@ -637,6 +693,7 @@ def main_func():
         if not repo_uri and subcommand not in ("create-repository", "generate"):
                 usage(_("a destination repository must be provided"))
 
+        visitors = [SolarisBundleVisitor()]
         ret = 0
         try:
                 if subcommand == "create-repository":
@@ -650,17 +707,37 @@ def main_func():
                 elif subcommand == "add":
                         ret = trans_add(repo_uri, pargs)
                 elif subcommand == "import":
-                        ret = trans_import(repo_uri, pargs)
+                        ret = trans_import(repo_uri, pargs,
+                            visitors=visitors)
                 elif subcommand == "include":
                         ret = trans_include(repo_uri, pargs)
                 elif subcommand == "publish":
                         ret = trans_publish(repo_uri, pargs)
                 elif subcommand == "generate":
-                        ret = trans_generate(pargs)
+                        ret = trans_generate(pargs,
+                            visitors=visitors)
                 elif subcommand == "refresh-index":
                         ret = trans_refresh_index(repo_uri, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
+
+                printed_space = False
+                for visitor in visitors:
+                        for warn in visitor.warnings:
+                                if not printed_space:
+                                        print ""
+                                        printed_space = True
+                                error(warn, cmd=subcommand)
+
+                        for err in visitor.errors:
+                                if not printed_space:
+                                        print ""
+                                        printed_space = True
+                                error(err, cmd=subcommand)
+                                ret = 1
+        except pkg.bundle.InvalidBundleException, e:
+                error(e, cmd=subcommand)
+                ret = 1
         except getopt.GetoptError, e:
                 usage(_("illegal %s option -- %s") % (subcommand, e.opt))
 

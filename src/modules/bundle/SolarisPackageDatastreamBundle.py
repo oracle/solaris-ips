@@ -21,15 +21,17 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
 import stat
 import pkg.misc as misc
 
-from pkg.sysvpkg import SolarisPackage
+from pkg.sysvpkg import SolarisPackage, MultiPackageDatastreamException
 from pkg.actions import *
+from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
+from pkg.bundle import InvalidBundleException
 
 typemap = {
         stat.S_IFBLK: "block-special",
@@ -41,13 +43,25 @@ typemap = {
         stat.S_IFSOCK: "socket"
 }
 
-class SolarisPackageDatastreamBundle(object):
+class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
         """XXX Need a class comment."""
 
         def __init__(self, filename, targetpaths=()):
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
                 self.filename = filename
+
+                # map the path name to the SVR4 class it belongs to and
+                # maintain a set of pre/post install/remove and class action
+                # scripts this package uses.
+                self.class_actions_dir = {}
+                self.class_action_names = set()
+                self.scripts = set()
+
+                self.hollow = self.pkg.pkginfo.get("SUNW_PKG_HOLLOW",
+                    "").lower() == "true"
+                self.pkginfo_actions = self.get_pkginfo_actions(
+                    self.pkg.pkginfo)
 
                 # SolarisPackage.manifest is a list.  Cache it into a dictionary
                 # based on pathname.  The cpio archive contains the files as
@@ -65,6 +79,8 @@ class SolarisPackageDatastreamBundle(object):
                                 else:
                                         dir = "reloc/"
                                 self.pkgmap[dir + p.pathname] = p
+                                self.class_actions_dir[p.pathname] = p.klass
+                                self.class_action_names.add(p.klass)
                         elif p.type == "i":
                                 self.pkgmap["install/" + p.pathname] = p
 
@@ -81,6 +97,9 @@ class SolarisPackageDatastreamBundle(object):
                    file type in the archive is the same as the file type in the
                    package map.
                 """
+                for act in self.pkginfo_actions:
+                                yield act
+
                 for p in self.pkg.datastream:
                         act = self.action(self.pkgmap, p, p.name)
                         if act:
@@ -117,6 +136,8 @@ class SolarisPackageDatastreamBundle(object):
                         # XXX Return an unknown instead of a missing, for now.
                         return unknown.UnknownAction(path=path)
 
+                act = None
+
                 # If any one of the mode, owner, or group is "?", then we're
                 # clearly not capable of delivering the object correctly, so
                 # ignore it.
@@ -125,28 +146,46 @@ class SolarisPackageDatastreamBundle(object):
                         return None
 
                 if mapline.type in "fev":
-                        return file.FileAction(ci.extractfile(),
+                        act = file.FileAction(ci.extractfile(),
                             mode=mapline.mode, owner=mapline.owner,
                             group=mapline.group, path=mapline.pathname,
                             timestamp=misc.time_to_timestamp(int(mapline.modtime)))
                 elif mapline.type in "dx":
-                        return directory.DirectoryAction(mode = mapline.mode,
+                        act = directory.DirectoryAction(mode = mapline.mode,
                             owner=mapline.owner, group=mapline.group,
                             path=mapline.pathname)
                 elif mapline.type == "s":
-                        return link.LinkAction(path=mapline.pathname,
+                        act = link.LinkAction(path=mapline.pathname,
                             target=mapline.target)
                 elif mapline.type == "l":
-                        return hardlink.HardLinkAction(path=mapline.pathname,
+                        act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
 		elif mapline.type == "i" and mapline.pathname == "copyright":
-			return license.LicenseAction(data=ci.extractfile(),
+			act = license.LicenseAction(data=ci.extractfile(),
 			    license="%s.copyright" % self.pkgname,
 			    path=mapline.pathname)
                 elif mapline.type == "i":
+                        if mapline.pathname not in ["depend", "pkginfo"]:
+                                # check to see if we've seen this script
+                                # before
+                                script = mapline.pathname
+                                if script.startswith("i.") and \
+                                    script.replace("i.", "", 1) in \
+                                    self.class_action_names:
+                                        pass
+                                elif script.startswith("r.") and \
+                                    script.replace("r.", "", 1) in \
+                                    self.class_action_names:
+                                        pass
+                                else:
+                                        self.scripts.add(script)
                         return None
                 else:
-                        return unknown.UnknownAction(path=mapline.pathname)
+                        act = unknown.UnknownAction(path=mapline.pathname)
+
+                if self.hollow and act:
+                        act.attrs[self.hollow_attr] = "true"
+                return act
 
 def test(filename):
         if not os.path.isfile(filename):
@@ -155,5 +194,10 @@ def test(filename):
         try:
                 SolarisPackage(filename)
                 return True
+        except MultiPackageDatastreamException:
+                raise InvalidBundleException(
+                    _("Multi-package datastreams are not supported.\n"
+                    "Please use pkgtrans(1) to convert this bundle to "
+                    "multiple\nfilesystem format packages."))
         except:
                 return False

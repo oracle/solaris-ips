@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import os
@@ -53,6 +53,7 @@ class DirectoryBundle(object):
                 self.pkgname = os.path.basename(self.rootdir)
                 self.inodes = {}
                 self.targetpaths = targetpaths
+                self.pkg = None
 
         def __iter__(self):
                 # Pre-populate self.inodes with the paths of known targets
