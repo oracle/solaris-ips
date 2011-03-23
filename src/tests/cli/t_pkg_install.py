@@ -2481,6 +2481,18 @@ adm:NP:6445::::::
                     close
                 """
 
+                self.devalias10 = """
+                    open devalias@1,5.11
+                    add driver name=zerg alias=pci8086,1234 alias=pci8086,4321
+                    close
+                """
+
+                self.devalias20 = """
+                    open devalias@2,5.11
+                    add driver name=zerg alias=pci8086,5555
+                    close
+                """
+
                 self.badhardlink1 = """
                     open badhardlink1@1.0,5.11-0
                     add hardlink path=foo target=bar
@@ -2983,6 +2995,33 @@ adm:NP:6445::::::
                 dllines = readfile()
                 self.failUnless(len(dllines) == 4, msg=dllines)
                 assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
+
+        def test_driver_aliases_upgrade(self):
+                """Make sure that aliases properly appear and disappear on
+                upgrade.  This is the result of a bug in update_drv, but it's
+                not a bad idea to test some of this ourselves."""
+
+                # driver actions are not valid except on OpenSolaris
+                if portable.util.get_canonical_os_name() != "sunos":
+                        return
+
+                self.pkgsend_bulk(self.rurl, [self.devicebase, self.devalias10,
+                    self.devalias20])
+
+                self.image_create(self.rurl)
+                self.pkg("install devicebase devalias@1")
+                self.pkg("update devalias")
+                self.pkg("verify devalias")
+
+                daf = open(os.path.join(self.get_img_path(),
+                    "etc/driver_aliases"))
+                dalines = daf.readlines()
+                daf.close()
+
+                self.assert_(len(dalines) == 1, msg=dalines)
+                self.assert_(",1234" not in dalines[0])
+                self.assert_(",4321" not in dalines[0])
+                self.assert_(",5555" in dalines[0])
 
         def test_uninstall_without_perms(self):
                 """Test for bug 4569"""

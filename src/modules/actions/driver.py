@@ -339,13 +339,13 @@ from %(imgroot)s/etc/driver_aliases." % \
                 rem_clone = oclone - nclone
 
                 for i in add_alias:
-                        args = add_base + ("-i", '"%s"' % i, self.attrs["name"])
+                        args = add_base + ("-i", '%s' % i, self.attrs["name"])
                         self.__call(args, "driver (%(name)s) upgrade (addition "
                             "of alias '%(alias)s')",
                             {"name": self.attrs["name"], "alias": i})
 
                 for i in rem_alias:
-                        args = rem_base + ("-i", '"%s"' % i, self.attrs["name"])
+                        args = rem_base + ("-i", '%s' % i, self.attrs["name"])
                         self.__call(args, "driver (%(name)s) upgrade (removal "
                             "of alias '%(alias)s')",
                             {"name": self.attrs["name"], "alias": i})
