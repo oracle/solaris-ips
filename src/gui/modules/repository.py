@@ -892,6 +892,9 @@ class Repository(progress.GuiProgressTracker):
                 if pub == None:
                         pub, repo, new_pub = self.__get_or_create_pub_with_url(self.api_o,
                             alias, origin_url)
+                        if pub == None:
+                                self.progress_stop_thread = True
+                                return
                         name = alias
                 else:
                         repo = pub.selected_repository
@@ -906,11 +909,16 @@ class Repository(progress.GuiProgressTracker):
                         if len(e.known) > 0:
                                 pub, repo, new_pub = self.__get_or_create_pub_with_url(
                                     self.api_o, e.known[0], origin_url)
-                                errors_ssl = self.__update_ssl_creds(pub, repo,
-                                    ssl_cert, ssl_key)
-                                pub.alias = name
-                                errors_update = self.__update_publisher(pub,
-                                    new_publisher=new_pub, raise_unknownpubex=False)
+                                if new_pub:
+                                        errors_ssl = self.__update_ssl_creds(pub, repo,
+                                            ssl_cert, ssl_key)
+                                        pub.alias = name
+                                        errors_update = self.__update_publisher(pub,
+                                            new_publisher=new_pub,
+                                            raise_unknownpubex=False)
+                                else:
+                                        self.progress_stop_thread = True
+                                        return
                         else:
                                 errors_update.append((pub, e))
                 errors += errors_ssl
@@ -945,15 +953,16 @@ class Repository(progress.GuiProgressTracker):
         def __update_publisher(self, pub, new_publisher=False, raise_unknownpubex=True):
                 errors = []
                 try:
-                        self.no_changes += 1
                         if new_publisher:
                                 self.__g_update_details_text(
                                     _("Adding publisher %s\n") % pub.prefix)
                                 self.api_o.add_publisher(pub)
+                                self.no_changes += 1
                         else:
                                 self.__g_update_details_text(
                                     _("Updating publisher %s\n") % pub.prefix)
                                 self.api_o.update_publisher(pub)
+                                self.no_changes += 1
                         if new_publisher:
                                 self.__g_update_details_text(
                                     _("Publisher %s succesfully added\n") % pub.prefix)
@@ -1667,7 +1676,7 @@ class Repository(progress.GuiProgressTracker):
                 if title != None:
                         msg_title = title
                 else:   # More Generic for WebInstall
-                        msg_title = _("Publisher error")
+                        msg_title = _("Publisher Error")
                 for err in errors:
                         if isinstance(err[1], api_errors.CatalogRefreshException):
                                 crerr = gui_misc.get_catalogrefresh_exception_msg(err[1])
@@ -1730,7 +1739,7 @@ class Repository(progress.GuiProgressTracker):
                 try:
                         pub = api_o.get_publisher(prefix=name, alias=name,
                             duplicate=True)
-                        repo = pub.selected_repository
+                        raise URIExistingPublisher(origin_url, pub)
                 except api_errors.UnknownPublisher:
                         repo = publisher.Repository()
                         # We need to specify a name when creating a publisher
@@ -1750,7 +1759,7 @@ class Repository(progress.GuiProgressTracker):
                                 origin = repo.origins[0]
                                 origin.uri = origin_url
                 except api_errors.ApiException, e:
-                        self.__show_errors([(name, e)])
+                        gobject.idle_add(self.__show_errors, [(name, e)])
                 return (pub, repo, new_pub)
 
         @staticmethod
@@ -1991,3 +2000,16 @@ class Repository(progress.GuiProgressTracker):
 
         def reset_label_text_after_delay(self):
                 pass
+
+class URIExistingPublisher(api_errors.ApiException):
+        def __init__(self, uri, pub):
+                api_errors.ApiException.__init__(self)
+                self.uri = uri
+                self.pub = pub
+
+        def __str__(self):
+                return _("The URI '%(uri)s' points to a publisher "
+                    "'%(publisher)s' which already exists "
+                    "on the system.") % { "uri": self.uri,
+                    "publisher": self.pub }
+
