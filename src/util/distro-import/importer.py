@@ -203,7 +203,7 @@ class Package(object):
                                             (action.attrs["path"], imppkg_name)
                                 continue
 
-                        if action.name == "unknown":
+                        if action.name in ["unknown", "legacy", "set"]:
                                 continue
 
                         action.attrs["importer.source"] = "svr4pkg"
@@ -231,6 +231,11 @@ class Package(object):
 
                         if hollow:
                                 action.attrs["variant.opensolaris.zone"] = "global"
+
+                        # we can drop all pkg.send.convert keys
+                        for key in action.attrs.keys():
+                                if key.startswith("pkg.send.convert"):
+                                        del action.attrs[key]
 
                         self.check_perms(action)
                         self.actions.append(action)
