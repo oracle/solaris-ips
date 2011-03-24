@@ -3120,6 +3120,7 @@ assistance."""))
         updated = []
         failed = []
 
+        last_pub = None
         for src_pub in pubs:
                 prefix = src_pub.prefix
                 if name and prefix != name:
@@ -3148,6 +3149,15 @@ assistance."""))
                             unset_props=unset_props)
                         if rval == EXIT_OK:
                                 added.append(prefix)
+
+                        if preferred:
+                                if not last_pub:
+                                        api_inst.set_preferred_publisher(
+                                            prefix=prefix)
+                                else:
+                                        api_inst.set_pub_search_after(prefix,
+                                            last_pub)
+                                        last_pub = prefix
                 else:
                         # The update case is special and requires some
                         # finesse.  In particular, the update should

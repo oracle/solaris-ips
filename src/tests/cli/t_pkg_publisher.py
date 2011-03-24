@@ -677,8 +677,30 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                     self.dcs[6].get_repodir())
                 self.pkg("unset-publisher test3")
                 self.dcs[6].refresh()
-                self.pkg("set-publisher -p %s" % durl6)
-                self.pkg("publisher test3 test2")
+                self.pkg("set-publisher -P -p %s" % durl6)
+
+                # Determine publisher order from output and then verify it
+                # matches expected.
+                def get_pubs():
+                        self.pkg("publisher -HF tsv")
+                        pubs = []
+                        for l in self.output.splitlines():
+                                pub, ignored = l.split("\t", 1)
+                                if pub not in pubs:
+                                        pubs.append(pub)
+                        return pubs
+
+                # Since -P was used, new publishers should be set first in
+                # search order alphabetically.
+                self.assertEqual(get_pubs(), ["test2", "test3", "test1"])
+
+                # Now change search order and verify that using -P and -p again
+                # won't change it since publishers already exist.
+                self.pkg("set-publisher --search-after=test1 test2")
+                self.pkg("set-publisher --search-after=test2 test3")
+                self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
+                self.pkg("set-publisher -P -p %s" % durl6)
+                self.assertEqual(get_pubs(), ["test1", "test2", "test3"])
 
         def test_set_mirrors_origins(self):
                 """Test set-publisher functionality for mirrors and origins."""

@@ -765,7 +765,8 @@ SUBCOMMANDS
           new packages, this publisher will be searched first.
           Updates to already installed packages will come from the
           same publisher that originally provided the package so long
-          as that publisher remains sticky.
+          as that publisher remains sticky.  When used with -p, only new
+          publishers added will be placed first in search order.
 
           With --non-sticky, specify that higher ranked publishers than
           this one may provide updates to packages originally installed
@@ -776,11 +777,13 @@ SUBCOMMANDS
 
           With --search-before, alter the publisher search order so that
           the publisher being modified is now searched before the specified
-          publisher.
+          publisher.  When used with -p, it is only applied to new
+          publishers.
 
           With --search-after, alter the publisher search order so that
           the publisher being modified is now searched after the specified
-          publisher.
+          publisher.  When used with -p, it is only applied to new
+          publishers.
 
           With --approve-ca-cert, add the given certificate as a CA certificate
           that is trusted.  The hashes of the user approved CA certificates are
