@@ -807,6 +807,7 @@ def exit_if_no_threads():
 
 def get_statusbar_label(statusbar):
         sb_frame = None
+        sb_hbox = None
         sb_label = None
         children = statusbar.get_children()
         if len(children) > 0:
@@ -814,6 +815,11 @@ def get_statusbar_label(statusbar):
         if sb_frame and isinstance(sb_frame, gtk.Frame):
                 children = sb_frame.get_children()
                 if len(children) > 0:
+                        sb_hbox = children[0] 
+                        if sb_hbox and isinstance(sb_hbox, gtk.HBox):
+                                children = sb_hbox.get_children()
+                                if len(children) == 0:
+                                        return None
                         sb_label = children[0]
                 if sb_label and isinstance(sb_label, gtk.Label):
                         return sb_label

@@ -872,6 +872,9 @@ class PackageManager:
                         return
                 rs_iter = category_tree.iter_children(
                     self.recent_searches_cat_iter)
+                rs_path = category_tree.get_path(self.recent_searches_cat_iter)
+                if not self.w_categories_treeview.row_expanded(rs_path):
+                        self.w_categories_treeview.expand_row(rs_path, False)
                 while rs_iter:
                         rs_value = category_tree.get_value(rs_iter,
                             enumerations.CATEGORY_VISIBLE_NAME)
