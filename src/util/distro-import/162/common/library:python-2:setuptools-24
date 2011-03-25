@@ -1,0 +1,9 @@
+package library/python-2/setuptools-24
+consolidation "gnome"
+obsoleted 162
+end package
+
+package SUNWpython-setuptools
+consolidation "gnome"
+obsoleted 162
+end package
