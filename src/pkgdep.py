@@ -354,8 +354,7 @@ def resolve_echo_line(l):
         except actions.ActionError:
                 return True
         else:
-                return not act.name == "depend" or \
-                    act.attrs["type"] != "require"
+                return not act.name == "depend"
 
 def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         """Write the resolved package dependencies to stdout.
@@ -370,8 +369,12 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         manifest will be written out or not."""
 
         ret_code = 0
+        first = True
         for p in manifest_paths:
-                msg(p)
+                if not first:
+                        msg("\n\n")
+                first = False
+                msg("# %s" % p)
                 if echo_manifest:
                         try:
                                 fh = open(p, "rb")
@@ -385,7 +388,6 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
                                 ret_code = 1
                 for d in pkg_deps[p]:
                         msg(d)
-                msg(_("\n\n"))
         return ret_code
 
 def write_res(deps, out_file, echo_manifest, manifest_path):
@@ -419,6 +421,8 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
                             manifest_path)
                 for l in fh:
                         if resolve_echo_line(l):
+                                if l[-1] != "\n":
+                                        l += "\n"
                                 out_fh.write(l)
                 fh.close()
         for d in deps:

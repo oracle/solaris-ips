@@ -141,7 +141,11 @@ SUBCOMMANDS
           by the generate step removed, before adding the resolved
           dependencies.
 
-          With -o, write the results to standard output.
+          With -o, write the results to standard output.  This option is
+          intended for human consumption.  If its output is appended to a file,
+          it may result in an invalid manifest.  For use in a pipe line for
+          manifest processing, using -d or -s instead of -o is strongly
+          recommended.
 
           With -d, write the resolved dependencies for each manifest
           provided in a separate file in output_dir.  By default, each

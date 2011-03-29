@@ -236,44 +236,39 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
 """
 
         two_v_deps_verbose_output = """\
-%(m1_path)s
+# %(m1_path)s
 depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
 
 
-%(m2_path)s
+# %(m2_path)s
 
 
 
-%(m3_path)s
+# %(m3_path)s
 
 
 
-%(m4_path)s
-
-
-
+# %(m4_path)s
 """
 
         two_v_deps_output = """\
-%(m1_path)s
+# %(m1_path)s
 depend fmri=pkg:/s-v-bar type=require
 depend fmri=pkg:/s-v-baz-one type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two type=require variant.foo=baz variant.num=two
 
 
-%(m2_path)s
+# %(m2_path)s
 
 
 
-%(m3_path)s
+# %(m3_path)s
 
 
 
-%(m4_path)s
-
-
+# %(m4_path)s
 """
 
         dup_variant_deps = """\
@@ -545,7 +540,8 @@ file NOHASH path=usr/bin/unsatisfied owner=root group=staff mode=0555
 """
 
         satisfying_out = """\
-depend fmri=pkg:/satisfying_manf type=require variant.foo=baz"""
+depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
+"""
 
         def make_pyver_python_res(self, ver, proto_area=None):
                 """Create the python dependency results with paths expected for
@@ -969,7 +965,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
                 # Check that -S doesn't prevent the resolution from happening.
                 self.pkgdepend_resolve("-S -o %s" % res_path, exit=1)
-                self.check_res("%s" % res_path, self.output)
+                self.check_res("# %s" % res_path, self.output)
                 self.check_res(self.resolve_error % {
                         "manf_path": res_path,
                         "pfx":
@@ -1407,14 +1403,16 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
                 self.pkgdepend_resolve("-o %s %s %s" %
                     (col_path, bar_path, foo_path), exit=1)
-                self.check_res("\n\n".join([col_path, bar_path, foo_path]),
+                self.check_res("\n\n".join(
+                    ["# %s" % l for l in [col_path, bar_path, foo_path]]),
                     self.output)
                 self.check_res(self.run_path_errors %
                     {"unresolved_path": col_path, "vc": ""}, self.errout)
 
                 self.pkgdepend_resolve("-o %s %s %s" %
                     (col_path, bar_path, bar2_path), exit=1)
-                self.check_res("\n\n".join([col_path, bar_path, bar2_path]),
+                self.check_res("\n\n".join(
+                    ["# %s" % l for l in [col_path, bar_path, bar2_path]]),
                     self.output)
                 self.check_res(self.amb_path_errors %
                     {"unresolved_path": col_path}, self.errout)
@@ -1452,8 +1450,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.pkgdepend_resolve(" -o %s %s" % (partial, satisfying),
                     exit=1)
                 self.check_res(self.unsatisfied_error_2 % partial, self.errout)
-                self.check_res("%s\n\n%s\n%s" % (partial, satisfying,
-                    self.satisfying_out), self.output)
+                self.check_res("# %s\n%s\n\n# %s\n" % (partial,
+                    self.satisfying_out, satisfying), self.output)
 
                 # No dependencies at all
                 self.pkgdepend_resolve(" -o %s" % satisfying)

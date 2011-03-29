@@ -936,9 +936,11 @@ def combine(deps, pkg_vars):
                 so that the groups match the duplicate actions that the code
                 in pkg.manifest notices."""
 
-                # d[0] is the action.  d[1] is the VariantCombination for this
-                # action.
-                return d[0].name, d[0].attrs.get(d[0].key_attr, id(d[0]))
+                # d is a tuple containing two items.  d[0] is the action.  d[1]
+                # is the VariantCombination for this action.  The
+                # VariantCombination isn't useful for our grouping needs.
+                return d[0].name, d[0].attrs.get("type", None), \
+                    d[0].attrs.get(d[0].key_attr, id(d[0]))
 
         def add_vars(d, d_vars, pkg_vars):
                 """Add the variants 'd_vars' to the dependency 'd', after

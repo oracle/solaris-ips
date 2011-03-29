@@ -32,6 +32,7 @@ import sys
 import unittest
 
 import pkg.client.api as api
+import pkg.actions.depend as depend
 import pkg.client.progress as progress
 import pkg.flavor.base as base
 from pkg.fmri import PkgFmri
@@ -929,6 +930,24 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
                             isinstance(e,
                             dependencies.UnresolvedDependencyError))
 
+        def test_bug_18019(self):
+                """Test that a package with manually annotated group,
+                incorporate, or other types of dependencies doesn't end up with
+                two copies of any dependencies."""
+
+                manf = ["set name=pkg.fmri value=bug_18019@1.0,5.11-1"]
+                for t in depend.known_types:
+                        manf.append("depend fmri=pkg:/%(type)s@0,5.11-1 "
+                            "type=%(type)s" % {"type": t})
+                manf_path = self.make_manifest("\n".join(manf))
+                self.pkgdepend_resolve("-m %s" % manf_path)
+                res_path = manf_path + ".res"
+                with open(res_path, "r") as fh:
+                        s = fh.read()
+                s = s.splitlines()
+                self.assertEqualDiff("\n".join(sorted(manf)),
+                    "\n".join(sorted(s)))
+
         def test_bug_18045_normal(self):
                 """Test that when a package without variants has a file
                 dependency on a file in a package that declares variants,
@@ -994,6 +1013,24 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
                 self.debug("fmri:%s" % pkg_deps[dep_path][0].attrs["fmri"])
                 self.assert_(pkg_deps[dep_path][0].attrs["fmri"].startswith(
                     "pkg:/runtime/python26@2.6.4-0.161"))
+
+        def test_bug_18077(self):
+                """Test that a package with manually annotated group,
+                incorporate, or other types of dependencies on the same package
+                doesn't cause pkgdep resolve to traceback."""
+
+                manf = ["set name=pkg.fmri value=bug_18077@1.0,5.11-1"]
+                for t in depend.known_types:
+                        manf.append("depend fmri=pkg:/foo@0,5.11-1 "
+                            "type=%(type)s" % {"type": t})
+                manf_path = self.make_manifest("\n".join(manf))
+                self.pkgdepend_resolve("-m %s" % manf_path)
+                res_path = manf_path + ".res"
+                with open(res_path, "r") as fh:
+                        s = fh.read()
+                s = s.splitlines()
+                self.assertEqualDiff("\n".join(sorted(manf)),
+                    "\n".join(sorted(s)))
 
 
 if __name__ == "__main__":
