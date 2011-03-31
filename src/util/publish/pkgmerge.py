@@ -465,6 +465,9 @@ def merge_fmris(source_list, fmri_list, variant_list, variants):
 
         # Merge each variant one at a time.
         merged = {}
+        # where to find files...
+        hash_source = {}
+
         for i, variant in enumerate(variants):
                 # Build the unique list of remaining variant combinations to
                 # use for merging this variant.
@@ -509,6 +512,7 @@ def merge_fmris(source_list, fmri_list, variant_list, variants):
                         slist = []
                         flist = []
                         vlist = []
+                        sindex = []
                         new_fmri = None
                         for j, src in enumerate(source_list):
                                 if combo:
@@ -530,15 +534,16 @@ def merge_fmris(source_list, fmri_list, variant_list, variants):
                                 # merged with another package.
                                 pfmri = fmri_list[j]
                                 if not pfmri or \
-                                    merged.get(pfmri, None) == null_manifest:
+                                    merged.get(id(pfmri), None) == null_manifest:
                                         continue
 
                                 # The newest FMRI in the set of manifests being
                                 # merged will be used as the new FMRI of the
                                 # merged package.
-                                if new_fmri is None or pfmri.version > new_fmri:
+                                if new_fmri is None or pfmri.version > new_fmri.version:
                                         new_fmri = pfmri
 
+                                sindex.append(j)
                                 slist.append(src)
                                 flist.append(pfmri)
                                 vlist.append(variant_list[j][variant])
@@ -549,32 +554,36 @@ def merge_fmris(source_list, fmri_list, variant_list, variants):
 
                         # Build the list of manifests to be merged.
                         mlist = []
-                        for s, f in zip(slist, flist):
-                                if f in merged:
+                        for j, s, f in zip(sindex, slist, flist):
+                                if id(f) in merged:
                                         # Manifest already merged before, use
                                         # the merged version.
-                                        m = merged[f]
+                                        m = merged[id(f)]
                                 else:
                                         # Manifest not yet merged, retrieve
-                                        # from source.
+                                        # from source; record those w/ payloads
+                                        # so we know from where to get them..
                                         m = get_manifest(s, f)
+                                        for a in m.gen_actions():
+                                                if a.has_payload:
+                                                        hash_source.setdefault(a.hash, j)
                                 mlist.append(m)
 
                         m = __merge_fmris(new_fmri, mlist, flist, vlist,
                             variant)
 
                         for f in flist:
-                                if f == new_fmri:
+                                if id(f) == id(new_fmri):
                                         # This FMRI was used for the merged
                                         # manifest; any future merges should
                                         # use the merged manifest for this
                                         # FMRI.
-                                        merged[f] = m
+                                        merged[id(f)] = m
                                 else:
                                         # This package has been merged with
                                         # another so shouldn't be retrieved
                                         # or merged again.
-                                        merged[f] = null_manifest
+                                        merged[id(f)] = null_manifest
 
         # Merge process should have resulted in a single non-null manifest.
         m = [v for v in merged.values() if v != null_manifest]
@@ -583,53 +592,14 @@ def merge_fmris(source_list, fmri_list, variant_list, variants):
 
         # Finally, build a list of actions to retrieve based on position in
         # source_list.
-        already_seen = set()
-        def repeated(a, d):
-                if a in d:
-                        return True
-                already_seen.add(a)
-                return False
 
         retrievals = [list() for i in source_list]
+
         for a in m.gen_actions():
-                if not a.has_payload or repeated(a.hash, already_seen):
-                        continue
-
-                avars, afacets = a.get_varcet_keys()
-
-                # Only evaluate retrievals based on the variants declared for
-                # each source; the action may have been tagged with variants
-                # from a previous merge.
-                avars = [v for v in avars if v in variants]
-
-                if not avars:
-                        # Action can be retrieved from any source; so use the
-                        # first one.
-                        retrievals[0].append(a)
-                        continue
-
-                found = False
-                for i, s in enumerate(source_list):
-                        for vname in avars:
-                                if not vname in variants:
-                                        continue
-                                if not vname in variant_list[i]:
-                                        found = False
-                                        break
-                                if not variant_list[i][vname] == a.attrs[vname]:
-                                        found = False
-                                        break
-                                found = True
-
-                        if found:
-                                # Retrieve action from first source that matches
-                                # all variants the action is tagged with.
-                                retrievals[i].append(a)
-                                break
-
-                # Should have found a source to retrieve the action from.
-                assert found
-
+                if a.has_payload:
+                        source = hash_source.pop(a.hash, None)
+                        if source is not None:
+                                retrievals[source].append(a)
         return m, retrievals
 
 
@@ -639,6 +609,10 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
         # Remove variant tags, package variant metadata, and signatures
         # from manifests since we're reassigning.  This allows merging
         # pre-tagged, already merged pkgs, or signed packages.
+
+        blended_actions = []
+        blend_names = set([variant, variant[8:]])
+
         for j, m in enumerate(manifest_list):
                 deleted_count = 0
                 vval = variant_list[j]
@@ -672,13 +646,27 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
                                             "var_value": vval })
                                 del m.actions[i - deleted_count]
                                 deleted_count += 1
+                        # checking if we're supposed to blend this action
+                        # for this variant.  Handle prepended "variant.".
+                        if blend_names & set(a.attrlist("pkg.merge.blend")):
+                                blended_actions.append((j, a))
+
+        # add blended actions to other manifests
+        for j, m in enumerate(manifest_list):
+                for k, a in blended_actions:
+                        if k != j:
+                                m.actions.append(a)
 
         # Like the unix utility comm, except that this function
         # takes an arbitrary number of manifests and compares them,
         # returning a tuple consisting of each manifest's actions
         # that are not the same for all manifests, followed by a
         # list of actions that are the same in each manifest.
-        action_lists = list(manifest.Manifest.comm(manifest_list))
+        try:
+                action_lists = list(manifest.Manifest.comm(manifest_list))
+        except manifest.ManifestError, e:
+                error("Duplicate action(s) in package \"%s\": \n%s" %
+                    (new_fmri.pkg_name, e))
 
         # Declare new package FMRI.
         action_lists[-1].insert(0,
@@ -687,7 +675,15 @@ def __merge_fmris(new_fmri, manifest_list, fmri_list, variant_list, variant):
         for a_list, v in zip(action_lists[:-1], variant_list):
                 for a in a_list:
                         a.attrs[variant] = v
-
+        # discard any blend tags for this variant from common list
+        for a in action_lists[-1]:
+                blend_attrs = set(a.attrlist("pkg.merge.blend"))
+                match = blend_names & blend_attrs
+                for m in list(match):
+                        if len(blend_attrs) == 1:
+                                del a.attrs["pkg.merge.blend"]
+                        else:
+                                a.attrlist("pkg.merge.blend").remove(m)
         # combine actions into single list
         allactions = reduce(lambda a, b: a + b, action_lists)
 
@@ -887,7 +883,8 @@ This is an internal error in pkg(5) version %(version)s.  Please let the
 developers know about this problem by including the information above (and
 this message) when filing a bug at:
 
-%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI })
+%(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI },
+                    exitcode=None)
                 __ret = 99
         finally:
                 cleanup()

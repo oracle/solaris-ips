@@ -182,6 +182,7 @@ class Manifest(object):
 
                 # Must specify at least one manifest.
                 assert compare_m
+                dups = []
 
                 # construct list of dictionaries of actions in each
                 # manifest, indexed by unique key and variant combination
@@ -205,12 +206,14 @@ class Manifest(object):
                                         # id for the action as its identifier.
                                         key = (id(a),)
 
-                                # Only use the first action found for each
-                                # unique combination; this does mean that
-                                # duplicate actions will be silently discarded
-                                # for each manifest.
-                                m_dict.setdefault((a.name, key), a)
+                                # catch duplicate actions here...
+                                if m_dict.setdefault((a.name, key), a) != a:
+                                        dups.append((m_dict[(a.name, key)], a))
+
                         m_dicts.append(m_dict)
+
+                if dups:
+                        raise ManifestError(duplicates=dups)
 
                 # construct list of key sets in each dict
                 m_sets = [
@@ -357,7 +360,7 @@ class Manifest(object):
 
                 'excludes' is an optional list of variants to exclude from the
                 manifest.
-        
+
                 'pathname' is an optional filename containing the location of
                 the manifest content.
 
@@ -608,7 +611,7 @@ class Manifest(object):
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         if e.errno == errno.EROFS:
-                                raise apx.ReadOnlyFileSystemException( 
+                                raise apx.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
 
@@ -1080,3 +1083,18 @@ class EmptyFactoredManifest(Manifest):
                 return []
 
 NullFactoredManifest = EmptyFactoredManifest()
+
+class ManifestError(Exception):
+        """Simple Exception class to handle manifest specific errors"""
+
+        def __init__(self, duplicates=EmptyI):
+                self.__duplicates=duplicates
+
+        def __str__(self):
+                ret = []
+                for d in self.__duplicates:
+                        ret.append("%s\n%s\n\n" % d)
+
+                return "\n".join(ret)
+
+
