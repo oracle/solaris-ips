@@ -2136,10 +2136,6 @@ class Repository(object):
                 assert self.version < 4
 
                 alias = self.cfg.get_property("publisher", "alias")
-                icas = self.cfg.get_property("publisher",
-                    "intermediate_certs")
-                scas = self.cfg.get_property("publisher",
-                    "signing_ca_certs")
 
                 rargs = {}
                 for prop in ("collection_type", "description",
@@ -2151,7 +2147,7 @@ class Repository(object):
 
                 repo = publisher.Repository(**rargs)
                 return publisher.Publisher(pub, alias=alias,
-                    repositories=[repo], ca_certs=scas, intermediate_certs=icas)
+                    repositories=[repo])
 
         def get_publishers(self):
                 """Return publisher objects for all publishers known by the
@@ -2359,63 +2355,6 @@ class Repository(object):
                 rstore = self.get_trans_rstore(trans_id)
                 return rstore.add_file(trans_id, data=data, size=size)
 
-        def add_signing_certs(self, cert_paths, ca, pub=None):
-                """Add the certificates stored in the given paths to the
-                files in the repository and as properties of the publisher.
-                Whether the certificates are added as CA certificates or
-                intermediate certificates is determined by the 'ca' parameter.
-                """
-
-                rstore = self.get_pub_rstore(pub)
-
-                hshs = []
-                for p in cert_paths:
-                        try:
-                                # Get the hash of the cert file and then add it.
-                                hsh, s = misc.get_data_digest(p,
-                                    return_content=True)
-
-                                # The cert must be compressed first before
-                                # adding it to the repository.  The temporary
-                                # file created to do this is moved into place
-                                # by the insert.
-                                fd, pth = tempfile.mkstemp()
-                                os.fchmod(fd, misc.PKG_FILE_MODE)
-                                gfh = PkgGzipFile(filename=pth, mode="wb")
-                                gfh.write(s)
-                                gfh.close()
-                                rstore.cache_store.insert(hsh, pth)
-                                hshs.append(hsh)
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise apx.PermissionsException(
-                                            e.filename)
-                                if e.errno == errno.ENOENT:
-                                        raise RepositoryNoSuchFileError(
-                                            e.filename)
-                                raise
-
-                prop_name = "intermediate_certs"
-                if ca:
-                        prop_name = "signing_ca_certs"
-
-                if self.version < 4:
-                        # For older repositories, the information is stored
-                        # in the repository configuration.
-                        t = set(self.cfg.get_property("publisher", prop_name))
-                        t.update(hshs)
-                        self.cfg.set_property("publisher", prop_name, sorted(t))
-                        self.write_config()
-                        return
-
-                # For newer repositories, the certs are stored as part of the
-                # publisher's metadata.
-                pub_obj = rstore.get_publisher()
-                t = set(getattr(pub_obj, prop_name))
-                t.update(hshs)
-                setattr(pub_obj, prop_name, sorted(t))
-                rstore.update_publisher(pub_obj)
-
         def rebuild(self, build_catalog=True, build_index=False, pub=None):
                 """Rebuilds the repository catalog and search indexes using the
                 package manifests currently in the repository.
@@ -2442,35 +2381,6 @@ class Repository(object):
                 self.__lock_repository()
                 self.__init_state()
                 self.__unlock_repository()
-
-        def remove_signing_certs(self, hshs, ca, pub=None):
-                """Remove the given hashes from the certificates configured
-                for the publisher.  Whether the hashes are removed from the
-                list of CA certificates or the list of intermediate certificates
-                is determined by the 'ca' parameter. """
-
-                rstore = self.get_pub_rstore(pub)
-
-                prop_name = "intermediate_certs"
-                if ca:
-                        prop_name = "signing_ca_certs"
-
-                if self.version < 4:
-                        # For older repositories, the information is stored
-                        # in the repository configuration.
-                        t = set(self.cfg.get_property("publisher", prop_name))
-                        t.difference_update(hshs)
-                        self.cfg.set_property("publisher", prop_name, sorted(t))
-                        self.write_config()
-                        return
-
-                # For newer repositories, the certs are stored as part of the
-                # publisher's metadata.
-                pub_obj = rstore.get_publisher()
-                t = set(getattr(pub_obj, prop_name))
-                t.difference_update(hshs)
-                setattr(pub_obj, prop_name, sorted(t))
-                rstore.update_publisher(pub_obj)
 
         def replace_package(self, pfmri):
                 """Replaces the information for the specified FMRI in the
@@ -2627,8 +2537,6 @@ class RepositoryConfig(object):
                 cfg.PropertySection("publisher", [
                     cfg.PropPublisher("alias"),
                     cfg.PropPublisher("prefix"),
-                    cfg.PropList("signing_ca_certs"),
-                    cfg.PropList("intermediate_certs"),
                 ]),
                 cfg.PropertySection("repository", [
                     cfg.PropDefined("collection_type", ["core",

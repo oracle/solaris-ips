@@ -1,3 +1,18 @@
+Version 55:
+Incompatible with clients using versions 0-54:
+
+     pkg.client.publisher.Publisher has changed as follows:
+
+	* The following functions have been removed:
+          get_intermediate_certs
+       	  verify_ca_certs
+
+        * verify_chain has had the mandatory parameter cur_pathlen added which
+	  indicates how many certificates exist between cert and the leaf cert.
+
+        * approve_ca_cert has had the 'manual' parameter removed as only the
+          user can approve a certificate now.
+
 Version 54:
 Compatible with clients using versions 53-54:
 

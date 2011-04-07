@@ -94,13 +94,6 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(["tmp/empty", "tmp/truck1",
                     "tmp/truck2"])
 
-                self.path_to_certs = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced")
-                self.pub_cas_dir = os.path.join(self.path_to_certs,
-                    "publisher_cas")
-                self.inter_certs_dir = os.path.join(self.path_to_certs,
-                    "inter_certs")
-
         def test_00_base(self):
                 """Verify pkgrepo handles basic option and subcommand parsing
                 as expected.
@@ -194,30 +187,28 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
                 for uri in (repo_uri, depot_uri):
                         self.pkgrepo("get -s %s" % uri)
                         expected = """\
-SECTION    PROPERTY           VALUE
-feed       description        ""
-feed       icon               web/_themes/pkg-block-icon.png
-feed       id                 ""
-feed       logo               web/_themes/pkg-block-logo.png
-feed       name               package\ repository\ feed
-feed       window             24
-publisher  alias              ""
-publisher  intermediate_certs ()
-publisher  prefix             test
-publisher  signing_ca_certs   ()
-repository collection_type    core
-repository description        ""
-repository detailed_url       ""
-repository legal_uris         ()
-repository maintainer         ""
-repository maintainer_url     ""
-repository mirrors            ()
-repository name               package\ repository
-repository origins            ()
-repository refresh_seconds    14400
-repository registration_uri   ""
-repository related_uris       ()
-repository version            3
+SECTION    PROPERTY         VALUE
+feed       description      ""
+feed       icon             web/_themes/pkg-block-icon.png
+feed       id               ""
+feed       logo             web/_themes/pkg-block-logo.png
+feed       name             package\ repository\ feed
+feed       window           24
+publisher  alias            ""
+publisher  prefix           test
+repository collection_type  core
+repository description      ""
+repository detailed_url     ""
+repository legal_uris       ()
+repository maintainer       ""
+repository maintainer_url   ""
+repository mirrors          ()
+repository name             package\ repository
+repository origins          ()
+repository refresh_seconds  14400
+repository registration_uri ""
+repository related_uris     ()
+repository version          3
 """
                         self.assertEqualDiff(expected, self.output)
                 self.dc.stop()
@@ -233,9 +224,7 @@ feed\tlogo\tweb/_themes/pkg-block-logo.png
 feed\tname\tpackage\ repository\ feed
 feed\twindow\t24
 publisher\talias\t""
-publisher\tintermediate_certs\t()
 publisher\tprefix\ttest
-publisher\tsigning_ca_certs\t()
 repository\tcollection_type\tcore
 repository\tdescription\t""
 repository\tdetailed_url\t""
@@ -261,16 +250,16 @@ repository\tversion\t3
                 self.pkgrepo("get -s %s publisher/prefix" %
                     repo_uri)
                 expected = """\
-SECTION    PROPERTY           VALUE
-publisher  prefix             test
+SECTION    PROPERTY         VALUE
+publisher  prefix           test
 """
                 self.assertEqualDiff(expected, self.output)
 
                 self.pkgrepo("get -s %s -H publisher/prefix "
                     "repository/origins" % repo_uri)
                 expected = """\
-publisher  prefix             test
-repository origins            ()
+publisher  prefix           test
+repository origins          ()
 """
                 self.assertEqualDiff(expected, self.output)
 
@@ -1084,114 +1073,7 @@ test\t3\tonline\t%sZ
                 self.pkgrepo("version")
                 self.assert_(self.output.find(pkg.VERSION) != -1)
 
-        def __test_add_remove_certs(self, repo_uri, pubs=[]):
-                """Private helper method to test certificate add and remove
-                for default publisher case."""
-
-                pub_opt = "".join(" -p %s " % p for p in pubs)
-                exit = 0
-                if "nosuchpub" in pubs:
-                        if len(pubs) > 1:
-                                # Expect partial in this case.
-                                exit = 3
-                        else:
-                                # Expect failure in this case.
-                                exit = 1
-
-                ca3_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
-                ca1_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta1_cert.pem")
-
-                ca1_hsh = self.calc_file_hash(ca1_pth)
-                ca3_hsh = self.calc_file_hash(ca3_pth)
-
-                self.pkgrepo("add-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_pth), exit=exit)
-                self.pkgrepo("add-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_pth), exit=exit)
-
-                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
-                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
-                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
-                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
-
-                self.pkgrepo("add-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_pth), exit=exit)
-                self.pkgrepo("add-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_pth), exit=exit)
-
-                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
-                self.pkgrepo("remove-signing-ca-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
-                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca1_hsh), exit=exit)
-                self.pkgrepo("remove-signing-intermediate-cert -s %s %s%s" %
-                    (repo_uri, pub_opt, ca3_hsh), exit=exit)
-
-        def test_07_certs(self):
-                """Verify that certificate commands work as expected."""
-
-                # Create a repository.
-                repo_path = os.path.join(self.test_root, "repo")
-                repo_uri = "file:%s" % repo_path
-                self.create_repo(repo_path)
-
-                ca3_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta3_cert.pem")
-                ca1_pth = os.path.join(self.pub_cas_dir, "pubCA1_ta1_cert.pem")
-
-                ca1_hsh = self.calc_file_hash(ca1_pth)
-                ca3_hsh = self.calc_file_hash(ca3_pth)
-
-                # Verify that signing commands will fail gracefully if no
-                # default publisher has been set and a publisher was not
-                # specified.
-                self.pkgrepo("-s %s add-signing-ca-cert %s" % (repo_uri,
-                    ca3_pth), exit=1)
-                self.pkgrepo("-s %s add-signing-intermediate-cert %s" %
-                    (repo_uri, ca3_pth), exit=1)
-                self.pkgrepo("-s %s remove-signing-intermediate-cert %s" %
-                    (repo_uri, ca3_hsh), exit=1)
-                self.pkgrepo("-s %s remove-signing-ca-cert %s" %
-                    (repo_uri, ca1_hsh), exit=1)
-
-                # Now verify that add / remove work as expected for a
-                # repository.
-
-                # Test default publisher case.
-                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
-                self.__test_add_remove_certs(repo_uri)
-
-                # Test specific publisher case.
-                shutil.rmtree(repo_path)
-                self.create_repo(repo_path)
-                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
-                self.__test_add_remove_certs(repo_uri, ["test"])
-                self.__test_add_remove_certs(repo_uri, ["nosuchpub"])
-
-                # Test multiple publisher case.
-                shutil.rmtree(repo_path)
-                self.create_repo(repo_path)
-                self.pkgrepo("set -s %s -p test publisher/alias=test" %
-                    repo_path)
-                self.pkgrepo("set -s %s -p test2 publisher/alias=test2" %
-                    repo_path)
-                self.__test_add_remove_certs(repo_uri, ["test", "test2"])
-                self.__test_add_remove_certs(repo_uri, ["test", "test2",
-                    "nosuchpub"])
-
-                # Last, verify that add/remove works for a v3 repository.
-                shutil.rmtree(repo_path)
-                self.create_repo(repo_path, version=3)
-                self.pkgrepo("set -s %s publisher/prefix=test" % repo_path)
-                self.__test_add_remove_certs(repo_uri, ["test"])
-                self.__test_add_remove_certs(repo_uri)
-                self.__test_add_remove_certs(repo_uri, ["nosuchpub"])
-
-        def test_08_add_publisher(self):
+        def test_07_add_publisher(self):
                 """Verify that add-publisher subcommand works as expected."""
 
                 # Create a repository.

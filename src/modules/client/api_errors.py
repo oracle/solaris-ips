@@ -1888,7 +1888,74 @@ class InappropriateCertificateUse(SigningException):
                     "'%(val)s'.") % {"cert": self.cert.get_subject(),
                     "use": self.use, "name":self.ext.get_name(),
                     "val":self.ext.get_value()}
-                
+
+class PathlenTooShort(InappropriateCertificateUse):
+        """Exception used when a certificate in the chain of trust has been used
+        inappropriately.  An example would be a certificate which was only
+        supposed to be used to sign code being used to sign other certificates.
+        """
+
+        def __init__(self, cert, actual_length, cert_length):
+                SigningException.__init__(self)
+                self.cert = cert
+                self.al = actual_length
+                self.cl = cert_length
+
+        def __str__(self):
+                return _("The certificate whose subject is %(cert)s could not "
+                    "be verified because it has been used inappropriately.  "
+                    "There can only be %(cl)s certificates between this "
+                    "certificate and the leaf certificate.  There are %(al)s "
+                    "certificates between this certificate and the leaf in "
+                    "this chain.") % {
+                        "cert": self.cert.get_subject(),
+                        "al": self.al,
+                        "cl": self.cl
+                    }
+
+
+class AlmostIdentical(ApiException):
+        """Exception used when a package already has a signature action which is
+        nearly identical to the one being added but differs on some
+        attributes."""
+
+        def __init__(self, hsh, algorithm, version, pkg=None):
+                self.hsh = hsh
+                self.algorithm = algorithm
+                self.version = version
+                self.pkg = pkg
+
+        def __str__(self):
+                s = _("The signature to be added to the package has the same "
+                    "hash (%(hash)s), algorithm (%(algorithm)s), and "
+                    "version (%(version)s) as an existing signature, but "
+                    "doesn't match the signature exactly.  For this signature "
+                    "to be added, the existing signature must be removed.") % {
+                        "hash": self.hsh,
+                        "algorithm": self.algorithm,
+                        "version": self.version
+                    }
+                if self.pkg:
+                        s += _("The package being signed was %(pkg)s") % \
+                            {"pkg": self.pkg}
+                return s
+
+
+class DuplicateSignaturesAlreadyExist(ApiException):
+        """Exception used when a package already has a signature action which is
+        nearly identical to the one being added but differs on some
+        attributes."""
+
+        def __init__(self, pfmri):
+                self.pfmri = pfmri
+
+        def __str__(self):
+                return _("%s could not be signed because it already has two "
+                    "copies of this signature in it.  One of those signature "
+                    "actions must be removed before the package is given to "
+                    "users.") % self.pfmri
+
+
 class InvalidPropertyValue(ApiException):
         """Exception used when a property was set to an invalid value."""
 

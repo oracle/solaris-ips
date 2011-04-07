@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -60,7 +60,6 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
   "publishers": [
     {
       "alias": "cat", 
-      "intermediate_certs": [], 
       "name": "bobcat", 
       "packages": [
         "pkg:/foo@1.0,5.11-0"
@@ -81,8 +80,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
           "registration_uri": "", 
           "related_uris": []
         }
-      ], 
-      "signing_ca_certs": []
+      ]
     }
   ], 
   "version": 1
@@ -226,11 +224,9 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
   "publishers": [
     {
       "alias": "cat", 
-      "intermediate_certs": [], 
       "name": "bobcat", 
       "packages": [], 
-      "repositories": [], 
-      "signing_ca_certs": []
+      "repositories": []
     }
   ], 
   "version": 1
@@ -259,7 +255,6 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
   "publishers": [
     {
       "alias": "cat", 
-      "intermediate_certs": [], 
       "name": "bobcat", 
       "packages": [], 
       "repositories": [
@@ -276,8 +271,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
           "registration_uri": "", 
           "related_uris": []
         }
-      ], 
-      "signing_ca_certs": []
+      ]
     }
   ], 
   "version": 1

@@ -116,6 +116,56 @@ authorityKeyIdentifier=keyid:always,issuer:always
 basicConstraints = critical,CA:true
 keyUsage = critical, keyCertSign, cRLSign
 
+[ v3_ca_lp4 ]
+
+# Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:4
+keyUsage = critical, keyCertSign, cRLSign
+
+[ v3_ca_lp3 ]
+
+# Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:3
+keyUsage = critical, keyCertSign, cRLSign
+
+[ v3_ca_lp2 ]
+
+# Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:2
+keyUsage = critical, keyCertSign, cRLSign
+
+[ v3_ca_lp1 ]
+
+# Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:1
+keyUsage = critical, keyCertSign, cRLSign
+
+[ v3_ca_lp0 ]
+
+# Extensions for a typical CA
+
+# PKIX recommendation.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = critical,CA:true,pathlen:0
+keyUsage = critical, keyCertSign, cRLSign
+
 [ v3_ca_no_crl ]
 
 # Extensions for a CA which cannot sign a CRL.
@@ -168,21 +218,21 @@ keyUsage = critical, encipherOnly
 # Used for testing certificate revocation.
 
 basicConstraints = critical,CA:FALSE
-crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA1_ta4_crl.pem
+crlDistributionPoints = URI:http://localhost:12001/file/0/ch1_ta4_crl.pem
 
-[ pubCA1_ta1_crl ]
-
-# Used for testing certificate revocation.
-
-basicConstraints = critical,CA:FALSE
-crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA1_ta1_crl.pem
-
-[ pubCA2_ta4_crl ]
+[ ch5_ta1_crl ]
 
 # Used for testing certificate revocation.
 
 basicConstraints = critical,CA:FALSE
-crlDistributionPoints = URI:http://localhost:12001/file/0/pubCA2_ta4_crl.pem
+crlDistributionPoints = URI:http://localhost:12001/file/0/ch5_ta1_crl.pem
+
+[ ch1.1_ta4_crl ]
+
+# Used for testing certificate revocation.
+
+basicConstraints = critical,CA:FALSE
+crlDistributionPoints = URI:http://localhost:12001/file/0/ch1.1_ta4_crl.pem
 
 [ ch1_ta1_crl ]
 

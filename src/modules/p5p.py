@@ -672,9 +672,6 @@ class Archive(object):
                                                     pfmri.publisher)
                                                 assert pub
 
-                                        payloads.update(pub.signing_ca_certs)
-                                        payloads.update(pub.intermediate_certs)
-
                         if not payloads:
                                 # Nothing more to do.
                                 continue
@@ -687,9 +684,6 @@ class Archive(object):
                 The archive will be created and the package added to it when
                 the close() method is called.  The package contents must not
                 change after this method is called while the archive is open.
-                Please note that, for signed packages, signing certificates
-                used by the publisher are not automatically added to the
-                archive.
 
                 'pfmri' is the FMRI string or object identifying the package to
                 add.
@@ -705,41 +699,6 @@ class Archive(object):
                         pfmri = pkg.fmri.PkgFmri(pfmri)
                 assert pfmri.publisher
                 self.__add_package(pfmri, mpath, fpath=fpath)
-
-        def add_signing_certs(self, pub, hashes, ca):
-                """Queues the specified publisher certs for addition to the
-                archive. The archive will be created and the certs added to it
-                when the close() method is called.  The cert contents must not
-                change after this method is called while the archive is open.
-
-                'pub' is the prefix of the publisher to store the package
-                files for.
-
-                'hashes' is the list of certificate hash files to store.
-                (The certificate files must be in the same compressed format
-                that the Repository class stores them in.)
-
-                'ca' is a boolean indicating whether the certs are added as
-                as CA certificates or intermediate certificates.
-                """
-
-                root = os.path.dirname(self.__arc_name)
-                pub_dir = os.path.join("publisher", pub)
-                file_dir = os.path.join(pub_dir, "file")
-
-                pubobj = self.__pubs.get(pub, None) 
-                if not pubobj:
-                        self.__pubs[pub] = pubobj = \
-                            pkg.client.publisher.Publisher(pub)
-
-                for fname in hashes:
-                        hsh = os.path.basename(fname)
-                        self.__add_publisher_files(root, file_dir, [hsh],
-                            fpath=os.path.dirname(fname))
-                        if ca:
-                                pubobj.signing_ca_certs.append(hsh)
-                        else:
-                                pubobj.intermediate_certs.append(hsh)
 
         def add_repo_package(self, pfmri, repo):
                 """Queues the specified package in a repository for addition to
@@ -1224,14 +1183,12 @@ class Archive(object):
 
                 # If any publisher objects were cached, then there were
                 # signed packages present, and p5i information for each
-                # must be added to the archive so that the client can
-                # handle signing ca and intermediate certs.
+                # must be added to the archive.
                 for pub in self.__pubs.values():
                         # A new publisher object is created with a copy of only
                         # the information that's needed for the archive.
                         npub = pkg.client.publisher.Publisher(pub.prefix,
-                            alias=pub.alias, ca_certs=pub.signing_ca_certs,
-                            intermediate_certs=pub.intermediate_certs,
+                            alias=pub.alias, 
                             revoked_ca_certs=pub.revoked_ca_certs,
                             approved_ca_certs=pub.approved_ca_certs)
 

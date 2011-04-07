@@ -9,12 +9,6 @@ SYNOPSIS
 
      pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
 
-     pkgrepo add-signing-ca-cert [-p publisher ...]
-         [-s repo_uri_or_path] path ...
-
-     pkgrepo add-signing-intermediate-cert [-p publisher ...]
-         [-s repo_uri_or_path] path ...
-
      pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
          [section/property ...]
 
@@ -26,12 +20,6 @@ SYNOPSIS
 
      pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
          [--no-catalog] [--no-index]
-
-     pkgrepo remove-signing-ca-cert [-p publisher ...]
-         [-s repo_uri_or_path] hash ...
-
-     pkgrepo remove-signing-intermediate-cert [-p publisher ...]
-         [-s repo_uri_or_path] hash ...
 
      pkgrepo set [-p publisher] [-s repo_uri_or_path]
          section/property=[value] ... or
@@ -80,34 +68,6 @@ SUBCOMMANDS
 
           Add the specified publisher(s) to the repository.  The new
           publisher(s) will not have any packages or content.
-
-     add-signing-ca-certs [-p publisher ...]
-       [-s repo_uri_or_path] path ...
-          May only be used with filesystem-based repositories.
-
-          Add the certificates provided as approved CA certificates.
-
-          With -p, only add certificate data for the given publisher.
-          The special value 'all' may be used to add the certificate
-          data for all publishers.  If not specified, the default
-          publisher will be used.
-
-          With -s, operate on the repository located at the given URI
-          or filesystem path.
-
-     add-signing-intermediate-certs [-p publisher ...]
-       [-s repo_uri_or_path] path ...
-          May only be used with filesystem-based repositories.
-
-          Add the certificates provided as intermediate certificates.
-
-          With -p, only add certificate data for the given publisher.
-          The special value 'all' may be used to add the certificate
-          data for all publishers.  If not specified, the default
-          publisher will be used.
-
-          With -s, operate on the repository located at the given URI
-          or filesystem path.
 
      get [-F format] [-H] [-p publisher ...] [-s repo_uri_or_path]
        [section/property ...]
@@ -192,36 +152,6 @@ SUBCOMMANDS
           With --no-catalog, don't add any new packages.
 
           With --no-index, don't update search indexes.
-
-     remove-signing-ca-certs [-p publisher ...]
-       [-s repo_uri_or_path] hash ...
-          May only be used with filesystem-based repositories.
-
-          Remove the certificates provided from the list of CA
-          certificates.
-
-          With -p, only remove certificate data for the given
-          publisher.  The special value 'all' may be used to remove
-          the certificate data for all publishers.  If not specified,
-          the default publisher will be used.
-
-          With -s, operate on the repository located at the given URI
-          or filesystem path.
-
-     remove-signing-intermediate-certs [-p publisher ...]
-       [-s repo_uri_or_path] hash ...
-          May only be used with filesystem-based repositories.
-
-          Remove the certificates provided from the list of
-          intermediate certificates.
-
-          With -p, only remove certificate data for the given
-          publisher.  The special value 'all' may be used to remove
-          the certificate data for all publishers.  If not specified,
-          the default publisher will be used.
-
-          With -s, operate on the repository located at the given URI
-          or filesystem path.
 
      set [-p publisher] [-s repo_uri_or_path]
        [section/property=value ...]
@@ -396,35 +326,7 @@ EXAMPLES
      $ pkgrepo set -s /my/repository -p example.com \
          repository/origins=http://example.com/repository
 
-     Example 9:  Add the certificate stored in /tmp/example_file.pem
-     as a signing CA certificate for the repository located at
-     /my/repository for the default publisher.
-
-     $ pkgrepo add-signing-ca-cert -s /my/repository \
-         /tmp/example_file.pem
-
-     Example 10:  Add the certificate stored in /tmp/example_file.pem
-     as a signing CA certificate for the repository located at
-     /my/repository for a specific publisher.
-
-     $ pkgrepo add-signing-ca-cert -s /my/repository \
-         -p example.com /tmp/example_file.pem
-
-     Example 11:  Remove the certificate with hash a12345 from the
-     list of intermediate certificates for the repository located at
-     /my/repository for the default publisher.
-
-     $ pkgrepo remove-signing-intermediate-ca-cert -s /my/repository \
-         a12345
-
-     Example 12:  Remove the certificate with hash a12345 from the
-     list of intermediate certificates for the repository located at
-     /my/repository for a specific publisher.
-
-     $ pkgrepo remove-signing-intermediate-ca-cert -s /my/repository \
-         -p example.com a12345
-
-     Example 13:  Add a new publisher to the repository.
+     Example 9:  Add a new publisher to the repository.
 
      $ pkgrepo add-publisher -s /my/repository example.com
 

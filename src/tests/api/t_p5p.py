@@ -119,10 +119,6 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     "code_signing_certs")
                 self.chain_certs_dir = os.path.join(self.path_to_certs,
                     "chain_certs")
-                self.pub_cas_dir = os.path.join(self.path_to_certs,
-                    "publisher_cas")
-                self.inter_certs_dir = os.path.join(self.path_to_certs,
-                    "inter_certs")
                 self.raw_trust_anchor_dir = os.path.join(self.path_to_certs,
                     "trust_anchors")
                 self.crl_dir = os.path.join(self.path_to_certs, "crl")
@@ -138,23 +134,22 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 # Sign the 'signed' package.
                 r = self.get_repo(self.dcs[1].get_repodir())
-                r.add_signing_certs([os.path.join(self.pub_cas_dir,
-                    "pubCA1_ta1_cert.pem")], ca=True)
-                r.add_signing_certs([os.path.join(self.pub_cas_dir,
-                    "pubCA1_ta3_cert.pem")], ca=True)
-                r.add_signing_certs([os.path.join(self.inter_certs_dir,
-                    "i1_ta1_cert.pem")], ca=False)
-                r.add_signing_certs([os.path.join(self.inter_certs_dir,
-                    "i2_ta1_cert.pem")], ca=False)
-
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
-                    "%(pkg)s" % {
-                    "key": os.path.join(self.keys_dir, "cs1_pubCA1_key.pem"),
-                    "cert": os.path.join(self.cs_dir, "cs1_pubCA1_cert.pem"),
+                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
+                    "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                    "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                     "i1": os.path.join(self.chain_certs_dir,
-                        "ch1_pubCA1_cert.pem"),
+                        "ch1_ta1_cert.pem"),
                     "i2": os.path.join(self.chain_certs_dir,
-                        "ch2_pubCA1_cert.pem"),
+                        "ch2_ta1_cert.pem"),
+                    "i3": os.path.join(self.chain_certs_dir,
+                        "ch3_ta1_cert.pem"),
+                    "i4": os.path.join(self.chain_certs_dir,
+                        "ch4_ta1_cert.pem"),
+                    "i5": os.path.join(self.chain_certs_dir,
+                        "ch5_ta1_cert.pem"),
+                    "i6": os.path.join(self.chain_certs_dir,
+                        "ch1_ta3_cert.pem"),
                     "pkg": self.signed
                 }
                 self.pkgsign(self.rurl, sign_args)
@@ -197,32 +192,32 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     "publisher/test/file",
                     "publisher/test/file/0a",
                     "publisher/test/file/0a/0acf1107d31f3bab406f8611b21b8fade78ac874",
-                    "publisher/test/file/4e",
-                    "publisher/test/file/4e/4ee36c0da7f97dd367d36095c4fcac014f8b2ec4",
-                    "publisher/test/file/6f",
-                    "publisher/test/file/6f/6fadc7b6ba9db7705b3833416447ba5daebe1478",
-                    "publisher/test/file/93",
-                    "publisher/test/file/93/93911122ac112e5e4cbcbe95d81c9cc5299e239c",
-                    "publisher/test/file/96",
-                    "publisher/test/file/96/965dad893f0173a84cf112e7160aa9a2dc8ec2d3",
+                    "publisher/test/file/34",
+                    "publisher/test/file/34/344f2a94afd12146336340d71962254f647874be",
+                    "publisher/test/file/65",
+                    "publisher/test/file/65/65154063c6988c4de879751bb112703b06ba5129",
+                    "publisher/test/file/6c",
+                    "publisher/test/file/6c/6cd1527a2e4a2926b05663e0a29f0fd5207a7119",
+                    "publisher/test/file/97",
+                    "publisher/test/file/97/97ff81591147d40444c8fea6e794fefda382d199",
+                    "publisher/test/file/9c",
+                    "publisher/test/file/9c/9cb9f772cc4a01801b983f199114cc7884b026e3",
+
                     "publisher/test/file/a2",
                     "publisher/test/file/a2/a285ada5f3cae14ea00e97a8d99bd3e357cb0dca",
                     "publisher/test/file/b2",
                     "publisher/test/file/b2/b265f2ec87c4a55eb2b6b4c926e7c65f7247a27e",
-                    "publisher/test/file/d4",
-                    "publisher/test/file/d4/d43daefacfba6d0c178dd37178e650bb606936f4",
-                    "publisher/test/file/d8",
-                    "publisher/test/file/d8/d851faf1de264d9a04527cc4b7fd2e2daef2cfdd",
+                    "publisher/test/file/d0",
+                    "publisher/test/file/d0/d087434b648f50ab20107b6dfb03f754a06fa462",
                     "publisher/test/file/dc",
                     "publisher/test/file/dc/dc84bd4b606fe43fc892eb245d9602b67f8cba38",
-                    "publisher/test/file/e2",
-                    "publisher/test/file/e2/e2c1fd4b0d66150de3d2b28195603c69dfd792e8",
+                    "publisher/test/file/f7",
+                    "publisher/test/file/f7/f72001172042e0afafef7cf5a1f90697866acf3d",
                     "publisher/test/pkg",
                     "publisher/test/pkg/foo",
                     "publisher/test/pkg/%s" % self.foo.get_dir_path(),
                     "publisher/test/pkg/signed",
                     "publisher/test/pkg/%s" % self.signed.get_dir_path(),
-                    "publisher/test/pub.p5i",
                     "publisher/test2",
                     "publisher/test2/file",
                     "publisher/test2/file/80",
@@ -393,18 +388,6 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 arc.add_package(self.foo, foo_path, dfroot)
                 arc.add_package(self.signed, signed_path, dfroot)
                 arc.add_package(self.quux, quux_path, dfroot)
-
-                # Add publisher cert files.  (This has to be done manually
-                # since add_package() was used instead of add_repo_package().)
-                p = repo.get_publisher("test")
-                arc.add_signing_certs(p.prefix, [
-                    repo.file(hsh, pub=p.prefix)
-                    for hsh in p.signing_ca_certs
-                ], True)
-                arc.add_signing_certs(p.prefix, [
-                    repo.file(hsh, pub=p.prefix)
-                    for hsh in p.intermediate_certs
-                ], False)
                 arc.close()
 
                 # Verify the result.
@@ -453,7 +436,10 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 # Verify the result.
                 arc = ptf.PkgTarFile(name=arc_path, mode="r")
-                expected = self.multi_expected
+                # Add in the p5i file since this is an archive with signed
+                # packages created from a repo.
+                expected = sorted(self.multi_expected +
+                    ["publisher/test/pub.p5i"])
                 actual = sorted(m.name for m in arc.getmembers())
                 self.assertEqualDiff(expected, actual)
 
@@ -784,7 +770,10 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 # Verify that archive has expected contents.
                 arc = ptf.PkgTarFile(name=arc_path, mode="r")
-                expected = self.multi_expected
+                # Add in the p5i file since this is an archive with signed
+                # packages created from a repo.
+                expected = sorted(self.multi_expected +
+                    ["publisher/test/pub.p5i"])
                 actual = sorted(m.name for m in arc.getmembers())
                 self.assertEqualDiff(expected, actual)
                 arc.close()

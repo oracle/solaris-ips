@@ -186,34 +186,45 @@ if __name__ == "__main__":
         os.mkdir("crl")
         os.mkdir("keys")
         os.mkdir("trust_anchors")
-        os.mkdir("inter_certs")
-        os.mkdir("publisher_cas")
         os.mkdir("chain_certs")
         os.mkdir("code_signing_certs")
 
         # Make a length 7 chain.
         make_trust_anchor("ta1")
-        make_ca_cert("inter_certs", "i1_ta1", "trust_anchors", "ta1")
-        make_ca_cert("inter_certs", "i2_ta1", "inter_certs", "i1_ta1")
-        make_ca_cert("publisher_cas", "pubCA1_ta1", "inter_certs", "i2_ta1")
-        make_ca_cert("chain_certs", "ch1_pubCA1", "publisher_cas", "pubCA1_ta1")
-        make_ca_cert("chain_certs", "ch2_pubCA1", "chain_certs", "ch1_pubCA1")
-        make_cs_cert("code_signing_certs", "cs1_pubCA1",
-            "chain_certs", "ch2_pubCA1")
-        # Make a chain where the publisher CA has revoked the code signing cert.
-        make_cs_cert("code_signing_certs", "cs2_pubCA1",
-            "chain_certs", "ch2_pubCA1", ext="pubCA1_ta1_crl")
-        revoke_cert("pubCA1_ta1", "cs2_pubCA1", ca_dir="publisher_cas")
-        # Make a chain where the chain cert has revoked the code signing cert.
-        make_cs_cert("code_signing_certs", "cs3_pubCA1",
-            "chain_certs", "ch2_pubCA1", ext="ch1_ta1_crl")
-        revoke_cert("ch1_pubCA1", "cs3_pubCA1", ca_dir="chain_certs")
+        make_ca_cert("chain_certs", "ch1_ta1", "trust_anchors", "ta1",
+            ext="v3_ca_lp4")
+        make_ca_cert("chain_certs", "ch2_ta1", "chain_certs", "ch1_ta1",
+            ext="v3_ca_lp3")
+        make_ca_cert("chain_certs", "ch3_ta1", "chain_certs", "ch2_ta1",
+            ext="v3_ca_lp2")
+        make_ca_cert("chain_certs", "ch4_ta1", "chain_certs", "ch3_ta1",
+            ext="v3_ca_lp1")
+        make_ca_cert("chain_certs", "ch5_ta1", "chain_certs", "ch4_ta1",
+            ext="v3_ca_lp0")
+        make_cs_cert("code_signing_certs", "cs1_ch5_ta1",
+            "chain_certs", "ch5_ta1")
+        # Make a chain where a chain cert has revoked the code signing cert.
+        make_cs_cert("code_signing_certs", "cs2_ch5_ta1",
+            "chain_certs", "ch5_ta1", ext="ch5_ta1_crl")
+        revoke_cert("ch5_ta1", "cs2_ch5_ta1", ca_dir="chain_certs")
         # Make a chain where the chain cert has an unsupported critical
         # extension.
-        make_ca_cert("chain_certs", "ch2.2_pubCA1", "chain_certs", "ch1_pubCA1",
+        make_ca_cert("chain_certs", "ch5.1_ta1", "chain_certs", "ch4_ta1",
             ext="issuer_ext_ca")
-        make_cs_cert("code_signing_certs", "cs4_pubCA1",
-            "chain_certs", "ch2.2_pubCA1")
+        make_cs_cert("code_signing_certs", "cs1_ch5.1_ta1",
+            "chain_certs", "ch5.1_ta1")
+        # Make a chain where a chain cert has a larger number than is needed.
+        make_ca_cert("chain_certs", "ch5.2_ta1", "chain_certs", "ch4_ta1",
+            ext="v3_ca_lp1")
+        make_cs_cert("code_signing_certs", "cs1_ch5.2_ta1",
+            "chain_certs", "ch5.2_ta1")
+        # Make a chain where a chain cert has a smaller number than is needed.
+        make_ca_cert("chain_certs", "ch4.3_ta1", "chain_certs", "ch3_ta1",
+            ext="v3_ca_lp0")
+        make_ca_cert("chain_certs", "ch5.3_ta1", "chain_certs", "ch4.3_ta1",
+            ext="v3_ca_lp0")
+        make_cs_cert("code_signing_certs", "cs1_ch5.3_ta1",
+            "chain_certs", "ch5.3_ta1")
 
         # Make a length 2 chain
         make_trust_anchor("ta2")
@@ -221,82 +232,82 @@ if __name__ == "__main__":
 
         # Make a length 3 chain
         make_trust_anchor("ta3")
-        make_ca_cert("publisher_cas", "pubCA1_ta3", "trust_anchors", "ta3")
-        make_cs_cert("code_signing_certs", "cs1_p1_ta3",
-            "publisher_cas", "pubCA1_ta3")
+        make_ca_cert("chain_certs", "ch1_ta3", "trust_anchors", "ta3")
+        make_cs_cert("code_signing_certs", "cs1_ch1_ta3",
+            "chain_certs", "ch1_ta3")
         # Add a certificate to the length 3 chain with an unsupported critical
         # extension.
-        make_cs_cert("code_signing_certs", "cs2_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", ext="issuer_ext")
+        make_cs_cert("code_signing_certs", "cs2_ch1_ta3",
+            "chain_certs", "ch1_ta3", ext="issuer_ext")
         # Add a certificate to the length 3 chain that has already expired.
-        make_cs_cert("code_signing_certs", "cs3_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", expired=True)
+        make_cs_cert("code_signing_certs", "cs3_ch1_ta3",
+            "chain_certs", "ch1_ta3", expired=True)
         # Add a certificate to the length 3 chain that is in the future.
-        make_cs_cert("code_signing_certs", "cs4_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", future=True)
+        make_cs_cert("code_signing_certs", "cs4_ch1_ta3",
+            "chain_certs", "ch1_ta3", future=True)
         # Add a certificate to the length 3 chain that has an unknown value for
         # a recognized non-critical extension.
-        make_cs_cert("code_signing_certs", "cs5_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", ext="issuer_ext_non_critical")
+        make_cs_cert("code_signing_certs", "cs5_ch1_ta3",
+            "chain_certs", "ch1_ta3", ext="issuer_ext_non_critical")
         # Add a certificate to the length 3 chain that has an unknown value for
         # a recognized critical extension.
-        make_cs_cert("code_signing_certs", "cs6_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", ext="issuer_ext_bad_val")
+        make_cs_cert("code_signing_certs", "cs6_ch1_ta3",
+            "chain_certs", "ch1_ta3", ext="issuer_ext_bad_val")
         # Add a certificate to the length 3 chain that has keyUsage information
         # but cannot be used to sign code.
-        make_cs_cert("code_signing_certs", "cs7_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", ext="v3_no_keyUsage")
+        make_cs_cert("code_signing_certs", "cs7_ch1_ta3",
+            "chain_certs", "ch1_ta3", ext="v3_no_keyUsage")
         # Make a chain where a CS is used to sign another CS.
-        make_cs_cert("code_signing_certs", "cs8_p1_ta3",
-            "publisher_cas", "pubCA1_ta3", ext="v3_confused_cs")
-        make_cs_cert("code_signing_certs", "cs1_cs8_p1_ta3",
-            "code_signing_certs", "cs8_p1_ta3")
+        make_cs_cert("code_signing_certs", "cs8_ch1_ta3",
+            "chain_certs", "ch1_ta3", ext="v3_confused_cs")
+        make_cs_cert("code_signing_certs", "cs1_cs8_ch1_ta3",
+            "code_signing_certs", "cs8_ch1_ta3")
         # Make a chain where the CA has an unsupported critical extension.
-        make_ca_cert("publisher_cas", "pubCA2_ta3", "trust_anchors", "ta3",
+        make_ca_cert("chain_certs", "ch1.1_ta3", "trust_anchors", "ta3",
             ext="issuer_ext_ca")
-        make_cs_cert("code_signing_certs", "cs1_p2_ta3",
-            "publisher_cas", "pubCA2_ta3")
+        make_cs_cert("code_signing_certs", "cs1_ch1.1_ta3",
+            "chain_certs", "ch1.1_ta3")
         # Make a chain where the CA is expired but the CS is current.
-        make_ca_cert("publisher_cas", "pubCA3_ta3", "trust_anchors", "ta3",
+        make_ca_cert("chain_certs", "ch1.2_ta3", "trust_anchors", "ta3",
             expired=True)
-        make_cs_cert("code_signing_certs", "cs1_p3_ta3",
-            "publisher_cas", "pubCA3_ta3")
+        make_cs_cert("code_signing_certs", "cs1_ch1.2_ta3",
+            "chain_certs", "ch1.2_ta3")
         # Make a chain where the CA is in the future but the CS is current.
-        make_ca_cert("publisher_cas", "pubCA4_ta3", "trust_anchors", "ta3",
+        make_ca_cert("chain_certs", "ch1.3_ta3", "trust_anchors", "ta3",
             future=True)
-        make_cs_cert("code_signing_certs", "cs1_p4_ta3",
-            "publisher_cas", "pubCA4_ta3")
+        make_cs_cert("code_signing_certs", "cs1_ch1.3_ta3",
+            "chain_certs", "ch1.3_ta3")
         # Make a chain where the CA does not have keyUsage set.
-        make_ca_cert("publisher_cas", "pubCA5_ta3", "trust_anchors", "ta3",
+        make_ca_cert("chain_certs", "ch1.4_ta3", "trust_anchors", "ta3",
             future=True, ext="v3_ca_no_keyUsage")
-        make_cs_cert("code_signing_certs", "cs1_p5_ta3",
-            "publisher_cas", "pubCA5_ta3")
+        make_cs_cert("code_signing_certs", "cs1_ch1.4_ta3",
+            "chain_certs", "ch1.4_ta3")
 
         # Revoke a code signing certificate from the publisher.
         make_trust_anchor("ta4")
-        make_ca_cert("publisher_cas", "pubCA1_ta4", "trust_anchors", "ta4")
-        make_cs_cert("code_signing_certs", "cs1_ta4",
-            "publisher_cas", "pubCA1_ta4", ext="crl_ext")
-        revoke_cert("pubCA1_ta4", "cs1_ta4", ca_dir="publisher_cas")
-        make_cs_cert("code_signing_certs", "cs2_ta4",
-            "publisher_cas", "pubCA1_ta4", ext="bad_crl")
-        make_cs_cert("code_signing_certs", "cs3_ta4",
-            "publisher_cas", "pubCA1_ta4", ext="bad_crl_loc")
+        make_ca_cert("chain_certs", "ch1_ta4", "trust_anchors", "ta4")
+        make_cs_cert("code_signing_certs", "cs1_ch1_ta4",
+            "chain_certs", "ch1_ta4", ext="crl_ext")
+        revoke_cert("ch1_ta4", "cs1_ch1_ta4", ca_dir="chain_certs")
+        make_cs_cert("code_signing_certs", "cs2_ch1_ta4",
+            "chain_certs", "ch1_ta4", ext="bad_crl")
+        make_cs_cert("code_signing_certs", "cs3_ch1_ta4",
+            "chain_certs", "ch1_ta4", ext="bad_crl_loc")
         # Revoke a code signing certificate but sign the CRL with a CA
         # certificate that does not have that keyUsage set.
-        make_ca_cert("publisher_cas", "pubCA2_ta4", "trust_anchors", "ta4",
+        make_ca_cert("chain_certs", "ch1.1_ta4", "trust_anchors", "ta4",
             ext="v3_ca_no_crl")
-        make_cs_cert("code_signing_certs", "cs1_p2_ta4",
-            "publisher_cas", "pubCA2_ta4", ext="pubCA2_ta4_crl")
-        revoke_cert("pubCA2_ta4", "cs1_p2_ta4", ca_dir="publisher_cas")
+        make_cs_cert("code_signing_certs", "cs1_ch1.1_ta4",
+            "chain_certs", "ch1.1_ta4", ext="ch1.1_ta4_crl")
+        revoke_cert("ch1.1_ta4", "cs1_ch1.1_ta4", ca_dir="chain_certs")
 
         # Revoke a CA cert from the trust anchor
         make_trust_anchor("ta5")
-        make_ca_cert("publisher_cas", "pubCA1_ta5", "trust_anchors", "ta5",
+        make_ca_cert("chain_certs", "ch1_ta5", "trust_anchors", "ta5",
             ext="crl_ca")
-        make_cs_cert("code_signing_certs", "cs1_ta5",
-            "publisher_cas", "pubCA1_ta5")
-        revoke_cert("ta5", "pubCA1_ta5", cert_dir="publisher_cas")
+        make_cs_cert("code_signing_certs", "cs1_ch1_ta5",
+            "chain_certs", "ch1_ta5")
+        revoke_cert("ta5", "ch1_ta5", cert_dir="chain_certs")
 
         os.remove(cnf_file)
         os.chdir("../")

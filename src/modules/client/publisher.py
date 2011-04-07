@@ -96,7 +96,7 @@ URI_SORT_POLICIES = {
 
 # This dictionary records the recognized values of extensions.
 SUPPORTED_EXTENSION_VALUES = {
-    "basicConstraints": ("CA:TRUE", "CA:FALSE"),
+    "basicConstraints": ("CA:TRUE", "CA:FALSE", "PATHLEN:"),
     "keyUsage": ("DIGITAL SIGNATURE", "CERTIFICATE SIGN", "CRL SIGN")
 }
 
@@ -814,11 +814,6 @@ class Publisher(object):
                 #
                 # The relevant implementation is probably the line which
                 # strips ][ from the input in imageconfig.read_list.
-                if ca_certs:
-                        self.signing_ca_certs = ca_certs
-                else:
-                        self.signing_ca_certs = []
-
                 if revoked_ca_certs:
                         self.revoked_ca_certs = revoked_ca_certs
                 else:
@@ -829,18 +824,10 @@ class Publisher(object):
                 else:
                         self.approved_ca_certs = []
 
-                if intermediate_certs:
-                        self.intermediate_certs = intermediate_certs
-                else:
-                        self.intermediate_certs = []
-
                 if props:
                         self.properties.update(props)
 
                 self.ca_dict = None
-
-                self.__verified_cas = False
-                self.__bad_ca_certs = set()
 
                 # Must be done last.
                 self.__catalog = catalog
@@ -871,11 +858,10 @@ class Publisher(object):
                     client_uuid=self.__client_uuid, disabled=self.__disabled,
                     meta_root=self.meta_root, repositories=repositories,
                     selected_repository=selected, transport=self.transport,
-                    sticky=self.__sticky, ca_certs=self.signing_ca_certs,
+                    sticky=self.__sticky,
                     props=self.properties,
                     revoked_ca_certs=self.revoked_ca_certs,
-                    approved_ca_certs=self.approved_ca_certs,
-                    intermediate_certs=self.intermediate_certs)
+                    approved_ca_certs=self.approved_ca_certs)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -1703,14 +1689,10 @@ pkg unset-publisher %s
                             known=known, unknown=[self.prefix],
                             origins=self.selected_repository.origins)
 
-        def approve_ca_cert(self, cert, manual=False, trust_anchors=None,
-            img_policy=None):
+        def approve_ca_cert(self, cert, trust_anchors=None, img_policy=None):
                 """Add the cert as a CA for manifest signing for this publisher.
 
                 The 'cert' parameter as a string of the certificate to add.
-
-                The 'manual' parameter indicates whether this is a CA the user
-                has explicitly added.
 
                 The 'trust_anchors' parameter is a dictionary which contains
                 the trust anchors to use to validate the certificate.
@@ -1718,31 +1700,14 @@ pkg unset-publisher %s
                 The 'img_policy' parameter is the signature policy for the
                 image."""
 
-                assert manual or (trust_anchors and img_policy)
-                # Verifying this one certificate shouldn't change whether
-                # the publisher's CA certs have been verified.
-                old_verification_value = self.__verified_cas
-                # Mark that not all CA certs have been verified.
-                self.__verified_cas = False
                 hsh = self.__add_cert(cert)
-                self.signing_ca_certs.append(hsh)
-                # If the user had previously removed this certificate, remove
+                # If the user had previously revoked this certificate, remove
                 # the certificate from that list.
-                if manual and hsh in self.revoked_ca_certs:
+                if hsh in self.revoked_ca_certs:
                         t = set(self.revoked_ca_certs)
                         t.remove(hsh)
                         self.revoked_ca_certs = list(t)
-                        self.__bad_ca_certs.discard(hsh)
-                # If the user indicated that this cert should be approved, add
-                # it to the approved list. 
-                if manual:
-                        self.approved_ca_certs.append(hsh)
-                else:
-                        # If the user did not add this certificate manually,
-                        # then ensure that it validates against the image's
-                        # trust anchors.
-                        self.__verify_ca_cert(cert, trust_anchors, img_policy)
-                self.__verified_cas = old_verification_value
+                self.approved_ca_certs.append(hsh)
 
         def revoke_ca_cert(self, s):
                 """Record that the cert with hash 's' is no longer trusted
@@ -1770,14 +1735,16 @@ pkg unset-publisher %s
                         t.remove(s)
                         self.revoked_ca_certs = list(t)
 
+        @staticmethod
+        def __hash_cert(s):
+                return hashlib.sha1(s).hexdigest()
+
         def __add_cert(self, s):
                 """Add the certificate stored as a string in 's' to the
                 certificates this publisher knows about."""
 
                 self.create_meta_root()
-                pkg_hash = hashlib.sha1()
-                pkg_hash.update(s)
-                pkg_hash = pkg_hash.hexdigest()
+                pkg_hash = self.__hash_cert(s)
                 pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
                 try:
                         with open(pkg_hash_pth, "wb") as fh:
@@ -1875,29 +1842,18 @@ pkg unset-publisher %s
                 """Return a dictionary of the CA certificates for this
                 publisher."""
 
-                # The CA certs must be verified before this method is called.
-                assert self.__verified_cas
                 if self.ca_dict is not None:
                         return self.ca_dict
                 self.ca_dict = {}
                 # CA certs approved for this publisher are stored by hash to
                 # prevent the later substitution or confusion over what certs
                 # have or have not been approved.
-                for h in (set(self.signing_ca_certs) -
-                    set(self.__bad_ca_certs)) | set(self.approved_ca_certs):
+                for h in set(self.approved_ca_certs):
                         c = self.get_cert_by_hash(h, verify_hash=True)
                         s = c.get_subject().as_hash()
                         self.ca_dict.setdefault(s, [])
                         self.ca_dict[s].append(c)
                 return self.ca_dict
-
-        def get_intermediate_certs(self):
-                """Retrieve the intermediate certificates the publisher deemed
-                were necessary to validate its CA certificates against the
-                image's trust anchors."""
-
-                for c in self.intermediate_certs:
-                        self.get_cert_by_hash(c, verify_hash=True)
 
         def update_props(self, set_props=EmptyI, add_prop_values=EmptyDict,
             remove_prop_values=EmptyDict, unset_props=EmptyI):
@@ -1945,29 +1901,6 @@ pkg unset-publisher %s
                                             {"value":v, "name":n})
                 self.__delay_validation = False
                 self.__validate_properties()
-
-        def verify_ca_certs(self, trust_anchors):
-                """Verify the CA certs for this publisher against the image's
-                trust anchors."""
-
-                self.__bad_ca_certs = set(self.revoked_ca_certs)
-
-                self.get_intermediate_certs()
-                # The set of potential CA certs is all those certs the publisher
-                # declared minus the ones the user has explictly removed.
-                for c in set(self.signing_ca_certs) - \
-                    set(self.revoked_ca_certs):
-                        cert = self.get_cert_by_hash(c, verify_hash=True)
-                        try:
-                                self.verify_chain(cert, trust_anchors,
-                                    usages=CERT_SIGNING_USE)
-                        except api_errors.CertificateException:
-                                # If the cert couldn't be verified, add it to
-                                # the certs to ignore for this operation but
-                                # don't treat it as if the user had declared
-                                # the cert untrustworthy.
-                                self.__bad_ca_certs.add(c)
-                self.__verified_cas = True
 
         def __validate_properties(self):
                 """Check that the properties set for this publisher are
@@ -2099,7 +2032,7 @@ pkg unset-publisher %s
                                         # raises will take the code to the
                                         # except below.
                                         self.__check_extensions(t,
-                                            CRL_SIGNING_USE)
+                                            CRL_SIGNING_USE, 0)
                                         verified_crl = True
                         except api_errors.SigningException:
                                 pass
@@ -2108,8 +2041,8 @@ pkg unset-publisher %s
                         for c in crl_cas:
                                 if crl.verify(c.get_pubkey()):
                                         try:
-                                                self.verify_chain(c, ca_dict,
-                                                    usages=CRL_SIGNING_USE)
+                                                self.verify_chain(c, ca_dict, 0,
+                                                    usages=CRL_SIGNING_USE,)
                                         except api_errors.SigningException:
                                                 pass
                                         else:
@@ -2123,9 +2056,36 @@ pkg unset-publisher %s
                 if rev:
                         raise api_errors.RevokedCertificate(cert, rev[1])
 
-        def __check_extensions(self, cert, usages):
+        def __check_revocation(self, cert, ca_dict):
+                txt = cert.as_text() + cert.as_pem()
+                hsh = self.__hash_cert(txt)
+                if hsh in self.revoked_ca_certs:
+                        raise api_errors.RevokedCertificate(cert,
+                            "User manually revoked certificate.")
+                self.__check_crls(cert, ca_dict)
+
+        def __check_extensions(self, cert, usages, cur_pathlen):
                 """Check whether the critical extensions in this certificate
                 are supported and allow the provided use(s)."""
+
+                def check_values(vs):
+                        for v in vs:
+                                if v in supported_vs:
+                                        continue
+                                if v.startswith("PATHLEN:") and \
+                                    "PATHLEN:" in supported_vs:
+                                        try:
+                                                cert_pathlen = int(v[len("PATHLEN:"):])
+                                        except ValueError, e:
+                                                raise api_errors.UnsupportedExtensionValue(cert, ext, v)
+                                        if cur_pathlen > cert_pathlen:
+                                                raise api_errors.PathlenTooShort(cert, cur_pathlen, cert_pathlen)
+                                        continue
+                                if len(vs) < 2:
+                                        raise api_errors.UnsupportedExtensionValue(cert, ext)
+                                else:
+                                        raise api_errors.UnsupportedExtensionValue(cert, ext, v)
+
 
                 for i in range(0, cert.get_ext_count()):
                         ext = cert.get_ext_at(i)
@@ -2138,12 +2098,7 @@ pkg unset-publisher %s
                                 vs = [s.strip() for s in v.split(",")]
                                 # Check whether the values for the extension are
                                 # recognized.
-                                for v in vs:
-                                        if v not in supported_vs:
-                                                if len(vs) < 2:
-                                                        raise api_errors.UnsupportedExtensionValue(cert, ext)
-                                                else:
-                                                        raise api_errors.UnsupportedExtensionValue(cert, ext, v)
+                                check_values(vs)
                                 uses = usages.get(name, [])
                                 if isinstance(uses, basestring):
                                         uses = [uses]
@@ -2159,13 +2114,17 @@ pkg unset-publisher %s
                                 raise api_errors.UnsupportedCriticalExtension(
                                     cert, ext)
         
-        def verify_chain(self, cert, ca_dict, required_names=None, usages=None):
+        def verify_chain(self, cert, ca_dict, cur_pathlen, required_names=None,
+            usages=None):
                 """Validates the certificate against the given trust anchors.
 
                 The 'cert' parameter is the certificate to validate.
 
-                The 'ca_dict' is a dictionary which maps subject hashes to
-                certs treated as trust anchors.
+                The 'ca_dict' parameter is a dictionary which maps subject
+                hashes to certs treated as trust anchors.
+
+                The 'cur_pathlen' parameter is an integer indicating how many
+                certificates have been found between cert and the leaf cert.
 
                 The 'required_names' parameter is a set of strings that must
                 be seen as a CN in the chain of trust for the certificate."""
@@ -2175,6 +2134,13 @@ pkg unset-publisher %s
                 verified = False
                 continue_loop = True
                 certs_with_problems = []
+
+                ca_dict = copy.copy(ca_dict)
+                for k, v in self.get_ca_certs().iteritems():
+                        if k in ca_dict:
+                                ca_dict[k].extend(v)
+                        else:
+                                ca_dict[k] = v
 
                 def merge_dicts(d1, d2):
                         """Function for merging usage dictionaries."""
@@ -2186,20 +2152,7 @@ pkg unset-publisher %s
                                         res[k] = d2[k]
                         return res
 
-                if not usages:
-                        usages = {}
-                        for u in POSSIBLE_USES:
-                                usages = merge_dicts(usages, u)
-
-                # Check whether we can validate this certificate.
-                self.__check_extensions(cert, usages)
-
-                # Check whether this certificate has been revoked.
-                self.__check_crls(cert, ca_dict)
-
-                while continue_loop:
-                        # If this certificate's CN is in the set of required
-                        # names, remove it.
+                def discard_names(cert, required_names):
                         for cert_cn in [
                             str(c.get_data())
                             for c
@@ -2207,6 +2160,22 @@ pkg unset-publisher %s
                                 m2.X509.X509_Name.nid["CN"])
                         ]:
                                 required_names.discard(cert_cn)
+
+                if not usages:
+                        usages = {}
+                        for u in POSSIBLE_USES:
+                                usages = merge_dicts(usages, u)
+
+                # Check whether we can validate this certificate.
+                self.__check_extensions(cert, usages, cur_pathlen)
+
+                # Check whether this certificate has been revoked.
+                self.__check_revocation(cert, ca_dict)
+
+                while continue_loop:
+                        # If this certificate's CN is in the set of required
+                        # names, remove it.
+                        discard_names(cert, required_names)
 
                         # Find the certificate that issued this certificate.
                         issuer = cert.get_issuer()
@@ -2217,6 +2186,9 @@ pkg unset-publisher %s
                         for c in ca_dict.get(issuer_hash, []):
                                 if cert.verify(c.get_pubkey()):
                                         verified = True
+                                        # Remove any required names found in the
+                                        # trust anchor.
+                                        discard_names(c, required_names)
                                         # If there are more names to check for
                                         # continue up the chain of trust to look
                                         # for them.
@@ -2262,20 +2234,25 @@ pkg unset-publisher %s
                                                 # don't understand.
                                                 try:
                                                         self.__check_extensions(
-                                                            c, CERT_SIGNING_USE)
-                                                        self.__check_crls(c,
+                                                            c, CERT_SIGNING_USE,
+                                                            cur_pathlen)
+                                                        self.__check_revocation(c,
                                                             ca_dict)
                                                 except (api_errors.UnsupportedCriticalExtension, api_errors.RevokedCertificate), e:
                                                         certs_with_problems.append(e)
                                                         problem = True
                                                 # If this certificate has no
                                                 # problems with it, it's the
-                                                # next link in the chain so
-                                                # make it the current
-                                                # certificate.
+                                                # next link in the chain so make
+                                                # it the current certificate and
+                                                # add one to cur_pathlen since
+                                                # there's one more chain cert
+                                                # between the code signing cert
+                                                # and the root of the chain.
                                                 if not problem:
                                                         up_chain = True
                                                         cert = c
+                                                        cur_pathlen += 1
                                                         break
                                 # If there's not another link in the chain to be
                                 # found, stop the iteration.

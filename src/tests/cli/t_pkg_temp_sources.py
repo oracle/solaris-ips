@@ -133,27 +133,24 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Sign the 'signed' package.
                 r = self.get_repo(self.dcs[1].get_repodir())
-                r.add_signing_certs([os.path.join(self.pub_cas_dir,
-                    "pubCA1_ta1_cert.pem")], ca=True)
-                r.add_signing_certs([os.path.join(self.pub_cas_dir,
-                    "pubCA1_ta3_cert.pem")], ca=True)
-                r.add_signing_certs([os.path.join(self.inter_certs_dir,
-                    "i1_ta1_cert.pem")], ca=False)
-                r.add_signing_certs([os.path.join(self.inter_certs_dir,
-                    "i2_ta1_cert.pem")], ca=False)
-
-                sign_args = \
-                    "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s %(pkg)s" % {
-                    "key": os.path.join(self.keys_dir,
-                        "cs1_pubCA1_key.pem"),
-                    "cert": os.path.join(self.cs_dir,
-                        "cs1_pubCA1_cert.pem"),
-                    "i1": os.path.join(self.chain_certs_dir,
-                        "ch1_pubCA1_cert.pem"),
-                    "i2": os.path.join(self.chain_certs_dir,
-                        "ch2_pubCA1_cert.pem"),
-                    "pkg": plist[3]
-                }
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
+                    "-i %(i3)s -i %(i4)s -i %(i5)s -i %(i6)s %(pkg)s" % {
+                      "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
+                      "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                      "i1": os.path.join(self.chain_certs_dir,
+                          "ch1_ta1_cert.pem"),
+                      "i2": os.path.join(self.chain_certs_dir,
+                          "ch2_ta1_cert.pem"),
+                      "i3": os.path.join(self.chain_certs_dir,
+                          "ch3_ta1_cert.pem"),
+                      "i4": os.path.join(self.chain_certs_dir,
+                          "ch4_ta1_cert.pem"),
+                      "i5": os.path.join(self.chain_certs_dir,
+                          "ch5_ta1_cert.pem"),
+                      "i6": os.path.join(self.chain_certs_dir,
+                          "ch1_ta3_cert.pem"),
+                      "pkg": plist[3]
+                    }
                 self.pkgsign(rurl, sign_args)
 
                 # This is just a test assertion to verify that the
@@ -206,10 +203,6 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                     "code_signing_certs")
                 self.chain_certs_dir = os.path.join(self.path_to_certs,
                     "chain_certs")
-                self.pub_cas_dir = os.path.join(self.path_to_certs,
-                    "publisher_cas")
-                self.inter_certs_dir = os.path.join(self.path_to_certs,
-                    "inter_certs")
                 self.raw_trust_anchor_dir = os.path.join(self.path_to_certs,
                     "trust_anchors")
                 self.crl_dir = os.path.join(self.path_to_certs, "crl")
@@ -508,7 +501,7 @@ Packaging Date: %(quux10_pkg_date)s
  Build Release: 5.11
         Branch: None
 Packaging Date: %(signed10_pkg_date)s
-          Size: 2.76 kB
+          Size: 22.92 kB
           FMRI: %(signed10_pkg_fmri)s
 """ % { "foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": self.foo10,
     "incorp20_pkg_date": pd(self.incorp20), "incorp20_pkg_fmri": self.incorp20,

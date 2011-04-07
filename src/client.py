@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 54
+CLIENT_API_VERSION = 55
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -3414,7 +3414,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                                         raise api_errors.PermissionsException(
                                             ca)
                                 raise
-                        pub.approve_ca_cert(s, manual=True)
+                        pub.approve_ca_cert(s)
 
                 for hsh in revoked_cas:
                         pub.revoke_ca_cert(hsh)

@@ -68,7 +68,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 54
+CURRENT_API_VERSION = 55
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -249,7 +249,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([53, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -1777,10 +1777,6 @@ class ImageInterface(object):
                                                     op_time=op_time, pub=pub,
                                                     stem=stem, ver=ver)
 
-                        # Build a unique set of publisher objects so that
-                        # signing information can be consolidated and
-                        # used.  (If this isn't done, signed packages
-                        # can't be installed from temporary sources.)
                         pub_map = {}
                         for pub in pubs:
                                 try:
@@ -1789,11 +1785,6 @@ class ImageInterface(object):
                                         opub = publisher.Publisher(pub.prefix,
                                             catalog=compkcat)
                                         pub_map[pub.prefix] = opub
-
-                                for attr in ("signing_ca_certs",
-                                    "intermediate_certs"):
-                                        getattr(opub, attr).extend(
-                                            getattr(pub, attr))
 
                         rid_map = {}
                         for pub in pkg_pub_map:

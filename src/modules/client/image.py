@@ -1454,18 +1454,6 @@ class Image(object):
                                 try:
                                         img_pub = self.cfg.publishers[pfx]
 
-                                        # A blind merge of the signing certs
-                                        # is required since which ones are
-                                        # needed isn't known in advance.
-                                        for attr in ("signing_ca_certs",
-                                            "intermediate_certs"):
-                                                ocerts = set(getattr(img_pub,
-                                                    attr))
-                                                ncerts = getattr(
-                                                    alt_src_pubs[pfx], attr)
-                                                setattr(img_pub, attr,
-                                                    list(ocerts.union(ncerts)))
-
                                         if not img_pub.disabled:
                                                 # No override needed.
                                                 continue
@@ -1667,18 +1655,6 @@ class Image(object):
                                 # Nothing to do.
                                 continue
 
-                        # Elide any certs that were not retrieved and that came
-                        # from temporary package sources.
-                        for hattr in ("signing_ca_certs", "intermediate_certs"):
-                                certs = set(getattr(ipub, hattr))
-                                tcerts = set(getattr(pub, hattr))
-                                for chash in (tcerts & certs):
-                                        cpath = os.path.join(ipub.cert_root,
-                                            chash)
-                                        if not os.path.exists(cpath):
-                                                certs.discard(chash)
-                                setattr(ipub, hattr, list(certs))
-
         def set_alt_pkg_sources(self, alt_sources):
                 """Specifies an alternate source of package metadata to be
                 temporarily merged with image state so that it can be used
@@ -1850,11 +1826,6 @@ class Image(object):
                                 pub.validate_config()
                                 self.refresh_publishers(pubs=[pub],
                                     progtrack=progtrack)
-                                # Check that all CA certs claimed by
-                                # this publisher validate against the
-                                # trust anchors for this image.
-                                self.signature_policy.check_cas(pub,
-                                    self.trust_anchors)
                         except Exception, e:
                                 # Remove the newly added publisher since
                                 # it is invalid or the retrieval failed.
@@ -1877,7 +1848,7 @@ class Image(object):
                                         raise apx.MissingFileArgumentException(
                                             ca)
                                 raise apx._convert_error(e)
-                        pub.approve_ca_cert(s, manual=True)
+                        pub.approve_ca_cert(s)
 
                 for hsh in revoked_cas:
                         pub.revoke_ca_cert(hsh)
@@ -1921,9 +1892,8 @@ class Image(object):
                         # Only perform signature verification logic if there are
                         # signatures or if signature-policy is not 'ignore'.
                         try:
-                                sig_pol.check_cas(pub, self.trust_anchors)
                                 sig_pol.process_signatures(sigs,
-                                    manf.gen_actions(), pub)
+                                    manf.gen_actions(), pub, self.trust_anchors)
                         except apx.SigningException, e:
                                 e.pfmri = fmri
                                 yield e.sig, [e], [], []

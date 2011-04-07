@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api_errors as apx
@@ -43,19 +43,14 @@ class Policy(object):
                 # for the factory below.
                 object.__init__(self)
 
-        def process_signatures(self, sigs, acts, pub):
+        def process_signatures(self, sigs, acts, pub, trust_anchors):
                 """Check that the signatures ("sigs") verify against the actions
                 ("acts") using the publisher ("pub") as the repository for
-                certificates.
+                certificates and "trust_anchors" as the dictionary of trust
+                anchors.
 
                 Not implemented in the base class."""
                 raise NotImplementedError()
-
-        def check_cas(self, pub, trust_anchors):
-                """Almost all policies want to verify the publishers CA certs
-                when given the chance to check them."""
-
-                pub.verify_ca_certs(trust_anchors)
 
         def __cmp__(self, other):
                 return cmp(self.strictness, other.strictness)
@@ -93,20 +88,13 @@ class Ignore(Policy):
         strictness = 1
         name = "ignore"
 
-        def process_signatures(self, sigs, acts, pub):
+        def process_signatures(self, sigs, acts, pub, trust_anchors):
                 """Since this policy ignores signatures, only download the
                 certificates that might be needed so that they're present if
                 the policy changes later."""
 
                 for s in sigs:
-                        s.get_chain_certs(pub)
-
-        def check_cas(self, pub, trust_anchors):
-                """Since this policy ignores signatures, only download the
-                certificates that might be needed so that they're present if
-                the policy changes later."""
-
-                pub.get_intermediate_certs()
+                        s.retrieve_chain_certs(pub)
 
 Policy._policies[Ignore.name] = Ignore
 
@@ -118,13 +106,13 @@ class Verify(Policy):
         strictness = 2
         name = "verify"
 
-        def process_signatures(self, sigs, acts, pub):
+        def process_signatures(self, sigs, acts, pub, trust_anchors):
                 """Check that all signatures present are valid signatures."""
 
                 # Ensure that acts can be iterated over repeatedly.
                 acts = list(acts)
                 for s in sigs:
-                        s.verify_sig(acts, pub)
+                        s.verify_sig(acts, pub, trust_anchors)
 
 Policy._policies[Verify.name] = Verify
 
@@ -135,7 +123,7 @@ class RequireSigs(Policy):
         strictness = 3
         name = "require-signatures"
 
-        def process_signatures(self, sigs, acts, pub):
+        def process_signatures(self, sigs, acts, pub, trust_anchors):
                 """Check that all signatures present are valid signatures and
                 at least one signature action which has been signed with a
                 private key is present."""
@@ -144,7 +132,8 @@ class RequireSigs(Policy):
                 acts = list(acts)
                 verified = False
                 for s in sigs:
-                        verified |= bool(s.verify_sig(acts, pub)) and \
+                        verified |= \
+                            bool(s.verify_sig(acts, pub, trust_anchors)) and \
                             s.is_signed()
                 if not verified:
                         raise apx.RequiredSignaturePolicyException(pub)
@@ -167,13 +156,13 @@ class RequireNames(Policy):
                         req_names = [req_names]
                 self.required_names = frozenset(req_names)
 
-        def process_signatures(self, sigs, acts, pub):
+        def process_signatures(self, sigs, acts, pub, trust_anchors):
                 acts = list(acts)
                 missing_names = set(self.required_names)
                 verified = False
                 for s in sigs:
                         verified |= bool(s.verify_sig(
-                            acts, pub, missing_names)) and \
+                            acts, pub, trust_anchors, missing_names)) and \
                             s.is_signed()
                 if missing_names:
                         raise apx.MissingRequiredNamesException(pub,

@@ -163,14 +163,10 @@ class PkgPlan(object):
                                 # there are signatures or if signature-policy
                                 # is not 'ignore'.
 
-                                # Check that the publisher's CA certs validate
-                                # against the image's trust anchors.
-                                sig_pol.check_cas(dest_pub,
-                                    self.image.trust_anchors)
                                 try:
                                         sig_pol.process_signatures(sigs,
                                             self.__destination_mfst.gen_actions(),
-                                                dest_pub)
+                                            dest_pub, self.image.trust_anchors)
                                         self.__destination_mfst.exclude_content(
                                             new_excludes)
                                 except apx.SigningException, e:
@@ -281,6 +277,12 @@ class PkgPlan(object):
                         if dest and dest.needsdata(src, self):
                                 self.__xfersize += get_pkg_otw_size(dest)
                                 self.__xferfiles += 1
+                                if dest.name == "signature":
+                                        self.__xfersize += \
+                                            dest.get_action_chain_csize()
+                                        self.__xferfiles += \
+                                            len(dest.attrs.get("chain",
+                                                "").split())
 
                 return (self.__xferfiles, self.__xfersize)
 

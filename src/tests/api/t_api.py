@@ -41,7 +41,7 @@ import tempfile
 import time
 import unittest
 
-CLIENT_API_VERSION = 53
+CLIENT_API_VERSION = 55
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
@@ -115,7 +115,6 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
   "publishers": [
     {
       "alias": "cat", 
-      "intermediate_certs": [], 
       "name": "bobcat", 
       "packages": [
         "pkg:/foo@1.0,5.11-0"
@@ -136,8 +135,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
           "registration_uri": "", 
           "related_uris": []
         }
-      ], 
-      "signing_ca_certs": []
+      ]
     }
   ], 
   "version": 1

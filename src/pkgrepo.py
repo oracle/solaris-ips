@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -118,12 +118,6 @@ Subcommands:
 
      pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
 
-     pkgrepo add-signing-ca-cert [-p publisher ...]
-         [-s repo_uri_or_path] path ...
-
-     pkgrepo add-signing-intermediate-cert [-p publisher ...]
-         [-s repo_uri_or_path] path ...
-
      pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
          [section/property ...]
 
@@ -135,12 +129,6 @@ Subcommands:
 
      pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
          [--no-catalog] [--no-index]
-
-     pkgrepo remove-signing-ca-cert [-p publisher ...]
-         [-s repo_uri_or_path] hash ...
-
-     pkgrepo remove-signing-intermediate-cert [-p publisher ...]
-         [-s repo_uri_or_path] hash ...
 
      pkgrepo set [-p publisher ...] [-s repo_uri_or_path]
          section/property[+|-]=[value] ... or
@@ -168,162 +156,6 @@ def parse_uri(uri):
         """
 
         return publisher.RepositoryURI(misc.parse_uri(uri))
-
-
-def _add_certs(conf, subcommand, args, ca):
-        opts, pargs = getopt.getopt(args, "p:s:")
-        pubs = set()
-
-        for opt, arg in opts:
-                if opt == "-p":
-                        pubs.add(arg)
-                elif opt == "-s":
-                        conf["repo_uri"] = parse_uri(arg)
-
-        # Get repository object.
-        if not conf.get("repo_uri", None):
-                usage(_("A package repository location must be provided "
-                    "using -s."), cmd=subcommand)
-
-        repo = get_repo(conf, read_only=False, subcommand=subcommand)
-
-        if len(pargs) < 1:
-                usage(_("At least one path to a certificate must be provided."))
-
-        failed = []
-        def add_certs(pfx=None):
-                if orig_cwd:
-                        certs = [os.path.join(orig_cwd, f) for f in pargs]
-                else:
-                        certs = [os.path.abspath(f) for f in pargs]
-
-                try:
-                        repo.add_signing_certs(certs, ca=ca, pub=pfx)
-                except (apx.ApiException, sr.RepositoryError), e:
-                        failed.append((pfx, e))
-
-        if "all" in pubs:
-                # Default to list of all publishers.
-                pubs = repo.publishers
-
-        if not pubs:
-                # Assume default publisher or older repository.
-                add_certs()
-        else:
-                # Add for each publisher specified.
-                map(add_certs, pubs)
-
-        return pubs, failed
-
-
-def subcmd_add_signing_ca_cert(conf, args):
-        """Add the provided signing ca certificates to the repository for
-        the given publisher."""
-
-        subcommand = "add-signing-ca-cert"
-        pubs, failed = _add_certs(conf, subcommand, args, True)
-        if failed:
-                for pfx, details in failed:
-                        error(_("Unable to add signing ca certificates for "
-                            "publisher '%(pfx)s':\n%(details)s") % locals(),
-                            cmd=subcommand)
-                if len(failed) < len(pubs):
-                        return EXIT_PARTIAL
-                return EXIT_OOPS
-        return EXIT_OK
-
-
-def subcmd_add_signing_intermediate_cert(conf, args):
-        subcommand = "add-signing-intermediate-cert"
-        pubs, failed = _add_certs(conf, subcommand, args, True)
-        if failed:
-                for pfx, details in failed:
-                        if pfx:
-                                error(_("Unable to add signing intermediate "
-                                    "certificates for publisher '%(pfx)s':\n"
-                                    "%(details)s") % locals(), cmd=subcommand)
-                        else:
-                                error(_("Unable to add signing intermediate "
-                                    "certificates:\n%(details)s") % locals(),
-                                    cmd=subcommand)
-                if len(failed) < len(pubs):
-                        return EXIT_PARTIAL
-                return EXIT_OOPS
-        return EXIT_OK
-
-
-def _remove_certs(conf, subcommand, args, ca):
-        opts, pargs = getopt.getopt(args, "p:s:")
-        pubs = set()
-
-        for opt, arg in opts:
-                if opt == "-p":
-                        pubs.add(arg)
-                elif opt == "-s":
-                        conf["repo_uri"] = parse_uri(arg)
-
-        # Get repository object.
-        if not conf.get("repo_uri", None):
-                usage(_("A package repository location must be provided "
-                    "using -s."), cmd=subcommand)
-
-        repo = get_repo(conf, read_only=False, subcommand=subcommand)
-
-        if len(pargs) < 1:
-                usage(_("At least one certificate hash must be provided."))
-
-        failed = []
-        def remove_certs(pfx=None):
-                try:
-                        repo.remove_signing_certs(pargs, ca=True, pub=pfx)
-                except (apx.ApiException, sr.RepositoryError), e:
-                        failed.append((pfx, e))
-
-        if "all" in pubs:
-                # Default to list of all publishers.
-                pubs = repo.publishers
-
-        if not pubs:
-                # Assume default publisher or older repository.
-                remove_certs()
-        else:
-                # Add for each publisher specified.
-                map(remove_certs, pubs)
-
-        return pubs, failed
-
-
-def subcmd_remove_signing_ca_cert(conf, args):
-        subcommand = "remove-signing-ca-cert"
-        pubs, failed = _remove_certs(conf, subcommand, args, True)
-        if failed:
-                for pfx, details in failed:
-                        error(_("Unable to remove signing ca certificates for "
-                            "publisher '%(pfx)s':\n%(details)s") % locals(),
-                            cmd=subcommand)
-                if len(failed) < len(pubs):
-                        return EXIT_PARTIAL
-                return EXIT_OOPS
-        return EXIT_OK
-
-
-def subcmd_remove_signing_intermediate_cert(conf, args):
-        subcommand = "remove-signing-intermediate-cert"
-        pubs, failed = _remove_certs(conf, subcommand, args, True)
-        if failed:
-                for pfx, details in failed:
-                        if pfx:
-                                error(_("Unable to remove signing intermediate "
-                                    "certificates for publisher '%(pfx)s':\n"
-                                    "%(details)s") % locals(), cmd=subcommand)
-                        else:
-                                error(_("Unable to remove signing intermediate "
-                                    "certificates:\n%(details)s") % locals(),
-                                    cmd=subcommand)
-                if len(failed) < len(pubs):
-                        return EXIT_PARTIAL
-                return EXIT_OOPS
-        return EXIT_OK
 
 
 def print_col_listing(desired_field_order, field_data, field_values, out_format,

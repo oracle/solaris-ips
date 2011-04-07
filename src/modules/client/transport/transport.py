@@ -2172,6 +2172,17 @@ class Transport(object):
                 remove the file and raise an InvalidContentException."""
 
                 chash = action.attrs.get("chash", None)
+                if action.name == "signature":
+                        name = os.path.basename(filepath)
+                        found = False
+                        assert len(action.get_chain_certs()) == \
+                            len(action.get_chain_certs_chashes())
+                        for n, c in zip(action.get_chain_certs(),
+                            action.get_chain_certs_chashes()):
+                                if name == n:
+                                        found = True
+                                        chash = c
+                                        break
                 path = action.attrs.get("path", None)
                 if not chash:
                         # Compressed hash doesn't exist.  Decompress and
@@ -2699,12 +2710,23 @@ class MultiFile(MultiXfr):
                         action.data = self._make_opener(cpath)
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
-                                self._progtrack.download_add_progress(1, filesz)
+                                file_cnt = 1
+                                if action.name == "signature":
+                                        filesz += \
+                                            action.get_action_chain_csize()
+                                        file_cnt += \
+                                            len(action.attrs.get("chain",
+                                            "").split())
+                                self._progtrack.download_add_progress(file_cnt,
+                                    filesz)
                         return
 
                 hashval = action.hash
 
                 self.add_hash(hashval, action)
+                if action.name == "signature":
+                        for c in action.get_chain_certs():
+                                self.add_hash(c, action)
 
         def add_hash(self, hashval, item):
                 """Add 'item' to list of values that exist for
@@ -2731,13 +2753,17 @@ class MultiFile(MultiXfr):
                 action's data method."""
 
                 totalsz = 0
-                nactions = 0
+                nfiles = 0
 
                 filesz = os.stat(cache_path).st_size
                 for action in self._hash[hashval]:
-                        action.data = self._make_opener(cache_path)
-                        nactions += 1
-                        totalsz += misc.get_pkg_otw_size(action)
+                        nfiles += 1
+                        bn = os.path.basename(cache_path)
+                        if action.name != "signature" or action.hash == bn:
+                                action.data = self._make_opener(cache_path)
+                                totalsz += misc.get_pkg_otw_size(action)
+                        else:
+                                totalsz += action.get_chain_csize(bn)
 
                 # The progress tracker accounts for the sizes of all actions
                 # even if we only have to perform one download to satisfy
@@ -2751,7 +2777,7 @@ class MultiFile(MultiXfr):
                 # have received.
                 nbytes = int(totalsz - filesz)
                 if self._progtrack:
-                        self._progtrack.download_add_progress((nactions - 1),
+                        self._progtrack.download_add_progress((nfiles - 1),
                             nbytes)
 
         def subtract_progress(self, size):
@@ -2812,6 +2838,9 @@ class MultiFileNI(MultiFile):
                         return
 
                 self.add_hash(hashval, action)
+                if action.name == "signature":
+                        for c in action.get_chain_certs():
+                                self.add_hash(c, action)
 
         def file_done(self, hashval, current_path):
                 """Tell MFile that the transfer completed successfully."""

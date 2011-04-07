@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a generic packaging object
@@ -884,6 +884,9 @@ class Action(object):
                 """Returns True if the action transition requires a
                 datastream."""
                 return False
+
+        def get_size(self):
+                return int(self.attrs.get("pkg.size", "0"))
 
         def attrlist(self, name):
                 """return list containing value of named attribute."""

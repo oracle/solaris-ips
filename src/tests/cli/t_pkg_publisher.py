@@ -341,12 +341,12 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 setting an existing publisher works correctly."""
 
                 cert_dir = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced", "publisher_cas")
+                    "signing_certs", "produced", "chain_certs")
 
-                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
-                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
-                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
-                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1 = os.path.join(cert_dir, "ch1_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
                 app1_h = self.calc_file_hash(app1)
                 app2_h = self.calc_file_hash(app2)
                 rev1_h = self.calc_file_hash(rev1)
@@ -717,8 +717,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 # Verify that a cert and key can be set even when non-https
                 # origins are present.
-                key_path = os.path.join(self.keys_dir, "cs1_p1_ta3_key.pem")
-                cert_path = os.path.join(self.cs_dir, "cs1_p1_ta3_cert.pem")
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
                 self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
                     (key_path, cert_path))
@@ -892,12 +892,12 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 setting a new publisher works correctly."""
 
                 cert_dir = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced", "publisher_cas")
+                    "signing_certs", "produced", "chain_certs")
 
-                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
-                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
-                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
-                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1 = os.path.join(cert_dir, "ch4_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
                 app1_h = self.calc_file_hash(app1)
                 app2_h = self.calc_file_hash(app2)
                 rev1_h = self.calc_file_hash(rev1)
@@ -942,12 +942,12 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 setting a new publisher works correctly."""
 
                 cert_dir = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced", "publisher_cas")
+                    "signing_certs", "produced", "chain_certs")
 
-                app1 = os.path.join(cert_dir, "pubCA1_ta1_cert.pem")
-                app2 = os.path.join(cert_dir, "pubCA1_ta3_cert.pem")
-                rev1 = os.path.join(cert_dir, "pubCA1_ta4_cert.pem")
-                rev2 = os.path.join(cert_dir, "pubCA1_ta5_cert.pem")
+                app1 = os.path.join(cert_dir, "ch3_ta1_cert.pem")
+                app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
+                rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
+                rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
                 app1_h = self.calc_file_hash(app1)
                 app2_h = self.calc_file_hash(app2)
                 rev1_h = self.calc_file_hash(rev1)

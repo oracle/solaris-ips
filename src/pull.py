@@ -283,7 +283,7 @@ def add_hashes_to_multi(mfst, multi):
         sendb = 0
         sendcb = 0
 
-        for atype in ("file", "license"):
+        for atype in ("file", "license", "signature"):
                 for a in mfst.gen_actions_by_type(atype):
                         if a.needsdata(None, None):
                                 multi.add_action(a)
@@ -604,7 +604,7 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         pkgdir = xport_cfg.get_pkg_dir(f)
                         mfile = xport.multi_file_ni(src_pub, pkgdir,
                             progtrack=tracker)
-         
+
                         getb, getf, arcb, arccb = add_hashes_to_multi(m, mfile)
                         get_bytes += getb
                         get_files += getf
@@ -905,6 +905,11 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                                                 a.data = lambda: open(fname,
                                                     "rb")
                                         t.add(a)
+                                        if a.name == "signature":
+                                                for f in a.get_chain_certs():
+                                                        fname = os.path.join(
+                                                            pkgdir, f)
+                                                        t.add_file(fname)
                                 # Always defer catalog update.
                                 t.close(add_to_catalog=False)
                         except trans.TransactionError, e:

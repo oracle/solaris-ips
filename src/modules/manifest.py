@@ -680,8 +680,7 @@ class Manifest(object):
 
                 size = 0
                 for a in self.gen_actions(excludes):
-                        size += int(a.attrs.get("pkg.size", "0"))
-
+                        size += a.get_size()
                 return size
 
         def __getitem__(self, key):

@@ -493,9 +493,8 @@ class ImageConfig(cfg.FileConfig):
                         pub = self.__publishers[prefix]
                         section = "authority_%s" % pub.prefix
 
-                        for prop in ("alias", "prefix", "signing_ca_certs",
-                            "approved_ca_certs", "revoked_ca_certs",
-                            "intermediate_certs", "disabled", "sticky"):
+                        for prop in ("alias", "prefix", "approved_ca_certs",
+                            "revoked_ca_certs", "disabled", "sticky"):
                                 self.set_property(section, prop,
                                     getattr(pub, prop))
 
@@ -719,8 +718,6 @@ class ImageConfig(cfg.FileConfig):
                 pub = publisher.Publisher(prefix, alias=sec_idx["alias"],
                     client_uuid=sec_idx["uuid"], disabled=sec_idx["disabled"],
                     repositories=[r], sticky=sec_idx.get("sticky", True),
-                    ca_certs=sec_idx.get("signing_ca_certs", []),
-                    intermediate_certs=sec_idx.get("intermediate_certs", []),
                     props=props,
                     revoked_ca_certs=sec_idx.get("revoked_ca_certs", []),
                     approved_ca_certs=sec_idx.get("approved_ca_certs", []))
