@@ -2429,18 +2429,17 @@ class ImagePlan(object):
                 # remove newer multiple match if renamed version exists
                 for p in patterns:
                         if len(ret[p]) > 1 and p not in wildcard_patterns:
-                                targets = []
-                                renamed_matches = (
+                                renamed_matches = [
                                     pfmri
                                     for pkg_name in ret[p]
                                     for pfmri in ret[p][pkg_name]
                                     if pfmri in renamed_fmris
-                                    )
-                                targets.extend(
+                                    ]
+                                targets = set([
                                     pf.pkg_name
-                                    for pf in renamed_fmris[f]
                                     for f in renamed_matches
-                                )
+                                    for pf in renamed_fmris[f]
+                                ])
 
                                 for pkg_name in ret[p].keys():
                                         if pkg_name in targets:
@@ -2460,10 +2459,11 @@ class ImagePlan(object):
                                         wrongpub.append((p, rejected_pubs[p]))
                         elif l > 1 and p not in wildcard_patterns:
                                 # multiple matches
-                                multimatch.append((p, [
-                                    ret[p][n][0].get_pkg_stem()
+                                multimatch.append((p, set([
+                                    f.get_pkg_stem()
                                     for n in ret[p]
-                                ]))
+                                    for f in ret[p][n]
+                                ])))
                         else:
                                 # single match or wildcard
                                 for k in ret[p].keys():

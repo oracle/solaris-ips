@@ -3240,6 +3240,12 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
             open pkg_bar@1.0,5.11-0
             close
+            open trusted@1.0,5.11-0
+            add set name=pkg.renamed value=true
+            add depend type=require fmri=system/trusted@1.0
+            close
+            open system/trusted@1.0,5.11-0
+            close
         """
 
         leaf_template = """
@@ -3422,6 +3428,14 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
                 for i in self.incorps:
                         self.pkgsend_bulk(self.rurl, i)
+
+        def test_rename_matching(self):
+                """Verify install won't fail with a multiple match error for
+                a renamed package that shares a common basename."""
+
+                self.image_create(self.rurl)
+                self.pkg("install trusted")
+                self.pkg("info system/trusted")
 
         def test_require_dependencies(self):
                 """ exercise require dependencies """
@@ -3613,6 +3627,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall pkg9@1.0")
                 self.pkg("list pkg2@1.1")
                 self.pkg("verify")
+
         def test_origin_dependencies(self):
                 """Get origin dependencies working"""
                 self.image_create(self.rurl)
