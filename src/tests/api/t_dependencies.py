@@ -1452,11 +1452,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
 
                 self.assert_(d.is_error())
                 expected_not_sat = set([frozenset([
-                    ("variant.arch", "foo"),
                     ("variant.opensolaris.zone", "global")])])
                 expected_sat = set()
-                self.assertEqual(expected_sat, d.dep_vars.sat_set)
-                self.assertEqual(expected_not_sat, d.dep_vars.not_sat_set)
+                self.assertEqualDiff(expected_sat, d.dep_vars.sat_set)
+                self.assertEqualDiff(expected_not_sat, d.dep_vars.not_sat_set)
 
                 self.assertEqual(d.base_names[0], "libc.so.1")
                 self.assertEqual(set(d.run_paths), set(["lib", "usr/lib"]))

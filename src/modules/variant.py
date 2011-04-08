@@ -269,7 +269,7 @@ class VariantCombinations(object):
                 vc.__not_sat_set = copy.copy(self.__not_sat_set)
                 vc.__simpl_template = self.__simpl_template
                 return vc
-                
+
         def is_empty(self):
                 """Returns whether self was created with any potential variant
                 values."""
@@ -370,9 +370,86 @@ class VariantCombinations(object):
                 # If the size of sat_set or not_sat_set matches the number of
                 # possibilities a template can produce, then it can be
                 # simplified.
-                if possibilities != len(rel_set):
-                        return rel_set
-                return set()
+                if possibilities == len(rel_set):
+                        return set()
+                # If any dependencies are merged, then another pass over the
+                # variant types is necessary.  'keep_going' tracks whether that
+                # has happened.
+                keep_going = True
+                while keep_going:
+                        keep_going = False
+                        # For each variant type ...
+                        for variant_name in self.__simpl_template:
+                                def exclude_name(item):
+                                        return [
+                                            (k, v) for k, v in item
+                                            if k != variant_name
+                                        ]
+                                # For sanity, instead of modifying rel_set on
+                                # the fly, a new working set is created to which
+                                # members or collapsed members of rel_set are
+                                # added.
+                                new_rel_set = set()
+
+                                # Put the combinations of variant values into
+                                # groups so that all members of the group are
+                                # identical except for the values for
+                                # variant_name.
+                                for k, g in itertools.groupby(
+                                    sorted(rel_set, key=exclude_name),
+                                    exclude_name):
+                                        g = set(g)
+
+                                        # If there are fewer members in the
+                                        # group than there are values, then
+                                        # there's no way this value can be
+                                        # collapsed.
+                                        if len(g) < len(self.__simpl_template[
+                                            variant_name]):
+                                                new_rel_set |= g
+                                                continue
+
+                                        # 'expected' is the set of variant
+                                        # values that will need to be seen to
+                                        # collapse the combinations in g by
+                                        # removing the values associated with
+                                        # variant_name.
+                                        expected = set(self.__simpl_template[
+                                            variant_name])
+
+                                        # Check to see whether all possible
+                                        # variant values are covered.
+                                        for tup in g:
+                                                for v_name, v_value in tup:
+                                                        if v_name != \
+                                                            variant_name:
+                                                                continue
+                                                        expected.remove(v_value)
+
+                                        # If not all the possible values have
+                                        # been seen, then the variant
+                                        # combinations can't be collapsed.
+                                        if expected:
+                                                new_rel_set |= g
+                                                continue
+                                        # If they have, then the variant
+                                        # combinations can be collapsed by
+                                        # removing variant_name.  The key used
+                                        # to group the variant combinations,
+                                        # 'k', is identical to each of the
+                                        # variant combinations with the value
+                                        # for variant_name removed, so 'k' is
+                                        # added to the new result set.  Since
+                                        # some variant combinations have been
+                                        # collapsed, then it's necessary to make
+                                        # another pass over the variant types as
+                                        # 'k' may be able to collapse with other
+                                        # variant combinations.
+                                        keep_going = True
+                                        new_rel_set.add(frozenset(k))
+                                rel_set = new_rel_set
+                return rel_set
+                                        
 
         def __repr__(self):
                 return "VC Sat:%s Unsat:%s" % (sorted(self.sat_set),

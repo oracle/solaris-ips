@@ -349,6 +349,141 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
 """
 
+        bug_18130_dep = """\
+depend fmri=__TBD pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+"""
+
+        bug_18130_provider_1 = """\
+set name=pkg.fmri value=provider@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386
+"""
+
+        bug_18130_provider_2 = """\
+set name=pkg.fmri value=provider@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global
+"""
+
+        bug_18130_provider_3_1 = """\
+set name=pkg.fmri value=provider1@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal
+"""
+
+        bug_18130_provider_3_2 = """\
+set name=pkg.fmri value=provider2@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global
+"""
+
+        bug_18130_provider_4 = """\
+set name=pkg.fmri value=provider1@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
+"""
+
+        bug_18130_provider_5_1 = """\
+set name=pkg.fmri value=provider1@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=False
+"""
+
+        bug_18130_provider_5_2 = """\
+set name=pkg.fmri value=provider2@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
+"""
+
+        bug_18130_provider_6_1 = """\
+set name=pkg.fmri value=provider1@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=True
+"""
+
+        bug_18130_provider_6_2 = """\
+set name=pkg.fmri value=provider2@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=False
+"""
+
+        bug_18130_provider_7_1 = """\
+set name=pkg.fmri value=provider1@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=False
+"""
+
+        bug_18130_provider_7_2 = """\
+set name=pkg.fmri value=provider2@1.0,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.debug value=True value=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=nonglobal variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=sparc variant.opensolaris.zone=global variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i386 variant.opensolaris.zone=nonglobal variant.debug=False
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
+file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
+"""
+
         misc_files = ["tmp/foo"]
 
         def setUp(self):
@@ -525,18 +660,17 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
                 self.assertEqual(len(pkg_deps), 4)
                 # This is 5 because the variant.num values are not collapsed
                 # like they could be.
-                self.assertEqual(len(pkg_deps[m1_path]), 5)
+                self.assertEqual(len(pkg_deps[m1_path]), 3)
                 self.assertEqual(len(pkg_deps[m2_path]), 0)
                 self.assertEqual(len(pkg_deps[m3_path]), 0)
                 self.assertEqual(len(pkg_deps[m4_path]), 0)
                 self.assertEqual(len(errs), 1)
-                vnums = set(["one", "two", "three"])
                 for d in pkg_deps[m1_path]:
                         if d.attrs["fmri"] == "pkg:/s-v-bar":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
                                     "bar")
-                                vnums.remove(d.attrs["variant.num"])
+                                self.assert_("variant.num" not in d.attrs)
                         elif d.attrs["fmri"] == "pkg:/s-v-baz-one":
                                 self.assertEqual(
                                     d.attrs["variant.foo"],
@@ -555,7 +689,6 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
                                 raise RuntimeError("Unexpected fmri %s "
                                     "for dependency %s" %
                                     (d.attrs["fmri"], d))
-                self.assertEqual(vnums, set())
 
         def test_multi_file_dependencies(self):
                 """This checks manifests with multiple files, both with
@@ -1032,6 +1165,226 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
                 self.assertEqualDiff("\n".join(sorted(manf)),
                     "\n".join(sorted(s)))
 
+        def test_bug_18130(self):
+                """Test that dependency variants get collapsed where
+                possible."""
+
+                VA = "variant.arch"
+                VOZ = "variant.opensolaris.zone"
+                VD = "variant.debug"
+                
+                d_path = self.make_manifest(self.bug_18130_dep)
+
+                # Test that a single variant with two values is collapsed
+                # correctly.
+                p_path = self.make_manifest(self.bug_18130_provider_1)
+                pkg_deps, errs = dependencies.resolve_deps([d_path, p_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 1, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+                for k in pkg_deps[d_path][0].attrs:
+                        self.assert_(not k.startswith("variant."), "The "
+                            "resulting dependency should not contain any "
+                            "variants. The action is:\n%s" %
+                            pkg_deps[d_path][0])
+
+                # Test that combinations of two variant types works.
+                p_path = self.make_manifest(self.bug_18130_provider_2)
+                pkg_deps, errs = dependencies.resolve_deps([d_path, p_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 1, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+                # Test that splitting the variants across two packages gives the
+                # right simplification.
+                p_path = self.make_manifest(self.bug_18130_provider_3_1)
+                p2_path = self.make_manifest(self.bug_18130_provider_3_2)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [d_path, p_path, p2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[p2_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 3, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+                got_prov_2 = False
+                got_prov_1_i386 = False
+                got_prov_1_sparc = False
+                for d in pkg_deps[d_path]:
+                        if d.attrs["fmri"].startswith("pkg:/provider2"):
+                                self.assertEqual(d.attrs[VA], "i386")
+                                self.assertEqual(d.attrs[VOZ], "global")
+                                got_prov_2 = True
+                        elif d.attrs["fmri"].startswith("pkg:/provider1"):
+                                self.assert_(VA in d.attrs)
+                                if d.attrs[VA] == "i386":
+                                        self.assertEqual(d.attrs[VOZ],
+                                            "nonglobal")
+                                        got_prov_1_i386 = True
+                                else:
+                                        self.assertEqual(d.attrs[VA], "sparc")
+                                        self.assert_(VOZ not in d.attrs)
+                                        got_prov_1_sparc = True
+                        else:
+                                raise RuntimeError("Unexpected fmri seen:%s" %
+                                    d)
+                self.assert_(got_prov_2 and got_prov_1_i386 and
+                    got_prov_1_sparc, "Got the right number of dependencies "
+                    "but missed one of the expected ones. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+                # Test that when a variant combination is satisfied, it's
+                # reported as being unresolved.
+                p_path = self.make_manifest(self.bug_18130_provider_3_1)
+                pkg_deps, errs = dependencies.resolve_deps([d_path, p_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(errs), 1)
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 2, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+                # Test that variants with 3 values as well as a combination of
+                # three variant types are collapsed correctly.
+                p_path = self.make_manifest(self.bug_18130_provider_4)
+                pkg_deps, errs = dependencies.resolve_deps([d_path, p_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 1, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+                for k in pkg_deps[d_path][0].attrs:
+                        self.assert_(not k.startswith("variant."), "The "
+                            "resulting dependency should not contain any "
+                            "variants. The action is:\n%s" %
+                            pkg_deps[d_path][0])
+
+                # Test all but one dependency satisfier in one file, and one in
+                # another package.
+                p_path = self.make_manifest(self.bug_18130_provider_5_1)
+                p2_path = self.make_manifest(self.bug_18130_provider_5_2)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [d_path, p_path, p2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[p2_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 5, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+                got_prov_2 = False
+                got_prov_1_i386 = False
+                got_prov_1_sparc = False
+                got_prov_1_foo_debug = False
+                got_prov_1_foo_nondebug_global = False
+                for d in pkg_deps[d_path]:
+                        if d.attrs["fmri"].startswith("pkg:/provider2"):
+                                self.assertEqual(d.attrs[VA], "foo")
+                                self.assertEqual(d.attrs[VOZ], "nonglobal")
+                                self.assertEqual(d.attrs[VD], "False")
+                                got_prov_2 = True
+                        elif d.attrs["fmri"].startswith("pkg:/provider1"):
+                                self.assert_(VA in d.attrs)
+                                if d.attrs[VA] == "i386":
+                                        self.assert_(VD not in d.attrs)
+                                        self.assert_(VOZ not in d.attrs)
+                                        got_prov_1_i386 = True
+                                elif d.attrs[VA] == "sparc":
+                                        self.assert_(VD not in d.attrs)
+                                        self.assert_(VOZ not in d.attrs)
+                                        got_prov_1_sparc = True
+                                else:
+                                        self.assertEqual(d.attrs[VA], "foo")
+                                        if d.attrs[VD] == "True":
+                                                self.assert_(VOZ not in d.attrs)
+                                                got_prov_1_foo_debug = True
+                                        else:
+                                                self.assertEqual(d.attrs[VD],
+                                                    "False")
+                                                self.assertEqual(d.attrs[VOZ],
+                                                    "global")
+                                                got_prov_1_foo_nondebug_global = True
+                        else:
+                                raise RuntimeError("Unexpected fmri seen:%s" %
+                                    d)
+                self.assert_(got_prov_2 and got_prov_1_i386 and
+                    got_prov_1_sparc and got_prov_1_foo_debug and
+                    got_prov_1_foo_nondebug_global, "Got the right number "
+                    "of dependencies but missed one of the expected ones. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+                # Test that when two manifests split on debug, non-debug, the
+                # variants are collapsed correctly.
+                p_path = self.make_manifest(self.bug_18130_provider_6_1)
+                p2_path = self.make_manifest(self.bug_18130_provider_6_2)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [d_path, p_path, p2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[p2_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 2, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+                got_prov_2 = False
+                got_prov_1 = False
+                for d in pkg_deps[d_path]:
+                        if d.attrs["fmri"].startswith("pkg:/provider2"):
+                                self.assertEqual(d.attrs[VD], "False")
+                                self.assert_(VOZ not in d.attrs)
+                                self.assert_(VA not in d.attrs)
+                                got_prov_2 = True
+                        else:
+                                self.assert_(d.attrs["fmri"].startswith(
+                                    "pkg:/provider1"))
+                                self.assertEqual(d.attrs[VD], "True")
+                                self.assert_(VA not in d.attrs)
+                                self.assert_(VOZ not in d.attrs)
+                                got_prov_1 = True
+                self.assert_(got_prov_2 and got_prov_1, "Got the right number "
+                    "of dependencies but missed one of the expected ones. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+                # Test that variants won't be combined when they shouldn't be.
+                p_path = self.make_manifest(self.bug_18130_provider_7_1)
+                p2_path = self.make_manifest(self.bug_18130_provider_7_2)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [d_path, p_path, p2_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[p_path]), 0)
+                self.assertEqual(len(pkg_deps[p2_path]), 0)
+                self.assertEqual(len(pkg_deps[d_path]), 12, "Got wrong number "
+                    "of pkgdeps for the dependent package. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[d_path]]))
 
 if __name__ == "__main__":
         unittest.main()

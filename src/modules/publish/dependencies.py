@@ -959,129 +959,17 @@ def combine(deps, pkg_vars):
                         res = [d]
                 return res
 
-        def key_on_variants(a):
-                """Return the key (the VariantSets) to sort the grouped tuples
-                by."""
-
-                return a[1]
-
-        def sort_by_variant_subsets(a, b):
-                """Sort the tuples so that those actions whose variants are
-                supersets of others are placed at the front of the list.  This
-                function assumes that a and b are both VariantSets."""
-
-                if a.issubset(b, satisfied=True):
-                        return 1
-                elif b.issubset(a, satisfied=True):
-                        return -1
-                return 0
-
-        # Here is an example of how this code should work.  Assume that the code
-        # is looking at dependencies for a package published against
-        # variant.foo = bar, baz and variant.num = one, two.  These are
-        # abbreviated below as v.f and v.n.  The following dependencies have
-        # been found for this package:
-        # 1) depend pkg_a reason=file_1, VariantSet is v.f=bar,baz v.n=one,two
-        # 2) depend pkg_a reason=file_2, VariantSet is v.f=bar v.n=one
-        # 3) depend pkg_b reason=file_3, VariantSet is v.f=bar v.n=one
-        # 4) depend pkg_b reason=file_3, VariantSet is v.f=baz v.n=two
-        # 5) depend pkg_b reason=file_3 path=p1, VariantSet is v.f=bar
-        #        v.n=one,two
-        #
-        # First, these dependencies are grouped by their fmris.  This produces
-        # two lists, the first contains dependencies 1 and 2, the second
-        # contains dependencies 3, 4, and 5.
-        #
-        # The first group of dependencies is sorted by their VariantSet's.
-        # Dependency 1 comes before dependency 2 because 2's variants are a
-        # subset of 1's variants.  Dependency 1 is put in the temporary result
-        # list (subres) since at least one dependency on pkg_a must exist.
-        # Next, dependency 2 is compared to dependency 1 to see if it its
-        # variants are subset of 1's. Since they are, the two dependencies are
-        # merged.  This means that values of all tags in either dependency
-        # appear in the merged dependency.  In this case, the merged dependency
-        # would look something like:
-        # depend pkg_a reason=file_1 reason=file_2
-        # The variant set associated with the merged dependency would still be
-        # dependency 1's variant set.
-        #
-        # The last thing that happens with this group of dependencies is that
-        # add_vars is called on each result.  This first removes those variants
-        # which match the package's identically.  What remains is added to the
-        # dependency's attribute dictionary.  Since the package variants and the
-        # dependency's variants are identical in this case, nothing is added.
-        # Lastly, any duplicate values for a tag are removed.  Again, since
-        # there are no duplicates, nothing is changed.  The final dependency
-        # that's added to final_res is:
-        # depend pkg_a reason=file_1 reason=file_2
-        #
-        # The second group of dependencies is also sorted by their VariantSet's.
-        # This sort is a partial ordering.  Dependency 5 must come before
-        # dependency 3, but dependency 4 can be anywhere in the list.  Let's
-        # assume that the order is [4, 5, 3].
-        #
-        # Dependency 4 is added to the temporary result list (subres).
-        # Dependency 5 is checked to see if its variants are subset of 4's
-        # variants.  Since they are not, dependency 5 is added to subres.
-        # Dependency 3 is checked against 4 to see if its variants are a subset.
-        # Since they're not, 3's variants are then checked against 5's variants.
-        # Since 3's variants are a subset of 5's variants, 3 is merged with 5,
-        # producing this dependency:
-        # depend pkg_b reason=file_3 reason=file_3 path=p1, VariantSet is
-        # v.f=bar v.n=one,two
-        #
-        # The two results from this group (dependency 4 and the merge of 5 and
-        # 3) than has add_vars called on it.  The final results are:
-        # dependency pkg_b reason=file_3 v.f=baz v.n=two
-        # dependency pkg_b reason=file_3 path=p1 v.f=bar
-        #
-        # The v.n tags have been removed from the second result because they
-        # were identical to the package's variants.  The duplicate reasons have
-        # also been coalesced.
-        #
-        # After everything is done, the final set of dependencies for this
-        # package are:
-        # depend pkg_a reason=file_1 reason=file_2
-        # dependency pkg_b reason=file_3 v.f=baz v.n=two
-        # dependency pkg_b reason=file_3 path=p1 v.f=bar
-
         res = []
         # For each group of dependencies (g) for a particular fmri (k) ...
-        for k, g in itertools.groupby(sorted(deps, key=action_group_key),
+        for k, group in itertools.groupby(sorted(deps, key=action_group_key),
             action_group_key):
-
-                # Sort the dependencies so that any dependency whose variants
-                # are a subset of the variants of another dependency follow it.
-                glist = sorted(g, cmp=sort_by_variant_subsets,
-                    key=key_on_variants)
-                subres = [glist[0]]
-
-                # d is a dependency action. d_vars are the variants under which
-                # d will be applied.
-                for d, d_vars in glist[1:]:
-                        found_subset = False
-                        for rel_res, rel_vars in subres:
-
-                                # If d_vars is a subset of any variant set
-                                # already in the results, then d should be
-                                # combined with that dependency.
-                                if d_vars.issubset(rel_vars, satisfied=True):
-                                        found_subset = True
-                                        merge_deps(rel_res, d)
-                                        break
-                                assert(not rel_vars.issubset(d_vars,
-                                    satisfied=True))
-
-                        # If no subset was found, then d_vars is a new set of
-                        # conditions under which the dependency d should apply
-                        # so add it to the results.
-                        if not found_subset:
-                                subres.append((d, d_vars))
-
-                # Add the variants to the dependency action and remove any
-                # variants that are identical to those defined by the package.
-                subres = [add_vars(d, d_vars, pkg_vars) for d, d_vars in subres]
-                res.extend(itertools.chain.from_iterable(subres))
+                group = list(group)
+                res_dep = group[0][0]
+                res_vars = variants.VariantCombinations(pkg_vars, False)
+                for cur_dep, cur_vars in group:
+                        merge_deps(res_dep, cur_dep)
+                        res_vars.mark_as_satisfied(cur_vars)
+                res.extend(add_vars(res_dep, res_vars, pkg_vars))
         return res
 
 def split_off_variants(dep, pkg_vars):

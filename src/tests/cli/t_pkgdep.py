@@ -322,10 +322,7 @@ depend fmri=pkg:/dup-prov pkg.debug.depend.file=var/log/f2 pkg.debug.depend.file
 depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar variant.num=one
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar variant.num=two
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
-depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.file=var/log/f5 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
 """
 
@@ -1969,16 +1966,12 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.assertEqual(e.path, twod_a_pth)
                 self.assertEqual(e.file_dep.attrs[dependencies.files_prefix],
                     "perl")
-                self.assertEqual(e.pvars.not_sat_set, set([
-                    frozenset([("variant.foo", "a"), ("variant.bar", "v")]),
-                    frozenset([("variant.foo", "a"), ("variant.bar", "w")]),
-                    frozenset([("variant.foo", "a"), ("variant.bar", "x")]),
-                    frozenset([("variant.foo", "a"), ("variant.bar", "y")]),
-                    frozenset([("variant.foo", "a"), ("variant.bar", "z")]),
+                self.assertEqualDiff(set([
+                    frozenset([("variant.foo", "a")]),
                     frozenset([("variant.foo", "b"), ("variant.bar", "x")]),
                     frozenset([("variant.foo", "b"), ("variant.bar", "z")])
-                ]))
-                self.assertEqual(len(deps[twod_a_pth]), 11,
+                ]), e.pvars.not_sat_set)
+                self.assertEqual(len(deps[twod_a_pth]), 7,
                     "\n\n".join([str(s) for s in deps[twod_a_pth]]))
                 res_fmris = set(["pkg:/b_vw_link@0.5.11-0.151",
                     "pkg:/b_yz_link@0.5.11-0.151", "pkg:/c@0.5.11-0.151",
@@ -1988,7 +1981,6 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 b_vwx_file_var = set(["v", "w"])
                 b_yz_link_var = set(["y"])
                 b_y_file_var = set(["y"])
-                c_var = set(["v", "w", "x", "y", "z"])
                 for d in deps[twod_a_pth]:
                         self.assert_(d.attrs["fmri"] in res_fmris,
                             "Unexpected fmri for:%s" % d)
@@ -2025,8 +2017,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                                     set(d.attrs[dependencies.type_prefix]),
                                     set(["link", "script"]))
                                 self.assertEqual(d.attrs["variant.foo"], "c")
-                                self.assert_(d.attrs["variant.bar"] in c_var)
-                                c_var.remove(d.attrs["variant.bar"])
+                                self.assert_("variant.bar" not in d.attrs)
 
                 self.assertEqual(len(deps[twod_c_pth]), 0)
                 self.assertEqual(len(deps[twod_b_vwx_file_pth]), 0)
@@ -2284,23 +2275,18 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
                 self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
                 d = ds[0]
                 self.assertEqual(d.attrs[dependencies.files_prefix], ["perl"])
-                not_sat_set =[
-                    frozenset([("variant.foo", foo), ("variant.bar", bar)])
-                    for foo in ["a", "c"]
-                    for bar in ["x", "y", "z"]
-                ]
-                not_sat_set.extend([
-                    frozenset([("variant.foo", "d"), ("variant.bar", bar)])
-                    for bar in ["x", "z"]
+                not_sat_set = set([
+                    frozenset([("variant.foo", "a")]),
+                    frozenset([("variant.foo", "c")]),
+                    frozenset([("variant.foo", "d"), ("variant.bar", "x")]),
+                    frozenset([("variant.foo", "d"), ("variant.bar", "z")]),
                 ])
-                not_sat_set = set(not_sat_set)
-                self.assertEqual(d.dep_vars.not_sat_set, not_sat_set)
-                self.assertEqual(d.dep_vars.sat_set, set([
-                    frozenset([("variant.foo", "b"), ("variant.bar", "x")]),
-                    frozenset([("variant.foo", "b"), ("variant.bar", "y")]),
-                    frozenset([("variant.foo", "b"), ("variant.bar", "z")]),
+
+                self.assertEqualDiff(not_sat_set, d.dep_vars.not_sat_set)
+                self.assertEqualDiff(set([
+                    frozenset([("variant.foo", "b")]),
                     frozenset([("variant.foo", "d"), ("variant.bar", "y")])
-                ]))
+                ]), d.dep_vars.sat_set)
                 self.assertEqual(pkg_attrs, {})
 
         def test_bug_16808(self):
