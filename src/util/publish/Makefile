@@ -41,6 +41,7 @@ IPS_REPO=http://localhost:20003
 VPANELS_REPO=http://localhost:20004
 USERLAND_REPO=http://localhost:20005
 L10N_REPO=http://localhost:20006
+DESKTOP_REPO=http://localhost:20007
 
 INPUT_REPOS = \
     $(ON_REPO) \
@@ -49,7 +50,8 @@ INPUT_REPOS = \
     $(IPS_REPO) \
     $(VPANELS_REPO) \
     $(USERLAND_REPO) \
-    $(L10N_REPO)
+    $(L10N_REPO) \
+    $(DESKTOP_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
 L10N_EXTRA_REPO=http://localhost:30006

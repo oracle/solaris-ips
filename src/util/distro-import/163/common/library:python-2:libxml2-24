@@ -1,0 +1,11 @@
+package library/python-2/libxml2-24
+consolidation "sfw"
+obsoleted 163
+version 2.7.6
+end package
+
+package SUNWlxml-python
+consolidation "sfw"
+obsoleted 163
+version 2.7.6
+end package

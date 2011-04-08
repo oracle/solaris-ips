@@ -1,0 +1,11 @@
+package library/python-2/pyopenssl-24
+consolidation "sfw"
+obsoleted 163
+version 0.8
+end package
+
+package SUNWpython-pyopenssl
+consolidation "sfw"
+obsoleted 163
+version 0.8
+end package
