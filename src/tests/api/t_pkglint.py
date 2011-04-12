@@ -1326,6 +1326,38 @@ set name=pkg.renamed value=true
 depend fmri=renamed-ancestor-new type=require
 """
 
+        lint_move_mf = {}
+        lint_move_mf["move-sample1.mf"] = """
+#
+# A sample package which delivers several actions, to 0.161. We no longer
+# deliver etc/passwd, moving that to the package in move-sample2.mf below.
+#
+set name=pkg.fmri value=pkg://foo.org/system/kernel@0.5.11,5.11-0.161
+set name=pkg.description value="we remove etc/passwd from this package"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+dir group=sys mode=0755 owner=root path=etc
+"""
+
+        lint_move_mf["move-sample2.mf"] = """
+#
+# A sample package which delivers several actions, we now deliver etc/passwd
+# also.
+#
+set name=pkg.fmri value=pkg://foo.org/system/additional@0.5.11,5.11-0.161
+set name=pkg.description value="this manifest now gets etc/passwd too"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="additional content"
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.arch value=i386 value=sparc
+file /etc/motd group=sys mode=0644 owner=root path=etc/motd
+file /etc/passwd path=etc/passwd group=sys mode=0644 owner=root preserve=true
+dir group=sys mode=0755 owner=root path=etc
+dir group=sys mode=0755 owner=root path=etc
+"""
+
         def setUp(self):
 
                 pkg5unittest.ManyDepotTestCase.setUp(self,
@@ -1658,6 +1690,63 @@ depend fmri=renamed-ancestor-new type=require
                 lint_engine.execute()
                 lint_engine.teardown(clear_cache=True)
 
+        def test_ref_file_move(self):
+                """The dupaction checks can cope with a file that moves between
+                packages, where the old package was delivered in our reference
+                repository and we're linting both new packages: the package
+                from which the file was moved, as well as the package to which
+                the file is moving.
+
+                It should report an error when we only lint the new version
+                of the package to which the file is moving, but not the new
+                version of package from which the file was moved."""
+
+                paths = self.make_misc_files(self.lint_move_mf)
+                paths.sort()
+                rcfile = os.path.join(self.test_root, "pkglintrc")
+
+                move_src = os.path.join(self.test_root, "move-sample1.mf")
+                move_dst = os.path.join(self.test_root, "move-sample2.mf")
+
+                lint_logger = TestLogFormatter()
+
+                # first check that file moves work properly, that is,
+                # we should report no errors here.
+                manifests = read_manifests([move_src, move_dst], lint_logger)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        lint_msgs.append(msg)
+
+                self.assert_(lint_msgs == [], "Unexpected errors during file "
+                    "movement between packages: %s" % "\n".join(lint_msgs))
+
+                # next check that when delivering only the moved-to package,
+                # we report a duplicate error.
+                manifests = read_manifests([move_dst], lint_logger)
+                lint_engine = engine.LintEngine(lint_logger, use_tracker=False,
+                    config_file=rcfile)
+                lint_engine.setup(cache=self.cache_dir,
+                    ref_uris=[self.ref_uri], lint_manifests=manifests)
+                lint_engine.execute()
+                lint_engine.teardown(clear_cache=True)
+
+                lint_msgs = []
+                for msg in lint_logger.messages:
+                        lint_msgs.append(msg)
+
+                self.assert_(len(lint_msgs) == 1, "Expected duplicate path "
+                    "error not seen when moving file between packages, but "
+                    "omitting new source package: %s" % "\n".join(lint_msgs))
+                self.assert_(lint_logger.ids[0] == "pkglint.dupaction001.1",
+                    "Expected pkglint.dupaction001.1, got %s" %
+                    lint_logger.ids[0])
 
 class TestLintEngineInternals(pkg5unittest.Pkg5TestCase):
 

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 from pkg.lint.engine import lint_fmri_successor
@@ -131,21 +131,44 @@ class PkgDupActionChecker(base.ActionChecker):
                                 else:
                                         dic[p].append((mf.fmri, action))
 
+                # construct a set of FMRIs being presented for linting, and
+                # avoid seeding the reference dictionary for any packages
+                # that have new versions available in the lint repository, or
+                # lint manifests given on the command line.
+                lint_fmris = {}
+                for m in engine.gen_manifests(engine.lint_api_inst,
+                    release=engine.release, pattern=engine.pattern):
+                        lint_fmris.setdefault(
+                            m.fmri.get_name(), []).append(m.fmri)
+                for m in engine.lint_manifests:
+                        lint_fmris.setdefault(
+                            m.fmri.get_name(), []).append(m.fmri)
+
                 engine.logger.debug(
                     _("Seeding reference action duplicates dictionaries."))
 
                 for manifest in engine.gen_manifests(engine.ref_api_inst,
                     release=engine.release):
-                        seed_dict(manifest, "path", self.ref_paths)
-                        seed_dict(manifest, "name", self.ref_drivers,
-                            atype="driver")
-                        seed_dict(manifest, "username", self.ref_usernames,
-                            atype="user")
-                        seed_dict(manifest, "uid", self.ref_uids,
-                            atype="user")
-                        seed_dict(manifest, "groupname", self.ref_groupnames,
-                            atype="group")
-                        seed_dict(manifest, "gid", self.ref_gids, atype="group")
+                        # Only put this manifest into the reference dictionary
+                        # if it's not an older version of the same package.
+                        if any(
+                            lint_fmri_successor(fmri, manifest.fmri)
+                            for fmri
+                            in lint_fmris.get(manifest.fmri.get_name(), [])
+                        ):
+                                continue
+                        else:
+                                seed_dict(manifest, "path", self.ref_paths)
+                                seed_dict(manifest, "name", self.ref_drivers,
+                                    atype="driver")
+                                seed_dict(manifest, "username",
+                                    self.ref_usernames, atype="user")
+                                seed_dict(manifest, "uid", self.ref_uids,
+                                    atype="user")
+                                seed_dict(manifest, "groupname",
+                                    self.ref_groupnames, atype="group")
+                                seed_dict(manifest, "gid", self.ref_gids,
+                                    atype="group")
 
                 engine.logger.debug(
                     _("Seeding lint action duplicates dictionaries."))
@@ -363,6 +386,7 @@ class PkgDupActionChecker(base.ActionChecker):
                     pkg_vars)
                 if has_conflict:
                         plist = [f.get_fmri() for f in sorted(fmris)]
+
                         if not conflict_vars:
                                 engine.error(_("%(attr_name)s %(name)s is "
                                     "a duplicate delivered by %(pkgs)s "
