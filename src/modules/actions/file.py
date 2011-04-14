@@ -161,7 +161,7 @@ class FileAction(generic.Action):
                                 if e.errno == errno.ENOENT:
                                         pass
                                 elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):
-                                        pkgplan.image.salvage(final_path)
+                                        pkgplan.salvage(final_path)
                                 elif e.errno != errno.EACCES:
                                         # this happens on Windows
                                         raise
@@ -439,6 +439,23 @@ class FileAction(generic.Action):
                                 # Already gone; don't care.
                                 return
                         raise
+
+                if not pkgplan.destination_fmri and \
+                    self.attrs.get("preserve", "false").lower() != "false":
+                        # Preserved files are salvaged if they have been
+                        # modified since they were installed and this is
+                        # not an upgrade.
+                        try:
+                                ihash, cdata = misc.get_data_digest(path)
+                                if ihash != self.hash:
+                                        pkgplan.salvage(path)
+                                        # Nothing more to do.
+                                        return
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        # Already gone; don't care.
+                                        return
+                                raise
 
                 # Attempt to remove the file.
                 self.remove_fsobj(pkgplan, path)

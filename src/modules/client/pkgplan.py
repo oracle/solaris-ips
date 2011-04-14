@@ -51,7 +51,7 @@ class PkgPlan(object):
             "origin_fmri", "pkg_summary", "__destination_mfst",
             "__license_status", "__origin_mfst", "__progtrack",
             "__repair_actions", "__xferfiles", "__xfersize",
-            "_autofix_pkgs"
+            "_autofix_pkgs", "__executed"
         ]
 
         def __init__(self, image, progtrack, check_cancelation):
@@ -66,6 +66,7 @@ class PkgPlan(object):
                 self.image = image
                 self.pkg_summary = None
 
+                self.__executed = False
                 self.__license_status = {}
                 self.__progtrack = progtrack
                 self.__repair_actions = []
@@ -352,9 +353,10 @@ class PkgPlan(object):
 
         def execute_install(self, src, dest):
                 """ perform action for installation of package"""
+                self.__executed = True
                 try:
                         dest.install(self, src)
-                except pkg.actions.ActionError:
+                except (pkg.actions.ActionError, EnvironmentError):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
@@ -367,9 +369,10 @@ class PkgPlan(object):
 
         def execute_update(self, src, dest):
                 """ handle action updates"""
+                self.__executed = True
                 try:
                         dest.install(self, src)
-                except pkg.actions.ActionError:
+                except (pkg.actions.ActionError, EnvironmentError):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
@@ -382,9 +385,10 @@ class PkgPlan(object):
 
         def execute_removal(self, src, dest):
                 """ handle action removals"""
+                self.__executed = True
                 try:
                         src.remove(self)
-                except pkg.actions.ActionError:
+                except (pkg.actions.ActionError, EnvironmentError):
                         # Don't log these as they're expected, and should be
                         # handled by the caller.
                         raise
@@ -408,3 +412,12 @@ class PkgPlan(object):
                                 dest.postinstall(self, src)
                         else:
                                 src.postremove(self)
+
+        def salvage(self, path):
+                """Used to save unexpected files or directories found during
+                plan execution.  Salvaged items are tracked in the imageplan.
+                """
+
+                assert self.__executed
+                ignored, spath = self.image.salvage(path)
+                self.image.imageplan.salvaged.append((path, spath))

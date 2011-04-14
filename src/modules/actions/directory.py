@@ -148,7 +148,7 @@ class DirectoryAction(generic.Action):
                                         # file, or a package has been poorly
                                         # implemented.  Salvage what's there,
                                         # and drive on.
-                                        pkgplan.image.salvage(path)
+                                        pkgplan.salvage(path)
                                         os.mkdir(path, mode)
                                 elif stat.S_ISDIR(fs_mode):
                                         # The directory already exists, but
@@ -198,12 +198,12 @@ class DirectoryAction(generic.Action):
                         elif e.errno in (errno.EEXIST, errno.ENOTEMPTY):
                                 # Cannot remove directory since it's
                                 # not empty.
-                                pkgplan.image.salvage(path)
+                                pkgplan.salvage(path)
                         elif e.errno == errno.ENOTDIR:
                                 # Either the user or another package has changed
                                 # this directory into a link or file.  Salvage
                                 # what's there and drive on.
-                                pkgplan.image.salvage(path)
+                                pkgplan.salvage(path)
                         elif e.errno == errno.EBUSY and os.path.ismount(path):
                                 # User has replaced directory with mountpoint,
                                 # or a package has been poorly implemented.

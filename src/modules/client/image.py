@@ -2349,7 +2349,7 @@ class Image(object):
 
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
-                        orig_state_root = self.__salvage(self._statedir)
+                        orig_state_root, ignored = self.salvage(self._statedir)
                         portable.rename(tmp_state_root, self._statedir)
                         shutil.rmtree(orig_state_root, True)
                 except EnvironmentError, e:
@@ -2824,7 +2824,7 @@ class Image(object):
 
                 # Next, preserve the old installed state dir, rename the
                 # new one into place, and then remove the old one.
-                orig_state_root = self.__salvage(self._statedir)
+                orig_state_root, ignored = self.salvage(self._statedir)
                 portable.rename(tmp_state_root, self._statedir)
                 shutil.rmtree(orig_state_root, True)
 
@@ -3323,7 +3323,12 @@ class Image(object):
                                         continue
                                 shutil.rmtree(path, True)
 
-        def __salvage(self, path):
+        def salvage(self, path):
+                """Called when unexpected file or directory is found during
+                package operations; returns a tuple of the path of the salvage
+                directory where the item was stored and the new path of the
+                salvaged item.  path is rooted in /...."""
+
                 # This ensures that if the path is already rooted in the image,
                 # that it will be stored in lost+found (due to os.path.join
                 # behaviour with absolute path components).
@@ -3345,29 +3350,10 @@ class Image(object):
                 parent = os.path.dirname(sdir)
                 if not os.path.exists(parent):
                         misc.makedirs(parent)
-                shutil.move(os.path.normpath(os.path.join(self.root, path)),
-                    sdir)
-                return sdir
 
-        def salvage(self, path):
-                """Called when unexpected file or directory is found during
-                install or removal. XXX Need to work out a better error
-                passback mechanism. Path is rooted in /...."""
-
-                try:
-                        lstat = os.lstat(path)
-                except OSError, e:
-                        raise apx._convert_error(e)
-
-                is_dir = stat.S_ISDIR(lstat.st_mode)
-                sdir = self.__salvage(path)
-                if is_dir:
-                        logger.warning("\nWarning - directory %s not empty or "
-                            "not expected during operation - contents "
-                            "preserved in %s" % (path, sdir))
-                else:
-                        logger.warning("\nWarning - file %s not expected "
-                            "during operation - preserved in %s" % (path, sdir))
+                orig = os.path.normpath(os.path.join(self.root, path))
+                shutil.move(orig, sdir)
+                return sdir, os.path.join(sdir, sdir)
 
         def temporary_dir(self):
                 """Create a temp directory under the image directory for various

@@ -1,3 +1,12 @@
+Version 56:
+Compatible with clients using version 55:
+
+     pkg.client.api.ImageInterface has changed as follows:
+
+        * added a get_salvaged() method to the PlanDescription class to
+          get the list of files or directories that were salvaged during
+          the executed package operation
+
 Version 55:
 Incompatible with clients using versions 0-54:
 
@@ -17,9 +26,9 @@ Version 54:
 Compatible with clients using versions 53-54:
 
      pkg.client.api.ImageInterface has changed as follows:
+        * added avoid_pkgs, get_avoid_list functions to client
+          interface to manage group dependency behavior.
 
-	* added avoid_pkgs, get_avoid_list functions to client
-	  interface to manage group dependency behavior.
 
 Version 53:
 Incompatible with clients using versions 0-52:

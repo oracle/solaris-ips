@@ -2032,6 +2032,43 @@ adm
                 self.assert_(not os.path.exists(bronze1_path))
                 self.pkg("uninstall \*")
 
+                # Verify that unmodified, preserved files will not be salvaged
+                # on uninstall.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+
+                # Ensure directory is empty before testing.
+                shutil.rmtree(sroot)
+
+                self.pkg("install preserve@1.0")
+                self.file_contains("testme", "preserve1")
+                self.pkg("uninstall preserve")
+
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("testme-")
+                ]
+                self.assertEqual(salvaged, [])
+
+                # Verify that modified, preserved files will be salvaged
+                # on uninstall.
+                self.pkg("install preserve@1.0")
+                self.file_contains("testme", "preserve1")
+                self.file_append("testme", "junk")
+                self.pkg("uninstall preserve")
+
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith("testme-")
+                ]
+                self.assertNotEqual(salvaged, [])
+
+                sfile = os.path.join(sroot, salvaged[0])
+                with open(sfile, "rb") as f:
+                        found = [l.strip() for l in f if "junk" in l]
+                        self.assertEqual(found, ["junk"])
+
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
 

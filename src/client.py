@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 55
+CLIENT_API_VERSION = 56
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1047,60 +1047,90 @@ def __api_prepare(operation, api_inst, accept=False):
         except KeyboardInterrupt:
                 raise
         except:
-                error(_("\nAn unexpected error happened while preparing for " \
+                error(_("\nAn unexpected error happened while preparing for "
                     "%s:") % operation)
                 raise
         return EXIT_OK
 
 def __api_execute_plan(operation, api_inst):
+        rval = None
         try:
                 api_inst.execute_plan()
+                rval = EXIT_OK
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except (api_errors.InvalidPlanError,
             api_errors.ActionExecutionError,
             api_errors.InvalidPackageErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except api_errors.ImageUpdateOnLiveImageException:
                 error(_("%s cannot be done on live image") % operation)
-                return EXIT_NOTLIVE
+                rval = EXIT_NOTLIVE
         except api_errors.RebootNeededOnLiveImageException:
                 error(_("Requested \"%s\" operation would affect files that "
                     "cannot be modified in live image.\n"
                     "Please retry this operation on an alternate boot "
                     "environment.") % operation)
-                return EXIT_NOTLIVE
+                rval = EXIT_NOTLIVE
         except api_errors.CorruptedIndexException, e:
                 error("The search index appears corrupted.  Please rebuild the "
                     "index with 'pkg rebuild-index'.")
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e))
                 error(_("\n(Failure to consistently execute pkg commands as a "
                     "privileged user is often a source of this problem.)"))
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except api_errors.ImageFormatUpdateNeeded, e:
                 format_update_error(e)
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except api_errors.BEException, e:
                 error(e)
-                return EXIT_OOPS
+                rval = EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException:
                 raise
         except Exception, e:
-                error(_("An unexpected error happened during " \
+                error(_("An unexpected error happened during "
                     "%s: %s") % (operation, e))
                 raise
-        return EXIT_OK
+        finally:
+                exc_type = exc_value = exc_tb = None
+                if rval is None:
+                        # Store original exception so that the real cause of
+                        # failure can be raised if this fails.
+                        exc_type, exc_value, exc_tb = sys.exc_info()
+
+                try:
+                        salvaged = api_inst.describe().get_salvaged()
+                        if salvaged:
+                                logger.error("")
+                                logger.error(_("The following unexpected or "
+                                    "editable files and directories were\n"
+                                    "salvaged while executing the requested "
+                                    "package operation; they\nhave been moved "
+                                    "to the displayed location:\n"))
+                                for opath, spath in salvaged:
+                                        logger.error("  %s -> %s" % (opath,
+                                            spath))
+                except Exception:
+                        if rval is not None:
+                                # Only raise exception encountered here if the
+                                # exception previously raised was suppressed.
+                                raise
+
+                if exc_value or exc_tb:
+                        raise exc_value, None, exc_tb
+
+        return rval
 
 def __api_alloc(imgdir, exact_match, pkg_image_used, quiet):
         progresstracker = get_tracker(quiet)
@@ -4757,7 +4787,7 @@ def main_func():
                         usage(_("-R not allowed for %s subcommand") %
                               subcommand, cmd=subcommand)
                 if pargs:
-                        usage(_("version: command does not take operands " \
+                        usage(_("version: command does not take operands "
                             "('%s')") % " ".join(pargs), cmd=subcommand)
                 msg(pkg.VERSION)
                 return EXIT_OK

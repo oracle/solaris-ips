@@ -983,7 +983,7 @@ class Action(object):
                                         raise apx.ActionExecutionError(self,
                                             error=e, fmri=fmri)
 
-                                pkgplan.image.salvage(path)
+                                pkgplan.salvage(path)
 
         def postremove(self, pkgplan):
                 """Client-side method that performs post-remove actions."""

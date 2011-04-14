@@ -141,6 +141,7 @@ class ImagePlan(object):
                 self.__references = {} # dict of fmri -> pattern
                 self.__need_boot_archive = None
                 self.__new_avoid_obs = (None, None)
+                self.__salvaged = []
 
         def __str__(self):
 
@@ -166,6 +167,16 @@ class ImagePlan(object):
                             self.__new_excludes)
 
                 return s
+
+        @property
+        def salvaged(self):
+                """A list of tuples of items that were salvaged during plan
+                execution.  Each tuple is of the form (original_path,
+                salvage_path).  Where 'original_path' is the path of the item
+                before it was salvaged, and 'salvage_path' is where the item was
+                moved to.  This property is only valid after plan execution
+                has completed."""
+                return self.__salvaged
 
         @property
         def services(self):
