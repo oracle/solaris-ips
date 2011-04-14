@@ -1462,6 +1462,31 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        preslegacy = """
+            open preslegacy@1.0
+            add file tmp/preserve1 path=testme mode=0644 owner=root group=root preserve=true
+            close
+            open preslegacy@2.0
+            add file tmp/preserve2 path=testme mode=0444 owner=root group=root preserve=legacy
+            close
+            open preslegacy@3.0
+            add file tmp/preserve3 path=testme mode=0444 owner=root group=root preserve=legacy
+            close
+        """
+
+        renpreslegacy = """
+            open orig_preslegacy@1.0
+            add file tmp/preserve1 path=testme mode=0644 owner=root group=root preserve=true
+            close
+            open orig_preslegacy@1.1
+            add set pkg.renamed=true
+            add depend type=require fmri=ren_preslegacy@2.0
+            close
+            open ren_preslegacy@2.0
+            add file tmp/preserve2 path=newme mode=0444 owner=root group=root preserve=legacy original_name=orig_preslegacy:testme
+            close
+        """
+
         renpreserve = """
             open orig_pkg@1.0
             add file tmp/preserve1 path=foo1 mode=0644 owner=root group=root preserve=true
@@ -1485,9 +1510,9 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             "tmp/libc.so.1", "tmp/sh", "tmp/config1", "tmp/config2",
             "tmp/gold-passwd1", "tmp/gold-passwd2", "tmp/gold-group",
             "tmp/gold-shadow", "tmp/gold-ftpusers", "tmp/gold-silly",
-            "tmp/silver-silly", "tmp/preserve1", "tmp/preserve3",
-            "tmp/renold1", "tmp/renold3", "tmp/rennew1", "tmp/rennew3",
-            "tmp/liveroot1", "tmp/liveroot2",
+            "tmp/silver-silly", "tmp/preserve1", "tmp/preserve2",
+            "tmp/preserve3", "tmp/renold1", "tmp/renold3", "tmp/rennew1",
+            "tmp/rennew3", "tmp/liveroot1", "tmp/liveroot2",
         ]
 
         misc_files2 = {
@@ -1562,6 +1587,17 @@ adm
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files1)
                 self.make_misc_files(self.misc_files2)
+
+        def __salvage_file_contains(self, sroot, fprefix, entry):
+                salvaged = [
+                    n for n in os.listdir(sroot)
+                    if n.startswith(fprefix + "-")
+                ]
+
+                sfile = os.path.join(sroot, salvaged[0])
+                with open(sfile, "rb") as f:
+                        found = [l.strip() for l in f if entry in l]
+                        self.assertEqual(found, [entry])
 
         def test_incorp_install(self):
                 """Make sure we don't round up packages we specify on
@@ -2032,19 +2068,17 @@ adm
                 self.assert_(not os.path.exists(bronze1_path))
                 self.pkg("uninstall \*")
 
-                # Verify that unmodified, preserved files will not be salvaged
-                # on uninstall.
+                # Ensure directory is empty before testing.
                 api_inst = self.get_img_api_obj()
                 img_inst = api_inst.img
                 sroot = os.path.join(img_inst.imgdir, "lost+found")
-
-                # Ensure directory is empty before testing.
                 shutil.rmtree(sroot)
 
+                # Verify that unmodified, preserved files will not be salvaged
+                # on uninstall.
                 self.pkg("install preserve@1.0")
                 self.file_contains("testme", "preserve1")
                 self.pkg("uninstall preserve")
-
                 salvaged = [
                     n for n in os.listdir(sroot)
                     if n.startswith("testme-")
@@ -2057,17 +2091,7 @@ adm
                 self.file_contains("testme", "preserve1")
                 self.file_append("testme", "junk")
                 self.pkg("uninstall preserve")
-
-                salvaged = [
-                    n for n in os.listdir(sroot)
-                    if n.startswith("testme-")
-                ]
-                self.assertNotEqual(salvaged, [])
-
-                sfile = os.path.join(sroot, salvaged[0])
-                with open(sfile, "rb") as f:
-                        found = [l.strip() for l in f if "junk" in l]
-                        self.assertEqual(found, ["junk"])
+                self.__salvage_file_contains(sroot, "testme", "junk")
 
         def test_file_preserve_renameold(self):
                 """Make sure that file upgrade with preserve=renameold works."""
@@ -2194,6 +2218,77 @@ adm
                 self.file_doesnt_exist("testme.old")
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
+
+        def test_file_preserve_legacy(self):
+                """Verify that preserve=legacy works as expected."""
+
+                self.pkgsend_bulk(self.rurl, (self.preslegacy,
+                    self.renpreslegacy))
+                self.image_create(self.rurl)
+
+                # Ensure directory is empty before testing.
+                api_inst = self.get_img_api_obj()
+                img_inst = api_inst.img
+                sroot = os.path.join(img_inst.imgdir, "lost+found")
+                shutil.rmtree(sroot)
+
+                # Verify that unpackaged files will be salvaged on initial
+                # install if a package being installed delivers the same file
+                # and that the new file will be installed.
+                self.file_append("testme", "unpackaged")
+                self.pkg("install preslegacy@1.0")
+                self.file_contains("testme", "preserve1")
+                self.__salvage_file_contains(sroot, "testme", "unpackaged")
+                shutil.rmtree(sroot)
+
+                # Verify that a package transitioning to preserve=legacy from
+                # some other state will have the existing file renamed using
+                # .legacy as an extension.
+                self.pkg("update preslegacy@2.0")
+                self.file_contains("testme.legacy", "preserve1")
+                self.file_contains("testme", "preserve2")
+
+                # Verify that if an action with preserve=legacy is upgraded
+                # and its payload changes that the new payload is delivered
+                # but the old .legacy file is not modified.
+                self.pkg("update preslegacy@3.0")
+                self.file_contains("testme.legacy", "preserve1")
+                self.file_contains("testme", "preserve3")
+
+                # Verify that if the file for an action marked with
+                # preserve=legacy is removed that the package still
+                # verifies.
+                self.file_remove("testme")
+                self.pkg("verify -v preslegacy")
+
+                # Verify that a file removed for an action marked with
+                # preserve=legacy can be reverted.
+                self.pkg("revert testme")
+                self.file_contains("testme", "preserve3")
+
+                # Verify that an initial install of an action with
+                # preserve=legacy will not install the payload of the action.
+                self.pkg("uninstall preslegacy")
+                self.pkg("install preslegacy@3.0")
+                self.file_doesnt_exist("testme")
+
+                # Verify that if the original preserved file is missing during
+                # a transition to preserve=legacy from some other state that
+                # the new action is still delivered and the operation succeeds.
+                self.pkg("uninstall preslegacy")
+                self.pkg("install preslegacy@1.0")
+                self.file_remove("testme")
+                self.pkg("update")
+                self.file_contains("testme", "preserve3")
+
+                # Verify that a preserved file can be moved from one package to
+                # another and transition to preserve=legacy at the same time.
+                self.pkg("uninstall preslegacy")
+                self.pkg("install orig_preslegacy@1.0")
+                self.file_exists("testme")
+                self.pkg("update")
+                self.file_contains("testme.legacy", "preserve1")
+                self.file_contains("newme", "preserve2")
 
         def dest_file_valid(self, plist, pkg, src, dest):
                 """Used to verify that the dest item's mode, attrs, timestamp,

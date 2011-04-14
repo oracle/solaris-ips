@@ -837,6 +837,12 @@ class Action(object):
                         lstat = os.lstat(path)
                 except OSError, e:
                         if e.errno == errno.ENOENT:
+                                if self.attrs.get("preserve", "") == "legacy":
+                                        # It's acceptable for files with
+                                        # preserve=legacy to be missing;
+                                        # nothing more to validate.
+                                        return (lstat, errors, warnings, info,
+                                            abort)
                                 errors.append(_("Missing: %s does not exist") %
                                     ftype_to_name(ftype))
                         elif e.errno == errno.EACCES:

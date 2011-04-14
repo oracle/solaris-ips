@@ -114,19 +114,26 @@ DESCRIPTION
 
      preserve  This specifies that the file's contents should not be
                overwritten on upgrade if they are determined to have
-               changed since it was installed or last upgraded.
+               changed since it was installed or last upgraded.  On
+               initial installs, if an existing file is found, it will
+               be salvaged (i.e. stored in /var/pkg/lost+found).
 
-               If the value of this attribute is 'renameold', then the
-               existing file will be renamed, and the new file will be put
-               in its place.
+               If the value of preserve is 'renameold', then the existing
+               file will be renamed with the extension '.old', and the new
+               file will be put in its place.
 
-               If the value of this attribute is 'renamenew', then the
-               existing file will be left alone, and the new file will be
-               installed with a new name.
+               If the value of preserve is 'renamenew', then the existing
+               file will be left alone, and the new file will be installed
+               with the extension '.new'.
 
-               If the value of this attribute is 'strawberry', then the
-               existing file will be left alone, and the new file will not
-               be installed.
+               If the value of preserve is 'legacy', then this file will not
+               be installed for initial package installs.  On upgrades, any
+               existing file will be renamed with the extension '.legacy',
+               and then the new file will be put in its place.
+
+               If the value of preserve is 'true' (or a value not listed
+               above, such as 'strawberry'), then the existing file will
+               be left alone, and the new file will not be installed.
 
      Files may also be 'tasted', and depending on the flavor, may have
      additional interesting attributes.  For ELF files, the following

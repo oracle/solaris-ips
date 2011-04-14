@@ -35,10 +35,13 @@ import tempfile
 import stat
 import generic
 import pkg.misc as misc
-from pkg.client.debugvalues import DebugValues
 import pkg.portable as portable
 import pkg.client.api_errors as api_errors
 import pkg.actions
+
+from pkg.client.api_errors import ActionExecutionError
+from pkg.client.debugvalues import DebugValues
+
 try:
         import pkg.elf as elf
         haveelf = True
@@ -117,6 +120,11 @@ class FileAction(generic.Action):
                         self.makedirs(os.path.dirname(final_path),
                             mode=misc.PKG_DIR_MODE,
                             fmri=pkgplan.destination_fmri)
+                elif not orig and not pkgplan.origin_fmri and \
+                     "preserve" in self.attrs and os.path.isfile(final_path):
+                        # Unpackaged editable file is already present during
+                        # initial install; salvage it before continuing.
+                        pkgplan.salvage(final_path)
 
                 # XXX If we're upgrading, do we need to preserve file perms from
                 # existing file?
@@ -138,11 +146,17 @@ class FileAction(generic.Action):
                 # should it be stored?
                 pres_type = self.__check_preserve(orig, pkgplan)
                 do_content = True
+                old_path = None
                 if pres_type == True or (pres_type and
                     pkgplan.origin_fmri == pkgplan.destination_fmri):
                         # File is marked to be preserved and exists so don't
                         # reinstall content.
                         do_content = False
+                elif pres_type == "legacy":
+                        # Only rename old file if this is a transition to
+                        # preserve=legacy from something else.
+                        if orig.attrs.get("preserve", None) != "legacy":
+                                old_path = final_path + ".legacy"
                 elif pres_type == "renameold.update":
                         old_path = final_path + ".update"
                 elif pres_type == "renameold":
@@ -173,13 +187,22 @@ class FileAction(generic.Action):
                             final_path))
                         stream = self.data()
                         tfile = os.fdopen(tfilefd, "wb")
-                        shasum = misc.gunzip_from_stream(stream, tfile)
+                        try:
+                                shasum = misc.gunzip_from_stream(stream, tfile)
+                        except zlib.error, e:
+                                raise ActionExecutionError("zlib.error: %s" %
+                                    (" ".join([str(a) for a in e.args])))
+                        finally:
+                                tfile.close()
+                                stream.close()
 
-                        tfile.close()
-                        stream.close()
-
-                        # XXX Should throw an exception if shasum doesn't match
-                        # self.hash
+                        if shasum != self.hash:
+                                raise ActionExecutionError(_("Action data "
+                                   "hash verification failure: expected: "
+                                   "%(expected)s computed: %(actual)s "
+                                   "action: %(action)s") % {
+                                   "expected": self.hash, "actual": shasum,
+                                   "action": self })
                 else:
                         temp = final_path
 
@@ -201,9 +224,13 @@ class FileAction(generic.Action):
 
                 # XXX There's a window where final_path doesn't exist, but we
                 # probably don't care.
-                if do_content and pres_type in ("renameold",
-                    "renameold.update"):
-                        portable.rename(final_path, old_path)
+                if do_content and old_path:
+                        try:
+                                portable.rename(final_path, old_path)
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        # Only care if file isn't gone already.
+                                        raise
 
                 # This is safe even if temp == final_path.
                 portable.rename(temp, final_path)
@@ -337,17 +364,28 @@ class FileAction(generic.Action):
                 Returns None if preservation is not defined by the action.
                 Returns False if it is, but no preservation is necessary.
                 Returns True for the normal preservation form.  Returns one of
-                the strings 'renameold', 'renameold.update', or 'renamenew'
-                for each of the respective forms of preservation.
+                the strings 'renameold', 'renameold.update', 'renamenew',
+                or 'legacy' for each of the respective forms of preservation.
                 """
 
-                if not "preserve" in self.attrs:
+                try:
+                        pres_type = self.attrs["preserve"]
+                except KeyError:
                         return None
 
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
-                pres_type = False
+                # 'legacy' preservation is very different than other forms of
+                # preservation as it doesn't account for the on-disk state of
+                # the action's payload.
+                if pres_type == "legacy":
+                        if not orig:
+                                # This is an initial install or a repair, so
+                                # there's nothing to deliver.
+                                return True
+                        return pres_type
+
                 # If action has been marked with a preserve attribute, the
                 # hash of the preserved file has changed between versions,
                 # and the package being installed is older than the package
@@ -359,6 +397,7 @@ class FileAction(generic.Action):
                 # then this file is moving between packages and it can't be
                 # a downgrade since that isn't allowed across rename or obsolete
                 # boundaries.
+                is_file = os.path.isfile(final_path)
                 if orig and pkgplan.destination_fmri and \
                     self.hash != orig.hash and \
                     pkgplan.origin_fmri and \
@@ -367,11 +406,11 @@ class FileAction(generic.Action):
                         # what will be installed.  So check if the version on
                         # disk is different than what was originally delivered,
                         # and if so, preserve it.
-                        if os.path.isfile(final_path):
+                        if is_file:
                                 ihash, cdata = misc.get_data_digest(final_path)
                                 if ihash != orig.hash:
                                         # .old is intentionally avoided here to
-                                        # avoid accidental collisions with the
+                                        # prevent accidental collisions with the
                                         # normal install process.
                                         return "renameold.update"
                         return False
@@ -382,17 +421,14 @@ class FileAction(generic.Action):
                 # in some way, depending on the value of preserve.  If the
                 # action is an overlay, then we always overwrite.
                 overlay = self.attrs.get("overlay", "false") == "true"
-                if os.path.isfile(final_path) and not overlay:
+                if is_file and not overlay:
                         chash, cdata = misc.get_data_digest(final_path)
-
                         if not orig or chash != orig.hash:
-                                pres_type = self.attrs["preserve"]
                                 if pres_type in ("renameold", "renamenew"):
                                         return pres_type
-                                else:
-                                        return True
+                                return True
 
-                return pres_type
+                return False
 
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
@@ -417,7 +453,10 @@ class FileAction(generic.Action):
                         if not os.path.isfile(path):
                                 return True
 
-                if self.__check_preserve(orig, pkgplan):
+                pres_type = self.__check_preserve(orig, pkgplan)
+                if pres_type != None and pres_type != True:
+                        # Preserved files only need data if they're being
+                        # changed (e.g. "renameold", etc.).
                         return True
 
                 return False
