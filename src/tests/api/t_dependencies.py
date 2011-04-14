@@ -70,6 +70,7 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
         smf_paths = {
             "broken":
                 "var/svc/manifest/broken-service.xml",
+            "delete": "var/svc/manifest/delete-service.xml",
             "delivered_many_nodeps":
                 "var/svc/manifest/delivered-many-nodeps.xml",
             "foreign_many_nodeps":
@@ -672,6 +673,39 @@ None of these services or instances declare any dependencies.
 </service>
 </service_bundle>
 """
+        smf_fmris["delete"] = [ \
+            "svc:/application/pkg5test/deleteservice",
+            "svc:/application/pkg5test/deleteservice:default" ]
+        smf_known_deps["svc:/application/pkg5test/deleteservice"] = []
+        smf_known_deps["svc:/application/pkg5test/deleteservice:default"] = []
+        smf_manifest_text["delete"] = \
+"""<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='delete-service'>
+
+<!-- svc:/application/pkg5test/deleteservice
+     svc:/application/pkg5test/deleteservice:default
+    While we do have an SMF dependency, this shouldn't be used to generate
+    pkg dependencies, since it has the 'delete' attribute set to true.
+-->
+<service
+
+	name='application/pkg5test/deleteservice'
+	type='service'
+	version='0.1'>
+	<create_default_instance enabled='true' />
+	<single_instance/>
+        <dependency name='network'
+                    grouping='require_all'
+                    restart_on='error'
+                    type='service'
+                    delete='true'>
+                    <service_fmri value='svc:/application/pkg5test/delivered-many'/>
+        </dependency>
+</service>
+</service_bundle>
+"""
+
         int_smf_manf = """\
 file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
 file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
@@ -686,6 +720,11 @@ file NOHASH group=sys mode=0644 owner=root path=%(foreign_single_nodeps)s
 file NOHASH group=sys mode=0644 owner=root path=%(broken)s
 file NOHASH group=sys mode=0644 owner=root path=%(delivered_many_nodeps)s
 file NOHASH group=sys mode=0644 owner=root path=%(service_single)s
+""" % paths
+
+        delete_smf_manf = """\
+file NOHASH group=sys mode=0644 owner=root path=%(delete)s
+file NOHASH group=sys mode=0644 owner=root path=%(foreign_single_nodeps)s
 """ % paths
 
         faildeps_smf_manf = """\
@@ -1757,17 +1796,18 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 present in the provided pkg_attrs dictionary. Errors are
                 reported in an assertion message that includes manifest_name."""
 
-                self.assert_(pkg_attrs.has_key("opensolaris.smf.fmri"),
-                    "Missing opensolaris.smf.fmri key for %s" % manifest_name)
+                self.assert_(pkg_attrs.has_key("org.opensolaris.smf.fmri"),
+                    "Missing org.opensolaris.smf.fmri key for %s" %
+                    manifest_name)
 
-                found = len(pkg_attrs["opensolaris.smf.fmri"])
+                found = len(pkg_attrs["org.opensolaris.smf.fmri"])
                 self.assertEqual(found, len(expected),
                     "Wrong no. of SMF instances/services found for %s: expected"
                     " %s got %s" % (manifest_name, len(expected), found))
 
                 for fmri in expected:
                             self.assert_(
-                                fmri in pkg_attrs["opensolaris.smf.fmri"],
+                                fmri in pkg_attrs["org.opensolaris.smf.fmri"],
                                 "%s not in list of SMF instances/services "
                                 "from %s" % (fmri, manifest_name))
 
@@ -1926,6 +1966,24 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     self.smf_fmris["delivered_many_nodeps"] +
                     self.smf_fmris["service_unknown"],
                     "faildeps_smf_manf")
+
+        def test_delete_smf_manifest(self):
+                """We don't create any SMF dependencies where a manifest
+                specifies a 'delete' attribute in its dependency."""
+
+                t_path = self.make_manifest(self.delete_smf_manf)
+                self.make_smf_test_files()
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
+
+                self.assert_(len(es) == 0,
+                    "Detected %s error(s), expected 0" % len(es))
+                self.assert_(len(ds) == 0, "Expected 0 dependencies, got %s" %
+                    len(ds))
+                self.check_smf_fmris(pkg_attrs, self.smf_fmris["delete"] +
+                    self.smf_fmris["foreign_single_nodeps"], "delete")
 
         def test_runpath_1(self):
                 """Test basic functionality of runpaths."""

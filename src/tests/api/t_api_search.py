@@ -64,7 +64,7 @@ class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
             add set name=description value='FOOO bAr O OO OOO' value="whee fun"
             add set name='weirdness' value='] [ * ?'
-            add set name=opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default
+            add set name=org.opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default
             close """
 
         example_pkg11 = """
@@ -460,7 +460,7 @@ close
         res_smf_svc = set([
             ('pkg:/example_pkg@1.0-0',
             'svc:/milestone/multi-user-server:default',
-            'set name=opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default')
+            'set name=org.opensolaris.smf.fmri value=svc:/milestone/multi-user-server:default')
         ])
 
         res_dir = set([
@@ -729,29 +729,29 @@ close
                     svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:opensolaris.smf.fmri:%s" % svc_name,
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "set:opensolaris.smf.fmri:%s" % svc_name,
+                    "set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "opensolaris.smf.fmri:%s" %svc_name,
+                    "org.opensolaris.smf.fmri:%s" %svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    ":set:opensolaris.smf.fmri:%s" % svc_name,
+                    ":set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
                     "%s *milestone*" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "example_pkg:set:opensolaris.smf.fmri:%s example_pkg:set:opensolaris.smf.fmri:%s" %
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
                     (svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, True,
-                    "%s example_pkg:set:opensolaris.smf.fmri:%s" %
+                    "%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
                     (svc_name, svc_name),
                     self.res_smf_svc)
                 # Test that a single escaped colon doesn't cause a traceback.
@@ -910,29 +910,29 @@ close
                     svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:opensolaris.smf.fmri:%s" % svc_name,
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "set:opensolaris.smf.fmri:%s" % svc_name,
+                    "set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "opensolaris.smf.fmri:%s" %svc_name,
+                    "org.opensolaris.smf.fmri:%s" %svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    ":set:opensolaris.smf.fmri:%s" % svc_name,
+                    ":set:org.opensolaris.smf.fmri:%s" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
                     "%s *milestone*" % svc_name,
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s %s" % (svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "example_pkg:set:opensolaris.smf.fmri:%s example_pkg:set:opensolaris.smf.fmri:%s" %
+                    "example_pkg:set:org.opensolaris.smf.fmri:%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
                     (svc_name, svc_name),
                     self.res_smf_svc)
                 self._search_op(api_obj, False,
-                    "%s example_pkg:set:opensolaris.smf.fmri:%s" %
+                    "%s example_pkg:set:org.opensolaris.smf.fmri:%s" %
                     (svc_name, svc_name),
                     self.res_smf_svc)
                 # Test that a single escaped colon doesn't cause a traceback.

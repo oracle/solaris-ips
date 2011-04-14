@@ -638,7 +638,7 @@ def publish_pkg(pkg, proto_dir):
                 for fmri in smf_fmris:
                         values = values + " value=%s" % fmri
                 publish_action(t, pkg,
-                    actions.fromstr("set name=opensolaris.smf.fmri %s" % values))
+                    actions.fromstr("set name=org.opensolaris.smf.fmri %s" % values))
 
         # publish any actions w/ data defined in import file
         for a in pkg.actions:

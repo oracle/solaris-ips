@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os.path
@@ -274,7 +274,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                                 # local machine.
                                 elist.append(
                                     _("Unable to generate SMF dependency on "
-                                    "%(dep_fmri)s declared in %(proto_file)s by"
+                                    "%(dep_fmri)s declared in %(proto_file)s by "
                                     "%(fmri)s: %(err)s") % locals())
 
                         if manifest:
@@ -284,7 +284,7 @@ def process_smf_manifest_deps(action, pkg_vars, **kwargs):
                 deps.append(SMFManifestDependency(action, manifest, pkg_vars,
                     action.attrs[PD_PROTO_DIR]))
         pkg_attrs = {
-            "opensolaris.smf.fmri": instance_mf.keys()
+            "org.opensolaris.smf.fmri": instance_mf.keys()
         }
         return deps, elist, pkg_attrs
 
@@ -297,11 +297,13 @@ def __get_smf_dependencies(deps):
                 fmris = dependency.getElementsByTagName("service_fmri")
                 dep_type = dependency.getAttribute("type")
                 grouping = dependency.getAttribute("grouping")
+                delete = dependency.getAttribute("delete")
 
                 # we don't include SMF path dependencies as these are often
                 # not packaged files.
                 if fmris and dep_type == "service" and \
-                    grouping == "require_all":
+                    grouping == "require_all" and \
+                    delete != "true":
                         for service_fmri in fmris:
                                 dependency = service_fmri.getAttribute("value")
                                 if dependency:

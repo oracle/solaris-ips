@@ -27,7 +27,7 @@ set name=pkg.description value="The Image Packaging System (IPS), or pkg(5), is 
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=info.repository_changeset value=$(CHANGESET)
 set name=info.repository_url value=ssh://hg.opensolaris.org/hg/pkg/gate
-set name=opensolaris.smf.fmri value=svc:/application/pkg/server:default value=svc:/application/pkg/dynamic-mirror:default
+set name=org.opensolaris.smf.fmri value=svc:/application/pkg/server:default value=svc:/application/pkg/dynamic-mirror:default
 set name=variant.arch value=$(ARCH)
 
 dir path=etc
