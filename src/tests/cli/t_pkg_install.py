@@ -928,6 +928,11 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 self.pkg("update -v --reject 'idr1*' '*incorp@1.0-0.2'")
                 self.pkg("list  kernel@1.0,5.11-0.2")
 
+        def test_update(self):
+                self.image_create(self.rurl)
+                self.pkg("install  kernel@1.0,5.11-0.1 A@1.0,5.11-0")
+                self.pkg("update --reject A")
+                self.pkg("verify")
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 

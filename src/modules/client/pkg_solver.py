@@ -631,7 +631,7 @@ class PkgSolver(object):
                 # generate clauses for installed pkgs
 
                 for name in self.__installed_fmris.keys():
-                        if name in self.__avoid_set or name in self.__removal_list:
+                        if name in self.__avoid_set or name in self.__reject_set:
                                 continue
 
                         self.__addclauses(self.__gen_one_of_these_clauses(
