@@ -1092,6 +1092,22 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.assert_("Multi-package datastreams are not supported." in
                     self.errout)
 
+        def test_21_uri_paths(self):
+                """Verify that a repository path with characters that must be
+                URI-encoded or that are can be created and used with pkgsend."""
+
+                for name in ("a%3A%2Fb", "a:b"):
+                        rpath = os.path.join(self.test_root, name)
+                        self.pkgsend(rpath, "create-repository "
+                            "--set-property publisher.prefix=test")
+
+                        self.pkgsend(rpath, "open pkg://test/foo@1.0")
+                        self.pkgsend(rpath, "close")
+
+                        # This will fail if the repository wasn't created with
+                        # the expected name.
+                        shutil.rmtree(rpath)
+
 
 class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
 
@@ -1217,7 +1233,6 @@ class TestPkgsendHardlinks(pkg5unittest.CliTestCase):
                 do_test("f1", "f2", "f3")
                 do_test("d1/f1", "d1/f2", "f3")
                 do_test("d1/f1", "d1/f2", "d2/f3")
-
 
 
 if __name__ == "__main__":

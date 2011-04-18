@@ -206,20 +206,21 @@ class TransportTransaction(object):
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
                 self.scheme = scheme
+                if scheme == "file":
+                        path = urllib.unquote(path)
                 self.path = path
                 self.progtrack = progtrack
                 self.transport = xport
                 self.publisher = pub
 
                 if scheme == "file":
-                        self.create_file_repo(origin_url, repo_props=repo_props,
+                        self.create_file_repo(repo_props=repo_props,
                             create_repo=create_repo)
                 elif scheme != "file" and create_repo:
                         raise UnsupportedRepoTypeOperationError("create_repo",
                             type=scheme)
 
-        def create_file_repo(self, origin_url, repo_props=EmptyDict,
-            create_repo=False):
+        def create_file_repo(self, repo_props=EmptyDict, create_repo=False):
 
                 if self.transport.publish_cache_contains(self.publisher):
                         return
