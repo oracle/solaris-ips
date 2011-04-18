@@ -808,6 +808,16 @@ test\t3\tonline\t%sZ
                 self.__test_rebuild(repo_path, repo_uri)
                 shutil.rmtree(repo_path)
 
+                # Create a repository, add a publisher, remove its catalog,
+                # and then verify rebuild still works.
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("add-publisher -s %s test" % repo_path)
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                cat.destroy()
+                self.pkgrepo("rebuild -s %s" % repo_path)
+                shutil.rmtree(repo_path)
+
                 # Create a repository and verify network-based repository
                 # access.
                 self.assert_(not os.path.exists(repo_path))
@@ -996,6 +1006,16 @@ test\t3\tonline\t%sZ
                 repo_path = self.dc.get_repodir()
                 repo_uri = self.dc.get_repo_url()
                 self.__test_refresh(repo_path, repo_uri)
+                shutil.rmtree(repo_path)
+
+                # Create a repository, add a publisher, remove its catalog,
+                # and then verify refresh still works.
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrepo("add-publisher -s %s test" % repo_path)
+                repo = self.get_repo(repo_path, read_only=True)
+                cat = repo.get_catalog(pub="test")
+                cat.destroy()
+                self.pkgrepo("refresh -s %s" % repo_path)
                 shutil.rmtree(repo_path)
 
                 # Create a repository and verify network-based repository

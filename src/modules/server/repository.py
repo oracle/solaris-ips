@@ -1066,7 +1066,7 @@ class _RepoStore(object):
                 """
                 if self.mirror:
                         raise RepositoryMirrorError()
-                if not self.catalog_root or self.catalog_version < 1:
+                if not self.catalog_root or self.catalog_version == 0:
                         raise RepositoryUnsupportedOperationError()
 
                 self.__lock_rstore()
@@ -1414,7 +1414,7 @@ class _RepoStore(object):
                         raise RepositoryMirrorError()
                 if self.read_only:
                         raise RepositoryReadOnlyError()
-                if not self.catalog_root or self.catalog_version < 1:
+                if not self.catalog_root or self.catalog_version == 0:
                         raise RepositoryUnsupportedOperationError()
 
                 self.__lock_rstore()
