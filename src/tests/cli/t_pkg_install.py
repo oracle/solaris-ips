@@ -389,24 +389,28 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # Create a repository for a different publisher for at
                 # least one of the packages so that we can verify that
                 # publisher search order is accounted for by @latest.
-                t2dir = os.path.join(self.test_root, "test2-repo")
+                # The second publisher is called 'pub2' here so that
+                # it comes lexically before 'test' (see bug 18180) to
+                # ensure that latest version ordering works correctly
+                # when the same stem is provided by different publishers.
+                t2dir = os.path.join(self.test_root, "pub2-repo")
                 self.create_repo(t2dir, properties={ "publisher": {
-                    "prefix": "test2" } })
+                    "prefix": "pub2" } })
                 self.pkgsend_bulk(t2dir, self.bar11)
 
                 self.pkg("set-publisher -p %s" % t2dir)
                 self.pkg("install '*@latest'")
 
-                # 1.0 of bar should be installed here since test2 is a
+                # 1.0 of bar should be installed here since pub2 is a
                 # lower-ranked publisher.
                 self.pkg("list")
                 self.pkg("info bar@1.0 foo@1.2 boring@1.1")
 
                 self.pkg("set-publisher --non-sticky test")
-                self.pkg("set-publisher -P test2")
+                self.pkg("set-publisher -P pub2 ")
                 self.pkg("install bar@latest")
 
-                # 1.1 of bar should be installed here since test2 is a
+                # 1.1 of bar should be installed here since pub2 is a
                 # higher-ranked publisher and test is non-sticky.
                 self.pkg("list")
                 self.pkg("info bar@1.1")

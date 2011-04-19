@@ -2559,8 +2559,12 @@ class ImagePlan(object):
                 if latest_pats:
                         # Rebuild proposed_dict based on latest version of every
                         # package.
+                        sort_key = operator.attrgetter("version")
                         for pname, flist in proposed_dict.iteritems():
-                                platest = sorted(flist)[-1]
+                                # Must sort on version; sorting by FMRI would
+                                # sort by publisher, then by version which is
+                                # not desirable.
+                                platest = sorted(flist, key=sort_key)[-1]
                                 if references[platest] not in latest_pats:
                                         # Nothing to do.
                                         continue
