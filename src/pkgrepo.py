@@ -39,6 +39,7 @@ LISTING_FORMATS = ("tsv", )
 tmpdirs = []
 
 import atexit
+import collections
 import copy
 import errno
 import getopt
@@ -58,6 +59,7 @@ from pkg.misc import msg, PipeError
 import pkg
 import pkg.catalog
 import pkg.client.api_errors as apx
+import pkg.client.progress
 import pkg.client.publisher as publisher
 import pkg.client.transport.transport as transport
 import pkg.misc as misc
@@ -71,6 +73,7 @@ def cleanup():
         """To be called at program finish."""
         for d in tmpdirs:
                 shutil.rmtree(d, True)
+
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -95,6 +98,19 @@ def error(text, cmd=None):
         logger.error(ws + pkg_cmd + text_nows)
 
 
+def get_tracker(quiet=False):
+        if quiet:
+                progtrack = pkg.client.progress.QuietProgressTracker()
+        else:
+                try:
+                        progtrack = \
+                            pkg.client.progress.FancyUNIXProgressTracker()
+                except pkg.client.progress.ProgressTrackerException:
+                        progtrack = \
+                            pkg.client.progress.CommandLineProgressTracker()
+        return progtrack
+
+
 def usage(usage_error=None, cmd=None, retcode=2, full=False):
         """Emit a usage message and optionally prefix it with a more
         specific error message.  Causes program to exit.
@@ -116,21 +132,24 @@ Usage:
 Subcommands:
      pkgrepo create [--version] uri_or_path
 
-     pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
+     pkgrepo add-publisher -s repo_uri_or_path publisher ...
 
-     pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path
          [section/property ...]
 
      pkgrepo info [-F format] [-H] [-p publisher ...]
-         [-s repo_uri_or_path]
+         -s repo_uri_or_path
 
-     pkgrepo rebuild [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo rebuild [-p publisher ...] -s repo_uri_or_path
          [--no-catalog] [--no-index]
 
-     pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo refresh [-p publisher ...] -s repo_uri_or_path
          [--no-catalog] [--no-index]
 
-     pkgrepo set [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo remove [-n] [-p publisher ...] -s repo_uri_or_path
+         pkg_fmri_pattern ...
+
+     pkgrepo set [-p publisher ...] -s repo_uri_or_path
          section/property[+|-]=[value] ... or
          section/property[+|-]=([value]) ...
 
@@ -156,6 +175,68 @@ def parse_uri(uri):
         """
 
         return publisher.RepositoryURI(misc.parse_uri(uri))
+
+
+def subcmd_remove(conf, args):
+        subcommand = "remove"
+
+        opts, pargs = getopt.getopt(args, "np:s:")
+
+        dry_run = False
+        pubs = set()
+        for opt, arg in opts:
+                if opt == "-n":
+                        dry_run = True
+                elif opt == "-p":
+                        pubs.add(arg)
+                elif opt == "-s":
+                        conf["repo_uri"] = parse_uri(arg)
+
+        if not pargs:
+                usage(_("At least one package pattern must be provided."),
+                    cmd=subcommand)
+
+        # Get repository object.
+        if not conf.get("repo_uri", None):
+                usage(_("A package repository location must be provided "
+                    "using -s."), cmd=subcommand)
+        repo = get_repo(conf, read_only=False, subcommand=subcommand)
+
+        if "all" in pubs:
+                pubs = set()
+
+        # Find matching packages.
+        try:
+                matching, refs = repo.get_matching_fmris(pargs, pubs=pubs)
+        except apx.PackageMatchErrors, e:
+                error(str(e), cmd=subcommand)
+                return EXIT_OOPS
+
+        if dry_run:
+                # Don't make any changes; display list of packages to be
+                # removed and exit.
+                packages = set(f for m in matching.values() for f in m)
+                count = len(packages)
+                plist = "\n".join("\t%s" % p for p in sorted(packages))
+                logger.info(_("%(count)d package(s) will be removed:\n"
+                    "%(plist)s") % locals())
+                return EXIT_OK
+
+        progtrack = get_tracker()
+        packages = collections.defaultdict(list)
+        for m in matching.values():
+                for f in m:
+                        packages[f.publisher].append(f)
+
+        for pub in packages:
+                logger.info(_("Removing packages for publisher %s ...") % pub)
+                repo.remove_packages(packages[pub], progtrack=progtrack,
+                    pub=pub)
+                if len(packages) > 1:
+                        # Add a newline between each publisher.
+                        logger.info("")
+
+        return EXIT_OK
 
 
 def print_col_listing(desired_field_order, field_data, field_values, out_format,

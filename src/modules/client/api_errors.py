@@ -339,6 +339,48 @@ class ReadOnlyFileSystemException(PermissionsException):
                         "filesystem.")
 
 
+class PackageMatchErrors(ApiException):
+        def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
+            illegal=EmptyI, multispec=EmptyI):
+                ApiException.__init__(self)
+                self.unmatched_fmris = unmatched_fmris
+                self.multiple_matches = multiple_matches
+                self.illegal = illegal
+                self.multispec = multispec
+
+        def __str__(self):
+                res = []
+                if self.unmatched_fmris:
+                        s = _("The following pattern(s) did not match any "
+                            "packages:")
+
+                        res += [s]
+                        res += ["\t%s" % p for p in self.unmatched_fmris]
+
+                if self.multiple_matches:
+                        s = _("'%s' matches multiple packages")
+                        for p, lst in self.multiple_matches:
+                                res.append(s % p)
+                                for pfmri in lst:
+                                        res.append("\t%s" % pfmri)
+
+                if self.illegal:
+                        s = _("'%s' is an illegal FMRI")
+                        res += [ s % p for p in self.illegal ]
+
+                if self.multispec:
+                        s = _("The following different patterns specify the "
+                          "same package(s):")
+                        res += [s]
+                        for t in self.multispec:
+                                res += [
+                                    ", ".join([t[i] for i in range(1, len(t))])
+                                    + ": %s" % t[0]
+                                ]
+
+                return "\n".join(res)
+
+
 class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,

@@ -52,6 +52,8 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
 
         tree10 = """
             open tree@1.0,5.11-0
+            add file tmp/empty mode=0555 owner=root group=bin path=/etc/empty
+            add file tmp/truck1 mode=0444 owner=root group=bin path=/etc/trailer
             close
         """
 
@@ -89,10 +91,15 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        fhashes = {
+             "tmp/empty": "5f5fb715934e0fa2bfb5611fd941d33228027006",
+             "tmp/truck1": "c9e257b659ace6c3fbc4d334f49326b3889fd109",
+             "tmp/truck2": "c07fd27b5b57f8131f42e5f2c719a469d9fc71c5",
+        }
+
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
-                self.make_misc_files(["tmp/empty", "tmp/truck1",
-                    "tmp/truck2"])
+                self.make_misc_files(["tmp/empty", "tmp/truck1", "tmp/truck2"])
 
         def test_00_base(self):
                 """Verify pkgrepo handles basic option and subcommand parsing
@@ -1142,6 +1149,155 @@ publisher\tprefix\texample.com
 publisher\tprefix\texample.net
 """
                 self.assertEqualDiff(expected, self.output)
+
+        def test_09_remove_packages(self):
+                """Verify that remove subcommand works as expected."""
+
+                # Create a repository and then copy it somewhere for testing
+                # to make it easy to restore the original as needed.
+                src_repo = os.path.join(self.test_root, "remove-repo")
+                self.create_repo(src_repo)
+
+                self.pkgrepo("set -s %s publisher/prefix=test" % src_repo)
+                published = self.pkgsend_bulk(src_repo, (self.tree10,
+                    self.amber10, self.amber20, self.truck10, self.truck20,
+                    self.zoo10))
+                self.pkgrepo("set -s %s publisher/prefix=test2" % src_repo)
+                published += self.pkgsend_bulk(src_repo, (self.tree10,
+                    self.zoo10))
+
+                dest_repo = os.path.join(self.test_root, "test-repo")
+                shutil.copytree(src_repo, dest_repo)
+
+                # Verify that specifying something other than a filesystem-
+                # based repository fails.
+                self.pkgrepo("remove -s %s tree" % self.durl, exit=2)
+
+                # Verify that non-matching patterns result in error.
+                self.pkgrepo("remove -s %s nosuchpackage" % dest_repo, exit=1)
+                self.pkgrepo("remove -s %s tree nosuchpackage" % dest_repo,
+                    exit=1)
+
+                # Verify that -n works as expected.
+                self.pkgrepo("remove -n -s %s zoo" % dest_repo)
+                # Since package was not removed, this succeeds.
+                self.pkgrepo("remove -n -s %s zoo" % dest_repo) 
+
+                # Verify that -p works as expected.
+                self.pkgrepo("remove -s %s -p nosuchpub zoo" % dest_repo,
+                    exit=1)
+                self.pkgrepo("remove -s %s -p test -p test2 zoo" % dest_repo)
+                self.pkgrepo("remove -s %s -p test zoo" % dest_repo, exit=1)
+                self.pkgrepo("remove -s %s -p test2 zoo" % dest_repo, exit=1)
+
+                # Restore repository for next test.
+                shutil.rmtree(dest_repo)
+                shutil.copytree(src_repo, dest_repo)
+
+                # Verify a single version of a package can be removed and that
+                # package files will not be removed since older versions still
+                # reference them.  (This also tests that packages that only
+                # exist for one publisher in a multi-publisher repository can
+                # be removed.)
+                repo = self.get_repo(dest_repo)
+                mpath = repo.manifest(published[4])
+                self.pkgrepo("remove -s %s truck@2.0" % dest_repo)
+
+                # The manifest should no longer exist.
+                self.assert_(not os.path.exists(mpath))
+
+                # These two files are in use by other packages so should still
+                # exist.
+                repo.file(self.fhashes["tmp/empty"])
+                repo.file(self.fhashes["tmp/truck1"])
+
+                # This file was only referenced by truck@2.0 so should be gone.
+                self.assertRaises(sr.RepositoryFileNotFoundError, repo.file,
+                    self.fhashes["tmp/truck2"])
+
+                # Restore repository for next test.
+                shutil.rmtree(dest_repo)
+                shutil.copytree(src_repo, dest_repo)
+
+                # Verify that all versions of a specific package can be removed
+                # and that only files not referenced by other packages are
+                # removed.
+                self.pkgrepo("remove -s %s truck" % dest_repo)
+
+                # This file is still in use by other packages.
+                repo = self.get_repo(dest_repo)
+                repo.file(self.fhashes["tmp/empty"])
+                repo.file(self.fhashes["tmp/truck1"])
+
+                # These files should have been removed since other packages
+                # don't reference them.
+                self.assertRaises(sr.RepositoryFileNotFoundError, repo.file,
+                    self.fhashes["tmp/truck2"])
+
+                # Restore repository for next test.
+                shutil.rmtree(dest_repo)
+                shutil.copytree(src_repo, dest_repo)
+
+                # Verify that removing all packages that reference files
+                # results in all files being removed and an empty file_root
+                # for the repository.
+                repo = self.get_repo(dest_repo)
+                mpaths = []
+                for f in published:
+                        if "tree" in f or "truck" in f:
+                                mpaths.append(repo.manifest(f))
+
+                self.pkgrepo("remove -s %s tree truck" % dest_repo)
+
+                self.assertRaises(sr.RepositoryFileNotFoundError, repo.file,
+                    self.fhashes["tmp/empty"])
+                self.assertRaises(sr.RepositoryFileNotFoundError, repo.file,
+                    self.fhashes["tmp/truck1"])
+                self.assertRaises(sr.RepositoryFileNotFoundError, repo.file,
+                    self.fhashes["tmp/truck2"])
+
+                # Verify that directories for manifests no longer exist since
+                # all versions were removed.
+                for mpath in mpaths:
+                        pdir = os.path.dirname(mpath)
+                        self.assert_(not os.path.exists(pdir))
+
+                # Verify that entries for each package that was removed no
+                # longer exist in the catalog, but do exist in the catalog's
+                # updatelog.
+                repo = self.get_repo(dest_repo)
+                for pfx in ("test", "test2"):
+                        c = repo.get_catalog(pub=pfx)
+                        for f in c.fmris():
+                                self.assert_(f.pkg_name not in ("tree",
+                                    "truck"))
+
+                        removed = set()
+                        for name in c.updates:
+                                ulog = pkg.catalog.CatalogUpdate(name,
+                                    meta_root=c.meta_root, sign=False)
+
+                                for pfmri, op_type, op_time, md in ulog.updates():
+                                        if op_type == ulog.REMOVE:
+                                                removed.add(str(pfmri))
+
+                        expected = set(
+                            f
+                            for f in published
+                            if ("tree" in f or "truck" in f) and \
+                                f.startswith("pkg://%s/" % pfx)
+                        )
+                        self.assertEqualDiff(expected, removed)
+
+                # Verify repository file_root is empty.
+                for rstore in repo.rstores:
+                        if not rstore.publisher:
+                                continue
+                        self.assert_(not os.listdir(rstore.file_root))
+
+                # Cleanup.
+                shutil.rmtree(src_repo)
+                shutil.rmtree(dest_repo)
 
 
 if __name__ == "__main__":

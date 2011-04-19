@@ -7,21 +7,24 @@ NAME
 SYNOPSIS
      pkgrepo create [--version] uri_or_path
 
-     pkgrepo add-publisher [-s repo_uri_or_path] publisher ...
+     pkgrepo add-publisher -s repo_uri_or_path publisher ...
 
-     pkgrepo get [-F format] [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo get [-F format] [-p publisher ...] -s repo_uri_or_path
          [section/property ...]
 
      pkgrepo info [-F format] [-H] [-p publisher ...]
-         [-s repo_uri_or_path]
+         -s repo_uri_or_path
 
-     pkgrepo rebuild [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo rebuild [-p publisher ...] -s repo_uri_or_path
          [--no-catalog] [--no-index]
 
-     pkgrepo refresh [-p publisher ...] [-s repo_uri_or_path]
+     pkgrepo refresh [-p publisher ...] -s repo_uri_or_path
          [--no-catalog] [--no-index]
 
-     pkgrepo set [-p publisher] [-s repo_uri_or_path]
+     pkgrepo remove [-n] [-p publisher ...] -s repo_uri_or_path
+         pkg_fmri_pattern ...
+
+     pkgrepo set [-p publisher] -s repo_uri_or_path
          section/property=[value] ... or
          section/property=([value]) ...
 
@@ -63,13 +66,13 @@ SUBCOMMANDS
                     publishers, catalog version 1, and search
                     version 1.
 
-     add-publisher [-s repo_uri_or_path] publisher ...
+     add-publisher -s repo_uri_or_path publisher ...
           May only be used with version 4 filesystem-based repositories.
 
           Add the specified publisher(s) to the repository.  The new
           publisher(s) will not have any packages or content.
 
-     get [-F format] [-H] [-p publisher ...] [-s repo_uri_or_path]
+     get [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
        [section/property ...]
           Displays the property information for the repository or
           its publishers.
@@ -97,7 +100,7 @@ SUBCOMMANDS
           With -s, operate on the repository located at the given URI
           or filesystem path.
 
-     info [-F format] [-H] [-p publisher ...] [-s repo_uri_or_path]
+     info [-F format] [-H] [-p publisher ...] -s repo_uri_or_path
           Displays a listing of the package publishers known by the
           repository.  The listing includes the number of packages
           for each publisher, when the publisher's package data was
@@ -116,7 +119,7 @@ SUBCOMMANDS
           With -s, operate on the repository located at the given URI
           or filesystem path.
 
-     rebuild [-p publisher ...] [-s repo_uri_or_path] [--no-catalog]
+     rebuild [-p publisher ...] -s repo_uri_or_path [--no-catalog]
        [--no-index]
           Discards all catalog, search, and other cached information
           found in the repository and then re-creates it based on the
@@ -134,7 +137,7 @@ SUBCOMMANDS
 
           With --no-index, don't rebuild search indexes.
 
-     refresh [-p publisher ...] [-s repo_uri_or_path] [--no-catalog]
+     refresh [-p publisher ...] -s repo_uri_or_path [--no-catalog]
        [--no-index]
           Catalogs any new packages found in the repository and
           updates all search indexes.  This is intended for use with
@@ -153,8 +156,31 @@ SUBCOMMANDS
 
           With --no-index, don't update search indexes.
 
-     set [-p publisher] [-s repo_uri_or_path]
-       [section/property=value ...]
+     remove [-n] [-p publisher ...] -s repo_uri_or_path
+       pkg_fmri_pattern ...
+          May only be used with filesystem-based repositories.
+
+          WARNING: This operation is not reversible and should not be used
+          while other clients are accessing the repository as it may cause
+          them to fail during retrieval operations.
+
+          Remove the packages matching the specified patterns from the
+          repository (including any files they reference that are not in
+          use by any other package).  Please note that all search index
+          data for related publishers will be removed.
+
+          With -n, perform a trial run of the operation with no package
+          changes made.  A list of the packages to be removed will be
+          displayed before exiting.
+
+          With -p, only remove matching packages for the given publisher.
+          If not provided, any matching packages will be removed for all
+          publishers.  This option may be specified multiple times.
+
+          With -s, operate on the repository located at the given URI
+          or filesystem path.
+
+     set [-p publisher] -s repo_uri_or_path [section/property=value ...]
           May only be used with filesystem-based repositories.
 
           Sets the value of the specified properties for the repository

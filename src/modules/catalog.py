@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
@@ -2754,6 +2754,213 @@ class Catalog(object):
                                 # for a single variant name, so return it.
                                 return values
                 return None
+
+        def get_matching_fmris(self, patterns, raise_unmatched=True):
+                """Given a user-specified list of FMRI pattern strings, return
+                a tuple of ('matching', 'references', 'unmatched'), where
+                matching is a dict of matching fmris, references is a dict of
+                the patterns indexed by matching FMRI, and unmatched is a set of
+                the patterns that did not match any FMRIs respectively:
+
+                {
+                 pkgname: [fmri1, fmri2, ...],
+                 pkgname: [fmri1, fmri2, ...],
+                 ...
+                }
+
+                {
+                 fmri1: [pat1, pat2, ...],
+                 fmri2: [pat1, pat2, ...],
+                 ...
+                }
+
+                set(['unmatched1', 'unmatchedN'])
+
+                'patterns' is the list of package patterns to match.
+
+                'raise_unmatched' is an optional boolean indicating that an
+                exception should be raised if any patterns are not matched.
+
+                Constraint used is always AUTO as per expected UI behavior when
+                determining successor versions.
+
+                Note that patterns starting w/ pkg:/ require an exact match;
+                patterns containing '*' will using fnmatch rules; the default
+                trailing match rules are used for remaining patterns.
+
+                Exactly duplicated patterns are ignored.
+
+                Routine raises PackageMatchErrors if errors occur: it is
+                illegal to specify multiple different patterns that match the
+                same package name.  Only patterns that contain wildcards are
+                allowed to match multiple packages.
+                """
+
+                # problems we check for
+                illegals = []
+                unmatched = set()
+                multimatch = []
+                multispec = []
+                pat_data = []
+                wildcard_patterns = set()
+
+                # ignore dups
+                patterns = list(set(patterns))
+
+                # figure out which kind of matching rules to employ
+                brelease = "5.11" # XXX a better way to default this?
+                latest_pats = set()
+                for pat in patterns:
+                        try:
+                                parts = pat.split("@", 1)
+                                pat_stem = parts[0]
+                                pat_ver = None
+                                if len(parts) > 1:
+                                        pat_ver = parts[1]
+
+                                if "*" in pat_stem or "?" in pat_stem:
+                                        matcher = fmri.glob_match
+                                        wildcard_patterns.add(pat)
+                                elif pat_stem.startswith("pkg:/") or \
+                                    pat_stem.startswith("/"):
+                                        matcher = fmri.exact_name_match
+                                else:
+                                        matcher = fmri.fmri_match
+
+                                if matcher == fmri.glob_match:
+                                        pfmri = fmri.MatchingPkgFmri(
+                                            pat_stem, brelease)
+                                else:
+                                        pfmri = fmri.PkgFmri(
+                                            pat_stem, brelease)
+
+                                if not pat_ver:
+                                        # Do nothing.
+                                        pass
+                                elif "*" in pat_ver or "?" in pat_ver or \
+                                    pat_ver == "latest":
+                                        pfmri.version = \
+                                            pkg.version.MatchingVersion(pat_ver,
+                                                brelease)
+                                else:
+                                        pfmri.version = \
+                                            pkg.version.Version(pat_ver,
+                                                brelease)
+
+                                if pat_ver and getattr(pfmri.version,
+                                    "match_latest", None):
+                                        latest_pats.add(pat)
+
+                                pat_data.append((matcher, pfmri))
+                        except (fmri.FmriError,
+                            pkg.version.VersionError), e:
+                                illegals.append(e)
+
+                if illegals:
+                        raise api_errors.PackageMatchErrors(illegal=illegals)
+
+                # Create a dictionary of patterns, with each value being a
+                # dictionary of pkg names & fmris that match that pattern.
+                ret = dict(zip(patterns, [dict() for i in patterns]))
+
+                for name in self.names():
+                        for pat, (matcher, pfmri) in zip(patterns, pat_data):
+                                pub = pfmri.publisher
+                                version = pfmri.version
+                                if not matcher(name, pfmri.pkg_name):
+                                        continue # name doesn't match
+                                for ver, entries in self.entries_by_version(name):
+                                        if version and not ver.is_successor(
+                                            version, pkg.version.CONSTRAINT_AUTO):
+                                                continue # version doesn't match
+                                        for f, metadata in entries:
+                                                fpub = f.publisher
+                                                if pub and pub != fpub:
+                                                        # specified pubs
+                                                        # conflict
+                                                        continue 
+                                                ret[pat].setdefault(f.pkg_name,
+                                                    []).append(f)
+
+                # Discard all but the newest version of each match.
+                if latest_pats:
+                        # Rebuild ret based on latest version of every package.
+                        latest = {}
+                        nret = {}
+                        for p in patterns:
+                                if p not in latest_pats or not ret[p]:
+                                        nret[p] = ret[p]
+                                        continue
+
+                                nret[p] = {}
+                                for pkg_name in ret[p]:
+                                        nret[p].setdefault(pkg_name, [])
+                                        for f in ret[p][pkg_name]:
+                                                nver = latest.get(f.pkg_name,
+                                                    None)
+                                                if nver > f.version:
+                                                        # Not the newest.
+                                                        continue
+                                                if nver == f.version:
+                                                        # Allow for multiple
+                                                        # FMRIs of the same
+                                                        # latest version.
+                                                        nret[p][pkg_name].append(
+                                                            f)
+                                                        continue
+
+                                                latest[f.pkg_name] = f.version
+                                                nret[p][pkg_name] = [f]
+
+                        # Assign new version of ret and discard latest list.
+                        ret = nret
+                        del latest
+
+                # Determine match failures.
+                matchdict = {}
+                for p in patterns:
+                        l = len(ret[p])
+                        if l == 0: # no matches at all
+                                unmatched.add(p)
+                        elif l > 1 and p not in wildcard_patterns:
+                                # multiple matches
+                                multimatch.append((p, [
+                                    ret[p][n][0].get_pkg_stem()
+                                    for n in ret[p]
+                                ]))
+                        else:
+                                # single match or wildcard
+                                for k in ret[p].keys():
+                                        # for each matching package name
+                                        matchdict.setdefault(k, []).append(p)
+
+                for name in matchdict:
+                        if len(matchdict[name]) > 1:
+                                # different pats, same pkg
+                                multispec.append(tuple([name] +
+                                    matchdict[name]))
+
+                if (raise_unmatched and unmatched) or multimatch or multispec:
+                        raise api_errors.PackageMatchErrors(
+                            multiple_matches=multimatch,
+                            multispec=multispec,
+                            unmatched_fmris=unmatched)
+
+                # merge patterns together now that there are no conflicts
+                proposed_dict = {}
+                for d in ret.values():
+                        proposed_dict.update(d)
+
+                # construct references so that we can know which pattern
+                # generated which fmris...
+                references = dict([
+                    (f, p)
+                    for p in ret.keys()
+                    for flist in ret[p].values()
+                    for f in flist
+                ])
+
+                return proposed_dict, references, unmatched
 
         def get_package_counts_by_pub(self):
                 """Returns a generator of tuples of the form (pub,
