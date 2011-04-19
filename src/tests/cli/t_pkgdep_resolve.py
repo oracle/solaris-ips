@@ -483,6 +483,53 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i38
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
 """
+        bug_18172_top = """\
+set name=pkg.fmri value=top@0.5.11,5.11-1
+depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=usr/lib/brand/shared/dsconvert pkg.debug.depend.type=script type=require
+"""
+        bug_18172_l1 = """\
+set name=pkg.fmri value=ksh@0.5.11,5.11-1
+link path=usr/bin/ksh target=../../usr/lib/l1
+"""
+        bug_18172_l2 = """\
+set name=pkg.fmri value=l2@0.5.11,5.11-1
+link path=usr/lib/l1 target=l2
+"""
+        bug_18172_l3 = """\
+set name=pkg.fmri value=l3@0.5.11,5.11-1
+link path=usr/lib/l2 target=isaexec
+"""
+        bug_18172_dest = """\
+set name=pkg.fmri value=dest@0.5.11,5.11-1
+file tmp/foo path=usr/lib/isaexec
+"""
+
+        bug_18173_cs_1 = """\
+open cs@0.5.11,5.11-1
+add set name=pkg.fmri value=cs@0.5.11,5.11-1
+add file NOHASH path=usr/lib/isaexec mode=0755 owner=root group=sys
+
+add link path=usr/sbin/sh target=../bin/i86/ksh93
+add hardlink path=usr/bin/ksh target=../../usr/lib/isaexec
+close
+"""
+
+        bug_18173_cs_2 = """\
+set name=pkg.fmri value=cs@0.5.11,5.11-2
+file tmp/foo path=usr/lib/isaexec
+"""
+
+        bug_18173_ksh = """\
+set name=pkg.fmri value=ksh@0.5.11,5.11-2
+hardlink path=usr/bin/ksh target=../../usr/lib/isaexec
+depend fmri=__TBD pkg.debug.depend.file=isaexec pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/ksh pkg.debug.depend.type=hardlink type=require
+"""
+
+        bug_18173_zones = """\
+set name=pkg.fmri value=zones@0.5.11,5.11-2
+file NOHASH path=usr/lib/brand/shared/dsconvert mode=0755
+depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=usr/lib/brand/shared/dsconvert pkg.debug.depend.type=script type=require
+"""
 
         misc_files = ["tmp/foo"]
 
@@ -1385,6 +1432,114 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo
                 self.assertEqual(len(pkg_deps[d_path]), 12, "Got wrong number "
                     "of pkgdeps for the dependent package. Deps were:\n%s" %
                     "\n".join([str(d) for d in pkg_deps[d_path]]))
+
+        def test_bug_18172(self):
+                """Test that the via-links attribute is set correctly when
+                multiple packages deliver a chain of links."""
+
+                top_path = self.make_manifest(self.bug_18172_top)
+                l1_path = self.make_manifest(self.bug_18172_l1)
+                l2_path = self.make_manifest(self.bug_18172_l2)
+                l3_path = self.make_manifest(self.bug_18172_l3)
+                dest_path = self.make_manifest(self.bug_18172_dest)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [top_path, l1_path, l2_path, l3_path, dest_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 5)
+                self.assertEqual(len(pkg_deps[dest_path]), 0)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[l3_path]), 0)
+                self.assertEqual(len(pkg_deps[top_path]), 4,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[top_path]]))
+                got_top = False
+                got_l1 = False
+                got_l2 = False
+                got_l3 = False
+                for d in pkg_deps[top_path]:
+                        if d.attrs["fmri"].startswith("pkg:/dest"):
+                                self.assertEqual(
+                                    d.attrs[dependencies.files_prefix],
+                                    ["usr/lib/isaexec"])
+                                self.assertEqual(
+                                    d.attrs[dependencies.via_links_prefix],
+                                    "usr/bin/ksh:usr/lib/l1:usr/lib/l2")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "script")
+                                got_top = True
+                        elif d.attrs["fmri"].startswith("pkg:/ksh"):
+                                got_l1 = True
+                        elif d.attrs["fmri"].startswith("pkg:/l2"):
+                                got_l2 = True
+                        else:
+                                self.assert_(d.attrs["fmri"].startswith(
+                                    "pkg:/l3"))
+                                got_l3 = True
+                self.assert_(got_top and got_l1 and got_l2 and got_l3, "Got "
+                    "the right number of dependencies but missed one of the "
+                    "expected ones. Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[top_path]]))
+
+        def test_bug_18173(self):
+                """Test that if a link moves in a new version of a package, the
+                link in the installed version of the package doesn't interfere
+                with dependency resolution."""
+
+                self.make_misc_files("usr/lib/isaexec")
+                self.pkgsend_bulk(self.rurl, self.bug_18173_cs_1)
+                cs2_path = self.make_manifest(self.bug_18173_cs_2)
+                ksh_path = self.make_manifest(self.bug_18173_ksh)
+                zones_path = self.make_manifest(self.bug_18173_zones)
+
+                self.api_obj.refresh(immediate=True)
+                self._api_install(self.api_obj, ["cs"])
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [cs2_path, ksh_path, zones_path], self.api_obj,
+                    use_system=True)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[cs2_path]), 0)
+                self.assertEqual(len(pkg_deps[ksh_path]), 1)
+                self.assertEqual(len(pkg_deps[zones_path]), 2,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[zones_path]]))
+                got_cs2 = False
+                got_ksh = False
+                for d in pkg_deps[zones_path]:
+                        if d.attrs["fmri"].startswith("pkg:/cs"):
+                                self.assert_(d.attrs["fmri"].endswith("-2"))
+                                self.assertEqual(
+                                    d.attrs[dependencies.files_prefix],
+                                    ["usr/lib/isaexec"])
+                                self.assertEqual(
+                                    d.attrs[dependencies.via_links_prefix],
+                                    "usr/bin/ksh")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "script")
+                                got_cs2 = True
+                        else:
+                                self.assert_(d.attrs["fmri"].startswith(
+                                    "pkg:/ksh"))
+                                self.assertEqual(
+                                    d.attrs[dependencies.files_prefix],
+                                    ["usr/bin/ksh"])
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "link")
+                                got_ksh = True
+                self.assert_(got_cs2 and got_ksh, "Got the right number "
+                    "of dependencies but missed one of the expected ones. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[zones_path]]))
 
 if __name__ == "__main__":
         unittest.main()

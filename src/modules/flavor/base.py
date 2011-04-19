@@ -298,7 +298,8 @@ class PublishingDependency(Dependency):
                         res_pths, res_links = resolve_links(
                             path_to_check, delivered_files, links,
                             orig_dep_vars, attrs)
-                        for res_pth, res_pfmri, res_vc in res_pths:
+                        for res_pth, res_pfmri, res_vc, res_via_links in \
+                            res_pths:
                                 p = self._check_path(res_pth, delivered_files)
                                 if p:
                                         res.append((p, res_vc))
