@@ -598,6 +598,19 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             # check that it is not installed in the image
             "pkgmap": [ "i", None, None, None, None ] }
 
+        # Same, but for the non-relocatable package
+        sysv_nonreloc_contents = {
+            "etc": [ "d", 0755, "root", "sys", None ],
+            "etc/foo.conf": [ "f", 0644, "root", "sys", None ],
+            "SUNWfoo/bin": [ "d", 0755, "root", "bin", None ],
+            "SUNWfoo/bin/foo": [ "f", 0755, "root", "bin", None ],
+            "copyright": [ "i", None, None, None, None ],
+            # check that pkgsend doesn't generate an Action for "i" files
+            "pkginfo": [ "i", None, None, None, None ],
+            # pkgmap is not an "i" file, but we still want to
+            # check that it is not installed in the image
+            "pkgmap": [ "i", None, None, None, None ] }
+
         # a prototype that uses classes and postinstall scripts, which
         # pkgsend should complain about
         sysv_classes_prototype = """i pkginfo
@@ -617,6 +630,14 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             f none foobar/baz 0644 daemon adm
             s none foobar/symlink=baz
             l none foobar/hardlink=baz"""
+
+        sysv_nonreloc_prototype = """\
+            i pkginfo
+            i copyright
+            d none /etc 0755 root sys
+            f none /etc/foo.conf 0644 root sys
+            d none SUNWfoo/bin 0755 root bin
+            f none SUNWfoo/bin/foo 0755 root bin"""
 
         sysv_pkginfo = 'PKG="nopkg"\n'\
             'NAME="No package"\n'\
@@ -645,15 +666,15 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
             'BASEDIR="/"'
 
         def create_sysv_package(self, rootdir, prototype_contents,
-            pkginfo_contents=sysv_pkginfo):
+            contents_dict, pkginfo_contents=sysv_pkginfo):
                 """Create a SVR4 package at a given location using some predefined
                 contents and a given prototype."""
                 pkgroot = os.path.join(rootdir, "sysvpkg")
                 os.mkdir(pkgroot)
 
                 # create files and directories in our proto area
-                for entry in self.sysv_contents:
-                        ftype, mode  = self.sysv_contents[entry][:2]
+                for entry in contents_dict:
+                        ftype, mode  = contents_dict[entry][:2]
                         if ftype in "fi":
                                 dirname = os.path.dirname(entry)
                                 try:
@@ -667,7 +688,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 f.close()
                                 # compute a digest of the file we just created, which
                                 # we can use when validating later.
-                                self.sysv_contents[entry][4] = \
+                                contents_dict[entry][4] = \
                                     misc.get_data_digest(fpath)[0]
 
                         elif ftype == "d":
@@ -696,7 +717,8 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 """ A SVR4 directory-format package can be imported, its contents
                 published to a repo and installed to an image."""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir, self.sysv_prototype)
+                self.create_sysv_package(rootdir, self.sysv_prototype,
+                    self.sysv_contents)
 
                 def test_import(url):
                         self.pkgsend(url, "open nopkg@1.0")
@@ -706,7 +728,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
 
                         self.image_create(url)
                         self.pkg("install nopkg")
-                        self.validate_sysv_contents("nopkg")
+                        self.validate_sysv_contents("nopkg", self.sysv_contents)
                         self.pkg("verify")
                         self.image_destroy()
 
@@ -719,11 +741,32 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                     properties={ "publisher": { "prefix": "test" } })
                 test_import("file://%s" % repodir)
 
+        def test_11_bundle_sysv_dir_nonrelocatable(self):
+                """A SVr4 directory format package with non-relocatable elements
+                can be imported, its contents published to a repo and installed
+                to an image."""
+
+                rootdir = self.test_root
+                self.create_sysv_package(rootdir, self.sysv_nonreloc_prototype,
+                    self.sysv_nonreloc_contents)
+
+                url = self.dc.get_depot_url()
+                self.pkgsend(url, "open nopkg@1.0")
+                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"))
+                self.pkgsend(url, "close")
+
+                self.image_create(url)
+                self.pkg("install nopkg")
+                self.validate_sysv_contents("nopkg", self.sysv_nonreloc_contents)
+                self.pkg("verify")
+                self.image_destroy()
+
         def test_12_bundle_sysv_datastream(self):
                 """ A SVR4 datastream package can be imported, its contents published to
                 a repo and installed to an image."""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir, self.sysv_prototype)
+                self.create_sysv_package(rootdir, self.sysv_prototype,
+                    self.sysv_contents)
                 self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
                         os.path.join(rootdir, "nopkg.pkg")), coverage=False)
 
@@ -734,11 +777,11 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
 
                 self.image_create(url)
                 self.pkg("install nopkg")
-                self.validate_sysv_contents("nopkg")
+                self.validate_sysv_contents("nopkg", self.sysv_contents)
                 self.pkg("verify")
                 self.image_destroy()
 
-        def validate_sysv_contents(self, pkgname):
+        def validate_sysv_contents(self, pkgname, contents_dict):
                 """ Check that the image contents correspond to the SVR4 package.
                 The tests in t_pkginstall cover most of the below, however
                 here we're interested in ensuring that pkgsend really did import
@@ -748,9 +791,9 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 # verify we have copyright text
                 self.pkg("info --license %s" % pkgname)
 
-                for entry in self.sysv_contents:
+                for entry in contents_dict:
                         name = os.path.join(self.img_path, entry)
-                        ftype, mode, user, group, digest = self.sysv_contents[entry]
+                        ftype, mode, user, group, digest = contents_dict[entry]
 
                         if ftype in "fl":
                                 self.assertTrue(os.path.isfile(name))
@@ -1019,7 +1062,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 """ A SVR4 directory-format package containing class action
                 scripts fails to be imported or is generated with errors"""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype,
+                    self.sysv_contents)
                 url = self.dc.get_depot_url()
 
                 self.pkgsend(url, "open nopkg@1.0")
@@ -1036,7 +1080,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 """ A SVR4 datastream package containing class action scripts
                 fails to be imported or is generated with errors"""
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype,
+                    self.sysv_contents)
                 self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
                         os.path.join(rootdir, "nopkg.pkg")), coverage=False)
 
@@ -1080,9 +1125,10 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 """Verify we return an error for a multi-package datastream."""
 
                 rootdir = self.test_root
-                self.create_sysv_package(rootdir, self.sysv_classes_prototype)
+                self.create_sysv_package(rootdir, self.sysv_classes_prototype,
+                    self.sysv_contents)
                 self.create_sysv_package(rootdir, self.sysv_prototype,
-                    pkginfo_contents=self.sysv_pkginfo_2)
+                    self.sysv_contents, pkginfo_contents=self.sysv_pkginfo_2)
                 url = self.dc.get_depot_url()
 
                 self.cmdline_run("pkgtrans -s %s %s nopkg nopkgtwo" % (rootdir,

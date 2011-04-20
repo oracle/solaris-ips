@@ -89,7 +89,7 @@ class SolarisPackageDirBundle(object):
                                 if os.path.exists(fpath + x):
                                         cf = CpioFile.open(fpath + x)
                                         break
-                        
+
                         for ci in cf:
                                 faspac_contents.add(j(ci.name))
                                 act = self.action(pkgmap[j(ci.name)],
@@ -97,14 +97,16 @@ class SolarisPackageDirBundle(object):
                                 if act:
                                         yield act
 
-                # Remove BASEDIR from the path.  The extra work is because if
-                # BASEDIR is not empty (non-"/"), then we probably need to strip
-                # an extra slash from the beginning of the path, but if BASEDIR
-                # is "" ("/" in the pkginfo file), then we don't need to do
-                # anything extra.
+                # Remove BASEDIR from a relocatable path.  The extra work is
+                # because if BASEDIR is not empty (non-"/"), then we probably
+                # need to strip an extra slash from the beginning of the path,
+                # but if BASEDIR is "" ("/" in the pkginfo file), then we don't
+                # need to do anything extra.
                 def r(path, type):
                         if type == "i":
                                 return path
+                        if path[0] == "/":
+                                return path[1:]
                         p = path[len(self.pkg.basedir):]
                         if p[0] == "/":
                                 p = p[1:]
@@ -122,13 +124,17 @@ class SolarisPackageDirBundle(object):
 
                         # These are the only valid file types in SysV packages
                         if p.type in "fevbcdxpls":
+                                if p.pathname[0] == "/":
+                                        d = "root"
+                                else:
+                                        d = "reloc"
                                 act = self.action(p, os.path.join(self.filename,
-                                    "reloc", r(p.pathname, p.type)))
+                                    d, r(p.pathname, p.type)))
                                 if act:
                                         yield act
-			elif p.type == "i":
-				a = self.action(p, os.path.join(self.filename,
-				    "install", r(p.pathname, p.type)))
+                        elif p.type == "i":
+                                a = self.action(p, os.path.join(self.filename,
+                                    "install", r(p.pathname, p.type)))
                                 if a:
                                         yield a
 
@@ -149,22 +155,25 @@ class SolarisPackageDirBundle(object):
                     mapline.owner == "?" or mapline.group == "?"):
                         return None
 
-                if mapline.type in "f":
+                if mapline.type in "fev":
                         act = file.FileAction(data, mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,
                             path=mapline.pathname, 
                             timestamp=misc.time_to_timestamp(int(mapline.modtime)))
-                        if mapline.klass in preserve_dict:
-                                act.attrs["preserve"] = preserve_dict[mapline.klass]
-                elif mapline.type in "ev":
-                        # for editable files, map klass onto IPS names; if match
-                        # fails, make sure we at least preserve file
-                        preserve=preserve_dict.get(mapline.klass, "true")
-                        act =  file.FileAction(data, mode=mapline.mode,
-                            owner=mapline.owner, group=mapline.group,
-                            path=mapline.pathname, preserve=preserve,
-                            timestamp=misc.time_to_timestamp(int(mapline.modtime)))
 
+                        # Add a preserve attribute if klass is known to be used
+                        # for preservation.  For editable and volatile files,
+                        # always do at least basic preservation.
+                        preserve = preserve_dict.get(mapline.klass, None)
+                        if preserve or mapline.type in "ev":
+                                if not preserve:
+                                        preserve = "true"
+                                act.attrs["preserve"] = preserve
+
+                        if act.hash == "NOHASH" and \
+                            isinstance(data, basestring) and \
+                            data.startswith(self.filename):
+                                act.hash = data[len(self.filename) + 1:]
                 elif mapline.type in "dx":
                         act = directory.DirectoryAction(mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,
@@ -175,10 +184,10 @@ class SolarisPackageDirBundle(object):
                 elif mapline.type == "l":
                         act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
-		elif mapline.type == "i" and mapline.pathname == "copyright":
-			act = license.LicenseAction(data,
-			    license="%s.copyright" % self.pkgname,
-			    path=mapline.pathname)
+                elif mapline.type == "i" and mapline.pathname == "copyright":
+                        act = license.LicenseAction(data,
+                            license="%s.copyright" % self.pkgname,
+                            path=mapline.pathname)
                 elif mapline.type == "i":
                         if mapline.pathname not in ["depend", "pkginfo"]:
                                 # check to see if we've seen this script
