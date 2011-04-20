@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """feed - routines for generating RFC 4287 Atom feeds for packaging server
@@ -33,16 +33,13 @@
 import cherrypy
 from cherrypy.lib.static import serve_file
 import copy
-import cStringIO
 import datetime
 import httplib
 import os
-import rfc822
 import shutil
 import time
 import urllib
 import urlparse
-import uuid
 import xml.dom.minidom as xmini
 
 import pkg.catalog as catalog
