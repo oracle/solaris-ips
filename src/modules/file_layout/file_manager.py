@@ -69,6 +69,21 @@ class NeedToModifyReadOnlyFileManager(apx.ApiException):
                     { "cre": self.create, "ent":self.ent }
 
 
+class FMInsertionFailure(apx.ApiException):
+        """Used to indicate that an in-progress insert failed because the
+        item to be inserted went missing during the operation and wasn't
+        already found in the cache."""
+
+        def __init__(self, src, dest):
+                apx.ApiException.__init__(self)
+                self.src = src
+                self.dest = dest
+
+        def __str__(self):
+                return _("%(src)s was removed while FileManager was attempting "
+                    "to insert it into the cache as %(dest)s.") % self.__dict__
+
+
 class FMPermissionsException(apx.PermissionsException):
         """This exception is raised when a FileManager does not have the
         permissions to operate as needed on the file system."""
@@ -241,42 +256,53 @@ class FileManager(object):
                                 raise
                         src_path = cur_full_path
 
-                p_dir = os.path.dirname(dest_full_path)
-                try:
-                        # Move the file into place.
-                        portable.rename(src_path, dest_full_path)
-                except EnvironmentError, e:
-                        if e.errno == errno.ENOENT and not os.path.isdir(p_dir):
-                                try:
-                                        os.makedirs(p_dir)
-                                except EnvironmentError, e:
-                                        if e.errno == errno.EACCES or \
-                                            e.errno == errno.EROFS:
-                                                raise FMPermissionsException(
-                                                    e.filename)
-                                        # If directory creation failed due to
-                                        # EEXIST, but the entry it failed for
-                                        # isn't the immediate parent, assume
-                                        # there's a larger problem and re-raise
-                                        # the exception.  For file_manager, this
-                                        # is believed to be unlikely.
-                                        if not (e.errno == errno.EEXIST and
-                                            e.filename == p_dir):
-                                                raise
+                while True:
+                        try:
+                                # Move the file into place.
+                                portable.rename(src_path, dest_full_path)
+                        except EnvironmentError, e:
+                                p_dir = os.path.dirname(dest_full_path)
+                                if e.errno == errno.ENOENT and \
+                                    not os.path.isdir(p_dir):
+                                        try:
+                                                os.makedirs(p_dir)
+                                        except EnvironmentError, e:
+                                                if e.errno == errno.EACCES or \
+                                                    e.errno == errno.EROFS:
+                                                        raise FMPermissionsException(
+                                                            e.filename)
+                                                # If directory creation failed
+                                                # due to EEXIST, but the entry
+                                                # it failed for isn't the
+                                                # immediate parent, assume
+                                                # there's a larger problem and
+                                                # re-raise the exception.  For
+                                                # file_manager, this is believed
+                                                # to be unlikely.
+                                                if not (e.errno == errno.EEXIST
+                                                    and e.filename == p_dir):
+                                                        raise
 
-                                try:
-                                        portable.rename(src_path,
+                                        # Parent directory created successsfully
+                                        # so loop again to retry rename.
+                                elif e.errno == errno.ENOENT:
+                                        if os.path.exists(dest_full_path):
+                                                # Item has already been moved
+                                                # into cache by another process;
+                                                # nothing more to do.  (This
+                                                # could happen during parallel
+                                                # publication.)
+                                                return dest_full_path
+                                        raise FMInsertionFailure(src_path,
                                             dest_full_path)
-                                except EnvironmentError, e:
-                                        if e.errno == errno.EACCES or \
-                                            e.errno == errno.EROFS:
-                                                raise FMPermissionsException(
-                                                    e.filename)
-                                        raise
-                        elif e.errno == errno.EACCES or e.errno == errno.EROFS:
-                                raise FMPermissionsException(e.filename)
+                                elif e.errno == errno.EACCES or \
+                                    e.errno == errno.EROFS:
+                                        raise FMPermissionsException(e.filename)
+                                else:
+                                        raise apx._convert_error(e)
                         else:
-                                raise
+                                # Success!
+                                break
 
                 # Attempt to remove the parent directory of the file's original
                 # location to ensure empty directories aren't left behind.
