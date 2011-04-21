@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -35,6 +35,9 @@ import stat
 import sys
 import tempfile
 import unittest
+
+import pkg.portable
+
 class TestPkgFmt(pkg5unittest.CliTestCase):
         pkgcontents = \
             """
@@ -950,6 +953,49 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
         def pkgfmt(self, args, exit=0, su_wrap=False):
                 cmd="%s/usr/bin/pkgfmt %s" % (pkg5unittest.g_proto_area, args)
                 self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap)
+
+        def test_0_checkfmt(self):
+                """Verify that pkgfmt -c format checking works as expected."""
+
+                man = os.path.join(self.test_root, "man.p5m")
+                with open(man, "wb") as badf:
+                        badf.write("""
+dir path=etc mode=755 owner=root group=root
+set name=pkg.summary \
+    value="Package Summary"
+file path=etc/foo owner=root group=root mode=0644
+set name=pkg.description value="Package Description"
+""")
+
+                # Copy man to man2 before executing tests.
+                man2 = os.path.join(self.test_root, "man2.p5m")
+                pkg.portable.copyfile(man, man2)
+
+                # Verify pkgfmt exits 1 when checking format for manifest that
+                # needs formatting.
+                self.pkgfmt("-c %s" % man, exit=1)
+
+                # Verify pkgfmt exits 1 when checking format for multiple
+                # manifests that need formatting.
+                self.pkgfmt("-c %s %s" % (man, man2), exit=1)
+
+                # Format the second manifest.
+                self.pkgfmt(man)
+
+                # Verify pkgfmt exits 1 when any of the manifests named need
+                # formatting.  (Ordering matters here, the good one must be
+                # specified last.)
+                self.pkgfmt("-c %s %s" % (man2, man), exit=1)
+
+                # Verify pkgfmt exits 0 when a manifest doesn't need formatting.
+                self.pkgfmt("-c %s" % man)
+
+                # Format the second manifest.
+                self.pkgfmt(man2)
+
+                # Verify pkgfmt exits 0 when none of the manifests named need
+                # formatting.
+                self.pkgfmt("-c %s %s" % (man, man2))
 
         def test_1_difference(self):
                 """display that pkgfmt makes no diff in manifest"""

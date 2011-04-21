@@ -32,7 +32,7 @@
 # 3) Actions appear grouped by type, ignoring macros
 # 4) Actions are limited to 80 chars; continuation lines are accepted
 #    and emitted
-# 5) varient & facet tags appear at the end of actions
+# 5) variant & facet tags appear at the end of actions
 # 6) multi-valued tags appear at the end aside from the above
 # 7) key attribute tags come first
 
@@ -276,6 +276,7 @@ def main_func():
                 fmt_file(sys.stdin, sys.stdout)
                 return ret
 
+        ret = None
         for fname in flist:
                 tname = None
                 try:
@@ -306,7 +307,8 @@ def main_func():
                                 f2 = open(tname, "r")
                                 whole_f2 = f2.readlines()
                                 if whole_f1 == whole_f2:
-                                        ret = 0
+                                        if ret != 1:
+                                                ret = 0
                                 elif opt_diffs:
                                         for s in unified_diff(whole_f2,
                                             whole_f1):
