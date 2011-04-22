@@ -69,7 +69,6 @@ class SMFManifestDependency(base.PublishingDependency):
                 SMFManifestDependency.instance_mf = {}
                 SMFManifestDependency.instance_deps = {}
 
-                manifests = []
                 def find(manifests, dirname, fnames):
                          for file in fnames:
                                  path = os.path.join(dirname, file)
@@ -90,6 +89,7 @@ class SMFManifestDependency(base.PublishingDependency):
                                     location))
 
                 for location in manifest_paths:
+                        manifests = []
                         os.path.walk(location, find, manifests)
                         for manifest_file in manifests:
                                 SMFManifestDependency.__populate_smf_dics(

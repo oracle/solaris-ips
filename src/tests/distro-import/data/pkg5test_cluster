@@ -1,0 +1,11 @@
+include common/system:zones:brand:ipkg
+include common/package:pkg
+include common/package:varianted_actions
+package pkg5test_install
+consolidation "solaris_re"
+cluster pkg5test_install
+description "pkg5test install cluster"
+version 0.1
+depend system/zones/brand/ipkg
+depend package/pkg
+end package

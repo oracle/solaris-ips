@@ -430,8 +430,12 @@ def check_pathdict_actions(my_path_dict, remove_dups=False, allow_dir_goofs=Fals
                         continue
 
                 elif dups[0].name != "dir":
-                        errorlist.append("Multiple actions with the same path that aren't directories:\n\t%s\n" %
-                            ("\n\t".join(str(d) for d in dups)))
+                        # we have already merged package-level variants into the
+                        # this action, so passing {} is ok.
+                        conflict, vars = conflicting_variants(dups, {})
+                        if conflict:
+                                errorlist.append("Multiple actions with the same path that aren't directories:\n\t%s\n" %
+                                    ("\n\t".join(str(d) for d in dups)))
                         continue
 
                 # construct glommed attrs dict; this check could be more thorough
@@ -440,7 +444,21 @@ def check_pathdict_actions(my_path_dict, remove_dups=False, allow_dir_goofs=Fals
                     for d in dups
                     for k in d.attrs.keys()
                 ])
-                ga = dict(zip(dkeys, [set([d.attrs.get(k, None) for d in dups]) for k in dkeys]))
+
+                # create a dictionary of all attribute values for a given
+                # attribute across our duplicates.  Each item in the dictionary
+                # should be a set of seen values for that attribute.
+                ga = {}
+                for k in dkeys:
+                        ga[k] = [d.attrs.get(k, None) for d in dups]
+                        l = []
+                        for item in ga[k]:
+                                if isinstance(item, set):
+                                        l.append(frozenset(item))
+                                else:
+                                        l.append(item)
+                        ga[k] = set(l)
+
                 for g in ga:
                         if len(ga[g]) == 1:
                                 continue
@@ -460,6 +478,42 @@ def check_pathdict_actions(my_path_dict, remove_dups=False, allow_dir_goofs=Fals
                                                 if 1 or show_debug:
                                                         print "removing %s as hollow dup" % d
         return errorlist
+
+def conflicting_variants(actions, pkg_vars):
+        """Given a set of actions, determine that none of the actions
+        have matching variant values for any variant."""
+
+        conflicts = False
+        conflict_vars = set()
+        action_list = []
+
+        for action in actions:
+                action_list.append(action)
+
+        # compare every action in the list with every other,
+        # determining what actions have conflicting variants
+        # The comparison is commutative.
+        for i in range(0, len(action_list)):
+                action = action_list[i]
+                var = action.get_variant_template()
+                # if we don't declare any variants on a given
+                # action, then it's automatically a conflict
+                if len(var) == 0:
+                        conflicts = True
+                vc = variant.VariantCombinations(var, True)
+                for j in range(i + 1, len(action_list)):
+                        cmp_action = action_list[j]
+                        cmp_var = variant.VariantCombinations(
+                            cmp_action.get_variant_template(), True)
+                        if vc.intersects(cmp_var):
+                                intersection = vc.intersection(cmp_var)
+                                intersection.simplify(pkg_vars,
+                                    assert_on_different_domains=False)
+                                conflicts = True
+                                for k in intersection.sat_set:
+                                        if len(k) != 0:
+                                                conflict_vars.add(k)
+        return conflicts, conflict_vars
 
 def start_package(pkgname):
         set_macro("PKGNAME", urllib.quote(pkgname, ""))
@@ -839,7 +893,6 @@ def gen_file_depend_actions(action, fname, proto_dir):
 
                 # handle smf manifests
                 if smf_manifest.has_smf_manifest_dir(path):
-
                         # pkg.flavor.* used by pkgdepend wants PD_LOCAL_PATH, PD_PROTO_DIR
                         # and PD_PROTO_DIR_LIST set
                         action.attrs[PD_LOCAL_PATH] = fname
@@ -1643,7 +1696,7 @@ def main_func():
         # we've now pulled any SMF manifests found in the repository for this
         # branch, as well as those present in the packages to import.
         # Update our SMF manifest cache now.
-        smf_manifest.SMFManifestDependency.populate_cache(local_smf_manifests,
+        smf_manifest.SMFManifestDependency.populate_cache([local_smf_manifests],
             force_update=True)
 
         print "Second pass: global crosschecks", datetime.now()
@@ -1717,7 +1770,9 @@ def main_func():
                                         continue # ignore pkgs already seen
                                 pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
                                 fmridict[pfmri.get_name()] = pfmri_str
-                                for action in get_manifest(server_pub, pfmri).gen_actions(excludes):
+                                mf = get_manifest(server_pub, pfmri)
+                                pkg_vars = mf.get_all_variants()
+                                for action in mf.gen_actions(excludes):
                                         if "path" not in action.attrs:
                                                 continue
                                         if action.name == "unknown":
@@ -1730,6 +1785,12 @@ def main_func():
                                                 print "INFO: ignoring action in %s: %s" \
                                                     % (pfmri_str, str(action))
                                                 continue
+
+                                        # merge the package level variants into this action
+                                        variants = action.get_variant_template()
+                                        variants.merge_unknown(pkg_vars)
+                                        action.attrs.update(variants)
+
                                         action.attrs["importer.ipspkg"] = pfmri_str
                                         path_dict.setdefault(action.attrs["path"], []).append(action)
                                         if action.name in ["file", "link", "hardlink"]:

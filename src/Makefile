@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 PYTHON = /usr/bin/python2.6
@@ -60,7 +60,7 @@ $(SUBDIRS): FRC
 
 # Use the bits we just built to create the packages.
 packages: install
-	@cd pkg; pwd; $(MAKE) $(TARGET) check \
+	@cd pkg; pwd; $(MAKE) $(TARGET) check svr4_test \
 		PATH=$$(hg root)/proto/root_$$(uname -p)/usr/bin:$$PATH \
 		PYTHONPATH=$$(hg root)/proto/root_$$(uname -p)/usr/lib/python2.6/vendor-packages
 

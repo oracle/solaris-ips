@@ -92,6 +92,11 @@ clobber: clean
 svr4:
 	$(MAKE) -f Makefile.svr4 _svr4
 
+# A target used to only build the SVR4 packages needed for
+# the test suite
+svr4_test:
+	$(MAKE) -f Makefile.svr4 _svr4_test
+
 $(PDIR):
 	mkdir -p $@
 

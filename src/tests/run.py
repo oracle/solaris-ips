@@ -308,11 +308,13 @@ if __name__ == "__main__":
 
         api_suite = find_tests("api", onlyval, startattest, output)
         cli_suite = find_tests("cli", onlyval, startattest, output)
+        distro_suite = find_tests("distro-import", onlyval, startattest, output)
 
         suites = []
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
+                suites.append(distro_suite)
                 try:
                         import gui.testutils
                 except Exception, e:

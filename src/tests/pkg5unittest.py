@@ -50,6 +50,7 @@ EmptyDict = dict()
 
 # relative to our proto area
 path_to_pub_util = "../../src/util/publish"
+path_to_distro_import_utils = "../../src/util/distro-import"
 
 #
 # These are initialized by pkg5testenv.setup_environment.
@@ -456,6 +457,8 @@ class Pkg5TestCase(unittest.TestCase):
                         except KeyboardInterrupt:
                                 # Try hard to make sure we've done a teardown.
                                 needtodie = True
+                        except TestSkippedException, err:
+                                result.addSkip(self, err)
                         except:
                                 error_added = True
                                 result.addError(self, sys.exc_info())
@@ -692,6 +695,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 self.bailonfail = bailonfail
                 self.show_on_expected_fail = show_on_expected_fail
                 self.archive_dir = archive_dir
+                self.skips = []
 
         def getDescription(self, test):
                 return str(test)
@@ -700,6 +704,9 @@ class _Pkg5TestResult(unittest._TextTestResult):
         # considered "matching the baseline"
         def wasSuccessful(self):
                 return len(self.mismatches) == 0
+
+        def wasSkipped(self):
+                return len(self.skips) != 0
 
         def dobailout(self, test):
                 """ Pull the ejection lever.  Stop execution, doing as
@@ -959,6 +966,13 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 if self.bailonfail and bresult == baseline.BASELINE_MISMATCH:
                         self.dobailout(test)
 
+        def addSkip(self, test, err):
+                """Python 2.7 adds formal support for skipped tests in unittest
+                For now, we'll record this as a success, but also save the
+                reason why we wanted to skip this test"""
+                self.addSuccess(test)
+                self.skips.append((test, err))
+
         def addPersistentSetupError(self, test, err):
                 errtype, errval = err[:2]
 
@@ -1084,6 +1098,9 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 timing = {}
                 lst = []
                 suite_name = None
+                if not getattr(test, "_tests", None):                        
+                        return
+
                 for t in test._tests:
                         for (sname, cname, mname), secs in t.timing.items():
                                 lst.append((secs, cname, mname))
@@ -1124,8 +1141,18 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                                 if self.output != OUTPUT_VERBOSE:
                                         result.printErrors()
                                         self.stream.writeln("# " + result.separator2)
-                                self.stream.writeln("\n# Ran %d test%s in %.3fs" %
-                                    (run, run != 1 and "s" or "", timeTaken))
+
+                                self.stream.writeln("\n# Ran %d test%s in %.3fs"
+                                    " - skipped %d tests." %
+                                    (run, run != 1 and "s" or "", timeTaken,
+                                    len(result.skips)))
+
+                                if result.wasSkipped() and \
+                                    self.output == OUTPUT_VERBOSE:
+                                        self.stream.writeln("Skipped tests:")
+                                        for test,reason in result.skips:
+                                                self.stream.writeln("%s: %s" %
+                                                    (test, reason))
                                 self.stream.writeln()
                         if not result.wasSuccessful():
                                 self.stream.write("FAILED (")
@@ -1945,6 +1972,13 @@ class CliTestCase(Pkg5TestCase):
                 if not ready:
                         raise RuntimeError("Repository readiness "
                             "timeout exceeded.")
+
+        def importer(self, args=EmptyI, out=False, stderr=False, exit=0):
+                distro_import_utils = os.path.join(g_proto_area,
+                    path_to_distro_import_utils)
+                prog = os.path.join(distro_import_utils, "importer.py")
+                cmd = "%s %s" % (prog, " ".join(args))
+                return self.cmdline_run(cmd, out=out, stderr=stderr, exit=exit)
 
         def _api_install(self, api_obj, pkg_list, **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
