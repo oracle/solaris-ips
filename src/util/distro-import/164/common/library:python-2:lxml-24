@@ -1,0 +1,11 @@
+package library/python-2/lxml-24
+consolidation "admin"
+obsoleted 164
+version 2.1.2
+end package
+
+package SUNWpython-lxml
+consolidation "admin"
+obsoleted 164
+version 2.1.2
+end package
