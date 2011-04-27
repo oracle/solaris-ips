@@ -1,1 +1,11 @@
 <transform set name=pkg.fmri -> edit value pkg://[^/]+/ pkg://solaris/>
+
+#
+# Temporary work-around to prevent obsoletion of Python 2.4 on update as
+# there are still unbundled consumers.
+#
+<transform depend fmri=SUNWPython@.* type=incorporate \
+    -> edit fmri .* SUNWPython@2.4.6,5.11-0.133>
+
+<transform depend fmri=runtime/python-24@.* type=incorporate \
+    -> edit fmri .* runtime/python-24@2.4.6-0.163>
