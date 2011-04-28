@@ -3261,9 +3261,7 @@ assistance."""))
                                 updated.append(prefix)
 
                 if rval != EXIT_OK:
-                        if rmsg:
-                                error(rmsg, cmd="set-publisher")
-                        failed.append((prefix, msg))
+                        failed.append((prefix, rmsg))
                         continue
 
         first = True
