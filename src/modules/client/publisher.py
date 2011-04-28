@@ -124,6 +124,7 @@ class RepositoryURI(object):
         # documentation as private, and for clarity in the property declarations
         # found near the end of the class definition.
         __priority = None
+        __proxy = None
         __ssl_cert = None
         __ssl_key = None
         __trailing_slash = None
@@ -134,7 +135,7 @@ class RepositoryURI(object):
         _source_object_id = None
 
         def __init__(self, uri, priority=None, ssl_cert=None, ssl_key=None,
-            trailing_slash=True):
+            trailing_slash=True, proxy=None, system=False):
                 # Must set first.
                 self.__trailing_slash = trailing_slash
 
@@ -146,27 +147,42 @@ class RepositoryURI(object):
                 self.uri = uri
                 self.ssl_cert = ssl_cert
                 self.ssl_key = ssl_key
+                self.proxy = proxy
+                self.system = system
 
         def __copy__(self):
                 uri = RepositoryURI(self.__uri, priority=self.__priority,
                     ssl_cert=self.__ssl_cert, ssl_key=self.__ssl_key,
-                    trailing_slash=self.__trailing_slash)
+                    trailing_slash=self.__trailing_slash, proxy=self.__proxy,
+                    system=self.system)
                 uri._source_object_id = id(self)
                 return uri
 
         def __eq__(self, other):
                 if isinstance(other, RepositoryURI):
-                        return self.uri == other.uri
+                        return self.uri == other.uri and \
+                            self.proxy == other.proxy
                 if isinstance(other, str):
-                        return self.uri == other
+                        return self.proxy is None and self.uri == other
                 return False
 
         def __ne__(self, other):
                 if isinstance(other, RepositoryURI):
-                        return self.uri != other.uri
+                        return self.uri != other.uri or \
+                            self.proxy != other.proxy
                 if isinstance(other, str):
-                        return self.uri != other
+                        return self.proxy is not None or self.uri != other
                 return True
+
+        def __cmp__(self, other):
+                if not other:
+                        return 1
+                if not isinstance(other, RepositoryURI):
+                        other = RepositoryURI(other)
+                res = cmp(self.uri, other.uri)
+                if res != 0:
+                        return res
+                return cmp(self.proxy, other.proxy)
 
         def __set_priority(self, value):
                 if value is not None:
@@ -175,6 +191,13 @@ class RepositoryURI(object):
                         except (TypeError, ValueError):
                                 raise api_errors.BadRepositoryURIPriority(value)
                 self.__priority = value
+
+        def __set_proxy(self, proxy):
+                if not proxy:
+                        return
+                self.__proxy = proxy
+                assert not self.__ssl_cert
+                assert not self.__ssl_key
 
         def __set_ssl_cert(self, filename):
                 if self.scheme not in SSL_SCHEMES and filename:
@@ -250,7 +273,29 @@ class RepositoryURI(object):
                 self.__uri = uri
 
         def __str__(self):
-                return self.__uri
+                if not self.__proxy:
+                        return self.__uri
+                return "proxy://%s" % self.__uri
+
+        def change_scheme(self, new_scheme):
+                """Change the scheme of this uri."""
+
+                assert self.__uri
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(self.__uri, allow_fragments=False)
+                if new_scheme == scheme:
+                        return
+                self.uri = urlparse.urlunparse(
+                    (new_scheme, netloc, path, params, query, fragment))
+
+        def get_host(self):
+                """Get the host and port of this URI if it's a http uri."""
+
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(self.__uri, allow_fragments=0)
+                if scheme != "file":
+                        return netloc
+                return ""
 
         def get_pathname(self):
                 """Returns the URI path as a pathname if the URI is a file
@@ -274,6 +319,9 @@ class RepositoryURI(object):
         priority = property(lambda self: self.__priority, __set_priority, None,
             "An integer value representing the importance of this repository "
             "URI relative to others.")
+
+        proxy = property(lambda self: self.__proxy, __set_proxy, None, "The "
+            "proxy to use to access this repository.")
 
         @property
         def scheme(self):
@@ -405,6 +453,7 @@ class Repository(object):
                 cmirrors = [copy.copy(u) for u in self.mirrors]
                 cruris = [copy.copy(u) for u in self.related_uris]
                 corigins = [copy.copy(u) for u in self.origins]
+
                 repo = Repository(collection_type=self.collection_type,
                     description=self.description,
                     legal_uris=cluris,
@@ -562,7 +611,7 @@ class Repository(object):
                 'mirror' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(mirror, RepositoryURI):
-                        mirror = misc.url_affix_trailing_slash(mirror)
+                        mirror = RepositoryURI(mirror)
                 return mirror in self.mirrors
 
         def has_origin(self, origin):
@@ -572,7 +621,7 @@ class Repository(object):
                 'origin' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(origin, RepositoryURI):
-                        origin = misc.url_affix_trailing_slash(origin)
+                        origin = RepositoryURI(origin)
                 return origin in self.origins
 
         def remove_legal_uri(self, uri):
@@ -609,9 +658,9 @@ class Repository(object):
                 'origin' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(origin, RepositoryURI):
-                        origin = misc.url_affix_trailing_slash(origin)
+                        origin = RepositoryURI(origin)
                 for i, o in enumerate(self.origins):
-                        if origin == o.uri:
+                        if origin == o.uri and origin.proxy == o.proxy:
                                 # Immediate return as the index into the array
                                 # changes with each removal.
                                 del self.origins[i]
@@ -754,8 +803,7 @@ class Publisher(object):
         __disabled = False
         __meta_root = None
         __prefix = None
-        __selected_repository = None
-        __repositories = []
+        __repository = None
         __sticky = True
         transport = None
 
@@ -764,10 +812,9 @@ class Publisher(object):
         _source_object_id = None
 
         def __init__(self, prefix, alias=None, catalog=None, client_uuid=None,
-            disabled=False, meta_root=None, repositories=None,
-            selected_repository=None, transport=None, sticky=True,
-            ca_certs=EmptyI, intermediate_certs=EmptyI, props=None,
-            revoked_ca_certs=EmptyI, approved_ca_certs=EmptyI):
+            disabled=False, meta_root=None, repository=None,
+            transport=None, sticky=True, props=None, revoked_ca_certs=EmptyI,
+            approved_ca_certs=EmptyI, sys_pub=False):
                 """Initialize a new publisher object.
 
                 'catalog' is an optional Catalog object to use in place of
@@ -782,7 +829,7 @@ class Publisher(object):
                 else:
                         self.__client_uuid = client_uuid
 
-                self.__repositories = []
+                self.sys_pub = False
 
                 # Note that the properties set here are intentionally lacking
                 # the '__' prefix which means assignment will occur using the
@@ -795,12 +842,6 @@ class Publisher(object):
                 self.meta_root = meta_root
                 self.sticky = sticky
 
-                if repositories:
-                        for r in repositories:
-                                self.add_repository(r)
-
-                if selected_repository:
-                        self.selected_repository = selected_repository
 
                 self.__sig_policy = None
                 self.__delay_validation = False
@@ -829,6 +870,10 @@ class Publisher(object):
 
                 self.ca_dict = None
 
+                if repository:
+                        self.repository = repository
+                self.sys_pub = sys_pub
+
                 # Must be done last.
                 self.__catalog = catalog
 
@@ -848,20 +893,15 @@ class Publisher(object):
 
         def __copy__(self):
                 selected = None
-                repositories = []
-                for r in self.__repositories:
-                        repo = copy.copy(r)
-                        if r == self.selected_repository:
-                                selected = repo
-                        repositories.append(repo)
                 pub = Publisher(self.__prefix, alias=self.__alias,
                     client_uuid=self.__client_uuid, disabled=self.__disabled,
-                    meta_root=self.meta_root, repositories=repositories,
-                    selected_repository=selected, transport=self.transport,
-                    sticky=self.__sticky,
+                    meta_root=self.meta_root,
+                    repository=copy.copy(self.repository),
+                    transport=self.transport, sticky=self.__sticky,
                     props=self.properties,
                     revoked_ca_certs=self.revoked_ca_certs,
-                    approved_ca_certs=self.approved_ca_certs)
+                    approved_ca_certs=self.approved_ca_certs,
+                    sys_pub=self.sys_pub)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -883,7 +923,7 @@ class Publisher(object):
                 if key == "prefix":
                         return self.__prefix
 
-                repo = self.selected_repository
+                repo = self.repository
                 if key == "mirrors":
                         return [str(m) for m in repo.mirrors]
                 if key == "origin":
@@ -920,6 +960,9 @@ class Publisher(object):
                 return True
 
         def __set_alias(self, value):
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(
+                            "Cannot set the alias of a system publisher")
                 # Aliases must comply with the same restrictions that prefixes
                 # have as they are intended to be useable in any case where
                 # a prefix may be used.
@@ -929,6 +972,10 @@ class Publisher(object):
                 self.__alias = value
 
         def __set_disabled(self, disabled):
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(_("Cannot "
+                            "enable or disable a system publisher"))
+
                 if disabled:
                         self.__disabled = True
                 else:
@@ -1012,17 +1059,19 @@ class Publisher(object):
                         raise api_errors.BadPublisherPrefix(prefix)
                 self.__prefix = prefix
 
-        def __set_selected_repository(self, value):
-                if not isinstance(value, Repository) or \
-                    value not in self.repositories:
+        def __set_repository(self, value):
+                if not isinstance(value, Repository):
                         raise api_errors.UnknownRepository(value)
-                self.__selected_repository = value
+                self.__repository = value
                 self.__catalog = None
 
         def __set_client_uuid(self, value):
                 self.__client_uuid = value
 
         def __set_stickiness(self, value):
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(_("Cannot "
+                            "change the stickiness of a system publisher"))
                 self.__sticky = bool(value)
 
         def __str__(self):
@@ -1050,7 +1099,7 @@ class Publisher(object):
                 pubs = self.catalog.publishers()
 
                 if self.prefix not in pubs:
-                        origins = self.selected_repository.origins
+                        origins = self.repository.origins
                         origin = origins[0]
                         logger.error(_("""
 Unable to retrieve package data for publisher '%(prefix)s' from one
@@ -1106,23 +1155,6 @@ following command as a privileged user:
 
 pkg unset-publisher %s
 """) % self.prefix)
-
-        def add_repository(self, repository):
-                """Adds the provided repository object to the publisher and
-                sets it as the selected one if no repositories exist."""
-
-                for r in self.__repositories:
-                        if repository.name == r.name:
-                                raise api_errors.DuplicateRepository(
-                                    self.prefix)
-                        for o in repository.origins:
-                                if o.uri in r.origins:
-                                        raise api_errors.DuplicateRepository(
-                                            self.prefix)
-
-                self.__repositories.append(repository)
-                if len(self.__repositories) == 1:
-                        self.selected_repository = repository
 
         @property
         def catalog(self):
@@ -1189,16 +1221,13 @@ pkg unset-publisher %s
                                         # Otherwise, raise the exception.
                                         raise
 
-        def get_repository(self, name=None, origin=None):
-                """Returns the repository object matching the name or that has
-                a matching origin URI."""
+        def has_configuration(self):
+                """Returns whether this publisher has any configuration which
+                should prevent its removal."""
 
-                assert not (name and origin)
-                for r in self.__repositories:
-                        if (name and r.name == name) or (origin and
-                            r.has_origin(origin)):
-                                return r
-                raise api_errors.UnknownRepository(max(name, origin))
+                return bool(self.__repository.origins or
+                    self.__repository.mirrors or self.__sig_policy or
+                    self.approved_ca_certs or self.revoked_ca_certs)
 
         @property
         def needs_refresh(self):
@@ -1206,7 +1235,7 @@ pkg unset-publisher %s
                 metadata for the currently selected repository needs to be
                 refreshed."""
 
-                if not self.selected_repository or not self.meta_root:
+                if not self.repository or not self.meta_root:
                         # Nowhere to obtain metadata from; this should rarely
                         # occur except during publisher initialization.
                         return False
@@ -1220,7 +1249,7 @@ pkg unset-publisher %s
                 ts_now = time.time()
                 ts_last = calendar.timegm(lc.utctimetuple())
 
-                rs = self.selected_repository.refresh_seconds
+                rs = self.repository.refresh_seconds
                 if not rs:
                         # There is no indicator of how often often publisher
                         # metadata should be refreshed, so assume it should be
@@ -1232,7 +1261,6 @@ pkg unset-publisher %s
                         # publisher metadata was last refreshed exceeds or
                         # equals the specified interval.
                         return True
-
                 return False
 
         def __convert_v0_catalog(self, v0_cat):
@@ -1310,7 +1338,7 @@ pkg unset-publisher %s
                 new_cat = True
                 v0_lm = None
                 if v0_cat.exists:
-                        repo = self.selected_repository
+                        repo = self.repository
                         if full_refresh or v0_cat.origin() not in repo.origins:
                                 try:
                                         v0_cat.destroy(root=self.catalog_root)
@@ -1497,7 +1525,7 @@ pkg unset-publisher %s
                                 # No refresh needed.
                                 return False
 
-                if not self.selected_repository.origins:
+                if not self.repository.origins:
                         # Nothing to do.
                         return False
 
@@ -1619,33 +1647,10 @@ pkg unset-publisher %s
                         if e.errno not in (errno.ENOENT, errno.ESRCH):
                                 raise
 
-        def remove_repository(self, name=None, origin=None):
-                """Removes the repository object matching the name or that has
-                a matching origin URI from the publisher."""
-
-                assert not (name and origin)
-                for i, r in enumerate(self.__repositories):
-                        if (name and r.name == name) or (origin and
-                            r.has_origin(origin)):
-                                if r != self.selected_repository:
-                                        # Immediate return as the index into the
-                                        # array changes with each removal.
-                                        del self.__repositories[i]
-                                        return
-                                raise api_errors.SelectedRepositoryRemoval(r)
-
         def reset_client_uuid(self):
                 """Replaces the current client_uuid with a new UUID."""
 
                 self.__client_uuid = str(uuid.uuid1())
-
-        def set_selected_repository(self, name=None, origin=None):
-                """Sets the selected repository for the publisher to the
-                repository object matching the name or that has a matching
-                origin URI."""
-
-                self.__selected_repository = self.get_repository(name=name,
-                    origin=origin)
 
         def validate_config(self, repo_uri=None):
                 """Verify that the publisher's configuration (such as prefix)
@@ -1655,7 +1660,7 @@ pkg unset-publisher %s
 
                 'repo_uri' is an optional RepositoryURI object or URI string
                 containing the location of the repository.  If not provided,
-                the publisher's selected_repository will be used instead."""
+                the publisher's repository will be used instead."""
 
                 if repo_uri and not isinstance(repo_uri, RepositoryURI):
                         repo = RepositoryURI(repo_uri)
@@ -1687,18 +1692,13 @@ pkg unset-publisher %s
                                     location=repo_uri)
                         raise api_errors.UnknownRepositoryPublishers(
                             known=known, unknown=[self.prefix],
-                            origins=self.selected_repository.origins)
+                            origins=self.repository.origins)
 
-        def approve_ca_cert(self, cert, trust_anchors=None, img_policy=None):
+        def approve_ca_cert(self, cert):
                 """Add the cert as a CA for manifest signing for this publisher.
 
-                The 'cert' parameter as a string of the certificate to add.
-
-                The 'trust_anchors' parameter is a dictionary which contains
-                the trust anchors to use to validate the certificate.
-
-                The 'img_policy' parameter is the signature policy for the
-                image."""
+                The 'cert' parameter is a string of the certificate to add.
+                """
 
                 hsh = self.__add_cert(cert)
                 # If the user had previously revoked this certificate, remove
@@ -2289,11 +2289,8 @@ pkg unset-publisher %s
         prefix = property(lambda self: self.__prefix, __set_prefix,
             doc="The name of the publisher.")
 
-        repositories = property(lambda self: self.__repositories,
-            doc="A list of repository objects that belong to the publisher.")
-
-        selected_repository = property(lambda self: self.__selected_repository,
-            __set_selected_repository,
+        repository = property(lambda self: self.__repository,
+            __set_repository,
             doc="A reference to the selected repository object.")
 
         sticky = property(lambda self: self.__sticky, __set_stickiness,
@@ -2323,6 +2320,10 @@ pkg unset-publisher %s
 
         def __set_prop(self, name, values):
                 """Accessor method to add a property"""
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(_("Cannot "
+                            "set a property for a system publisher. The "
+                            "property was:%s") % name)
 
                 if name == SIGNATURE_POLICY:
                         self.__sig_policy = None
@@ -2366,6 +2367,10 @@ pkg unset-publisher %s
 
         def __del_prop(self, name):
                 """Accessor method for properties"""
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(_("Cannot "
+                            "unset a property for a system publisher. The "
+                            "property was:%s") % name)
                 del self.__properties[name]
 
         def __prop_iter(self):
@@ -2407,6 +2412,9 @@ pkg unset-publisher %s
 
         def __prop_pop(self, d, default):
                 """Support pop() on properties"""
+                if self.sys_pub:
+                        raise api_errors.ModifyingSyspubException(_("Cannot "
+                            "unset a property for a system publisher."))
                 return self.__properties.pop(d, default)
 
         properties = DictProperty(__get_prop, __set_prop, __del_prop,

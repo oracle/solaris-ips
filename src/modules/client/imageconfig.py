@@ -34,14 +34,18 @@ logger = global_settings.logger
 
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
+import pkg.client.sigpolicy as sigpolicy
 import pkg.config as cfg
 import pkg.facet as facet
 import pkg.misc as misc
+import pkg.pkgsubprocess as subprocess
 import pkg.portable as portable
-import pkg.client.sigpolicy as sigpolicy
+import pkg.smf as smf
 import pkg.variant as variant
 
 from pkg.misc import DictProperty, SIGNATURE_POLICY
+from pkg.client.debugvalues import DebugValues
+from pkg.client.transport.exception import TransportFailures
 # The default_policies dictionary defines the policies that are supported by
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
@@ -49,12 +53,14 @@ from pkg.misc import DictProperty, SIGNATURE_POLICY
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
+USE_SYSTEM_REPO = "use-system-repo"
 
 default_policies = {
     FLUSH_CONTENT_CACHE: False,
     MIRROR_DISCOVERY: False,
     SEND_UUID: True,
-    SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY
+    SIGNATURE_POLICY: sigpolicy.DEFAULT_POLICY,
+    USE_SYSTEM_REPO: False
 }
 
 CA_PATH = "ca-path"
@@ -140,6 +146,8 @@ class ImageConfig(cfg.FileConfig):
                 cfg.PropertySection("image", properties=[
                     cfg.PropInt("version"),
                 ]),
+                # The preferred-authority property should be removed from
+                # version 4 of image config.
                 cfg.PropertySection("property", properties=[
                     cfg.PropPublisher("preferred-authority"),
                     cfg.PropList("publisher-search-order"),
@@ -152,6 +160,8 @@ class ImageConfig(cfg.FileConfig):
                     cfg.PropDefined(SIGNATURE_POLICY,
                         allowed=list(sigpolicy.Policy.policies()) + [DEF_TOKEN],
                         default=DEF_TOKEN),
+                    cfg.PropBool(USE_SYSTEM_REPO,
+                        default=default_policies[USE_SYSTEM_REPO]),
                     cfg.Property(CA_PATH,
                         default=default_properties[CA_PATH]),
                     cfg.Property("trust-anchor-directory",
@@ -182,6 +192,7 @@ class ImageConfig(cfg.FileConfig):
                         allowed=list(sigpolicy.Policy.policies()) + [DEF_TOKEN],
                         default=DEF_TOKEN),
                     cfg.PropList("property.signature-required-names"),
+                    cfg.PropList("property.proxied-urls"),
                     cfg.PropList("intermediate_certs"),
                     cfg.PropList("approved_ca_certs"),
                     cfg.PropList("revoked_ca_certs"),
@@ -221,23 +232,26 @@ class ImageConfig(cfg.FileConfig):
                     version=version)
 
         def __str__(self):
-                return "%s\n%s" % (self.__publishers, self)
+                return "%s\n%s" % (self.__publishers, self.__defs)
 
         def remove_publisher(self, prefix):
                 """External functional interface - use property interface"""
                 del self.publishers[prefix]
-                try:
-                        self.remove_section("authority_%s" % prefix)
-                except cfg.UnknownSectionError:
-                        pass
 
-        def change_publisher_search_order(self, new_world_order):
-                """Change search order to desired value"""
-                pval = self.get_property("property", "publisher-search-order")
-                if sorted(new_world_order) != sorted(pval):
-                        raise ValueError, "publishers added or removed"
-                self.set_property("property", "publisher-search-order",
-                    new_world_order)
+        def change_publisher_search_order(self, being_moved, staying_put,
+            after):
+                """Change the publisher search order by moving the publisher
+                'being_moved' relative to the publisher 'staying put.'  The
+                boolean 'after' determins whether 'being_moved' is placed before
+                or after 'staying_put'."""
+
+                so = self.get_property("property", "publisher-search-order")
+                so.remove(being_moved)
+                if after:
+                        so.insert(so.index(staying_put) + 1, being_moved)
+                else:
+                        so.insert(so.index(staying_put), being_moved)
+                self.set_property("property", "publisher-search-order", so)
 
         def __get_publisher(self, prefix):
                 """Accessor method for publishers dictionary"""
@@ -257,6 +271,10 @@ class ImageConfig(cfg.FileConfig):
                 if prefix in pval:
                         self.remove_property_value("property",
                             "publisher-search-order", prefix)
+                try:
+                        self.remove_section("authority_%s" % prefix)
+                except cfg.UnknownSectionError:
+                        pass
                 del self.__publishers[prefix]
 
         def __publisher_iter(self):
@@ -295,8 +313,6 @@ class ImageConfig(cfg.FileConfig):
                 section and name.  Raises UnknownPropertyError if it does not
                 exist.
                 """
-                if name == "preferred-publisher":
-                        name = "preferred-authority"
                 rval = cfg.FileConfig.get_property(self, section, name)
                 if name in default_policies and rval == DEF_TOKEN:
                         return default_policies[name]
@@ -352,14 +368,10 @@ class ImageConfig(cfg.FileConfig):
                         # Get updated configuration index.
                         idx = self.get_index()
 
-                preferred_publisher = None
                 for s, v in idx.iteritems():
                         if re.match("authority_.*", s):
                                 k, a = self.read_publisher(s, v)
                                 self.publishers[k] = a
-                                # just in case there's no other indication
-                                if preferred_publisher is None:
-                                        preferred_publisher = k
 
                 # Move any properties found in policy section (from older
                 # images) to the property section.
@@ -373,10 +385,6 @@ class ImageConfig(cfg.FileConfig):
                             default_properties[CA_PATH])
 
                 pso = self.get_property("property", "publisher-search-order")
-                if not pso and preferred_publisher:
-                        # make up the default - preferred, then the rest in
-                        # alpha order
-                        pso = [preferred_publisher]
 
                 # Ensure that all configured publishers are present in
                 # search order (add them in alpha order to the end).
@@ -407,18 +415,6 @@ class ImageConfig(cfg.FileConfig):
                 exist, it will be added.  Raises InvalidPropertyValueError if
                 the value is not valid for the given property."""
 
-                if name == "preferred-publisher":
-                        # Ensure that whenever preferred-publisher is changed,
-                        # search order is updated as well.  In addition, ensure
-                        # that 'preferred-publisher' is always stored as
-                        # 'preferred-authority' internally for compatibility
-                        # with older clients.
-                        name = "preferred-authority"
-                        pso = self.get_property("property",
-                            "publisher-search-order")
-                        if value in pso:
-                                pso.remove(value)
-                        pso.insert(0, value)
                 cfg.FileConfig.set_property(self, section, name, value)
 
                 if self.__validate:
@@ -455,21 +451,6 @@ class ImageConfig(cfg.FileConfig):
 
         def write(self, ignore_unprivileged=False):
                 """Write the image configuration."""
-
-                # Force preferred-authority to match publisher-search-order.
-                pso = self.get_property("property", "publisher-search-order")
-                ppub = None
-                for p in pso:
-                        if not self.__publishers[p].disabled:
-                                ppub = p
-                                break
-                else:
-                        if pso:
-                                # Fallback to first publisher in the unlikley
-                                # case that all publishers in search order are
-                                # disabled.
-                                ppub = pso[0]
-                self.set_property("property", "preferred-authority", ppub)
 
                 # The variant and facet sections must be removed so that the
                 # private variant and facet objects can have their information
@@ -513,7 +494,7 @@ class ImageConfig(cfg.FileConfig):
                         # not.  So we have a different policy: ssl_key and
                         # ssl_cert are treated as zone root relative.
                         #
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         ngz = self.variants.get("variant.opensolaris.zone",
                             "global") == "nonglobal"
 
@@ -717,7 +698,7 @@ class ImageConfig(cfg.FileConfig):
 
                 pub = publisher.Publisher(prefix, alias=sec_idx["alias"],
                     client_uuid=sec_idx["uuid"], disabled=sec_idx["disabled"],
-                    repositories=[r], sticky=sec_idx.get("sticky", True),
+                    repository=r, sticky=sec_idx.get("sticky", True),
                     props=props,
                     revoked_ca_certs=sec_idx.get("revoked_ca_certs", []),
                     approved_ca_certs=sec_idx.get("approved_ca_certs", []))
@@ -747,7 +728,411 @@ class ImageConfig(cfg.FileConfig):
                                     "At least one name must be provided for "
                                     "the signature-required-names policy."))
 
+        def __publisher_getdefault(self, name, value):
+                """Support getdefault() on properties"""
+                return self.__publishers.get(name, value)
+
         # properties so we can enforce rules
+        publishers = DictProperty(__get_publisher, __set_publisher,
+            __del_publisher, __publisher_iteritems, __publisher_keys,
+            __publisher_values, __publisher_iter,
+            doc="A dict mapping publisher prefixes to publisher objects",
+            fgetdefault=__publisher_getdefault, )
+
+
+class NullSystemPublisher(object):
+        """Dummy system publisher object for use when an image doesn't use a
+        system publisher."""
+
+        def __init__(self):
+                self.publishers = {}
+
+        def write(self):
+                return
+
+        def get_property(self, section, name):
+                """Return the value of the property if the NullSystemPublisher
+                has any knowledge of it."""
+
+                if section == "property" and \
+                    name in ("publisher-search-order", "property.proxied-urls"):
+                        return []
+                raise NotImplementedError()
+
+
+class BlendedConfig(object):
+        """Class which handles combining the system repository configuration
+        with the image configuration."""
+        
+        def __init__(self, img_cfg, pkg_counts, imgdir, transport,
+            use_system_pub):
+                """The 'img_cfg' parameter is the ImageConfig object for the
+                image.
+
+                The 'pkg_counts' parameter is a list of tuples which contains
+                the number of packages each publisher has installed.
+
+                The 'imgdir' parameter is the directory the current image
+                resides in.
+
+                The 'transport' object is the image's transport.
+
+                The 'use_system_pub' parameter is a boolean which indicates
+                whether the system publisher should be used."""
+
+                self.img_cfg = img_cfg
+                self.__pkg_counts = pkg_counts
+
+                self.__proxy_url = None
+
+                syscfg_path = os.path.join(imgdir, "pkg5.syspub")
+                # load the existing system repo config
+                if os.path.exists(syscfg_path):
+                        old_sysconfig = ImageConfig(syscfg_path, None)
+                else:
+                        old_sysconfig = NullSystemPublisher()
+
+                if use_system_pub:
+                        # get new syspub data from sysdepot
+                        try:
+                                self.__proxy_url = os.environ["PKG_SYSREPO_URL"]
+                                if not self.__proxy_url.startswith("http://"):
+                                        self.__proxy_url = "http://" + \
+                                            self.__proxy_url
+                        except KeyError:
+                                try:
+                                        host = smf.get_prop(
+                                            "system/zones-proxy-client",
+                                            "config/listen_host")
+                                        port = smf.get_prop(
+                                            "system/zones-proxy-client",
+                                            "config/listen_port")
+                                except smf.NonzeroExitException, e:
+                                        # If we can't get information out of
+                                        # smf, try using pkg/sysrepo.
+                                        try:
+                                                host = smf.get_prop(
+                                                    "system/pkg/sysrepo:default",
+                                                    "config/host")
+                                                host = "localhost"
+                                                port = smf.get_prop(
+                                                    "system/pkg/sysrepo:default",
+                                                    "config/port")
+                                        except smf.NonzeroExitException, e:
+                                                raise apx.UnknownSysrepoConfiguration()
+                                self.__proxy_url = "http://%s:%s" % (host, port)
+                        sysdepot_uri = publisher.RepositoryURI(self.__proxy_url)
+                        assert sysdepot_uri.get_host()
+                        try:
+                                pubs, props = transport.get_syspub_data(
+                                    sysdepot_uri)
+                        except TransportFailures:
+                                self.sys_cfg = old_sysconfig
+                        else:
+                                try:
+                                        # Remove any previous system repository
+                                        # configuration.
+                                        portable.remove(syscfg_path)
+                                except OSError, e:
+                                        if e.errno != errno.ENOENT:
+                                                raise
+                                self.sys_cfg = ImageConfig(syscfg_path, None)
+                                for p in pubs:
+                                        assert not p.disabled, "System " \
+                                            "publisher %s was unexpectedly " \
+                                            "marked disabled in system " \
+                                            "configuration." % p.prefix
+                                        self.sys_cfg.publishers[p.prefix] = p
+
+                                self.sys_cfg.set_property("property",
+                                    "publisher-search-order",
+                                    props["publisher-search-order"])
+                else:
+                        self.sys_cfg = NullSystemPublisher()
+                self.__publishers, self.added_pubs, self.removed_pubs = \
+                    self.__merge_publishers(self.img_cfg, self.sys_cfg,
+                        pkg_counts, old_sysconfig, self.__proxy_url)
+
+        @staticmethod
+        def __merge_publishers(img_cfg, sys_cfg, pkg_counts, old_sysconfig,
+            proxy_url):
+                """This funcion merges an old publisher configuration from the
+                system repository with the new publisher configuration from the
+                system repository.  It retuns a tuple containing a dictionary
+                mapping prefix to publisher, the publisher objects for the newly
+                added system publishers, and the publisher objects for the
+                system publishers which were removed.
+
+                The 'img_cfg' parameter is the ImageConfig object for the
+                image.
+
+                The 'sys_cfg' parameter is the ImageConfig object containing the
+                publisher configuration from the system repository.
+
+                The 'pkg_counts' parameter is a list of tuples which contains
+                the number of packages each publisher has installed.
+
+                The 'old_sysconfig' parameter is ImageConfig object containing
+                the previous publisher configuration from the system repository.
+
+                The 'use_system_pub' parameter is a boolean which indicates
+                whether the system publisher should be used.
+
+                The 'proxy_url' parameter is the url for the system repository.
+                """
+
+                pubs_with_installed_pkgs = set()
+
+                added_pubs = set()
+                removed_pubs = set()
+                        
+                for prefix, cnt, ver_cnt in pkg_counts:
+                        if cnt > 0:
+                                pubs_with_installed_pkgs.add(prefix)
+
+                # Merge in previously existing system publishers which have
+                # installed packages.
+                for prefix in old_sysconfig.get_property("property",
+                    "publisher-search-order"):
+                        if prefix in sys_cfg.publishers or \
+                            prefix in img_cfg.publishers or \
+                            prefix not in pubs_with_installed_pkgs:
+                                continue
+                        sys_cfg.publishers[prefix] = \
+                            old_sysconfig.publishers[prefix]
+                        sys_cfg.publishers[prefix].disabled = True
+
+                # Write out the new system publisher configuration.
+                sys_cfg.write()
+                for p in sys_cfg.publishers.values():
+                        for o in p.repository.origins:
+                                o.system = True
+                                if o.uri in p.properties["proxied-urls"]:
+                                        o.proxy = proxy_url
+                        for o in p.repository.mirrors:
+                                o.system = True
+                                if o.uri in p.properties["proxied-urls"]:
+                                        o.proxy = proxy_url
+                        p.sys_pub = True
+
+                # Create a dictionary mapping publisher prefix to publisher
+                # object while merging user configured origins into system
+                # publishers.
+                res = {}
+                for p in sys_cfg.publishers:
+                        res[p] = sys_cfg.publishers[p]
+                for p in img_cfg.publishers.values():
+                        assert isinstance(p, publisher.Publisher)
+                        if p.prefix in res:
+                                repo = p.repository
+                                for o in repo.origins:
+                                        res[p.prefix].repository.add_origin(o)
+                        else:
+                                res[p.prefix] = p
+
+                new_pubs = set(sys_cfg.publishers.keys())
+                old_pubs = set(old_sysconfig.publishers.keys())
+
+                # Find the system publishers which appeared or vanished.  This
+                # is needed so that the catalog information can be rebuilt.
+                added_pubs = new_pubs - old_pubs
+                removed_pubs = old_pubs - new_pubs
+
+                return res, [res[p] for p in added_pubs], \
+                    [old_sysconfig.publishers[p] for p in removed_pubs]
+
+        def write(self):
+                """Update the image configuration to reflect any changes made,
+                then write it."""
+
+                for p in self.__publishers.values():
+                        repo = p.repository
+                        user_origins = [o for o in repo.origins if not o.system]
+                        sys_origins = [o for o in repo.origins if o.system]
+                        # If there aren't any origins configured from the system
+                        # repository, then make sure the publisher is configured
+                        # in the image.
+                        if not sys_origins:
+                                self.img_cfg.publishers[p.prefix] = p
+                                continue
+
+                        user_pub = self.img_cfg.publishers.get(p.prefix, None)
+                        # If there aren't any user origins and the publisher has
+                        # not been configured manually, then remove the
+                        # publisher from the image.
+                        if not user_origins and \
+                            (not user_pub or not user_pub.has_configuration()):
+                                if user_pub:
+                                        del self.img_cfg.publishers[p.prefix]
+                                continue
+
+                        # If there isn't a publisher in the image configuration,
+                        # then create one and give it the right set of origins.
+                        if not user_pub:
+                                user_pub = publisher.Publisher(prefix=p.prefix)
+                                self.img_cfg.publishers[p.prefix] = user_pub
+                        if not user_pub.repository:
+                                user_pub.repository = publisher.Repository()
+                        user_pub.repository.origins = user_origins
+
+                # Write out the image configuration.
+                self.img_cfg.write()
+
+        def allowed_to_move(self, pub):
+                """Return whether a publisher is allowed to move in the search
+                order."""
+
+                return not self.__is_sys_pub(pub)
+
+        def add_property_value(self, *args, **kwargs):
+                return self.img_cfg.add_property_value(*args, **kwargs)
+
+        def remove_property_value(self, *args, **kwargs):
+                return self.img_cfg.remove_property_value(*args, **kwargs)
+
+        def get_index(self):
+                return self.img_cfg.get_index()
+
+        def get_policy(self, *args, **kwargs):
+                return self.img_cfg.get_policy(*args, **kwargs)
+
+        def get_policy_str(self, *args, **kwargs):
+                return self.img_cfg.get_policy_str(*args, **kwargs)
+
+        def get_property(self, section, name):
+                # If the property being retrieved is the publisher search order,
+                # it's necessary to merge the information from the image
+                # configuration and the system configuration.
+                if section == "property" and name == "publisher-search-order":
+                        res = self.sys_cfg.get_property(section, name)
+                        enabled_sys_pubs = [
+                            p for p in res
+                            if not self.sys_cfg.publishers[p].disabled
+                        ]
+                        img_pubs = [
+                            s for s in self.img_cfg.get_property(section, name)
+                            if s not in enabled_sys_pubs
+                        ]
+                        disabled_sys_pubs = [
+                            p for p in res
+                            if self.sys_cfg.publishers[p].disabled and \
+                                p not in img_pubs
+                        ]
+                        return enabled_sys_pubs + img_pubs + disabled_sys_pubs
+                return self.img_cfg.get_property(section, name)
+
+        def remove_property(self, *args, **kwargs):
+                return self.img_cfg.remove_property(*args, **kwargs)
+
+        def set_property(self, *args, **kwargs):
+                return self.img_cfg.set_property(*args, **kwargs)
+
+        def set_properties(self, *args, **kwargs):
+                return self.img_cfg.set_properties(*args, **kwargs)
+
+        @property
+        def target(self):
+                return self.img_cfg.target
+
+        @property
+        def variants(self):
+                return self.img_cfg.variants
+
+        def __get_facets(self):
+                return self.img_cfg.facets
+
+        def __set_facets(self, facets):
+                self.img_cfg.facets = facets
+
+        facets = property(__get_facets, __set_facets)
+
+        def __is_sys_pub(self, prefix):
+                """Return whether the publisher with the prefix 'prefix' is a
+                system publisher."""
+
+                return prefix in self.sys_cfg.publishers
+
+        def remove_publisher(self, prefix):
+                try:
+                        del self.publishers[prefix]
+                except KeyError:
+                        pass
+
+        def change_publisher_search_order(self, being_moved, staying_put,
+            after):
+                """Change the publisher search order by moving the publisher
+                'being_moved' relative to the publisher 'staying put.'  The
+                boolean 'after' determins whether 'being_moved' is placed before
+                or after 'staying_put'."""
+
+                if being_moved == staying_put:
+                        raise apx.MoveRelativeToSelf()
+
+                if self.__is_sys_pub(being_moved):
+                        raise apx.ModifyingSyspubException(_("Publisher '%s' "
+                            "is a system publisher and cannot be moved.") %
+                            being_moved)
+                if self.__is_sys_pub(staying_put):
+                        raise apx.ModifyingSyspubException(_("Publisher '%s' "
+                            "is a system publisher and other publishers cannot "
+                            "be moved relative to it.") % staying_put)
+                self.img_cfg.change_publisher_search_order(being_moved,
+                    staying_put, after)
+                
+        def reset(self, overrides=misc.EmptyDict):
+                """Discards current configuration state and returns the
+                configuration object to its initial state.
+
+                'overrides' is an optional dictionary of property values indexed
+                by section name and property name.  If provided, it will be used
+                to override any default values initially assigned during reset.
+                """
+
+                self.img_cfg.reset(overrides)
+                self.sys_cfg.reset()
+                old_sysconfig = ImageConfig(os.path.join(imgdir, "pkg5.syspub"),
+                    None)
+                self.__publishers = self.__merge_publishers(self.img_cfg,
+                    self.sys_cfg, self.__pkg_counts, old_sysconfig)
+
+        def __get_publisher(self, prefix):
+                """Accessor method for publishers dictionary"""
+                return self.__publishers[prefix]
+
+        def __set_publisher(self, prefix, pubobj):
+                """Accessor method to keep search order correct on insert"""
+                pval = self.get_property("property", "publisher-search-order")
+                if prefix not in pval:
+                        self.add_property_value("property",
+                            "publisher-search-order", prefix)
+                self.__publishers[prefix] = pubobj
+
+        def __del_publisher(self, prefix):
+                """Accessor method for publishers"""
+                if self.__is_sys_pub(prefix):
+                        raise apx.ModifyingSyspubException(_("%s is a system "
+                            "publisher and cannot be unset.") % prefix)
+
+                del self.img_cfg.publishers[prefix]
+                del self.__publishers[prefix]
+
+        def __publisher_iter(self):
+                return self.__publishers.__iter__()
+
+        def __publisher_iteritems(self):
+                """Support iteritems on publishers"""
+                return self.__publishers.iteritems()
+
+        def __publisher_keys(self):
+                """Support keys() on publishers"""
+                return self.__publishers.keys()
+
+        def __publisher_values(self):
+                """Support values() on publishers"""
+                return self.__publishers.values()
+
+        # properties so we can enforce rules and manage two potentially
+        # overlapping sets of publishers
         publishers = DictProperty(__get_publisher, __set_publisher,
             __del_publisher, __publisher_iteritems, __publisher_keys,
             __publisher_values, __publisher_iter,

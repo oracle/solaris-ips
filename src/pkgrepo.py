@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 PKG_CLIENT_NAME = "pkgrepo"
@@ -646,7 +646,7 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
                     },
                 }
 
-                pub_repo = pub.selected_repository
+                pub_repo = pub.repository
                 if pub_repo:
                         pub_idx[pub.prefix]["repository"] = {
                             "collection-type": pub_repo.collection_type,
@@ -1067,10 +1067,10 @@ def _set_pub(conf, subcommand, props, pubs, repo):
                                 if sname == "publisher":
                                         target = pub
                                 elif sname == "repository":
-                                        target = pub.selected_repository
+                                        target = pub.repository
                                         if not target:
                                                 target = publisher.Repository()
-                                                pub.repositories.append(target)
+                                                pub.repository = target
 
                                 for pname, val in sprops.iteritems():
                                         attrname = pname.replace("-", "_")

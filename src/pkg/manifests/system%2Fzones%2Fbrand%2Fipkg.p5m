@@ -41,10 +41,12 @@ dir path=usr/lib
 dir path=usr/lib/brand
 dir path=usr/lib/brand/ipkg
 file path=usr/lib/brand/ipkg/attach mode=0755
+file path=usr/lib/brand/ipkg/boot mode=0755
 file path=usr/lib/brand/ipkg/clone mode=0755
 file path=usr/lib/brand/ipkg/common.ksh
 file path=usr/lib/brand/ipkg/detach mode=0755
 file path=usr/lib/brand/ipkg/fmri_compare mode=0755
+file path=usr/lib/brand/ipkg/halt mode=0755
 file path=usr/lib/brand/ipkg/image_install mode=0755
 file path=usr/lib/brand/ipkg/p2v mode=0755
 file path=usr/lib/brand/ipkg/pkgcreatezone mode=0755

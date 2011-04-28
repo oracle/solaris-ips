@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -101,16 +101,6 @@ class TestPkgPropertyBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("unset-property require-optional", su_wrap=True,
                     exit=1)
                 self.pkg("unset-property require-optional")
-
-        def test_bug_4372(self):
-                """Verify that preferred-publisher cannot be changed using the
-                property commands, but can be read."""
-
-                self.image_create(self.rurl)
-
-                self.pkg("set-property preferred-publisher foo", exit=1)
-                self.pkg("unset-property preferred-publisher", exit=1)
-                self.pkg("property preferred-publisher")
 
 
 if __name__ == "__main__":

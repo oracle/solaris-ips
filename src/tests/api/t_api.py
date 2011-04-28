@@ -41,7 +41,7 @@ import tempfile
 import time
 import unittest
 
-CLIENT_API_VERSION = 56
+CLIENT_API_VERSION = 57
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(pkg5unittest.SingleDepotTestCase):
@@ -485,9 +485,11 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(api_obj.has_publisher("bobcat"))
 
                 # Verify preferred publisher prefix is returned correctly.
-                self.assertEqual(api_obj.get_preferred_publisher(), "bobcat")
+                self.assertEqual(api_obj.get_highest_ranked_publisher(),
+                    "bobcat")
 
-                # Verify that get_publisher returned the correct publisher object.
+                # Verify that get_publisher returned the correct publisher
+                # object.
                 pub = api_obj.get_publisher(prefix="bobcat")
                 self.assertEqual(pub.prefix, "bobcat")
 
@@ -510,7 +512,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Now modify publisher information and update.
                 cpub.alias = "cat"
-                repo = cpub.selected_repository
+                repo = cpub.repository
                 repo.name = "source"
                 repo.description = "xkcd.net/325"
                 repo.legal_uris = ["http://xkcd.com/license.html"]
@@ -521,7 +523,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 # Verify that the update happened.
                 pub = api_obj.get_publisher(prefix="bobcat")
                 self.assertEqual(pub.alias, "cat")
-                repo = pub.selected_repository
+                repo = pub.repository
                 self.assertEqual(repo.name, "source")
                 self.assertEqual(repo.description, "xkcd.net/325")
                 self.assertEqual(repo.legal_uris[0],
@@ -538,8 +540,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                     "mirrors", "name", "origins", "refresh_seconds",
                     "registered", "registration_uri", "related_uris",
                     "sort_policy"):
-                        srepo = pub.selected_repository
-                        crepo = cpub.selected_repository
+                        srepo = pub.repository
+                        crepo = cpub.repository
                         self.assertEqual(getattr(srepo, p), getattr(crepo, p))
                 cpub = None
 
@@ -590,7 +592,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                         self.assertEqual(pub.prefix, "bobcat")
                         self.assertEqual(pub.alias, "cat")
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         self.assertEqual(repo.name, "source")
                         self.assertEqual(repo.description, "xkcd.net/325")
                         self.assertEqual(repo.legal_uris[0],
@@ -944,6 +946,15 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj.execute_plan()
                 api_obj.reset()
 
+        def test_syspub_version_error(self):
+                api_obj = self.image_create()
+                try:
+                        api_obj.write_syspub("", [], 999)
+                except api_errors.UnsupportedP5SVersion, e:
+                        str(e)
+                else:
+                        raise RuntimeError("Expected write_syspub to raise "
+                            "an exception.")
 
 if __name__ == "__main__":
         unittest.main()

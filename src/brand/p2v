@@ -477,6 +477,8 @@ pkg -R "$ZONEROOT" update-format || pkg_err_check "$e_update_format"
 log "$v_change_var"
 pkg -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \
     fatal "$e_change_var"
+# Set the property which tells the image to use the system publisher.
+pkg -R $ZONEROOT set-property use-system-repo true
 
 #
 # Run update on attach.  State is currently 'incomplete' so use the private

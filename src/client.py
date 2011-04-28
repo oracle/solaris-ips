@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 56
+CLIENT_API_VERSION = 57
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -232,6 +232,7 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
             "            [--reset-uuid] [--non-sticky] [--sticky]\n"
             "            [--search-after=publisher]\n"
             "            [--search-before=publisher]\n"
+            "            [--search-first=publisher]\n"
             "            [--approve-ca-cert=path_to_CA]\n"
             "            [--revoke-ca-cert=hash_of_CA_to_revoke]\n"
             "            [--unset-ca-cert=hash_of_CA_to_unset]\n"
@@ -449,7 +450,9 @@ def list_inventory(api_inst, args):
 
         # Now get the matching list of packages and display it.
         found = False
-        ppub = api_inst.get_preferred_publisher().prefix
+        ppub = api_inst.get_highest_ranked_publisher()
+        if ppub:
+                ppub = ppub.prefix
         try:
                 res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
                     raise_unmatched=True, repos=origins, variants=variants)
@@ -2932,7 +2935,6 @@ def publisher_set(api_inst, args):
 
         cmd_name = "set-publisher"
 
-        preferred = False
         ssl_key = None
         ssl_cert = None
         origin_uri = None
@@ -2946,6 +2948,7 @@ def publisher_set(api_inst, args):
         sticky = None
         search_before = None
         search_after = None
+        search_first = False
         repo_uri = None
 
         approved_ca_certs = []
@@ -2959,9 +2962,10 @@ def publisher_set(api_inst, args):
         opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
             ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
             "no-refresh", "reset-uuid", "enable", "disable", "sticky",
-            "non-sticky", "search-before=", "search-after=", "approve-ca-cert=",
-            "revoke-ca-cert=", "unset-ca-cert=", "set-property=",
-            "add-property-value=", "remove-property-value=", "unset-property="])
+            "non-sticky", "search-after=", "search-before=", "search-first",
+            "approve-ca-cert=", "revoke-ca-cert=", "unset-ca-cert=",
+            "set-property=", "add-property-value=", "remove-property-value=",
+            "unset-property="])
 
         for opt, arg in opts:
                 if opt == "-c":
@@ -2996,8 +3000,8 @@ def publisher_set(api_inst, args):
                                     cwd=orig_cwd))
                 elif opt == "-p":
                         repo_uri = misc.parse_uri(arg, cwd=orig_cwd)
-                elif opt == "-P":
-                        preferred = True
+                elif opt in ("-P", "--search-first"):
+                        search_first = True
                 elif opt == "--reset-uuid":
                         reset_uuid = True
                 elif opt == "--no-refresh":
@@ -3055,17 +3059,14 @@ def publisher_set(api_inst, args):
         elif pargs:
                 name = pargs[0]
 
-        if preferred and disable:
-                usage(_("the -P and -d options may not be combined"),
-                    cmd="set-publisher")
-
         if origin_uri and (add_origins or remove_origins):
                 usage(_("the -O and -g, --add-origin, -G, or --remove-origin "
                     "options may not be combined"), cmd="set-publisher")
 
-        if search_before and search_after:
-                usage(_("--search-before and --search-after may not be "
-                    "combined"), cmd="set-publisher")
+        if (search_before and search_after) or \
+            (search_before and search_first) or (search_after and search_first):
+                usage(_("search-before, search-after, and search-first (-P) "
+                    "may not be combined"), cmd="set-publisher")
 
         if repo_uri and (add_origins or add_mirrors or remove_origins or
             remove_mirrors or disable != None or not refresh_allowed or
@@ -3087,8 +3088,8 @@ def publisher_set(api_inst, args):
                     remove_mirrors=remove_mirrors, add_origins=add_origins,
                     remove_origins=remove_origins, ssl_cert=ssl_cert,
                     ssl_key=ssl_key, search_before=search_before,
-                    search_after=search_after, reset_uuid=reset_uuid,
-                    refresh_allowed=refresh_allowed, preferred=preferred,
+                    search_after=search_after, search_first=search_first,
+                    reset_uuid=reset_uuid, refresh_allowed=refresh_allowed,
                     set_props=set_props, add_prop_values=add_prop_values,
                     remove_prop_values=remove_prop_values,
                     unset_props=unset_props, approved_cas=approved_ca_certs,
@@ -3150,14 +3151,13 @@ assistance."""))
         updated = []
         failed = []
 
-        last_pub = None
-        for src_pub in pubs:
+        for src_pub in sorted(pubs):
                 prefix = src_pub.prefix
                 if name and prefix != name:
                         # User didn't request this one.
                         continue
 
-                src_repo = src_pub.selected_repository
+                src_repo = src_pub.repository
                 if not api_inst.has_publisher(prefix=prefix):
                         add_origins = []
                         if not src_repo or not src_repo.origins:
@@ -3167,12 +3167,14 @@ assistance."""))
                                 # that the origin for the new publisher
                                 # matches the URI provided.
                                 add_origins.append(repo_uri)
+                                
                         rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
                             [], api_inst, prefix, pub=src_pub,
                             add_origins=add_origins, ssl_cert=ssl_cert,
                             ssl_key=ssl_key, sticky=sticky,
                             search_after=search_after,
                             search_before=search_before,
+                            search_first=search_first,
                             set_props=set_props,
                             add_prop_values=add_prop_values,
                             remove_prop_values=remove_prop_values,
@@ -3180,14 +3182,11 @@ assistance."""))
                         if rval == EXIT_OK:
                                 added.append(prefix)
 
-                        if preferred:
-                                if not last_pub:
-                                        api_inst.set_preferred_publisher(
-                                            prefix=prefix)
-                                else:
-                                        api_inst.set_pub_search_after(prefix,
-                                            last_pub)
-                                        last_pub = prefix
+                        # When multiple publishers result from a single -p
+                        # operation, this ensures that the new publishers are
+                        # ordered correctly.
+                        search_first = False
+                        search_after = prefix
                 else:
                         # The update case is special and requires some
                         # finesse.  In particular, the update should
@@ -3198,7 +3197,7 @@ assistance."""))
                         # publishers.
                         dest_pub = api_inst.get_publisher(prefix=prefix,
                             duplicate=True)
-                        dest_repo = dest_pub.selected_repository
+                        dest_repo = dest_pub.repository
 
                         if dest_repo.origins and \
                             not dest_repo.has_origin(repo_uri):
@@ -3304,8 +3303,8 @@ assistance."""))
 def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
     origin_uri=None, add_mirrors=EmptyI, remove_mirrors=EmptyI,
     add_origins=EmptyI, remove_origins=EmptyI, ssl_cert=None, ssl_key=None,
-    search_before=None, search_after=None,
-    reset_uuid=None, refresh_allowed=False, preferred=False,
+    search_before=None, search_after=None, search_first=False,
+    reset_uuid=None, refresh_allowed=False,
     set_props=EmptyI, add_prop_values=EmptyI,
     remove_prop_values=EmptyI, unset_props=EmptyI, approved_cas=EmptyI,
     revoked_cas=EmptyI, unset_cas=EmptyI):
@@ -3318,7 +3317,7 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                             alias=prefix, duplicate=True)
                         if reset_uuid:
                                 pub.reset_client_uuid()
-                        repo = pub.selected_repository
+                        repo = pub.repository
                 except api_errors.UnknownPublisher, e:
                         if not origin_uri and not add_origins and \
                             (remove_origins or remove_mirrors or
@@ -3327,19 +3326,19 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
 
                         # No pre-existing, so create a new one.
                         repo = publisher.Repository()
-                        pub = publisher.Publisher(prefix, repositories=[repo])
+                        pub = publisher.Publisher(prefix, repository=repo)
                         new_pub = True
         elif not api_inst.has_publisher(prefix=pub.prefix):
                 new_pub = True
 
         if not repo:
-                repo = pub.selected_repository
+                repo = pub.repository
                 if not repo:
                         # Could be a new publisher from auto-configuration
                         # case where no origin was provided in repository
                         # configuration.
                         repo = publisher.Repository()
-                        pub.add_repository(repo)
+                        pub.repository = repo
 
         if disable is not None:
                 # Set disabled property only if provided.
@@ -3428,7 +3427,9 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
         if new_pub:
                 api_inst.add_publisher(pub,
                     refresh_allowed=refresh_allowed, approved_cas=approved_cas,
-                    revoked_cas=revoked_cas, unset_cas=unset_cas)
+                    revoked_cas=revoked_cas, unset_cas=unset_cas,
+                    search_after=search_after, search_before=search_before,
+                    search_first=search_first)
         else:
                 for ca in approved_cas:
                         try:
@@ -3453,16 +3454,8 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
                         pub.unset_ca_cert(hsh)
 
                 api_inst.update_publisher(pub,
-                    refresh_allowed=refresh_allowed)
-
-        if preferred:
-                api_inst.set_preferred_publisher(prefix=pub.prefix)
-
-        if search_before:
-                api_inst.set_pub_search_before(pub.prefix, search_before)
-
-        if search_after:
-                api_inst.set_pub_search_after(pub.prefix, search_after)
+                    refresh_allowed=refresh_allowed, search_after=search_after,
+                    search_before=search_before, search_first=search_first)
 
         return EXIT_OK, None
 
@@ -3481,7 +3474,8 @@ def publisher_unset(api_inst, args):
                         format_update_error(e)
                         return EXIT_OOPS
                 except (api_errors.PermissionsException,
-                    api_errors.PublisherError), e:
+                    api_errors.PublisherError,
+                    api_errors.ModifyingSyspubException), e:
                         errors.append((name, e))
 
         retcode = EXIT_OK
@@ -3520,12 +3514,12 @@ def publisher_list(api_inst, args):
             "status" : [("default", "tsv"), _("STATUS"), ""],
             "uri" : [("default", "tsv"), _("URI"), ""],
             "sticky" : [("tsv"), _("STICKY"), ""],
-            "preferred" : [("tsv"), _("PREFERRED"), ""],
-            "enabled" : [("tsv"), _("ENABLED"), ""]
+            "enabled" : [("tsv"), _("ENABLED"), ""],
+            "syspub" : [("tsv"), _("SYSPUB"), ""]
         }
 
         desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
-                               _("PREFERRED"), _("ENABLED"), _("TYPE"),
+                               _("SYSPUB"), _("ENABLED"), _("TYPE"),
                                _("STATUS"), _("URI"))
 
         # Custom sort function for preserving field ordering
@@ -3609,23 +3603,13 @@ def publisher_list(api_inst, args):
 
         retcode = EXIT_OK
         if len(pargs) == 0:
-                pref_pub = api_inst.get_preferred_publisher()
+                pref_pub = api_inst.get_highest_ranked_publisher()
                 if preferred_only:
                         pubs = [pref_pub]
                 else:
                         pubs = [
                             p for p in api_inst.get_publishers()
                             if inc_disabled or not p.disabled
-                        ]
-
-                # if more than one, list in publisher search order
-                if len(pubs) > 1:
-                        so = api_inst.get_pub_search_order()
-                        pub_dict = dict([(p.prefix, p) for p in pubs])
-                        pubs = [
-                            pub_dict[name]
-                            for name in so
-                            if name in pub_dict
                         ]
                 # Create a formatting string for the default output
                 # format
@@ -3664,10 +3648,10 @@ def publisher_list(api_inst, args):
                                 else:
                                         pstatus_list = []
 
-                                if not preferred_only and p == pref_pub:
-                                        pstatus_list.append(_("preferred"))
                                 if p.disabled:
                                         pstatus_list.append(_("disabled"))
+                                if p.sys_pub:
+                                        pstatus_list.append(_("syspub"))
                                 if pstatus_list:
                                         pstatus = "(%s)" % \
                                             ", ".join(pstatus_list)
@@ -3677,23 +3661,22 @@ def publisher_list(api_inst, args):
                                 set_value(field_data["sticky"], _("true"))
                         else:
                                 set_value(field_data["sticky"], _("false"))
-                        if p == pref_pub:
-                                set_value(field_data["preferred"], _("true"))
-                        else:
-                                set_value(field_data["preferred"], _("false"))
                         if not p.disabled:
                                 set_value(field_data["enabled"], _("true"))
                         else:
                                 set_value(field_data["enabled"], _("false"))
-
+                        if p.sys_pub:
+                                set_value(field_data["syspub"], _("true"))
+                        else:
+                                set_value(field_data["syspub"], _("false"))
 
                         # Only show the selected repository's information in
                         # summary view.
-                        r = p.selected_repository
+                        r = p.repository
 
                         # Update field_data for each origin and output
                         # a publisher record in our desired format.
-                        for uri in r.origins:
+                        for uri in sorted(r.origins):
                                 # XXX get the real origin status
                                 set_value(field_data["type"], _("origin"))
                                 set_value(field_data["status"], _("online"))
@@ -3703,7 +3686,6 @@ def publisher_list(api_inst, args):
                                     field_data.values()), sort_fields)
                                 )
                                 msg(fmt % tuple(values))
-
                         # Update field_data for each mirror and output
                         # a publisher record in our desired format.
                         for uri in r.mirrors:
@@ -3788,13 +3770,12 @@ def publisher_list(api_inst, args):
                         msg(_("            Publisher:"), pub.prefix)
                         msg(_("                Alias:"), pub.alias)
 
-                        for r in pub.repositories:
-                                rval = display_repository(r)
-                                if rval != 0:
-                                        # There was an error in displaying some
-                                        # of the information about a repository.
-                                        # However, continue on.
-                                        retcode = rval
+                        rval = display_repository(pub.repository)
+                        if rval != 0:
+                                # There was an error in displaying some
+                                # of the information about a repository.
+                                # However, continue on.
+                                retcode = rval
 
                         msg(_("          Client UUID:"), pub.client_uuid)
                         msg(_("      Catalog Updated:"), dt)
@@ -3815,11 +3796,6 @@ def property_add_value(api_inst, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(_("requires a property name and value"), cmd=subcommand)
-
-        if propname == "preferred-publisher":
-                error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd=subcommand)
-                return EXIT_OOPS
 
         # XXX image property management should be in pkg.client.api
         try:
@@ -3842,11 +3818,6 @@ def property_remove_value(api_inst, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(_("requires a property name and value"), cmd=subcommand)
-
-        if propname == "preferred-publisher":
-                error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd=subcommand)
-                return EXIT_OOPS
 
         # XXX image property management should be in pkg.client.api
         try:
@@ -3881,11 +3852,6 @@ def property_set(api_inst, args):
                 # specified, allow the value to be passed on so that the
                 # configuration classes can re-raise the appropriate error.
                 propvalues = propvalues[0]
-
-        if propname == "preferred-publisher":
-                error(_("set-publisher must be used to change the preferred "
-                    "publisher"), cmd=subcommand)
-                return EXIT_OOPS
 
         props = { propname: propvalues }
         if propname == "signature-policy":
@@ -3925,11 +3891,6 @@ def property_unset(api_inst, args):
 
         # XXX image property management should be in pkg.client.api
         for p in pargs:
-                if p == "preferred-publisher":
-                        error(_("set-publisher must be used to change the "
-                            "preferred publisher"), cmd=subcommand)
-                        return EXIT_OOPS
-
                 try:
                         img.delete_property(p)
                 except api_errors.ImageFormatUpdateNeeded, e:
@@ -4145,10 +4106,7 @@ def image_create(args):
                     cmd=cmd_name)
         image_dir = pargs[0]
 
-        if not pub_name and not pub_url:
-                usage(_("publisher argument must be of the form "
-                    "'<prefix>=<uri> or '<uri>''."), cmd=cmd_name)
-        elif not pub_name and not refresh_allowed:
+        if not pub_name and not refresh_allowed:
                 usage(_("--no-refresh cannot be used with -p unless a "
                     "publisher prefix is provided."), cmd=cmd_name)
 

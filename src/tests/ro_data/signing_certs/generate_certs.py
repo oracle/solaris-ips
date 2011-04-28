@@ -35,12 +35,14 @@ cnf_file = "openssl.cnf"
 mk_file = "Makefile"
 
 subj_str = "/C=US/ST=California/L=Menlo Park/O=pkg5/CN=%s/emailAddress=%s"
+https_subj_str = "/C=US/ST=California/L=Menlo Park/O=pkg5/OU=%s/" \
+    "CN=localhost/emailAddress=%s"
 
 def convert_pem_to_text(tmp_pth, out_pth, kind="x509"):
         """Convert a pem file to a human friendly text file."""
 
         assert not os.path.exists(out_pth)
-        
+
         cmd = ["openssl", kind, "-in", tmp_pth,
             "-text"]
 
@@ -50,13 +52,16 @@ def convert_pem_to_text(tmp_pth, out_pth, kind="x509"):
         fh.close()
 
 def make_ca_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_ca",
-    expired=False, future=False):
+    expired=False, future=False, https=False):
         """Create a new CA cert."""
 
+        subj_str_to_use = subj_str
+        if https:
+                subj_str_to_use = https_subj_str
         cmd = ["openssl", "req", "-new", "-nodes",
             "-keyout", "./keys/%s_key.pem" % new_name,
             "-out", "./%s/%s.csr" % (new_loc, new_name),
-            "-sha256", "-subj", subj_str % (new_name, new_name)]
+            "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
 
@@ -86,13 +91,16 @@ def make_ca_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_ca",
 
 
 def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
-    expired=False, future=False):
+    expired=False, future=False, https=False):
         """Create a new code signing cert."""
 
+        subj_str_to_use = subj_str
+        if https:
+                subj_str_to_use = https_subj_str
         cmd = ["openssl", "req", "-new", "-nodes",
             "-keyout", "./keys/%s_key.pem" % new_name,
             "-out", "./%s/%s.csr" % (new_loc, new_name),
-            "-sha256", "-subj", subj_str % (new_name, new_name)]
+            "-sha256", "-subj", subj_str_to_use % (new_name, new_name)]
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
 
@@ -120,12 +128,15 @@ def make_cs_cert(new_loc, new_name, parent_loc, parent_name, ext="v3_req",
         p = subprocess.Popen(cmd)
         assert p.wait() == 0
 
-def make_trust_anchor(name):
+def make_trust_anchor(name, https=False):
         """Make a new trust anchor."""
 
+        subj_str_to_use = subj_str
+        if https:
+                subj_str_to_use = https_subj_str
         cmd = ["openssl", "req", "-new", "-x509", "-nodes",
             "-keyout", "./keys/%s_key.pem" % name,
-            "-subj", subj_str % (name, name),
+            "-subj", subj_str_to_use % (name, name),
             "-out", "./%s/%s_cert.tmp" % (name, name), "-days", "1000",
             "-sha256"]
 
@@ -166,7 +177,7 @@ def revoke_cert(ca, revoked_cert, ca_dir=None, cert_dir="code_signing_certs"):
         convert_pem_to_text("crl/%s_crl.tmp" % ca, "crl/%s_crl.pem" % ca,
             kind="crl")
 
-        
+
 if __name__ == "__main__":
         # Remove any existing output from previous runs of this program.
         if os.path.isdir(output_dir):
@@ -308,6 +319,26 @@ if __name__ == "__main__":
         make_cs_cert("code_signing_certs", "cs1_ch1_ta5",
             "chain_certs", "ch1_ta5")
         revoke_cert("ta5", "ch1_ta5", cert_dir="chain_certs")
+
+        # Make more length 2 chains for testing https repos.
+        make_trust_anchor("ta6", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta6", "trust_anchors", "ta6",
+            https=True)
+        make_trust_anchor("ta7", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta7", "trust_anchors", "ta7",
+            https=True)
+        make_trust_anchor("ta8", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta8", "trust_anchors", "ta8",
+            https=True)
+        make_trust_anchor("ta9", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta9", "trust_anchors", "ta9",
+            https=True)
+        make_trust_anchor("ta10", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta10", "trust_anchors", "ta10",
+            https=True)
+        make_trust_anchor("ta11", https=True)
+        make_cs_cert("code_signing_certs", "cs1_ta11", "trust_anchors", "ta11",
+            https=True)
 
         os.remove(cnf_file)
         os.chdir("../")

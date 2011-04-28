@@ -337,7 +337,7 @@ def fetch_catalog(src_pub, tracker, txport):
         """Fetch the catalog from src_uri."""
         global complete_catalog
 
-        src_uri = src_pub.selected_repository.origins[0].uri
+        src_uri = src_pub.repository.origins[0].uri
         tracker.catalog_start(src_uri)
 
         if not src_pub.meta_root:

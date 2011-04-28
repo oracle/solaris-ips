@@ -93,17 +93,9 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     self.bogus_url)
                 self.pkg("unset-publisher test3 test4", exit=3)
 
-                # ...when one of two provided is preferred (test2).
-                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
-                    self.bogus_url)
-                self.pkg("unset-publisher test2 test3", exit=3)
-
                 # ...when all provided are unknown.
                 self.pkg("unset-publisher test3 test4", exit=1)
                 self.pkg("unset-publisher test3", exit=1)
-
-                # ...when all provided are preferred.
-                self.pkg("unset-publisher test2", exit=1)
 
                 # Now verify that success occurs when attempting to remove
                 # one or more publishers:
@@ -316,7 +308,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
-                base_string = ("test\ttrue\ttrue\ttrue\torigin\tonline\t"
+                base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t"
                     "%s/\n"
                     "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
                     "https://test.invalid1/\n"
@@ -324,7 +316,7 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     "http://test.invalid2/\n" % self.rurl)
                 # With headers
                 self.pkg("publisher -F tsv")
-                expected = "PUBLISHER\tSTICKY\tPREFERRED\tENABLED" \
+                expected = "PUBLISHER\tSTICKY\tSYSPUB\tENABLED" \
                     "\tTYPE\tSTATUS\tURI\n" + base_string
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
@@ -434,18 +426,18 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3",  "test1", "test1", "test3"], start_depots=True)
 
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo1)
+                self.durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(self.durl1, self.foo1)
 
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.bar1)
+                self.durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(self.durl2, self.bar1)
 
-                durl3 = self.dcs[3].get_depot_url()
-                self.pkgsend_bulk(durl3, self.baz1)
+                self.durl3 = self.dcs[3].get_depot_url()
+                self.pkgsend_bulk(self.durl3, self.baz1)
 
-                self.image_create(durl1, prefix="test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
-                self.pkg("set-publisher -O " + durl3 + " test3")
+                self.image_create(self.durl1, prefix="test1")
+                self.pkg("set-publisher -O " + self.durl2 + " test2")
+                self.pkg("set-publisher -O " + self.durl3 + " test3")
 
                 self.path_to_certs = os.path.join(self.ro_data_root,
                     "signing_certs", "produced")
@@ -538,7 +530,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                                         pub_val = getattr(pub, prop)
                                 else:
                                         pub_val = getattr(
-                                            pub.selected_repository, prop)
+                                            pub.repository, prop)
 
                                 if prop in ("legal_uris", "mirrors", "origins",
                                     "related_uris"):
@@ -818,7 +810,7 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -a bar", exit=1)
                 self.pkg("publisher -a | grep test2")
-                self.pkg("set-publisher -P test2", exit=1)
+                self.pkg("set-publisher -P test2")
                 self.pkg("publisher test2")
                 self.pkg("set-publisher -e test2")
                 self.pkg("publisher -n | grep test2")
@@ -833,13 +825,14 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("publisher -n | grep test2")
                 self.pkg("list -a bar")
 
-                # should fail because test is the preferred publisher
-                self.pkg("set-publisher -d test1", exit=1)
-                self.pkg("set-publisher --disable test1", exit=1)
-
         def test_search_order(self):
                 """Test moving search order around"""
-                # following should be order from above test
+
+                # The expected publisher order is test1, test2, test3, with all
+                # publishers enabled and sticky.
+                self.pkg("set-publisher -e -P test1")
+                self.pkg("set-publisher -e --search-after test1 test2")
+                self.pkg("set-publisher -e --search-after test2 test3")
                 self.pkg("publisher") # ease debugging
                 self.pkg("publisher -H | head -1 | egrep test1")
                 self.pkg("publisher -H | head -2 | egrep test2")
@@ -872,6 +865,32 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # make sure we cannot get ahead or behind of ourselves
                 self.pkg("set-publisher --search-before=test3 test3", exit=1)
                 self.pkg("set-publisher --search-after=test3 test3", exit=1)
+
+                # make sure that setting search order while adding a publisher
+                # works
+                self.pkg("unset-publisher test2")
+                self.pkg("unset-publisher test3")
+                self.pkg("set-publisher --search-before=test1 test2")
+                self.pkg("set-publisher --search-after=test2 test3")
+                self.pkg("publisher") # ease debugging
+                self.pkg("publisher -H | head -1 | egrep test2")
+                self.pkg("publisher -H | head -2 | egrep test3")
+                self.pkg("publisher -H | head -3 | egrep test1")
+
+        def test_publishers_only_from_installed_packages(self):
+                """Test that get_highest_rank_publisher works when there are
+                installed packages but no configured publishers."""
+
+                self.pkg("install foo bar baz")
+                self.pkg("unset-publisher test1")
+                self.pkg("unset-publisher test2")
+                self.pkg("unset-publisher test3")
+                self.pkg("publisher")
+
+                # set publishers to expected configuration
+                self.pkg("set-publisher -p %s" % self.durl1)
+                self.pkg("set-publisher -p %s" % self.durl2)
+                self.pkg("set-publisher -p %s" % self.durl3)
 
 
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):

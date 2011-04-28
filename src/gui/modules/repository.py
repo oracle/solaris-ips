@@ -667,7 +667,7 @@ class Repository(progress.GuiProgressTracker):
                 if not self.repository_modify_publisher:
                         return False
                 pub = self.repository_modify_publisher
-                selected_repo = pub.selected_repository
+                selected_repo = pub.repository
                 prefix = ""
                 ssl_cert = ""
                 ssl_key = ""
@@ -740,7 +740,7 @@ class Repository(progress.GuiProgressTracker):
 
         def __add_mirror(self, new_mirror):
                 pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                repo = pub.repository
                 try:
                         repo.add_mirror(new_mirror)
                         self.w_addmirror_entry.set_text("")
@@ -754,7 +754,7 @@ class Repository(progress.GuiProgressTracker):
                 if itr and model:
                         remove_mirror = model.get_value(itr, 0)
                 pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                repo = pub.repository
                 try:
                         repo.remove_mirror(remove_mirror)
                 except api_errors.ApiException, e:
@@ -763,7 +763,7 @@ class Repository(progress.GuiProgressTracker):
 
         def __add_origin(self, new_origin):
                 pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                repo = pub.repository
                 try:
                         repo.add_origin(new_origin)
                         self.w_addorigin_entry.set_text("")
@@ -777,7 +777,7 @@ class Repository(progress.GuiProgressTracker):
                 if itr and model:
                         remove_origin = model.get_value(itr, 0)
                 pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                repo = pub.repository
                 try:
                         repo.remove_origin(remove_origin)
                 except api_errors.ApiException, e:
@@ -897,7 +897,7 @@ class Repository(progress.GuiProgressTracker):
                                 return
                         name = alias
                 else:
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         new_pub = True
                         name = pub.prefix
                 errors_ssl = self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
@@ -980,7 +980,7 @@ class Repository(progress.GuiProgressTracker):
 
         def __afteradd_confirmation(self, pub):
                 self.new_pub = pub
-                repo = pub.selected_repository
+                repo = pub.repository
                 origin = repo.origins[0]
                 # Descriptions not available at the moment
                 self.w_add_publisher_c_desc.hide()
@@ -1161,12 +1161,16 @@ class Repository(progress.GuiProgressTracker):
                 image_lock_err = False
                 for row in self.priority_changes:
                         try:
+                                pub1 = self.api_o.get_publisher(row[1],
+                                    duplicate=True)
+                                pub2 = self.api_o.get_publisher(row[2],
+                                    duplicate=True)
                                 if row[0] == enumerations.PUBLISHER_MOVE_BEFORE:
-                                        self.api_o.set_pub_search_before(row[1],
-                                            row[2])
+                                        self.api_o.update_publisher(pub1,
+                                            search_before=pub2.prefix)
                                 else:
-                                        self.api_o.set_pub_search_after(row[1],
-                                            row[2])
+                                        self.api_o.update_publisher(pub1,
+                                            search_after=pub2.prefix)
                                 self.no_changes += 1
                                 self.__g_update_details_text(
                                     _("Changing priority for publisher %s\n")
@@ -1234,7 +1238,7 @@ class Repository(progress.GuiProgressTracker):
                 ssl_key = self.w_repositorymodify_key_entry.get_text()
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
                 pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                repo = pub.repository
                 pub.alias = alias
                 errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
                 try:
@@ -1662,7 +1666,7 @@ class Repository(progress.GuiProgressTracker):
                 details_buffer = details_view.get_buffer()
                 details_buffer.set_text("")
                 uri_s_itr = details_buffer.get_start_iter()
-                repo = pub.selected_repository
+                repo = pub.repository
                 num = len(repo.origins)
                 origin_txt = ngettext("Origin:\n", "Origins:\n", num)
                 details_buffer.insert_with_tags_by_name(uri_s_itr,
@@ -1931,7 +1935,7 @@ class Repository(progress.GuiProgressTracker):
                 if pub == None:
                         return
                 self.repository_modify_publisher = pub
-                repo = pub.selected_repository
+                repo = pub.repository
                 origin_uri = ""
                 if repo != None and repo.origins != None and len(repo.origins) > 0:
                         origin_uri = repo.origins[0].uri

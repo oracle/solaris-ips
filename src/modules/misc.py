@@ -626,15 +626,6 @@ class DictProperty(object):
                     self.__update, self.__pop)
 
         
-def get_sorted_publishers(pubs, preferred=None):
-        spubs = []
-        for p in sorted(pubs, key=operator.attrgetter("prefix")):
-                if preferred and preferred == p.prefix:
-                        spubs.insert(0, p)
-                else:
-                        spubs.append(p)
-        return spubs
-
 def build_cert(path, uri=None, pub=None):
         """Take the file given in path, open it, and use it to create
         an X509 certificate object.
@@ -861,3 +852,13 @@ def relpath(path, start="."):
         if path and start and start == "/" and path[0] == "/":
                 return path.lstrip("/")
         return os.path.relpath(path, start=start)
+
+def recursive_chown_dir(d, uid, gid):
+        """Change the ownership of all files under directory d to uid:gid."""
+        for dirpath, dirnames, filenames in os.walk(d):
+                for name in dirnames:
+                        path = os.path.join(dirpath, name)
+                        portable.chown(path, uid, gid)
+                for name in filenames:
+                        path = os.path.join(dirpath, name)
+                        portable.chown(path, uid, gid)

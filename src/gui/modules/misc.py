@@ -86,7 +86,7 @@ def get_publishers_for_output(api_o):
         publisher_str = ""
         fmt = "\n%s\t%s\t%s (%s)"
         try:
-                pref_pub = api_o.get_preferred_publisher()
+                pref_pub = api_o.get_highest_ranked_publisher()
                 for pub in api_o.get_publishers():
                         pstatus = " "
                         if pub == pref_pub:
@@ -98,7 +98,7 @@ def get_publishers_for_output(api_o):
                         else:
                                 # Enabled, but not preferred
                                 pstatus = "E"
-                        r = pub.selected_repository
+                        r = pub.repository
                         for uri in r.origins:
                                 # Origin
                                 publisher_str += fmt % \

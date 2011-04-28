@@ -2366,7 +2366,7 @@ class Repository(object):
 
                 repo = publisher.Repository(**rargs)
                 return publisher.Publisher(pub, alias=alias,
-                    repositories=[repo])
+                    repository=repo)
 
         def get_publishers(self):
                 """Return publisher objects for all publishers known by the

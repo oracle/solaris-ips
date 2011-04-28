@@ -303,23 +303,28 @@ class HTTPRepo(TransportRepo):
                 self._engine = engine
                 self._verdata = None
 
+        def __str__(self):
+                return "HTTPRepo url: %s repouri: %s" % (self._url,
+                    self._repouri)
+
         def _add_file_url(self, url, filepath=None, progclass=None,
             progtrack=None, header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
-                    header=header, compressible=compress)
+                    header=header, compressible=compress,
+                    proxy=self._repouri.proxy)
 
         def _fetch_url(self, url, header=None, compress=False, ccancel=None,
             failonerror=True):
                 return self._engine.get_url(url, header, repourl=self._url,
                     compressible=compress, ccancel=ccancel,
-                    failonerror=failonerror)
+                    failonerror=failonerror, proxy=self._repouri.proxy)
 
         def _fetch_url_header(self, url, header=None, ccancel=None,
             failonerror=True):
                 return self._engine.get_url_header(url, header,
                     repourl=self._url, ccancel=ccancel,
-                    failonerror=failonerror)
+                    failonerror=failonerror, proxy=self._repouri.proxy)
 
         def _post_url(self, url, data=None, header=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True, progclass=None,
@@ -328,7 +333,7 @@ class HTTPRepo(TransportRepo):
                     repourl=self._url, ccancel=ccancel,
                     data_fobj=data_fobj, data_fp=data_fp,
                     failonerror=failonerror, progclass=progclass,
-                    progtrack=progtrack)
+                    progtrack=progtrack, proxy=self._repouri.proxy)
 
         def __check_response_body(self, fobj):
                 """Parse the response body found accessible using the provided
@@ -510,6 +515,12 @@ class HTTPRepo(TransportRepo):
                 """Get publisher information from the repository."""
 
                 requesturl = self.__get_request_url("publisher/0/")
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
+
+        def get_syspub_info(self, header=None, ccancel=None):
+                """Get configuration from the system depot."""
+
+                requesturl = self.__get_request_url("syspub/0/")
                 return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def get_status(self, header=None, ccancel=None):

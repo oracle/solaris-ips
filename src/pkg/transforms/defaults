@@ -23,7 +23,9 @@
 
 # Set some specific permissions
 <transform dir path=(etc|usr|var)$ -> set group sys>
-<transform dir path=etc/(brand|gconf|zones)$ -> set group sys>
+<transform dir path=etc/(brand|gconf|pkg|zones)$ -> set group sys>
+<transform dir path=var/log$ -> set group sys>
+<transform dir path=var/cache$ -> set group bin>
 <transform dir file path=etc/gconf/schemas -> set group sys>
 <transform dir file path=etc/(security|xdg) -> set group sys>
 <transform dir path=usr/share$ -> set group sys>

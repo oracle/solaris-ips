@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -54,7 +54,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 repouriobj = publisher.RepositoryURI(durl)
                 repo = publisher.Repository(origins=[repouriobj])
-                pub = publisher.Publisher(prefix="repo1", repositories=[repo])
+                pub = publisher.Publisher(prefix="repo1", repository=repo)
                 xport_cfg = transport.GenericTransportCfg()
                 xport_cfg.add_publisher(pub)
                 xport = transport.Transport(xport_cfg)
@@ -80,7 +80,7 @@ class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
 
                 repouriobj = publisher.RepositoryURI(location)
                 repo = publisher.Repository(origins=[repouriobj])
-                pub = publisher.Publisher(prefix="repo1", repositories=[repo])
+                pub = publisher.Publisher(prefix="repo1", repository=repo)
                 xport_cfg = transport.GenericTransportCfg()
                 xport_cfg.add_publisher(pub)
                 xport = transport.Transport(xport_cfg)

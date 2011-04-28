@@ -44,7 +44,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-CLIENT_API_VERSION = 56
+CLIENT_API_VERSION = 57
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
@@ -1100,7 +1100,8 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Change test2 to be ranked higher than test1.
-                api_obj.set_pub_search_before("test2", "test1")
+                pub = api_obj.get_publisher(prefix="test2", duplicate=True)
+                api_obj.update_publisher(pub, search_before="test1")
 
                 # Re-test; test2 should now have its entries listed in place
                 # of test1's for the non-filtered case.
@@ -1165,7 +1166,8 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Reset publisher search order and re-test.
-                api_obj.set_pub_search_before("test1", "test2")
+                pub = api_obj.get_publisher(prefix="test1", duplicate=True)
+                api_obj.update_publisher(pub, search_before="test2")
 
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj)

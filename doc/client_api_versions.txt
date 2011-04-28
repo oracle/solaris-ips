@@ -1,3 +1,48 @@
+Version 57:
+Incompatible with clients using versions 0-56:
+     pkg.client.api.ImageInterface has changed as follows:
+        * get_preferred_publisher has been replaced with 
+          get_highest_ranked_publisher
+
+        * set_pub_search_after has been removed
+
+        * set_pub_search_before has been removed
+
+        * search_after, search_before, and search_first have been added as 
+	  options to add_publisher and update_publisher
+
+        * The write_syspub_0 function has been added.
+
+     pkg.client.publisher.RepositoryURI has changed as follows:
+        * proxy and system attributes have been added
+
+        * The get_host function has been added.
+
+        * The change_scheme function has been added.
+
+     pkg.client.publisher.Repository has changed as follows:
+        * a proxy attribute has been added and may be set during initialization
+
+     pkg.client.publisher.Publisher has changed as follows:
+        * The repositories attribute which contained a list of Repository 
+          objects has been replaced by the repository attribute which contains a
+          single Repository object.
+
+        * The selected_repository attribute has been removed.
+
+        * A sys_pub attribute has been added which indicates whether a publisher
+          is a system publisher.
+
+        * The add_repository function has been replaced with the set_repository
+          function.
+
+        * The has_configuration function has been added which attempts to 
+          determine whether a publisher has been configured by a user.
+
+        * The remove_repository function has had its arguments removed.
+
+        * The set_selected_repository function has been removed.
+
 Version 56:
 Compatible with clients using version 55:
 

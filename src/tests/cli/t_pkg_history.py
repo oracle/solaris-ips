@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -130,7 +130,6 @@ class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
                     "uninstall",
                     "add-publisher",
                     "update-publisher",
-                    "set-preferred-publisher",
                     "remove-publisher",
                     "rebuild-index",
                     "fix"

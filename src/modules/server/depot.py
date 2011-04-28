@@ -391,7 +391,7 @@ class DepotHTTP(_Depot):
                                 # Couldn't get pub.
                                 pass
                         else:
-                                repo = pub.selected_repository
+                                repo = pub.repository
                                 if repo:
                                         rs = repo.refresh_seconds
                 if rs is None:

@@ -29,6 +29,7 @@ import difflib
 import errno
 import gettext
 import hashlib
+import httplib
 import logging
 import os
 import pprint
@@ -40,9 +41,12 @@ import sys
 import tempfile
 import time
 import unittest
+import urllib2
+import urlparse
 import platform
 import pwd
 import re
+import ssl
 import textwrap
 
 EmptyI = tuple()
@@ -100,9 +104,11 @@ import pkg.portable as portable
 import pkg.client.api
 import pkg.client.progress
 
+from pkg.client.debugvalues import DebugValues
+
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 56
+CLIENT_API_VERSION = 57
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -200,6 +206,17 @@ class Pkg5TestCase(unittest.TestCase):
         bogus_url = "test.invalid"
         __debug_buf = ""
 
+        smf_cmds = { \
+            "usr/bin/svcprop" : """\
+#!/usr/bin/python
+
+import sys
+
+if __name__ == "__main__":
+        sys.exit(1)
+"""}
+
+
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
                 assert g_base_port
@@ -241,7 +258,7 @@ class Pkg5TestCase(unittest.TestCase):
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
-            stderr=False):
+            stderr=False, env_arg=None):
                 wrapper = ""
                 if coverage:
                         wrapper = self.coverage_cmd
@@ -254,6 +271,8 @@ class Pkg5TestCase(unittest.TestCase):
                 newenv = os.environ.copy()
                 if coverage:
                         newenv.update(self.coverage_env)
+                if env_arg:
+                        newenv.update(env_arg)
 
                 p = subprocess.Popen(cmdline,
                     env=newenv,
@@ -376,6 +395,12 @@ class Pkg5TestCase(unittest.TestCase):
                     {"info_classification_path":
                     "%s/usr/share/lib/pkg/opensolaris.org.sections" %
                     g_proto_area}, self.test_root, section="pkglint")
+
+                self.template_dir = "%s/etc/pkg/sysrepo" % g_proto_area
+                self.make_misc_files(self.smf_cmds, prefix="smf_cmds",
+                    mode=0755)
+                DebugValues["smf_cmds_dir"] = \
+                    os.path.join(self.test_root, "smf_cmds")
 
         def impl_tearDown(self):
                 # impl_tearDown exists so that we can ensure that this class's
@@ -641,7 +666,7 @@ class Pkg5TestCase(unittest.TestCase):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
 
-        def assertEqualDiff(self, expected, actual):
+        def assertEqualDiff(self, expected, actual, bound_white_space=False):
                 """Compare two strings."""
 
                 if not isinstance(expected, basestring):
@@ -649,10 +674,14 @@ class Pkg5TestCase(unittest.TestCase):
                 if not isinstance(actual, basestring):
                         actual = pprint.pformat(actual)
 
+                expected_lines = expected.splitlines()
+                actual_lines = actual.splitlines()
+                if bound_white_space:
+                        expected_lines = ["'%s'" % l for l in expected_lines]
+                        actual_lines = ["'%s'" % l for l in actual_lines]
                 self.assertEqual(expected, actual,
                     "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
+                    "\n".join(difflib.unified_diff(expected_lines, actual_lines,
                         "Expected output", "Actual output", lineterm="")))
 
         def configure_rcfile(self, rcfile, config, test_root, section="DEFAULT",
@@ -1411,8 +1440,8 @@ class CliTestCase(Pkg5TestCase):
                 global_settings.client_args = old_val
                 return res
 
-        def image_create(self, repourl, prefix="test", variants=EmptyDict,
-            destroy=True):
+        def image_create(self, repourl=None, prefix=None, variants=EmptyDict,
+            destroy=True, ssl_cert=None, ssl_key=None, props=EmptyDict):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
                 to user) image using the pkg.client.api and returns the related
@@ -1429,14 +1458,15 @@ class CliTestCase(Pkg5TestCase):
                 api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
                     CLIENT_API_VERSION, self.img_path,
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
-                    prefix=prefix, progtrack=progtrack, variants=variants)
+                    prefix=prefix, progtrack=progtrack, variants=variants,
+                    ssl_cert=ssl_cert, ssl_key=ssl_key, props=props)
                 shutil.copy("%s/usr/bin/pkg" % g_proto_area,
                     os.path.join(self.img_path, "pkg"))
                 self.image_created = True
                 return api_inst
 
-        def pkg_image_create(self, repourl, prefix="test", additional_args="",
-            exit=0):
+        def pkg_image_create(self, repourl=None, prefix=None,
+            additional_args="", exit=0):
                 """Executes pkg(1) client to create a full (as opposed to user)
                 image; returns exit code of client or raises an exception if
                 exit code doesn't match 'exit' or equals 99.."""
@@ -1444,10 +1474,16 @@ class CliTestCase(Pkg5TestCase):
                 assert self.img_path
                 assert self.img_path != "/"
 
+                if repourl and prefix is None:
+                        prefix = "test"
+
                 self.image_destroy()
                 os.mkdir(self.img_path)
-                cmdline = "pkg image-create -F -p %s=%s %s %s" % \
-                    (prefix, repourl, additional_args, self.img_path)
+                cmdline = "pkg image-create -F "
+                if repourl:
+                        cmdline = "%s -p %s=%s " % (cmdline, prefix, repourl)
+                cmdline += additional_args
+                cmdline = "%s %s" % (cmdline, self.img_path)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell=True,
@@ -1480,12 +1516,16 @@ class CliTestCase(Pkg5TestCase):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
-            out=False, stderr=False, alt_img_path=None, use_img_root=True):
+            out=False, stderr=False, alt_img_path=None, use_img_root=True,
+            debug_smf=True):
                 pth = self.img_path
                 if alt_img_path:
                         pth = alt_img_path
                 elif not self.image_created:
                         pth = "%s/usr/bin" % g_proto_area
+                if debug_smf and "smf_cmds_dir" not in command:
+                        command = "--debug smf_cmds_dir=%s %s" % \
+                            (DebugValues["smf_cmds_dir"], command)
                 if use_img_root and "-R" not in command and \
                     "image-create" not in command and "version" not in command:
                         command = "-R %s %s" % (self.get_img_path(), command)
@@ -1685,6 +1725,31 @@ class CliTestCase(Pkg5TestCase):
                 prog = os.path.join(pub_utils, "merge.py")
                 cmd = "%s %s" % (prog, " ".join(args))
                 self.cmdline_run(cmd, exit=exit)
+
+        def sysrepo(self, args, exit=0, out=False, stderr=False, comment="",
+            fill_missing_args=True):
+                ops = ""
+                if "-R" not in args:
+                        args += " -R %s" % self.get_img_path()
+                if "-c" not in args:
+                        args += " -c %s" % os.path.join(self.test_root,
+                            "sysrepo_cache")
+                if "-l" not in args:
+                        args += " -l %s" % os.path.join(self.test_root,
+                            "sysrepo_logs")
+                if "-p" not in args and fill_missing_args:
+                        args += " -p %s" % self.next_free_port
+                if "-r" not in args:
+                        args += " -r %s" % os.path.join(self.test_root,
+                            "sysrepo_runtime")
+                if "-t" not in args:
+                        args += " -t %s" % self.template_dir
+
+                cmdline = "%s/usr/lib/pkg.sysrepo %s" % (
+                    g_proto_area, args)
+                e = {"PKG5_TEST_ENV": "1"}
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    out=out, stderr=stderr, env_arg=e)
 
         def copy_repository(self, src, dest, pub_map):
                 """Copies the packages from the src repository to a new
@@ -2115,7 +2180,7 @@ class ManyDepotTestCase(CliTestCase):
                         # We pick an arbitrary base port.  This could be more
                         # automated in the future.
                         repodir = os.path.join(testdir, "repo_contents%d" % i)
-                        self.dcs[i] = self.prep_depot(self.next_free_port + n,
+                        self.dcs[i] = self.prep_depot(self.next_free_port,
                             repodir,
                             depot_logfile, debug_features=debug_features,
                             properties=props, start=start_depots)
@@ -2348,3 +2413,205 @@ def eval_assert_raises(ex_type, eval_ex_func, func, *args):
                         raise
         else:
                 raise RuntimeError("Function did not raise exception.")
+
+class SysrepoStateException(Exception):
+        pass
+
+class ApacheController(object):
+
+        def __init__(self, conf, port, work_dir, testcase=None, https=False):
+                """
+                The 'conf' parameter is a path to a httpd.conf file.  The 'port'
+                parameter is a port to run on.  The 'work_dir' is a temporary
+                directory to store runtime state.  The 'testcase' parameter is
+                the Pkg5TestCase to use when writing output.  The 'https'
+                parameter is a boolean indicating whether this instance expects
+                to be contacted via https or not.
+                """
+
+                self.apachectl = "/usr/apache2/2.2/bin/httpd"
+                if not os.path.exists(work_dir):
+                        os.makedirs(work_dir)
+                self.__conf_path = os.path.join(work_dir, "sysrepo.conf")
+                self.__port = port
+                self.__repo_hdl = None
+                self.__starttime = 0
+                self.__state = None
+                self.__tc = testcase
+                prefix = "http"
+                if https:
+                        prefix = "https"
+                self.__url = "%s://localhost:%d" % (prefix, self.__port)
+                portable.copyfile(conf, self.__conf_path)
+
+        def __set_conf(self, path):
+                portable.copyfile(path, self.__conf_path)
+                if self.__state == "started":
+                        self.restart()
+
+        def __get_conf(self):
+                return self.__conf_path
+
+        conf = property(__get_conf, __set_conf)
+
+        def _network_ping(self):
+                try:
+                        urllib2.urlopen(self.__url)
+                except urllib2.HTTPError, e:
+                        if e.code == httplib.FORBIDDEN:
+                                return True
+                        return False
+                except urllib2.URLError, e:
+                        if isinstance(e.reason, ssl.SSLError):
+                                return True
+                        return False
+                return True
+
+        def debug(self, msg):
+                if self.__tc:
+                        self.__tc.debug(msg)
+
+        def debugresult(self, result, expected, msg):
+                if self.__tc:
+                        self.__tc.debugresult(result, expected, msg)
+
+        def start(self):
+                if self._network_ping():
+                        raise SysrepoStateException("A depot (or some " +
+                            "other network process) seems to be " +
+                            "running on port %d already!" % self.__port)
+                cmdline = ["/usr/bin/setpgrp", self.apachectl, "-f",
+                    self.__conf_path, "-k", "start", "-DFOREGROUND"]
+                try:
+                        self.__starttime = time.time()
+                        self.debug(" ".join(cmdline))
+                        self.__repo_hdl = subprocess.Popen(cmdline, shell=False,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+                        if self.__repo_hdl is None:
+                                raise SysrepoStateException("Could not start "
+                                    "sysrepo")
+                        begintime = time.time()
+
+                        sleeptime = 0.0
+                        check_interval = 0.20
+                        contact = False
+                        while (time.time() - begintime) <= 40.0:
+                                rc = self.__repo_hdl.poll()
+                                if rc is not None:
+                                        raise SysrepoStateException("Sysrepo "
+                                            "exited unexpectedly while "
+                                            "starting (exit code %d)" % rc)
+
+                                if self.is_alive():
+                                        contact = True
+                                        break
+                                time.sleep(check_interval)
+
+                        if contact == False:
+                                self.stop()
+                                raise SysrepoStateException("Sysrepo did not "
+                                    "respond to repeated attempts to make "
+                                    "contact")
+                        self.__state = "started"
+                except KeyboardInterrupt:
+                        if self.__repo_hdl:
+                                self.kill(now=True)
+                        raise
+
+        def kill(self, now=False):
+                if not self.__repo_hdl:
+                        return
+                try:
+                        lifetime = time.time() - self.__starttime
+                        if now == False and lifetime < 1.0:
+                                time.sleep(1.0 - lifetime)
+                finally:
+                        try:
+                                os.kill(-1 * self.__repo_hdl.pid,
+                                    signal.SIGKILL)
+                        except OSError:
+                                pass
+                        self.__repo_hdl.wait()
+                        self.__state = "killed"
+
+        def stop(self):
+                if self.__state == "stopped":
+                        return
+                cmdline = [self.apachectl, "-f", self.__conf_path, "-k",
+                    "stop"]
+
+                try:
+                        hdl = subprocess.Popen(cmdline, shell=False,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+                        stop_output, stop_errout = hdl.communicate()
+                        stop_retcode = hdl.returncode
+
+                        # retrieve output from the apache process we've just
+                        # stopped
+                        output, errout = self.__repo_hdl.communicate()
+                        self.debug(errout)
+                        self.debugresult(stop_retcode, 0, output)
+
+                        if stop_errout != "":
+                                self.debug(stop_errout)
+                        if stop_output != "":
+                                self.debug(stop_output)
+
+                        ret = hdl.wait()
+                        if ret != 0:
+                                self.kill(now=True)
+                        else:
+                                self.__state = "stopped"
+                except KeyboardInterrupt:
+                        self.kill(now=True)
+                        raise
+
+        def restart(self):
+                self.stop()
+                self.start()
+
+        def chld_sighandler(self, signum, frame):
+                pass
+
+        def killall_sighandler(self, signum, frame):
+                print >> sys.stderr, \
+                    "Ctrl-C: I'm killing depots, please wait.\n"
+                print self
+                self.signalled = True
+
+        def is_alive(self):
+                """ First, check that the depot process seems to be alive.
+                    Then make a little HTTP request to see if the depot is
+                    responsive to requests """
+
+                if self.__repo_hdl == None:
+                        return False
+
+                status = self.__repo_hdl.poll()
+                if status != None:
+                        return False
+                return self._network_ping()
+
+        @property
+        def url(self):
+                return self.__url
+
+class SysrepoController(ApacheController):
+
+        def __init__(self, conf, port, work_dir, testcase=None, https=False):
+                ApacheController.__init__(self, conf, port, work_dir,
+                    testcase=None, https=False)
+                self.apachectl = "/usr/apache2/2.2/bin/64/httpd"
+
+        def _network_ping(self):
+                try:
+                        urllib2.urlopen(urlparse.urljoin(self.url, "syspub/0"))
+                except urllib2.HTTPError, e:
+                        if e.code == httplib.FORBIDDEN:
+                                return True
+                        return False
+                except urllib2.URLError:
+                        return False
+                return True

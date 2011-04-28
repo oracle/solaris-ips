@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+## Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 ##
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -33,7 +33,7 @@
         pub = req.publisher
         rname = ""
         if pub:
-                repo = pub.selected_repository
+                repo = pub.repository
                 if repo and repo.name:
                         rname = repo.name
                 else:
@@ -54,7 +54,7 @@
         pub = req.publisher
         repo_desc = ""
         if pub:
-                repo = pub.selected_repository
+                repo = pub.repository
                 if repo and repo.description:
                         repo_desc = repo.description
 %>

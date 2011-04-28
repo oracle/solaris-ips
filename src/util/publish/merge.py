@@ -117,7 +117,7 @@ def fetch_catalog(repouri):
 
         pub.transport = xport
         # Pull catalog only from this host
-        pub.selected_repository.origins = [repouri]
+        pub.repository.origins = [repouri]
         pub.refresh(True, True)
 
         cat = pub.catalog

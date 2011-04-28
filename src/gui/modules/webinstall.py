@@ -164,7 +164,7 @@ class Webinstall:
                                 continue
                         infobuffer.insert_with_tags_by_name(textiter,
                             _("\t%s ") % pub_info.prefix, "bold")
-                        repo = pub_info.selected_repository
+                        repo = pub_info.repository
                         if repo != None and repo.origins != None and \
                                         len(repo.origins) > 0:
                                 infobuffer.insert(textiter,
@@ -274,7 +274,7 @@ class Webinstall:
                         if not pub_info:
                                 continue
 
-                        repo = pub_info.repositories
+                        repo = pub_info.repository
 
                         pub_registered = self.__is_publisher_registered(pub_info.prefix)
                         if pub_registered and packages != None and len(packages) > 0 and \
@@ -282,9 +282,10 @@ class Webinstall:
                                 self.disabled_pubs[pub_info.prefix] = True
 
                         if not pub_registered:
-                                if len(repo) > 0 and repo[0].origins != None and \
-                                        len(repo[0].origins) > 0 and \
-                                        repo[0].origins[0].scheme == "https":
+                                if repo and repo.origins and \
+                                    repo.origins[0] != None and \
+                                    repo.origins[0].scheme in \
+                                    pkg.client.publisher.SSL_SCHEMES:
                                         #TBD: check for registration uri as well as scheme
                                         #    repo.registration_uri.uri != None:
                                         pub_new_reg_ssl_tasks.append(pub_info)
@@ -404,12 +405,12 @@ class Webinstall:
                 pub = self.pub_new_tasks[0]
                 if debug:
                         print("Add New Publisher:\n\tName: %s" % pub.prefix)
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         if repo != None and repo.origins != None and \
                                         len(repo.origins) > 0:
                                 print("\tURL: %s" % repo.origins[0].uri)
 
-                repo = pub.selected_repository
+                repo = pub.repository
                 if repo and len(repo.origins) > 0 and self.repo_gui:
                         self.repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
                 else:

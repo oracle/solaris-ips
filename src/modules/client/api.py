@@ -39,6 +39,7 @@ import copy
 import datetime
 import errno
 import fnmatch
+import operator
 import os
 import shutil
 import sys
@@ -46,7 +47,6 @@ import tempfile
 import threading
 import urllib
 
-import pkg.client.actuator as actuator
 import pkg.client.api_errors as apx
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
@@ -60,6 +60,8 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.nrlock
 import pkg.p5i as p5i
+import pkg.p5s as p5s
+import pkg.portable as portable
 import pkg.search_errors as search_errors
 import pkg.version
 
@@ -67,8 +69,9 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
     _get_pkg_cat_data)
 from pkg.client.debugvalues import DebugValues
 from pkg.client import global_settings
+from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 56
+CURRENT_API_VERSION = 57
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -249,7 +252,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([55, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -1113,7 +1116,7 @@ class ImageInterface(object):
                                 error = apx.CorruptedIndexException(e)
                                 self.log_operation_end(error=error)
                                 raise error
-                        except actuator.NonzeroExitException, e:
+                        except NonzeroExitException, e:
                                 # Won't happen during update
                                 be.restore_install_uninstall()
                                 error = apx.ActuatorException(e)
@@ -1518,13 +1521,13 @@ class ImageInterface(object):
                                     location=str(repo))
 
                         for p in pubs:
-                                psrepo = p.selected_repository
+                                psrepo = p.repository
                                 if not psrepo:
                                         # Repository configuration info wasn't
                                         # provided, so assume origin is
                                         # repo_uri.
-                                        p.add_repository(publisher.Repository(
-                                            origins=[repo_uri]))
+                                        p.repository = publisher.Repository(
+                                            origins=[repo_uri])
                                 elif not psrepo.origins:
                                         # Repository configuration was provided,
                                         # but without an origin.  Assume the
@@ -1574,7 +1577,7 @@ class ImageInterface(object):
                                 misc.makedirs(meta_root)
                                 pub.meta_root = meta_root
                                 pub.transport = self._img.transport
-                                repo = pub.selected_repository
+                                repo = pub.repository
                                 pkg_repos[id(repo)] = repo
 
                                 # Retrieve each publisher's catalog.
@@ -1806,7 +1809,7 @@ class ImageInterface(object):
                                                             origins=origins)
                                                         npub = \
                                                             copy.copy(pub_map[pub])
-                                                        npub.add_repository(nrepo)
+                                                        npub.repository = nrepo
                                                         rid_map[rids] = npub
 
                                                 pkg_pub_map[pub][stem][ver] = \
@@ -1816,11 +1819,11 @@ class ImageInterface(object):
                         # a single repository object for the caller.
                         for pub in pubs:
                                 npub = pub_map[pub.prefix]
-                                nrepo = npub.selected_repository
+                                nrepo = npub.repository
                                 if not nrepo:
                                         nrepo = publisher.Repository()
-                                        npub.add_repository(nrepo)
-                                for o in pub.selected_repository.origins:
+                                        npub.repository = nrepo
+                                for o in pub.repository.origins:
                                         if not nrepo.has_origin(o):
                                                 nrepo.add_origin(o)
 
@@ -3080,6 +3083,7 @@ class ImageInterface(object):
 
         def add_publisher(self, pub, refresh_allowed=True,
             approved_cas=misc.EmptyI, revoked_cas=misc.EmptyI,
+            search_after=None, search_before=None, search_first=None,
             unset_cas=misc.EmptyI):
                 """Add the provided publisher object to the image
                 configuration."""
@@ -3088,32 +3092,16 @@ class ImageInterface(object):
                             refresh_allowed=refresh_allowed,
                             progtrack=self.__progresstracker,
                             approved_cas=approved_cas, revoked_cas=revoked_cas,
+                            search_after=search_after,
+                            search_before=search_before,
+                            search_first=search_first,
                             unset_cas=unset_cas)
                 finally:
                         self._img.cleanup_downloads()
 
-        def get_pub_search_order(self):
-                """Return current search order of publishers; includes
-                disabled publishers"""
-                return self._img.cfg.get_property("property",
-                    "publisher-search-order")
-
-        def set_pub_search_after(self, being_moved_prefix, staying_put_prefix):
-                """Change the publisher search order so that being_moved is
-                searched after staying_put"""
-                self._img.pub_search_after(being_moved_prefix,
-                    staying_put_prefix)
-
-        def set_pub_search_before(self, being_moved_prefix, staying_put_prefix):
-                """Change the publisher search order so that being_moved is
-                searched before staying_put"""
-                self._img.pub_search_before(being_moved_prefix,
-                    staying_put_prefix)
-
-        def get_preferred_publisher(self):
-                """Returns the preferred publisher object for the image."""
-                return self.get_publisher(
-                    prefix=self._img.get_preferred_publisher())
+        def get_highest_ranked_publisher(self):
+                """Returns the highest ranked publisher object for the image."""
+                return self._img.get_highest_ranked_publisher()
 
         def get_publisher(self, prefix=None, alias=None, duplicate=False):
                 """Retrieves a publisher object matching the provided prefix
@@ -3165,18 +3153,17 @@ class ImageInterface(object):
                 copies of the publisher objects should be returned instead
                 of the originals.
                 """
-                if duplicate:
-                        # Return a copy so that changes to the retrieved objects
-                        # are not reflected until update_publisher is called.
-                        pubs = [
-                            copy.copy(p)
-                            for p in self._img.get_publishers().values()
-                        ]
-                else:
-                        pubs = self._img.get_publishers().values()
-                return misc.get_sorted_publishers(pubs,
-                    preferred=self._img.get_preferred_publisher())
 
+                names = self._img.cfg.get_property("property",
+                    "publisher-search-order")
+                d = self._img.get_publishers()
+                missing_names = set(d) - set(names)
+                res =  [d[n] for n in names] + \
+                    [d[n] for n in sorted(missing_names)]
+                if duplicate:
+                        return [copy.copy(p) for p in res]
+                return res
+        
         def get_publisher_last_update_time(self, prefix=None, alias=None):
                 """Returns a datetime object representing the last time the
                 catalog for a publisher was modified or None."""
@@ -3218,11 +3205,8 @@ class ImageInterface(object):
                 self._img.remove_publisher(prefix=prefix, alias=alias,
                     progtrack=self.__progresstracker)
 
-        def set_preferred_publisher(self, prefix=None, alias=None):
-                """Sets the preferred publisher for the image."""
-                self._img.set_preferred_publisher(prefix=prefix, alias=alias)
-
-        def update_publisher(self, pub, refresh_allowed=True):
+        def update_publisher(self, pub, refresh_allowed=True, search_after=None,
+            search_before=None, search_first=None):
                 """Replaces an existing publisher object with the provided one
                 using the _source_object_id identifier set during copy.
 
@@ -3237,7 +3221,10 @@ class ImageInterface(object):
                         self._disable_cancel()
                         with self._img.locked_op("update-publisher"):
                                 return self.__update_publisher(pub,
-                                    refresh_allowed=refresh_allowed)
+                                    refresh_allowed=refresh_allowed,
+                                    search_after=search_after,
+                                    search_before=search_before,
+                                    search_first=search_first)
                 except apx.CanceledException, e:
                         self._cancel_done()
                         raise
@@ -3245,14 +3232,14 @@ class ImageInterface(object):
                         self._img.cleanup_downloads()
                         self._activity_lock.release()
 
-        def __update_publisher(self, pub, refresh_allowed=True):
+        def __update_publisher(self, pub, refresh_allowed=True,
+            search_after=None, search_before=None, search_first=None):
                 """Private publisher update method; caller responsible for
                 locking."""
 
-                if pub.disabled and \
-                    pub.prefix == self._img.get_preferred_publisher():
-                        raise apx.SetPreferredPublisherDisabled(
-                            pub.prefix)
+                assert (not search_after and not search_before) or \
+                    (not search_after and not search_first) or \
+                    (not search_before and not search_first)
 
                 def origins_changed(oldr, newr):
                         old_origins = set([
@@ -3278,13 +3265,8 @@ class ImageInterface(object):
                                 # retrieve the catalog.
                                 return True
 
-                        if len(newo.repositories) != len(oldo.repositories):
-                                # If there are an unequal number of repositories
-                                # then some have been added or removed.
-                                return True
-
-                        oldr = oldo.selected_repository
-                        newr = newo.selected_repository
+                        oldr = oldo.repository
+                        newr = newo.repository
                         if newr._source_object_id != id(oldr):
                                 # Selected repository has changed.
                                 return True
@@ -3356,17 +3338,17 @@ class ImageInterface(object):
                         new_id, old_pub = orig_pub
                         for new_pfx, new_pub in publishers.iteritems():
                                 if id(new_pub) == new_id:
-                                        del publishers[new_pfx]
                                         publishers[old_pub.prefix] = old_pub
                                         break
 
-                repo = pub.selected_repository
-                validate = origins_changed(orig_pub[-1].selected_repository,
-                    pub.selected_repository)
+                repo = pub.repository
+
+                validate = origins_changed(orig_pub[-1].repository,
+                    pub.repository)
 
                 try:
                         if disable or (not repo.origins and
-                            orig_pub[-1].selected_repository.origins):
+                            orig_pub[-1].repository.origins):
                                 # Remove the publisher's metadata (such as
                                 # catalogs, etc.).  This only needs to be done
                                 # in the event that a publisher is disabled or
@@ -3416,6 +3398,15 @@ class ImageInterface(object):
                         cleanup()
                         raise
 
+                if search_first:
+                        self._img.set_highest_ranked_publisher(
+                            prefix=pub.prefix)
+                elif search_before:
+                        self._img.pub_search_before(pub.prefix, search_before)
+                elif search_after:
+                        self._img.pub_search_after(pub.prefix, search_after)
+
+                # Successful; so save configuration.
                 self._img.save_config()
 
         def log_operation_end(self, error=None, result=None):
@@ -3595,6 +3586,26 @@ class ImageInterface(object):
                                         pkglist.append(p)
                         new_pkg_names[pub] = pkglist
                 p5i.write(fileobj, plist, pkg_names=new_pkg_names)
+
+        def write_syspub(self, path, prefixes, version):
+                """Write the syspub/version response to the provided path."""
+                if version != 0:
+                        raise apx.UnsupportedP5SVersion(version)
+
+                pubs = [
+                    p for p in self.get_publishers()
+                    if p.prefix in prefixes
+                ]
+                fd, fp = tempfile.mkstemp()
+                try:
+                        fh = os.fdopen(fd, "wb")
+                        p5s.write(fh, pubs, self._img.cfg)
+                        fh.close()
+                        portable.rename(fp, path)
+                except:
+                        if os.path.exists(fp):
+                                portable.remove(fp)
+                        raise
 
 
 class Query(query_p.Query):
@@ -3826,15 +3837,17 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         the image creation process.
 
         Callers must provide one of the following when calling this function:
+         * no 'prefix' and no 'origins'
          * a 'prefix' and 'repo_uri' (origins and mirrors are optional)
          * no 'prefix' and a 'repo_uri'  (origins and mirrors are optional)
          * a 'prefix' and 'origins'
         """
 
         # Caller must provide a prefix and repository, or no prefix and a
-        # repository, or a prefix and origins.
+        # repository, or a prefix and origins, or no prefix and no origins.
         assert (prefix and repo_uri) or (not prefix and repo_uri) or (prefix and
-            origins)
+            origins or (not prefix and not origins))
+        
 
         # If prefix isn't provided, and refresh isn't allowed, then auto-config
         # cannot be done.
@@ -3853,10 +3866,12 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
         # needed to retrieve publisher configuration information.
         img = image.Image(root, force=force, imgtype=imgtype,
             progtrack=progtrack, should_exist=False,
-            user_provided_dir=user_provided_dir)
+            user_provided_dir=user_provided_dir, props=props)
 
         api_inst = ImageInterface(img, version_id,
             progtrack, cancel_state_callable, pkg_client_name)
+
+        pubs = []
 
         try:
                 if repo_uri:
@@ -3888,14 +3903,14 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                         if repo_uri:
                                 for p in pubs:
-                                        psrepo = p.selected_repository
+                                        psrepo = p.repository
                                         if not psrepo:
                                                 # Repository configuration info
                                                 # was not provided, so assume
                                                 # origin is repo_uri.
-                                                p.add_repository(
+                                                p.repository = \
                                                     publisher.Repository(
-                                                    origins=[repo_uri]))
+                                                    origins=[repo_uri])
                                         elif not psrepo.origins:
                                                 # Repository configuration was
                                                 # provided, but without an
@@ -3920,7 +3935,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                         for m in mirrors:
                                 repo.add_mirror(m)
                         pub = publisher.Publisher(prefix,
-                            repositories=[repo])
+                            repository=repo)
                         pubs = [pub]
 
                 if prefix and prefix not in pubs:
@@ -3940,7 +3955,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
                 # Add additional origins and mirrors that weren't found in the
                 # publisher configuration if provided.
                 for p in pubs:
-                        pr = p.selected_repository
+                        pr = p.repository
                         for o in origins:
                                 if not pr.has_origin(o):
                                         pr.add_origin(o)
@@ -3950,7 +3965,7 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                 # Set provided SSL Cert/Key for all configured publishers.
                 for p in pubs:
-                        repo = p.selected_repository
+                        repo = p.repository
                         for o in repo.origins:
                                 if o.scheme not in publisher.SSL_SCHEMES:
                                         continue

@@ -148,7 +148,7 @@ def get_tracker(quiet=False):
 def load_catalog(repouri, pub):
         """Load catalog from specified uri"""
         # Pull catalog only from this host
-        pub.selected_repository.origins = [repouri]
+        pub.repository.origins = [repouri]
         pub.refresh(full_refresh=True, immediate=True)
 
         catalog_dict[repouri.uri] = dict(
@@ -162,8 +162,8 @@ def load_catalog(repouri, pub):
         # Discard catalog.
         pub.remove_meta_root()
         # XXX At the moment, the only way to force the publisher object to
-        # discard its copy of a catalog is to set selected_repository.
-        pub.selected_repository = pub.selected_repository
+        # discard its copy of a catalog is to set repository.
+        pub.repository = pub.repository
 
 def get_all_pkg_names(repouri):
         return catalog_dict[repouri.uri].keys()
@@ -401,7 +401,7 @@ def main_func():
                 pkgdir = tempfile.mkdtemp(dir=tmpdir)
                 # Retrieve package data from each package source.
                 for i, uri in enumerate(source_list):
-                        pub.selected_repository.origins = [uri]
+                        pub.repository.origins = [uri]
                         mfile = xport.multi_file_ni(pub, pkgdir,
                             decompress=True, progtrack=tracker)
                         for a in retrievals[i]:

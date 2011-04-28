@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -45,6 +45,7 @@ import pkg.client.transport.fileobj     as fileobj
 
 from collections        import deque
 from pkg.client         import global_settings
+from pkg.client.debugvalues import DebugValues
 
 pipelined_protocols = ()
 response_protocols = ("ftp", "http", "https")
@@ -118,7 +119,7 @@ class CurlTransportEngine(TransportEngine):
 
         def add_url(self, url, filepath=None, writefunc=None, header=None,
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False, failonerror=True):
+            repourl=None, compressible=False, failonerror=True, proxy=None):
                 """Add a URL to the transport engine.  Caller must supply
                 either a filepath where the file should be downloaded,
                 or a callback to a function that will peform the write.
@@ -131,7 +132,7 @@ class CurlTransportEngine(TransportEngine):
                     writefunc=writefunc, header=header, progclass=progclass,
                     progtrack=progtrack, sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, compressible=compressible,
-                    failonerror=failonerror)
+                    failonerror=failonerror, proxy=proxy)
 
                 self.__req_q.appendleft(t)
 
@@ -501,7 +502,7 @@ class CurlTransportEngine(TransportEngine):
 
         def get_url(self, url, header=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, ccancel=None,
-            failonerror=True):
+            failonerror=True, proxy=None):
                 """Invoke the engine to retrieve a single URL.  Callers
                 wishing to obtain multiple URLs at once should use
                 addUrl() and run().
@@ -519,14 +520,14 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header,
                     sslcert=sslcert, sslkey=sslkey, repourl=repourl,
                     compressible=compressible, progfunc=progfunc,
-                    uuid=fobj.uuid, failonerror=failonerror)
+                    uuid=fobj.uuid, failonerror=failonerror, proxy=proxy)
 
                 self.__req_q.appendleft(t)
 
                 return fobj
 
         def get_url_header(self, url, header=None, sslcert=None, sslkey=None,
-            repourl=None, ccancel=None, failonerror=True):
+            repourl=None, ccancel=None, failonerror=True, proxy=None):
                 """Invoke the engine to retrieve a single URL's headers.
 
                 getUrlHeader will return a read-only file object that
@@ -542,7 +543,7 @@ class CurlTransportEngine(TransportEngine):
                     hdrfunc=fobj.get_header_func(), header=header,
                     httpmethod="HEAD", sslcert=sslcert, sslkey=sslkey,
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
-                    failonerror=failonerror)
+                    failonerror=failonerror, proxy=proxy)
 
                 self.__req_q.appendleft(t)
 
@@ -677,7 +678,7 @@ class CurlTransportEngine(TransportEngine):
         def send_data(self, url, data=None, header=None, sslcert=None,
             sslkey=None, repourl=None, ccancel=None,
             data_fobj=None, data_fp=None, failonerror=True,
-            progclass=None, progtrack=None):
+            progclass=None, progtrack=None, proxy=None):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -700,7 +701,7 @@ class CurlTransportEngine(TransportEngine):
                     repourl=repourl, progfunc=progfunc, uuid=fobj.uuid,
                     read_fobj=data_fobj, read_filepath=data_fp,
                     failonerror=failonerror, progclass=progclass,
-                    progtrack=progtrack)
+                    progtrack=progtrack, proxy=proxy)
 
                 self.__req_q.appendleft(t)
 
@@ -764,9 +765,14 @@ class CurlTransportEngine(TransportEngine):
                 hdl.setopt(pycurl.MAXREDIRS,
                     global_settings.PKG_CLIENT_MAX_REDIRECT)
 
-                # Make sure that we don't use a proxy if the destination
-                # is localhost.
-                hdl.setopt(pycurl.NOPROXY, "localhost")
+                # If the TransportRequest has proxy information set, use it
+                # even if it's set to localhost.
+                if treq.proxy:
+                        hdl.setopt(pycurl.PROXY, treq.proxy)
+                else:
+                        # Make sure that we don't use a proxy if the destination
+                        # is localhost.
+                        hdl.setopt(pycurl.NOPROXY, "localhost")
 
                 # Set user agent, if client has defined it
                 if self.__user_agent:
@@ -912,11 +918,15 @@ class CurlTransportEngine(TransportEngine):
                 if proto == "https":
                         # Verify that peer's CN matches CN on certificate
                         hdl.setopt(pycurl.SSL_VERIFYHOST, 2)
-
-                        cadir = self.__xport.get_ca_dir()
                         hdl.setopt(pycurl.SSL_VERIFYPEER, 1)
+                        cadir = self.__xport.get_ca_dir()
                         hdl.setopt(pycurl.CAPATH, cadir)
-                        hdl.unsetopt(pycurl.CAINFO)
+                        if "ssl_ca_file" in DebugValues:
+                                cafile = DebugValues["ssl_ca_file"]
+                                hdl.setopt(pycurl.CAINFO, cafile)
+                                hdl.unsetopt(pycurl.CAPATH)
+                        else:
+                                hdl.unsetopt(pycurl.CAINFO)
 
         def shutdown(self):
                 """Shutdown the transport engine, perform cleanup."""
@@ -991,7 +1001,7 @@ class TransportRequest(object):
             hdrfunc=None, header=None, data=None, httpmethod="GET",
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False, progfunc=None, uuid=None,
-            read_fobj=None, read_filepath=None, failonerror=False):
+            read_fobj=None, read_filepath=None, failonerror=False, proxy=None):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -1077,3 +1087,4 @@ class TransportRequest(object):
                 self.read_fobj = read_fobj
                 self.read_filepath = read_filepath
                 self.failonerror = failonerror
+                self.proxy = proxy

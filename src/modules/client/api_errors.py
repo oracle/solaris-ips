@@ -1214,6 +1214,19 @@ class InvalidP5IFile(DataError):
                     "or does not contain valid publisher information.")
 
 
+class InvalidP5SFile(DataError):
+        """Used to indicate that the specified location does not contain a
+        valid p5i-formatted file."""
+
+        def __str__(self):
+                if self.data:
+                        return _("The provided p5s data is in an unrecognized "
+                            "format or does not contain valid publisher "
+                            "information: %s") % self.data
+                return _("The provided p5s data is in an unrecognized format "
+                    "or does not contain valid publisher information.")
+
+
 class UnsupportedP5IFile(DataError):
         """Used to indicate that an attempt to read an unsupported version
         of pkg(5) info file was attempted."""
@@ -1221,6 +1234,27 @@ class UnsupportedP5IFile(DataError):
         def __str__(self):
                 return _("Unsupported pkg(5) publisher information data "
                     "format.")
+
+
+class UnsupportedP5SFile(DataError):
+        """Used to indicate that an attempt to read an unsupported version
+        of pkg(5) info file was attempted."""
+
+        def __str__(self):
+                return _("Unsupported pkg(5) publisher and image information "
+                    "data format.")
+
+
+class UnsupportedP5SVersion(ApiException):
+        """Used to indicate that an attempt to read an unsupported version
+        of pkg(5) info file was attempted."""
+
+        def __init__(self, v):
+                self.version = v
+        
+        def __str__(self):
+                return _("%s is not a supported version for creating a "
+                    "syspub response.") % self.version
 
 
 class TransportError(ApiException):
@@ -1500,14 +1534,6 @@ class NoPublisherRepositories(PublisherError):
                     "for use with this publisher.") % self.data
 
 
-class RemovePreferredPublisher(PublisherError):
-        """Used to indicate an attempt to remove the preferred publisher was
-        made."""
-
-        def __str__(self):
-                return _("The preferred publisher cannot be removed.")
-
-
 class MoveRelativeToSelf(PublisherError):
         """Used to indicate an attempt to search a repo before or after itself"""
 
@@ -1522,25 +1548,6 @@ class SelectedRepositoryRemoval(PublisherError):
         def __str__(self):
                 return _("Cannot remove the selected repository for a "
                     "publisher.")
-
-
-class SetDisabledPublisherPreferred(PublisherError):
-        """Used to indicate an attempt to set a disabled publisher as the
-        preferred publisher was made."""
-
-        def __str__(self):
-                return _("Publisher '%s' is disabled and cannot be set as the "
-                    "preferred publisher.") % self.data
-
-
-class SetPreferredPublisherDisabled(PublisherError):
-        """Used to indicate that an attempt was made to set the preferred
-        publisher as disabled."""
-
-        def __str__(self):
-                return _("The preferred publisher may not be disabled."
-                    "  Another publisher must be set as the preferred "
-                    "publisher before this publisher can be disabled.")
 
 
 class UnknownLegalURI(PublisherError):
@@ -1692,6 +1699,31 @@ class UnsupportedRepositoryURIAttribute(PublisherError):
         def __str__(self):
                 return _("'%(attr)s' is not supported for '%(scheme)s'.") % {
                     "attr": self.data, "scheme": self._args["scheme"] }
+
+
+class UnknownSysrepoConfiguration(ApiException):
+        """Used when a pkg client needs to communicate with the system
+        repository but can't find the configuration for it."""
+
+        def __str__(self):
+                return _("""\
+pkg is configured to use the system repository (via the use-system-repo
+property) but it could not get the host and port from
+smf:/system/zones-proxy-client nor smf:/system/pkg/sysrepo, and the
+PKG_SYSREPO_URL environment variable was not set.  Please try enabling one of
+those services or setting the PKG_SYSREPO_URL environment variable.
+""")
+
+
+class ModifyingSyspubException(ApiException):
+        """This exception is raised when a user attempts to modify a system
+        publisher."""
+
+        def __init__(self, s):
+                self.s = s
+
+        def __str__(self):
+                return self.s
 
 
 class SigningException(ApiException):

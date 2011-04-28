@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -181,7 +181,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                                         pub_val = getattr(pub, prop)
                                 else:
                                         pub_val = getattr(
-                                            pub.selected_repository, prop)
+                                            pub.repository, prop)
 
                                 if prop in ("legal_uris", "mirrors", "origins",
                                     "related_uris"):
@@ -528,7 +528,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
 
                 # Verify origin configuration is intact.
                 expected = """\
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/
 test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
 """ % (self.rurl1, self.rurl2)
                 self.pkg("publisher -HF tsv")
@@ -538,7 +538,7 @@ test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
                 # Verify origin information matches expected if configuration
                 # changes are made.
                 expected = """\
-test1\ttrue\ttrue\ttrue\torigin\tonline\t%s/
+test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/
 test2\ttrue\tfalse\tfalse\torigin\tonline\t%s/
 """ % (self.rurl2, self.rurl2)
                 self.pkg("set-publisher --no-refresh -O %s test1" % self.rurl2)

@@ -178,12 +178,17 @@ man1_dir = 'usr/share/man/cat1'
 man1m_dir = 'usr/share/man/cat1m'
 man5_dir = 'usr/share/man/cat5'
 resource_dir = 'usr/share/lib/pkg'
-smf_dir = 'lib/svc/manifest/application'
+smf_app_dir = 'lib/svc/manifest/application'
+smf_sys_dir = 'lib/svc/manifest/system'
 zones_dir = 'etc/zones'
 etcbrand_dir = 'etc/brand/ipkg'
 brand_dir = 'usr/lib/brand/ipkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
+sysrepo_dir = 'etc/pkg/sysrepo'
+sysrepo_logs_dir = 'var/log/pkg/sysrepo'
+sysrepo_cache_dir = 'var/cache/pkg/sysrepo'
+
 
 # A list of source, destination tuples of modules which should be hardlinked
 # together if the os supports it and otherwise copied.
@@ -210,10 +215,12 @@ scripts_sunos = {
                 ['checkforupdates.py', 'pm-checkforupdates'],
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ['launch.py', 'pm-launch'],
+                ['sysrepo.py', 'pkg.sysrepo'],
                 ],
         svc_method_dir: [
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
                 ['svc/svc-pkg-mdns', 'svc-pkg-mdns'],
+                ['svc/svc-pkg-sysrepo', 'svc-pkg-sysrepo'],
                 ],
         }
 
@@ -278,7 +285,8 @@ man1_files = [
         'man/pm-updatemanager.1',
         ]
 man1m_files = [
-        'man/pkg.depotd.1m'
+        'man/pkg.depotd.1m',
+        'man/pkg.sysrepo.1m'
         ]
 man5_files = [
         'man/pkg.5'
@@ -324,14 +332,25 @@ etcbrand_files = [
         'brand/pkgrm.conf',
         'brand/smf_disable.conf',
         ]
-smf_files = [
+smf_app_files = [
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
         'svc/pkg-update.xml',
         ]
+smf_sys_files = [
+        'svc/pkg-sysrepo.xml',
+        ]
 resource_files = [
         'util/opensolaris.org.sections',
         'util/pkglintrc',
+        ]
+sysrepo_files = [
+        'util/apache2/sysrepo/sysrepo_httpd.conf.mako',
+        'util/apache2/sysrepo/sysrepo_publisher_response.mako',
+        ]
+sysrepo_log_stubs = [
+        'util/apache2/sysrepo/logs/access_log',
+        'util/apache2/sysrepo/logs/error_log',
         ]
 execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']
 authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
@@ -907,9 +926,13 @@ if osname == 'sunos':
                 (zones_dir, zones_files),
                 (brand_dir, brand_files),
                 (etcbrand_dir, etcbrand_files),
-                (smf_dir, smf_files),
+                (smf_app_dir, smf_app_files),
+                (smf_sys_dir, smf_sys_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
+                (sysrepo_dir, sysrepo_files),
+                (sysrepo_logs_dir, sysrepo_log_stubs),
+                (sysrepo_cache_dir, {})
                 ]
 
 if osname == 'sunos' or osname == "linux":

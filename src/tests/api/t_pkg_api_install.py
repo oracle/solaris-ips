@@ -637,10 +637,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # Now add the new publisher and remove the old one.
                 api_obj.reset()
                 npub = publisher.Publisher("test2",
-                    repositories=[publisher.Repository(origins=[new_repo_uri])])
-                api_obj.add_publisher(npub)
-                api_obj.reset()
-                api_obj.set_preferred_publisher(prefix="test2")
+                    repository=publisher.Repository(origins=[new_repo_uri]))
+                api_obj.add_publisher(npub, search_first=True)
                 api_obj.reset()
                 api_obj.remove_publisher(prefix="test")
 

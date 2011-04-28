@@ -1,1 +1,3 @@
 solaris.smf.read.pkg-server:::Read permissions for protected pkg(5) Server Service Properties::
+solaris.smf.value.pkg-sysrepo:::Change pkg(5) System Repository Service values::
+solaris.smf.manage.pkg-sysrepo:::Manage pkg(5) System Repository Service states::

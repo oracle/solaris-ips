@@ -1777,14 +1777,14 @@ class PackageManager:
                                 if pub_prefix != None:
                                         pub = self.api_o.get_publisher(prefix=pub_prefix)
                                 else:
-                                        pub = self.api_o.get_preferred_publisher()
+                                        pub = self.api_o.get_highest_ranked_publisher()
                         except api_errors.ApiException, ex:
                                 err = str(ex)
                                 gobject.idle_add(self.error_occurred, err,
                                     None, gtk.MESSAGE_INFO)
                                 gobject.idle_add(self.unset_busy_cursor)
                                 return
-                        origin_uri = gui_misc.get_origin_uri(pub.selected_repository)
+                        origin_uri = gui_misc.get_origin_uri(pub.repository)
                         servers.append({"origin": origin_uri})
                         self.publisher_being_searched = \
                                 self.get_publisher_display_name_from_prefix(pub.prefix)
@@ -3131,7 +3131,7 @@ class PackageManager:
                                    enumerations.REPOSITORY_PREFIX)
                 self.__disconnect_repository_model()
                 self.repositories_list = self.__get_new_repositories_liststore()
-                default_pub = api_o.get_preferred_publisher().prefix
+                default_pub = api_o.get_highest_ranked_publisher().prefix
                 if self.default_publisher != default_pub:
                         self.__clear_pkg_selections()
                         self.default_publisher = default_pub

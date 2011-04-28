@@ -512,12 +512,10 @@ class TestDepotController(pkg5unittest.CliTestCase):
 
                 repo = self.__dc.get_repo()
                 pub = repo.get_publisher("test")
-                pub_repo = pub.selected_repository
+                pub_repo = pub.repository
                 if not pub_repo:
                         pub_repo = publisher.Repository()
-                        while pub.repositories:
-                                pub.repositories.pop()
-                        pub.repositories.append(pub_repo)
+                        pub.repository = pub_repo
                 pub_repo.origins = [durl]
                 repo.update_publisher(pub)
 
@@ -798,12 +796,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         pub = publisher.Publisher("org.opensolaris.pending")
                         repo.add_publisher(pub)
 
-                pub_repo = pub.selected_repository
+                pub_repo = pub.repository
                 if not pub_repo:
                         pub_repo = publisher.Repository()
-                        while pub.repositories:
-                                pub.repositories.pop()
-                        pub.repositories.append(pub_repo)
+                        pub.repository = pub_repo
 
                 for attr, val in self.pub_repo_cfg.iteritems():
                         setattr(pub_repo, attr, val)
@@ -832,7 +828,7 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         self.assertEqual(getattr(pub, prop),
                             cfgdata["publisher"][prop])
 
-                repo = pub.selected_repository
+                repo = pub.repository
                 for prop, expected in self.pub_repo_cfg.iteritems():
                         returned = getattr(repo, prop)
                         if prop.endswith("uris") or prop == "origins":

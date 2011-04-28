@@ -192,27 +192,12 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                     "publisher/test/file",
                     "publisher/test/file/0a",
                     "publisher/test/file/0a/0acf1107d31f3bab406f8611b21b8fade78ac874",
-                    "publisher/test/file/34",
-                    "publisher/test/file/34/344f2a94afd12146336340d71962254f647874be",
-                    "publisher/test/file/65",
-                    "publisher/test/file/65/65154063c6988c4de879751bb112703b06ba5129",
-                    "publisher/test/file/6c",
-                    "publisher/test/file/6c/6cd1527a2e4a2926b05663e0a29f0fd5207a7119",
-                    "publisher/test/file/97",
-                    "publisher/test/file/97/97ff81591147d40444c8fea6e794fefda382d199",
-                    "publisher/test/file/9c",
-                    "publisher/test/file/9c/9cb9f772cc4a01801b983f199114cc7884b026e3",
-
                     "publisher/test/file/a2",
                     "publisher/test/file/a2/a285ada5f3cae14ea00e97a8d99bd3e357cb0dca",
                     "publisher/test/file/b2",
                     "publisher/test/file/b2/b265f2ec87c4a55eb2b6b4c926e7c65f7247a27e",
-                    "publisher/test/file/d0",
-                    "publisher/test/file/d0/d087434b648f50ab20107b6dfb03f754a06fa462",
                     "publisher/test/file/dc",
                     "publisher/test/file/dc/dc84bd4b606fe43fc892eb245d9602b67f8cba38",
-                    "publisher/test/file/f7",
-                    "publisher/test/file/f7/f72001172042e0afafef7cf5a1f90697866acf3d",
                     "publisher/test/pkg",
                     "publisher/test/pkg/foo",
                     "publisher/test/pkg/%s" % self.foo.get_dir_path(),
@@ -392,9 +377,24 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
 
                 # Verify the result.
                 arc = ptf.PkgTarFile(name=arc_path, mode="r")
-                expected = self.multi_expected
+                expected = self.multi_expected[:]
+                action_certs = [self.calc_file_hash(t) for t in (
+                    os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch3_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch4_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
+                )]
+                for hsh in action_certs:
+                        d = "publisher/test/file/%s" % hsh[0:2]
+                        f = "%s/%s" % (d, hsh)
+                        expected.append(d)
+                        expected.append(f)
+
                 actual = sorted(m.name for m in arc.getmembers())
-                self.assertEqualDiff(expected, actual)
+                self.assertEqualDiff(sorted(set(expected)), actual)
 
                 os.unlink(arc_path)
                 os.unlink(foo_path)
@@ -440,8 +440,22 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # packages created from a repo.
                 expected = sorted(self.multi_expected +
                     ["publisher/test/pub.p5i"])
+                action_certs = [self.calc_file_hash(t) for t in (
+                    os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch3_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch4_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
+                )]
+                for hsh in action_certs:
+                        d = "publisher/test/file/%s" % hsh[0:2]
+                        f = "%s/%s" % (d, hsh)
+                        expected.append(d)
+                        expected.append(f)
                 actual = sorted(m.name for m in arc.getmembers())
-                self.assertEqualDiff(expected, actual)
+                self.assertEqualDiff(sorted(set(expected)), actual)
 
                 os.unlink(arc_path)
 
@@ -774,8 +788,22 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # packages created from a repo.
                 expected = sorted(self.multi_expected +
                     ["publisher/test/pub.p5i"])
+                action_certs = [self.calc_file_hash(t) for t in (
+                    os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch3_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch4_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch5_ta1_cert.pem"),
+                    os.path.join(self.chain_certs_dir, "ch1_ta3_cert.pem"),
+                )]
+                for hsh in action_certs:
+                        d = "publisher/test/file/%s" % hsh[0:2]
+                        f = "%s/%s" % (d, hsh)
+                        expected.append(d)
+                        expected.append(f)
                 actual = sorted(m.name for m in arc.getmembers())
-                self.assertEqualDiff(expected, actual)
+                self.assertEqualDiff(sorted(set(expected)), actual)
                 arc.close()
 
                 # Verify pkg(5) archive class extraction behaviour using

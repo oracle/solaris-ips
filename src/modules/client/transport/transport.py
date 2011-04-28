@@ -49,6 +49,7 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.nrlock as nrlock
 import pkg.p5i as p5i
+import pkg.p5s as p5s
 import pkg.portable as portable
 import pkg.server.repository as sr
 import pkg.updatelog as updatelog
@@ -207,7 +208,7 @@ class TransportCfg(object):
                 # Automatically add any publisher repository origins
                 # or mirrors that are filesystem-based as read-only caches.
                 for pub in self.gen_publishers():
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         if not repo:
                                 continue
 
@@ -904,6 +905,39 @@ class Transport(object):
                 raise failures
 
         @LockedTransport()
+        def get_syspub_data(self, repo_uri, ccancel=None):
+                """Get the publisher and image configuration from the system
+                repo given in repo_uri."""
+
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                failures = tx.TransportFailures()
+                header = None
+
+                assert isinstance(self.cfg, ImageTransportCfg)
+                assert isinstance(repo_uri, publisher.RepositoryURI)
+
+                for d, v in self.__gen_repo(repo_uri, retry_count,
+                    origin_only=True, operation="syspub", versions=[0],
+                    ccancel=ccancel):
+                        try:
+                                resp = d.get_syspub_info(header,
+                                    ccancel=ccancel)
+                                infostr = resp.read()
+                                return p5s.parse(repo_uri.get_host(), infostr)
+                        except tx.ExcessiveTransientFailure, e:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(e.failures)
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+
+                raise failures
+
+        @LockedTransport()
         def get_content(self, pub, fhash, fmri=None, ccancel=None):
                 """Given a fhash, return the uncompressed content content from
                 the remote object.  This is similar to get_datastream, except
@@ -925,7 +959,7 @@ class Transport(object):
                         # that composites the repository information returned
                         # from the image with the alternate sources for this
                         # publisher.
-                        alt_repo = pub.selected_repository
+                        alt_repo = pub.repository
                         if alt_repo:
                                 alt_repo = copy.copy(alt_repo)
                         else:
@@ -934,7 +968,7 @@ class Transport(object):
                         for tpub in self.cfg.alt_pubs:
                                 if tpub.prefix != pub.prefix:
                                         continue
-                                for o in tpub.selected_repository.origins:
+                                for o in tpub.repository.origins:
                                         if not alt_repo.has_origin(o):
                                                 alt_repo.add_origin(o)
                 elif self.cfg.pkg_pub_map:
@@ -1170,7 +1204,7 @@ class Transport(object):
                 sver = str(ver)
                 if pfx in pmap and stem in pmap[pfx] and \
                     sver in pmap[pfx][stem]:
-                        return pmap[pfx][stem][sver].selected_repository
+                        return pmap[pfx][stem][sver].repository
 
         @LockedTransport()
         def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
@@ -1792,7 +1826,7 @@ class Transport(object):
         def __gen_repo(self, pub, count, prefer_remote=False, origin_only=False,
             single_repository=False, operation=None, versions=None,
             ccancel=None, alt_repo=None):
-                """An internal method tha returns the list of Repo objects
+                """An internal method that returns the list of Repo objects
                 for a given Publisher.  Callers use this method to generate
                 lists of endpoints for transport operations, and to retry
                 operations to a single endpoint.
@@ -1830,7 +1864,7 @@ class Transport(object):
                 passed in the 'ccancel' argument.
 
                 By default, this routine looks at a Publisher's
-                selected_repository.  If the caller would like to use a
+                repository.  If the caller would like to use a
                 different Repository object, it should pass one in
                 'alt_repo.'
 
@@ -1843,12 +1877,12 @@ class Transport(object):
 
                 # If alt_repo supplied, use that as the Repository.
                 # Otherwise, check that a Publisher was passed, and use
-                # its selected_repository.
+                # its repository.
                 repo = None
                 if alt_repo:
                         repo = alt_repo
                 elif isinstance(pub, publisher.Publisher):
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         assert repo
 
                 if repo and origin_only:
@@ -1958,7 +1992,7 @@ class Transport(object):
                         if not origin_only:
                                 repolist.extend(alt_repo.mirrors)
                 elif isinstance(pub, publisher.Publisher):
-                        repo = pub.selected_repository
+                        repo = pub.repository
                         repolist = repo.origins[:]
                         if not origin_only:
                                 repolist.extend(repo.mirrors)
@@ -2139,7 +2173,8 @@ class Transport(object):
                         self.__setup()
 
                 mfile = MultiFileNI(publisher, self, final_dir,
-                    decompress=decompress, progtrack=progtrack, ccancel=ccancel)
+                    decompress=decompress, progtrack=progtrack, ccancel=ccancel,
+                    alt_repo=alt_repo)
 
                 return mfile
 
@@ -2593,7 +2628,7 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                origins = [pub.selected_repository.origins[0]]
+                origins = [pub.repository.origins[0]]
                 rslist = self.stats.get_repostats(origins, origins)
                 rs, ruri = rslist[0]
 
@@ -2606,7 +2641,7 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                originuri = pub.selected_repository.origins[0].uri
+                originuri = pub.repository.origins[0].uri
                 return originuri in self.__repo_cache
 
 
@@ -2954,7 +2989,7 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                         origin.ssl_key = ssl_key
                         origin.ssl_cert = ssl_cert
 
-        pub = publisher.Publisher(prefix=prefix, repositories=[repo])
+        pub = publisher.Publisher(prefix=prefix, repository=repo)
 
         if not remote_prefix and not remote_publishers:
                 xport_cfg.add_publisher(pub)
@@ -2970,10 +3005,10 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                 return pub
 
         for p in newpubs:
-                psr = p.selected_repository
+                psr = p.repository
 
                 if not psr:
-                        p.add_repository(repo)
+                        p.repository = repo
                 elif remote_publishers:
                         if not psr.origins:
                                 for r in repouri_list:
@@ -2984,9 +3019,10 @@ def setup_publisher(repo_uri, prefix, xport, xport_cfg,
                 else:
                         psr.origins = repouri_list
 
-                for newrepo in p.repositories:
-                        for origin in newrepo.origins:
-                                if origin.scheme == "https": 
+                if p.repository:
+                        for origin in p.repository.origins:
+                                if origin.scheme == \
+                                    pkg.client.publisher.SSL_SCHEMES: 
                                         origin.ssl_key = ssl_key
                                         origin.ssl_cert = ssl_cert
 

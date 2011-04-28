@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -76,7 +76,7 @@ sort_policy: priority
 
                 pub = self.ic.publishers["sfbay.sun.com"]
                 self.assertEqual(pub.alias, "zruty")
-                repo = pub.selected_repository
+                repo = pub.repository
                 origin = repo.origins[0]
                 self.assertEqual(origin.uri, "http://zruty.sfbay:10001/")
                 self.assertEqual(origin.ssl_key, None)

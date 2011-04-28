@@ -130,7 +130,7 @@ def parse(data=None, fileobj=None, location=None):
                                         rargs[prop] = val
 
                                 repo = publisher.Repository(**rargs)
-                                pub.add_repository(repo)
+                                pub.repository = repo
 
                 pkglist = dump_struct.get("packages", [])
                 if pkglist:
@@ -192,7 +192,8 @@ def write(fileobj, pubs, pkg_names=None):
                         pass
 
                 drepos = dpub["repositories"]
-                for r in p.repositories:
+                if p.repository:
+                        r = p.repository
                         reg_uri = ""
                         if r.registration_uri:
                                 reg_uri = r.registration_uri.uri

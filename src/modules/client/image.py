@@ -60,6 +60,7 @@ import pkg.misc                         as misc
 import pkg.nrlock
 import pkg.portable                     as portable
 import pkg.server.catalog
+import pkg.smf                          as smf
 import pkg.pkgsubprocess                as subprocess
 import pkg.version
 import M2Crypto as m2
@@ -152,7 +153,7 @@ class Image(object):
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
             augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
-            allow_ambiguous=False):
+            allow_ambiguous=False, props=misc.EmptyDict):
                 if should_exist:
                         assert(imgtype is None)
                         assert(not force)
@@ -220,6 +221,8 @@ class Image(object):
                 # set of pkg stems subject to group
                 # dependency but removed because obsolete
                 self.__group_obsolete = None
+
+                self.__property_overrides = { "property": props }
 
                 # Transport operations for this image
                 self.transport = transport.Transport(
@@ -537,13 +540,25 @@ class Image(object):
                                 version = self.version
 
                 self.cfg = imageconfig.ImageConfig(self.__cfgpathname,
-                    self.root, version=version)
+                    self.root, version=version,
+                    overrides=self.__property_overrides)
+
+                if self.__upgraded:
+                        self.cfg = imageconfig.BlendedConfig(self.cfg,
+                            self.get_catalog(self.IMG_CATALOG_INSTALLED).\
+                                get_package_counts_by_pub(),
+                            self.imgdir, self.transport,
+                            self.cfg.get_policy("use-system-repo"))
 
         def save_config(self):
                 # First, create the image directories if they haven't been, so
                 # the configuration file can be written.
                 self.mkdirs()
                 self.cfg.write()
+                if self.is_liveroot() and \
+                    smf.get_state("svc:/system/pkg/sysrepo:default") in \
+                    (smf.SMF_SVC_TMP_ENABLED, smf.SMF_SVC_ENABLED):
+                        smf.refresh(["svc:/system/pkg/sysrepo:default"])
                 self.transport.cfg.reset_caches()
 
         def mkdirs(self, root=None, version=None):
@@ -708,7 +723,6 @@ class Image(object):
                             "tmp")
                 else:
                         self.__tmpdir = os.path.join(self.imgdir, "tmp")
-
                 self._statedir = os.path.join(self.imgdir, "state")
                 self.update_index_dir()
 
@@ -802,11 +816,43 @@ class Image(object):
                 # Prepare publishers for transport usage; this must be done
                 # just before configuration is written and transport caches
                 # are reset, but after all of the directory setup work done
-                # above.
+                # above.  This must be done before the format is updated.
                 for pub in self.gen_publishers(inc_disabled=True):
                         pub.meta_root = self._get_publisher_meta_root(
                             pub.prefix)
                         pub.transport = self.transport
+
+                # Upgrade the image's format if needed.
+                self.update_format(allow_unprivileged=True,
+                    progtrack=progtrack)
+
+                # If we haven't loaded the system publisher configuration, do
+                # that now.
+                if isinstance(self.cfg, imageconfig.ImageConfig):
+                        self.cfg = imageconfig.BlendedConfig(self.cfg,
+                            self.get_catalog(self.IMG_CATALOG_INSTALLED).\
+                                get_package_counts_by_pub(),
+                            self.imgdir, self.transport,
+                            self.cfg.get_policy("use-system-repo"))
+
+                        # This must be done again because new publishers may
+                        # have been added.
+                        for pub in self.gen_publishers(inc_disabled=True):
+                                pub.meta_root = self._get_publisher_meta_root(
+                                    pub.prefix)
+                                pub.transport = self.transport
+
+                        # Check to see if any system publishers have been
+                        # removed.  If they have, remove their metadata and
+                        # rebuild the catalogs.
+                        changed = False
+                        for p in self.cfg.removed_pubs:
+                                p.meta_root = self._get_publisher_meta_root(
+                                    p.prefix)
+                                self.remove_publisher_metadata(p, rebuild=False)
+                                changed = True
+                        if changed:
+                                self.__rebuild_image_catalogs()
 
                 if purge:
                         # Configuration shouldn't be written again unless this
@@ -816,10 +862,6 @@ class Image(object):
                         # If not saving configuration, transport caches need
                         # to be reset first.
                         self.transport.cfg.reset_caches()
-
-                # Finally, upgrade the image's format if needed.
-                self.update_format(allow_unprivileged=True,
-                    progtrack=progtrack)
 
                 # load image avoid pkg set
                 self.__avoid_set_load()
@@ -906,8 +948,8 @@ class Image(object):
                                 # If ValueError occurs, the installed file is of
                                 # a previous format.  For upgrades to work, it's
                                 # necessary to assume that the package was
-                                # installed from the preferred publisher.  Here,
-                                # the publisher is setup to record that.
+                                # installed from the highest ranked publisher.
+                                # Here, the publisher is setup to record that.
                                 if flines:
                                         pub = flines[0]
                                         pub = pub.strip()
@@ -916,7 +958,7 @@ class Image(object):
                                 else:
                                         newpub = "%s_%s" % (
                                             pkg.fmri.PREF_PUB_PFX,
-                                            self.get_preferred_publisher())
+                                            self.get_highest_ranked_publisher())
                                 pub = newpub
                         assert pub
                         return pub
@@ -1462,7 +1504,7 @@ class Image(object):
 
                                         # Discard origins and mirrors to prevent
                                         # their accidental use.
-                                        repo = new_pub.selected_repository
+                                        repo = new_pub.repository
                                         repo.reset_origins()
                                         repo.reset_mirrors()
                                 except KeyError:
@@ -1511,6 +1553,19 @@ class Image(object):
                         ret.setdefault(pub, (len(ret) + 1, False, False))
                 return ret
 
+        def get_highest_ranked_publisher(self):
+                """Return the highest ranked publisher."""
+
+                pubs = self.cfg.get_property("property",
+                    "publisher-search-order")
+                if pubs:
+                        return self.get_publisher(prefix=pubs[0])
+                for p in self.gen_publishers():
+                        return p
+                for p in self.get_installed_pubs():
+                        return p
+                return None
+
         def check_cert_validity(self):
                 """Look through the publishers defined for the image.  Print
                 a message and exit with an error if one of the certificates
@@ -1518,12 +1573,12 @@ class Image(object):
                 print a warning instead."""
 
                 for p in self.gen_publishers():
-                        for r in p.repositories:
-                                for uri in r.origins:
-                                        if uri.ssl_cert:
-                                                misc.validate_ssl_cert(
-                                                    uri.ssl_cert,
-                                                    prefix=p.prefix, uri=uri)
+                        r = p.repository
+                        for uri in r.origins:
+                                if uri.ssl_cert:
+                                        misc.validate_ssl_cert(
+                                            uri.ssl_cert,
+                                            prefix=p.prefix, uri=uri)
                 return True
 
         def has_publisher(self, prefix=None, alias=None):
@@ -1547,11 +1602,6 @@ class Image(object):
                         pub = self.get_publisher(prefix=prefix,
                             alias=alias)
 
-                        ppub = self.cfg.get_property("property",
-                            "preferred-publisher")
-                        if pub.prefix == ppub:
-                                raise apx.RemovePreferredPublisher()
-
                         self.cfg.remove_publisher(pub.prefix)
                         self.remove_publisher_metadata(pub, progtrack=progtrack)
                         self.save_config()
@@ -1568,47 +1618,28 @@ class Image(object):
                                 return pub
                         elif alias and alias == pub.alias:
                                 return pub
-                        elif origin and pub.selected_repository and \
-                            pub.selected_repository.has_origin(origin):
+                        elif origin and pub.repository and \
+                            pub.repository.has_origin(origin):
                                 return pub
                 raise apx.UnknownPublisher(max(prefix, alias, origin))
 
         def pub_search_before(self, being_moved, staying_put):
                 """Moves publisher "being_moved" to before "staying_put"
-                in search order."""
-                with self.locked_op("search-before"):
-                        self.__pub_search_common(being_moved, staying_put,
-                            after=False)
+                in search order.
+
+                The caller is responsible for locking the image."""
+
+                self.cfg.change_publisher_search_order(being_moved, staying_put,
+                    after=False)
 
         def pub_search_after(self, being_moved, staying_put):
                 """Moves publisher "being_moved" to after "staying_put"
-                in search order."""
-                with self.locked_op("search-after"):
-                        self.__pub_search_common(being_moved, staying_put,
-                            after=True)
+                in search order.
 
-        def __pub_search_common(self, being_moved, staying_put, after=True):
-                """Shared logic for altering publisher search order."""
+                The caller is responsible for locking the image."""
 
-                bm = self.get_publisher(being_moved).prefix
-                sp = self.get_publisher(staying_put).prefix
-
-                if bm == sp:
-                        raise apx.MoveRelativeToSelf()
-
-                # compute new order and set it
-                so = self.cfg.get_property("property", "publisher-search-order")
-                so.remove(bm)
-                if after:
-                        so.insert(so.index(sp) + 1, bm)
-                else:
-                        so.insert(so.index(sp), bm)
-                self.cfg.change_publisher_search_order(so)
-                self.save_config()
-
-        def get_preferred_publisher(self):
-                """Returns the prefix of the preferred publisher."""
-                return self.cfg.get_property("property", "preferred-publisher")
+                self.cfg.change_publisher_search_order(being_moved, staying_put,
+                    after=True)
 
         def __apply_alt_pkg_sources(self, img_kcat):
                 pkg_pub_map = self.__alt_pkg_pub_map
@@ -1680,7 +1711,8 @@ class Image(object):
                 self.__alt_pubs = alt_pubs
                 self.__alt_known_cat = alt_kcat
 
-        def set_preferred_publisher(self, prefix=None, alias=None, pub=None):
+        def set_highest_ranked_publisher(self, prefix=None, alias=None,
+            pub=None):
                 """Sets the preferred publisher for packaging operations.
 
                 'prefix' is an optional string value specifying the name of
@@ -1692,28 +1724,42 @@ class Image(object):
                 'pub' is an optional Publisher object identifying the
                 publisher to set as the preferred publisher.
 
-                One of the above parameters must be provided."""
+                One of the above parameters must be provided.
 
-                with self.locked_op("set-preferred-publisher"):
-                        if not pub:
-                                pub = self.get_publisher(prefix=prefix,
-                                    alias=alias)
+                The caller is responsible for locking the image."""
 
-                        if pub.disabled:
-                                raise apx.SetDisabledPublisherPreferred(pub)
-                        self.cfg.set_property("property", "preferred-publisher",
-                            pub.prefix)
-                        self.save_config()
+                if not pub:
+                        pub = self.get_publisher(prefix=prefix, alias=alias)
+                if not self.cfg.allowed_to_move(pub):
+                        raise apx.ModifyingSyspubException(_("Publisher '%s' "
+                            "is a system publisher and cannot be moved.") % pub)
+                relative = None
+                ranks = self.get_publisher_ranks()
+                rel_rank = None
+                for p in ranks:
+                        rel_pub = self.get_publisher(p)
+                        if not self.cfg.allowed_to_move(rel_pub):
+                                continue
+                        rank = ranks[p][0]
+                        if rel_rank is None or rank < rel_rank:
+                                rel_rank = rank
+                                relative = rel_pub
+                assert relative, "Expected %s to already be part of the " + \
+                    "search order:%s" % (relative, ranks)
+                if relative == pub:
+                        # It's already first in the list of non-system
+                        # publishers, so nothing to do.
+                        return
+                self.cfg.change_publisher_search_order(pub.prefix,
+                    relative.prefix, after=False)
 
         def set_property(self, prop_name, prop_value):
-                assert prop_name != "preferred-publisher"
                 with self.locked_op("set-property"):
                         self.cfg.set_property("property", prop_name,
                             prop_value)
                         self.save_config()
 
         def set_properties(self, properties):
-                assert "preferred-publisher" not in properties
                 properties = { "property": properties }
                 with self.locked_op("set-property"):
                         self.cfg.set_properties(properties)
@@ -1730,20 +1776,17 @@ class Image(object):
                         return False
 
         def delete_property(self, prop_name):
-                assert prop_name != "preferred-publisher"
                 with self.locked_op("unset-property"):
                         self.cfg.remove_property("property", prop_name)
                         self.save_config()
 
         def add_property_value(self, prop_name, prop_value):
-                assert prop_name != "preferred-publisher"
                 with self.locked_op("add-property-value"):
                         self.cfg.add_property_value("property", prop_name,
                             prop_value)
                         self.save_config()
 
         def remove_property_value(self, prop_name, prop_value):
-                assert prop_name != "preferred-publisher"
                 with self.locked_op("remove-property-value"):
                         self.cfg.remove_property_value("property", prop_name,
                             prop_value)
@@ -1771,7 +1814,8 @@ class Image(object):
                 return self.cfg.get_index()["property"].keys()
 
         def add_publisher(self, pub, refresh_allowed=True, progtrack=None,
-            approved_cas=EmptyI, revoked_cas=EmptyI, unset_cas=EmptyI):
+            approved_cas=EmptyI, revoked_cas=EmptyI, search_after=None,
+            search_before=None, search_first=None, unset_cas=EmptyI):
                 """Adds the provided publisher object to the image
                 configuration.
 
@@ -1785,12 +1829,49 @@ class Image(object):
                         return self.__add_publisher(pub,
                             refresh_allowed=refresh_allowed,
                             progtrack=progtrack, approved_cas=EmptyI,
-                            revoked_cas=EmptyI, unset_cas=EmptyI)
+                            revoked_cas=EmptyI, search_after=search_after,
+                            search_before=search_before,
+                            search_first=search_first, unset_cas=EmptyI)
+
+        def __update_publisher_catalogs(self, pub, progtrack=None,
+            refresh_allowed=True):
+                # Ensure that if the publisher's meta directory already
+                # exists for some reason that the data within is not
+                # used.
+                self.remove_publisher_metadata(pub, progtrack=progtrack,
+                    rebuild=False)
+
+                repo = pub.repository
+                if refresh_allowed and repo.origins:
+                        try:
+                                # First, verify that the publisher has a
+                                # valid pkg(5) repository.
+                                self.transport.valid_publisher_test(pub)
+                                pub.validate_config()
+                                self.refresh_publishers(pubs=[pub],
+                                    progtrack=progtrack)
+                        except Exception, e:
+                                # Remove the newly added publisher since
+                                # it is invalid or the retrieval failed.
+                                if not pub.sys_pub:
+                                        self.cfg.remove_publisher(pub.prefix)
+                                raise
+                        except:
+                                # Remove the newly added publisher since
+                                # the retrieval failed.
+                                if not pub.sys_pub:
+                                        self.cfg.remove_publisher(pub.prefix)
+                                raise
 
         def __add_publisher(self, pub, refresh_allowed=True, progtrack=None,
-            approved_cas=EmptyI, revoked_cas=EmptyI, unset_cas=EmptyI):
+            approved_cas=EmptyI, revoked_cas=EmptyI, search_after=None,
+            search_before=None, search_first=None, unset_cas=EmptyI):
                 """Private version of add_publisher(); caller is responsible
                 for locking."""
+
+                assert (not search_after and not search_before) or \
+                    (not search_after and not search_first) or \
+                    (not search_before and not search_first)
 
                 if self.version < self.CURRENT_VERSION:
                         raise apx.ImageFormatUpdateNeeded(self.root)
@@ -1811,31 +1892,8 @@ class Image(object):
                 pub.transport = self.transport
                 self.cfg.publishers[pub.prefix] = pub
 
-                # Ensure that if the publisher's meta directory already
-                # exists for some reason that the data within is not
-                # used.
-                self.remove_publisher_metadata(pub, progtrack=progtrack,
-                    rebuild=False)
-
-                repo = pub.selected_repository
-                if refresh_allowed and repo.origins:
-                        try:
-                                # First, verify that the publisher has a
-                                # valid pkg(5) repository.
-                                self.transport.valid_publisher_test(pub)
-                                pub.validate_config()
-                                self.refresh_publishers(pubs=[pub],
-                                    progtrack=progtrack)
-                        except Exception, e:
-                                # Remove the newly added publisher since
-                                # it is invalid or the retrieval failed.
-                                self.cfg.remove_publisher(pub.prefix)
-                                raise
-                        except:
-                                # Remove the newly added publisher since
-                                # the retrieval failed.
-                                self.cfg.remove_publisher(pub.prefix)
-                                raise
+                self.__update_publisher_catalogs(pub, progtrack=progtrack,
+                    refresh_allowed=refresh_allowed)
 
                 for ca in approved_cas:
                         try:
@@ -1848,13 +1906,20 @@ class Image(object):
                                         raise apx.MissingFileArgumentException(
                                             ca)
                                 raise apx._convert_error(e)
-                        pub.approve_ca_cert(s)
+                        pub.approve_ca_cert(s, manual=True)
 
                 for hsh in revoked_cas:
                         pub.revoke_ca_cert(hsh)
 
                 for hsh in unset_cas:
                         pub.unset_ca_cert(hsh)
+
+                if search_first:
+                        self.set_highest_ranked_publisher(prefix=pub.prefix)
+                elif search_before:
+                        self.pub_search_before(pub.prefix, search_before)
+                elif search_after:
+                        self.pub_search_after(pub.prefix, search_after)
 
                 # Only after success should the configuration be saved.
                 self.save_config()
@@ -2143,7 +2208,7 @@ class Image(object):
                         if intent:
                                 alt_repo = None
                                 if alt_pub:
-                                        alt_repo = alt_pub.selected_repository
+                                        alt_repo = alt_pub.repository
                                 try:
                                         self.transport.touch_manifest(fmri,
                                             intent, alt_repo=alt_repo)
@@ -2293,7 +2358,7 @@ class Image(object):
                         newpubs = (instpubs & altpubs) - cfgpubs
                         for pfx in newpubs:
                                 npub = publisher.Publisher(pfx,
-                                    repositories=[publisher.Repository()])
+                                    repository=publisher.Repository())
                                 self.__add_publisher(npub,
                                     refresh_allowed=False)
 
@@ -2468,15 +2533,6 @@ class Image(object):
                         return fmris[0]
                 return None
 
-        def fmri_set_default_publisher(self, fmri):
-                """If the FMRI supplied as an argument does not have
-                a publisher, set it to the image's preferred publisher."""
-
-                if fmri.has_publisher():
-                        return
-
-                fmri.set_publisher(self.get_preferred_publisher(), True)
-
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
                 installed in the current image."""
@@ -2486,7 +2542,8 @@ class Image(object):
                 if v and not fmri.publisher:
                         fmri.set_publisher(v.get_publisher_str())
                 elif not fmri.publisher:
-                        fmri.set_publisher(self.get_preferred_publisher(), True)
+                        fmri.set_publisher(self.get_highest_ranked_publisher(),
+                            True)
 
                 if v and v.is_successor(fmri):
                         return True
@@ -2560,11 +2617,6 @@ class Image(object):
                 progtrack.cache_catalogs_start()
 
                 publist = list(self.gen_publishers())
-                if not publist:
-                        # No publishers, so nothing can be known or installed.
-                        self.__remove_catalogs()
-                        progtrack.cache_catalogs_done()
-                        return
 
                 be_name, be_uuid = bootenv.BootEnv.get_be_name(self.root)
                 self.history.log_operation_start("rebuild-image-catalogs",
@@ -2876,6 +2928,11 @@ class Image(object):
                 if not pubs:
                         # Omit disabled publishers.
                         pubs = [p for p in self.gen_publishers()]
+
+                if not pubs:
+                        self.__rebuild_image_catalogs(progtrack=progtrack)
+                        return
+
                 for pub in pubs:
                         p = pub
                         if not isinstance(p, publisher.Publisher):
