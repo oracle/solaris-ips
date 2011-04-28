@@ -51,12 +51,10 @@ ROOTFILES = \
 	$(ROOTETCBRAND)/smf_disable.conf \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/attach \
-	$(ROOTBRANDPKG)/boot \
 	$(ROOTBRANDPKG)/clone \
 	$(ROOTBRANDPKG)/common.ksh \
 	$(ROOTBRANDPKG)/detach \
 	$(ROOTBRANDPKG)/fmri_compare \
-	$(ROOTBRANDPKG)/halt \
 	$(ROOTBRANDPKG)/image_install \
 	$(ROOTBRANDPKG)/p2v \
 	$(ROOTBRANDPKG)/pkgcreatezone \
