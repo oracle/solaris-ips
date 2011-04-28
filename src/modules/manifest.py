@@ -194,7 +194,7 @@ class Manifest(object):
                                 # type, key attribute, and unique variants set
                                 # on the action.
                                 try:
-                                        key = set([a.attrs[a.key_attr]])
+                                        key = set(a.attrlist(a.key_attr))
                                         key.update(
                                             "%s=%s" % (v, a.attrs[v])
                                             for v in a.get_varcet_keys()[0]

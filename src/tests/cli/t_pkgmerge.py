@@ -155,6 +155,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             add file tmp/sparc1 mode=0444 owner=root group=bin path=/etc/debug-notes pkg.merge.blend=arch
             add file tmp/sparc2 mode=0444 owner=root group=bin path=/etc/sparc/debug-notes
             add file tmp/sparc3 mode=0444 owner=root group=bin path=/etc/binary
+            add depend type=require-any fmri=foo fmri=bar
             close
         """
 
@@ -162,12 +163,14 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             open gold@1.0,5.11-0
             add file tmp/sparc4 mode=0444 owner=root group=bin path=/etc/everywhere-notes pkg.merge.blend=arch pkg.merge.blend=debug
             add file tmp/sparc4 mode=0444 owner=root group=bin path=/etc/binary
+            add depend type=require-any fmri=foo fmri=bar
             close
         """
 
         multiC = """
             open gold@1.0,5.11-0
             add file tmp/i3862 mode=0444 owner=root group=bin path=/etc/binary
+            add depend type=require-any fmri=foo fmri=bar
             close
         """
 
@@ -175,6 +178,7 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
             open gold@1.0,5.11-0
             add file tmp/i3861 mode=0444 owner=root group=bin path=/etc/nondebug-notes pkg.merge.blend=variant.arch
             add file tmp/i3863 mode=0444 owner=root group=bin path=/etc/binary
+            add depend type=require-any fmri=foo fmri=bar
             close
         """
 
@@ -972,6 +976,7 @@ set name=variant.arch value=sparc value=i386\
 
                 actual = self.get_manifest(repodir)
                 expected = """\
+depend fmri=foo fmri=bar type=require-any
 file 24bb3b46361cf7d180d0227beea4f75a872b6ff4 chash=b91fb7bdd4d35779bbd70c6b0367198e48290373 group=bin mode=0444 owner=root path=etc/nondebug-notes pkg.csize=35 pkg.size=15 variant.debug=false
 file 3dfdd5c4f64e2005e7913ba8444c8ee6fa70f238 chash=05beb59e279eb2c9146c6547f1c4b94536f4b2b9 group=bin mode=0444 owner=root path=etc/binary pkg.csize=35 pkg.size=15 variant.arch=i386 variant.debug=false
 file 4c12fa38950b7a5580c2715725f0ea980354b407 chash=61801db07f048941675ab3951cace0899b571430 group=bin mode=0444 owner=root path=etc/binary pkg.csize=35 pkg.size=15 variant.arch=i386 variant.debug=true
