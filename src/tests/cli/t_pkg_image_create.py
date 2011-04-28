@@ -719,12 +719,6 @@ class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
                 self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg_image_create, durl)
 
-        def test_763a(self):
-                """Bug 763, traceback 1: no -p option given to image-create."""
-
-                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
-                    self.pkg, "image-create foo")
-
         def test_763c(self):
                 """Bug 763, traceback 3: -p given to image-create, but no
                 publisher specified."""
