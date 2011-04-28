@@ -1343,6 +1343,8 @@ def change_variant(api_inst, args):
                         return ret_code
 
         if not stuff_to_do:
+                if verbose:
+                        display_plan(api_inst, verbose)
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
 
@@ -1448,6 +1450,8 @@ def change_facet(api_inst, args):
                         return ret_code
 
         if not stuff_to_do:
+                if verbose:
+                        display_plan(api_inst, verbose)
                 msg(_("Facet change has no effect on image"))
                 return EXIT_NOP
 
@@ -1545,6 +1549,8 @@ def install(api_inst, args):
                         return ret_code
 
         if not stuff_to_do:
+                if verbose:
+                        display_plan(api_inst, verbose)
                 msg(_("No updates necessary for this image."))
                 return EXIT_NOP
 
@@ -1731,6 +1737,8 @@ def update(api_inst, args):
                         return ret_code
 
         if not stuff_to_do:
+                if verbose:
+                        display_plan(api_inst, verbose)
                 msg(_("No updates available for this image."))
                 return EXIT_NOP
 
@@ -1801,6 +1809,8 @@ def revert(api_inst, args):
                         return ret_code
 
         if not stuff_to_do:
+                if verbose:
+                        display_plan(api_inst, verbose)
                 msg(_("No files need to be reverted."))
                 return EXIT_NOP
 
