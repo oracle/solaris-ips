@@ -25,6 +25,7 @@
 #
 
 import calendar
+import errno
 import getopt
 import gettext
 import os
@@ -50,8 +51,9 @@ from pkg.client import global_settings
 from pkg.misc import emsg, get_pkg_otw_size, msg, PipeError
 
 # Globals
+archive = False
 cache_dir = None
-complete_catalog = None
+src_cat = None
 download_start = False
 tmpdirs = []
 temp_root = None
@@ -59,6 +61,7 @@ xport = None
 xport_cfg = None
 dest_xport = None
 targ_pub = None
+target = None
 
 def error(text):
         """Emit an error message prefixed by the command name """
@@ -160,9 +163,9 @@ def cleanup(caller_error=False):
                             "following directory:\n\t%s\nUse pkgrecv -c "
                             "to resume the interrupted download.") % cache_dir)
                         continue
-                shutil.rmtree(d, True)
+                shutil.rmtree(d, ignore_errors=True)
 
-        if caller_error and dest_xport and targ_pub:
+        if caller_error and dest_xport and targ_pub and not archive:
                 try:
                         dest_xport.publish_refresh_packages(targ_pub)
                 except apx.TransportError:
@@ -219,32 +222,16 @@ def expand_fmri(pfmri, constraint=version.CONSTRAINT_AUTO):
         if isinstance(pfmri, str):
                 pfmri = pkg.fmri.PkgFmri(pfmri, "5.11")
 
-        for f in complete_catalog.get(pfmri.pkg_name, []):
-                if not pfmri.version or \
-                    f.version.is_successor(pfmri.version, constraint):
-                        return f
+        # Iterate in reverse so newest version is evaluated first.
+        versions = [e for e in src_cat.fmris_by_version(pfmri.pkg_name)]
+        for v, fmris in reversed(versions):
+                for f in fmris:
+                        if not pfmri.version or \
+                            f.version.is_successor(pfmri.version, constraint):
+                                return f
         return
 
-def expand_matching_fmris(fmri_list, pfmri_strings):
-        """find matching fmris using pattern matching and
-        constraint auto."""
-
-        try:
-                patterns = [
-                    pkg.fmri.MatchingPkgFmri(s, "5.11")
-                    for s in pfmri_strings
-                ]
-        except pkg.fmri.FmriError, e:
-                abort(err=e)
-
-        matched_pats = {}
-
-        matches, unmatched = catalog.extract_matching_fmris(fmri_list,
-            patterns=patterns, constraint=version.CONSTRAINT_AUTO,
-            matcher=pkg.fmri.glob_match, counthash=matched_pats)
-        return matched_pats, matches, unmatched
-
-def get_dependencies(src_uri, fmri_list, xport_cfg, tracker):
+def get_dependencies(fmri_list, xport_cfg, tracker):
 
         old_limit = sys.getrecursionlimit()
         # The user may be recursing 'entire' or 'redistributable'.
@@ -252,15 +239,14 @@ def get_dependencies(src_uri, fmri_list, xport_cfg, tracker):
 
         s = set()
         for f in fmri_list:
-                pfmri = expand_fmri(f)
-                _get_dependencies(src_uri, s, pfmri, xport_cfg, tracker)
+                _get_dependencies(s, f, xport_cfg, tracker)
 
         # Restore the previous default.
         sys.setrecursionlimit(old_limit)
 
         return list(s)
 
-def _get_dependencies(src_uri, s, pfmri, xport_cfg, tracker):
+def _get_dependencies(s, pfmri, xport_cfg, tracker):
         """Expand all dependencies."""
         tracker.evaluate_progress(fmri=pfmri)
         s.add(pfmri)
@@ -269,8 +255,7 @@ def _get_dependencies(src_uri, s, pfmri, xport_cfg, tracker):
         for a in m.gen_actions_by_type("depend"):
                 new_fmri = expand_fmri(a.attrs["fmri"])
                 if new_fmri and new_fmri not in s:
-                        _get_dependencies(src_uri, s, new_fmri, xport_cfg,
-                            tracker)
+                        _get_dependencies(s, new_fmri, xport_cfg, tracker)
         return s
 
 def add_hashes_to_multi(mfst, multi):
@@ -311,31 +296,8 @@ def prune(fmri_list, all_versions, all_timestamps):
                 fmri_list = [sorted(dedup[f], reverse=True)[0] for f in dedup]
         return fmri_list
 
-def list_newest_fmris(fmri_list):
-        """List the provided fmris."""
-
-        fm_hash = {}
-        fm_list = []
-
-        # Order all fmris by package name
-        for f in sorted(fmri_list):
-                if f.pkg_name in fm_hash:
-                        fm_hash[f.pkg_name].append(f)
-                else:
-                        fm_hash[f.pkg_name] = [ f ]
-
-        # sort each fmri list
-        for k in fm_hash.keys():
-                fm_hash[k].sort(reverse = True)
-                l = fm_hash[k]
-                fm_list.append(l[0])
-
-        for e in fm_list:
-                msg(e.get_fmri())
-
 def fetch_catalog(src_pub, tracker, txport):
         """Fetch the catalog from src_uri."""
-        global complete_catalog
 
         src_uri = src_pub.repository.origins[0].uri
         tracker.catalog_start(src_uri)
@@ -355,25 +317,15 @@ def fetch_catalog(src_pub, tracker, txport):
                 # and drive on.  If there was an actual failure due to a
                 # transport issue, let the failure happen whenever some other
                 # operation is attempted later.
-                return []
+                tracker.catalog_done()
+                return catalog.Catalog(read_only=True)
 
-        cat = src_pub.catalog
-
-        d = {}
-        fmri_list = []
-        for f in cat.fmris():
-                fmri_list.append(f)
-                d.setdefault(f.pkg_name, [f]).append(f)
-        for k in d.keys():
-                d[k].sort(reverse=True)
-
-        complete_catalog = d
         tracker.catalog_done()
-        return fmri_list
+        return src_pub.catalog
 
 def main_func():
-        global cache_dir, download_start, xport, xport_cfg, dest_xport, \
-            temp_root, targ_pub
+        global archive, cache_dir, download_start, xport, xport_cfg, \
+            dest_xport, temp_root, targ_pub, target
 
         all_timestamps = False
         all_versions = False
@@ -382,10 +334,8 @@ def main_func():
         list_newest = False
         recursive = False
         src_uri = None
-        target = None
         incoming_dir = None
         src_pub = None
-        archive = False
         raw = False
         key = None
         cert = None
@@ -490,39 +440,61 @@ def main_func():
 def check_processed(any_matched, any_unmatched, total_processed):
         # Reduce unmatched patterns to those that were unmatched for all
         # publishers.
-        unmatched = {}
-        for pub_unmatched in any_unmatched:
-                if not pub_unmatched:
-                        # If any publisher matched all patterns, then treat
-                        # the operation as successful.
-                        unmatched = {}
-                        break
+        unmatched = set(any_unmatched) - set(any_matched)
 
-                for k in pub_unmatched:
-                        unmatched.setdefault(k, set()).update(pub_unmatched[k])
+        if not unmatched:
+                return
 
-        for k in unmatched:
-                map(unmatched[k].discard, any_matched)
+        # If any match failures remain, abort with an error.
+        rval = 1
+        if total_processed > 0:
+                rval = 3
+        abort(str(apx.PackageMatchErrors(unmatched_fmris=unmatched)),
+            retcode=rval)
 
-        # Prune types of matching that didn't have any match failures.
-        for k, v in unmatched.items():
-                if not v:
-                        del unmatched[k]
+def get_matches(src_pub, tracker, xport, pargs, any_unmatched, any_matched,
+    all_versions, all_timestamps, recursive):
+        """Returns the set of matching FMRIs for the given arguments."""
+        global src_cat
 
-        if unmatched:
-                # If any match failures remain, abort with an error.
-                match_err = apx.InventoryException(**unmatched)
-                emsg(match_err)
-                if total_processed > 0:
-                        # Partial failure.
-                        abort(retcode=3)
-                abort()
+        src_cat = fetch_catalog(src_pub, tracker, xport)
+        # Avoid overhead of going through matching if user requested all
+        # packages.
+        if "*" not in pargs and "*@*" not in pargs:
+                try:
+                        matches, refs, unmatched = \
+                            src_cat.get_matching_fmris(pargs,
+                            raise_unmatched=False)
+                except apx.PackageMatchErrors, e:
+                        abort(str(e))
+
+                # Track anything that failed to match.
+                any_unmatched.extend(unmatched)
+                any_matched.extend(set(p for p in refs.values()))
+                matches = list(set(f for m in matches.values() for f in m))
+        else:
+                matches = [f for f in src_cat.fmris()]
+
+        if not matches:
+                # No matches at all; nothing to do for this publisher.
+                return matches
+
+        matches = prune(matches, all_versions, all_timestamps)
+        if recursive:
+                msg(_("Retrieving manifests for dependency "
+                    "evaluation ..."))
+                tracker.evaluate_start()
+                matches = prune(get_dependencies(matches, xport_cfg, tracker),
+                    all_versions, all_timestamps)
+                tracker.evaluate_done()
+
+        return matches
 
 def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
     keep_compresed, raw, recursive, dry_run, dest_xport_cfg, src_uri):
         """Retrieve source package data completely and then archive it."""
 
-        global cache_dir, download_start, xport, xport_cfg, dest_xport, targ_pub
+        global cache_dir, download_start, xport, xport_cfg
 
         target = os.path.abspath(target)
         if os.path.exists(target):
@@ -555,38 +527,16 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 if pargs == None or len(pargs) == 0:
                         usage(_("must specify at least one pkgfmri"))
 
-                all_fmris = fetch_catalog(src_pub, tracker, xport)
-                fmri_arguments = pargs
-                matched_pats, matches, unmatched = expand_matching_fmris(
-                    all_fmris, fmri_arguments)
-
-                # Track anything that failed to match.
-                any_unmatched.append(unmatched)
-                any_matched.extend(matched_pats.keys())
+                matches = get_matches(src_pub, tracker, xport, pargs,
+                    any_unmatched, any_matched, all_versions, all_timestamps,
+                    recursive)
                 if not matches:
                         # No matches at all; nothing to do for this publisher.
                         continue
 
-                fmri_list = prune(list(set(matches)), all_versions,
-                    all_timestamps)
-
-                if recursive:
-                        msg(_("Retrieving manifests for dependency "
-                            "evaluation ..."))
-                        tracker.evaluate_start()
-                        fmri_list = prune(get_dependencies(src_uri, fmri_list,
-                            xport_cfg, tracker), all_versions, all_timestamps)
-                        tracker.evaluate_done()
-
-                def get_basename(pfmri):
-                        open_time = pfmri.get_timestamp()
-                        return "%d_%s" % \
-                            (calendar.timegm(open_time.utctimetuple()),
-                            urllib.quote(str(pfmri), ""))
-
                 # First, retrieve the manifests and calculate package transfer
                 # sizes.
-                npkgs = len(fmri_list)
+                npkgs = len(matches)
                 get_bytes = 0
                 get_files = 0
 
@@ -595,10 +545,9 @@ def archive_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                             npkgs)
 
                 tracker.evaluate_start(npkgs=npkgs)
-                skipped = False
                 retrieve_list = []
-                while fmri_list:
-                        f = fmri_list.pop()
+                while matches:
+                        f = matches.pop()
 
                         m = get_manifest(f, xport_cfg)
                         pkgdir = xport_cfg.get_pkg_dir(f)
@@ -693,8 +642,10 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         if pargs or len(pargs) > 0:
                                 usage(_("-n takes no options"))
 
-                        fmri_list = fetch_catalog(src_pub, tracker, xport)
-                        list_newest_fmris(fmri_list)
+                        src_cat = fetch_catalog(src_pub, tracker,
+                            xport)
+                        for f in src_cat.fmris(ordered=True, last=True):
+                                msg(f.get_fmri())
                         continue
 
                 msg(_("Processing packages for publisher %s ...") %
@@ -755,31 +706,15 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 dest_xport_cfg.pkg_root = basedir
 
                 if republish:
-                        targ_fmris = fetch_catalog(targ_pub, tracker,
+                        targ_cat = fetch_catalog(targ_pub, tracker,
                             dest_xport)
 
-                all_fmris = fetch_catalog(src_pub, tracker, xport)
-                fmri_arguments = pargs
-                matched_pats, matches, unmatched = expand_matching_fmris(
-                    all_fmris, fmri_arguments)
-
-                # Track anything that failed to match.
-                any_unmatched.append(unmatched)
-                any_matched.extend(matched_pats.keys())
+                matches = get_matches(src_pub, tracker, xport, pargs,
+                    any_unmatched, any_matched, all_versions, all_timestamps,
+                    recursive)
                 if not matches:
                         # No matches at all; nothing to do for this publisher.
                         continue
-
-                fmri_list = prune(list(set(matches)), all_versions,
-                    all_timestamps)
-
-                if recursive:
-                        msg(_("Retrieving manifests for dependency "
-                            "evaluation ..."))
-                        tracker.evaluate_start()
-                        fmri_list = prune(get_dependencies(src_uri, fmri_list,
-                            xport_cfg, tracker), all_versions, all_timestamps)
-                        tracker.evaluate_done()
 
                 def get_basename(pfmri):
                         open_time = pfmri.get_timestamp()
@@ -789,7 +724,7 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
 
                 # First, retrieve the manifests and calculate package transfer
                 # sizes.
-                npkgs = len(fmri_list)
+                npkgs = len(matches)
                 get_bytes = 0
                 send_bytes = 0
 
@@ -800,10 +735,10 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                 tracker.evaluate_start(npkgs=npkgs)
                 skipped = False
                 retrieve_list = []
-                while fmri_list:
-                        f = fmri_list.pop()
+                while matches:
+                        f = matches.pop()
 
-                        if republish and f in targ_fmris:
+                        if republish and targ_cat.get_entry(f):
                                 if not skipped:
                                         # Ensure a new line is output so message
                                         # is on separate line from spinner.
@@ -919,6 +854,14 @@ def transfer_pkgs(pargs, target, list_newest, all_versions, all_timestamps,
                         # republish to conserve space.
                         try:
                                 shutil.rmtree(dest_xport_cfg.incoming_root)
+                                shutil.rmtree(pkgdir)
+                                if cache_dir in tmpdirs:
+                                        # If cache_dir is listed in tmpdirs,
+                                        # then it's safe to dump cache contents.
+                                        # Otherwise, it's a user cache directory
+                                        # and shouldn't be dumped.
+                                        shutil.rmtree(cache_dir)
+                                        misc.makedirs(cache_dir)
                         except EnvironmentError, e:
                                 raise apx._convert_error(e)
                         misc.makedirs(dest_xport_cfg.incoming_root)
@@ -954,23 +897,59 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except (KeyboardInterrupt, apx.CanceledException):
-                cleanup(True)
-                __ret = 1
+                try:
+                        cleanup(True)
+                except:
+                        __ret = 99
+                else:
+                        __ret = 1
         except (pkg.actions.ActionError, trans.TransactionError, RuntimeError,
             apx.ApiException), _e:
                 error(_e)
-                cleanup(True)
-                __ret = 1
+                try:
+                        cleanup(True)
+                except:
+                        __ret = 99
+                else:
+                        __ret = 1
         except PipeError:
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                cleanup(False)
-                __ret = 1
+                try:
+                        cleanup(False)
+                except:
+                        __ret = 99
+                else:
+                        __ret = 1
         except SystemExit, _e:
-                cleanup(False)
+                try:
+                        cleanup(False)
+                except:
+                        __ret = 99
                 raise _e
+        except EnvironmentError, _e:
+                if _e.errno != errno.ENOSPC and _e.errno != errno.EDQUOT:
+                        raise
+
+                txt = "\n"
+                if _e.errno == errno.EDQUOT:
+                        txt += _("Storage space quota exceeded.")
+                else:
+                        txt += _("No storage space left.")
+
+                tdirs = [temp_root]
+                if cache_dir not in tmpdirs:
+                        # Only include in message if user specified.
+                        tdirs.append(cache_dir)
+                if target and target.startswith("file://"):
+                        tdirs.append(target)
+
+                txt += "\n"
+                error(txt + _("Please verify that the filesystem containing "
+                   "the following directories has enough space available:\n"
+                   "%s") % "\n".join(tdirs))
+                __ret = 1
         except:
-                cleanup(True)
                 traceback.print_exc()
                 error(_("""\n
 This is an internal error in pkg(5) version %(version)s.  Please let the
@@ -979,4 +958,11 @@ this message) when filing a bug at:
 
 %(bug_uri)s""") % { "version": pkg.VERSION, "bug_uri": misc.BUG_URI_CLI })
                 __ret = 99
+                # Cleanup must be called *after* error messaging so that
+                # exceptions processed during cleanup don't cause the wrong
+                # traceback to be printed.
+                try:
+                        cleanup(True)
+                except:
+                        pass
         sys.exit(__ret)

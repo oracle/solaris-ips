@@ -183,7 +183,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 scheme = self.published[6]
                 bronze = self.published[4]
                 tree = self.published[5]
-                expected = "\n".join((amber, scheme, tree, bronze)) + "\n"
+                expected = "\n".join((amber, bronze, scheme, tree)) + "\n"
                 self.assertEqualDiff(expected, output)
 
         def test_1_recv_pkgsend(self):
@@ -606,8 +606,8 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 self.pkgrecv(arc_path, "--newest")
                 self.pkgrecv(arc_path, "-d %s pkg://test2/amber bronze" %
                     self.durl4)
+                self.wait_repo(self.dcs[4].get_repodir())
                 repo = self.dcs[4].get_repo()
-                self.wait_repo(repo.root)
                 self.pkgrecv(repo.root, "--newest")
 
                 # Check for expected publishers.

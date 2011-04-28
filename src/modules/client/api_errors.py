@@ -1629,7 +1629,7 @@ class UnknownRepositoryMirror(PublisherError):
         def __str__(self):
                 return _("Unknown repository mirror '%s'.") % self.data
 
-class UnsupportedRepositoryOperation(PublisherError):
+class UnsupportedRepositoryOperation(TransportError):
         """The publisher has no active repositories that support the
         requested operation."""
 
@@ -1641,8 +1641,8 @@ class UnsupportedRepositoryOperation(PublisherError):
                 self.op = operation
 
         def __str__(self):
-                return _("Publisher '%s' has no repositories that support the"
-                    " '%s' operation.") % (self.pub, self.op)
+                return _("Publisher '%(pub)s' has no repositories that support "
+                    "the '%(op)s' operation.") % self.__dict__
 
 
 class RepoPubConfigUnavailable(PublisherError):
