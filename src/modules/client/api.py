@@ -1274,13 +1274,13 @@ class ImageInterface(object):
                     immediate=immediate, pubs=pubs,
                     progtrack=self.__progresstracker)
 
-        def __licenses(self, pfmri, mfst):
+        def __licenses(self, pfmri, mfst, alt_pub=None):
                 """Private function. Returns the license info from the
                 manifest mfst."""
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
                         license_lst.append(LicenseInfo(pfmri, lic,
-                            img=self._img))
+                            img=self._img, alt_pub=alt_pub))
                 return license_lst
 
         @_LockedCancelable()
@@ -2516,7 +2516,7 @@ class ImageInterface(object):
                                 if mfst is not None:
                                         if PackageInfo.LICENSES in info_needed:
                                                 licenses = self.__licenses(pfmri,
-                                                    mfst)
+                                                    mfst, alt_pub=alt_pub)
 
                                         if PackageInfo.SIZE in info_needed:
                                                 size = mfst.get_size(

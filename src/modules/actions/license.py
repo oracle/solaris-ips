@@ -169,11 +169,15 @@ class LicenseAction(generic.Action):
 
                 return indices
 
-        def get_text(self, img, pfmri):
+        def get_text(self, img, pfmri, alt_pub=None):
                 """Retrieves and returns the payload of the license (which
                 should be text).  This may require remote retrieval of
                 resources and so this could raise a TransportError or other
-                ApiException."""
+                ApiException.
+
+                'alt_pub' is an optional alternate Publisher to use for
+                any required transport operations.
+                """
 
                 opener = self.get_local_opener(img, pfmri)
                 if opener:
@@ -181,8 +185,10 @@ class LicenseAction(generic.Action):
                         return opener().read()
 
                 try:
-                        pub = img.get_publisher(pfmri.publisher)
-                        return img.transport.get_content(pub, self.hash,
+                        if not alt_pub:
+                                alt_pub = img.get_publisher(pfmri.publisher)
+                        assert pfmri.publisher == alt_pub.prefix
+                        return img.transport.get_content(alt_pub, self.hash,
                             fmri=pfmri)
                 finally:
                         img.cleanup_downloads()

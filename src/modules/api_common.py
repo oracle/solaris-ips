@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 # Visible changes to classes here require an update to
 # doc/client_api_versions.txt and/or doc/server_api_versions.txt.
@@ -37,8 +37,9 @@ class LicenseInfo(object):
         """A class representing the license information a package
         provides.  Not intended for instantiation by API consumers."""
 
-        def __init__(self, pfmri, act, img=None, text=None):
+        def __init__(self, pfmri, act, img=None, text=None, alt_pub=None):
                 self.__action = act
+                self.__alt_pub = alt_pub
                 self.__fmri = pfmri
                 self.__img = img
                 self.__text = text
@@ -54,7 +55,8 @@ class LicenseInfo(object):
 
                 if not self.__img:
                         return self.__text
-                return self.__action.get_text(self.__img, self.__fmri)
+                return self.__action.get_text(self.__img, self.__fmri,
+                    alt_pub=self.__alt_pub)
 
         @property
         def fmri(self):

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -75,6 +74,11 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
             open pkg://test/incorp@2.0
             add set name=pkg.summary value="Incorporation"
             add depend type=incorporate fmri=quux@1.0,5.11-0.2
+            close """
+
+        licensed_pkg = """
+            open pkg://test2/licensed@1.0
+            add license tmp/LICENSE license=sample_license
             close """
 
         signed_pkg = """
@@ -183,7 +187,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test", "test",
-                    "empty"])
+                    "empty", "test2"])
                 self.make_misc_files(self.misc_files)
 
                 # First repository will contain all packages.
@@ -194,6 +198,9 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
 
                 # Third will be empty.
                 self.empty_rurl = self.dcs[3].get_repo_url()
+
+                # Fourth will be for license packages only.
+                self.licensed_rurl = self.dcs[4].get_repo_url()
 
                 # Setup base test paths.
                 self.path_to_certs = os.path.join(self.ro_data_root,
@@ -246,6 +253,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.signed10 = plist[3]
                 self.quux01 = plist[4]
                 self.quux10 = plist[5]
+
+                # Handle license package specially.
+                self.licensed10 = self.pkgsend_bulk(self.licensed_rurl,
+                    self.licensed_pkg)[0]
 
         def test_00_list(self):
                 """Verify that the list operation works as expected for
@@ -559,6 +570,10 @@ Packaging Date: %(pkg_date)s
                 # Uninstall all packages and verify there are no known packages.
                 self.pkg("uninstall \*")
                 self.pkg("info -r \*", exit=1)
+
+                # Verify that --license works as expected with -g.
+                self.pkg("info -g %s --license licensed" % self.licensed_rurl)
+                self.assertEqualDiff("tmp/LICENSE\n", self.output)
 
                 # Cleanup.
                 self.image_destroy()
