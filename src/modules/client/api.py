@@ -71,7 +71,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client import global_settings
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 57
+CURRENT_API_VERSION = 58
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -252,7 +252,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([57, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -288,6 +288,7 @@ class ImageInterface(object):
                 self.__plan_desc = None
                 self.__prepared = False
                 self.__executed = False
+                self.__be_activate = True
                 self.__be_name = None
                 self.__can_be_canceled = False
                 self.__canceling = False
@@ -438,7 +439,8 @@ class ImageInterface(object):
                 if not rc:
                         raise apx.ImageLockedError()
 
-        def __plan_common_start(self, operation, noexecute, new_be, be_name):
+        def __plan_common_start(self, operation, noexecute, new_be, be_name,
+            be_activate):
                 """Start planning an operation:
                     Acquire locks.
                     Log the start of the operation.
@@ -459,6 +461,7 @@ class ImageInterface(object):
                 assert self._activity_lock._is_owned()
                 self.log_operation_start(operation)
                 self.__new_be = new_be
+                self.__be_activate = be_activate
                 self.__be_name = be_name
                 if self.__be_name is not None:
                         self.check_be_name(be_name)
@@ -567,7 +570,8 @@ class ImageInterface(object):
                 # information in the plan.  We have to save it here and restore
                 # it later because __reset_unlock() torches it.
                 if exc_type == apx.ConflictingActionErrors:
-                        plan_desc = PlanDescription(self._img, self.__new_be)
+                        plan_desc = PlanDescription(self._img, self.__new_be,
+                            self.__be_activate)
 
                 self.__reset_unlock()
 
@@ -579,7 +583,8 @@ class ImageInterface(object):
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, update_index=True, be_name=None,
-            reject_list=misc.EmptyI, new_be=False, repos=None):
+            reject_list=misc.EmptyI, new_be=False, repos=None,
+            be_activate=True):
                 """Constructs a plan to install the packages provided in
                 pkg_list.  Once an operation has been planned, it may be
                 executed by first calling prepare(), and then execute_plan().
@@ -617,10 +622,15 @@ class ImageInterface(object):
                 use during the planned operation.  All API functions called
                 while a plan is still active will use this package data.
 
+                'be_activate' is an optional boolean indicating whether any
+                new boot environment created for the operation should be set
+                as the active one on next boot if the operation is successful.
+
                 This function returns a boolean indicating whether there is
                 anything to do."""
 
-                self.__plan_common_start("install", noexecute, new_be, be_name)
+                self.__plan_common_start("install", noexecute, new_be, be_name,
+                    be_activate)
                 try:
                         if refresh_catalogs:
                                 self.__refresh_publishers()
@@ -641,7 +651,7 @@ class ImageInterface(object):
                         self.__set_new_be()
 
                         self.__plan_desc = PlanDescription(self._img,
-                            self.__new_be)
+                            self.__new_be, self.__be_activate)
                         if self._img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -658,7 +668,7 @@ class ImageInterface(object):
                 return res
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
-            update_index=True, be_name=None, new_be=False):
+            update_index=True, be_name=None, new_be=False, be_activate=True):
                 """Constructs a plan to remove the packages provided in
                 pkg_list.  Once an operation has been planned, it may be
                 executed by first calling prepare(), and then execute_plan().
@@ -677,8 +687,7 @@ class ImageInterface(object):
                 is anything to do."""
 
                 self.__plan_common_start("uninstall", noexecute, new_be,
-                    be_name)
-
+                    be_name, be_activate)
                 try:
                         self._img.make_uninstall_plan(pkg_list,
                             recursive_removal, self.__progresstracker,
@@ -694,7 +703,7 @@ class ImageInterface(object):
                         self.__set_new_be()
 
                         self.__plan_desc = PlanDescription(self._img,
-                            self.__new_be)
+                            self.__new_be, self.__be_activate)
                         if noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -709,7 +718,7 @@ class ImageInterface(object):
 
         def plan_update(self, pkg_list, refresh_catalogs=True,
             reject_list=misc.EmptyI, noexecute=False, update_index=True,
-            be_name=None, new_be=False, repos=None):
+            be_name=None, new_be=False, repos=None, be_activate=True):
                 """Constructs a plan to update the packages provided in
                 pkg_list.  Once an operation has been planned, it may be
                 executed by first calling prepare(), and then execute_plan().
@@ -725,7 +734,7 @@ class ImageInterface(object):
                 is anything to do."""
 
                 self.__plan_common_start("update", noexecute, new_be,
-                    be_name)
+                    be_name, be_activate)
                 try:
                         if refresh_catalogs:
                                 self.__refresh_publishers()
@@ -745,7 +754,7 @@ class ImageInterface(object):
                         self.__set_new_be()
 
                         self.__plan_desc = PlanDescription(self._img,
-                            self.__new_be)
+                            self.__new_be, self.__be_activate)
                         if self._img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -792,7 +801,8 @@ class ImageInterface(object):
 
         def plan_update_all(self, refresh_catalogs=True,
             reject_list=misc.EmptyI, noexecute=False, force=False,
-            update_index=True, be_name=None, new_be=True, repos=None):
+            update_index=True, be_name=None, new_be=True, repos=None,
+            be_activate=True):
                 """Constructs a plan to update all packages on the system
                 to the latest known versions.  Once an operation has been
                 planned, it may be executed by first calling prepare(), and
@@ -808,7 +818,8 @@ class ImageInterface(object):
                 This function returns a tuple of booleans of the form
                 (stuff_to_do, solaris_image)."""
 
-                self.__plan_common_start("update", noexecute, new_be, be_name)
+                self.__plan_common_start("update", noexecute, new_be, be_name,
+                    be_activate)
                 try:
                         if refresh_catalogs:
                                 self.__refresh_publishers()
@@ -844,7 +855,7 @@ class ImageInterface(object):
                         self.__set_new_be()
 
                         self.__plan_desc = PlanDescription(self._img,
-                            self.__new_be)
+                            self.__new_be, self.__be_activate)
 
                         if self._img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
@@ -861,7 +872,8 @@ class ImageInterface(object):
                 return res, opensolaris_image
 
         def plan_change_varcets(self, variants=None, facets=None,
-            noexecute=False, be_name=None, new_be=None, repos=None):
+            noexecute=False, be_name=None, new_be=None, repos=None,
+            be_activate=True):
                 """Creates a plan to change the specified variants and/or facets
                 for the image.  After execution of a plan, or to abandon a plan,
                 reset() should be called.
@@ -878,7 +890,7 @@ class ImageInterface(object):
                 """
 
                 self.__plan_common_start("change-variant", noexecute, new_be,
-                    be_name)
+                    be_name, be_activate)
                 if not variants and not facets:
                         raise ValueError, "Nothing to do"
                 try:
@@ -897,7 +909,8 @@ class ImageInterface(object):
                         if not noexecute:
                                 self.__plan_type = self.__VARCET
 
-                        self.__plan_desc = PlanDescription(self._img, self.__new_be)
+                        self.__plan_desc = PlanDescription(self._img,
+                            self.__new_be, self.__be_activate)
 
                         if self._img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
@@ -918,7 +931,7 @@ class ImageInterface(object):
                 return res
 
         def plan_revert(self, args, tagged=False, noexecute=True, be_name=None,
-            new_be=None):
+            new_be=None, be_activate=True):
                 """Plan to revert either files or all files tagged with
                 specified values.  Args contains either path names or tag names
                 to be reverted, tagged is True if args contains tags.
@@ -926,7 +939,8 @@ class ImageInterface(object):
                 For all other parameters, refer to the 'plan_install' function
                 for an explanation of their usage and effects."""
 
-                self.__plan_common_start("revert", noexecute, new_be, be_name)
+                self.__plan_common_start("revert", noexecute, new_be, be_name,
+                    be_activate)
                 try:
                         self._img.make_revert_plan(args,
                             tagged,
@@ -943,7 +957,8 @@ class ImageInterface(object):
 
                         self.__set_new_be()
 
-                        self.__plan_desc = PlanDescription(self._img, self.__new_be)
+                        self.__plan_desc = PlanDescription(self._img,
+                            self.__new_be, self.__be_activate)
                         if self._img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -1172,7 +1187,7 @@ class ImageInterface(object):
                         be.update_boot_archive()
 
                 if self.__new_be == True:
-                        be.activate_image()
+                        be.activate_image(set_active=self.__be_activate)
                 else:
                         be.activate_install_uninstall()
                 self._img.cleanup_cached_content()
@@ -3626,10 +3641,11 @@ class Query(query_p.Query):
 class PlanDescription(object):
         """A class which describes the changes the plan will make."""
 
-        def __init__(self, img, new_be):
+        def __init__(self, img, new_be, be_activate):
                 self.__plan = img.imageplan
                 self._img = img
                 self.__new_be = new_be
+                self.__be_activate = be_activate
 
         def get_services(self):
                 """Returns a list of services affected in this plan."""
@@ -3732,6 +3748,12 @@ class PlanDescription(object):
                         return []
 
                 return self.__plan.get_solver_errors()
+
+        @property
+        def activate_be(self):
+                """A boolean value indicating whether any new boot environment
+                will be set active on next boot."""
+                return self.__be_activate
 
         @property
         def reboot_needed(self):

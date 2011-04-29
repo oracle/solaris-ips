@@ -383,15 +383,18 @@ class BootEnv(object):
                             "cmd": " ".join(cmd), "ret": ret })
                     
                 
-        def activate_image(self):
-
+        def activate_image(self, set_active=True):
                 """Activate a clone of the BE being operated on.
                         If were operating on a non-live BE then
-                        destroy the snapshot."""
+                        destroy the snapshot.
 
+                'set_active' is an optional boolean indicating that the new
+                BE (if created) should be set as the active one on next boot.
+                """
 
                 def activate_live_be():
-                        if be.beActivate(self.be_name_clone) != 0:
+                        if set_active and \
+                            be.beActivate(self.be_name_clone) != 0:
                                 logger.error(_("pkg: unable to activate %s") \
                                     % self.be_name_clone)
                                 return
@@ -412,18 +415,27 @@ class BootEnv(object):
 
                         os.rmdir(self.clone_dir)
 
-                        logger.info(_("""
-A clone of %s exists and has been updated and activated.
-On the next boot the Boot Environment %s will be mounted on '/'.
-Reboot when ready to switch to this updated BE.
-""") % \
-                            (self.be_name, self.be_name_clone))
+                        if set_active:
+                                logger.info(_("""
+A clone of %(be_name)s exists and has been updated and activated.
+On the next boot the Boot Environment %(be_name_clone)s will be
+mounted on '/'.  Reboot when ready to switch to this updated BE.
+""") % self.__dict__)
+                        else:
+                                logger.info(_("""
+A clone of %(be_name)s exists and has been updated.  To set the
+new BE as the active one on next boot, execute the following
+command as a privileged user and reboot when ready to switch to
+the updated BE:
+
+beadm activate %(be_name_clone)s
+""") % self.__dict__)
 
                 def activate_be():
                         # Delete the snapshot that was taken before we
-                        # updated the image and update the the boot archive.
-                        logger.info(_("%s has been updated successfully") % \
-                                (self.be_name))
+                        # updated the image and the boot archive.
+                        logger.info(_("%s has been updated successfully") %
+                            self.be_name)
 
                         os.rmdir(self.clone_dir)
                         self.destroy_snapshot()

@@ -10,16 +10,17 @@ SYNOPSIS
      /usr/bin/pkg refresh [--full] [publisher ...]
 
      /usr/bin/pkg install [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
-         [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
-         [--be-name name] [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
+         [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |
+         --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ...]
+         pkg_fmri_pattern ...
 
-     /usr/bin/pkg uninstall [-nrvq] [--no-index]
+     /usr/bin/pkg uninstall [-nrvq] [--no-be-activate] [--no-index]
          [--deny-new-be | --require-new-be] [--be-name name]
          pkg_fmri_pattern ...
 
      /usr/bin/pkg update [-fnvq] [-g path_or_uri ...] [--accept] [--licenses]
-         [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]
-         [--be-name name] [--reject pkg_fmri_pattern ...]
+         [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |
+         --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ...]
          [pkg_fmri_pattern ...]
 
      /usr/bin/pkg list [-Hafnsuv] [-g path_or_uri ...] [--no-refresh]
@@ -34,18 +35,19 @@ SYNOPSIS
 
      /usr/bin/pkg verify [-Hqv] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
-     /usr/bin/pkg revert [-nv] [--be-name name] [--deny-new-be |
-         --require-new-be] (--tagged tag-name ... | path-to-file ...)
+     /usr/bin/pkg revert [-nv] [--no-be-activate] [--be-name name]
+         [--deny-new-be | --require-new-be] (--tagged tag-name ... |
+         path-to-file ...)
 
      /usr/bin/pkg variant [-H] [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [-g path_or_uri ...] [--accept]
-         [--licenses] [--deny-new-be | --require-new-be] [--be-name name]
-         <variant_spec>=<instance> ...
+         [--licenses] [--no-be-activate] [--deny-new-be | --require-new-be]
+         [--be-name name] <variant_spec>=<instance> ...
 
      /usr/bin/pkg facet [-H] [<facet_spec>]
      /usr/bin/pkg change-facet [-nvq] [-g path_or_uri ...] [--accept]
-         [--licenses] [--deny-new-be | --require-new-be] [--be-name name]
-         <facet_spec>=[True|False|None] ...
+         [--licenses] [--no-be-activate] [--deny-new-be | --require-new-be]
+         [--be-name name] <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg avoid [pkg_fmri_pattern ... ]
      /usr/bin/pkg unavoid [pkg_fmri_pattern ... ]
@@ -155,9 +157,10 @@ SUBCOMMANDS
           option only exists for troubleshooting purposes and should not
           be used on a regular basis.
 
-     install [-nvq] [-g path_or_uri ...] [--accept] [--licenses] [--no-index]
-       [--no-refresh] [--deny-new-be | --require-new-be] [--be-name]
-       [--reject pkg_fmri_pattern ...] pkg_fmri_pattern ...
+     install [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
+       [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |
+       --require-new-be] [--be-name] [--reject pkg_fmri_pattern ...]
+       pkg_fmri_pattern ...
 
           Installs and updates packages to the newest version that match
           pkg_fmri_pattern allowed by the packages installed in the
@@ -196,6 +199,10 @@ SUBCOMMANDS
           packages that will be installed or updated as part of this
           operation.
 
+          With --no-be-activate, if a boot environment is created, do not
+          set it as the active BE on the next boot.  See beadm(1M) for more
+          information.
+
           With --no-index, do not update the search indices after the
           operation has completed successfully.
 
@@ -206,7 +213,7 @@ SUBCOMMANDS
           With --be-name, rename the newly created boot environment to
           be the argument given.  This option is only valid if a new
           boot environment is created during the operation.  See also
-          beadm(1m).
+          beadm(1M).
 
           With --require-new-be, always create a new boot environment.
           Without this option, a boot environment is created
@@ -222,8 +229,8 @@ SUBCOMMANDS
           operation.  Rejected packages that are the target of group
           dependencies will be placed on the avoid list.
 
-     uninstall [-nrvq] [--no-index] [--deny-new-be | --require-new-be]
-       [--be-name name] pkg_fmri_pattern ...
+     uninstall [-nrvq] [--no-be-activate] [--no-index] [--deny-new-be |
+       --require-new-be] [--be-name name] pkg_fmri_pattern ...
 
           Removes installed packages that match pkg_fmri_pattern.
 
@@ -239,9 +246,10 @@ SUBCOMMANDS
           For all other options, refer to the install command above
           for usage and their effects.
 
-     update [-fnvq] [-g path_or_uri ...] [--accept] [--licenses] [--no-index]
-       [--no-refresh] [--deny-new-be | --require-new-be] [--be-name name]
-       [--reject pkg_fmri_pattern ... ] [pkg_fmri_pattern ...]
+     update [-fnvq] [-g path_or_uri ...] [--accept] [--licenses]
+       [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |
+       --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ... ]
+       [pkg_fmri_pattern ...]
 
           With no arguments, or if '*' is one of the patterns provided,
           update all installed packages in the current image to the newest
@@ -568,12 +576,12 @@ SUBCOMMANDS
           With --licenses, display all of the licenses for the packages that
           will be installed or updated as part of this operation.
 
-     revert [-nv] [--be-name name] [--deny-new-be | --require-new-be]
-          (--tagged tag-name ... | path-to-file ...)
+     revert [-nv] [--no-be-activate] [--be-name name] [--deny-new-be |
+       --require-new-be] (--tagged tag-name ... | path-to-file ...)
           Revert files to their as-delivered condition.  Either all
           files tagged with a particular value, or individual files
-          may be reverted. File ownership and protections are also
-          restored. Caution: reverting some editable files to their
+          may be reverted.  File ownership and protections are also
+          restored.  Caution: reverting some editable files to their
           default values may make the system unbootable, or cause
           other malfunctions.
 
@@ -588,39 +596,12 @@ SUBCOMMANDS
           With -H, omit the headers from the listing.
 
      change-variant [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
-       [--deny-new-be | --require-new-be] [--be-name name]
+       [--no-be-activate] [--deny-new-be | --require-new-be] [--be-name name]
        <variant_spec>=<instance> ...
 
           Change the specified variants in the current image.
 
-          With -g, use the specified package repository or archive as an
-          additional source of package data for the operation.  This option
-          may be specified multiple times.
-
-          With the -n option, plan the requested operation but make
-          no actual changes.
-
-          With the -v option, issue verbose progress messages during the
-          requested operation.  With the -q option, be completely silent.
-
-          With --accept, you indicate that you agree to and accept the
-          terms of the licenses of the packages that are updated or
-          installed.  If you do not provide this option, and any package
-          licenses require acceptance, the operation will fail.
-
-          With --licenses, display all of the licenses for the packages that
-          will be installed or updated as part of this operation.
-
-          With --be-name, rename the newly created boot environment to be the
-          argument given.  This option is only valid if a new boot environment
-          is created during image update.  See also beadm(1m).
-
-          With --require-new-be, always create a new boot environment.  Without
-          this option, a new boot environment is only created if needed.
-
-          With --deny-new-be, disallow creation of a new boot environment;
-          the operation will not be performed if a new boot environment is
-          required.
+          For option usage and effects, refer to the install command above.
 
      facet [-H] [<facet_spec> ...]
 
@@ -631,42 +612,15 @@ SUBCOMMANDS
           With -H, omit the headers from the listing.
 
      change-facet [-nvq] [-g path_or_uri ...] [--accept] [--licenses]
-       [--deny-new-be | --require-new-be] [--be-name name]
+       [--no-be-activate] [--deny-new-be | --require-new-be] [--be-name name]
        <facet_spec>=[True|False|None] ...
 
           Change the specified facets in the current image.
 
-          With -g, use the specified package repository or archive as an
-          additional source of package data for the operation.  This option
-          may be specified multiple times.
-
-          With the -n option, plan the requested operation but make
-          no actual changes.
-
-          With the -v option, issue verbose progress messages during the
-          requested operation.  With the -q option, be completely silent.
-
-          With --accept, you indicate that you agree to and accept the
-          terms of the licenses of the packages that are updated or
-          installed.  If you do not provide this option, and any package
-          licenses require acceptance, the operation will fail.
-
-          With --licenses, display all of the licenses for the packages that
-          will be installed or updated as part of this operation.
-
-          With --be-name, rename the newly created boot environment to be the
-          argument given.  This option is only valid if a new boot environment
-          is created during the operation.  See also beadm(1m).
-
-          With --require-new-be, always create a new boot environment.  Without
-          this option, a new boot environment is only created if needed.
-
-          With --deny-new-be, disallow creation of a new boot environment;
-          the operation will not be performed if a new boot environment is
-          required.
-
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.
+
+          For option usage and effects, refer to the install command above.
 
      avoid [pkg_fmri_pattern ...]
           Avoids the specified packages if they are the target of a group
@@ -1013,7 +967,7 @@ IMAGE PROPERTIES
           link-local content mirrors using mDNS and DNS-SD.  If this is
           set to True, the client will attempt to download package content
           from mirrors it dynamically discovers.  To run a mirror that
-          advertises its content via mDNS, see pkg.depotd(1m).
+          advertises its content via mDNS, see pkg.depotd(1M).
 
           Default value: False
 
@@ -1356,7 +1310,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5)
+     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5), beadm(1M)
 
 NOTES
      The image packaging system is an under-development feature.

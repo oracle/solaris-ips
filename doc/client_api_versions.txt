@@ -1,3 +1,17 @@
+Version 58:
+Compatible with clients using version 57:
+
+     pkg.client.api.ImageInterface has changed as follows:
+
+        * added a 'be_activate' parameter to all plan_*() functions to
+          allow clients to control whether any new BE created during
+          operations is set as the active one on next boot.
+
+    pkg.client.api.PlanDescription has changed as follows:
+
+        * added 'activate_be' boolean property so clients can determine
+          whether be activation was requested at planning time.
+
 Version 57:
 Incompatible with clients using versions 0-56:
      pkg.client.api.ImageInterface has changed as follows:

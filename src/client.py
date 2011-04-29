@@ -86,7 +86,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 57
+CLIENT_API_VERSION = 58
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -157,16 +157,16 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         basic_usage["install"] = _(
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] [--reject pkg_fmri_pattern ... ]\n"
+            "            [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |\n"
+            "            --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ... ]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
-            "[-nrvq] [--no-index] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] pkg_fmri_pattern ...")
+            "[-nrvq] [--no-be-activate] [--no-index] [--deny-new-be |\n"
+            "            --require-new-be] [--be-name name] pkg_fmri_pattern ...")
         basic_usage["update"] = _(
             "[-fnvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--no-index] [--no-refresh] [--deny-new-be | --require-new-be]\n"
-            "            [--be-name name] [--reject pkg_fmri_pattern ...]\n"
+            "            [--no-be-activate] [--no-index] [--no-refresh] [--deny-new-be |\n"
+            "            --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ...]\n"
             "            [pkg_fmri_pattern ...]")
         basic_usage["list"] = _(
             "[-Hafnsuv] [-g path_or_uri ...] [--no-refresh]\n"
@@ -176,10 +176,11 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         advanced_cmds = ["info", "contents", "search", "", "verify", "fix",
             "revert", "", "variant", "change-variant", "", "facet",
-            "change-facet", "", "avoid", "unavoid", "", "property", "set-property",
-            "add-property-value", "remove-property-value", "unset-property", "",
-            "publisher", "set-publisher", "unset-publisher", "", "history",
-            "purge-history", "", "rebuild-index", "update-format"]
+            "change-facet", "", "avoid", "unavoid", "", "property",
+            "set-property", "add-property-value", "remove-property-value",
+            "unset-property", "", "publisher", "set-publisher",
+            "unset-publisher", "", "history", "purge-history", "",
+            "rebuild-index", "update-format", "image-create"]
 
         adv_usage["info"] = \
             _("[-lr] [-g path_or_uri ...] [--license] [pkg_fmri_pattern ...]")
@@ -193,8 +194,8 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
         adv_usage["verify"] = _("[-Hqv] [pkg_fmri_pattern ...]")
         adv_usage["fix"] = _("[--accept] [--licenses] [pkg_fmri_pattern ...]")
         adv_usage["revert"] = _(
-            "[-nv] [--be-name name] [--deny-new-be | --require-new-be]\n"
-            "            (--tagged tag-name ... | path-to-file ...)")
+            "[-nv] [--no-be-activate] [--be-name name] [--deny-new-be |\n"
+            "            --require-new-be] (--tagged tag-name ... | path-to-file ...)")
 
         adv_usage["image-create"] = _(
             "[-FPUfz] [--force] [--full|--partial|--user] [--zone]\n"
@@ -205,13 +206,13 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
             "            (-p|--publisher) [<name>=]<repo_uri> dir")
         adv_usage["change-variant"] = _(
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            <variant_spec>=<instance> ...")
+            "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
+            "            [--be-name name] <variant_spec>=<instance> ...")
 
         adv_usage["change-facet"] = _(
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
-            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
-            "            <facet_spec>=[True|False|None] ...")
+            "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
+            "            [--be-name name] <facet_spec>=[True|False|None] ...")
 
         adv_usage["variant"] = _("[-H] [<variant_spec>]")
         adv_usage["facet"] = ("[-H] [<facet_spec>]")
@@ -913,6 +914,11 @@ def display_plan(api_inst, verbose):
                         a.append((src, dest))
         v = plan.get_varcets()
 
+        def bool_str(val):
+                if val:
+                        return _("Yes")
+                return _("No")
+
         if "basic" in disp:
                 def cond_show(s, v):
                         if v:
@@ -927,24 +933,23 @@ def display_plan(api_inst, verbose):
                 else:
                         s = "                   Packages to fix: %5d"
                 cond_show(s, len(a))
-                if plan.new_be:
-                        s = _("Yes")
-                else:
-                        s = _("No")
 
-                logger.info(_("           Create boot environment: %5s") % s)
+                logger.info(_("           Create boot environment: %5s") %
+                    bool_str(plan.new_be))
+
+                if plan.new_be and (verbose or not plan.activate_be):
+                        # Only show activation status if verbose or if new BE
+                        # will not be activated.
+                        logger.info(_("         Activate boot environment: %5s") %
+                            bool_str(plan.activate_be))
 
                 if not plan.new_be:
                         cond_show(_("               Services to restart: %5d"),
                             len(plan.get_services()))
 
         if "boot-archive" in disp:
-                if plan.update_boot_archive:
-                        s = _("Yes")
-                else:
-                        s = _("No")
-
-                logger.info(_("              Rebuild boot archive: %5s") % s)
+                logger.info(_("              Rebuild boot archive: %5s") %
+                    bool_str(plan.update_boot_archive))
 
         if "variants/facets" in disp and v:
                 logger.info(_("Changed variants/facets:"))
@@ -1276,11 +1281,12 @@ def change_variant(api_inst, args):
 
         op = "change-variant"
         opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "be-name=",
-            "licenses", "deny-new-be", "require-new-be"])
+            "deny-new-be", "licenses", "no-be-activate", "require-new-be"])
 
         accept = quiet = noexecute = show_licenses = False
         origins = set()
         verbose = 0
+        be_activate = True
         be_name = None
         new_be = None
         for opt, arg in opts:
@@ -1300,6 +1306,8 @@ def change_variant(api_inst, args):
                         show_licenses = True
                 elif opt == "--deny-new-be":
                         new_be = False
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--require-new-be":
                         new_be = True
 
@@ -1333,7 +1341,7 @@ def change_variant(api_inst, args):
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants,
                     facets=None, noexecute=noexecute, be_name=be_name,
-                    new_be=new_be, repos=origins)
+                    new_be=new_be, repos=origins, be_activate=be_activate)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1368,11 +1376,12 @@ def change_facet(api_inst, args):
 
         op = "change-facet"
         opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "be-name=",
-            "licenses", "deny-new-be", "require-new-be"])
+            "deny-new-be", "licenses", "no-be-activate", "require-new-be"])
 
         accept = quiet = noexecute = show_licenses = False
         origins = set()
         verbose = 0
+        be_activate = True
         be_name = None
         new_be = None
         for opt, arg in opts:
@@ -1392,6 +1401,8 @@ def change_facet(api_inst, args):
                         show_licenses = True
                 elif opt == "--deny-new-be":
                         new_be = False
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--require-new-be":
                         new_be = True
 
@@ -1440,7 +1451,7 @@ def change_facet(api_inst, args):
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants=None,
                     facets=facets, noexecute=noexecute, be_name=be_name,
-                    new_be=new_be, repos=origins)
+                    new_be=new_be, repos=origins, be_activate=be_activate)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1475,14 +1486,15 @@ def install(api_inst, args):
 
         op = "install"
         opts, pargs = getopt.getopt(args, "g:nvq", ["accept", "licenses",
-            "no-refresh", "no-index", "deny-new-be", "require-new-be",
-            "be-name=", "reject="])
+            "no-be-activate", "no-refresh", "no-index", "deny-new-be",
+            "require-new-be", "be-name=", "reject="])
 
         accept = quiet = noexecute = show_licenses = False
         verbose = 0
         origins = set()
         refresh_catalogs = update_index = True
         new_be = None
+        be_activate = True
         be_name = None
         reject_pats = []
 
@@ -1499,6 +1511,8 @@ def install(api_inst, args):
                         accept = True
                 elif opt == "--licenses":
                         show_licenses = True
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
                 elif opt == "--no-index":
@@ -1535,7 +1549,7 @@ def install(api_inst, args):
                 stuff_to_do = api_inst.plan_install(pargs,
                     refresh_catalogs, noexecute, update_index=update_index,
                     be_name=be_name, new_be=new_be, reject_list=reject_pats,
-                    repos=origins)
+                    repos=origins, be_activate=be_activate)
         except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1572,12 +1586,12 @@ def uninstall(api_inst, args):
         """Attempt to take package specified to DELETED state."""
 
         op = "uninstall"
-        opts, pargs = getopt.getopt(args, "nrvq", ["no-index",
+        opts, pargs = getopt.getopt(args, "nrvq", ["no-be-activate", "no-index",
             "deny-new-be", "require-new-be", "be-name="])
 
         quiet = noexecute = recursive_removal = False
         verbose = 0
-        update_index = True
+        be_activate = update_index = True
         be_name = None
         new_be = None
 
@@ -1590,6 +1604,8 @@ def uninstall(api_inst, args):
                         verbose = verbose + 1
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--no-index":
                         update_index = False
                 elif opt == "--deny-new-be":
@@ -1616,7 +1632,7 @@ def uninstall(api_inst, args):
         try:
                 if not api_inst.plan_uninstall(pargs, recursive_removal,
                     noexecute, update_index=update_index, be_name=be_name,
-                    new_be=new_be):
+                    new_be=new_be, be_activate=be_activate):
                         assert 0
         except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
@@ -1646,12 +1662,12 @@ def update(api_inst, args):
 
         op = "update"
         opts, pargs = getopt.getopt(args, "fg:nvq", ["accept", "be-name=",
-            "reject=", "licenses", "no-refresh", "no-index", "deny-new-be",
-            "require-new-be"])
+            "reject=", "licenses", "no-be-activate", "no-refresh", "no-index",
+            "deny-new-be", "require-new-be"])
 
         accept = force = quiet = noexecute = show_licenses = False
         verbose = 0
-        refresh_catalogs = update_index = True
+        be_activate = refresh_catalogs = update_index = True
         be_name = None
         new_be = None
         origins = set()
@@ -1674,6 +1690,8 @@ def update(api_inst, args):
                         be_name = arg
                 elif opt == "--licenses":
                         show_licenses = True
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
                 elif opt == "--no-index":
@@ -1711,7 +1729,7 @@ def update(api_inst, args):
                             refresh_catalogs=refresh_catalogs,
                             noexecute=noexecute, be_name=be_name, new_be=new_be,
                             update_index=update_index, reject_list=reject_pats,
-                            repos=origins)
+                            repos=origins, be_activate=be_activate)
                 else:
                         # If no packages were specified, or '*' was one of
                         # the patterns provided, attempt to update all
@@ -1723,7 +1741,7 @@ def update(api_inst, args):
                                 new_be=new_be, force=force,
                                 update_index=update_index,
                                 reject_list=reject_pats,
-                                repos=origins)
+                                repos=origins, be_activate=be_activate)
         except Exception, e:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
@@ -1766,11 +1784,12 @@ def revert(api_inst, args):
 
         op = "revert"
         opts, pargs = getopt.getopt(args, "nvq", ["tagged", "deny-new-be",
-            "require-new-be", "be-name="])
+            "no-be-activate", "require-new-be", "be-name="])
 
         quiet = tagged = noexecute = False
         verbose = 0
         new_be = None
+        be_activate = True
         be_name = None
 
         for opt, arg in opts:
@@ -1782,6 +1801,8 @@ def revert(api_inst, args):
                         quiet = True
                 elif opt == "--deny-new-be":
                         new_be = False
+                elif opt == "--no-be-activate":
+                        be_activate = False
                 elif opt == "--require-new-be":
                         new_be = True
                 elif opt == "--be-name":
@@ -1799,7 +1820,8 @@ def revert(api_inst, args):
         stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_revert(pargs, tagged=tagged,
-                    noexecute=noexecute, be_name=be_name, new_be=new_be)
+                    noexecute=noexecute, be_name=be_name, new_be=new_be,
+                    be_activate=be_activate)
         except:
                 ret_code = __api_plan_exception(op, api_inst, noexecute,
                     verbose)
