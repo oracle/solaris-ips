@@ -560,6 +560,15 @@ pkglist="$pkglist
 pkglist="$pkglist \
 	pkg:///text/doctools"
 
+# 
+# packages needed for sysconfig in zone
+#
+pkglist="$pkglist \
+	pkg:///system/install
+	pkg:///system/install/configuration
+	pkg:///system/library/install
+	pkg:///security/sudo"
+
 #
 # Add in any extra packages requested by the user.
 #
@@ -590,13 +599,25 @@ chown root:sys $repfile
 printf "$m_done\n"
 
 #
-# Make sure sysidtools run; we manually poke in the SSH action
-# so that we get an SSH key.  Yes, this is seriously borken.
-# See http://defect.opensolaris.org/bz/show_bug.cgi?id=741
+# If unconfig service exists and is online then copy in enable_sci.xml
+# sysconfig file to trigger config cycle on boot of zone.
 #
-printf "$m_more_brokenness\n"
-/usr/sbin/sysidconfig -b $ZONEROOT -a /lib/svc/method/sshd
-touch $ZONEROOT/etc/.UNCONFIGURED
+SC_ONLINE=$(svcprop -p restarter/state \
+    svc:/milestone/unconfig:default 2> /dev/null)
+if (( $? == 0 )) && [[ $SC_ONLINE == "online" ]]; then
+	cp /usr/share/auto_install/sc_profiles/enable_sci.xml \
+	    $ZONEROOT/etc/svc/profile/site
+else
+	#
+	# Make sure sysidtools run; we manually poke in the SSH action
+	# so that we get an SSH key.  Yes, this is seriously borken.
+	# See http://defect.opensolaris.org/bz/show_bug.cgi?id=741
+	#
+	printf "$m_more_brokenness\n"
+	/usr/sbin/sysidconfig -b $ZONEROOT -a /lib/svc/method/sshd
+
+	touch $ZONEROOT/etc/.UNCONFIGURED
+fi
 
 #
 # Labeled zones need to be able to modify /etc/gconf files, when gnome

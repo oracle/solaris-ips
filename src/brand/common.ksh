@@ -242,8 +242,19 @@ unconfigure_zone() {
 	ZONE_IS_MOUNTED=1
 	zoneadm -z $ZONENAME mount -f || fatal "$e_badmount"
 
-	zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
-	    </dev/null >/dev/null 2>&1
+	# If unconfig service exists and is online then use sysconfig
+	SC_ONLINE=$(svcprop -p restarter/state \
+	    svc:/milestone/unconfig:default 2> /dev/null)
+	if (( $? == 0 )) && [[ $SC_ONLINE == "online" ]]; then
+		zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
+		    /usr/sbin/sysconfig unconfigure -g system; \
+		    export _UNCONFIG_ALT_ROOT= ;" \
+		    </dev/null >/dev/null 2>&1
+	else
+		zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
+		    </dev/null >/dev/null 2>&1
+	fi
+
 	if (( $? != 0 )); then
 		error "$e_unconfig"
 		failed=1
