@@ -834,8 +834,6 @@ def verify_image(api_inst, args):
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
-                        api_inst.log_operation_end(
-                            result=history.RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
                 notfound = e.notfound
         except api_errors.ImageFormatUpdateNeeded, e:
