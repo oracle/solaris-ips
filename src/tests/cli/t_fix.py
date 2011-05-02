@@ -127,6 +127,9 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 files, and make sure it gets fixed.  """
 
                 self.image_create(self.rurl)
+                # Cache must be flushed after install for tests to work as
+                # expected.
+                self.pkg("set-property flush-content-cache-on-success True")
                 self.pkg("install amber@1.0")
 
                 index_dir = self.get_img_api_obj().img.index_dir
@@ -158,6 +161,13 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # check that we didn't reindex
                 new_mtime = os.stat(index_file).st_mtime
                 self.assertEqual(orig_mtime, new_mtime)
+
+                # Verify that removing the publisher of a package that needs
+                # fixing results in graceful failure (not a traceback).
+                self.file_append(victim, "foobar")
+                self.pkg("set-publisher -P --no-refresh -g %s foo" % self.rurl)
+                self.pkg("unset-publisher test")
+                self.pkg("fix", exit=1)
 
         def test_02_hardlinks(self):
                 """Hardlink test: make sure that a file getting fixed gets any

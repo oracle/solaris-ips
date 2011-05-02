@@ -223,6 +223,13 @@ class TransportCfg(object):
                                         for rstore in frepo.rstores:
                                                 if not rstore.file_root:
                                                         continue
+                                                if rstore.publisher and \
+                                                    rstore.publisher != pub.prefix:
+                                                        # If the repository
+                                                        # storage object is for
+                                                        # a different publisher,
+                                                        # skip it.
+                                                        continue
                                                 self.add_cache(rstore.file_root,
                                                     pub=rstore.publisher,
                                                     readonly=True)
@@ -1883,7 +1890,8 @@ class Transport(object):
                         repo = alt_repo
                 elif isinstance(pub, publisher.Publisher):
                         repo = pub.repository
-                        assert repo
+                        if not repo:
+                                raise apx.NoPublisherRepositories(pub)
 
                 if repo and origin_only:
                         repolist = repo.origins
@@ -1993,6 +2001,8 @@ class Transport(object):
                                 repolist.extend(alt_repo.mirrors)
                 elif isinstance(pub, publisher.Publisher):
                         repo = pub.repository
+                        if not repo:
+                                raise apx.NoPublisherRepositories(pub)
                         repolist = repo.origins[:]
                         if not origin_only:
                                 repolist.extend(repo.mirrors)

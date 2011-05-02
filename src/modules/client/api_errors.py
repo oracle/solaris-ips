@@ -1524,14 +1524,18 @@ class DuplicateRepositoryOrigin(PublisherError):
                     "publisher.") % self.data
 
 
-class NoPublisherRepositories(PublisherError):
+class NoPublisherRepositories(TransportError):
         """Used to indicate that a Publisher has no repository information
         configured and so transport operations cannot be performed."""
+
+        def __init__(self, prefix):
+                TransportError.__init__(self)
+                self.publisher = prefix
 
         def __str__(self):
                 return _("Unable to retrieve requested package data for "
                     "publisher %s; no repositories are currently configured "
-                    "for use with this publisher.") % self.data
+                    "for use with this publisher.") % self.publisher
 
 
 class MoveRelativeToSelf(PublisherError):
