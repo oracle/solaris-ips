@@ -253,9 +253,10 @@ def _get_dependencies(s, pfmri, xport_cfg, tracker):
 
         m = get_manifest(pfmri, xport_cfg)
         for a in m.gen_actions_by_type("depend"):
-                new_fmri = expand_fmri(a.attrs["fmri"])
-                if new_fmri and new_fmri not in s:
-                        _get_dependencies(s, new_fmri, xport_cfg, tracker)
+                for fmri_str in a.attrlist("fmri"):
+                        new_fmri = expand_fmri(fmri_str)
+                        if new_fmri and new_fmri not in s:
+                                _get_dependencies(s, new_fmri, xport_cfg, tracker)
         return s
 
 def add_hashes_to_multi(mfst, multi):

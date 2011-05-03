@@ -56,7 +56,18 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
 
         tree10 = """
             open tree@1.0,5.11-0
+            add depend type=require-any fmri=leaf@1.0 fmri=branch@1.0
             close 
+        """
+
+        leaf10 = """
+            open leaf@1.0,5.11-0
+            close
+        """
+
+        branch10 = """
+            open branch@1.0,5.11-0
+            close
         """
 
         amber10 = """
@@ -129,7 +140,7 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # and scheme after that.
                 time.sleep(1)
                 self.published.extend(self.pkgsend_bulk(self.durl1,
-                    (self.bronze20, self.tree10, self.scheme10)))
+                    (self.bronze20, self.tree10, self.branch10, self.leaf10, self.scheme10)))
 
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
@@ -180,10 +191,13 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 # The latest version of amber and bronze should be listed
                 # (sans publisher prefix currently).
                 amber = self.published[1]
-                scheme = self.published[6]
+                scheme = self.published[8]
                 bronze = self.published[4]
                 tree = self.published[5]
-                expected = "\n".join((amber, bronze, scheme, tree)) + "\n"
+                branch = self.published[6]
+                leaf = self.published[7]
+
+                expected = "\n".join((amber, branch, bronze, leaf, scheme, tree)) + "\n"
                 self.assertEqualDiff(expected, output)
 
         def test_1_recv_pkgsend(self):
