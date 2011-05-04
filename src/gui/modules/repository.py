@@ -431,19 +431,6 @@ class Repository(progress.GuiProgressTracker):
                 filtered_model = sorted_model.get_model()
                 model = filtered_model.get_model()
 
-                if len(pubs) > 1:
-                        try:
-                                so = self.api_o.get_pub_search_order()
-                        except api_errors.ApiException, e:
-                                self.__show_errors([("", e)])
-                                return
-                        pub_dict = dict([(p.prefix, p) for p in pubs])
-                        pubs = [
-                            pub_dict[name]
-                            for name in so
-                            if name in pub_dict
-                            ]
-
                 if restore_changes == False:
                         self.no_changes = 0
                         self.priority_changes = []
