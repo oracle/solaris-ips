@@ -20,6 +20,7 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/documentation/gnome/gnome-user-docs for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/editor/gedit for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/games/gnome-games for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/accessibility/gnome-a11y-libs for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/accessibility/gnome-a11y-libs for pkg://pkg5-nightly/system/desktop/ldtp
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/config/gconf for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/file-manager/nautilus for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
