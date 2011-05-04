@@ -44,6 +44,19 @@ import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
 
+obsolete_pkg = """
+    open obs@1.0,5.11-0
+    add set name=pkg.obsolete value=true
+    add set name=pkg.summary value="An obsolete package"
+    close """
+
+renamed_pkg = """
+    open renamed@1.0,5.11-0
+    add set name=pkg.renamed value=true
+    add depend fmri=example_pkg@1.0 type=require
+    close """
+
+
 class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         # Tests in this suite use the read only data directory.
         need_ro_data = True
@@ -76,6 +89,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin variant.arch=sparc
             add dir mode=0755 owner=root group=bin path=/baz variant.arch=i386
             close """
+
+        need_renamed_pkg = """
+            open need_renamed@1.0,5.11-0
+            add depend fmri=renamed type=require
+            close """
+
 
         image_files = ['simple_file']
         misc_files = ['tmp/example_file']
@@ -2123,6 +2142,55 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Check that the cli hands PathlenTooShort exceptions.
                 self.pkg("install example_pkg", exit=1)
 
+        def test_bug_16861_1(self):
+                """Test whether obsolete packages can be signed and still
+                function."""
+
+                plist = self.pkgsend_bulk(self.rurl1, obsolete_pkg)
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+                
+                self.pkg_image_create(self.rurl1,
+                    additional_args="--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["obs"])
+
+        def test_bug_16861_2(self):
+                """Test whether renamed packages can be signed and still
+                function."""
+
+                plist = self.pkgsend_bulk(self.rurl1, [self.example_pkg10,
+                    renamed_pkg, self.need_renamed_pkg])
+                for name in plist:
+                        sign_args = "-k %(key)s -c %(cert)s -i %(i1)s " \
+                            "%(name)s" % {
+                                "name": name,
+                                "key": os.path.join(self.keys_dir,
+                                    "cs1_ch1_ta3_key.pem"),
+                                "cert": os.path.join(self.cs_dir,
+                                    "cs1_ch1_ta3_cert.pem"),
+                                "i1": os.path.join(self.chain_certs_dir,
+                                    "ch1_ta3_cert.pem")
+                        }
+                        self.pkgsign(self.rurl1, sign_args)
+                
+                self.pkg_image_create(self.rurl1,
+                    additional_args="--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["need_renamed"])
+
         def test_bug_16867_1(self):
                 """Test whether signing a package multiple times makes a package
                 uninstallable."""
@@ -2359,6 +2427,36 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+        def test_bug_16861_recv(self):
+                """Check that signed obsolete and renamed packages can be
+                transferred from one repo to another."""
+
+                plist = self.pkgsend_bulk(self.rurl2, [renamed_pkg,
+                    obsolete_pkg])
+                for name in plist:
+                        sign_args = "-k %(key)s -c %(cert)s -i %(i1)s " \
+                            "-i %(i2)s -i %(i3)s -i %(i4)s -i %(i5)s " \
+                            "%(name)s" % {
+                                "name": name,
+                                "key": os.path.join(self.keys_dir,
+                                    "cs1_ch5_ta1_key.pem"),
+                                "cert": os.path.join(self.cs_dir,
+                                    "cs1_ch5_ta1_cert.pem"),
+                                "i1": os.path.join(self.chain_certs_dir,
+                                    "ch1_ta1_cert.pem"),
+                                "i2": os.path.join(self.chain_certs_dir,
+                                    "ch2_ta1_cert.pem"),
+                                "i3": os.path.join(self.chain_certs_dir,
+                                    "ch3_ta1_cert.pem"),
+                                "i4": os.path.join(self.chain_certs_dir,
+                                    "ch4_ta1_cert.pem"),
+                                "i5": os.path.join(self.chain_certs_dir,
+                                    "ch5_ta1_cert.pem"),
+                        }
+                        self.pkgsign(self.rurl2, sign_args)
+
+                self.pkgrecv(self.rurl2, "-d %s renamed obs" % self.rurl1)
 
 
 if __name__ == "__main__":

@@ -518,18 +518,20 @@ class Transaction(object):
                     action.attrs["name"] == "pkg.obsolete" and \
                     action.attrs["value"] == "true":
                         self.obsolete = True
-                        if self.types_found.difference(set(("set",))):
+                        if self.types_found.difference(
+                            set(("set", "signature"))):
                                 raise TransactionOperationError(_("An obsolete "
                                     "package cannot contain actions other than "
-                                    "'set'."))
+                                    "'set' and 'signature'."))
                 elif action.name == "set" and \
                     action.attrs["name"] == "pkg.renamed" and \
                     action.attrs["value"] == "true":
                         self.renamed = True
-                        if self.types_found.difference(set(("set", "depend"))):
+                        if self.types_found.difference(
+                            set(("depend", "set", "signature"))):
                                 raise TransactionOperationError(_("A renamed "
                                     "package cannot contain actions other than "
-                                    "'set' and 'depend'."))
+                                    "'set', 'depend', and 'signature'."))
 
                 if not self.has_reqdeps and action.name == "depend" and \
                     action.attrs["type"] == "require":
@@ -544,11 +546,12 @@ class Transaction(object):
                                 self.renamed = False
                         raise TransactionOperationError(_("A package may not "
                             " be marked for both obsoletion and renaming."))
-                elif self.obsolete and action.name != "set":
+                elif self.obsolete and action.name not in ("set", "signature"):
                         raise TransactionOperationError(_("A '%s' action cannot"
                             " be present in an obsolete package: %s") %
                             (action.name, action))
-                elif self.renamed and action.name not in ("set", "depend"):
+                elif self.renamed and action.name not in \
+                    ("depend", "set", "signature"):
                         raise TransactionOperationError(_("A '%s' action cannot"
                             " be present in a renamed package: %s") %
                             (action.name, action))
