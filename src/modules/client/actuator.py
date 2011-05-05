@@ -25,8 +25,10 @@
 #
 
 import pkg.smf as smf
+import os
 
 from pkg.client.debugvalues import DebugValues
+from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 
 class GenericActuator(object):
         """Actuators are action attributes that cause side effects
@@ -132,19 +134,32 @@ class Actuator(GenericActuator):
 
         def get_services_list(self):
                 """Returns a list of services that would be restarted"""
-                return [(fmri, smf) for fmri, smf in self.get_list() 
+                return [(fmri, smf) for fmri, smf in self.get_list()
                     if smf not in ["true", "false"]]
 
         def __str__(self):
-                return "\n".join("  %16s: %s" % (fmri, smf) 
+                return "\n".join("  %16s: %s" % (fmri, smf)
                     for fmri, smf in self.get_list())
 
         def reboot_needed(self):
                 return bool("true" in self.update.get("reboot-needed", [])) or \
                     bool("true" in self.removal.get("reboot-needed", []))
 
-        def exec_prep(self, image):
+        def exec_prep(self, image):                
                 if not image.is_liveroot():
+                        # we're doing off-line pkg ops; we need
+                        # to support self-assembly milestone
+                        # so create the necessary marker file
+
+                        if image.type != IMG_USER:
+                                path = os.path.join(image.root,
+                                    ".SELF-ASSEMBLY-REQUIRED")
+                                # create only if it doesn't exist
+                                if not os.path.exists(path):
+                                        os.close(os.open(path,
+                                            os.O_EXCL  |
+                                            os.O_CREAT |
+                                            os.O_WRONLY))
                         if not DebugValues.get_value("smf_cmds_dir"):
                                 return
                 self.do_nothing = False

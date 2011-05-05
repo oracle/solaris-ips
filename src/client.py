@@ -1221,6 +1221,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                         return EXIT_OK
                 return EXIT_OOPS
         if e_type in (api_errors.InvalidPlanError,
+            api_errors.ReadOnlyFileSystemException,
             api_errors.ActionExecutionError,
             api_errors.ConflictingActionErrors,
             api_errors.InvalidPackageErrors):
