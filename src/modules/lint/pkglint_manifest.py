@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some pkg(5) specific lint manifest checks
@@ -99,7 +99,7 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 has_invalid_action = False
                 for action in manifest.gen_actions():
-                        if action.name not in ["set", "manifest"]:
+                        if action.name not in ["set", "signature"]:
                                 has_invalid_action = True
 
                 if has_invalid_action:

@@ -722,6 +722,7 @@ set name=pkg.fmri value=pkg://opensolaris.org/SUNWaspell@0.5.11,5.11-0.130:20091
 set name=pkg.obsolete value=true variant.arch=i386
 set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
 set name=variant.arch value=i386
+signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
 expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002.1",
@@ -1384,6 +1385,9 @@ dir group=sys mode=0755 owner=root path=etc
                             command="publish --fmri-in-manifest %s" % item)
                 self.pkgsend(depot_url=self.lint_uri,
                             command="refresh-index")
+                # we should sign the repositories for additional coverage
+                self.pkgsign(self.lint_uri, "--sign-all")
+                self.pkgsign(self.ref_uri, "--sign-all")
 
         def test_lint_repo_basics(self):
                 """Test basic handling of repo URIs with the lint engine,
