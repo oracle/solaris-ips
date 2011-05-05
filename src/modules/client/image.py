@@ -1953,13 +1953,16 @@ class Image(object):
                         sig_pol = self.signature_policy.combine(
                             pub.signature_policy)
 
-                manf = self.get_manifest(fmri)
+                manf = self.get_manifest(fmri, all_variants=True)
                 sigs = list(manf.gen_actions_by_type("signature",
                     self.list_excludes()))
                 if sig_pol and (sigs or sig_pol.name != "ignore"):
                         # Only perform signature verification logic if there are
                         # signatures or if signature-policy is not 'ignore'.
                         try:
+                                # Signature verification must be done using all
+                                # the actions from the manifest, not just the
+                                # ones for this image's variants.
                                 sig_pol.process_signatures(sigs,
                                     manf.gen_actions(), pub, self.trust_anchors)
                         except apx.SigningException, e:

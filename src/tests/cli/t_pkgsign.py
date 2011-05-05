@@ -1743,6 +1743,8 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assert_(not os.path.exists(
                     os.path.join(self.img_path, "bin")))
 
+                self.pkg("verify")
+
         def test_disabled_append(self):
                 """Test that publishing to a depot which doesn't support append
                 fails as expected."""
