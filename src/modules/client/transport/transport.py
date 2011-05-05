@@ -67,6 +67,11 @@ class TransportCfg(object):
 
         def __init__(self):
                 self.__caches = {}
+
+                # Used to track if reset_caches() has been called at least
+                # once.
+                self.__caches_set = False
+
                 self.pkg_pub_map = None
                 self.alt_pubs = None
 
@@ -84,6 +89,9 @@ class TransportCfg(object):
                 'readonly' is an optional boolean value indicating whether file
                 data should be stored here as well.  Only one writeable cache
                 can exist for each 'pub' at a time."""
+
+                if not self.__caches_set:
+                        self.reset_caches(shared=True)
 
                 if not pub:
                         pub = "__all"
@@ -141,6 +149,9 @@ class TransportCfg(object):
                 a cache for storing file data should be returned.  By default,
                 only caches for reading file data are returned."""
 
+                if not self.__caches_set:
+                        self.reset_caches(shared=True)
+
                 if isinstance(pub, publisher.Publisher):
                         pub = pub.prefix
                 elif not pub or not isinstance(pub, basestring):
@@ -197,6 +208,9 @@ class TransportCfg(object):
                 should also be discarded.  If True, callers are responsible for
                 ensuring a new set of shared cache information is added again.
                 """
+
+                # Caches fully set at least once.
+                self.__caches_set = True
 
                 for pub in self.__caches.keys():
                         if shared or pub != "__all":
@@ -290,9 +304,12 @@ class ImageTransportCfg(TransportCfg):
         def get_publisher(self, publisher_name):
                 return self.__img.get_publisher(publisher_name)
 
-        def reset_caches(self):
+        def reset_caches(self, shared=True):
                 """Discard any publisher specific cache information and
                 reconfigure based on current publisher configuration data.
+
+                'shared' is ignored and exists only for compatibility with
+                the interface defined by TransportCfg.
                 """
 
                 # Call base class method to perform initial reset of all

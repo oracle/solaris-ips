@@ -559,7 +559,10 @@ class Image(object):
                     smf.get_state("svc:/system/pkg/sysrepo:default") in \
                     (smf.SMF_SVC_TMP_ENABLED, smf.SMF_SVC_ENABLED):
                         smf.refresh(["svc:/system/pkg/sysrepo:default"])
-                self.transport.cfg.reset_caches()
+
+                # This ensures all old transport configuration is thrown away.
+                self.transport = transport.Transport(
+                    transport.ImageTransportCfg(self))
 
         def mkdirs(self, root=None, version=None):
                 """Create any missing parts of the image's directory structure.
@@ -604,6 +607,10 @@ class Image(object):
                         self.img_prefix = img_user_prefix
                 else:
                         self.img_prefix = img_root_prefix
+
+                # Use a new Transport object every time location is changed.
+                self.transport = transport.Transport(
+                    transport.ImageTransportCfg(self))
 
                 # Change directory to the root of the image so that we can
                 # remove any directories beneath us.  If we're changing the
@@ -858,10 +865,6 @@ class Image(object):
                         # Configuration shouldn't be written again unless this
                         # is an image creation operation (hence the purge).
                         self.save_config()
-                else:
-                        # If not saving configuration, transport caches need
-                        # to be reset first.
-                        self.transport.cfg.reset_caches()
 
                 # load image avoid pkg set
                 self.__avoid_set_load()

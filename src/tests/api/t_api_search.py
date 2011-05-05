@@ -2324,7 +2324,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 6
+                num_expected = 7
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
