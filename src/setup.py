@@ -335,10 +335,10 @@ etcbrand_files = [
 smf_app_files = [
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
+        'svc/pkg-system-repository.xml',
         'svc/pkg-update.xml',
         ]
 smf_sys_files = [
-        'svc/pkg-sysrepo.xml',
         ]
 resource_files = [
         'util/opensolaris.org.sections',

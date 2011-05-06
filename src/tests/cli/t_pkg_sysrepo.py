@@ -1323,7 +1323,7 @@ if __name__ == "__main__":
         }
 
         if len(pargs) != 2 or pargs[0] != "restart" or \
-            pargs[1] != "svc:/system/pkg/sysrepo":
+            pargs[1] != "svc:/application/pkg/system-repository":
                 sys.exit(1)
         sys.exit(0)
 """}

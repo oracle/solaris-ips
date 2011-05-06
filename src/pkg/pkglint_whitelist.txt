@@ -1,5 +1,5 @@
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/package/pkg
-WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/system/desktop/ldtp
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/system/zones/brand/ipkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/archiver/gnu-tar for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/communication/im/pidgin for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
@@ -97,7 +97,7 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/text/gnu-grep for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/text/tidy for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/web/curl for pkg://pkg5-nightly/library/python-2/pycurl
-WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/web/server/apache-22 for pkg://pkg5-nightly/package/sysrepo
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/web/server/apache-22 for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/web/wget for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/x11/library/libx11 for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/x11/trusted/libxtsol for pkg://pkg5-nightly/system/trusted/trusted-nonglobal

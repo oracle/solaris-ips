@@ -9,11 +9,12 @@ SYNOPSIS
      pkg.sysrepo -p <port> [ -c cache_dir] [-s cache_size]
 
 DESCRIPTION
-     pkg.sysrepo(1M) is used to generate the configuration  files
-     for  the  IPS  System Repository.  This command is called by
-     the svc:/system/pkg/sysrepo SMF service.  Changes in  confi-
-     guration  should  be  made to the properties in the SMF ser-
-     vice.
+
+     pkg.sysrepo(1M) is used to generate the configuration files 
+     for the IPS System Repository.  This command is called by 
+     the svc:/application/pkg/system-repository SMF service.  
+     Changes in configuration should be made to the properties in 
+     the SMF service.
 
      The system repository is responsible for providing access to
      the  package  repositories  configured  in a reference image
@@ -79,7 +80,7 @@ EXAMPLES
      Example 1:  Enabling the system repository
 
 
-       $ svcadm enable svc:/system/pkg/sysrepo
+       $ svcadm enable svc:/application/pkg/system-repository
 
 
 EXIT STATUS

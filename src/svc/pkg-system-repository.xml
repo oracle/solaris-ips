@@ -29,10 +29,10 @@
 
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 
-<service_bundle type='manifest' name='pkg:sysrepo'>
+<service_bundle type='manifest' name='pkg:system-repository'>
 
 <service
-	name='system/pkg/sysrepo'
+	name='application/pkg/system-repository'
 	type='service'
 	version='1'>
 

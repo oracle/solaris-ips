@@ -63,7 +63,7 @@ EXIT_BADOPT  = 2
 
 #
 # This is a simple python script, run from the method script that starts
-# svc:/system/pkg/sysrepo:default.
+# svc:/application/pkg/system-repository:default.
 #
 # It writes an Apache configuration that is used to serve responses to pkg
 # clients querying the system repository, as well as providing http/https proxy

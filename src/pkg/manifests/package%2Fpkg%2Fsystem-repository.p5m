@@ -20,13 +20,14 @@
 #
 # Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
-set name=pkg.fmri value=pkg:/package/sysrepo@$(PKGVERS)
+set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
 set name=pkg.description \
     value="A service that provides a publisher proxy to pkg(5) clients."
 set name=pkg.summary value="IPS System Repository"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
-set name=opensolaris.smf.fmri value=svc:/system/pkg/sysrepo:default
+set name=org.opensolaris.smf.fmri \
+    value=svc:/application/pkg/system-repository:default
 set name=variant.arch value=$(ARCH)
 dir path=etc
 dir path=etc/pkg
@@ -46,7 +47,7 @@ dir path=var/cache/pkg/sysrepo owner=pkg5srv
 dir path=var/log
 dir path=var/log/pkg
 dir path=var/log/pkg/sysrepo
-file path=lib/svc/manifest/system/pkg-sysrepo.xml
+file path=lib/svc/manifest/application/pkg-system-repository.xml
 file path=lib/svc/method/svc-pkg-sysrepo
 file path=usr/lib/pkg.sysrepo mode=0755
 file path=etc/pkg/sysrepo/sysrepo_httpd.conf.mako

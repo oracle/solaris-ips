@@ -812,11 +812,11 @@ class BlendedConfig(object):
                                         # smf, try using pkg/sysrepo.
                                         try:
                                                 host = smf.get_prop(
-                                                    "system/pkg/sysrepo:default",
+                                                    "application/pkg/system-repository:default",
                                                     "config/host")
                                                 host = "localhost"
                                                 port = smf.get_prop(
-                                                    "system/pkg/sysrepo:default",
+                                                    "application/pkg/system-repository:default",
                                                     "config/port")
                                         except smf.NonzeroExitException, e:
                                                 raise apx.UnknownSysrepoConfiguration()

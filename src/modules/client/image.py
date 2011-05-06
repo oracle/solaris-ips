@@ -556,9 +556,11 @@ class Image(object):
                 self.mkdirs()
                 self.cfg.write()
                 if self.is_liveroot() and \
-                    smf.get_state("svc:/system/pkg/sysrepo:default") in \
+                    smf.get_state(
+                        "svc:/application/pkg/system-repository:default") in \
                     (smf.SMF_SVC_TMP_ENABLED, smf.SMF_SVC_ENABLED):
-                        smf.refresh(["svc:/system/pkg/sysrepo:default"])
+                        smf.refresh([
+                            "svc:/application/pkg/system-repository:default"])
 
                 # This ensures all old transport configuration is thrown away.
                 self.transport = transport.Transport(

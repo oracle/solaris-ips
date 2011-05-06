@@ -1713,9 +1713,9 @@ class UnknownSysrepoConfiguration(ApiException):
                 return _("""\
 pkg is configured to use the system repository (via the use-system-repo
 property) but it could not get the host and port from
-smf:/system/zones-proxy-client nor smf:/system/pkg/sysrepo, and the
-PKG_SYSREPO_URL environment variable was not set.  Please try enabling one of
-those services or setting the PKG_SYSREPO_URL environment variable.
+smf:/system/zones-proxy-client nor smf:/application/pkg/system-repository, and
+the PKG_SYSREPO_URL environment variable was not set.  Please try enabling one
+of those services or setting the PKG_SYSREPO_URL environment variable.
 """)
 
 

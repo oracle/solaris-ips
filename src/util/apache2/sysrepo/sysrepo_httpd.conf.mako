@@ -8,8 +8,8 @@
 #
 # This is an automatically generated file for the IPS system publisher, and
 # should not be modified directly.  Changes made to this file will be
-# overwritten the next time svc:/system/pkg/sysrepo:default is refreshed or
-# restarted.
+# overwritten the next time svc:/application/pkg/system-repository:default is
+# refreshed or restarted.
 #
 """)
 %>
