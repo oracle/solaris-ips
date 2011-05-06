@@ -523,7 +523,7 @@ pkglist="$pkglist
 #
 pkglist="$pkglist
 	pkg:///shell/bash
-	pkg:///editor/vim
+	pkg:///editor/vim/vim-core
 	pkg:///network/ssh
 	pkg:///network/ssh/ssh-key
 	pkg:///service/network/ssh"
