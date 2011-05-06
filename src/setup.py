@@ -720,8 +720,8 @@ def syntax_check(filename):
 
                         # Assume it's a tuple of (filename, lineno, col, code)
                         fname, line, col, code = err
-                        res += "line %d, column %d, in %s:\n%s" % (line, col,
-                            fname, code)
+                        res += "line %d, column %s, in %s:\n%s" % (line,
+                            col or "unknown", fname, code)
 
                 raise DistutilsError(res)
 
