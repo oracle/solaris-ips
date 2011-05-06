@@ -290,38 +290,25 @@ SUBCOMMANDS
           for a different architecture or zone type are excluded.
           The usual output is in four columns:
 
-            NAME (PUBLISHER)                  VERSION          STATE      UFOXI
-            SUNWcs                            0.5.11-0.126     installed  -----
-            web/firefox/plugin/flash (extra)  10.0.32.18-0.111 installed  -----
+            NAME (PUBLISHER)                  VERSION          IFO
+            SUNWcs                            0.5.11-0.126     i--
+            web/firefox/plugin/flash (extra)  10.0.32.18-0.111 i--
 
           The first column contains the name of the package.  If the publisher
           from which it is installed (or available, if not installed) is not
           the preferred publisher, then the publisher name is listed in
           parentheses after the package name.  The second column contains the
-          release and branch versions of the package (see pkg(5)).  The third
-          column contains the state of the package as it exists on the system.
-          Possible values are "installed" and "known".  The last column
-          contains a set of flags that show how the package relates to other
-          packages:
+          release and branch versions of the package (see pkg(5)).  The last
+          column contains a set of flags that show the status of the package:
 
-              - a "u" in the "U" column shows that a newer version is
-                available, although it may not be possible to install
-                this newer version due to package dependencies or
-                constraints;
+              - an "i" in the "I" column shows that it is installed;
 
               - an "f" in the "F" column shows that this version has
                 been frozen (not implemented);
 
               - an "o" in the "O" column shows that it is obsolete,
                 while an "r" shows that it has been renamed (a form of
-                obsoletion);
-
-              - an "x" in the "X" column shows that it is prevented from
-                being installed because some other package has excluded
-                it (not implemented); and
-
-              - an "i" in the "I" column shows that it has been
-                constrained by an incorporation (not implemented).
+                obsoletion).
 
           With -H, omit the headers from the listing.
 

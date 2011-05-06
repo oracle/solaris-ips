@@ -395,11 +395,11 @@ def list_inventory(api_inst, args):
                 usage(_("-s and -v may not be combined"), cmd="list")
 
         if verbose:
-                fmt_str = "%-64s %-10s %s"
+                fmt_str = "%-76s %s"
         elif summary:
-                fmt_str = "%-30s %s"
+                fmt_str = "%-55s %s"
         else:
-                fmt_str = "%-45s %-15s %-10s %s"
+                fmt_str = "%-55s %-20s %s"
 
         api_inst.progresstracker = get_tracker(quiet=not display_headers)
 
@@ -441,12 +441,12 @@ def list_inventory(api_inst, args):
                         pass
 
         state_map = [
-            [(api.PackageInfo.UPGRADABLE, "u")],
+            [(api.PackageInfo.INSTALLED, "i")],
             [(api.PackageInfo.FROZEN, "f")],
-            [(api.PackageInfo.OBSOLETE, "o"),
-            (api.PackageInfo.RENAMED, "r")],
-            [(api.PackageInfo.EXCLUDES, "x")],
-            [(api.PackageInfo.INCORPORATED, "i")],
+            [
+                (api.PackageInfo.OBSOLETE, "o"),
+                (api.PackageInfo.RENAMED, "r")
+            ],
         ]
 
         # Now get the matching list of packages and display it.
@@ -461,19 +461,19 @@ def list_inventory(api_inst, args):
                         found = True
                         if display_headers:
                                 if verbose:
-                                        msg(fmt_str % \
-                                            ("FMRI", "STATE", "UFOXI"))
+                                        msg(fmt_str %
+                                            ("FMRI", "IFO"))
                                 elif summary:
-                                        msg(fmt_str % \
+                                        msg(fmt_str %
                                             ("NAME (PUBLISHER)",
                                             "SUMMARY"))
                                 else:
-                                        msg(fmt_str % \
+                                        msg(fmt_str %
                                             ("NAME (PUBLISHER)",
-                                            "VERSION", "STATE", "UFOXI"))
+                                            "VERSION", "IFO"))
                                 display_headers = False
 
-                        ufoxi = ""
+                        status = ""
                         for sentry in state_map:
                                 for s, v in sentry:
                                         if s in states:
@@ -481,7 +481,7 @@ def list_inventory(api_inst, args):
                                                 break
                                         else:
                                                 st = "-"
-                                ufoxi += st
+                                status += st
 
                         pub, stem, ver = pt
                         if pub == ppub:
@@ -489,19 +489,10 @@ def list_inventory(api_inst, args):
                         else:
                                 spub = " (" + pub + ")"
 
-                        # Check for installed state first.
-                        st_str = ""
-                        if api.PackageInfo.INSTALLED in states:
-                                st_str = _("installed")
-                        elif api.PackageInfo.UNSUPPORTED in states:
-                                st_str = _("unsupported")
-                        else:
-                                st_str = _("known")
-
                         # Display full FMRI for verbose case.
                         if verbose:
                                 pfmri = "pkg://%s/%s@%s" % (pub, stem, ver)
-                                msg("%-64s %-10s %s" % (pfmri, st_str, ufoxi))
+                                msg(fmt_str % (pfmri, status))
                                 continue
 
                         # Display short FMRI + summary.
@@ -514,7 +505,7 @@ def list_inventory(api_inst, args):
 
                         # Default case; display short FMRI and version info.
                         sver = version.Version.split(ver)[-1]
-                        msg(fmt_str % (pf, sver, st_str, ufoxi))
+                        msg(fmt_str % (pf, sver, status))
 
                 if not found and not pargs:
                         if pkg_list == api_inst.LIST_INSTALLED:

@@ -112,31 +112,31 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -aH")
                 expected = \
-                    ("foo 1.2.1-0 known -----\n"
-                    "foo (test2) 1.2.1-0 known -----\n"
-                    "food 1.2-0 known -----\n"
-                    "food (test2) 1.2-0 known -----\n"
-                    "hier/foo 1.0-0 known -----\n"
-                    "hier/foo (test2) 1.0-0 known -----\n")
+                    ("foo 1.2.1-0 ---\n"
+                    "foo (test2) 1.2.1-0 ---\n"
+                    "food 1.2-0 ---\n"
+                    "food (test2) 1.2-0 ---\n"
+                    "hier/foo 1.0-0 ---\n"
+                    "hier/foo (test2) 1.0-0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -afH")
                 expected = \
-                    ("foo 1.2.1-0 known -----\n"
-                    "foo 1.2-0 known u----\n"
-                    "foo 1.1-0 known u----\n"
-                    "foo 1.0-0 known u----\n"
-                    "foo 1-0 known u----\n"
-                    "foo (test2) 1.2.1-0 known -----\n"
-                    "foo (test2) 1.2-0 known u----\n"
-                    "foo (test2) 1.1-0 known u----\n"
-                    "foo (test2) 1.0-0 known u----\n"
-                    "foo (test2) 1-0 known u----\n"
-                    "food 1.2-0 known -----\n"
-                    "food (test2) 1.2-0 known -----\n"
-                    "hier/foo 1.0-0 known -----\n"
-                    "hier/foo (test2) 1.0-0 known -----\n")
+                    ("foo 1.2.1-0 ---\n"
+                    "foo 1.2-0 ---\n"
+                    "foo 1.1-0 ---\n"
+                    "foo 1.0-0 ---\n"
+                    "foo 1-0 ---\n"
+                    "foo (test2) 1.2.1-0 ---\n"
+                    "foo (test2) 1.2-0 ---\n"
+                    "foo (test2) 1.1-0 ---\n"
+                    "foo (test2) 1.0-0 ---\n"
+                    "foo (test2) 1-0 ---\n"
+                    "food 1.2-0 ---\n"
+                    "food (test2) 1.2-0 ---\n"
+                    "hier/foo 1.0-0 ---\n"
+                    "hier/foo (test2) 1.0-0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -149,7 +149,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """List all "foo@1.0" from auth "test1"."""
                 self.pkg("list -afH pkg://test1/foo@1.0,5.11-0")
                 expected = \
-                    "foo 1.0-0 known u----\n"
+                    "foo 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -163,8 +163,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 or '/' prefix."""
                 self.pkg("list -afH pkg:/foo@1.0,5.11-0")
                 expected = \
-                    "foo 1.0-0 known u----\n" \
-                    "foo (test2) 1.0-0 known u----\n"
+                    "foo 1.0-0 ---\n" \
+                    "foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -178,8 +178,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 prefix."""
                 self.pkg("list -afH pkg:/foo@1.0,5.11-0")
                 expected = \
-                    "foo         1.0-0 known u----\n" \
-                    "foo (test2) 1.0-0 known u----\n"
+                    "foo         1.0-0 ---\n" \
+                    "foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -188,28 +188,28 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo              1.2-0   known u----\n" \
-                    "foo              1.1-0   known u----\n" \
-                    "foo              1.0-0   known u----\n" \
-                    "foo              1-0     known u----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2-0   known u----\n" \
-                    "foo (test2)      1.1-0   known u----\n" \
-                    "foo (test2)      1.0-0   known u----\n" \
-                    "foo (test2)      1-0     known u----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "foo              1.2-0   ---\n" \
+                    "foo              1.1-0   ---\n" \
+                    "foo              1.0-0   ---\n" \
+                    "foo              1-0     ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "foo (test2)      1.2-0   ---\n" \
+                    "foo (test2)      1.1-0   ---\n" \
+                    "foo (test2)      1.0-0   ---\n" \
+                    "foo (test2)      1-0     ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aH foo")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -218,22 +218,22 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """Show foo@1.0 from both depots, but 1.1 only from test2."""
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
-                    "foo              1.0-0 known u----\n" \
-                    "foo (test2)      1.1-0 known u----\n" \
-                    "foo (test2)      1.0-0 known u----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.0-0 ---\n" \
+                    "foo (test2)      1.1-0 ---\n" \
+                    "foo (test2)      1.0-0 ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
-                    "foo              1.0-0 known u----\n" \
-                    "foo (test2)      1.1-0 known u----\n" \
-                    "foo (test2)      1.0-0 known u----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.0-0 ---\n" \
+                    "foo (test2)      1.1-0 ---\n" \
+                    "foo (test2)      1.0-0 ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -242,18 +242,18 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
                 expected = \
-                    "foo (test2) 1.2.1-0 known -----\n" \
-                    "foo (test2) 1.2-0   known u----\n" \
-                    "foo (test2) 1.1-0   known u----\n" \
-                    "foo (test2) 1.0-0   known u----\n" \
-                    "foo (test2) 1-0     known u----\n"
+                    "foo (test2) 1.2.1-0 ---\n" \
+                    "foo (test2) 1.2-0   ---\n" \
+                    "foo (test2) 1.1-0   ---\n" \
+                    "foo (test2) 1.0-0   ---\n" \
+                    "foo (test2) 1-0     ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aH pkg://test2/foo")
                 expected = \
-                    "foo (test2) 1.2.1-0 known -----\n"
+                    "foo (test2) 1.2.1-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -263,21 +263,21 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 the latter once."""
                 self.pkg("list -aHf pkg://test1/foo@1 pkg:/foo@1.2")
                 expected = \
-                    "foo         1.2.1-0 known -----\n" \
-                    "foo         1.2-0   known u----\n" \
-                    "foo         1.1-0   known u----\n" \
-                    "foo         1.0-0   known u----\n" \
-                    "foo         1-0     known u----\n" \
-                    "foo (test2) 1.2.1-0 known -----\n" \
-                    "foo (test2) 1.2-0   known u----\n"
+                    "foo         1.2.1-0 ---\n" \
+                    "foo         1.2-0   ---\n" \
+                    "foo         1.1-0   ---\n" \
+                    "foo         1.0-0   ---\n" \
+                    "foo         1-0     ---\n" \
+                    "foo (test2) 1.2.1-0 ---\n" \
+                    "foo (test2) 1.2-0   ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aH pkg://test1/foo@1 pkg:/foo@1.2")
                 expected = \
-                    "foo         1.2.1-0 known -----\n" + \
-                    "foo (test2) 1.2.1-0 known -----\n"
+                    "foo         1.2.1-0 ---\n" + \
+                    "foo (test2) 1.2.1-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -294,33 +294,32 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 # Change the origin of the publisher of an installed package to
                 # that of an empty repository.  The package should still be
-                # shown as known for test1 and installed for test2.
+                # shown for test1 and installed for test2.
                 self.pkg("set-publisher -O %s test2" % self.rurl3)
                 self.pkg("list -aHf /foo@1.0")
                 expected = \
-                    "foo 1.0-0 known u----\n" + \
-                    "foo (test2) 1.0-0 installed u----\n"
+                    "foo 1.0-0 ---\n" + \
+                    "foo (test2) 1.0-0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
                 self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # Remove the publisher of an installed package, then add the
                 # publisher back, but with an empty repository.  The package
-                # should still be shown as known for test1 and installed
-                # for test2.
+                # should still be shown as for test1 and installed for test2.
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test2" % self.rurl3)
                 self.pkg("list -aHf /foo@1.0")
                 expected = \
-                    "foo 1.0-0 known u----\n" + \
-                    "foo (test2) 1.0-0 installed u----\n"
+                    "foo 1.0-0 ---\n" + \
+                    "foo (test2) 1.0-0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
                 self.pkg("set-publisher -O %s test2" % self.rurl2)
 
                 # With the publisher of an installed package unknown, add a new
                 # publisher using the repository the package was originally
-                # installed from.  The pkg should be shown as known for test1,
+                # installed from.  The pkg should be shown as for test1,
                 # installed for test2, and test3 shouldn't be listed since the
                 # packages in the specified repository are for publisher test2.
                 self.pkg("unset-publisher test2")
@@ -419,18 +418,18 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -aHf foo*")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo              1.2-0   known u----\n" \
-                    "foo              1.1-0   known u----\n" \
-                    "foo              1.0-0   known u----\n" \
-                    "foo              1-0     known u----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2-0   known u----\n" \
-                    "foo (test2)      1.1-0   known u----\n" \
-                    "foo (test2)      1.0-0   known u----\n" \
-                    "foo (test2)      1-0     known u----\n" \
-                    "food             1.2-0   known -----\n" \
-                    "food (test2)     1.2-0   known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "foo              1.2-0   ---\n" \
+                    "foo              1.1-0   ---\n" \
+                    "foo              1.0-0   ---\n" \
+                    "foo              1-0     ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "foo (test2)      1.2-0   ---\n" \
+                    "foo (test2)      1.1-0   ---\n" \
+                    "foo (test2)      1.0-0   ---\n" \
+                    "foo (test2)      1-0     ---\n" \
+                    "food             1.2-0   ---\n" \
+                    "food (test2)     1.2-0   ---\n"
 
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
@@ -443,8 +442,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 expected += \
-                    "hier/foo         1.0-0   known -----\n" \
-                    "hier/foo (test2) 1.0-0   known -----\n"
+                    "hier/foo         1.0-0   ---\n" \
+                    "hier/foo (test2) 1.0-0   ---\n"
                 expected = self.reduceSpaces(expected)
                 self.pkg("list -aHf '*fo*'")
                 output = self.reduceSpaces(self.output)
@@ -452,10 +451,10 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -aH foo*")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "food             1.2-0   known -----\n" \
-                    "food (test2)     1.2-0   known -----\n" \
+                    "foo              1.2.1-0 ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "food             1.2-0   ---\n" \
+                    "food (test2)     1.2-0   ---\n" \
 
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
@@ -468,8 +467,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 expected += \
-                    "hier/foo         1.0-0   known -----\n" \
-                    "hier/foo (test2) 1.0-0   known -----\n"
+                    "hier/foo         1.0-0   ---\n" \
+                    "hier/foo (test2) 1.0-0   ---\n"
                 expected = self.reduceSpaces(expected)
                 self.pkg("list -aH '*fo*'")
                 output = self.reduceSpaces(self.output)
@@ -485,22 +484,22 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 """Test for multiple name match listing."""
                 self.pkg("list -aHf /foo*@1.2")
                 expected = \
-                    "foo          1.2.1-0 known -----\n" + \
-                    "foo          1.2-0   known u----\n" + \
-                    "foo  (test2) 1.2.1-0 known -----\n" + \
-                    "foo  (test2) 1.2-0   known u----\n" + \
-                    "food         1.2-0   known -----\n" + \
-                    "food (test2) 1.2-0   known -----\n"
+                    "foo          1.2.1-0 ---\n" + \
+                    "foo          1.2-0   ---\n" + \
+                    "foo  (test2) 1.2.1-0 ---\n" + \
+                    "foo  (test2) 1.2-0   ---\n" + \
+                    "food         1.2-0   ---\n" + \
+                    "food (test2) 1.2-0   ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aH /foo*@1.2")
                 expected = \
-                    "foo          1.2.1-0 known -----\n" + \
-                    "foo  (test2) 1.2.1-0 known -----\n" + \
-                    "food         1.2-0   known -----\n" + \
-                    "food (test2) 1.2-0   known -----\n"
+                    "foo          1.2.1-0 ---\n" + \
+                    "foo  (test2) 1.2.1-0 ---\n" + \
+                    "food         1.2-0   ---\n" + \
+                    "food (test2) 1.2-0   ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -527,32 +526,32 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg("list -aHf foo@latest")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aHf foo@latest foo@1.1 //test2/foo@1.2")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "foo              1.1-0   known u----\n" \
-                    "foo (test2)      1.2.1-0 known -----\n" \
-                    "foo (test2)      1.2-0   known u----\n" \
-                    "foo (test2)      1.1-0   known u----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "foo              1.1-0   ---\n" \
+                    "foo (test2)      1.2.1-0 ---\n" \
+                    "foo (test2)      1.2-0   ---\n" \
+                    "foo (test2)      1.1-0   ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -aHf /hier/foo@latest //test1/foo@latest")
                 expected = \
-                    "foo              1.2.1-0 known -----\n" \
-                    "hier/foo         1.0-0 known -----\n" \
-                    "hier/foo (test2) 1.0-0 known -----\n"
+                    "foo              1.2.1-0 ---\n" \
+                    "hier/foo         1.0-0 ---\n" \
+                    "hier/foo (test2) 1.0-0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -628,8 +627,8 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 self.image_create(self.rurl)
                 self.pkg("list -aH foo unsupported")
                 expected = \
-                    "foo         1.0-0 known -----\n" \
-                    "unsupported 1.0 unsupported -----\n"
+                    "foo         1.0-0 ---\n" \
+                    "unsupported 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -641,9 +640,9 @@ class TestPkgListSingle(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh --full")
                 self.pkg("list -afH foo unsupported")
                 expected = \
-                    "foo         1.0-0 known -----\n" \
-                    "unsupported 1.0 unsupported -----\n" \
-                    "unsupported 1.0 unsupported u----\n"
+                    "foo         1.0-0 ---\n" \
+                    "unsupported 1.0 ---\n" \
+                    "unsupported 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)

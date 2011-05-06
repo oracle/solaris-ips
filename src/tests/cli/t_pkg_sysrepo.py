@@ -377,7 +377,7 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output, bound_white_space=True)
 
         def __check_package_lists(self, expected):
-                self.pkg("list -a")
+                self.pkg("list -Ha")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -634,9 +634,8 @@ test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
                 self.__check_publisher_dirs([])
 
                 expected = """\
-NAME (PUBLISHER) VERSION STATE UFOXI
-example_pkg 1.0-0 known -----
-foo (test12) 1.0-0 known -----
+example_pkg 1.0-0 ---
+foo (test12) 1.0-0 ---
 """
                 self.__check_package_lists(expected)
                 self.pkg("refresh --full")
@@ -661,9 +660,8 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
                 self.__check_publisher_dirs(["test1"])
 
                 expected = """\
-NAME (PUBLISHER) VERSION STATE UFOXI
-bar (test3) 1.0-0 known -----
-example_pkg 1.0-0 known -----
+bar (test3) 1.0-0 ---
+example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)
 
@@ -688,9 +686,8 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
 
 
                 expected = """\
-NAME (PUBLISHER) VERSION STATE UFOXI
-bar (test3) 1.0-0 known -----
-example_pkg 1.0-0 known -----
+bar (test3) 1.0-0 ---
+example_pkg 1.0-0 ---
 """
                 self.__check_package_lists(expected)
                 self.pkg("refresh --full")
@@ -715,9 +712,8 @@ test3\ttrue\tfalse\ttrue\torigin\tonline\t%s/
                 self.pkg("refresh --full")
 
                 expected = """\
-NAME (PUBLISHER) VERSION STATE UFOXI
-bar (test3) 1.0-0 known -----
-foo 1.0-0 known -----
+bar (test3) 1.0-0 ---
+foo 1.0-0 ---
 """
                 self.__check_package_lists(expected)
 

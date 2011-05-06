@@ -289,7 +289,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 # -a is used here to verify that even though -a is implicit,
                 # it is not an error to specify it.
                 self.pkg("list -aH -g %s" % self.foo_arc)
-                expected = "foo (test) 1.0 known -----\n"
+                expected = "foo (test) 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -300,12 +300,12 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 # as an unprivileged user.
                 self.pkg("list -fH -g %s" % self.all_arc, su_wrap=True)
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 2.0 known -----\n"
-                    "incorp (test) 1.0 known u----\n"
-                    "quux (test2) 1.0-0.2 known -----\n"
-                    "quux (test2) 0.1-0.1 known u----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 2.0 ---\n"
+                    "incorp (test) 1.0 ---\n"
+                    "quux (test2) 1.0-0.2 ---\n"
+                    "quux (test2) 0.1-0.1 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -319,20 +319,20 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -fH -g %s -g %s" % (self.signed_arc,
                     self.foo_rurl))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
                 self.pkg("list -fH -g %s -g %s -g %s -g %s" % (self.signed_arc,
                     self.incorp_arc, self.quux_arc, self.foo_arc))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 2.0 known -----\n"
-                    "incorp (test) 1.0 known u----\n"
-                    "quux (test2) 1.0-0.2 known -----\n"
-                    "quux (test2) 0.1-0.1 known u----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 2.0 ---\n"
+                    "incorp (test) 1.0 ---\n"
+                    "quux (test2) 1.0-0.2 ---\n"
+                    "quux (test2) 0.1-0.1 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -350,10 +350,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -H -g %s -g %s -g %s -g %s" % (self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 2.0 known -----\n"
-                    "quux (test2) 1.0-0.2 known -----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 2.0 ---\n"
+                    "quux (test2) 1.0-0.2 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -361,7 +361,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 # output.
                 self.pkg("install -g %s incorp@1.0" % self.incorp_arc)
                 self.pkg("list -H")
-                expected = "incorp (test) 1.0 installed -----\n"
+                expected = "incorp (test) 1.0 i--\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -369,10 +369,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -H -g %s -g %s -g %s -g %s" % (self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 1.0 installed u----\n"
-                    "quux (test2) 0.1-0.1 known u----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 1.0 i--\n"
+                    "quux (test2) 0.1-0.1 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -387,12 +387,12 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -fH -g %s -g %s -g %s -g %s" % (self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 2.0 known -----\n"
-                    "incorp (test) 1.0 installed u----\n"
-                    "quux (test2) 1.0-0.2 known -----\n"
-                    "quux (test2) 0.1-0.1 known u----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 2.0 ---\n"
+                    "incorp (test) 1.0 i--\n"
+                    "quux (test2) 1.0-0.2 ---\n"
+                    "quux (test2) 0.1-0.1 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -400,10 +400,10 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -nH -g %s -g %s -g %s -g %s" % (self.signed_arc,
                     self.quux_arc, self.incorp_arc, self.foo_rurl))
                 expected = \
-                    ("foo (test) 1.0 known -----\n"
-                    "incorp (test) 2.0 known -----\n"
-                    "quux (test2) 1.0-0.2 known -----\n"
-                    "signed (test) 1.0 known -----\n")
+                    ("foo (test) 1.0 ---\n"
+                    "incorp (test) 2.0 ---\n"
+                    "quux (test2) 1.0-0.2 ---\n"
+                    "signed (test) 1.0 ---\n")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
@@ -738,7 +738,7 @@ test
                 # Verify that removing all packages leaves only foo known.
                 self.pkg("uninstall \*")
                 self.pkg("list -aH")
-                expected = "foo 1.0 known -----\n"
+                expected = "foo 1.0 ---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 

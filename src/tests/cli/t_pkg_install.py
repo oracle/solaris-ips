@@ -4728,7 +4728,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install qbar")
                 self.pkg("list qbar")
                 self.pkg("list foo@1")
-                self.pkg("list qux | grep -- --r--")
+                self.pkg("list qux | grep -- i-r")
                 self.pkg("uninstall '*'") #clean up for next test
                 # A simple rename test: First install the pre-renamed version of
                 # qux.  Then install the renamed version, and see that the new
@@ -4795,7 +4795,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh")
                 self.pkg("update")
                 self.pkg("list -af")
-                self.pkg("list t7ap2 | grep -- --r--")
+                self.pkg("list t7ap2 | grep -- i-r")
                 self.pkg("list t7ap3")
 
         def test_basic_7b(self):
@@ -4842,7 +4842,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("refresh")
                 self.pkg("update")
-                self.pkg("list t7bp2 | grep -- --r--")
+                self.pkg("list t7bp2 | grep -- i-r")
                 self.pkg("list t7bp3")
 
         def test_basic_7c(self):
@@ -4884,7 +4884,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh")
                 self.pkg("update")
 
-                self.pkg("list t7cp2 | grep -- --r--")
+                self.pkg("list t7cp2 | grep -- i-r")
                 self.pkg("list t7cp3")
 
         def test_basic_6a(self):
@@ -5146,7 +5146,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("refresh")
                 self.pkg("update -v")
-                self.pkg("list pkg:/developer/netbeenz | grep -- -----")
+                self.pkg("list pkg:/developer/netbeenz | grep -- i--")
                 self.pkg("list pkg:/netbeenz", exit=1)
 
         def test_remove_renamed(self):
