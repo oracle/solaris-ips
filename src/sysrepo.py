@@ -256,7 +256,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 # check our port
                 try:
                         num = int(port)
-                        if num <= 0 or num >= 65635:
+                        if num <= 0 or num >= 65535:
                                 raise SysrepoException(_("invalid port: %s") %
                                     port)
                 except ValueError:
@@ -265,7 +265,7 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                 # check our cache size
                 try:
                         num = int(cache_size)
-                        if num <= 0 or num >= 65635:
+                        if num <= 0:
                                 raise SysrepoException(_("invalid cache size: "
                                    "%s") % num)
                 except ValueError:

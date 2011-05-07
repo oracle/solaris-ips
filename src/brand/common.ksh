@@ -57,6 +57,10 @@ f_safedir=$(gettext "Expected %s to be a directory.")
 f_cp=$(gettext "Failed to cp %s %s.")
 f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
 
+f_sysrepo_fail=$(gettext "Unable to enable svc:/application/pkg/system-repository, please enable the service manually.")
+f_zones_proxyd_fail=$(gettext "Unable to enable svc:/system/zones-proxyd, please enable the service manually.")
+f_set_sysrepo_prop_fail=$(gettext "Unable to set the use-system-repo property.")
+
 m_brnd_usage=$(gettext "brand-specific usage: ")
 
 v_unconfig=$(gettext "Performing zone sys-unconfig")
@@ -295,134 +299,27 @@ get_entire_incorp() {
 }
 
 #
-# Emits to stdout the extended attributes for a publisher. The
-# attributes are emitted in the order "sticky preferred enabled". It
-# expects two parameters: publisher name and URL type which can be
-# ("mirror" or "origin").
-#
-get_publisher_attrs() {
-	typeset pname=$1
-	typeset utype=$2
-
-	LC_ALL=C $PKG publisher -HF tsv| \
-	    nawk '($5 == "'"$utype"'" || \
-	    ("'"$utype"'" == "origin" && $5 == "")) \
-	    && $1 == "'"$pname"'" \
-	    {printf "%s %s %s\n", $2, $3, $4;}'
-	return 0
-}
-
-#
-# Emits to stdout the extended attribute arguments for a publisher. It
-# expects two parameters: publisher name and URL type which can be
-# ("mirror" or "origin").
-#
-get_publisher_attr_args() {
-	typeset args=
-	typeset sticky=
-	typeset preferred=
-	typeset enabled=
-
-	get_publisher_attrs $1 $2 |
-	while IFS=" " read sticky preferred enabled; do
-		if [ $sticky == "true" ]; then
-			args="--sticky"
-		else
-			args="--non-sticky"
-		fi
-
-		if [ $preferred == "true" ]; then
-			args="$args -P"
-		fi
-
-		if [ $enabled == "true" ]; then
-			args="$args --enable"
-		else
-			args="$args --disable"
-		fi
-	done
-	echo $args
-
-	return 0
-}
-
-#
-# Emits to stdout the publisher's prefix followed by a '=', and then
-# the list of the requested URLs separated by spaces, followed by a
-# newline after each unique publisher.  It expects two parameters,
-# publisher type ("all", "preferred", "non-preferred") and URL type
-# ("mirror" or "origin".)
-#
-get_publisher_urls() {
-	typeset ptype=$1
-	typeset utype=$2
-	typeset __pub_prefix=
-	typeset __publisher_urls=
-	typeset ptype_filter=
-
-	if [ "$ptype" == "all" ]
-	then
-		ptype_filter=""
-	elif [ "$ptype" == "preferred" ]
-	then
-		ptype_filter="true"
-	elif [ "$ptype" == "non-preferred" ]
-	then
-		ptype_filter="false"
-	fi
-
-	LC_ALL=C $PKG publisher -HF tsv | \
-		nawk '($5 == "'"$utype"'" || \
-		("'"$utype"'" == "origin" && $5 == "")) && \
-		( "'"$ptype_filter"'" == "" || $3 == "'"$ptype_filter"'" ) \
-		{printf "%s %s\n", $1, $7;}' |
-		while IFS=" " read __publisher __publisher_url; do
-			if [[ "$utype" == "origin" && \
-			    -z "$__publisher_url" ]]; then
-				# Publisher without origins.
-				__publisher_url="None"
-			fi
-
-			if [[ -n "$__pub_prefix" && \
-				"$__pub_prefix" != "$__publisher" ]]; then
-				# Different publisher so emit accumulation and
-				# clear existing data.
-				echo $__pub_prefix=$__publisher_urls
-				__publisher_urls=""
-			fi
-			__pub_prefix=$__publisher
-			__publisher_urls="$__publisher_urls$__publisher_url "
-		done
-
-	if [[ -n "$__pub_prefix" && -n "$__publisher_urls" ]]; then
-		echo $__pub_prefix=$__publisher_urls
-	fi
-
-	return 0
-}
-
-#
-# Emit to stdout the key and cert associated with the publisher
-# name provided.  Returns 'None' if no information is present.
-# For now we assume that the mirrors all use the same key and cert
-# as the main publisher.
-#
-get_pub_secinfo() {
-	typeset key=
-	typeset cert=
-
-	key=$(LC_ALL=C $PKG publisher $1 |
-	    nawk -F': ' '/SSL Key/ {print $2; exit 0}')
-	cert=$(LC_ALL=C $PKG publisher $1 |
-	    nawk -F': ' '/SSL Cert/ {print $2; exit 0}')
-	print $key $cert
-}
-
-#
 # Handle pkg exit code.  Exit 0 means Command succeeded, exit 4 means
 # No changes were made - nothing to do.  Any other exit code is an error.
 #
 pkg_err_check() {
 	typeset res=$?
 	(( $res != 0 && $res != 4 )) && fail_fatal "$1"
+}
+
+#
+# Enable the services needed to perform packaging operations inside a zone.
+#
+enable_zones_services() {                                                       
+	/usr/sbin/svcadm enable -t -s /application/pkg/system-repository
+	if [[ $? -ne 0 ]]; then
+		error "$f_sysrepo_fail"
+		return 1
+	fi
+	/usr/sbin/svcadm enable -t -s /system/zones-proxyd
+	if [[ $? -ne 0 ]]; then
+		error "$f_zones_proxyd_fail"
+		return 1
+	fi
+	return 0
 }

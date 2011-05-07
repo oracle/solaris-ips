@@ -41,10 +41,12 @@ dir path=usr/lib
 dir path=usr/lib/brand
 dir path=usr/lib/brand/ipkg
 file path=usr/lib/brand/ipkg/attach mode=0755
+file path=usr/lib/brand/ipkg/boot mode=0755
 file path=usr/lib/brand/ipkg/clone mode=0755
 file path=usr/lib/brand/ipkg/common.ksh
 file path=usr/lib/brand/ipkg/detach mode=0755
 file path=usr/lib/brand/ipkg/fmri_compare mode=0755
+file path=usr/lib/brand/ipkg/halt mode=0755
 file path=usr/lib/brand/ipkg/image_install mode=0755
 file path=usr/lib/brand/ipkg/p2v mode=0755
 file path=usr/lib/brand/ipkg/pkgcreatezone mode=0755
@@ -59,6 +61,7 @@ license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-brand version=0.0.0
 depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
 depend type=require fmri=package/pkg
+depend type=require fmri=package/pkg/system-repository
 depend type=require fmri=runtime/python-26@2.6.4
 depend type=require fmri=system/extended-system-utilities@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
 depend type=require fmri=system/library@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)

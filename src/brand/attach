@@ -34,7 +34,6 @@ m_attach_ds=$(gettext   "        Attach ZFS Dataset: %s")
 m_gzinc=$(gettext       "       Global zone version: %s")
 m_zinc=$(gettext        "   Non-Global zone version: %s")
 m_need_update=$(gettext "                Evaluation: Packages in zone %s are out of sync with the global zone. To proceed, retry with the -u flag.")
-m_need_nonsticky=$(gettext "                Evaluation: Publisher %s in zone %s needs to be set to non-sticky")
 m_cache=$(gettext       "                     Cache: Using %s.")
 m_updating=$(gettext    "  Updating non-global zone: Output follows")
 m_sync_done=$(gettext   "  Updating non-global zone: Zone updated.")
@@ -51,9 +50,6 @@ no_installing=$(gettext "                Installing: Using pre-existing data in 
 f_sanity_variant=$(gettext "  Sanity Check: FAILED, couldn't determine %s from image.")
 f_sanity_global=$(gettext  "  Sanity Check: FAILED, appears to be a global zone (%s=%s).")
 f_update=$(gettext "Could not update attaching zone")
-f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
-f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
-f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
 f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
 f_nonsticky=$(gettext "Could not set legacy publisher to non-sticky")
@@ -148,127 +144,7 @@ unset inst_type
 # to store information about the global zone publishers and
 # incorporations.
 
-typeset -A gz_publishers
 typeset gz_incorporations=""
-
-#
-# Gather the zone publisher details. $1 is the location of the image we
-# are processing and $2 is an associative array used to store publisher
-# details.
-#
-gather_zone_publisher_details() {
-	STORED_IMAGE=$PKG_IMAGE
-	PKG_IMAGE=$1;export PKG_IMAGE
-	typeset -n publishers=$2
-	typeset -li publisher_count=0
-	typeset -li url_count=0
-	typeset line=
-	typeset name=
-	typeset mirror=
-	typeset origin=
-	typeset opublisher=
-
-	#
-	# Store publisher, origin and security details. It is assumed
-	# that mirrors all use the same key as the origins.
-	#
-	for line in $(get_publisher_urls all origin); do
-		print $line | IFS="=" read name origin
-		# When a publisher has multiple origins, the
-		# additional origins don't contain the publisher
-		# name. Correct for this by checking if origin is not
-		# set by get_publisher_urls() and, if so, use the
-		# "name" as the origin and set the name to the value
-		# we have already saved.
-		if [[ -z $origin ]]; then
-			origin=$name
-			name=${publisher.name}
-		elif [[ "$origin" == "None" ]]; then
-			# Publisher with no origins.
-			origin=""
-		fi
-
-		# Use a compound variable to store all the data
-		# relating to a publisher.
-		if [[ -z ${publishers[$name]} ]]; then
-			typeset -C publisher_$publisher_count
-			typeset -n publisher=publisher_$publisher_count
-			typeset publisher.sticky=""
-			typeset publisher.preferred=""
-			typeset publisher.enabled=""
-			typeset -a publisher.origins
-			typeset -a publisher.mirrors
-			typeset publisher.name=$name
-			typeset publisher.keyfile=""
-			typeset publisher.certfile=""
-
-			get_publisher_attrs ${publisher.name} origin | \
-			    IFS=" " read publisher.sticky publisher.preferred \
-			    publisher.enabled
-			if [[ -n "$origin" ]]; then
-				get_pub_secinfo ${publisher.name} | \
-				    read publisher.keyfile publisher.certfile
-				[[ ${publisher.keyfile} != "None" && \
-				    ! -f ${PKG_IMAGE}/${publisher.keyfile} ]] && \
-				    fail_usage "$f_nosuch_key" \
-				        ${publisher.keyfile}
-				[[ ${publisher.certfile} != "None" && \
-				    ! -f ${PKG_IMAGE}/${publisher.certfile} ]] && \
-				    fail_usage "$f_nosuch_cert" \
-				        ${publisher.certfile}
-			else
-				# Publisher has no origins.
-				publisher.keyfile="None"
-				publisher.certfile="None"
-			fi
-			publisher_count=publisher_count+1
-			url_count=0
-		fi
-		publisher.origins[$url_count]=$origin
-		publishers[$name]=${publisher}
-		url_count=url_count+1
-	done
-
-	#
-	# Store mirror details
-	#
-	url_count=0
-	for line in $(get_publisher_urls all mirror); do
-		print $line | IFS="=" read name mirror
-		if [[ -z $mirror ]]; then
-			mirror=$name
-			name=${publisher.name}
-		fi
-		if [[ -z $opublisher || $opublisher != $name ]]; then
-			opublisher=$name
-			eval publisher="${publishers[$name]}"
-			url_count=0
-		fi
-		publisher.mirrors[$url_count]=$mirror
-		publishers[$name]=${publisher}
-		url_count=url_count+1
-	done
-	
-	PKG_IMAGE=$STORED_IMAGE;export PKG_IMAGE
-}
-
-#
-# $1 is an associative array of publishers. Search this array and
-# return the preferred publisher.
-#
-get_preferred_publisher() {
-	typeset -n publishers=$1
-	typeset publisher=
-
-	for key in ${!publishers[*]}; do
-		eval publisher="${publishers[$key]}"
-		if [[ ${publisher.preferred}  ==  "true" ]]; then
-			print ${key}
-			return 0
-		fi
-	done
-	return 1
-}
 
 #
 # $1 is an empty string to be populated with a list of incorporation
@@ -283,47 +159,6 @@ gather_incorporations() {
 	    ':pkg.depend.install-hold:core-os*');do
 		incorporations="$incorporations $(get_pkg_fmri $p)"
 	done
-}
-
-#
-# Print the pkg(1) command which defines a publisher. $1 is an associative 
-# array of publisher details and $2 is the publisher to be printed.
-#
-print_publisher_pkg_defn() {
-	typeset -n publishers=$1
-	typeset pname=$2
-	typeset publisher=
-	typeset args=""
-	typeset origin=
-	typeset mirror=
-
-	eval publisher="${publishers[$pname]}"
-
-	if [[ ${publisher.preferred} == "true" ]]; then
-		args="$args -P"
-	fi
-
-	for origin in "${publisher.origins[@]}"; do
-		args="$args -g $origin"
-	done
-
-	for mirror in "${publisher.mirrors[@]}"; do
-		args="$args -m $mirror"
-	done
-
-	if [[ ${publisher.sticky} == "true" ]]; then
-		args="$args --sticky"
-	else
-		args="$args --non-sticky"
-	fi
-
-	if [[ ${publisher.enabled} == "true" ]]; then
-		args="$args --enable"
-	else
-		args="$args --disable"
-	fi
-
-	echo "$args"
 }
 
 # Other brand attach options are invalid for this brand.
@@ -376,6 +211,11 @@ if [ $noexecute -eq 1 ]; then
 	exit $ZONE_SUBPROC_OK
 fi
 
+enable_zones_services
+if [[ $? -ne 0 ]]; then
+	exit $ZONE_SUBPROC_NOTCOMPLETE
+fi
+
 LOGFILE=$(/usr/bin/mktemp -t -p /var/tmp ${zone.name}.attach_log.XXXXXX)
 if [[ -z "$LOGFILE" ]]; then
 	fatal "$e_tmpfile"
@@ -404,28 +244,6 @@ echo $variant | IFS=" " read variantname variantval
 # Check that the variant is non-global, else fail
 [[ $variantval = "nonglobal" ]] || fatal "$f_sanity_global" $VARIANT $variantval
 
-# We would like to ensure that our NGZ publishers are a superset of
-# those in the GZ. We do this by building a list of all publishers in
-# the GZ. We then process this list in the NGZ, first removing (if
-# present) and then installing all publishers in this list. Other
-# publisher, i.e. those not in the GZ list, are left as is.
-
-#
-# Gather all the publisher details for the global zone
-#
-gather_zone_publisher_details $PKG_IMAGE gz_publishers
-
-#
-# Get the preferred publisher for the global zone
-# If we were not able to get the zone's preferred publisher, complain.
-#
-gz_publisher_pref=$(get_preferred_publisher gz_publishers)
-
-if [[ $? -ne 0 ]]; then
-	fail_usage "$f_no_pref_publisher" "global"
-fi
-
-vlog "Preferred global publisher: $gz_publisher_pref"
 
 #
 # Try to find the "entire" incorporation's FMRI in the gz.
@@ -486,69 +304,16 @@ if [[ $allow_update == 1 ]]; then
 fi
 
 #
-# The NGZ publishers must be a superset of the GZ publisher. Process
-# the GZ publishers and make the NGZ publishers match them.
-# You can't remove a preferred publisher, so temporarily create
-# a preferred publisher
-RANDOM=$$
-
-ZNAME=za$RANDOM
-
-LC_ALL=C $PKG set-publisher --no-refresh -P -g http://localhost:10000 $ZNAME
-for key in ${!gz_publishers[*]}; do
-	typeset newloc=""
-
-	args=$(print_publisher_pkg_defn gz_publishers $key)
-
-	# Copy credentials from global zone.
-	safe_dir var
-	safe_dir var/pkg
-
-	eval publisher="${gz_publishers[$key]}"
-	if [[ ${publisher.keyfile} != "None" || \
-	    ${publisher.certfile} != "None" ]]; then
-		if [[ -e $ZONEROOT/$KEYDIR ]]; then
-			safe_dir $KEYDIR
-		else
-			mkdir -m 755 $ZONEROOT/$KEYDIR
-		fi
-	fi
-
-	if [[ ${publisher.keyfile} != "None" ]]; then
-		relnewloc="$KEYDIR/$(basename ${publisher.keyfile})"
-		newloc="$ZONEROOT/$relnewloc"
-		safe_copy ${publisher.keyfile} $newloc
-		chmod 644 $newloc
-		chown -h root:root $newloc
-		args="$args -k $relnewloc"
-	fi
-	if [[ ${publisher.certfile} != "None" ]]; then
-		relnewloc="$KEYDIR/$(basename ${publisher.certfile})"
-		newloc="$ZONEROOT/$relnewloc"
-		safe_copy ${publisher.certfile} $newloc
-		chmod 644 $newloc
-		chown -h root:root $newloc
-		args="$args -c $relnewloc"
-	fi
-	LC_ALL=C $PKG unset-publisher $key >/dev/null 2>&1
-	LC_ALL=C $PKG set-publisher $args $key
-	
-done
-
+# Set the use-system-repo property.
 #
-# Now remove our temporary publisher
-#
-LC_ALL=C $PKG unset-publisher $ZNAME
-
-#
-# Make sure that the solaris publisher can update packages that first
-# came from opensolaris.org.
-#
-if [[ $allow_update == 1 ]] && \
-    $PKG publisher opensolaris.org >/dev/null 2>&1; then
-	LC_ALL=C $PKG set-publisher --no-refresh --non-sticky \
-	    opensolaris.org || pkg_err_check "$f_nonsticky"
+LC_ALL=C $PKG set-property use-system-repo true
+if [[ $? != 0 ]]; then
+    log "\n$f_set_sysrepo_prop_fail"
+    EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
+    exit $EXIT_CODE
 fi
+
+LC_ALL=C $PKG refresh --full
 
 #
 # Bring the ngz entire incorporation into sync with the gz as follows:

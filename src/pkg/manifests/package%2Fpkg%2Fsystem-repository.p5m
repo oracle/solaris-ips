@@ -27,7 +27,9 @@ set name=pkg.summary value="IPS System Repository"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=org.opensolaris.smf.fmri \
-    value=svc:/application/pkg/system-repository:default
+    value=svc:/application/pkg/system-repository:default \
+    value=svc:/system/zones-proxyd:default \
+    value=svc:/system/zones-proxy-client:default
 set name=variant.arch value=$(ARCH)
 dir path=etc
 dir path=etc/pkg
@@ -37,7 +39,9 @@ dir path=lib/svc
 dir path=lib/svc/manifest
 dir path=lib/svc/manifest/system
 dir path=usr
+dir path=usr/include
 dir path=usr/lib
+dir path=usr/lib/zones
 dir path=usr/share/man/cat1m
 file path=usr/share/man/cat1m/pkg.sysrepo.1m
 dir path=var
@@ -48,8 +52,18 @@ dir path=var/log
 dir path=var/log/pkg
 dir path=var/log/pkg/sysrepo
 file path=lib/svc/manifest/application/pkg-system-repository.xml
+file path=lib/svc/manifest/system/zoneproxy-client.xml \
+    variant.opensolaris.zone=nonglobal
+file path=lib/svc/manifest/system/zoneproxyd.xml \
+    variant.opensolaris.zone=global
 file path=lib/svc/method/svc-pkg-sysrepo
+file path=usr/include/zoneproxy_impl.h
 file path=usr/lib/pkg.sysrepo mode=0755
+file path=usr/lib/zones/zoneproxy-adm mode=0555 \
+    variant.opensolaris.zone=global
+file path=usr/lib/zones/zoneproxy-client mode=0555 \
+    variant.opensolaris.zone=nonglobal
+file path=usr/lib/zones/zoneproxyd mode=0555 variant.opensolaris.zone=global
 file path=etc/pkg/sysrepo/sysrepo_httpd.conf.mako
 file path=etc/pkg/sysrepo/sysrepo_publisher_response.mako
 # we deliver 0-byte log file stubs

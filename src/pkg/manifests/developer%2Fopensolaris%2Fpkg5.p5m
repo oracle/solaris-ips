@@ -29,6 +29,7 @@ set name=info.repository_url value=ssh://hg.opensolaris.org/hg/pkg/gate
 set name=pkg.description value="This package should be installed on systems used for development of the pkg(5) project"
 depend fmri=pkg:/developer/build/make type=require
 depend fmri=pkg:/developer/build/onbld type=require
+depend fmri=pkg:/developer/object-file type=require
 depend fmri=pkg:/developer/gnome/gettext type=require
 depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
 depend fmri=pkg:/developer/swig type=require

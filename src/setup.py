@@ -339,6 +339,8 @@ smf_app_files = [
         'svc/pkg-update.xml',
         ]
 smf_sys_files = [
+        'svc/zoneproxy-client.xml',
+        'svc/zoneproxyd.xml'
         ]
 resource_files = [
         'util/opensolaris.org.sections',
