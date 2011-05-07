@@ -352,7 +352,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         url = "http://localhost:%(port)s/%(pub)s/%(hash)s/" % \
                             {"port": self.sysrepo_port, "hash": hash,
                             "pub": pub}
-                        self.img_path = os.path.join(self.test_root, "sysrepo_image")
+                        self.set_img_path(os.path.join(self.test_root,
+                            "sysrepo_image"))
                         self.pkg_image_create(prefix=pub, repourl=url)
                         self.pkg("-R %s install sample" % self.get_img_path())
 

@@ -26,16 +26,20 @@
 
 . /usr/lib/brand/ipkg/common.ksh
 
+# Allows developer to override some things like PATH and PYTHONPATH
+. /usr/lib/brand/ipkg/developerenv.ksh
+
 m_attach_log=$(gettext "Log File: %s")
 m_zfs=$(gettext "A ZFS file system was created for the zone.")
-m_usage=$(gettext  "attach [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
+m_usage=$(gettext  "attach [-a archive] [-d dataset] [-r zfs-recv] [-v] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.\n\tThe -v option enables verbose output.")
 m_attach_root=$(gettext "               Attach Path: %s")
 m_attach_ds=$(gettext   "        Attach ZFS Dataset: %s")
 m_gzinc=$(gettext       "       Global zone version: %s")
 m_zinc=$(gettext        "   Non-Global zone version: %s")
 m_need_update=$(gettext "                Evaluation: Packages in zone %s are out of sync with the global zone. To proceed, retry with the -u flag.")
 m_cache=$(gettext       "                     Cache: Using %s.")
-m_updating=$(gettext    "  Updating non-global zone: Output follows")
+m_publisher=$(gettext   "  Updating non-global zone: Propagating publisher %s.")
+m_image_link=$(gettext  "  Updating non-global zone: Linking to image %s.")
 m_sync_done=$(gettext   "  Updating non-global zone: Zone updated.")
 m_complete=$(gettext    "                    Result: Attach Succeeded.")
 m_failed=$(gettext      "                    Result: Attach Failed.")
@@ -50,6 +54,7 @@ no_installing=$(gettext "                Installing: Using pre-existing data in 
 f_sanity_variant=$(gettext "  Sanity Check: FAILED, couldn't determine %s from image.")
 f_sanity_global=$(gettext  "  Sanity Check: FAILED, appears to be a global zone (%s=%s).")
 f_update=$(gettext "Could not update attaching zone")
+f_sysrepo=$(gettext "Could not install system-repository")
 f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
 f_nonsticky=$(gettext "Could not set legacy publisher to non-sticky")
@@ -60,6 +65,7 @@ e_dataset_not_in_be=$(gettext "Dataset %s mountpoint %s is not under zone root %
 # Clean up on interrupt
 trap_cleanup() {
 	typeset msg=$(gettext "Installation cancelled due to interrupt.")
+	trap - INT
 
 	log "$msg"
 
@@ -71,7 +77,15 @@ trap_cleanup() {
 
 # If the attach failed then clean up the ZFS datasets we created.
 trap_exit() {
-	if [[ $EXIT_CODE == $ZONE_SUBPROC_OK ]]; then
+	trap - INT
+	if [[ -n $EXIT_NOEXECUTE ]]; then
+		# dryrun mode, nothing to do here; exit with whatever
+		# EXIT_CODE is set to.
+		;
+	elif [[ $EXIT_CODE == $ZONE_SUBPROC_USAGE ]]; then
+		# Usage message printed, nothing to do here.
+		;
+	elif [[ $EXIT_CODE == $ZONE_SUBPROC_OK ]]; then
 		# unmount the zoneroot if labeled brand
 		is_brand_labeled
 		(( $? == 1 )) && ( umount $ZONEROOT || \
@@ -111,7 +125,7 @@ install_media="-"
 trap trap_cleanup INT
 trap trap_exit EXIT
 
-PKG="/usr/bin/pkg"
+PKG=pkg
 KEYDIR=/var/pkg/ssl
 
 # If we weren't passed at least two arguments, exit now.
@@ -147,22 +161,9 @@ unset inst_type
 typeset gz_incorporations=""
 
 #
-# $1 is an empty string to be populated with a list of incorporation
-# fmris.
-#
-gather_incorporations() {
-	typeset -n incorporations=$1
-	typeset p=
-
-	for p in \
-	    $(LC_ALL=C $PKG search -Hl -o pkg.name \
-	    ':pkg.depend.install-hold:core-os*');do
-		incorporations="$incorporations $(get_pkg_fmri $p)"
-	done
-}
-
+verbose=""
 # Other brand attach options are invalid for this brand.
-while getopts "a:d:nr:u" opt; do
+while getopts "a:d:n:r:uv" opt; do
 	case $opt in
 		a)
 			if [[ -n "$inst_type" ]]; then
@@ -178,7 +179,10 @@ while getopts "a:d:nr:u" opt; do
 		 	inst_type="directory"
 			install_media="$OPTARG"
 			;;
-		n)	noexecute=1 ;;
+		n)	noexecute=1
+	       		EXIT_NOEXECUTE=1
+			dryrun_mfst=$"OPTARG"
+			;;
 		r)
 			if [[ -n "$inst_type" ]]; then
 				fatal "$incompat_options" "$m_usage"
@@ -187,6 +191,8 @@ while getopts "a:d:nr:u" opt; do
 			install_media="$OPTARG"
 			;;
 		u)	allow_update=1 ;;
+		v)	verbose="-v"
+			OPT_V=1 ;;	# used for vlog()
 		?)	fail_usage "" ;;
 		*)	fail_usage "";;
 	esac
@@ -201,14 +207,16 @@ fi
 
 if [ $noexecute -eq 1 ]; then
 	#
-	# The zone doesn't have to exist when the -n option is used, so do
+	# the zone doesn't have to exist when the -n option is used, so do
 	# this work early.
 	#
 
-	# XXX There is no sw validation for IPS right now, so just pretend
+	# LIXXX There is no sw validation for IPS right now, so just pretend
 	# everything will be ok.
+
+	# Set exit code for the trap handler.
 	EXIT_CODE=$ZONE_SUBPROC_OK
-	exit $ZONE_SUBPROC_OK
+	exit $EXIT_CODE
 fi
 
 enable_zones_services
@@ -246,53 +254,20 @@ echo $variant | IFS=" " read variantname variantval
 
 
 #
-# Try to find the "entire" incorporation's FMRI in the gz.
-#
-gz_entire_fmri=$(get_entire_incorp)
-
-#
-# If entire isn't installed, create an array of global zone core-os
-# incorporations.
-#
-if [[ -z $gz_entire_fmri ]]; then
-	gather_incorporations gz_incorporations
-fi
-
-#
 # We're done with the global zone: switch images to the non-global
 # zone.
 #
 PKG_IMAGE="$ZONEROOT"
 
 #
-# Try to find the "entire" incorporation's FMRI in the ngz.
-#
-ngz_entire_fmri=$(get_entire_incorp)
-
-[[ -n $gz_entire_fmri ]] && log "$m_gzinc" "$gz_entire_fmri"
-[[ -n $ngz_entire_fmri ]] && log "$m_zinc" "$ngz_entire_fmri"
-
-#
-# Create the list of incorporations we wish to install/update in the
-# ngz.
-#
-typeset -n incorp_list
-if [[ -n $gz_entire_fmri ]]; then
-    incorp_list=gz_entire_fmri
-else
-    incorp_list=gz_incorporations
-fi
-
-#
 # If there is a cache, use it.
 #
 if [[ -f /var/pkg/pkg5.image && -d /var/pkg/publisher ]]; then
-	PKG_CACHEROOT=/var/pkg/publisher
+	# respect PKG_CACHEROOT if the caller has it set.
+	[ -z "$PKG_CACHEROOT" ] && PKG_CACHEROOT=/var/pkg/publisher
 	export PKG_CACHEROOT
 	log "$m_cache" "$PKG_CACHEROOT"
 fi
-
-log "$m_updating"
 
 #
 # pkg update-format doesn't allow a dry run or provide any other way to
@@ -316,53 +291,27 @@ fi
 LC_ALL=C $PKG refresh --full
 
 #
-# Bring the ngz entire incorporation into sync with the gz as follows:
-# - First compare the existence of entire in both global and non-global
-#   zone and update the non-global zone accordingly.
-# - Then, if updates aren't allowed check if we can attach because no
-#   updates are required. If we can, then we are finished.
-# - Finally, we know we can do updates and they are required, so update
-#   all the non-global zone incorporations using the list we gathered
-#   from the global zone earlier.
+# Reset the pkg image back to the global zone so that we link the
+# zoneroot to that image.
 #
-if [[ -z $gz_entire_fmri && -n $ngz_entire_fmri ]]; then
-	if [[ $allow_update == 1 ]]; then
-		LC_ALL=C $PKG uninstall entire || pkg_err_check "$f_update"
-	else
-		log "\n$m_need_update" "$ZONENAME"
-		EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
-		exit $EXIT_CODE
-    fi
-fi
+PKG_IMAGE=$GZ_IMAGE
 
+log "$m_image_link" $GZ_IMAGE
+extra_flags=""
 if [[ $allow_update == 0 ]]; then
-	LC_ALL=C $PKG install --accept --no-refresh -n $incorp_list
-	if [[ $? == 4 ]]; then
-		log "\n$m_complete"
-		EXIT_CODE=$ZONE_SUBPROC_OK
-		exit $EXIT_CODE
-	else
-		log "\n$m_need_update" "$ZONENAME"
-		EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
-		exit $EXIT_CODE
-	fi
+       extra_flags="--no-pkg-updates"
 fi
 
-#
-# If the NGZ doesn't have entire, but the GZ does, then we have to install
-# entire twice. First time we don't specify a version and let constraining
-# incorporations determine the version. Second time, we try to install the
-# same version as we have in the GZ.
-#
-if [[ -n $gz_entire_fmri && -z $ngz_entire_fmri ]]; then
-	LC_ALL=C $PKG install --accept --no-refresh entire  || \
-	    pkg_err_check "$f_update"
-fi
+LC_ALL=C $PKG attach-linked $verbose -f --allow-relink --accept \
+    $extra_flags \
+    -c zone:${zone.name} $ZONEROOT || pkg_err_check "$f_update"
 
-LC_ALL=C $PKG install --accept --no-refresh $incorp_list  || \
-    pkg_err_check "$f_update"
+# make sure the sysrepo is installed:
+PKG_IMAGE=$ZONEROOT
+LC_ALL=C $PKG install $verbose pkg:///package/pkg/system-repository || \
+    pkg_err_check "$f_sysrepo"
 
-log "\n$m_sync_done"
+dlog "\n$m_sync_done"
 log "$m_complete"
 
 EXIT_CODE=$ZONE_SUBPROC_OK

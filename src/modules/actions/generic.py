@@ -97,6 +97,8 @@ class Action(object):
         # key_attr would be the driver name.  When 'key_attr' is None, it means
         # that all attributes of the action are distinguishing.
         key_attr = None
+        # 'key_attr_opt' indicates if the 'key_attr' attribute is optional.
+        key_attr_opt = False
         # 'globally_identical' is True if all actions representing a single
         # object on a system must be identical.
         globally_identical = False
@@ -152,6 +154,28 @@ class Action(object):
                     )))
                 self.__class__.unknown = \
                     self.orderdict[pkg.actions.types["unknown"]]
+
+        def __getstate__(self):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate this object's contents into a
+                dictionary for pickling"""
+
+                state = {}
+                for name in Action.__slots__:
+                        if not hasattr(self, name):
+                                continue
+                        state[name] = getattr(self, name)
+                return state
+
+        def __setstate__(self, state):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate a pickled dictionary copy of this
+                object's contents into a real in-memory object."""
+
+                for name in state:
+                        setattr(self, name, state[name])
 
         def __init__(self, data=None, **attrs):
                 """Action constructor.
@@ -488,6 +512,8 @@ class Action(object):
                 """
 
                 if self.key_attr is None:
+                        return str(self)
+                if self.key_attr_opt and self.key_attr not in self.attrs:
                         return str(self)
                 return "%s: %s" % \
                     (self.name, self.attrs.get(self.key_attr, "???"))

@@ -77,7 +77,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(os.path.exists(lfpath))
 
                 # Verify that an API function will fail the same way.
-                self.assertRaises(nrlock.NRLockException, api_obj.plan_install,
+                self.assertRaises(nrlock.NRLockException,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_install(*args, **kwargs)),
                     ["foo"])
                 api_obj.reset()
 
@@ -89,7 +91,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(os.path.exists(lfpath))
                 self.assertEqual(os.stat(lfpath).st_size, 0)
 
-                api_obj.plan_install(["foo"])
+                for pd in api_obj.gen_plan_install(["foo"]):
+                        continue
                 api_obj.reset()
 
                 # Verify that if a state change occurs at any point after
@@ -98,8 +101,10 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj2 = self.get_img_api_obj()
 
                 # Both of these should succeed since no state change exists yet.
-                api_obj.plan_install(["foo"])
-                api_obj2.plan_install(["foo"])
+                for pd in api_obj.gen_plan_install(["foo"]):
+                        continue
+                for pd in api_obj2.gen_plan_install(["foo"]):
+                        continue
 
                 # Execute the first plan.
                 api_obj.prepare()
@@ -112,8 +117,10 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Restart plan process.
                 api_obj2.reset()
-                api_obj2.plan_uninstall(["foo"], False)
-                api_obj.plan_uninstall(["foo"], False)
+                for pd in api_obj2.gen_plan_uninstall(["foo"], False):
+                        continue
+                for pd in api_obj.gen_plan_uninstall(["foo"], False):
+                        continue
 
                 # Prepare second and first plan.
                 api_obj2.prepare()
@@ -149,7 +156,8 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Now plan an uninstall using the API object.
                 api_obj.reset()
-                api_obj.plan_uninstall(["foo"], False)
+                for pd in api_obj.gen_plan_uninstall(["foo"], False):
+                        continue
                 api_obj.prepare()
 
                 # Execute the client to actually uninstall the package, and then

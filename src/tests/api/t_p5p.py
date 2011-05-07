@@ -104,7 +104,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
         def image_create(self, *args, **kwargs):
                 pkg5unittest.SingleDepotTestCase.image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
 
         def setUp(self):

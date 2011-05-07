@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2011 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -35,6 +35,7 @@ logger = global_settings.logger
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
 import pkg.client.sigpolicy as sigpolicy
+import pkg.client.linkedimage as li
 import pkg.config as cfg
 import pkg.facet as facet
 import pkg.misc as misc
@@ -172,6 +173,7 @@ class ImageConfig(cfg.FileConfig):
                     cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),
                 ]),
                 cfg.PropertySection("variant", properties=[]),
+
                 cfg.PropertySectionTemplate("^authority_.*", properties=[
                     # Base publisher information.
                     cfg.PropPublisher("alias", value_map=_val_map_none),
@@ -217,6 +219,11 @@ class ImageConfig(cfg.FileConfig):
                         value_map=_val_map_none),
                     cfg.Property("repo.sort_policy", value_map=_val_map_none),
                 ]),
+                cfg.PropertySectionTemplate("^linked_.*", properties=[
+                    cfg.Property(li.PROP_NAME, value_map=_val_map_none),
+                    cfg.Property(li.PROP_PATH, value_map=_val_map_none),
+                    cfg.PropBool(li.PROP_RECURSE, default=True),
+                ]),
             ],
         }
 
@@ -227,6 +234,7 @@ class ImageConfig(cfg.FileConfig):
                 self.__validate = False
                 self.facets = facet.Facets()
                 self.variants = variant.Variants()
+                self.linked_children = {}
                 cfg.FileConfig.__init__(self, cfgpathname,
                     definitions=self.__defs, overrides=overrides,
                     version=version)
@@ -354,6 +362,16 @@ class ImageConfig(cfg.FileConfig):
                 if "variant.opensolaris.zone" not in self.variants:
                         self.variants["variant.opensolaris.zone"] = "global"
 
+                # load linked image child properties
+                for s, v in idx.iteritems():
+                        if not re.match("linked_.*", s):
+                                continue
+                        linked_props = self.read_linked(s, v)
+                        if linked_props:
+                                lin = linked_props[li.PROP_NAME]
+                                assert lin not in self.linked_children
+                                self.linked_children[lin] = linked_props
+
                 # Merge disabled publisher file with configuration; the DA_FILE
                 # is used for compatibility with older clients.
                 dafile = os.path.join(os.path.dirname(self.target), DA_FILE)
@@ -468,6 +486,21 @@ class ImageConfig(cfg.FileConfig):
                         pass
                 for f in self.facets:
                         self.set_property("facet", f, self.facets[f])
+
+                # remove all linked image child configuration
+                idx = self.get_index()
+                for s, v in idx.iteritems():
+                        if not re.match("linked_.*", s):
+                                continue
+                        self.remove_section(s)
+
+                # add sections for any known linked children
+                for lin in sorted(self.linked_children):
+                        linked_props = self.linked_children[lin]
+                        s = "linked_%s" % str(lin)
+                        for k in [li.PROP_NAME, li.PROP_PATH, li.PROP_RECURSE]:
+                                self.set_property(s, k, str(linked_props[k]))
+
 
                 # Transfer current publisher information to configuration.
                 for prefix in self.__publishers:
@@ -607,6 +640,45 @@ class ImageConfig(cfg.FileConfig):
                                 for name in default:
                                         self.set_property("property", name,
                                             DEF_TOKEN)
+
+        def read_linked(self, s, sidx):
+                """Read linked image properties associated with a child image.
+                Zone linked images do not store their properties here in the
+                image config.
+
+                If we encounter an error while parsing property data, then
+                instead of throwing an error/exception which the user would
+                have no way of fixing, we simply return and ignore the child.
+                The child data will be removed from the config file the next
+                time it gets re-written, and if the user want the child back
+                they'll have to re-attach it."""
+
+                linked_props = dict()
+
+                # Check for known properties
+                for k in [li.PROP_NAME, li.PROP_PATH, li.PROP_RECURSE]:
+                        if k not in sidx:
+                                # we're missing a property
+                                return None
+                        linked_props[k] = sidx[k]
+
+                # all children saved in the config file are pushed based
+                linked_props[li.PROP_MODEL] = li.PV_MODEL_PUSH
+
+                # make sure the name is valid
+                try:
+                        lin = li.LinkedImageName(linked_props[li.PROP_NAME])
+                except apx.MalformedLinkedImageName:
+                        # invalid child image name
+                        return None
+                linked_props[li.PROP_NAME] = lin
+
+                # check if this image is already defined
+                if lin in self.linked_children:
+                        # duplicate child linked image data, first copy wins
+                        return None
+
+                return linked_props
 
         def read_publisher(self, sname, sec_idx):
                 # s is the section of the config file.
@@ -1045,6 +1117,15 @@ class BlendedConfig(object):
                 self.img_cfg.facets = facets
 
         facets = property(__get_facets, __set_facets)
+
+        def __get_linked_children(self):
+                return self.img_cfg.linked_children
+
+        def __set_linked_children(self, linked_children):
+                self.img_cfg.linked_children = linked_children
+
+        linked_children = property(__get_linked_children,
+            __set_linked_children)
 
         def __is_sys_pub(self, prefix):
                 """Return whether the publisher with the prefix 'prefix' is a

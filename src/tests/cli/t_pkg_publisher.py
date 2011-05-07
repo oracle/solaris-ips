@@ -311,9 +311,10 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 base_string = ("test\ttrue\tfalse\ttrue\torigin\tonline\t"
                     "%s/\n"
                     "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "https://test.invalid1/\n"
+                    "https://%s1/\n"
                     "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
-                    "http://test.invalid2/\n" % self.rurl)
+                    "http://%s2/\n" % (self.rurl, self.bogus_url,
+                    self.bogus_url))
                 # With headers
                 self.pkg("publisher -F tsv")
                 expected = "PUBLISHER\tSTICKY\tSYSPUB\tENABLED" \
@@ -521,8 +522,12 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         def __verify_pub_cfg(self, prefix, pub_cfg):
                 """Private helper method to verify publisher configuration."""
 
+                # pretend like the Image object is being allocated from
+                # a pkg command run from within the target image.
+                cmdpath = os.path.join(self.get_img_path(), "pkg")
+
                 img = image.Image(self.get_img_path(), should_exist=True,
-                    user_provided_dir=True)
+                    user_provided_dir=True, cmdpath=cmdpath)
                 pub = img.get_publisher(prefix=prefix)
                 for section in pub_cfg:
                         for prop, val in pub_cfg[section].iteritems():

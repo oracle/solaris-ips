@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -131,7 +131,8 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
         @staticmethod
         def __do_install(api_obj, fmris, noexecute=False):
                 api_obj.reset()
-                api_obj.plan_install(fmris, noexecute=noexecute)
+                for pd in api_obj.gen_plan_install(fmris, noexecute=noexecute):
+                        continue
                 if not noexecute:
                         api_obj.prepare()
                         api_obj.execute_plan()
@@ -140,8 +141,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
         def __do_uninstall(api_obj, fmris, recursive_removal=False,
             noexecute=False):
                 api_obj.reset()
-                api_obj.plan_uninstall(fmris, recursive_removal,
-                    noexecute=noexecute)
+                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal,
+                    noexecute=noexecute):
+                        continue
                 if not noexecute:
                         api_obj.prepare()
                         api_obj.execute_plan()
@@ -294,7 +296,8 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 api_obj.refresh(immediate=True)
 
                 api_obj.reset()
-                api_obj.plan_update_all(sys.argv[0])
+                for pd in api_obj.gen_plan_update():
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 

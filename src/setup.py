@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011 Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
 import errno
@@ -45,6 +45,7 @@ from distutils.command.build import build as _build
 from distutils.command.build_py import build_py as _build_py
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.clean import clean as _clean
+from distutils.dist import Distribution
 
 from distutils.sysconfig import get_python_inc
 import distutils.file_util as file_util
@@ -296,6 +297,7 @@ packages = [
         'pkg.actions',
         'pkg.bundle',
         'pkg.client',
+        'pkg.client.linkedimage',
         'pkg.client.transport',
         'pkg.file_layout',
         'pkg.flavor',
@@ -303,6 +305,12 @@ packages = [
         'pkg.portable',
         'pkg.publish',
         'pkg.server'
+        ]
+
+pylint_targets = [
+        'pkg.altroot',
+        'pkg.client.linkedimage',
+        'pkg.client.pkgdefs',
         ]
 
 web_files = []
@@ -356,6 +364,9 @@ sysrepo_log_stubs = [
         ]
 execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']
 authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
+syscallat_srcs = [
+        'modules/syscallat.c'
+        ]
 pspawn_srcs = [
         'modules/pspawn.c'
         ]
@@ -378,12 +389,53 @@ solver_link_args = ["-lm", "-lc"]
 if osname == 'sunos':
         solver_link_args = ["-ztext"] + solver_link_args
 
+# Runs lint on the extension module source code
+class pylint_func(Command):
+        description = "Runs pylint tools over IPS python source code"
+        user_options = []
+
+        def initialize_options(self):
+                pass
+
+        def finalize_options(self):
+                pass
+
+        # Make string shell-friendly
+        @staticmethod
+        def escape(astring):
+                return astring.replace(' ', '\\ ')
+
+        def run(self):
+                proto = os.path.join(root_dir, py_install_dir)
+                sys.path.insert(0, proto)
+
+                # Insert tests directory onto sys.path so any custom checkers
+                # can be found.
+                sys.path.insert(0, os.path.join(pwd, 'tests'))
+                # assumes pylint is accessible on the sys.path
+                from pylint import lint
+
+                #
+                # For some reason, the load-plugins option, when used in the
+                # rcfile, does not work, so we put it here instead, to load
+                # our custom checkers.
+                #
+                # Unfortunately, pylint seems pretty fragile and will crash if
+                # we try to run it over all the current pkg source.  Hence for
+                # now we only run it over a subset of the source.  As source
+                # files are made pylint clean they should be added to the
+                # pylint_targets list.
+                #
+                lint.Run(['--load-plugins=multiplatform', '--rcfile',
+                          os.path.join(pwd, 'tests', 'pylintrc')] +
+                          pylint_targets)
+
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
 
 # Runs lint on the extension module source code
-class lint_func(Command):
-        description = "Runs various lint tools over IPS extension source code"
+class clint_func(Command):
+        description = "Runs lint tools over IPS C extension source code"
         user_options = []
 
         def initialize_options(self):
@@ -417,6 +469,10 @@ class lint_func(Command):
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             pspawn_srcs
+                        syscallatcmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            syscallat_srcs
 
                         print(" ".join(archcmd))
                         os.system(" ".join(archcmd))
@@ -426,30 +482,29 @@ class lint_func(Command):
                         os.system(" ".join(_actionscmd))
                         print(" ".join(pspawncmd))
                         os.system(" ".join(pspawncmd))
+                        print(" ".join(syscallatcmd))
+                        os.system(" ".join(syscallatcmd))
 
-                        proto = os.path.join(root_dir, py_install_dir)
-                        sys.path.insert(0, proto)
 
-                        # Insert tests directory onto sys.path so any custom checkers
-                        # can be found.
-                        sys.path.insert(0, os.path.join(pwd, 'tests'))
-                        print(sys.path)
+# Runs both C and Python lint
+class lint_func(Command):
+        description = "Runs C and Python lint checkers"
+        user_options = []
 
-                # assumes pylint is accessible on the sys.path
-                from pylint import lint
-                scriptlist = [ 'setup.py' ]
-                for d, m in scripts_sunos.items():
-                        for a in m:
-                                # specify the filenames of the scripts, in addition
-                                # to the package names themselves
-                                scriptlist.append(os.path.join(root_dir, d, a[1]))
+        def initialize_options(self):
+                pass
 
-                # For some reason, the load-plugins option, when used in the
-                # rcfile, does not work, so we put it here instead, to load
-                # our custom checkers.
-                lint.Run(['--load-plugins=multiplatform', '--rcfile',
-                          os.path.join(pwd, 'tests', 'pylintrc')] +
-                          scriptlist + packages)
+        def finalize_options(self):
+                pass
+
+        # Make string shell-friendly
+        @staticmethod
+        def escape(astring):
+                return astring.replace(' ', '\\ ')
+
+        def run(self):
+                clint_func(Distribution()).run()
+                pylint_func(Distribution()).run()
 
 class install_func(_install):
         def initialize_options(self):
@@ -514,7 +569,7 @@ class install_func(_install):
 
                 prep_sw(CP, CPARC, CPDIR, CPURL, CPHASH)
                 install_sw(CP, CPDIR, CPIDIR)
-		if osname == "sunos" and platform.uname()[2] == "5.11":
+                if osname == "sunos" and platform.uname()[2] == "5.11":
                         prep_sw(LDTP, LDTPARC, LDTPDIR, LDTPURL,
                             LDTPHASH)
                         saveenv = os.environ.copy()
@@ -523,7 +578,7 @@ class install_func(_install):
                         install_ldtp(LDTP, LDTPDIR, LDTPIDIR)
                         os.environ = saveenv
 
-		if "BUILD_PYOPENSSL" in os.environ and \
+                if "BUILD_PYOPENSSL" in os.environ and \
                     os.environ["BUILD_PYOPENSSL"] != "":
                         #
                         # Include /usr/sfw/lib in the build environment
@@ -908,6 +963,8 @@ cmdclasses = {
         'build_py': build_py_func,
         'bdist': dist_func,
         'lint': lint_func,
+        'clint': clint_func,
+        'pylint': pylint_func,
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,
@@ -968,6 +1025,14 @@ if osname == 'sunos' or osname == "linux":
                     Extension(
                             'pspawn',
                             pspawn_srcs,
+                            include_dirs = include_dirs,
+                            extra_compile_args = compile_args,
+                            extra_link_args = link_args,
+                            define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            ),
+                    Extension(
+                            'syscallat',
+                            syscallat_srcs,
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,

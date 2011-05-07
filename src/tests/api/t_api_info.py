@@ -131,7 +131,8 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 self.assert_(not ret[api.ImageInterface.INFO_FOUND])
                 self.assert_(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
                 
-                api_obj.plan_install(["jade"])
+                for pd in api_obj.gen_plan_install(["jade"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 

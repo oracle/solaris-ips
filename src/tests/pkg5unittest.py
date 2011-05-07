@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -21,6 +19,17 @@
 #
 
 # Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+
+#
+# Define the basic classes that all test cases are inherited from.
+# The currently defined test case classes are:
+#
+# CliTestCase
+# ManyDepotTestCase
+# Pkg5TestCase
+# SingleDepotTestCase
+# SingleDepotTestCaseCorruptImage
+#
 
 import baseline
 import ConfigParser
@@ -49,6 +58,12 @@ import re
 import ssl
 import textwrap
 
+import pkg.client.api_errors as apx
+import pkg.client.publisher as publisher
+import pkg.server.repository as sr
+
+from pkg.client.debugvalues import DebugValues
+
 EmptyI = tuple()
 EmptyDict = dict()
 
@@ -62,6 +77,9 @@ path_to_distro_import_utils = "../../src/util/distro-import"
 g_proto_area = "TOXIC"
 # User's value for TEMPDIR
 g_tempdir = "/tmp"
+g_fakeroot = "TOXIC"
+g_fakeroot_repo = "TOXIC"
+g_pkg_cmdpath = "TOXIC"
 
 g_debug_output = False
 if "DEBUG" in os.environ:
@@ -108,7 +126,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 58
+CLIENT_API_VERSION = 59
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -200,10 +218,16 @@ def setup_logging(test_case):
 
 class Pkg5TestCase(unittest.TestCase):
 
-        # Needed for compatability
+        # Needed for compatibility
         failureException = AssertionError
 
-        bogus_url = "test.invalid"
+        #
+        # Some dns servers return results for unknown dns names to redirect
+        # callers to a common landing page.  To avoid getting tripped up by
+        # these stupid servers make sure that bogus_url actually contains an
+        # syntactically invalid dns name so we'll never succeed at the lookup.
+        #
+        bogus_url = "test.0.invalid"
         __debug_buf = ""
 
         smf_cmds = { \
@@ -255,6 +279,9 @@ if __name__ == "__main__":
                 return os.path.join(self.__test_root, "ro_data")
 
         ro_data_root = property(fget=__get_ro_data_root)
+
+        def persistent_setup_copy(self, orig):
+                pass
 
         def cmdline_run(self, cmdline, comment="", coverage=True, exit=0,
             handle=False, out=False, prefix="", raise_error=True, su_wrap=None,
@@ -429,9 +456,20 @@ if __name__ == "__main__":
                 # We have some sloppy subclasses which don't call the superclass
                 # setUp-- in which case the dir might not exist.  Tolerate it.
                 #
+                # Also, avoid deleting our fakeroot since then we'd have to
+                # keep re-creating it.
+                #
                 if self.__test_root is not None and \
                     os.path.exists(self.__test_root):
-                        shutil.rmtree(self.__test_root)
+                        for d in os.listdir(self.__test_root):
+                                path = os.path.join(self.__test_root, d)
+                                if path in [g_fakeroot, g_fakeroot_repo]:
+                                        continue
+                                self.debug("removing: %s" % path)
+                                if os.path.isdir(path):
+                                        shutil.rmtree(path)
+                                else:
+                                        os.remove(path)
 
         def tearDown(self):
                 # In reality this call does nothing.
@@ -590,6 +628,16 @@ if __name__ == "__main__":
                             "Tried: %s.  Try setting $CC to a valid"
                             "compiler." % compilers)
 
+        def make_file(self, path, content, mode=0644):
+                if not os.path.exists(os.path.dirname(path)):
+                        os.makedirs(os.path.dirname(path), 0777)
+                self.debugfilecreate(content, path)
+                fh = open(path, 'wb')
+                if isinstance(content, unicode):
+                        content = content.encode("utf-8")
+                fh.write(content)
+                fh.close()
+                os.chmod(path, mode)
 
         def make_misc_files(self, files, prefix=None, mode=0644):
                 """ Make miscellaneous text files.  Files can be a
@@ -623,15 +671,7 @@ if __name__ == "__main__":
                         assert not f.startswith("/"), \
                             ("%s: misc file paths must be relative!" % f)
                         path = os.path.join(prefix, f)
-                        if not os.path.exists(os.path.dirname(path)):
-                                os.makedirs(os.path.dirname(path))
-                        self.debugfilecreate(content, path)
-                        file_handle = open(path, 'wb')
-                        if isinstance(content, unicode):
-                                content = content.encode("utf-8")
-                        file_handle.write(content)
-                        file_handle.close()
-                        os.chmod(path, mode)
+                        self.make_file(path, content, mode)
                         outpaths.append(path)
                 return outpaths
 
@@ -1213,6 +1253,7 @@ class Pkg5TestSuite(unittest.TestSuite):
         def __init__(self, tests=()):
                 unittest.TestSuite.__init__(self, tests)
                 self.timing = {}
+                self.__pid = os.getpid()
 
                 # The site module deletes the function to change the
                 # default encoding so a forced reload of sys has to
@@ -1228,6 +1269,45 @@ class Pkg5TestSuite(unittest.TestSuite):
                         inst.killalldepots()
                 print >> sys.stderr, "Stopping tests..."
                 raise TestStopException()
+
+        def env_sanitize(self):
+                # save some DebugValues settings
+                smf_cmds_dir = DebugValues["smf_cmds_dir"]
+
+                # clear any existing DebugValues settings
+                DebugValues.clear()
+
+                # clear misc environment variables
+                for e in ["PKG_CMDPATH"]:
+                        if e in os.environ:
+                                del os.environ[e]
+
+                # Set image path to a path that's not actually an
+                # image to force failure of tests that don't
+                # explicitly provide an image root either through the
+                # default behaviour of the pkg() helper routine or
+                # another method.
+                os.environ["PKG_IMAGE"] = g_tempdir
+
+                # Test suite should never attempt to access the
+                # live root image.
+                os.environ["PKG_NO_LIVE_ROOT"] = "1"
+
+                # Pkg interfaces should never know they are being
+                # run from within the test suite.
+                os.environ["PKG_NO_RUNPY_CMDPATH"] = "1"
+
+                # always print out recursive linked image commands
+                os.environ["PKG_DISP_LINKED_CMDS"] = "1"
+
+                # Pretend that we're being run from the fakeroot image.
+                DebugValues["simulate_cmdpath"] = g_pkg_cmdpath
+
+                # Update the path to smf commands
+                DebugValues["smf_cmds_dir"] = smf_cmds_dir
+
+                # always get detailed data from the solver
+                DebugValues["plan"] = True
 
         def run(self, result):
                 self.timing = {}
@@ -1262,6 +1342,11 @@ class Pkg5TestSuite(unittest.TestSuite):
                 def setUp_dofail():
                         raise TestSkippedException(
                             "Persistent setUp Failed, skipping test.")
+
+                # test case setUp() may require running pkg commands
+                # so setup a fakeroot to run them from.
+                fakeroot_init()
+                self.env_sanitize()
 
                 if persistent_setup:
                         setUpFailed = False
@@ -1300,6 +1385,14 @@ class Pkg5TestSuite(unittest.TestSuite):
                         suite_name = test._Pkg5TestCase__suite_name
                         cname = test.__class__.__name__
 
+                        #
+                        # Update test environment settings. We redo this
+                        # before running each test case since previously
+                        # executed test cases may have messed with these
+                        # environment settings.
+                        #
+                        self.env_sanitize()
+
                         # Populate test with the data from the instance
                         # already constructed, but update the method name.
                         # We need to do this so that we have all the state
@@ -1311,12 +1404,14 @@ class Pkg5TestSuite(unittest.TestSuite):
                                 test = copy.copy(inst)
                                 test._testMethodName = name
                                 test._testMethodDoc = doc
+                                test.persistent_setup_copy(inst)
 
                         test_start = time.time()
                         test(result)
                         test_end = time.time()
                         self.timing[suite_name, cname, real_test_name] = \
                             test_end - test_start
+
                 if persistent_setup:
                         try:
                                 inst.reallytearDown()
@@ -1406,63 +1501,77 @@ class PkgSendOpenException(Pkg5CommonException):
 class CliTestCase(Pkg5TestCase):
         bail_on_fail = False
 
-        def setUp(self):
+        def setUp(self, image_count=1):
                 Pkg5TestCase.setUp(self)
 
-                self.image_dir = None
-                self.img_path = os.path.join(self.test_root, "image")
-                self.image_created = False
+                self.__imgs_path = {}
+                self.__imgs_index = -1
 
-                # Set image path to a path that's not actually an image to
-                # force failure of tests that don't explicitly provide an
-                # image root either through the default behaviour of the
-                # pkg() helper routine or another method.
-                os.environ["PKG_IMAGE"] = self.test_root
+                for i in range(0, image_count):
+                        path = os.path.join(self.test_root, "image%d" % i)
+                        self.__imgs_path[i] = path
+
+                self.set_image(0)
 
         def tearDown(self):
                 Pkg5TestCase.tearDown(self)
 
-        def get_img_path(self):
-                return self.img_path
+        def persistent_setup_copy(self, orig):
+                Pkg5TestCase.persistent_setup_copy(self, orig)
+                self.__imgs_path = copy.copy(orig.__imgs_path)
 
-        def get_img_api_obj(self, cmd_path=None, img_path=None):
-                if not img_path:
-                        img_path = self.img_path
-                from pkg.client import global_settings
+        def set_image(self, ii):
+                # ii is the image index
+                if self.__imgs_index == ii:
+                        return
+
+                self.__imgs_index = ii
+                path = self.__imgs_path[self.__imgs_index]
+                assert path and path != "/"
+
+                self.debug("image %d selected: %s" % (ii, path))
+
+        def set_img_path(self, path):
+                self.__imgs_path[self.__imgs_index] = path
+
+        def img_index(self):
+                return self.__imgs_index
+
+        def img_path(self, ii=None):
+                if ii != None:
+                        return self.__imgs_path[ii]
+                return self.__imgs_path[self.__imgs_index]
+
+        def get_img_path(self):
+                # for backward compatibilty
+                return self.img_path()
+
+        def get_img_api_obj(self, cmd_path=None, ii=None):
                 progresstracker = pkg.client.progress.NullProgressTracker()
                 if not cmd_path:
-                        cmd_path = os.path.join(img_path, "pkg")
-                old_val = global_settings.client_args
-                global_settings.client_args[0] = cmd_path
-                res = pkg.client.api.ImageInterface(img_path,
+                        cmd_path = os.path.join(self.img_path(), "pkg")
+                res = pkg.client.api.ImageInterface(self.img_path(ii=ii),
                     CLIENT_API_VERSION, progresstracker, lambda x: False,
-                    PKG_CLIENT_NAME)
-                global_settings.client_args = old_val
+                    PKG_CLIENT_NAME, cmdpath=cmd_path)
                 return res
 
-        def image_create(self, repourl=None, prefix=None, variants=EmptyDict,
-            destroy=True, ssl_cert=None, ssl_key=None, props=EmptyDict):
+        def image_create(self, repourl=None, destroy=True, **kwargs):
                 """A convenience wrapper for callers that only need basic image
                 creation functionality.  This wrapper creates a full (as opposed
                 to user) image using the pkg.client.api and returns the related
                 API object."""
 
-                assert self.img_path
-                assert self.img_path != "/"
-
                 if destroy:
                         self.image_destroy()
-                os.mkdir(self.img_path)
+                os.mkdir(self.img_path())
 
+                self.debug("image_create %s" % self.img_path())
                 progtrack = pkg.client.progress.NullProgressTracker()
                 api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
-                    CLIENT_API_VERSION, self.img_path,
+                    CLIENT_API_VERSION, self.img_path(),
                     pkg.client.api.IMG_TYPE_ENTIRE, False, repo_uri=repourl,
-                    prefix=prefix, progtrack=progtrack, variants=variants,
-                    ssl_cert=ssl_cert, ssl_key=ssl_key, props=props)
-                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
-                    os.path.join(self.img_path, "pkg"))
-                self.image_created = True
+                    progtrack=progtrack,
+                    **kwargs)
                 return api_inst
 
         def pkg_image_create(self, repourl=None, prefix=None,
@@ -1471,19 +1580,17 @@ class CliTestCase(Pkg5TestCase):
                 image; returns exit code of client or raises an exception if
                 exit code doesn't match 'exit' or equals 99.."""
 
-                assert self.img_path
-                assert self.img_path != "/"
-
                 if repourl and prefix is None:
                         prefix = "test"
 
                 self.image_destroy()
-                os.mkdir(self.img_path)
-                cmdline = "pkg image-create -F "
+                os.mkdir(self.img_path())
+                self.debug("pkg_image_create %s" % self.img_path())
+                cmdline = "%s image-create -F " % g_pkg_cmdpath
                 if repourl:
                         cmdline = "%s -p %s=%s " % (cmdline, prefix, repourl)
                 cmdline += additional_args
-                cmdline = "%s %s" % (cmdline, self.img_path)
+                cmdline = "%s %s" % (cmdline, self.img_path())
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell=True,
@@ -1498,38 +1605,27 @@ class CliTestCase(Pkg5TestCase):
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, 0,
                             retcode, output)
-                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
-                    os.path.join(self.img_path, "pkg"))
-                self.image_created = True
                 return retcode
 
-        def image_set(self, imgdir):
-                self.debug("image_set: %s" % imgdir)
-                self.img_path = imgdir
-                os.environ["PKG_IMAGE"] = self.img_path
-
         def image_destroy(self):
-                self.debug("image_destroy %s" % self.img_path)
-                # Make sure we're not in the image.
-                if os.path.exists(self.img_path):
+                if os.path.exists(self.img_path()):
+                        self.debug("image_destroy %s" % self.img_path())
+                        # Make sure we're not in the image.
                         os.chdir(self.test_root)
-                        shutil.rmtree(self.img_path)
+                        shutil.rmtree(self.img_path())
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None,
-            out=False, stderr=False, alt_img_path=None, use_img_root=True,
+            out=False, stderr=False, cmd_path=None, use_img_root=True,
             debug_smf=True):
-                pth = self.img_path
-                if alt_img_path:
-                        pth = alt_img_path
-                elif not self.image_created:
-                        pth = "%s/usr/bin" % g_proto_area
                 if debug_smf and "smf_cmds_dir" not in command:
                         command = "--debug smf_cmds_dir=%s %s" % \
                             (DebugValues["smf_cmds_dir"], command)
                 if use_img_root and "-R" not in command and \
                     "image-create" not in command and "version" not in command:
                         command = "-R %s %s" % (self.get_img_path(), command)
-                cmdline = "%s/pkg %s" % (pth, command)
+                if not cmd_path:
+                        cmd_path = g_pkg_cmdpath
+                cmdline = "%s %s" % (cmd_path, command)
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
 
@@ -1834,10 +1930,10 @@ class CliTestCase(Pkg5TestCase):
                                                 continue
                                         copy_manifests(src_root, dest_root)
 
-        def get_img_manifest_cache_dir(self, pfmri, img_path=None):
+        def get_img_manifest_cache_dir(self, pfmri, ii=None):
                 """Returns the path to the manifest for the given fmri."""
 
-                img = self.get_img_api_obj(img_path=img_path).img
+                img = self.get_img_api_obj(ii=ii).img
 
                 if not pfmri.publisher:
                         # Allow callers to not specify a fully-qualified FMRI
@@ -1851,10 +1947,10 @@ class CliTestCase(Pkg5TestCase):
                         pfmri.publisher = pubs[0]
                 return img.get_manifest_dir(pfmri)
 
-        def get_img_manifest_path(self, pfmri, img_path=None):
+        def get_img_manifest_path(self, pfmri):
                 """Returns the path to the manifest for the given fmri."""
 
-                img = self.get_img_api_obj(img_path=img_path).img
+                img = self.get_img_api_obj().img
 
                 if not pfmri.publisher:
                         # Allow callers to not specify a fully-qualified FMRI
@@ -1868,25 +1964,22 @@ class CliTestCase(Pkg5TestCase):
                         pfmri.publisher = pubs[0]
                 return img.get_manifest_path(pfmri)
 
-        def get_img_manifest(self, pfmri, img_path=None):
+        def get_img_manifest(self, pfmri):
                 """Retrieves the client's cached copy of the manifest for the
                 given package FMRI and returns it as a string.  Callers are
                 responsible for all error handling."""
 
-                mpath = self.get_img_manifest_path(pfmri, img_path=img_path)
+                mpath = self.get_img_manifest_path(pfmri)
                 with open(mpath, "rb") as f:
                         return f.read()
 
-        def write_img_manifest(self, pfmri, mdata, img_path=None):
+        def write_img_manifest(self, pfmri, mdata):
                 """Overwrites the client's cached copy of the manifest for the
                 given package FMRI using the provided string.  Callers are
                 responsible for all error handling."""
 
-                if not img_path:
-                        img_path = self.get_img_path()
-
-                mpath = self.get_img_manifest_path(pfmri, img_path=img_path)
-                mdir = self.get_img_manifest_cache_dir(pfmri, img_path=img_path)
+                mpath = self.get_img_manifest_path(pfmri)
+                mdir = self.get_img_manifest_cache_dir(pfmri)
 
                 # Dump the manifest directory for the package to ensure any
                 # cached information related to it is gone.
@@ -1898,15 +1991,14 @@ class CliTestCase(Pkg5TestCase):
                 with open(mpath, "wb") as f:
                         f.write(mdata)
 
-        def validate_fsobj_attrs(self, act, target=None, img_path=None):
+        def validate_fsobj_attrs(self, act, target=None):
                 """Used to verify that the target item's mode, attrs, timestamp,
                 etc. match as expected.  The actual"""
 
                 if act.name not in ("file", "dir"):
                         return
 
-                if not img_path:
-                        img_path = self.get_img_path()
+                img_path = self.img_path()
                 if not target:
                         target = act.attrs["path"]
 
@@ -2045,24 +2137,55 @@ class CliTestCase(Pkg5TestCase):
                 cmd = "%s %s" % (prog, " ".join(args))
                 return self.cmdline_run(cmd, out=out, stderr=stderr, exit=exit)
 
-        def _api_install(self, api_obj, pkg_list, **kwargs):
+        def _api_attach(self, api_obj, catch_wsie=True, **kwargs):
+                self.debug("attach: %s" % str(kwargs))
+                for pd in api_obj.gen_plan_attach(**kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_detach(self, api_obj, catch_wsie=True, **kwargs):
+                self.debug("detach: %s" % str(kwargs))
+                for pd in api_obj.gen_plan_detach(**kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_sync(self, api_obj, catch_wsie=True, **kwargs):
+                self.debug("sync: %s" % str(kwargs))
+                for pd in api_obj.gen_plan_sync(**kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_install(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
-                api_obj.plan_install(pkg_list, **kwargs)
-                self._api_finish(api_obj)
+                for pd in api_obj.gen_plan_install(pkg_list, **kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_uninstall(self, api_obj, pkg_list, **kwargs):
+        def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
-                api_obj.plan_uninstall(pkg_list, False, **kwargs)
-                self._api_finish(api_obj)
+                for pd in api_obj.gen_plan_uninstall(pkg_list, False, **kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_image_update(self, api_obj, **kwargs):
+        def _api_image_update(self, api_obj, catch_wsie=True, **kwargs):
                 self.debug("planning update")
-                api_obj.plan_update_all(**kwargs)
-                self._api_finish(api_obj)
+                for pd in api_obj.gen_plan_update(**kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_finish(self, api_obj):
+        def _api_change_varcets(self, api_obj, catch_wsie=True, **kwargs):
+                self.debug("change varcets: %s" % str(kwargs))
+                for pd in api_obj.gen_plan_change_varcets(**kwargs):
+                        continue
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
+
+        def _api_finish(self, api_obj, catch_wsie=True):
                 api_obj.prepare()
-                api_obj.execute_plan()
+                try:
+                        api_obj.execute_plan()
+                except apx.WrapSuccessfulIndexingException:
+                        if not catch_wsie:
+                                raise
                 api_obj.reset()
 
         def file_inode(self, path):
@@ -2153,8 +2276,9 @@ class ManyDepotTestCase(CliTestCase):
                 super(ManyDepotTestCase, self).__init__(methodName)
                 self.dcs = {}
 
-        def setUp(self, publishers, debug_features=EmptyI, start_depots=False):
-                CliTestCase.setUp(self)
+        def setUp(self, publishers, debug_features=EmptyI, start_depots=False,
+            image_count=1):
+                CliTestCase.setUp(self, image_count=image_count)
 
                 self.debug("setup: %s" % self.id())
                 self.debug("creating %d repo(s)" % len(publishers))
@@ -2265,10 +2389,10 @@ class ManyDepotTestCase(CliTestCase):
 class SingleDepotTestCase(ManyDepotTestCase):
 
         def setUp(self, debug_features=EmptyI, publisher="test",
-            start_depot=False):
+            start_depot=False, image_count=1):
                 ManyDepotTestCase.setUp(self, [publisher],
-                    debug_features=debug_features, start_depots=start_depot)
-                self.backup_img_path = None
+                    debug_features=debug_features, start_depots=start_depot,
+                    image_count=image_count)
 
         def __get_dc(self):
                 if self.dcs:
@@ -2288,13 +2412,6 @@ class SingleDepotTestCase(ManyDepotTestCase):
         # for convenience of writing test cases.
         dc = property(fget=__get_dc)
 
-        def create_sub_image(self, repourl, prefix="test", variants=EmptyDict):
-                if not self.backup_img_path:
-                        self.backup_img_path = self.img_path
-                self.image_set(os.path.join(self.img_path, "sub"))
-                self.image_create(repourl, prefix, variants, destroy=False)
-
-
 class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         """ A class which allows manipulation of the image directory that
         SingleDepotTestCase creates. Specifically, it supports removing one
@@ -2312,15 +2429,15 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 SingleDepotTestCase.setUp(self, debug_features=debug_features,
                     publisher=publisher, start_depot=start_depot)
 
+                self.__imgs_path_backup = {}
+
         def tearDown(self):
-                self.__uncorrupt_img_path()
                 SingleDepotTestCase.tearDown(self)
 
-        def __uncorrupt_img_path(self):
-                """ Function which restores the img_path back to the original
-                level. """
-                if self.backup_img_path:
-                        self.img_path = self.backup_img_path
+        def backup_img_path(self, ii=None):
+                if ii != None:
+                        return self.__imgs_path_backup[ii]
+                return self.__imgs_path_backup[self.img_index()]
 
         def corrupt_image_create(self, repourl, config, subdirs, prefix="test",
             destroy = True):
@@ -2337,10 +2454,12 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 was made optional to allow testing of two images installed next
                 to each other (a user and full image created in the same
                 directory for example). """
-                if not self.backup_img_path:
-                        self.backup_img_path = self.img_path
-                self.img_path = os.path.join(self.img_path, "bad")
-                assert self.img_path and self.img_path != "/"
+
+                ii = self.img_index()
+                if ii not in self.__imgs_path_backup:
+                        self.__imgs_path_backup[ii] = self.img_path()
+
+                self.set_img_path(os.path.join(self.img_path(), "bad"))
 
                 if destroy:
                         self.image_destroy()
@@ -2348,10 +2467,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 for s in subdirs:
                         if s == "var/pkg":
                                 cmdline = "pkg image-create -F -p %s=%s %s" % \
-                                    (prefix, repourl, self.img_path)
+                                    (prefix, repourl, self.img_path())
                         elif s == ".org.opensolaris,pkg":
                                 cmdline = "pkg image-create -U -p %s=%s %s" % \
-                                    (prefix, repourl, self.img_path)
+                                    (prefix, repourl, self.img_path())
                         else:
                                 raise RuntimeError("Got unknown subdir option:"
                                     "%s\n" % s)
@@ -2372,7 +2491,7 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                                 raise UnexpectedExitCodeException(cmdline, 0,
                                     retcode, output)
 
-                        tmpDir = os.path.join(self.img_path, s)
+                        tmpDir = os.path.join(self.img_path(), s)
 
                         # This is where the actual corruption of the
                         # image takes place. A normal image was created
@@ -2394,15 +2513,87 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                         if "index_absent" in config:
                                 shutil.rmtree(os.path.join(tmpDir, "cache",
                                     "index"))
-                shutil.copy("%s/usr/bin/pkg" % g_proto_area,
-                    os.path.join(self.img_path, "pkg"))
 
                 # Make find root start at final. (See the doc string for
                 # more explanation.)
-                cmd_path = os.path.join(self.img_path, "final")
+                cmd_path = os.path.join(self.img_path(), "final")
 
                 os.mkdir(cmd_path)
                 return cmd_path
+
+def debug(s):
+        s = str(s)
+        for x in s.splitlines():
+                if g_debug_output:
+                        print >> sys.stderr, "# %s" % x
+
+def mkdir_eexist_ok(p):
+        try:
+                os.mkdir(p)
+        except OSError, e:
+                if e.errno != errno.EEXIST:
+                        raise e
+
+def fakeroot_init():
+        global g_fakeroot
+        global g_fakeroot_repo
+        global g_pkg_cmdpath
+
+        try:
+                os.stat(g_pkg_cmdpath)
+        except OSError, e:
+                pass
+        else:
+                # fakeroot already exists
+                return
+
+        #
+        # When accessing images via the pkg apis those apis will try
+        # to access the image containing the command from which the
+        # apis were invoked.  Normally when running the test suite the
+        # command is run.py in a developers workspace, and that
+        # workspace lives in the root image.  But accessing the root
+        # image during a test suite run is verboten.  Hence, here we
+        # create a temporary image from which we can run the pkg
+        # command.
+        #
+        test_root = os.path.join(g_tempdir, "ips.test.%d" % os.getpid())
+        fakeroot_repo = os.path.join(test_root, "fakeroot_repo")
+        fakeroot = os.path.join(test_root, "fakeroot")
+
+        # create directories
+        mkdir_eexist_ok(test_root)
+        mkdir_eexist_ok(fakeroot_repo)
+        mkdir_eexist_ok(fakeroot)
+
+        debug("fakeroot repo create %s" % fakeroot_repo)
+        repo = sr.repository_create(fakeroot_repo)
+        repo.add_publisher(publisher.Publisher("bobcat"))
+
+        debug("fakeroot image create %s" % fakeroot)
+        cmd_path = os.path.join(fakeroot, "pkg")
+        progtrack = pkg.client.progress.NullProgressTracker()
+        api_inst = pkg.client.api.image_create(PKG_CLIENT_NAME,
+            CLIENT_API_VERSION, fakeroot,
+            pkg.client.api.IMG_TYPE_ENTIRE, False,
+            repo_uri="file://" + fakeroot_repo,
+            prefix="bobcat", progtrack=progtrack, cmdpath=cmd_path)
+
+        #
+        # put a copy of the pkg command in our fake root directory.
+        # we do this because when recursive linked image commands are
+        # run, the pkg interfaces may fork and exec additional copies
+        # of pkg(1), and in this case we want them to run the copy of
+        # pkg from the fake root.
+        #
+        fakeroot_cmdpath = os.path.join(fakeroot, "pkg")
+        shutil.copy(os.path.join(g_proto_area, "usr", "bin", "pkg"),
+            fakeroot_cmdpath)
+
+        g_fakeroot = fakeroot
+        g_fakeroot_repo = fakeroot_repo
+        g_pkg_cmdpath = fakeroot_cmdpath
+
 
 def eval_assert_raises(ex_type, eval_ex_func, func, *args):
         try:

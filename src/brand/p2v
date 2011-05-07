@@ -19,8 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # NOTE: this script runs in the global zone and touches the non-global
@@ -38,6 +39,10 @@ unset LD_LIBRARY_PATH
 
 . /usr/lib/brand/ipkg/common.ksh
 
+# Allows developer to override some things like PATH and PYTHONPATH
+. /usr/lib/brand/ipkg/developerenv.ksh
+
+PKG=pkg
 LOGFILE=
 EXIT_CODE=1
 
@@ -266,7 +271,7 @@ rm_pkgs()
 	for i in $(egrep -hv "^#" /usr/lib/brand/ipkg/pkgrm.lst \
 	    /etc/brand/ipkg/pkgrm.conf)
 	do
-		pkg info $i >/dev/null 2>&1
+		$PKG info $i >/dev/null 2>&1
 		if (( $? != 0 )); then
 			continue
 		fi
@@ -475,8 +480,8 @@ pkg -R "$ZONEROOT" update-format || pkg_err_check "$e_update_format"
 
 # Change the pkging variant from global zone to non-global zone.
 log "$v_change_var"
-pkg -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \
-    fatal "$e_change_var"
+$PKG -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \
+    pkg_err_check "$e_change_var"
 # Set the property which tells the image to use the system publisher.
 pkg -R $ZONEROOT set-property use-system-repo true
 if [[ $? != 0 ]]; then

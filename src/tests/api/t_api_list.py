@@ -39,13 +39,9 @@ import unittest
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
-import pkg.client.progress as progress
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
-
-CLIENT_API_VERSION = 58
-PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -375,10 +371,7 @@ add set name=pkg.description value="%(desc)s"
             pubs=misc.EmptyI, variants=False):
 
                 if not api_obj:
-                        progresstracker = progress.NullProgressTracker()
-                        api_obj = api.ImageInterface(self.get_img_path(),
-                            CLIENT_API_VERSION, progresstracker, lambda x: False,
-                            PKG_CLIENT_NAME)
+                        api_obj = self.get_img_api_obj()
 
                 # Set of states exposed by the API.
                 exp_states = set([api.PackageInfo.FROZEN,
@@ -423,9 +416,7 @@ add set name=pkg.description value="%(desc)s"
                 """Verify the sort order and content of a full list and
                 combinations thereof."""
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 # First check all variants case.
                 returned = self.__get_returned(api_obj.LIST_ALL,
@@ -506,10 +497,7 @@ add set name=pkg.description value="%(desc)s"
                 # Verify that LIST_NEWEST will allow version-specific
                 # patterns such that the newest version allowed by the
                 # pattern is what is listed.
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(),
-                    CLIENT_API_VERSION, progresstracker, lambda x: False,
-                    PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
                     api_obj=api_obj, patterns=["baz@1.0", "bat/bar",
@@ -591,9 +579,7 @@ add set name=pkg.description value="%(desc)s"
                 """Verify the sort order and content of a list containing
                 only installed packages and combinations thereof."""
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 # Verify no installed packages case.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED,
@@ -605,8 +591,9 @@ add set name=pkg.description value="%(desc)s"
                 # won't be installed.
                 af = self.__get_pub_entry("test1", 3, "apple",
                     "1.2.0,5.11-0")[0]
-                api_obj.plan_install(["entire", af.get_fmri(), "corge",
-                    "obsolete", "qux"])
+                for pd in api_obj.gen_plan_install(
+                    ["entire", af.get_fmri(), "corge", "obsolete", "qux"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -746,7 +733,8 @@ add set name=pkg.description value="%(desc)s"
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # uninstalling 'quux' and 'qux'.
-                api_obj.plan_uninstall(["quux"], False)
+                for pd in api_obj.gen_plan_uninstall(["quux"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -781,7 +769,8 @@ add set name=pkg.description value="%(desc)s"
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
-                api_obj.plan_uninstall(["*"], False)
+                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -892,7 +881,9 @@ add set name=pkg.description value="%(desc)s"
                 # Test results after installing packages and only listing the
                 # installed packages.
                 af = self.__get_pub_entry("test1", 1, "apple", "1.0,5.11-0")[0]
-                api_obj.plan_install([af.get_fmri(), "qux@0.9", "corge@0.9"])
+                for pd in api_obj.gen_plan_install(
+                    [af.get_fmri(), "qux@0.9", "corge@0.9"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -955,13 +946,15 @@ add set name=pkg.description value="%(desc)s"
                 # LIST_INSTALLED_NEWEST.  corge, grault, qux, and
                 # quux should be listed since none of them are
                 # listed in an installed incorporation.
-                api_obj.plan_uninstall(["corge"], False)
+                for pd in api_obj.gen_plan_uninstall(["corge"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
 
                 af = self.__get_pub_entry("test1", 1, "apple", "1.0,5.11-0")[0]
-                api_obj.plan_install(["pkg://test2/grault"])
+                for pd in api_obj.gen_plan_install(["pkg://test2/grault"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -996,12 +989,14 @@ add set name=pkg.description value="%(desc)s"
                 # Now verify that publisher search order determines the entries
                 # that are listed when those entries are part of an installed
                 # incorporation.
-                api_obj.plan_uninstall(["*"], False)
+                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
 
-                api_obj.plan_install(["entire"])
+                for pd in api_obj.gen_plan_install(["entire"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -1134,7 +1129,8 @@ add set name=pkg.description value="%(desc)s"
                 # Now install one of the incorporated packages and check
                 # that test2 is still listed for the remaining package
                 # for the non-filtered case.
-                api_obj.plan_install(["apple"])
+                for pd in api_obj.gen_plan_install(["apple"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -1196,7 +1192,8 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Reset image state for following tests.
-                api_obj.plan_uninstall(["*"], False)
+                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -1205,9 +1202,7 @@ add set name=pkg.description value="%(desc)s"
                 """Verify the sort order and content of a list containing
                 only upgradable packages and combinations thereof."""
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 # Verify no installed packages case.
                 returned = self.__get_returned(api_obj.LIST_UPGRADABLE,
@@ -1218,7 +1213,9 @@ add set name=pkg.description value="%(desc)s"
                 # installed, upgradable packages.
                 af = self.__get_pub_entry("test1", 3, "apple",
                     "1.2.0,5.11-0")[0]
-                api_obj.plan_install([af.get_fmri(), "bat/bar", "qux"])
+                for pd in api_obj.gen_plan_install(
+                    [af.get_fmri(), "bat/bar", "qux"]):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -1235,7 +1232,8 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Reset image state for following tests.
-                api_obj.plan_uninstall(["*"], False)
+                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
@@ -1243,9 +1241,7 @@ add set name=pkg.description value="%(desc)s"
         def test_list_07_get_pkg_categories(self):
                 """Verify that get_pkg_categories returns expected results."""
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 # Verify no installed packages case.
                 returned = api_obj.get_pkg_categories(installed=True)
@@ -1313,7 +1309,8 @@ add set name=pkg.description value="%(desc)s"
                             f.get_fmri(anarchy=True, include_scheme=False)
                             for f in combo
                         ]
-                        api_obj.plan_install(pkgs)
+                        for pd in api_obj.gen_plan_install(pkgs):
+                                continue
                         api_obj.prepare()
                         api_obj.execute_plan()
                         api_obj.reset()
@@ -1328,11 +1325,12 @@ add set name=pkg.description value="%(desc)s"
 
                         # Prepare for next test.
                         # skip corge since it's renamed
-                        api_obj.plan_uninstall([
-                                                p
-                                                for p in pkgs
-                                                if not p.startswith("corge@1.0")
-                                                ], False)
+                        for pd in api_obj.gen_plan_uninstall([
+                                p
+                                for p in pkgs
+                                if not p.startswith("corge@1.0")
+                            ], False):
+                                continue
                         api_obj.prepare()
                         api_obj.execute_plan()
                         api_obj.reset()
@@ -1340,9 +1338,7 @@ add set name=pkg.description value="%(desc)s"
         def test_list_08_patterns(self):
                 """Verify that pattern filtering works as expected."""
 
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), CLIENT_API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj = self.get_img_api_obj()
 
                 # First, check all variants, but with multiple patterns for the
                 # partial, exact, and wildcard match cases.

@@ -48,6 +48,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
         foo_pkg = """
             open pkg://test/foo@1.0
             add set name=pkg.summary value="Example package foo."
+            add set name=variant.debug.foo value=true value=false
             add dir mode=0755 owner=root group=bin path=lib
             add dir mode=0755 owner=root group=bin path=usr
             add dir mode=0755 owner=root group=bin path=usr/bin
@@ -122,7 +123,7 @@ class TestPkgTempSources(pkg5unittest.ManyDepotTestCase):
         def image_create(self, *args, **kwargs):
                 pkg5unittest.ManyDepotTestCase.image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
 
         def __publish_packages(self, rurl):
@@ -613,6 +614,7 @@ Packaging Date: %(pkg_date)s
                 expected = """\
 set name=pkg.fmri value=%s
 set name=pkg.summary value="Example package foo."
+set name=variant.debug.foo value=true value=false
 dir group=bin mode=0755 owner=root path=lib
 dir group=bin mode=0755 owner=root path=usr
 dir group=bin mode=0755 owner=root path=usr/bin
@@ -795,7 +797,8 @@ test2
                 #
                 # Verify change-facet can use temporary origins.
                 #
-                fpath = os.path.join(self.img_path, "usr/share/man/man1/foo.1")
+                fpath = os.path.join(self.img_path(),
+                    "usr/share/man/man1/foo.1")
                 assert os.path.exists(fpath)
 
                 # Now set facet.doc.man to false and verify faceted item is
@@ -824,7 +827,8 @@ test2
                 #
                 # Verify change-variant can use temporary origins.
                 #
-                vpath = os.path.join(self.img_path, "lib/libfoo.so.1")
+                vpath = os.path.join(self.img_path(),
+                    "lib/libfoo.so.1")
                 assert os.path.exists(vpath)
                 self.assertEqual(os.stat(vpath).st_size, 15)
 

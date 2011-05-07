@@ -32,6 +32,7 @@ depend fmri=pkg:/developer/build/onbld type=require
 depend fmri=pkg:/developer/object-file type=require
 depend fmri=pkg:/developer/gnome/gettext type=require
 depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
+depend fmri=pkg:/developer/python/pylint type=require
 depend fmri=pkg:/developer/swig type=require
 depend fmri=pkg:/developer/versioning/mercurial type=require
 depend fmri=pkg:/gnome/accessibility/gnome-a11y-libs type=require

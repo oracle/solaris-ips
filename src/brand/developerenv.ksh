@@ -1,4 +1,3 @@
-#!/usr/bin/python2.6
 #
 # CDDL HEADER START
 #
@@ -19,41 +18,22 @@
 #
 # CDDL HEADER END
 #
+
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-import pkg.fmri
-import sys
+#
+# This file is present as a hook to allow developers to insert
+# environment variables-- in particular, to allow the use of an
+# alternate set of IPS or other bits-- into the brand hooks.
+#
+# End users should not modify this file.
+#
 
-def usage():
-        print >> sys.stderr, "usage: %s <fmri1> <fmri2>" % sys.argv[0]
-        sys.exit(2)
+# export PKGPROTO=/path/to/proto_area
+# mach=$(uname -p)
+# export PATH=$PKGPROTO/root_$mach/usr/bin:$PATH
+# export PYTHONPATH=$PKGPROTO/root_$mach/usr/lib/python2.6/vendor-packages/
+# unset mach
 
-if len(sys.argv) != 3:
-        usage()
-
-try:
-        x = pkg.fmri.PkgFmri(sys.argv[1])
-        y = pkg.fmri.PkgFmri(sys.argv[2])
-except pkg.fmri.FmriError, e:
-        print >> sys.stderr, "error: %s" % str(e)
-        sys.exit(1)
-
-if not x.is_same_pkg(y):
-        print >> sys.stderr, \
-            "error: can only compare two versions of the same package."
-        sys.exit(1)
-
-if x < y:
-        print "<"
-elif x > y:
-        print ">"
-elif x == y:
-        print "="
-else:
-        print >> sys.stderr, "panic"
-        sys.exit(1)
-
-sys.exit(0)

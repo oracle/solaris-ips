@@ -24,6 +24,7 @@
 # Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
+import M2Crypto as m2
 import atexit
 import copy
 import datetime
@@ -31,6 +32,7 @@ import errno
 import os
 import platform
 import shutil
+import simplejson as json
 import stat
 import tempfile
 import time
@@ -47,6 +49,8 @@ import pkg.client.bootenv               as bootenv
 import pkg.client.history               as history
 import pkg.client.imageconfig           as imageconfig
 import pkg.client.imageplan             as imageplan
+import pkg.client.linkedimage           as li
+import pkg.client.pkgdefs               as pkgdefs
 import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
@@ -58,13 +62,11 @@ import pkg.lockfile                     as lockfile
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
 import pkg.nrlock
+import pkg.pkgsubprocess                as subprocess
 import pkg.portable                     as portable
 import pkg.server.catalog
 import pkg.smf                          as smf
-import pkg.pkgsubprocess                as subprocess
 import pkg.version
-import M2Crypto as m2
-import simplejson as json
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
@@ -153,7 +155,9 @@ class Image(object):
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
             augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
-            allow_ambiguous=False, props=misc.EmptyDict):
+            allow_ambiguous=False, props=misc.EmptyDict, cmdpath=None,
+            runid=-1):
+
                 if should_exist:
                         assert(imgtype is None)
                         assert(not force)
@@ -165,6 +169,31 @@ class Image(object):
                 self.__alt_pubs = None
                 self.__alt_known_cat = None
                 self.__alt_pkg_sources_loaded = False
+
+                if (runid < 0):
+                        runid = os.getpid()
+                self.runid = runid
+
+                # Determine identity of client executable if appropriate.
+                if cmdpath == None:
+                        cmdpath = misc.api_cmdpath()
+                self.cmdpath = cmdpath
+
+                if self.cmdpath != None:
+                        self.__cmddir = os.path.dirname(cmdpath)
+
+                # prevent brokeness in the test suite
+                if self.cmdpath and \
+                    "PKG_NO_RUNPY_CMDPATH" in os.environ and \
+                    self.cmdpath.endswith(os.sep + "run.py"):
+                        raise RuntimeError, """
+An Image object was allocated from within ipkg test suite and
+cmdpath was not explicitly overridden.  Please make sure to
+explicitly set cmdpath when allocating an Image object, or
+override cmdpath when allocating an Image object by setting PKG_CMDPATH
+in the environment or by setting simulate_cmdpath in DebugValues."""
+
+                self.linked = None
 
                 # Indicates whether automatic image format upgrades of the
                 # on-disk format are allowed.
@@ -179,10 +208,11 @@ class Image(object):
                 self.blocking_locks = False
                 self.cfg = None
                 self.history = history.History()
-                self.imageplan = None # valid after evaluation succeeds
+                self.imageplan = None
                 self.img_prefix = None
                 self.imgdir = None
                 self.index_dir = None
+                self.plandir = None
                 self.root = root
                 self.version = -1
 
@@ -228,6 +258,8 @@ class Image(object):
                 self.transport = transport.Transport(
                     transport.ImageTransportCfg(self))
 
+                self.linked = li.LinkedImage(self)
+
                 if should_exist:
                         self.find_root(self.root, user_provided_dir,
                             progtrack)
@@ -245,16 +277,11 @@ class Image(object):
                 # locked down umask.
                 os.umask(0022)
 
-                # Determine identity of client executable if appropriate.
-                self.__cmddir = None
-                if global_settings.client_args[0]:
-                        cmdpath = os.path.join(os.getcwd(),
-                            global_settings.client_args[0])
-                        cmdpath = os.path.realpath(cmdpath)
-                        self.__cmddir = os.path.dirname(os.path.realpath(
-                            cmdpath))
-
                 self.augment_ta_from_parent_image = augment_ta_from_parent_image
+
+        @staticmethod
+        def alloc(*args, **kwargs):
+                return Image(*args, **kwargs)
 
         def __catalog_loaded(self, name):
                 """Returns a boolean value indicating whether the named catalog
@@ -308,7 +335,8 @@ class Image(object):
                 if self.__cmddir and self.augment_ta_from_parent_image:
                         pkg_trust_anchors = Image(self.__cmddir,
                             augment_ta_from_parent_image=False,
-                            allow_ambiguous=True).trust_anchors
+                            allow_ambiguous=True,
+                            cmdpath=self.cmdpath).trust_anchors
                 if not loc_is_dir and os.path.exists(trust_anchor_loc):
                         raise apx.InvalidPropertyValue(_("The trust "
                             "anchors for the image were expected to be found "
@@ -478,10 +506,6 @@ class Image(object):
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
 
-                live_root = DebugValues.get_value("simulate_live_root")
-                if not live_root:
-                        live_root = "/"
-
                 while True:
                         imgtype = self.image_type(d)
                         if imgtype in (IMG_USER, IMG_ENTIRE):
@@ -490,6 +514,7 @@ class Image(object):
                                     os.path.realpath(d):
                                         raise apx.ImageNotFoundException(
                                             exact_match, startd, d)
+                                live_root = misc.liveroot()
                                 if not exact_match and d != live_root and \
                                     not self.allow_ambiguous and \
                                     portable.osname == "sunos":
@@ -504,7 +529,7 @@ class Image(object):
                                         raise apx.ImageLocationAmbiguous(d,
                                             live_root=live_root)
                                 self.__set_dirs(imgtype=imgtype, root=d,
-                                    progtrack=progtrack)
+                                    startd=startd, progtrack=progtrack)
                                 return
 
                         # XXX follow symlinks or not?
@@ -599,9 +624,18 @@ class Image(object):
                         except EnvironmentError, e:
                                 raise apx._convert_error(e)
 
-        def __set_dirs(self, imgtype, root, progtrack=None, purge=False):
+        def __set_dirs(self, imgtype, root, startd=None, progtrack=None,
+            purge=False):
                 # Ensure upgraded status is reset.
                 self.__upgraded = False
+
+                if not self.__allow_liveroot() and root == misc.liveroot():
+                        if startd == None:
+                                startd = root
+                        raise RuntimeError, \
+                           "Live root image access is disabled but was \
+                           attempted.\nliveroot: %s\nimage path: %s" % \
+                           (misc.liveroot(), startd)
 
                 self.type = imgtype
                 self.root = root
@@ -614,18 +648,12 @@ class Image(object):
                 self.transport = transport.Transport(
                     transport.ImageTransportCfg(self))
 
-                # Change directory to the root of the image so that we can
-                # remove any directories beneath us.  If we're changing the
-                # image, don't chdir, as we're likely changing to a new BE
-                # and want to be able to unmount it later.
-                if not self.imgdir and os.path.isdir(root):
+                # cleanup specified path
+                if os.path.isdir(root):
+                        cwd = os.getcwd()
                         os.chdir(root)
-
-                        # The specified root may have been a relative path.
                         self.root = os.getcwd()
-
-                if not os.path.isabs(self.root):
-                        self.root = os.path.abspath(self.root)
+                        os.chdir(cwd)
 
                 # If current image is locked, then it should be unlocked
                 # and then relocked after the imgdir is changed.  This
@@ -733,6 +761,7 @@ class Image(object):
                 else:
                         self.__tmpdir = os.path.join(self.imgdir, "tmp")
                 self._statedir = os.path.join(self.imgdir, "state")
+                self.plandir = os.path.join(self.__tmpdir, "plan")
                 self.update_index_dir()
 
                 self.history.root_dir = self.imgdir
@@ -867,6 +896,9 @@ class Image(object):
                         # Configuration shouldn't be written again unless this
                         # is an image creation operation (hence the purge).
                         self.save_config()
+
+                # Let the linked image subsystem know that root is moving
+                self.linked._init_root()
 
                 # load image avoid pkg set
                 self.__avoid_set_load()
@@ -1375,6 +1407,9 @@ class Image(object):
 
                 if refresh_allowed:
                         self.refresh_publishers(progtrack=progtrack)
+                else:
+                        # initialize empty catalogs on disk
+                        self.__rebuild_image_catalogs(progtrack=progtrack)
 
                 self.cfg.set_property("property", "publisher-search-order",
                     [p.prefix for p in pubs])
@@ -1384,9 +1419,27 @@ class Image(object):
 
                 self.history.log_operation_end()
 
+        @staticmethod
+        def __allow_liveroot():
+                """Check if we're allowed to access the current live root
+                image."""
+
+                # if we're simulating a live root then allow access to it
+                if DebugValues.get_value("simulate_live_root") or \
+                    "PKG_LIVE_ROOT" in os.environ:
+                        return True
+
+                # check if the user disabled access to the live root
+                if DebugValues.get_value("simulate_no_live_root"):
+                        return False
+                if "PKG_NO_LIVE_ROOT" in os.environ:
+                        return False
+
+                # by default allow access to the live root
+                return True
+
         def is_liveroot(self):
-                return bool(self.root == "/" or
-                    self.root == DebugValues.get_value("simulate_live_root"))
+                return bool(self.root == misc.liveroot())
 
         def is_zone(self):
                 return self.cfg.variants["variant.opensolaris.zone"] == \
@@ -1534,28 +1587,26 @@ class Image(object):
                                 yield pub
 
         def get_publisher_ranks(self):
-                """Returns dictionary of publishers by name; each
-                entry contains a tuple of search order index starting
-                at 0, and a boolean indicating whether or not
-                this publisher is "sticky", and a boolean indicating
-                whether or not the publisher is enabled"""
+                """Return dictionary of configured + enabled publishers and
+                unconfigured publishers which still have packages installed.
 
-                # automatically make disabled publishers not sticky
-                so = copy.copy(self.cfg.get_property("property",
-                    "publisher-search-order"))
+                Each entry contains a tuple of search order index starting at
+                0, and a boolean indicating whether or not this publisher is
+                "sticky", and a boolean indicating whether or not the
+                publisher is enabled"""
 
-                pubs = list(self.gen_publishers())
-                so.extend((p.prefix for p in pubs if p.prefix not in so))
-
+                pubs = self.get_sorted_publishers(inc_disabled=False)
                 ret = dict([
-                    (p.prefix, (so.index(p.prefix), p.sticky, True))
-                    for p in self.gen_publishers()
+                    (pubs[i].prefix, (i, pubs[i].sticky, True))
+                    for i in range(0, len(pubs))
                 ])
 
-                # add any publishers for pkgs that are installed,
-                # but have been deleted... so they're not sticky.
+                # Add any publishers for pkgs that are installed,
+                # but have been deleted. These publishers are implicitly
+                # not-sticky and disabled.
                 for pub in self.get_installed_pubs():
-                        ret.setdefault(pub, (len(ret) + 1, False, False))
+                        i = len(ret)
+                        ret.setdefault(pub, (i, False, False))
                 return ret
 
         def get_highest_ranked_publisher(self):
@@ -1611,11 +1662,42 @@ class Image(object):
                         self.remove_publisher_metadata(pub, progtrack=progtrack)
                         self.save_config()
 
-        def get_publishers(self):
+        def get_publishers(self, inc_disabled=True):
+                """Return a dictionary of configured publishers.  This doesn't
+                include unconfigured publishers which still have packages
+                installed."""
+
                 return dict(
                     (p.prefix, p)
-                    for p in self.gen_publishers(inc_disabled=True)
+                    for p in self.gen_publishers(inc_disabled=inc_disabled)
                 )
+
+        def get_sorted_publishers(self, inc_disabled=True):
+                """Return a list of configured publishers sorted by rank.
+                This doesn't include unconfigured publishers which still have
+                packages installed."""
+
+                d = self.get_publishers(inc_disabled=inc_disabled)
+                names = self.cfg.get_property("property",
+                    "publisher-search-order")
+
+                #
+                # If someone has been editing the config file we may have
+                # unranked publishers.  Also, as publisher come and go via the
+                # sysrepo we can end up with configured but unranked
+                # publishers.  In either case just sort unranked publishers
+                # alphabetically.
+                #
+                unranked = set(d) - set(names)
+                ret = [
+                    d[n]
+                    for n in names
+                    if n in d
+                ] + [
+                    d[n]
+                    for n in sorted(unranked)
+                ]
+                return ret
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
                 for pub in self.gen_publishers(inc_disabled=True):
@@ -1929,7 +2011,7 @@ class Image(object):
                 # Only after success should the configuration be saved.
                 self.save_config()
 
-        def verify(self, fmri, progresstracker, **args):
+        def verify(self, fmri, progresstracker, **kwargs):
                 """Generator that returns a tuple of the form (action, errors,
                 warnings, info) if there are any error, warning, or other
                 messages about an action contained within the specified
@@ -1941,7 +2023,7 @@ class Image(object):
 
                 'progresstracker' is a ProgressTracker object.
 
-                'args' is a dict of additional keyword arguments to be passed
+                'kwargs' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
                 try:
@@ -1976,7 +2058,7 @@ class Image(object):
                 for act in manf.gen_actions(
                     self.list_excludes()):
                         errors, warnings, info = act.verify(self, pfmri=fmri,
-                            **args)
+                            **kwargs)
                         progresstracker.verify_add_progress(fmri)
                         actname = act.distinguished_name()
                         if errors:
@@ -1990,59 +2072,6 @@ class Image(object):
                                     info)
                         if errors or warnings or info:
                                 yield act, errors, warnings, info
-
-        def __call_imageplan_evaluate(self, ip):
-                # A plan can be requested without actually performing an
-                # operation on the image.
-                if self.history.operation_name:
-                        self.history.operation_start_state = ip.get_plan()
-
-                try:
-                        ip.evaluate()
-                except apx.ConflictingActionErrors:
-                        # Image plan evaluation can fail because of duplicate
-                        # action discovery, but we still want to be able to
-                        # display and log the solved FMRI changes.
-                        self.imageplan = ip
-                        if self.history.operation_name:
-                                self.history.operation_end_state = \
-                                    "Unevaluated: merged plan had errors\n" + \
-                                    ip.get_plan(full=False)
-                        raise
-
-                self.imageplan = ip
-
-                if self.history.operation_name:
-                        self.history.operation_end_state = \
-                            ip.get_plan(full=False)
-
-        def image_change_varcets(self, variants, facets, progtrack, check_cancelation,
-            noexecute):
-
-                # Allow garbage collection of previous plan.
-                self.imageplan = None
-
-                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
-                    noexecute=noexecute)
-
-                progtrack.evaluate_start()
-
-                # Always start with most current (on-disk) state information.
-                self.__init_catalogs()
-
-                # compute dict of changing variants
-                if variants:
-                        variants = dict(set(variants.iteritems()) - \
-                           set(self.cfg.variants.iteritems()))
-                # facets are always the entire set
-
-                try:
-                        ip.plan_change_varcets(variants, facets)
-                        self.__call_imageplan_evaluate(ip)
-                except apx.ActionExecutionError, e:
-                        raise
-                except pkg.actions.ActionError, e:
-                        raise apx.InvalidPackageErrors([e])
 
         def image_config_update(self, new_variants, new_facets):
                 """update variants in image config"""
@@ -2087,7 +2116,7 @@ class Image(object):
 
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
                 # into the api and can actually use the
-                # api::__check_cancelation() function.
+                # api::__check_cancel() function.
                 pps = []
                 for fmri, actions in repairs:
                         logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
@@ -3544,24 +3573,24 @@ class Image(object):
 
                 return olist, onames
 
-        def avoid_pkgs(self, pat_list, progtrack, check_cancelation):
+        def avoid_pkgs(self, pat_list, progtrack, check_cancel):
                 """Avoid the specified packages... use pattern matching on
                 names; ignore versions."""
 
                 with self.locked_op("avoid"):
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
                             noexecute=False)
 
                         self._avoid_set_save(self.avoid_set_get() |
                             set(ip.match_user_stems(pat_list, ip.MATCH_UNINSTALLED)))
 
-        def unavoid_pkgs(self, pat_list, progtrack, check_cancelation):
+        def unavoid_pkgs(self, pat_list, progtrack, check_cancel):
                 """Unavoid the specified packages... use pattern matching on
                 names; ignore versions."""
 
                 with self.locked_op("unavoid"):
 
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
                             noexecute=False)
                         unavoid_set = set(ip.match_user_stems(pat_list, ip.MATCH_ALL))
                         current_set = self.avoid_set_get()
@@ -3589,9 +3618,34 @@ class Image(object):
                                 ret[group].append(fmri.pkg_name)
                 return ret
 
+        def __call_imageplan_evaluate(self, ip):
+                # A plan can be requested without actually performing an
+                # operation on the image.
+                if self.history.operation_name:
+                        self.history.operation_start_state = ip.get_plan()
 
-        def __make_plan_common(self, plan_name, progtrack, check_cancelation,
-            noexecute, *args):
+                try:
+                        ip.evaluate()
+                except apx.ConflictingActionErrors:
+                        # Image plan evaluation can fail because of duplicate
+                        # action discovery, but we still want to be able to
+                        # display and log the solved FMRI changes.
+                        self.imageplan = ip
+                        if self.history.operation_name:
+                                self.history.operation_end_state = \
+                                    "Unevaluated: merged plan had errors\n" + \
+                                    ip.get_plan(full=False)
+                        raise
+
+                self.imageplan = ip
+
+                if self.history.operation_name:
+                        self.history.operation_end_state = \
+                            ip.get_plan(full=False)
+
+        def __make_plan_common(self, _op, _progtrack, _check_cancel,
+            _ip_mode, _noexecute, _ip_noop=False,
+            **kwargs):
                 """Private helper function to perform base plan creation and
                 cleanup.
                 """
@@ -3599,18 +3653,39 @@ class Image(object):
                 # Allow garbage collection of previous plan.
                 self.imageplan = None
 
-                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
-                    noexecute=noexecute)
+                ip = imageplan.ImagePlan(self, _progtrack, _check_cancel,
+                    noexecute=_noexecute, mode=_ip_mode)
 
-                progtrack.evaluate_start()
+                _progtrack.evaluate_start()
 
                 # Always start with most current (on-disk) state information.
                 self.__init_catalogs()
 
                 try:
                         try:
-                                pfunc = getattr(ip, "plan_%s" % plan_name)
-                                pfunc(*args)
+                                if _ip_noop:
+                                        ip.plan_noop()
+                                elif _op in [
+                                    pkgdefs.API_OP_ATTACH,
+                                    pkgdefs.API_OP_DETACH,
+                                    pkgdefs.API_OP_SYNC]:
+                                        ip.plan_sync(**kwargs)
+                                elif _op in [
+                                    pkgdefs.API_OP_CHANGE_FACET,
+                                    pkgdefs.API_OP_CHANGE_VARIANT]:
+                                        ip.plan_change_varcets(**kwargs)
+                                elif _op == pkgdefs.API_OP_INSTALL:
+                                        ip.plan_install(**kwargs)
+                                elif _op == pkgdefs.API_OP_REVERT:
+                                        ip.plan_revert(**kwargs)
+                                elif _op == pkgdefs.API_OP_UNINSTALL:
+                                        ip.plan_uninstall(**kwargs)
+                                elif _op == pkgdefs.API_OP_UPDATE:
+                                        ip.plan_update(**kwargs)
+                                else:
+                                        raise RuntimeError(
+                                            "Unknown api op: %s" % _op)
+
                         except apx.ActionExecutionError, e:
                                 raise
                         except pkg.actions.ActionError, e:
@@ -3626,45 +3701,82 @@ class Image(object):
                 finally:
                         self.__cleanup_alt_pkg_certs()
 
-        def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute, reject_list=EmptyI):
-                """Take a list of packages, specified in pkg_list, and attempt
+        def make_install_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, pkgs_inst=None, reject_list=None):
+                """Take a list of packages, specified in pkgs_inst, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
                 """
 
-                self.__make_plan_common("install", progtrack, check_cancelation,
-                    noexecute, pkg_list, reject_list)
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, pkgs_inst=pkgs_inst,
+                    reject_list=reject_list)
 
-        def make_uninstall_plan(self, fmri_list, recursive_removal,
-            progtrack, check_cancelation, noexecute):
+        def make_change_varcets_plan(self, op, progtrack, check_cancel,
+            ip_mode, noexecute, facets=None, reject_list=None,
+            variants=None):
+                """Take a list of variants and/or facets and attempt to
+                assemble an image plan which changes them.  This is a helper
+                routine for some common operations in the client."""
+
+                # compute dict of changing variants
+                if variants:
+                        new = set(variants.iteritems())
+                        cur = set(self.cfg.variants.iteritems())
+                        variants = dict(new - cur)
+
+                self.__make_plan_common(op, progtrack, check_cancel, ip_mode,
+                    noexecute, new_variants=variants, new_facets=facets,
+                    reject_list=reject_list)
+
+        def make_sync_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, li_pkg_updates=True, reject_list=None):
+                """Attempt to create an appropriate image plan to bring an
+                image in sync with it's linked image constraints.  This is a
+                helper routine for some common operations in the client."""
+
+                self.__make_plan_common(op, progtrack, check_cancel, ip_mode,
+                    noexecute, reject_list=reject_list,
+                    li_pkg_updates=li_pkg_updates)
+
+        def make_uninstall_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, pkgs_to_uninstall, recursive_removal):
                 """Create uninstall plan to remove the specified packages;
                 do so recursively iff recursive_removal is set"""
 
-                self.__make_plan_common("uninstall", progtrack,
-                    check_cancelation, noexecute, fmri_list,
-                    recursive_removal)
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, pkgs_to_uninstall=pkgs_to_uninstall,
+                    recursive_removal=recursive_removal)
 
-        def make_update_plan(self, progtrack, check_cancelation, noexecute,
-            pkg_list=None, reject_list=EmptyI):
+        def make_update_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, pkgs_update=None, reject_list=None):
                 """Create a plan to update all packages or the specific ones as
                 far as possible.  This is a helper routine for some common
                 operations in the client.
                 """
 
-                self.__make_plan_common("update", progtrack,
-                    check_cancelation, noexecute, pkg_list, reject_list)
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, pkgs_update=pkgs_update,
+                    reject_list=reject_list)
 
-        def make_revert_plan(self, args, tagged, progtrack, check_cancelation,
-            noexecute):
+        def make_revert_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, args, tagged):
                 """Revert the specified files, or all files tagged as specified
                 in args to their manifest definitions.
                 """
 
-                self.__make_plan_common("revert", progtrack, check_cancelation,
-                    noexecute, args, tagged)
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, args=args, tagged=tagged)
 
-        def ipkg_is_up_to_date(self, check_cancelation, noexecute,
+        def make_noop_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute):
+                """Create an image plan that doesn't update the image in any
+                way."""
+
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, _ip_noop=True)
+
+        def ipkg_is_up_to_date(self, check_cancel, noexecute,
             refresh_allowed=True, progtrack=None):
                 """Test whether the packaging system is updated to the latest
                 version known to be available for this image."""
@@ -3704,7 +3816,7 @@ class Image(object):
                         #
                         newimg = Image(self.__cmddir,
                             allow_ondisk_upgrade=False, allow_ambiguous=True,
-                            progtrack=progtrack)
+                            progtrack=progtrack, cmdpath=self.cmdpath)
                         useimg = True
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,
@@ -3733,8 +3845,9 @@ class Image(object):
 
                 # XXX call to progress tracker that the package is being
                 # refreshed
-                img.make_install_plan(["pkg:/package/pkg"], progtrack,
-                    check_cancelation, True)
+                img.make_install_plan(pkgdefs.API_OP_INSTALL, progtrack,
+                    check_cancel, pkgdefs.API_STAGE_DEFAULT, noexecute,
+                    pkgs_inst=["pkg:/package/pkg"])
 
                 return img.imageplan.nothingtodo()
 
@@ -3787,7 +3900,7 @@ class Image(object):
 
                 if not self.__avoid_set_altered:
                         return
-                
+
 
                 state_file = os.path.join(self._statedir, "avoid_set")
                 tmp_file   = os.path.join(self._statedir, "avoid_set.new")

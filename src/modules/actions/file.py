@@ -66,6 +66,31 @@ class FileAction(generic.Action):
                 self.hash = "NOHASH"
                 self.replace_required = False
 
+        def __getstate__(self):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate this object's contents into a
+                dictionary for pickling"""
+
+                pstate = generic.Action.__getstate__(self)
+                state = {}
+                for name in FileAction.__slots__:
+                        if not hasattr(self, name):
+                                continue
+                        state[name] = getattr(self, name)
+                return (state, pstate)
+
+        def __setstate__(self, state):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate a pickled dictionary copy of this
+                object's contents into a real in-memory object."""
+
+                (state, pstate) = state
+                generic.Action.__setstate__(self, pstate)
+                for name in state:
+                        setattr(self, name, state[name])
+
         # this check is only needed on Windows
         if portable.ostype == "windows":
                 def preinstall(self, pkgplan, orig):

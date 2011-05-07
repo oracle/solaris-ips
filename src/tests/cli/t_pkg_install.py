@@ -31,9 +31,6 @@ import pkg5unittest
 
 import errno
 import os
-import pkg.fmri as fmri
-import pkg.manifest as manifest
-import pkg.portable as portable
 import platform
 import re
 import shutil
@@ -41,6 +38,12 @@ import stat
 import time
 import unittest
 
+import pkg.actions
+import pkg.fmri as fmri
+import pkg.manifest as manifest
+import pkg.portable as portable
+
+from pkg.client.pkgdefs import EXIT_OOPS
 
 class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -1688,10 +1691,8 @@ adm
                 self.pkg("verify -v")
 
                 # Make sure all directories are gone save /var in test image.
-                # 'pkg' will also be present as a file because image create
-                # places it there.
                 self.assertEqual(set(os.listdir(self.get_img_path())),
-                    set(["pkg", ".SELF-ASSEMBLY-REQUIRED", "var"]))
+                    set([".SELF-ASSEMBLY-REQUIRED", "var"]))
 
         def test_upgrade2(self):
                 """ test incorporations:
@@ -3374,6 +3375,46 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg121 = """
+            open pkg12@1.1,5.11-0
+        """
+        pkg121 += "add depend type=parent fmri=%s" % \
+            pkg.actions.depend.DEPEND_SELF
+        pkg121 += """
+            close
+        """
+
+        pkg122 = """
+            open pkg12@1.2,5.11-0
+        """
+        pkg122 += "add depend type=parent fmri=%s" % \
+            pkg.actions.depend.DEPEND_SELF
+        pkg122 += """
+            close
+        """
+
+        pkg123 = """
+            open pkg12@1.3,5.11-0
+        """
+        pkg123 += "add depend type=parent fmri=%s" % \
+            pkg.actions.depend.DEPEND_SELF
+        pkg123 += """
+            close
+        """
+
+        pkg132 = """
+            open pkg13@1.2,5.11-0
+            add depend type=parent fmri=pkg12@1.2,5.11-0
+            close
+        """
+
+        pkg142 = """
+            open pkg14@1.2,5.11-0
+            add depend type=parent fmri=pkg12@1.2,5.11-0
+            add depend type=parent fmri=pkg13@1.2,5.11-0
+            close
+        """
+
         pkg_renames = """
             open pkg_need_rename@1.0,5.11-0
             add depend type=require fmri=pkg_rename
@@ -3389,6 +3430,11 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=require fmri=system/trusted@1.0
             close
             open system/trusted@1.0,5.11-0
+            close
+        """
+
+        pkgSUNWcs075 = """
+            open SUNWcs@0.5.11-0.75
             close
         """
 
@@ -3558,14 +3604,16 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
         """
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
                     self.pkg505, self.pkg51, self.pkg60, self.pkg61,
                     self.pkg70, self.pkg80, self.pkg81, self.pkg90,
                     self.pkg91, self.bug_7394_incorp,
                     self.pkg100, self.pkg101, self.pkg102,
-                    self.pkg110, self.pkg111, self.pkg_renames))
+                    self.pkg110, self.pkg111,
+                    self.pkg121, self.pkg122, self.pkg123, self.pkg132,
+                    self.pkg142, self.pkg_renames, self.pkgSUNWcs075))
 
                 for t in self.leaf_expansion:
                         self.pkgsend_bulk(self.rurl, self.leaf_template % t)
@@ -3774,7 +3822,11 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
         def test_origin_dependencies(self):
                 """Get origin dependencies working"""
+                self.set_image(0)
                 self.image_create(self.rurl)
+                self.set_image(1)
+                self.image_create(self.rurl)
+                self.set_image(0)
                 # check install behavior
                 self.pkg("install pkg10@1.0")
                 self.pkg("install pkg10")
@@ -3800,10 +3852,76 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install pkg10@1.2")
                 self.pkg("uninstall '*'")
                 # check origin root-image=true dependencies
-                # relies on SUNWcs in root image; may need to change
-                self.pkg("install pkg11@1.0")
-                self.pkg("install pkg11@1.1", exit=1)
+                # relies on SUNWcs in root image; make image 1 the root image
+                self.set_image(1)
+                self.pkg("install SUNWcs@0.5.11-0.75")
+                self.set_image(0)
+                live_root = self.img_path(1)
+                self.pkg("-D simulate_live_root=%s install pkg11@1.0" % \
+                    live_root)
+                self.pkg("-D simulate_live_root=%s install pkg11@1.1" %
+                    live_root, exit=1)
                 self.pkg("uninstall '*'")
+
+        def test_parent_dependencies(self):
+                self.set_image(0)
+                self.image_create(self.rurl)
+                self.set_image(1)
+                self.image_create(self.rurl)
+
+                # attach c2p 1 -> 0
+                self.pkg("attach-linked -p system:img1 %s" % self.img_path(0))
+
+                # try to install packages that have unmet parent dependencies
+                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+
+                # install packages in parent
+                self.set_image(0)
+                self.pkg("install pkg12@1.1")
+                self.set_image(1)
+
+                # try to install packages that have unmet parent dependencies
+                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+
+                # install packages in parent
+                self.set_image(0)
+                self.pkg("install pkg12@1.3")
+                self.set_image(1)
+
+                # try to install packages that have unmet parent dependencies
+                self.pkg("install pkg12@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg13@1.2", exit=EXIT_OOPS)
+                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+
+                # install packages in parent
+                self.set_image(0)
+                self.pkg("update pkg12@1.2")
+                self.set_image(1)
+
+                # try to install packages that have unmet parent dependencies
+                self.pkg("install pkg14@1.2", exit=EXIT_OOPS)
+
+                # try to install packages that have satisfied parent deps
+                self.pkg("install pkg12@1.2")
+                self.pkg("verify")
+                self.pkg("uninstall pkg12@1.2")
+                self.pkg("install pkg13@1.2")
+                self.pkg("verify")
+                self.pkg("uninstall pkg13@1.2")
+
+                # install packages in parent
+                self.set_image(0)
+                self.pkg("install pkg13@1.2")
+                self.set_image(1)
+
+                # try to install packages that have satisfied parent deps
+                self.pkg("install pkg14@1.2")
+                self.pkg("verify")
+                self.pkg("uninstall pkg14@1.2")
 
 
 class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
@@ -4422,7 +4540,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                     set(["cfg_cache_absent"]), ["var/pkg"])
 
                 self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path, use_img_root=False)
+                    self.backup_img_path(), use_img_root=False)
 
         def test_var_pkg_missing_index(self):
                 """ Creates bad_dir with only the index dir missing. """
@@ -4524,7 +4642,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                     set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
 
                 self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path, use_img_root=False)
+                    self.backup_img_path(), use_img_root=False)
 
         def test_ospkg_missing_index(self):
                 """ Creates a corrupted image at bad_dir by creating
@@ -4602,7 +4720,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
                     set(["cfg_cache_absent"]), ["var/pkg"], destroy=False)
 
                 self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path, use_img_root=False)
+                    self.backup_img_path(), use_img_root=False)
 
         def test_var_pkg_ospkg_missing_cfg_cache_alongside(self):
                 """ Complete Full image besides a User image missing cfg_cache
@@ -4620,7 +4738,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 # Found full image before we reached root image.
                 self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path, use_img_root=False, exit=1)
+                    self.backup_img_path(), use_img_root=False, exit=1)
 
                 # Only possible if user specifies full image's root since
                 # user image is at the top level.
@@ -4640,7 +4758,7 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 # Found user image before we reached root image.
                 self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path, use_img_root=False, exit=1)
+                    self.backup_img_path(), use_img_root=False, exit=1)
 
                 # Should succeed and install package in user image since
                 # test suite will add -R self.get_img_path().
@@ -5846,6 +5964,7 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_dupfilesv1 = """
             open dupfilesv1@0,5.11-0
+            add set name=variant.arch value=sparc value=i386
             add dir path=dir/pathname mode=0755 owner=root group=bin variant.arch=i386
             close
         """
@@ -5858,12 +5977,14 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_dupfilesv3 = """
             open dupfilesv3@0,5.11-0
+            add set name=variant.arch value=sparc value=i386
             add dir path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
             close
         """
 
         pkg_dupfilesv4 = """
             open dupfilesv4@0,5.11-0
+            add set name=variant.arch value=sparc value=i386
             add file tmp/file1 path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
             add file tmp/file2 path=dir/pathname mode=0777 owner=root group=bin variant.arch=sparc
             add file tmp/file3 path=dir/pathname mode=0777 owner=root group=bin variant.arch=i386
@@ -5872,6 +5993,7 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_dupfilesv5 = """
             open dupfilesv5@0,5.11-0
+            add set name=variant.opensolaris.zone value=global value=nonglobal
             add file tmp/file1 path=dir/pathname mode=0777 owner=root group=bin variant.opensolaris.zone=nonglobal
             close
         """
@@ -6511,13 +6633,13 @@ adm
                 self.pkg("uninstall implicitdirs7")
                 # XXX We don't currently fix up anything beneath a directory
                 # that was restored, so we have to do it by hand.
-                os.mkdir("%s/usr/bin" % self.img_path)
+                os.mkdir("%s/usr/bin" % self.img_path())
                 shutil.copy("%s/tmp/file1" % self.test_root,
-                    "%s/usr/bin/something" % self.img_path)
-                owner = portable.get_user_by_name("root", self.img_path, True)
-                group = portable.get_group_by_name("bin", self.img_path, True)
-                os.chown("%s/usr/bin/something" % self.img_path, owner, group)
-                os.chmod("%s/usr/bin/something" % self.img_path, 0755)
+                    "%s/usr/bin/something" % self.img_path())
+                owner = portable.get_user_by_name("root", self.img_path(), True)
+                group = portable.get_group_by_name("bin", self.img_path(), True)
+                os.chown("%s/usr/bin/something" % self.img_path(), owner, group)
+                os.chmod("%s/usr/bin/something" % self.img_path(), 0755)
                 self.pkg("verify")
 
                 # Removing one of more than two offending actions can't do much
@@ -6534,7 +6656,7 @@ adm
                     stat.S_IFLNK: "symbolic link",
                     stat.S_IFSOCK: "socket",
                 }
-                thepath = "%s/dir/pathname" % self.img_path
+                thepath = "%s/dir/pathname" % self.img_path()
                 fmt = stat.S_IFMT(os.lstat(thepath).st_mode)
                 # XXX The checks here rely on verify failing due to action types
                 # not matching what's on the system; they should probably report
@@ -6736,7 +6858,7 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "duppath-nonidenticallinksp1 duppath-nonidenticallinksp2@0")
-                link = os.readlink("%s/dir/pathname" % self.img_path)
+                link = os.readlink("%s/dir/pathname" % self.img_path())
                 if link == "dir/something":
                         self.pkg("uninstall duppath-nonidenticallinksp2")
                 else:
@@ -6748,7 +6870,7 @@ adm
                 self.pkg("uninstall '*'")
                 self.pkg("-D broken-conflicting-action-handling=1 install "
                     "duppath-nonidenticallinksp1 duppath-nonidenticallinksp2@0")
-                link = os.readlink("%s/dir/pathname" % self.img_path)
+                link = os.readlink("%s/dir/pathname" % self.img_path())
                 if link == "dir/something":
                         self.pkg("uninstall duppath-nonidenticallinksp1")
                 else:

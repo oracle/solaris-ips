@@ -1,0 +1,1265 @@
+.. This document is formatted using reStructuredText, which is a Markup
+   Syntax and Parser Component of Docutils for Python.  An html version
+   of this document can be generated using the following command:
+     rst2html.py doc/linked-images.txt > doc/linked-images.html
+
+============================
+Ips pkg(5) zones integration
+============================
+
+:Author: Edward Pilatowicz
+:Version: 0.6
+
+.. sectnum::
+.. contents::
+
+Introduction
+============
+
+To allow for support of pkg(5) within zones and the automatic management
+and upgrading of zones during global zone pkg(5) operations, this
+proposal describes enhancements to pkg(5) to support "linked images".
+
+The pkg(5) linked images functionality proposed herein is intended to
+be generic, with zones being one type of linked images that can be
+supported. In addition to supporting zones linked images we also propose
+supporting another "system" type of linked images. The details of how
+these linked image types differ will be explained in more detail below.
+
+Another goal of the pkg(5) linked image support is to make all the
+linked image functionality visible to other pkg(5) subsystems common,
+and to isolate code dealing with the different linked image types within
+well defined modules contained within the linked image subsystem. IE,
+while other pkg(5) subsystems may need to be aware of linked images,
+they should not have to worry about specific linked image types.
+(zones, system, etc.)
+
+Linked images will have properties associated with them. The set of
+available properties may vary across different linked image types.  The
+storage location for these properties values (IE, linked image metadata)
+may be plugin specific. For the "system" plugin, property data
+configuration will live within a /var/pkg configuration file.  For the
+"zones" linked image plugin, property configuration will be derived from
+the zones subsystem (some properties will have implicit values, others
+may be derived from zonecfg(1m) parameters, etc.)
+
+
+Zones and linked images
+=======================
+
+The design for pkg(5) linked images as proposed herein is primarily
+being driven by the need to support zones. Hence, before jumping into
+the specifics of linked images support it is worth discussing how zones
+user are expected to interact with linked images, and also the
+requirements that zones have upon the design of linked images.
+
+
+Zone users and linked images
+----------------------------
+
+Ideally, zone users should be unaware of all linked image functionality
+proposed herein.  They should never need to run any of the proposed
+pkg(1) linked image commands.  Linked images will do their work
+automatically under the hood when users do operations like:
+
+- Run pkg(1) in the global zone.  In this case pkg(1) operations will
+  automatically keep non-global zones in sync with the global zone.
+
+- Run pkg(1) in a non-global zone.  In this case pkg(1) will prevent
+  operations that would allow a non-global zone to go out of sync with
+  the global zone.
+
+- Run zoneadm(1m) install/uninstall/detach/attach/etc.  In this case the
+  zone brand callbacks will utilize with the pkg(5) linked image
+  functionality to manage zones as linked images.
+
+
+Zones requirements
+------------------
+
+Zones is a OS level virtualization technology that allows us to run
+multiple userland execution environment on a single kernel. Each of
+these userland execution environments is a separate virtual machine,
+with it's own filesystem, processes, network stack, etc. The default
+execution environment (IE, the one you get when you install Solaris or
+OpenSolaris) is called the global zone.  Subsequent execution
+environments are called non-global zones and can be created and managed
+via zonecfg(1M) and zoneadm(1M).
+
+All the zones on a system share the same kernel, and the kernel is
+managed by the global zone. Non-global zones can not supply their own
+kernel modules. Hence, any software within a zone which spans the
+user/kernel boundary must be kept in sync with the kernel installed in
+the global zone. This puts constraints on what software can be installed
+within zones. The basic requirements here can be summed up as:
+
+- Software installed in a non-global zone that depends on specific
+  kernel functionality must be kept in sync with the kernel software
+  installed within the global zone.  examples:
+	libzfs and drv/zfs (system/file-system/zfs)
+	libdladm (system/library) and drv/dld (system/kernel)
+
+- Software installed in a non-global that communicates to the global
+  zone via private interfaces must be kept in sync with the kernel
+  software installed within the global zone.  examples:
+	zones proxy (system/zones)
+	libdladm (system/library) and dladm (system/network)
+
+- Software that depends on specific kernel functionality can only be
+  installed in a non-global zone if the corresponding kernel
+  functionality is installed within the global zone.
+
+Since non-global zones are separate virtual machines with their own
+filesystems and software, these machines (and their software contents)
+may not be trusted by the global zone. Hence any software management
+operations being done on non-global zone should not be able to affect
+the global zone. Effectively this means that all actions performed on a
+zone cannot safely be done from the global zone environment. This means
+that software management operations initiated from a global zone will
+either have to "enter" the zone (if it's running) to perform their
+operation, or they must take special precautions when accessing zone
+images to ensure that all filesystem operations are performed safely.
+The basic requirements here can be summed up as:
+
+- Software management operations will need to span multiple processes
+  operating in different zones.
+
+- Since zones are untrusted execution environment, global zone pkg(5)
+  operations should not read data from non-global zone.  IE, any data
+  flow required to support linked images must be from a global zone to a
+  non-global zone, and never in the reverse direction.  Also, write
+  accesses to a non-global zone from the global zone should be kept to
+  an absolute minimum, and any such accesses must be provably safe via
+  code inspection.
+
+Lastly, since non-global zones are separate virtual machines, they will
+normally not have access to the contents of the global zone. Yet the
+software that can be run in non-global zones is constrained by the
+software installed in the global zone. Hence:
+
+- All the constraints required to perform software management operations
+  within a non-global zone must be persistently available within that
+  zones image/filesystem.
+
+
+Zones non-requirements
+----------------------
+
+While developing linked images, existing Solaris 10 zones users have
+asked how linked images will enable them to continue to do certain zones
+administrative operations that they are familiar with.  Unfortunately,
+some of these operations were possible mainly as side effects of the
+zones and SVR4 packaging implementations on Solaris 10.  Since pkg(5) is
+significantly changing the way zones are used and managed, some of these
+legacy operations will no longer be possible and users will need to
+adopt new ways of managing their zones.  So here are some of the
+requests from Solaris 10 users that we're not initially addressing with
+linked images.
+
+
+**The ability to install a patch on all zones on a system.**
+
+Patching of systems with pkg(5) will be substantially different from the
+patching of Solaris 10 system.  This change is the administrative model
+is being driven by pkg(5) and is largely orthogonal to zones.  With
+pkg(5), patching of systems will be done via pkg(1) update, where
+repositories are populated with the latests versions of packages that
+all system should be running, and when systems are image-updated they
+will automatically install the latest versions of software available
+within the repositories they are using.  Hence, if an administrator
+wants to install updated packages onto a system with zones, they should
+push the updated packages into their repositories and update their
+zones.
+
+
+**The ability to install a package on all zones on a system.**
+
+Previously in Solaris 10, the package content of zones closely tracked
+the package content of the global zone.  In most cases installing a
+package in the global zone would result in that package being installed
+in all zones.  With pkg(5) the contents of zones are much more decoupled
+from the contents of global zones.  We will not be providing a way to
+install packages across multiple zones.  In general, system should only
+contain the software that they need for their operation.  Hence, this
+software should be installed at zone installation time.  Or if added
+later, it needs to be added directly into the zone image (via a pkg(1)
+install run within that zone image).
+
+We may subsequently create new mechanisms to help with operations like
+the ones above.  Such mechanisms might take the form of recursive
+operation support, a simple image content policy mechanism, or some
+larger system life cycle management mechanism that defines the package
+software content of systems for their entire deployment (instead of just
+at install time).
+
+
+Possible linked image types
+===========================
+
+So in addition to supporting zones linked image, the design herein has
+also considered other future possible types of linked images. So before
+going into the details of the linked image design it's worth while to
+first describe some possible linked image types to understand when and
+where they might be used.
+
+
+**Zones linked images**
+
+  Support for zones linked images is included in this proposal. Users
+  will not be able to directly create or manage zones linked images.
+  Instead the system will automatically manage zones linked images when
+  zones are used. Zones linked images should provide us with with a
+  means to do the following:
+
+  - Allow for the creation of non-global zone images where the contents
+    of those images is constrained by the software installed in the
+    global zone.
+
+  - Allow for the updating of software within non-global zones while
+    taking into account the constraints placed upon the zone by the
+    software installed in the global zone.
+
+  - Allow pkg(5) operations initiated from (and operating on) the global
+    zone to update non-global zone images as required to keep them in
+    sync with software being updated in the global zone.
+
+  - Allow for pkg(5) operations initiated directly upon non-global zone
+    image to take into account the constraints placed upon then by the
+    software installed in the global zone.
+
+  - Allow for the auditing of non-global zones to verify that their
+    software contents are in sync with the software installed in the
+    global zone.
+
+
+**System linked images**
+
+  Support for system linked images is included in this proposal. These
+  types of linked images will be very similar to zone linked images. All
+  the features listed above that will be available for zones linked
+  images will also be available for system linked images. But unlike
+  zone linked images, these images can be created via new pkg(1)
+  interfaces.
+
+  Support for system linked images is included in this proposal because
+  it is anticipated that system linked images will be used internally
+  within Solaris.  Also, having a "system" linked image type will
+  greatly facilitate the testing of linked image functionality, the
+  large majority of which is common to all linked image types.
+
+
+**User linked images**
+
+  Support for user linked images is NOT included in this proposal. These
+  type of images would be managed very differently from zones or system
+  linked images. User linked images could provide us with the following
+  functionality:
+
+  - Allow for arbitrary users to create user linked images, where the
+    contents of that image are in sync with the software installed in
+    another image.
+
+  - Allow for a user to update the software within a user linked image
+    while staying in sync with the software installed in another image.
+
+  - Allow for the auditing of a user linked image to verify that their
+    software contents are in sync with the software installed in another
+    image.
+
+  So here's an example of how a user linked image might work. Say a user
+  named Ed wants to run a copy of SpamAssassin on a system named
+  jurassic, but jurassic doesn't have SpamAssassin installed. Ed could
+  then create a "user" linked image that is linked to the jurassic
+  system image. Then he could install SpamAssassin into that image.
+  Pkg(5) would install a version of SpamAssassin that is compatible with
+  the software contents already installed on jurassic. (In the process
+  of doing this pkg(5) would also install into the user image any
+  dependencies required by SpamAssassin that were missing from
+  jurassic.) Ed could then run this version of SpamAssassin without
+  having to worry about his software being out of sync with the system.
+  The system administrator would have no knowledge of user images that
+  might be created on a system, hence, if the administrator updates the
+  software on a system then any user images may now be out of sync. In
+  this case, Ed would be able to perform an audit of all his user linked
+  images to determine if they are in sync with their specified policy
+  and the contents of the system they are being used on. If they were
+  out of sync (due to the system being updated) he could then initiate a
+  sync operation to update them and bring them back in sync.
+
+
+**Diskless client linked images**
+
+  Support for diskless client linked images is NOT included in this
+  proposal. These types of images would probably not be managed
+  directly, but would probably be managed indirectly by diskless client
+  management tools. One possible deployment model for diskless clients
+  would be to create a parent image which represents the standard
+  diskless client configuration deployment, and then to create linked
+  images all parented to that one parent image. These linked images
+  would actually be the diskless client root filesystems. Subsequent
+  software management operations could be performed on the parent image,
+  with changes automatically propagated to all the client images
+  automatically based on the content policy of the linked images.
+
+
+**Distributed linked images**
+
+  Support for Distributed linked images is NOT included in this
+  proposal.  But if pkg(5) functionality was accessible over the network
+  via rad interfaces, it should be possible to create linked image
+  relationships that span multiple machines.  This could be used in a
+  manager similar to diskless clients where a master deployment image is
+  created on one machine, and this master image is then linked to
+  machines which deploy the image.  Subsequently, updates to the master
+  image would automatically be propagated to deployment machines, based
+  of the content management policy being used.
+
+
+Out of scope
+============
+
+There are many components which will probably be required to allow
+pkg(5) and zones to work seamlessly together. This proposal does not
+address all of them. Specifically, the following features are not being
+delivered by this project.
+
+
+**User, diskless, and distributed linked images.**
+
+  While this project will provide basic support for creating system and
+  zone linked images, it will not provide support for any other types of
+  linked linked images, even though other types of linked images may be
+  discussed within this document.
+
+
+**Offline zone install.** [1]_
+
+  This proposal does nothing to address the current requirement that an
+  active network connection to a valid package repository be available
+  during most pkg(5) operations. If anything, this proposal will
+  increase the number of operations that may require such a connection
+  to be available.
+
+
+**The system repository.** [2]_
+
+  When managing zone linked images, it's critical that certain packages
+  be kept in sync between global and non-global zones. This means that
+  zones must have access to any publishers that contain packages that
+  must be kept in sync between the images, regardless of the zones
+  publisher configuration. Some additional complications to this problem
+  are that for zones which are not running, we may not be able to
+  instantiate their network configuration, so we may not be able to talk
+  to any of their configured network based publishers.  The planned
+  solution to address these problems is to create "system repository".
+  The system repository would allow a linked image to access any
+  publishers configured within the parent image that contain packages
+  which needed to be kept in sync with the child image.
+
+  Since delivery of the system repository is out of scope for this
+  project, initially zones linked image support will rely on zones
+  having a publisher configuration which provides access to all the
+  packages required to keep the zone in sync.
+
+
+**Zones image locking.** [3]_
+
+  When performing pkg(5) operations in a global zone that affect the
+  contents of the global zone, we need a locking mechanism to prevent
+  concurrent operations from being done within a non-global zone. We
+  also need a locking mechanism that allows for the reverse. Ie, if a
+  zone is in the middle of a pkg(5) operation we don't want to initiate
+  an operation from the global zone which might also require updating
+  that zone. Other scenarios that we will probably also need to protect
+  against include a zone changing state while we're performing a pkg(5)
+  operation on that zone. For example, if we're installing a package in
+  a global zone which results in us also installing a package in a
+  non-global zone, we need to prevent that non-global zone from
+  rebooting while we're installing the package.  Another example is that
+  if we're installing or removing a package from a global zone, we will
+  probably want to prevent a concurrent install of a non-global zone
+  since that could results in the freshly installed zone being out of
+  sync with the global zone. This proposal does not address any of the
+  possible race conditions wrt pkg(5) and zone linked image operations.
+
+
+**Pkg(5)/beadm(1M) image filesystem management.** [4]_
+
+  Currently, beadm(1M) allows for versioning (via snapshotting and
+  cloning) of multiple filesystem in a global zone image, assuming all
+  those filesystems are zfs based and are all children of the current
+  root filesystem. beadm(1M) treats any other filesystems in the current
+  BE as shared and lofs mounts them into any other alternate BE. This
+  means that if any pkg(5) software is installed into these "shared"
+  filesystems that software will become out of sync wrt some BE. Pkg(5)
+  and beadm(1M) do not perform any check to ensure that all the software
+  being installed is not being installed into "shared" filesystems. This
+  same problem also affects zones. This proposal does not address this
+  issue in any way and assumes that eventually pkg(5) or beadm(1M) will
+  provide more flexible and robust functionality to manage images that
+  span multiple filesystem.
+
+
+**Beadm(1M) support for linked images.**
+
+  Currently, beadm(1M) can be run within the global zone to manage
+  global zone boot environments and their associated zones. But
+  beadm(1M) does not support running within a non-global zone and
+  creating snapshots of zone boot environments from within a zone.
+  Beadm(1M) support within a zone is a requirements for supporting
+  pkg(5) image-update within a zone.  (Since image-update only operates
+  on alternate boot environments.) It is also the case that other pkg(5)
+  operations may refuse to operate on the currently running image and
+  may only be run on cloned and offline boot environments. Since
+  beadm(1M) can not be run within a zone, we can't create cloned boot
+  environments within a zone, so none of these operations will be
+  supported.
+
+  Additionally, beadm(1M) is currently aware of zones images, but
+  eventually, beadm(1m) should probably become linked image aware, since
+  all linked images should be snapshotted, cloned, and upgraded in sync.
+  Enhancing beadm(1M) will be required to support non-zone types of
+  linked images that live outside the current boot environment. Once
+  this project delivers initial pkg(5) linked image interfaces it will
+  be possible to update beadm(1M) to consume these interfaces so that it
+  can be aware of all linked images on the system, instead of just zone
+  images. These beadm(1M) enhancements are out of the scope of this
+  proposal.
+
+
+pkg(5) linked image overview
+============================
+
+pkg(5) linked images will always always have a parent and child
+relationship. Parent images may have multiple children, but each child
+image may only have one parent. It's possible for there to be multiple
+levels of linked images (i.e., nested linked image), for example, you
+could have a system linked image, which is a child of a zone linked
+image, which is the child of a global zone image.
+
+
+pkg(5) linked image name
+------------------------
+
+All pkg(5) linked images are uniquely identified by a name. A fully
+qualified linked image name is <linked image type>:<linked image name>.
+The linked image name must begin with an alphanumeric character and can
+contain alphanumeric characters, underscores (_), hyphens (-), and dots
+(.).  Additional restrictions on the <linked image name> format may be
+defined by the linked image plugin handling that type of linked image.
+
+
+pkg(5) linked image attach mode
+-------------------------------
+
+As previously mentioned, all linked images will have a parent/child
+relationship.  But there are two distinct ways that this parent/child
+link can be established, which in turn determines what operations are
+possible on each image and how the linked image relationship is managed.
+
+First, a parent may link/attach a child image to itself, in which case,
+the parent image will be authoritative for the linked image
+relationship.  This means that:
+
+- The parent image is aware of the child image.
+
+- The child image will know that it is a linked image, but it will
+  not know the location of it's parent image.
+
+- Linked image properties can only be modified from the parent image and
+  are treated as read-only within the child image.
+
+- Packaging operations on the parent image which require updating child
+  images to keep them in sync will attempt to do so automatically.
+
+Second, an image may make itself into a child by linking/attaching
+itself to a parent.  In this case the parent has no awareness of the
+child image and the child image is authoritative for and must manage the
+linked image relationship.  This means that:
+
+- The parent image is unaware of the child image.
+
+- The child image will know that it is a linked image, and it will
+  know the location of the parent image.
+
+- Linked image properties only exist within (and there for must be
+  modified from within) the child image.
+
+- Packaging operations on the parent image will not directly affect the
+  child image.  It is the responsibility of the child image to make sure
+  that it remains in sync with it's parent.
+
+In the former image linking mode, the parent must "push" constraint (and
+property) information to child images.  While in the latter mode the
+child will "pull" constraint information from the parent.
+
+Zones linked images will exclusively use the push linking mode.
+System linked images will support both the push and pull linking modes.
+
+
+pkg(5) linked image properties
+------------------------------
+
+As mentioned earlier, each child linked image will have properties
+associated with it.
+
+In the case of both push and pull based child images, linked image
+property information will always be stored within a private file and
+directory in the pkg(5) image metadata directory.  Currently either
+/.org.opensolaris,pkg/linked/ or /var/pkg/linked/.
+
+In the case of push based parent images, the property information for
+child images is accessible through a plugin for managing each different
+type of linked image.  This allows each linked image type to manage the
+storage of linked image properties.  In the case of system linked
+images, child linked image properties will be stored within the image
+configuration.  In the case of Zones linked images, linked image
+properties may either be fixed or derived from different zonecfg(1m)
+options.
+
+Initially the following properties will be supported:
+
+**li-name**
+
+  This is a linked image name (as described above).
+
+  This property is common to all linked image types, both push and
+  pull based.
+
+  Notably, this property always refers to a child linked image and
+  never a parent image.  This is because the linked image name encodes
+  what type of linked image the child is.
+
+**li-mode**
+
+  This indicates the attach mode of the linked image child (as
+  described above), either push or pull.
+
+  This property is common to all linked image types, both push and
+  pull based.
+
+**li-path**
+
+  This is the filesystem path by which one linked image is accessible
+  from another.
+
+  In the case of a parent image with a push based child, this property
+  will point to the child image.  From within the push based child,
+  this property will not be present.  In the case of pull based
+  children, this property will point to the parent linked image.
+
+**li-recurse**
+
+  This property specifies if recursive linked image operations should
+  continue to recurse within a linked child.
+
+  This property only exists for push based children of a parent image.
+
+  By default, for zones this property will be set to false.  This means
+  that if we do an recursive pkg(5) operation in the global zone that
+  affects a non-global zone, we will update that non-global zone, but we
+  will ignore any children of that non-global zone.  So if for example,
+  a non-global zone administrator has created a push based child of the
+  non-global zone image, global zone pkg operations will not recurse
+  into that child image.
+
+
+pkg(5) linked image interfaces
+==============================
+
+
+pkg(1) linked image interfaces introduction
+-------------------------------------------
+
+Linked image support has an impact on the behavior and interfaces of
+many pkg(5) operations.  Hence, before jumping into all the new linked
+image interfaces it makes sense to discuss some of the common linked
+image behaviors and options to pkg(1) cli interfaces.
+
+pkg(5) operation recursion
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Any pkg(1) subcommand which installs or removes packages from a linked
+  image may attempt to recurse into linked child images to attempt to
+  keep those child images in sync with the parent.  There are two things
+  to note about this recursive behavior.
+
+  First, the initial recursion into child images by a pkg(5) operation
+  on a parent image has no relation to the li-recure linked image
+  property.  This property is only used when dealing with multiple
+  levels of recursion.  If this property is false for a child image, a
+  recursive operation will still descend into that child, but it will
+  not continue to recursively descended into children of that child.
+
+  Second, it's important to realize that recursion doesn't imply that
+  the operation being performed on the parent will also be performed on
+  all it's children.  Recursion into children is only done to keep child
+  images in sync.  To clarify this point it's worth explicitly
+  describing how this impacts common pkg(5) operations.
+
+    **pkg(1) install** - When an install recurses into child linked images,
+    it does so only to keep those images in sync.  Hence, if a user
+    installs a new package in a parent image, the requested package will
+    not automatically be installed into child images.  Although if a
+    user "upgrades" a package in the parent image by installing a newer
+    version of that package, and that package also happens to be kept in
+    sync between the parent and child images, then the recursive sync
+    done as part of the install operation will result in the newer
+    package being installed in the child image.
+
+    **pkg(1) update** - This is handled similarly to a pkg(1) install.
+    When we recurse into the child we do not do a pkg(1) update.  We
+    will only update the minimum number of packages required to keep the
+    child in sync with the planned contents of the parent image.
+
+    **pkg(1) uninstall** - When an uninstall recurses into a child, it will
+    not uninstall the specified packages within that child.  Hence if a
+    random un-synced package is removed from a parent image it will not
+    be touched in a child image.  But if the user tries to remove
+    a synced package which is installed within a child image, the
+    removal will fail.  The user will have to remove the package from
+    child images before they can remove it from the parent image.
+
+
+pkg(1) linked image common cli options: ignoring children
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  As mention above, any pkg(1) subcommand which installs or removes
+  packages from a linked image may attempt to recurse into linked child
+  images to attempt to keep those child images in sync with the parent.
+  There for, these pkg(1) commands will all get new options to allow
+  them to ignore linked child images.  These pkg(1) commands include::
+
+    attach-linked [-I | -i <li-name>]
+    change-facet [-I | -i <li-name>]
+    change-variant [-I | -i <li-name>]
+    image-update [-I | -i <li-name>]
+    install [-I | -i <li-name>]
+    set-property-linked [-I | -i <li-name>]
+    sync-linked [-I | -i <li-name>]
+    uninstall [-I | -i <li-name>]
+
+  Note that the list of commands above does not include pkg(1) commands
+  like verify, fix, and change-facet, since those commands will never
+  result in packages being installed or removed from an image.
+  Unintuitively, set-property-linked is included in the list above since
+  it may be used to change linked image properties which may results in
+  in packaging contents changes in that image, which in turn may need to
+  be propagated to linked children.
+
+  When performing one of the above operations, the operation is first
+  planned in the parent image, and if there are required packaging
+  changes then we will recurse to each child image and create a plan to
+  keep each child in sync with the planned changes in the parent.  If a
+  plan which keeps a child image in sync cannot be created then the
+  operation will fail before any image is modified.  In this case, if
+  the administrator wants to retry the requested operation they will
+  need to do one of the following before that operation will succeed:
+
+  - Detach the child image preventing the operation.
+
+  - Modify the package contents of the child image that is preventing
+    the operation such that the operation can succeed.
+
+  - Pass the -i <li-name> option to the requested pkg(1) command,
+    there by telling it to ignore the specified child image that is
+    preventing the operation.
+
+  - Use the -I option to requested pkg(1) command, there by telling
+    it to ignore all child images.
+
+  Notably, in certain cases it's possible for a push based child linked
+  image to exist but not be accessible from the parent. An example of
+  this would be when a non-root user runs a pkg(1) command, all zone
+  linked image paths will not be accessible.  If pkg(1) is attempting to
+  do any operation which may recurse into child images, all children
+  must be accessible and if any child is not accessible the operations
+  will fail and no updates will be made to any image.
+
+
+pkg(1) linked image common cli options: selecting children
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Some of the proposed linked image pkg(1) commands support common
+  arguments that allow the caller to specify which linked image they
+  should operate on.  These new commands and options are::
+
+    property-linked [-l <li-name>]
+    set-property-linked [-l <li-name>]
+
+    audit-linked [-a|-l <li-name>]
+    detach-linked [-a|-l <li-name>]
+    sync-linked [-a|-l <li-name>]
+
+  If one the above commands is run without any arguments, then the
+  command will be preformed on the current image with the assumption
+  that the current image is a linked child image.  If the current image
+  is not a child image an error will be generated.
+
+  If the "-l <li-name>" option is specified to one of the commands
+  above, then it's assumed that the current image has a child by that
+  name and the requested operation is run for that child.
+
+  If the "-a" option is specified to one of the commands above, then the
+  command is run for all the children of the current image.
+
+
+pkg(1) linked image common cli options: syncing parent metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  If a child image is linked to a parent in pull mode, then certain
+  pkg(1) subcommands will always attempt to update linked image metadata
+  from their parent.  This update will fail if the parent image is not
+  accessible.  Hence, a new --no-parent-sync option is available for to
+  skip this parent metadata sync.  The pkg(1) commands which support
+  this option are:
+
+    attach [--no-parent-sync]
+    audit [--no-parent-sync]
+    change-facet [--no-parent-sync]
+    change-variant [--no-parent-sync]
+    image-update [--no-parent-sync]
+    install [--no-parent-sync]
+    list [--no-parent-sync]
+    sync [--no-parent-sync]
+
+
+pkg(1) linked image cli interfaces
+----------------------------------
+
+pkg(1) list-linked
+~~~~~~~~~~~~~~~~~~
+
+  **pkg list-linked [-H]**
+
+  List all known child images associated with the current image. This
+  lists the name and path for each child image.
+
+  Here's an example of this command when run by a non-root user on a
+  system with zones::
+
+    $ pkg list-linked
+    NAME            RELATIONSHIP    PATH
+    -               self            /
+    zone:dhcp       child           /export/zones/dhcp/root
+    zone:z1         child           /export/zones/z1/root
+    zone:z3         child           /export/zones/z3/root
+    system:child    child           /child
+
+
+pkg(1) property-linked
+~~~~~~~~~~~~~~~~~~~~~~
+
+  **pkg property-linked [-H] [-l <li-name>] [propname ...]**
+
+  List all property values associated with a linked image.  If no linked
+  image is specified then if the current image is assumed to be a child
+  linked image and it's properties are listed.
+
+  Here's an example of this command when run on an image that is not
+  linked::
+
+    $ pkg -R /tmp/a list-linked
+    $
+
+  Here's an example of this command when run on an image that has
+  children but is not itself a child::
+
+    $ pkg property-linked
+    PROPERTY        VALUE
+    li-altroot      /
+    li-path         /
+
+  Here's an example of this command when run by a non-root user on a
+  system with zones::
+
+    $ pkg property-linked -l zone:dhcp
+    PROPERTY        VALUE
+    li-altroot      /
+    li-model        push
+    li-name         zone:dhcp
+    li-path         /export/zones/dhcp/root
+
+  Here's an example of this command when run by a root user directly on
+  a zone/child image::
+
+    # pkg -R /export/zones/dhcp/root property-linked
+    PROPERTY        VALUE
+    li-altroot      /export/zones/dhcp/root
+    li-model        push
+    li-name         zone:dhcp
+    li-path         /export/zones/dhcp/root/
+
+
+pkg(1) audit-linked
+~~~~~~~~~~~~~~~~~~~
+
+  **pkg audit-linked [--no-parent-sync] [-a|-l <name>]**
+
+  Audit the package contents of a linked image to see if it's in sync
+  with the contents of it's parent image and it's content policy.
+
+  Here's an example of this command when run on an image that has no
+  parent::
+
+    $ pkg audit-linked
+    pkg: Linked image exception(s):
+    Current image is not a linked child: /
+
+  Here's an example of this command run by root on a system with zones::
+
+    # pkg audit-linked -a
+    NAME            STATUS
+    zone:dhcp       diverged
+    zone:z1         diverged
+    zone:z3         diverged
+    system:child    synced
+
+
+pkg(1) sync-linked
+~~~~~~~~~~~~~~~~~~
+
+  | **pkg sync-linked [-a|-l <name>]**
+  |       **[--no-parent-sync] [--no-pkg-updates] [--linked-md-only]**
+  |       **[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]**
+
+  Sync will attempt to bring an image into sync with it's policy.
+
+  A sync operation may upgrade packages or install new packages into an
+  image while bringing the image into sync.  If the user wants to
+  prevent a sync from installing new packages or updating existing
+  packages, they can specify the --no-pkg-updates option.  If the image
+  cannot be synced without installing or updating packages, then this
+  option will cause the sync operation to fail.
+
+  If the caller doesn't want to make any packaging updates to the child
+  image then they can specify the --linked-md-only option.  (This option
+  implies the --no-pkg-updates option.) When this option is specified
+  the package contents of an image will not be modified, and the only
+  result of the operation is that the parent content data stored within
+  the child image will be updated.
+
+  Since a sync operation may modify the packaging contents of an image
+  it is very similar to a pkg(1) install operation, there for the sync
+  command also must support of the same options as the pkg(1) install
+  command.  Those common options are::
+
+    [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+
+  Here's an example of this command when run on an image that has no
+  parent::
+
+    $ pkg sync-linked
+    pkg: detach-linked failed (linked image exception(s)):
+    Current image is not a linked child: /
+
+  Here's an example of this command run by root on a system with zones::
+
+    # pkg sync-linked -l zone:dhcp -v
+    Solver: [ Variables: 2356 Clauses: 60384 Iterations: 2 State: Succeeded]
+    ...
+    Maintained incorporations: None
+
+    Package version changes:
+    ...
+    pkg://opensolaris.org/entire@0.5.11,5.11-0.125:20091014T044127Z -> pkg://opensolaris.org/entire@0.5.11,5.11-0.139:20100511T142142Z
+    ...
+
+
+pkg(1) set-property-linked
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  | **pkg set-property-linked [-l <name>]**
+  |       **[--no-parent-sync] [--no-pkg-updates] [--linked-md-only]**
+  |       **[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]**
+  |       **<propname> <propvalue>**
+
+  This command will attempt to update the specified linked image
+  property.
+
+  Certain linked image properties may be read-only, and which properties
+  are read-only may vary between different types of linked images.  When
+  dealing with push based child images, all linked image properties are
+  treated as read-only within the child.
+
+  Since a set-property-linked operation can change a linked image's
+  content policy, this command may need to sync a child image with it's
+  parent.  Hence, the set-property-linked command also supports many of
+  the same options as the pkg(1) sync-link command.  Those common
+  options are::
+
+    [--no-parent-sync] [--no-pkg-updates] [--linked-md-only]
+    [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+
+
+pkg(1) attach-linked
+~~~~~~~~~~~~~~~~~~~~
+
+  | **pkg attach-linked (-c|-p)**
+  |       **[--no-pkg-updates] [--linked-md-only]**
+  |       **[-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]**
+  |       **[--prop-linked <propname>=<propvalue> ...]**
+  |        **<li-name> <dir>**
+
+  The attach-linked command is used to establish a linked image
+  relationship.  This command may not be supported for all linked image
+  types.  (For example, zone linked images cannot be attached via this
+  command.)
+
+  If a parent image want to link a child image to itself, the -c option
+  should be specified.  This creates a child with a push mode of
+  operation.  If a child image wants to attach to a parent image, the -p
+  option should be specified.  This creates a child with a pull mode of
+  operation.
+
+  When linking images the user may specify optional linked image
+  property values.  Not all properties are settable via these values.
+  (The allowable properties may change in the future and may also be
+  linked image type plugin specific.)
+
+  Normally when linking images together, a sync of the child image is
+  automatically done.  If the child image can not be synced the attach
+  will fail.  Since an attach operation tries to sync a child image with
+  it's parent, the attach-linked command must also support many of the
+  same options as the pkg(1) sync-link command.  Those common options
+  are::
+
+    [--no-pkg-updates] [--linked-md-only]
+    [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+
+  Currently, linked image relationships cannot be created at image
+  creation time.  A linked image relationship can only be established at
+  between two existing images.  The reason for this is mainly cli
+  complexity.  Specifically, supporting this would require that pkg(1)
+  image-create accept all the same commands options as the pkg(1)
+  attach-linked command.
+
+  Here's an example of this command attaching a push child image::
+
+    # pkg -R attach-linked -v -c system:child /child
+               Create boot environment:    No
+                  Rebuild boot archive:    No
+    Services:
+      None
+
+
+pkg(1) detach-linked
+~~~~~~~~~~~~~~~~~~~~
+
+  **pkg detach-linked [-a|-l <li-name>]**
+
+  The detach-linked command will end a linked image relationship.  This
+  command may not be supported for all linked image types.  (For
+  example, zone linked images cannot be detached via this command.)
+
+  Here's an example of this command when run on an image that is not
+  linked::
+
+    # pkg detach-linked
+    pkg: detach-linked failed (linked image exception(s)):
+    Current image is not a linked child: /
+
+  Here's an example of this command when run directly on a child that
+  linked to a parent via a push mode relationship::
+
+    # pkg -R /child detach-linked
+    pkg: detach-linked failed (linked image exception(s)):
+    Parent linked to child, can not detach child: /child
+
+  Here's an example of this command detaching a child image::
+
+    # pkg detach-linked -l system:b -v
+               Create boot environment:    No
+                  Rebuild boot archive:    No
+    Services:
+      None
+
+
+
+pkg(5) linked image manifest metadata
+-------------------------------------
+
+When dealing with zones, package publishers need a way to specify which
+packages must be kept in sync between zone images.  In Solaris 10 this
+was done via a SVR4 packaging attribute (SUNW_PKG_ALLZONES).  With
+pkg(5) we will create a new manifest depend actions for this
+purpose::
+
+  depend type=parent
+
+If a package contains this dependency and it is being installed into an
+image which is not a linked child then this dependency is ignored.  If a
+package containing this image is being installed into a child image,
+then it's required that the same package be installed within the parent
+image.  This dependency has an implicit fmri value which is equal to the
+package fmri which contains the dependency.  Also, when matching fmris
+in the parent image, the fmri version matching algorithm employed is the
+same as that used for satisfying "incorporate" dependencies.  (Ie, an
+exact version match is required, not a equal than or greater version
+match.)
+
+So packages that must be kept in sync between the global and non-global
+zone should have the following dependency action in their manifest::
+
+  depend type=parent variant.opensolaris.zone=nonglobal
+
+The dependency above will need to be set for any package which delivers
+software that may operate across zone boundaries on a system.  This
+would include:
+
+- Any software which delivers a kernel component of any kind.
+
+- Any software which delivers interfaces which may span a zone boundary.
+  Some examples would include:
+
+  - pkg(5) - Since zones are different linked images, pkg(5) by
+    definition must manage images that span zones.
+
+  - libdladm - When this library is used inside a zone it will will
+    communicate (via private interfaces) to the dlmgmtd daemon inside
+    the global zone.
+
+Initially, all of ON and pkg(5) will set this property for all packages
+they deliver.  In time, the number of packages delivered from the ON and
+pkg(5) gates with this attribute set will be reduced.
+
+This property will also be a public interface since anyone delivering
+software via pkg(5) may fall into one of the categories above.  Examples
+of third parties applications which fall into this category would
+include things like VirtualBox, VxVM/VxFS, ClearCase, etc.
+
+
+pkg(5) linked image api.py interfaces
+-------------------------------------
+
+There will need to be changes made to the pkg(5) api.py interfaces to
+support linked images.
+
+The new pkg(5) api.py interfaces will attempt to minimize the amount of
+change required for existing pkg(5) api.py clients which do not wish to
+provide support for managing linked images directly.  (This should
+include every api.py client except for the pkg(1) cli).  Aside from
+tweaks to existing api.py interfaces, the most significant impact to
+existing api.py consumers will be a new set of linked image related
+exceptions and errors that may be generated by api.py interface calls.
+
+
+
+pkg(5) linked image internals
+=============================
+
+
+pkg(5) linked image child operations
+------------------------------------
+
+When operating on child linked images, pkg(1) will access those images
+in one of two ways.
+
+1) A parent image may access a child image directly to write linked
+image property and parent content information into the child image.
+
+2) For all other operations, the pkg(1) linked image code will spawn a
+new pkg(1) cli process to manipulate the child image.  For system images
+this will be a normal pkg(1) process started with the -R option.  Zones
+linked images will initially operate in the same way as system images.
+
+
+pkg(5) linked image operation staging
+-------------------------------------
+
+Currently pkg(1) has multiple stages of operation when manipulating
+images. The stages most relevant to linked image operations are:
+
+1) Package install/uninstall/upgrade planning
+2) Package action planning
+3) Package content downloading
+4) Action execution
+
+When dealing with linked images we want to be able to perform most of
+the operations above in lock step across multiple images.  We want to be
+able to do planning for all child images (and potentially children of
+children) before beginning any of the later stages of execution (this
+will allows us to report problems early.).  Before beginning any
+operation which modifies an image we also want to make sure that we've
+downloaded any required content for updating any linked images.
+
+Also, depending on how many packages are installed within an pkg(5)
+image, stages 1 and 2 above can be very memory intensive, and when
+planning operations across many images we want to be careful not to run
+a system out of memory.
+
+Hence, this project will create a mechanism where using pkg(5) we can
+execute one of the specific stages above, save the results to disk, and
+then resume our operation to perform a later stage, only using
+previously saved results.  This will be done by adding the following
+private options to pkg(1):
+
+  | **pkg [--runid=<N> --stage=(pubcheck|plan|prepare|execute)] <command> ...**
+
+The --stage option will specify which specific operation the pkg(1)
+command should perform.  If --stage=pubcheck is specified, the pkg(1)
+command will verify that the current images publisher configuration is a
+superset of the parent images publisher configuration.  If --stage=plan
+is specified, the pkg(1) command will plan what packages to
+install/uninstall/upgrade, write that information to disk, and exit.  If
+--stage=prepare is specified, pkg(1) will read a previously created
+install/uninstall/upgrade plan from disk (an error will be generated if
+there is no existing package plan on disk), and then download any
+required contents.  Lastly, --stage=execute will cause pkg(1) to read
+existing package and action plans and execute them.
+
+When writing package plans to disk they are stored in json format.
+
+It's possible that we may have multiple non-image-modifying operations
+in progress on a single image at one.  (For example, using the -n option
+to make pkg(1) commands.)  Hence, we introduce a --runid option that
+allows the caller to specify a number (N) to uniquely identify the saved
+package and action plans.  The --runid options is required when using
+the --stage option.
+
+These new options are private and users should never specify them.  They
+will be used internally by the linked image code when invoking pkg(1)
+commands to operate on child images.
+
+
+zones(5) and pkg(5) integration
+===============================
+
+This project will update the zones smf service script and the zones ipkg
+brand callback to utilize the new linked image pkg(1) cli and api.py
+interfaces.
+
+zones smf service changes
+-------------------------
+
+During system boot the zones smf service (svc:/system/zones) will be
+enhanced such that it does a linked-audit of all installed ipkg branded
+zones on the system.  If any zones fail the linked audit, the zones
+service will enter the maintenance state.  If a zone has the zonecfg(1m)
+autoboot property set to true, but fails a linked audit, that zone will
+not be booted.
+
+ipkg brand callback changes
+---------------------------
+
+The zones ipkg brand boot callback will be updated to audit zone images
+before attempting to boot them.  If a zone image fails to audit then it
+will also fail to boot.
+
+The zones install callback will be modified such that it uses linked
+functionality when creating and populating zones images.
+
+The zones attach and detach callbacks will be modified so that they
+automatically use the linked image attach and detach functionality.  By
+default, a zoneadm attach will use the pkg(1) attach-linked
+--no-pkg-updates option, unless the zoneadm(1m) attach -u option is
+specified (there by allowing package updates).
+
+Zoneadm(1m) move will not require any new callbacks or updates since
+zones linked image metadata (like the zone path) will not be cached by
+the linked image subsystem.  Instead, internally, the zones linked image
+plugin will obtain all zones linked image metadata directly from the
+zones subsystem.
+
+
+
+Related Bugs
+============
+
+The linked image support proposed above is covered by the following
+bugs:
+
+- | 16148 need linked image support for zones, phase 1
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=16148
+
+- | 6969956 need pkg metadata indicating pkgs which must be synced between zones
+  | http://monaco.sfbay.sun.com/detail.jsf?cr=6969956
+  | 7633 need pkg metadata indicating pkgs which must be synced between zones
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=7633
+
+The following bugs are all prerequisites for most the future linked
+images and zones follow on work described above:
+
+- | 16149 need system repository to facilitate linked image support
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=16149
+
+- | 6964121 tmpfs rename should update ->v_path
+  | http://monaco.sfbay.sun.com/detail.jsf?cr=6964121
+
+The future improvements to linked images and zones which are required
+for fully integrated zones support are covered by:
+
+- | 16150 need linked image support for zones, phase 2
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=16150
+
+- | 6978239 pkg(5) needs a zones state locking mechanism
+  | http://monaco.sfbay.sun.com/detail.jsf?cr=6978239
+
+Other bugs which are related to pkg(5) and zones(5) which are not being
+addressed by this work include:
+
+- | 1947 Offline zone creation is impossible
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=1947
+
+- | 13986 incorporation/metapackage needed for zone install
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=13986
+
+- | 15343 pkg needs to be able to lock BEs
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=15343
+
+- | 15342 libbe (and beadm) need BE write lock support
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=15342
+
+- | 16258 libbe support for zones
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=16258
+
+- | 16838 pkg should take into account libbe's ideas about shared and nonshared filesystems
+  | https://defect.opensolaris.org/bz/show_bug.cgi?id=16838
+
+- | 6988152 beadm/libbe needs support for zone/linked dataset management
+  | http://monaco.sfbay.sun.com/detail.jsf?cr=6988152
+
+- | 6998842 Zones Proxy for the pkg(5) System Repository
+  | http://monaco.sfbay.sun.com/detail.jsf?cr=6998842
+
+
+PTL Entries
+===========
+
+- | 8362 Pkg support for Zones phase 1
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8362
+
+- | 8724 Pkg support for Zones phase 2
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8724
+
+- | 8725 pkg(5) System Repository
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8725
+
+- | 8726 Zones Proxy for the pkg(5) System Repository
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8726
+
+- | 8727 Updater Branded Zones
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8727
+
+- | 8728 Zone State Locking
+  | http://sac.sfbay/projectlog/ptl/dashboard.php?UniqueID=8728
+
+
+References
+==========
+
+.. [1] | 1947 Offline zone creation is impossible
+   | https://defect.opensolaris.org/bz/show_bug.cgi?id=1947
+
+.. [2] | 16149 need system repository to facilitate linked image support
+   | https://defect.opensolaris.org/bz/show_bug.cgi?id=16149
+
+.. [3] | 15343 pkg needs to be able to lock BEs
+   | https://defect.opensolaris.org/bz/show_bug.cgi?id=15343
+   | 15342 libbe (and beadm) need BE write lock support
+   | https://defect.opensolaris.org/bz/show_bug.cgi?id=15342
+   | 6978239 pkg(5) needs a zones state locking mechanism
+   | http://monaco.sfbay.sun.com/detail.jsf?cr=6978239
+
+.. [4] | 16838 pkg should be aware of image and filesystem boundaries
+   | https://defect.opensolaris.org/bz/show_bug.cgi?id=16838

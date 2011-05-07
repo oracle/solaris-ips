@@ -208,11 +208,12 @@ def fromstr(string, data=None):
 
         action = types[atype](data=data, **attr_dict)
 
-        ka = action.key_attr
-        if ka is not None and (ka not in action.attrs or
-            action.attrs[ka] is None):
-                raise InvalidActionError(string, _("required attribute '%s' "
-                    "was not provided.") % ka)
+        if not action.key_attr_opt:
+                ka = action.key_attr
+                if ka is not None and (ka not in action.attrs or
+                    action.attrs[ka] is None):
+                        raise InvalidActionError(string,
+                            _("required attribute '%s' was not provided.") % ka)
 
         if ahash:
                 action.hash = ahash

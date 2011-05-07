@@ -205,21 +205,24 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         @staticmethod
         def __do_install(api_obj, fmris):
                 api_obj.reset()
-                api_obj.plan_install(fmris)
+                for pd in api_obj.gen_plan_install(fmris):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 
         @staticmethod
         def __do_update(api_obj, fmris):
                 api_obj.reset()
-                api_obj.plan_update(fmris)
+                for pd in api_obj.gen_plan_update(fmris):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 
         @staticmethod
         def __do_uninstall(api_obj, fmris, recursive_removal=False):
                 api_obj.reset()
-                api_obj.plan_uninstall(fmris, recursive_removal)
+                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 
@@ -366,18 +369,24 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 # Attempting to update carriage should result in nothing to do.
                 api_obj.reset()
-                self.assertFalse(api_obj.plan_update(["carriage"]))
+                for pd in api_obj.gen_plan_update(["carriage"]):
+                        continue
+                self.assertTrue(api_obj.planned_nothingtodo())
 
                 # Downgrading to carriage@1.0 would force a downgrade to
                 # horse@1.0 and so should raise an exception...
                 api_obj.reset()
                 self.assertRaises(api_errors.PlanCreationException,
-                    api_obj.plan_update, ["carriage@1"])
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)),
+                    ["carriage@1"])
 
                 api_obj.reset()
                 self.assertRaises(api_errors.PlanCreationException,
-                    api_obj.plan_update, ["carriage@1", "horse"])
- 
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)),
+                    ["carriage@1", "horse"])
+
                 # ...unless horse is explicitly downgraded as well.
                 api_obj.reset()
                 self.__do_update(api_obj, ["carriage@1", "horse@1"])
@@ -400,14 +409,18 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # to horse@1.0 so should be ignored as a possibility by
                 # the solver.
                 api_obj.reset()
-                self.assertFalse(api_obj.plan_update(["carriage"]))
+                for pd in api_obj.gen_plan_update(["carriage"]):
+                        continue
+                self.assertTrue(api_obj.planned_nothingtodo())
 
                 # Upgrading explicitly to carriage@3.0 would force a downgrade
                 # to horse@1.0 and so should raise an exception...
                 api_obj.reset()
                 self.assertRaises(api_errors.PlanCreationException,
-                    api_obj.plan_update, ["carriage@3", "horse"])
- 
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)),
+                    ["carriage@3", "horse"])
+
                 # ...unless horse is explicitly downgraded as well.
                 api_obj.reset()
                 self.__do_update(api_obj, ["carriage@3", "horse@1"])
@@ -514,7 +527,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("verify")
                 api_obj.reset()
-                api_obj.plan_update_all(sys.argv[0])
+                for pd in api_obj.gen_plan_update():
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
                 self.pkg("verify")
@@ -533,17 +547,14 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     self.corepkgs))
                 self.image_create(self.rurl)
 
-                # We need to pretend that we're running out of the image we just
-                # created, so that the up to date code looks in that image to do
-                # the checking.
-                argv0 = os.path.join(self.get_img_path(), "usr/bin/pkg")
-                api_obj = self.get_img_api_obj(cmd_path=argv0)
+                api_obj = self.get_img_api_obj()
 
                 # Update when it doesn't appear to be an opensolaris image
                 # shouldn't have any issues.
                 self.__do_install(api_obj, ["foo@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # Even though SUNWipkg is on the system, it won't appear as an
                 # opensolaris system.
@@ -552,7 +563,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWipkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # Same for package/pkg
                 api_obj.reset()
@@ -560,7 +572,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "package/pkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # Same for SUNWcs
                 api_obj.reset()
@@ -568,7 +581,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWcs"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # There are still no problems if the packaging system is up to
                 # date.  We can't test with SUNWipkg installed instead, because
@@ -581,7 +595,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_install(api_obj, ["foo@1.0", "SUNWcs", "package/pkg@2.0"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # We should run into a problem if pkg(5) is out of date.
                 api_obj.reset()
@@ -591,7 +606,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     ["foo@1.0", "SUNWcs", "package/pkg@1.0"])
                 api_obj.reset()
                 self.assertRaises(api_errors.IpkgOutOfDateException,
-                    api_obj.plan_update_all)
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)))
 
                 # Use the metadata on release/name to determine it's an
                 # opensolaris system.
@@ -602,7 +618,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                     ["foo@1.0", "release/name@2.0", "package/pkg@1.0"])
                 api_obj.reset()
                 self.assertRaises(api_errors.IpkgOutOfDateException,
-                    api_obj.plan_update_all)
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)))
 
                 # An older release/name which doesn't have the metadata should
                 # cause us to skip the check.
@@ -612,7 +629,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_install(api_obj,
                     ["foo@1.0", "release/name@1.0", "package/pkg@1.0"])
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
                 # Verify that if the installed version of pkg is from an
                 # unconfigured publisher and is newer than what is available
@@ -642,11 +660,12 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 api_obj.remove_publisher(prefix="test")
 
-                # Now verify that plan_update_all succeeds still since the
+                # Now verify that plan_update succeeds still since the
                 # version of pkg installed is newer than the versions that
                 # are offered by the current publishers.
                 api_obj.reset()
-                api_obj.plan_update_all()
+                for pd in api_obj.gen_plan_update():
+                        continue
 
         def test_recursive_uninstall(self):
                 """Install bar@1.0, dependent on foo@1.0, uninstall foo
@@ -780,33 +799,54 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                         return e.missing_matches
 
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_unfound, api_obj.plan_install, ["foo"])
+                    check_unfound,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_install(*args, **kwargs)),
+                    ["foo"])
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_missing, api_obj.plan_uninstall, ["foo"], False)
+                    check_missing,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_uninstall(*args, **kwargs)),
+                    ["foo"], False)
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_install, ["@/foo"])
+                    check_illegal,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_install(*args, **kwargs)),
+                    ["@/foo"])
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["_foo"], False)
+                    check_illegal,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_uninstall(*args, **kwargs)),
+                    ["_foo"], False)
 
                 self.pkgsend_bulk(self.rurl, self.foo10)
 
                 api_obj.refresh(False)
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_missing, api_obj.plan_uninstall, ["foo"], False)
+                    check_missing,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_uninstall(*args, **kwargs)),
+                    ["foo"], False)
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["_foo"], False)
+                    check_illegal,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_uninstall(*args, **kwargs)),
+                    ["_foo"], False)
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_missing, api_obj.plan_update, ["foo"])
+                    check_missing,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_update(*args, **kwargs)),
+                    ["foo"])
 
                 api_obj.reset()
                 api_obj.refresh(True)
@@ -815,13 +855,18 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # Verify update plan has nothing to do result for installed
                 # package that can't be updated.
                 api_obj.reset()
-                self.assertEqual(api_obj.plan_update(["foo"]), False)
+                for pd in api_obj.gen_plan_update(["foo"]):
+                        continue
+                self.assertTrue(api_obj.planned_nothingtodo())
 
                 self.__do_uninstall(api_obj, ["foo"])
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_missing, api_obj.plan_uninstall, ["foo"], False)
+                    check_missing,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_uninstall(*args, **kwargs)),
+                    ["foo"], False)
 
         def test_bug_4109(self):
 
@@ -832,7 +877,10 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_install, ["_foo"])
+                    check_illegal,
+                    lambda *args, **kwargs: list(
+                        api_obj.gen_plan_install(*args, **kwargs)),
+                    ["_foo"])
 
         def test_catalog_v0(self):
                 """Test install from a publisher's repository that only supports
@@ -1006,7 +1054,8 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         def __do_install(api_obj, fmris):
                 fmris = [str(f) for f in fmris]
                 api_obj.reset()
-                api_obj.plan_install(fmris)
+                for pd in api_obj.gen_plan_install(fmris):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 
@@ -1024,7 +1073,8 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         def __do_uninstall(api_obj, fmris, recursive_removal=False):
                 fmris = [str(f) for f in fmris]
                 api_obj.reset()
-                api_obj.plan_uninstall(fmris, recursive_removal)
+                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal):
+                        continue
                 api_obj.prepare()
                 api_obj.execute_plan()
 

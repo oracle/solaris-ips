@@ -46,53 +46,56 @@ ROOTDIRS = \
 	$(ROOTBRAND) \
 	$(ROOTBRANDPKG)
 
-ROOTFILES = \
-	$(ROOTETCBRAND)/pkgrm.conf \
-	$(ROOTETCBRAND)/smf_disable.conf \
-	$(ROOTETCZONES)/SUNWipkg.xml \
+ROOTBINS = \
 	$(ROOTBRANDPKG)/attach \
 	$(ROOTBRANDPKG)/boot \
 	$(ROOTBRANDPKG)/clone \
-	$(ROOTBRANDPKG)/common.ksh \
 	$(ROOTBRANDPKG)/detach \
-	$(ROOTBRANDPKG)/fmri_compare \
 	$(ROOTBRANDPKG)/halt \
 	$(ROOTBRANDPKG)/image_install \
 	$(ROOTBRANDPKG)/p2v \
 	$(ROOTBRANDPKG)/pkgcreatezone \
-	$(ROOTBRANDPKG)/pkgrm.lst \
 	$(ROOTBRANDPKG)/poststate \
 	$(ROOTBRANDPKG)/prestate \
-	$(ROOTBRANDPKG)/smf_disable.lst \
 	$(ROOTBRANDPKG)/support \
 	$(ROOTBRANDPKG)/sysboot \
 	$(ROOTBRANDPKG)/uninstall
 
+ROOTFILES = \
+	$(ROOTBRANDPKG)/common.ksh \
+	$(ROOTBRANDPKG)/developerenv.ksh \
+	$(ROOTBRANDPKG)/pkgrm.lst \
+	$(ROOTBRANDPKG)/smf_disable.lst \
+	$(ROOTETCBRAND)/pkgrm.conf \
+	$(ROOTETCBRAND)/smf_disable.conf \
+	$(ROOTETCZONES)/SUNWipkg.xml \
+
 BIN = \
 	support \
-	fmri_compare
+
+FILEMODE = 0444
+$(ROOTBINS) := FILEMODE = 755
+$(ROOTETCBRAND)/% := FILEMODE = 644
+
 
 support := LDLIBS = -lzonecfg
 
 all := TARGET = all
 
+
 support: support.c
 	$(LINK.c) -o $@ $@.c $(LDLIBS)
 
-fmri_compare: fmri_compare.py
-	cp $@.py $@
-	chmod 755 $@
-
-all: fmri_compare
+all:
 
 clean:
 	rm -f $(BIN)
 
 clobber: clean
-	rm -f $(ROOTFILES)
+	rm -f $(ROOTFILES) $(ROOTBINS)
 	rm -fr $(ROOTBRAND)
 
-install: $(ROOTFILES)
+install: $(ROOTFILES) $(ROOTBINS)
 
 
 $(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTETCZONES) $(ROOTUSRLIB) \
@@ -100,10 +103,10 @@ $(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTETCZONES) $(ROOTUSRLIB) \
 	mkdir -p $@
 
 $(ROOTETCBRAND)/%: $(ROOTETCBRAND) %
-	rm -f $@; $(INSTALL) -f $(ROOTETCBRAND) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTETCBRAND) -m $(FILEMODE) $<
 
 $(ROOTETCZONES)/%: $(ROOTETCZONES) %
-	rm -f $@; $(INSTALL) -f $(ROOTETCZONES) -m 0444 $<
+	rm -f $@; $(INSTALL) -f $(ROOTETCZONES) -m $(FILEMODE) $<
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
-	rm -f $@; $(INSTALL) -f $(ROOTBRANDPKG) -m 0444 $<
+	rm -f $@; $(INSTALL) -f $(ROOTBRANDPKG) -m $(FILEMODE) $<

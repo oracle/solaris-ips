@@ -382,7 +382,7 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
         def __check_publisher_dirs(self, pubs):
-                pub_dir = os.path.join(self.img_path, "var/pkg/publisher")
+                pub_dir = os.path.join(self.img_path(), "var/pkg/publisher")
                 for p in pubs:
                         if not os.path.isdir(os.path.join(pub_dir, p)):
                                 raise RuntimeError("Publisher %s was expected "
@@ -407,7 +407,7 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
                 api_obj = self.image_create(props={"use-system-repo": True})
                 # Make sure that the publisher catalogs were created.
                 for n in ("test1", "test12", "test3"):
-                        self.assert_(os.path.isdir(os.path.join(self.img_path,
+                        self.assert_(os.path.isdir(os.path.join(self.img_path(),
                             "var/pkg/publisher/%s" % n)))
                 expected = """\
 PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI

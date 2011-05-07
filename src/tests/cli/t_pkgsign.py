@@ -115,19 +115,19 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def pkg_image_create(self, *args, **kwargs):
                 pkg5unittest.SingleDepotTestCase.pkg_image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
                 for f in self.image_files:
-                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                        with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
         def image_create(self, *args, **kwargs):
                 pkg5unittest.SingleDepotTestCase.image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
                 for f in self.image_files:
-                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                        with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
         def pkg(self, command, *args, **kwargs):
@@ -140,7 +140,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     *args, **kwargs)
 
         def setUp(self):
-                pkg5unittest.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self, image_count=2)
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
@@ -319,7 +319,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
                 self._api_uninstall(api_obj, ["example_pkg"])
 
-                emptyCA = os.path.join(self.img_path, "emptyCA")
+                emptyCA = os.path.join(self.img_path(), "emptyCA")
                 os.makedirs(emptyCA)
                 self.pkg("set-property trust-anchor-directory emptyCA")
                 # This should fail because the chain is rooted in an untrusted
@@ -510,7 +510,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                           "ch1_ta3_cert.pem"),
                       "pkg": plist[0]
                     }
-                
+
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta1")
@@ -556,7 +556,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                
+
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir(["ta1", "ta2"])
                 self.pkg("set-property signature-policy verify")
@@ -648,7 +648,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "ta": ta_path,
                       "pkg": plist[0]
                     }
-                
+
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
 
@@ -757,7 +757,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # Test that passing neither sign-all nor a fmri results in an
                 # error.
                 self.pkgsign(self.durl1, "", exit=2)
-                
+
                 # Test bad sig.alg setting.
                 self.pkgsign(self.durl1, "-a foo -k %(key)s -c %(cert)s "
                     "%(name)s" % {
@@ -991,13 +991,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Make sure the manifest is locally stored.
                 api_obj = self.get_img_api_obj()
-                api_obj.plan_install(["example_pkg"], noexecute=True)
+                for pd in api_obj.gen_plan_install(["example_pkg"],
+                    noexecute=True):
+                        continue
                 # Change the signature action.
                 pfmri = fmri.PkgFmri(plist[0])
                 s = self.get_img_manifest(pfmri)
                 s = s.replace("rsa-sha256", "rsa-foobar")
                 self.write_img_manifest(pfmri, s)
-                
+
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.RequiredSignaturePolicyException,
@@ -1380,7 +1382,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Replace the client CS cert.
                 hsh = self.calc_file_hash(cs_path)
-                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
+                pth = os.path.join(self.img_path(), "var", "pkg", "publisher",
                     "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
@@ -1402,7 +1404,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 # Replace the client chain cert.
                 hsh = self.calc_file_hash(chain_cert_path)
-                pth = os.path.join(self.img_path, "var", "pkg", "publisher",
+                pth = os.path.join(self.img_path(), "var", "pkg", "publisher",
                     "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)
                 api_obj = self.get_img_api_obj()
@@ -1495,7 +1497,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
 
@@ -1516,7 +1518,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 portable.copyfile(os.path.join(self.crl_dir,
                     "ta5_crl.pem"),
                     os.path.join(rstore.file_root, "ta", "ta5_crl.pem"))
-                
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -1531,7 +1533,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta5")
 
@@ -1550,7 +1552,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 portable.copyfile(os.path.join(self.test_root,
                     "tmp/example_file"),
                     os.path.join(rstore.file_root, "ex", "example_file"))
-                
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -1565,7 +1567,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
 
@@ -1591,7 +1593,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
 
@@ -1611,7 +1613,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     os.path.join(rstore.file_root, "ch", "ch5_ta1_crl.pem"))
 
                 self.dcs[1].start()
-                
+
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
                     "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
@@ -1629,7 +1631,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                           "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
                     }
-                
+
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta1")
@@ -1651,7 +1653,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                     os.path.join(rstore.file_root, "ch", "ch5_ta1_crl.pem"))
 
                 self.dcs[1].start()
-                
+
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
                     "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
@@ -1669,7 +1671,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                           "ch5_ta1_cert.pem"),
                       "pkg": plist[0]
                     }
-                
+
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta1")
@@ -1698,7 +1700,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
 
@@ -1739,9 +1741,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["var_pkg"])
-                self.assert_(os.path.exists(os.path.join(self.img_path, "baz")))
+                self.assert_(os.path.exists(os.path.join(self.img_path(), "baz")))
                 self.assert_(not os.path.exists(
-                    os.path.join(self.img_path, "bin")))
+                    os.path.join(self.img_path(), "bin")))
 
                 self.pkg("verify")
 
@@ -1751,9 +1753,9 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].set_disable_ops(["append"])
                 self.dcs[1].start()
-                
+
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
-                
+
                 sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % {
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
@@ -1771,7 +1773,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.dcs[1].set_disable_ops(["add"])
                 self.dcs[1].start()
-                
+
                 sign_args = "-k %(key)s -c %(cert)s %(pkg)s" % {
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
@@ -1789,7 +1791,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.dcs[1].start()
 
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
-                
+
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(pkg)s" % {
                     "key": os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem"),
                     "cert": os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem"),
@@ -1914,7 +1916,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta3")
 
@@ -1968,7 +1970,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                         "i1": os.path.join(self.chain_certs_dir,
                             "ch1_ta3_cert.pem")
                 }
-                
+
                 self.pkgsign(self.rurl1, sign_args)
                 mp = r.manifest(plist[0])
                 with open(mp, "r") as fh:
@@ -2021,7 +2023,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch1_ta3_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                
+
                 self.pkg_image_create(self.rurl1,
                     additional_args="--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
@@ -2044,15 +2046,13 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch1_ta3_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                
+
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta3")
 
-                orig_img_path = self.img_path
-                
-                # This changes self.img_path to point to the newly created
-                # sub image.
-                self.create_sub_image(self.rurl1)
+                # This changes the default image we're operating on.
+                self.set_image(1)
+                self.image_create(self.rurl1, destroy=False)
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
                 # This raises an exception because the command is run from
@@ -2062,20 +2062,20 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # This should work because the command is run from within the
                 # original image which contains the trust anchors needed to
                 # validate the chain.
-                api_obj = self.get_img_api_obj(
-                    cmd_path=os.path.join(orig_img_path, "pkg"))
+                cmd_path = os.path.join(self.img_path(0), "pkg")
+                api_obj = self.get_img_api_obj(cmd_path=cmd_path)
                 self._api_install(api_obj, ["example_pkg"])
                 # Check that the package is installed into the correct image.
                 self.pkg("list example_pkg")
-                self.pkg("-R %s list example_pkg" % orig_img_path, exit=1)
+                self.pkg("-R %s list example_pkg" % self.img_path(0), exit=1)
                 api_obj = self.get_img_api_obj()
                 self._api_uninstall(api_obj, ["example_pkg"])
                 # Repeat the test using the pkg command interface instead of the
                 # api.
-                self.pkg("-R %s install example_pkg" % self.img_path,
-                    alt_img_path=orig_img_path)
+                self.pkg("-D simulate_cmdpath=%s -R %s install example_pkg" % \
+                    (cmd_path, self.img_path()))
                 self.pkg("list example_pkg")
-                self.pkg("-R %s list example_pkg" % orig_img_path, exit=1)
+                self.pkg("-R %s list example_pkg" % self.img_path(0), exit=1)
 
         def test_big_pathlen(self):
                 """Test that a chain cert which has a larger pathlen value than
@@ -2361,19 +2361,19 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
         def pkg_image_create(self, *args, **kwargs):
                 pkg5unittest.ManyDepotTestCase.pkg_image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
                 for f in self.image_files:
-                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                        with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
         def image_create(self, *args, **kwargs):
                 pkg5unittest.ManyDepotTestCase.image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
                 for f in self.image_files:
-                        with open(os.path.join(self.img_path, f), "wb") as fh:
+                        with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
         def setUp(self):

@@ -57,8 +57,16 @@ class ProgressTracker(object):
             External consumers should base their subclasses on the
             NullProgressTracker class. """
 
-        def __init__(self):
+        def __init__(self, quiet=False, verbose=0):
+
+                self.quiet = quiet
+                self.verbose = verbose
+
                 self.reset()
+
+        def set_linked_name(self, lin):
+                """Called once an image determines it's linked image name."""
+                return
 
         def reset_download(self):
                 self.dl_started = False
@@ -406,6 +414,18 @@ class ProgressTracker(object):
                 raise NotImplementedError("eval_output_done() not implemented "
                     "in superclass")
 
+        def li_recurse_start(self, lin):
+                """Called when we recurse into a child linked image."""
+
+                raise NotImplementedError("li_recurse_start() not implemented "
+                    "in superclass")
+
+        def li_recurse_end(self, lin):
+                """Called when we return from a child linked image."""
+
+                raise NotImplementedError("li_recurse_end() not implemented "
+                    "in superclass")
+
         def ver_output(self):
                 raise NotImplementedError("ver_output() not implemented in "
                     "superclass")
@@ -494,7 +514,7 @@ class QuietProgressTracker(ProgressTracker):
             intended to be "quiet"  See also NullProgressTracker below. """
 
         def __init__(self):
-                ProgressTracker.__init__(self)
+                ProgressTracker.__init__(self, quiet=True)
 
         def cat_output_start(self):
                 return
@@ -521,6 +541,12 @@ class QuietProgressTracker(ProgressTracker):
                 return
 
         def eval_output_done(self):
+                return
+
+        def li_recurse_start(self, lin):
+                return
+
+        def li_recurse_end(self, lin):
                 return
 
         def ver_output(self):
@@ -596,9 +622,16 @@ class CommandLineProgressTracker(ProgressTracker):
             and so is appropriate for sending through a pipe.  This code
             is intended to be platform neutral. """
 
-        def __init__(self):
-                ProgressTracker.__init__(self)
+        def __init__(self, quiet=False, verbose=0):
+                ProgressTracker.__init__(self, quiet=quiet,
+                    verbose=verbose)
                 self.last_printed_pkg = None
+                self.msg_prefix = ""
+
+        def set_linked_name(self, lin):
+                self.msg_prefix = ""
+                if lin:
+                        self.msg_prefix = _("Image %s ") % lin
 
         def cat_output_start(self):
                 return
@@ -626,6 +659,30 @@ class CommandLineProgressTracker(ProgressTracker):
 
         def eval_output_done(self):
                 return
+
+        def li_recurse_start(self, lin):
+                msg = _("Recursing into linked image: %s") % lin
+                msg = "%s%s" % (self.msg_prefix, msg)
+
+                try:
+                        print "%s\n" % msg
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def li_recurse_end(self, lin):
+                msg = _("Returning from linked image: %s") % lin
+                msg = "%s%s" % (self.msg_prefix, msg)
+
+                try:
+                        print "%s\n" % msg
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def ver_output(self):
                 return
@@ -746,14 +803,15 @@ class FancyUNIXProgressTracker(ProgressTracker):
         #
         TERM_DELAY = 0.10
 
-        def __init__(self):
-                ProgressTracker.__init__(self)
+        def __init__(self, quiet=False, verbose=0):
+                ProgressTracker.__init__(self, quiet=quiet, verbose=verbose)
 
                 self.act_started = False
                 self.ind_started = False
                 self.item_started = False
                 self.last_print_time = 0
                 self.clear_eol = ""
+                self.msg_prefix = ""
 
                 try:
                         import curses
@@ -774,6 +832,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.spinner = 0
                 self.spinner_chars = "/-\|"
                 self.curstrlen = 0
+
+        def set_linked_name(self, lin):
+                self.msg_prefix = ""
+                if lin:
+                        self.msg_prefix = _("Image %s ") % lin
 
         def __generic_start(self, msg):
                 # Ensure the last message displayed is flushed in case the
@@ -828,13 +891,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print self.cr,
                         print " " * self.curstrlen,
                         print self.cr,
-                        s = _("Refreshing catalog %(current)d/%(total)d "
+                        msg = _("Refreshing catalog %(current)d/%(total)d "
                             "%(publisher)s") % {
                             "current": self.refresh_cur_pub_cnt,
                             "total": self.refresh_pub_cnt,
                             "publisher": self.refresh_cur_pub }
-                        self.curstrlen = len(s)
-                        print "%s" % s,
+                        msg = "%s%s" % (self.msg_prefix, msg)
+                        self.curstrlen = len(msg)
+                        print "%s" % msg,
                         self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
@@ -850,10 +914,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # corresponding operation did not complete successfully.
                 self.__generic_done()
 
-                s = _("Creating Plan")
-                self.curstrlen = len(s)
+                msg = _("Creating Plan")
+                msg = "%s%s" % (self.msg_prefix, msg)
+
+                self.curstrlen = len(msg)
                 try:
-                        print "%s" % s,
+                        print "%s" % msg,
                         self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
@@ -869,10 +935,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.spinner = (self.spinner + 1) % len(self.spinner_chars)
                 try:
                         print self.cr,
-                        s = _("Creating Plan %c") % self.spinner_chars[
+                        msg = _("Creating Plan %c") % self.spinner_chars[
                             self.spinner]
-                        self.curstrlen = len(s)
-                        print "%s" % s,
+                        msg = "%s%s" % (self.msg_prefix, msg)
+
+                        self.curstrlen = len(msg)
+                        print "%s" % msg,
                         self.needs_cr = True
                         sys.stdout.flush()
                 except IOError, e:
@@ -883,6 +951,33 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def eval_output_done(self):
                 self.__generic_done()
                 self.last_print_time = 0
+
+        def li_recurse_start(self, lin):
+                self.__generic_done()
+
+                msg = _("Recursing into linked image: %s") % lin
+                msg = "%s%s" % (self.msg_prefix, msg)
+
+                try:
+                        print "%s" % msg, self.cr
+                        self.curstrlen = len(msg)
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def li_recurse_end(self, lin):
+                msg = _("Returning from linked image: %s") % lin
+                msg = "%s%s" % (self.msg_prefix, msg)
+
+                try:
+                        print "%s" % msg, self.cr
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def ver_output(self):
                 try:
@@ -1142,7 +1237,10 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.ind_started = False
                 self.last_print_time = 0
                 try:
-                        print _("Optimizing Index...")
+                        msg = _("Optimizing Index...")
+                        msg = "%s%s" % (self.msg_prefix, msg)
+
+                        print msg
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:

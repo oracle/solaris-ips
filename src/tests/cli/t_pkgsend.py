@@ -792,7 +792,7 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                 self.pkg("info --license %s" % pkgname)
 
                 for entry in contents_dict:
-                        name = os.path.join(self.img_path, entry)
+                        name = os.path.join(self.img_path(), entry)
                         ftype, mode, user, group, digest = contents_dict[entry]
 
                         if ftype in "fl":
@@ -810,13 +810,13 @@ file 6a1ae3def902f5612a43f0c0836fe05bc4f237cf chash=be9c91959ec782acb0f081bf4bf1
                                 pkg5_digest = misc.get_data_digest(name)[0]
                                 self.assertEqual(digest, pkg5_digest)
 
-                        st = os.stat(os.path.join(self.img_path, name))
+                        st = os.stat(os.path.join(self.img_path(), name))
                         if mode is not None:
                                 portable.assert_mode(name, stat.S_IMODE(mode))
                         self.assertEqual(portable.get_user_by_name(user,
-                            self.img_path, use_file=True), st.st_uid)
+                            self.img_path(), use_file=True), st.st_uid)
                         self.assertEqual(portable.get_group_by_name(group,
-                            self.img_path, use_file=True), st.st_gid)
+                            self.img_path(), use_file=True), st.st_gid)
     
         def test_13_pkgsend_indexcontrol(self):
                 """Verify that "pkgsend refresh-index" triggers indexing."""

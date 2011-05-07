@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -32,6 +32,7 @@ import os
 import re
 import unittest
 
+from pkg.client.pkgdefs import *
 
 class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -58,6 +59,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         pkg_shared = """
         open pkg_shared@1.0,5.11-0
         add set name=variant.arch value=sparc value=i386 value=zos
+        add set name=variant.opensolaris.zone value=global value=nonglobal
         add dir mode=0755 owner=root group=bin path=/shared
         add dir mode=0755 owner=root group=bin path=/unique
         add file tmp/pkg_shared/shared/common mode=0555 owner=root group=bin path=shared/common
@@ -244,7 +246,9 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         self.assert_(False,
                             "unable to determine image arch variant")
                 if ic.variants["variant.arch"] != v_arch:
-                        self.assert_(False, "unexpected arch variant")
+                        self.assert_(False,
+                            "unexpected arch variant: %s != %s" % \
+                            (ic.variants["variant.arch"], v_arch))
 
                 if "variant.opensolaris.zone" not in ic.variants:
                         self.assert_(False,
@@ -283,7 +287,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                         for p in pl:
                                 self.pkg("search -l %s" % p )
 
-        def cv_test(self, v_arch, v_zone, pl, v_arch2, v_zone2, pl2):
+        def cv_test(self, v_arch, v_zone, pl, v_arch2, v_zone2, pl2,
+            rv=EXIT_OK):
                 """ test if change-variant works """
 
                 assert v_arch == 'i386' or v_arch == 'sparc' or v_arch == 'zos'
@@ -315,7 +320,8 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 cv_args += " -v"
                 cv_args += " variant.arch=%s" % v_arch2
                 cv_args += " variant.opensolaris.zone=%s" % v_zone2
-                self.pkg("change-variant -v" + cv_args)
+
+                self.pkg("change-variant" + cv_args, exit=rv)
                 # verify the updated image
                 self.i_verify(v_arch2, v_zone2, pl2)
 
@@ -325,20 +331,20 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                 self.image_destroy()
 
         def test_cv_01_none_1(self):
-                self.cv_test("i386", "global", ["pkg_cluster",],
-                    "i386", "global", ["pkg_cluster"])
+                self.cv_test("i386", "global", ["pkg_cluster"],
+                    "i386", "global", ["pkg_cluster"], rv=EXIT_NOP)
 
         def test_cv_01_none_2(self):
-                self.cv_test("i386", "nonglobal", ["pkg_cluster",],
-                    "i386", "nonglobal", ["pkg_cluster"])
+                self.cv_test("i386", "nonglobal", ["pkg_cluster"],
+                    "i386", "nonglobal", ["pkg_cluster"], rv=EXIT_NOP)
 
         def test_cv_01_none_3(self):
-                self.cv_test("sparc", "global", ["pkg_cluster",],
-                    "sparc", "global", ["pkg_cluster"])
+                self.cv_test("sparc", "global", ["pkg_cluster"],
+                    "sparc", "global", ["pkg_cluster"], rv=EXIT_NOP)
 
         def test_cv_01_none_4(self):
-                self.cv_test("sparc", "nonglobal", ["pkg_cluster",],
-                    "sparc", "nonglobal", ["pkg_cluster"])
+                self.cv_test("sparc", "nonglobal", ["pkg_cluster"],
+                    "sparc", "nonglobal", ["pkg_cluster"], rv=EXIT_NOP)
 
         def test_cv_02_arch_1(self):
                 self.cv_test("i386", "global", ["pkg_shared"],
@@ -349,7 +355,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "i386", "global", ["pkg_shared"])
 
         def test_cv_03_arch_1(self):
-                self.cv_test("i386", "global", ["pkg_inc",],
+                self.cv_test("i386", "global", ["pkg_inc"],
                     "sparc", "global", ["pkg_inc"])
 
         def test_cv_03_arch_2(self):
@@ -375,7 +381,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "i386", "global", ["pkg_shared", "pkg_inc"])
 
         def test_cv_06_arch_1(self):
-                self.cv_test("i386", "global", ["pkg_cluster",],
+                self.cv_test("i386", "global", ["pkg_cluster"],
                     "sparc", "global", ["pkg_cluster"])
 
         def test_cv_06_arch_2(self):
@@ -391,7 +397,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "i386", "global", ["pkg_cluster", "pkg_inc"])
 
         def test_cv_08_zone_1(self):
-                self.cv_test("i386", "global", ["pkg_cluster",],
+                self.cv_test("i386", "global", ["pkg_cluster"],
                     "i386", "nonglobal", ["pkg_cluster"])
 
         def test_cv_08_zone_2(self):
@@ -399,7 +405,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "i386", "global", ["pkg_cluster"])
 
         def test_cv_09_zone_1(self):
-                self.cv_test("sparc", "global", ["pkg_cluster",],
+                self.cv_test("sparc", "global", ["pkg_cluster"],
                     "sparc", "nonglobal", ["pkg_cluster"])
 
         def test_cv_09_zone_2(self):
@@ -407,7 +413,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "sparc", "global", ["pkg_cluster"])
 
         def test_cv_10_arch_and_zone_1(self):
-                self.cv_test("i386", "global", ["pkg_cluster",],
+                self.cv_test("i386", "global", ["pkg_cluster"],
                     "sparc", "nonglobal", ["pkg_cluster"])
 
         def test_cv_10_arch_and_zone_2(self):
@@ -415,7 +421,7 @@ class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
                     "i386", "global", ["pkg_cluster"])
 
         def test_cv_11_arch_and_zone_1(self):
-                self.cv_test("i386", "nonglobal", ["pkg_cluster",],
+                self.cv_test("i386", "nonglobal", ["pkg_cluster"],
                     "sparc", "global", ["pkg_cluster"])
 
         def test_cv_11_arch_and_zone_2(self):

@@ -16,6 +16,7 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/gnome/gettext for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/gnome/gnome-doc-utils for pkg://pkg5-nightly/system/trusted/trusted-nonglobal
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/object-file for pkg://pkg5-nightly/developer/opensolaris/pkg5
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/python/pylint for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/swig for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/versioning/mercurial for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/documentation/gnome/gnome-user-docs for pkg://pkg5-nightly/system/trusted/trusted-nonglobal

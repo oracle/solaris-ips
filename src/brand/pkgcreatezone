@@ -35,9 +35,13 @@ export PKG_IMAGE
 
 . /usr/lib/brand/ipkg/common.ksh
 
+# Allows developers to override some things like PATH and PYTHONPATH
+. /usr/lib/brand/ipkg/developerenv.ksh
+
 f_a_obs=$(gettext "-a publisher=uri option is obsolete.")
 f_pkg5_missing=$(gettext "pkg(5) does not seem to be present on this system.\n")
 f_img=$(gettext "failed to create image\n")
+f_imglink=$(gettext "failed to link image to global zone\n")
 f_pkg=$(gettext "failed to install package\n")
 f_interrupted=$(gettext "Installation cancelled due to interrupt.\n")
 f_bad_publisher=$(gettext "Syntax error in publisher information.")
@@ -68,13 +72,7 @@ ZONEPATH=""
 TEXTDOMAIN="SUNW_OST_OSCMD"
 export TEXTDOMAIN
 
-PKG=/usr/bin/pkg
-export PKG
-
-#
-# Just in case.  This should probably be removed later.
-#
-[[ ! -x $PKG ]] && fail_incomplete "$f_pkg5_missing"
+PKG=pkg
 
 unset install_archive
 unset source_dir
@@ -187,16 +185,33 @@ LC_ALL=C $PKG image-create --zone --full \
     --set-property use-system-repo=true \
     $ZONEROOT || fail_incomplete "$f_img"
 
+# Link this image to the parent image.
+printf "$m_image_link\n" $GZ_IMAGE
+LC_ALL=C $PKG attach-linked -q -f --no-refresh --no-index --linked-md-only \
+    -c zone:$ZONENAME $ZONEROOT || fail_incomplete "$f_imglink"
+
 # Change the value of PKG_IMAGE so that future PKG operation will work
 # on the newly created zone rather than the global zone
-
 PKG_IMAGE="$ZONEROOT"
 export PKG_IMAGE
 
+if [[ -f /var/pkg/pkg5.image && -d /var/pkg/publisher ]]; then
+	# respect PKG_CACHEROOT if the caller has it set.
+	[ -z "$PKG_CACHEROOT" ] && PKG_CACHEROOT=/var/pkg/publisher
+	export PKG_CACHEROOT
+	printf "$m_cache\n" $PKG_CACHEROOT
+fi
+
 printf "$m_core\n"
 pkglist=""
+
+#
+# 'entire' is essentially optional-- if you don't have it in your global
+# zone, you are probably an OS developer, and therefore you probably don't
+# want it in your non-global zone.  We follow the preference we find in
+# the global zone.
 if [[ -n $entire_fmri ]]; then
-	pkglist="$pkglist $entire_fmri"
+	pkglist="$pkglist pkg:///entire"
 fi
 
 pkglist="$pkglist

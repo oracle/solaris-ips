@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -57,7 +57,7 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 """Ensure that pkg explicit image specification works as
                 expected."""
 
-                imgpath = self.img_path
+                imgpath = self.img_path()
                 badpath = self.test_root
 
                 # Verify that bad paths cause exit and good paths succeed.
@@ -87,14 +87,14 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 """Ensure that pkg implicit image finding works as expected."""
 
                 # Should fail because $PKG_IMAGE is set to test root by default,
-                # and default test behaviour to use -R self.img_path was
+                # and default test behaviour to use -R self.img_path() was
                 # disabled.
                 self.pkg("install foo", exit=1, use_img_root=False)
 
                 # Unset unit testing default bogus image dir.
                 del os.environ["PKG_IMAGE"]
-                os.chdir(self.img_path)
-                self.assertEqual(os.getcwd(), self.img_path)
+                os.chdir(self.img_path())
+                self.assertEqual(os.getcwd(), self.img_path())
 
                 if portable.osname != "sunos":
                         # For other platforms, first install a package uses an
@@ -111,7 +111,7 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
 
                 # Should succeed because image is found at simulated live root.
                 self.pkg("-D simulate_live_root=%s install foo" %
-                    self.img_path, use_img_root=False)
+                    self.img_path(), use_img_root=False)
 
 
 if __name__ == "__main__":

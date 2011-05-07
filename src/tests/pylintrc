@@ -18,8 +18,9 @@
 #
 # CDDL HEADER END
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+#
 
 # This file is used to control pylint when checking python source
 #
@@ -48,11 +49,7 @@ disable-checker=similarities
 
 # Disable the message(s) with the given id(s).
 # C0103 Invalid name "%s" Used when the const/var/class name doesn't match regex
-# C0111 Missing Docstring
-# W0311 Bad Indentation
-# W0311 Mixed (Space/Tab) Indentation
-# W0511 "XXX" / "FIXME" Comments
-disable-msg=C0103,C0111,W0311,W0312,W0511
+disable-msg=C0103
 
 [REPORTS]
 # set the output format. Available formats are text, parseable, colorized, msvs

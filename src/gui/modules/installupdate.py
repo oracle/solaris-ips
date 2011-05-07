@@ -642,7 +642,10 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:
                         return True
-                upgrade_needed = self.api_o.plan_install(self.ipkg_ipkgui_list)
+                for pd in self.api_o.gen_plan_install(self.ipkg_ipkgui_list):
+                        continue
+                upgrade_needed = not self.api_o.planned_nothingtodo(
+                    li_ignore_all=True)
                 return not upgrade_needed
 
         def __proceed_with_stages(self, continue_operation = False):
@@ -668,14 +671,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                                             _("Ensuring %s is up to date...") %
                                             self.parent_name,
                                             bounce_progress=True)
-                                        opensolaris_image = True
+                                        solaris_image = True
                                         ips_uptodate = True
                                         notfound = self.__installed_fmris_from_args(
                                             [gui_misc.package_name["SUNWipkg"],
                                             gui_misc.package_name["SUNWcs"]])
                                         if notfound:
-                                                opensolaris_image = False
-                                        if opensolaris_image:
+                                                solaris_image = False
+                                        if solaris_image:
                                                 ips_uptodate = \
                                                     self.__ipkg_ipkgui_uptodate()
                                         if not ips_uptodate:
@@ -1340,28 +1343,30 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __plan_stage(self):
                 '''Function which plans the image'''
-                stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
-                        stuff_to_do = self.api_o.plan_install(
-                            self.list_of_packages, refresh_catalogs = False)
+                        for pd in self.api_o.gen_plan_install(
+                            self.list_of_packages, refresh_catalogs=False):
+                                continue
                 elif self.action == enumerations.REMOVE:
-                        plan_uninstall = self.api_o.plan_uninstall
-                        stuff_to_do = \
-                            plan_uninstall(self.list_of_packages, False, False)
+                        for pd in self.api_o.gen_plan_uninstall(
+                            self.list_of_packages,
+                            recursive_removal=False, noexecute=False):
+                                continue
                 elif self.action == enumerations.IMAGE_UPDATE:
                         # we are passing force, since we already checked if the
-                        # packages are up to date.
-                        stuff_to_do, opensolaris_image = \
-                            self.api_o.plan_update_all(
-                            refresh_catalogs = False,
-                            noexecute = False, force = True,
-                            be_name = None, new_be = None) # Create BE if required
-                        self.pylint_stub = opensolaris_image
-                elif self.action == enumerations.UPDATE_FACETS:
-                        stuff_to_do = self.api_o.plan_change_varcets(
-                                variants = None, facets = self.facets,
-                                noexecute = False, be_name = None, new_be = None)
-                return stuff_to_do
+                        # packages are up to date.  Create BE if required
+                        for pd in self.api_o.gen_plan_update(
+                            refresh_catalogs=False, noexecute=False,
+                            force=True, be_name=None, new_be=None):
+                                continue
+                        self.pylint_stub = self.api_o.solaris_image()
+                else:
+                        assert self.action == enumerations.UPDATE_FACETS
+                        for pd in self.api_o.gen_plan_change_varcets(
+                            variants=None, facets=self.facets,
+                            noexecute=False, be_name=None, new_be=None):
+                                continue
+                return not self.api_o.planned_nothingtodo(li_ignore_all=True)
 
         def __operations_done(self, alternate_done_txt = None):
                 self.__reset_window_title()

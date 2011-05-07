@@ -85,9 +85,10 @@ class VersionInfo:
                         install_update_list = []
                         stuff_to_do = False
                         install_update_list.append(pkg_stem)
-                        stuff_to_do = api_o.plan_install(
-                                    install_update_list,
-                                    refresh_catalogs = False)
+                        for pd in api_o.gen_plan_install(install_update_list,
+                            refresh_catalogs=False):
+                                continue
+                        stuff_to_do = not api_o.planned_nothingtodo()
                         if stuff_to_do:
                                 plan_desc = api_o.describe()
                                 if plan_desc == None:

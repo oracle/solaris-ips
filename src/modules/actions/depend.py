@@ -32,11 +32,26 @@ relationship between the package containing the action and another package.
 """
 
 import generic
-import pkg.fmri as fmri
+import pkg.fmri
 import pkg.version
 
-known_types = ("optional", "require", "exclude", "incorporate", 
-    "conditional", "require-any", "origin", "group")
+known_types = (
+    "conditional",
+    "exclude",
+    "group",
+    "incorporate",
+    "optional",
+    "origin",
+    "parent",
+    "require",
+    "require-any")
+
+#
+# this is a special package name that when present in an fmri defines a
+# dependency on the current package in which the dependency is present.
+# this is useful with the "parent" dependency type.
+#
+DEPEND_SELF = "feature/package/dependency/self"
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -47,7 +62,7 @@ class DependencyAction(generic.Action):
         other words, if installed, other packages must be at least at specified
         version level.
 
-        require -  dependency on minimum version of other package is needed 
+        require - dependency on minimum version of other package is needed
         for correct function of this package.
 
         conditional - dependency on minimum version of specified package
@@ -60,10 +75,14 @@ class DependencyAction(generic.Action):
         in order to install this package; if root-image=true, dependency is
         on version installed in / rather than image being modified.
 
-        incorporate - optional dependency on precise version of other package; 
+        parent - dependency on same version of this package being present in
+        the parent image.  if the current image is not a child then this
+        dependency is ignored.
+
+        incorporate - optional dependency on precise version of other package;
         non-specified portion of version is free to float.
 
-        exclude - package may not be installed together with named version 
+        exclude - package may not be installed together with named version
         or higher - reverse logic of require.
 
         group - a version of package is required unless stem is in image
@@ -87,8 +106,8 @@ class DependencyAction(generic.Action):
 
                 if len(self.attrlist("fmri")) > 1 and \
                     self.attrs["type"] != "require-any":
-                        raise pkg.actions.InvalidActionError(str(self), 
-                            _("Multiple fmris specifed for %s dependency type") % 
+                        raise pkg.actions.InvalidActionError(str(self),
+                            _("Multiple fmris specified for %s dependency type") %
                             self.attrs["type"])
 
                 if self.attrs["type"] not in known_types:
@@ -133,7 +152,7 @@ class DependencyAction(generic.Action):
                 #
                 fmri_string = self.attrs["fmri"]
                 if not isinstance(fmri_string, basestring):
-                        return 
+                        return
                 #
                 # First, try to eliminate fmris that don't need cleaning since
                 # this process is relatively expensive (when considering tens
@@ -202,6 +221,47 @@ class DependencyAction(generic.Action):
                 #           (fmri_string, cleanfmri)
                 self.attrs["fmri"] = cleanfmri
 
+        def __check_parent_installed(self, image, fmri):
+
+                if not image.linked.ischild():
+                        # if we're not a linked child then ignore "parent"
+                        # dependencies.
+                        return []
+
+                # create a dictionary of packages installed in the parent
+                ppkgs_dict = dict([
+                    (i.pkg_name, i)
+                    for i in image.linked.parent_fmris()
+                ])
+
+                errors = []
+                if fmri.pkg_name not in ppkgs_dict:
+                        errors.append(_("Package is not installed in "
+                            "parent image %s") % fmri.pkg_name)
+                        return errors
+
+                pf = ppkgs_dict[fmri.pkg_name]
+                if fmri.publisher and fmri.publisher != pf.publisher:
+                        # package is from a different publisher
+                        errors.append(_("Package in parent is from a "
+                            "different publisher: %s") % pf)
+                        return errors
+
+                if pf.version == fmri.version or pf.version.is_successor(
+                    fmri.version, pkg.version.CONSTRAINT_AUTO):
+                        # parent dependency is satisfied
+                        return []
+
+                if pf.version.is_successor(fmri.version,
+                    pkg.version.CONSTRAINT_NONE):
+                        errors.append(_("Parent image has a newer "
+                            "version of package %s") % pf)
+                else:
+                        errors.append(_("Parent image has an older "
+                            "version of package %s") % pf)
+
+                return errors
+
         def __check_installed(self, image, installed_version, min_fmri,
             max_fmri, required, ctype):
                 errors = []
@@ -231,12 +291,12 @@ class DependencyAction(generic.Action):
                     image.get_pkg_state(installed_version):
                         errors.append(
                             _("%s dependency on an obsolete package (%s);"
-                            "this package must be uninstalled manually") % 
-                            (ctype, installed_version))                                  
+                            "this package must be uninstalled manually") %
+                            (ctype, installed_version))
                         return errors
                 return errors
 
-        def verify(self, image, **args):
+        def verify(self, image, pfmri, **args):
                 """Returns a tuple of lists of the form (errors, warnings,
                 info).  The error list will be empty if the action has been
                 correctly installed in the given image."""
@@ -244,6 +304,10 @@ class DependencyAction(generic.Action):
                 errors = []
                 warnings = []
                 info = []
+
+                # the fmri for the package containing this action should
+                # include a publisher
+                assert pfmri.publisher
 
                 # XXX Exclude and range between min and max not yet handled
                 def __min_version():
@@ -257,13 +321,23 @@ class DependencyAction(generic.Action):
                             _("Unknown type (%s) in depend action") % ctype)
                         return errors, warnings, info
 
-                pfmris = [
-                    fmri.PkgFmri(f, image.attrs["Build-Release"]) 
-                    for f in self.attrlist("fmri")
-                ]
+                # get a list of fmris and do fmri token substitution
+                pfmris = []
+                for i in self.attrlist("fmri"):
+                        f = pkg.fmri.PkgFmri(i, image.attrs["Build-Release"])
+                        if f.pkg_name == DEPEND_SELF:
+                                f = pfmri
+                        pfmris.append(f)
+
+                if ctype == "parent":
+                        # handle "parent" dependencies here
+                        assert len(pfmris) == 1
+                        errors.extend(self.__check_parent_installed(image,
+                            pfmris[0]))
+                        return errors, warnings, info
 
                 installed_versions = [
-                    image.get_version_installed(f) 
+                    image.get_version_installed(f)
                     for f in pfmris
                 ]
 
@@ -287,7 +361,7 @@ class DependencyAction(generic.Action):
                         min_fmri = pfmri.copy()
                         min_fmri.version = __min_version()
                 elif ctype == "conditional":
-                        cfmri = fmri.PkgFmri(self.attrs["predicate"],
+                        cfmri = pkg.fmri.PkgFmri(self.attrs["predicate"],
                             image.attrs["Build-Release"])
                         installed_cversion = image.get_version_installed(cfmri)
                         if installed_cversion is not None and \
@@ -324,7 +398,6 @@ class DependencyAction(generic.Action):
                 # operation, not final state
 
                 return errors, warnings, info
-            
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

@@ -50,13 +50,13 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
         def pkg_image_create(self, *args, **kwargs):
                 pkg5unittest.SingleDepotTestCase.pkg_image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
 
         def image_create(self, *args, **kwargs):
                 pkg5unittest.SingleDepotTestCase.image_create(self,
                     *args, **kwargs)
-                self.ta_dir = os.path.join(self.img_path, "etc/certs/CA")
+                self.ta_dir = os.path.join(self.img_path(), "etc/certs/CA")
                 os.makedirs(self.ta_dir)
 
         def pkg(self, command, *args, **kwargs):

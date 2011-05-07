@@ -35,6 +35,9 @@
 
 . /usr/lib/brand/ipkg/common.ksh
 
+# Allows developer to override some things like PATH and PYTHONPATH
+. /usr/lib/brand/ipkg/developerenv.ksh
+
 m_usage=$(gettext "\n        install {-a archive|-d path} {-p|-u} [-s|-v]")
 install_log=$(gettext   "    Log File: %s")
 

@@ -27,6 +27,7 @@
 import errno
 import itertools
 import os
+import cPickle as pickle
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -76,10 +77,8 @@ class PkgPlan(object):
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
-
                 for src, dest in itertools.chain(*self.actions):
                         s += "  %s -> %s\n" % (src, dest)
-
                 return s
 
         def __add_license(self, src, dest):
@@ -96,6 +95,74 @@ class PkgPlan(object):
                     "accepted": False,
                     "displayed": False,
                 }
+
+        @staticmethod
+        def __pickle_actions(actions):
+                """Return a list of pickled actions."""
+                action_list = []
+                for pair in actions:
+                        newpair = [None, None]
+                        if pair[0]:
+                                newpair[0] = pickle.dumps(pair[0])
+                        if pair[1]:
+                                newpair[1] = pickle.dumps(pair[1])
+                        action_list.append(newpair)
+                return action_list
+
+        @staticmethod
+        def __unpickle_actions(pickled_actions):
+                """Return a list of unpickled actions."""
+                action_list=[]
+                for pair in pickled_actions:
+                        newpair = [None, None]
+                        if pair[0]:
+                                newpair[0] = pickle.loads(str(pair[0]))
+                        if pair[1]:
+                                newpair[1] = pickle.loads(str(pair[1]))
+                        action_list.append(newpair)
+                return action_list
+
+        def setstate(self, state):
+                """Update the state of this object using the contents of
+                the supplied dictionary."""
+
+                import pkg.fmri
+
+                # if there is no origin, don't allocate an fmri obj
+                if state["src"]:
+                        state["src"] = pkg.fmri.PkgFmri(state["src"])
+
+                # if there is no destination, don't allocate an fmri obj
+                if state["dst"]:
+                        state["dst"] = pkg.fmri.PkgFmri(state["dst"])
+
+                self.origin_fmri = state["src"]
+                self.destination_fmri = state["dst"]
+                self.pkg_summary = state["summary"]
+                self.actions = manifest.ManifestDifference([], [], [])
+                self.actions.added.extend(
+                    self.__unpickle_actions(state["add"]))
+                self.actions.changed.extend(
+                    self.__unpickle_actions(state["change"]))
+                self.actions.removed.extend(
+                    self.__unpickle_actions(state["remove"]))
+                for src, dest in itertools.chain(self.gen_update_actions(),
+                    self.gen_install_actions()):
+                       if dest.name == "license":
+                                self.__add_license(src, dest)
+
+        def getstate(self):
+                """Returns a dictionary containing the state of this object
+                so that it can be easily stored using JSON, pickle, etc."""
+
+                state = {}
+                state["src"] = self.origin_fmri
+                state["dst"] = self.destination_fmri
+                state["summary"] = self.pkg_summary
+                state["add"] = self.__pickle_actions(self.actions.added)
+                state["change"] = self.__pickle_actions(self.actions.changed)
+                state["remove"] = self.__pickle_actions(self.actions.removed)
+                return state
 
         def propose(self, of, om, df, dm):
                 """Propose origin and dest fmri, manifest"""

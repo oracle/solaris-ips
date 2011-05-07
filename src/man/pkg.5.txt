@@ -273,6 +273,13 @@ DESCRIPTION
            silently satisfy the group dependency.  See the avoid subcommand
            in pkg(1).
 
+           If the value is 'parent', then the dependency is ignored if
+           the image is not a child image.  If the image is a child
+           image then it's required that the dependency be present in
+           the parent image.  The package version matching for a
+           'parent' dependency is the same as that used for 'incorporate'
+           dependencies.
+
      fmri  The FMRI representing the depended-upon package.  It must not
            include the publisher.  In the case of require-any dependencies,
            there may be multiple values.  This is the dependency action's

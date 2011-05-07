@@ -28,6 +28,9 @@ import errno
 import os
 import urlparse
 
+# pkg classes
+import pkg.client.pkgdefs as pkgdefs
+
 # EmptyI for argument defaults; can't import from misc due to circular
 # dependency.
 EmptyI = tuple()
@@ -49,6 +52,24 @@ class ApiException(Exception):
         @property
         def verbose_info(self):
                 return self.__verbose_info
+
+class SuidUnsupportedError(ApiException):
+        def __str__(self):
+                return _("""
+The pkg client api module can not be invoked from an setuid executable.""")
+
+class SubprocessError(ApiException):
+
+        def __init__(self, rv, cmd):
+                if type(cmd) == list:
+                        cmd = " ".join(cmd)
+                assert type(cmd) == str
+                self.err = _("The following subprocess returned an "
+                    "unexpected exit code of %(rv)d:\n%(cmd)s") % \
+                    {"rv": rv, "cmd": cmd}
+
+        def __str__(self):
+                return self.err
 
 class ImageLockedError(ApiException):
         """Used to indicate that the image is currently locked by another thread
@@ -382,37 +403,57 @@ class PackageMatchErrors(ApiException):
 
 
 class PlanCreationException(ApiException):
-        def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
-            missing_matches=EmptyI, illegal=EmptyI,
-            badarch=EmptyI, installed=EmptyI, multispec=EmptyI,
-            no_solution=False, no_version=EmptyI, missing_dependency=EmptyI,
-            wrong_publishers=EmptyI, obsolete=EmptyI, nofiles=EmptyI,
-            solver_errors=EmptyI, already_installed=EmptyI,
-            would_install=EmptyI, wrong_variants=EmptyI):
+        def __init__(self,
+            already_installed=EmptyI,
+            badarch=EmptyI,
+            illegal=EmptyI,
+            installed=EmptyI,
+            linked_pub_error=EmptyI,
+            missing_dependency=EmptyI,
+            missing_matches=EmptyI,
+            multiple_matches=EmptyI,
+            multispec=EmptyI,
+            no_solution=False,
+            no_tmp_origins=False,
+            no_version=EmptyI,
+            nofiles=EmptyI,
+            obsolete=EmptyI,
+            pkg_updates_required=EmptyI,
+            solver_errors=EmptyI,
+            unmatched_fmris=EmptyI,
+            would_install=EmptyI,
+            wrong_publishers=EmptyI,
+            wrong_variants=EmptyI):
+
                 ApiException.__init__(self)
-                self.unmatched_fmris       = unmatched_fmris
-                self.multiple_matches      = multiple_matches
-                self.missing_matches       = missing_matches
-                self.illegal               = illegal
+                self.already_installed     = already_installed
                 self.badarch               = badarch
+                self.illegal               = illegal
                 self.installed             = installed
-                self.multispec             = multispec
-                self.obsolete              = obsolete
-                self.no_solution           = no_solution
-                self.no_version            = no_version
+                self.linked_pub_error      = linked_pub_error
                 self.missing_dependency    = missing_dependency
+                self.missing_matches       = missing_matches
+                self.multiple_matches      = multiple_matches
+                self.multispec             = multispec
+                self.no_solution           = no_solution
+                self.no_tmp_origins        = no_tmp_origins
+                self.no_version            = no_version
+                self.nofiles               = nofiles
+                self.obsolete              = obsolete
+                self.pkg_updates_required  = pkg_updates_required
+                self.solver_errors         = solver_errors
+                self.unmatched_fmris       = unmatched_fmris
+                self.would_install         = would_install
                 self.wrong_publishers      = wrong_publishers
                 self.wrong_variants        = wrong_variants
-                self.nofiles               = nofiles
-                self.solver_errors         = solver_errors
-                self.already_installed     = already_installed
-                self.would_install         = would_install
+
         def __str__(self):
                 res = []
                 if self.unmatched_fmris:
                         s = _("""\
-The following pattern(s) did not match any packages in the current catalog.
-Try relaxing the pattern, refreshing and/or examining the catalogs:""")
+The following pattern(s) did not match any allowable packages.  Try
+using a different matching pattern, or refreshing the image:
+""")
                         res += [s]
                         res += ["\t%s" % p for p in self.unmatched_fmris]
 
@@ -477,8 +518,26 @@ for the current image's architecture, zone type, and/or other variant:""")
                         if isinstance(self.no_solution, list):
                                 res.extend(self.no_solution)
 
+                if self.pkg_updates_required:
+                        s = _("""\
+Syncing this linked image would require the following package updates:
+""")
+                        res += [s]
+                        for (oldfmri, newfmri) in self.pkg_updates_required:
+                                res += ["%(oldfmri)s -> %(newfmri)s\n" % \
+                                    {"oldfmri": oldfmri, "newfmri": newfmri}]
+
                 if self.no_version:
                         res += self.no_version
+
+                if self.no_tmp_origins:
+                        s = _("""
+The proposed operation on this parent image can not be performed because
+temporary origins were specified and this image has children.  Please either
+retry the operation again without specifying any temporary origins, or if
+packages from additional origins are required, please configure those origins
+persistently.""")
+                        res = [s]
 
                 if self.missing_dependency:
                         res += [_("Package %(pkg)s is missing a dependency: "
@@ -495,12 +554,45 @@ for the current image's architecture, zone type, and/or other variant:""")
                         res.extend(self.solver_errors)
 
                 if self.already_installed:
-                        res += [_("The following packages are already installed in this image; use uninstall to avoid these:")]
+                        res += [_("The following packages are already "
+                            "installed in this image; use uninstall to "
+                            "avoid these:")]
                         res += [ "\t%s" % s for s in self.already_installed]
 
                 if self.would_install:
-                        res += [_("The following packages are a target of group dependencies; use install to unavoid these:")]
+                        res += [_("The following packages are a target "
+                            "of group dependencies; use install to unavoid "
+                            "these:")]
                         res += [ "\t%s" % s for s in self.would_install]
+
+                def __format_li_pubs(pubs, res):
+                        i = 0
+                        for pub, sticky in pubs:
+                                s = "    %s %d: %s" % (_("PUBLISHER"), i, pub)
+                                mod = []
+                                if not sticky:
+                                        mod.append(_("non-sticky"))
+                                if mod:
+                                        s += " (%s)" % ",".join(mod)
+                                res.append(s)
+                                i += 1
+
+                if self.linked_pub_error:
+                        res = []
+                        (pubs, parent_pubs) = self.linked_pub_error
+
+                        res.append(_("""
+Invalid child image publisher configuration.  Child image publisher
+configuration must be a subset of the parent image publisher configuration.
+Please update the child publisher configuration to match the parent.  If the
+child image is a zone this can be done automatically by detaching and
+attaching the zone.
+
+The parent image has the following enabled publishers:"""))
+                        __format_li_pubs(parent_pubs, res)
+                        res.append(_("""
+The child image has the following enabled publishers:"""))
+                        __format_li_pubs(pubs, res)
 
                 return "\n".join(res)
 
@@ -1429,6 +1521,16 @@ class BadPublisherPrefix(PublisherError):
                 return _("'%s' is not a valid publisher name.") % self.data
 
 
+class ReservedPublisherPrefix(PublisherError):
+        """Used to indicate that a publisher name is not valid."""
+
+        def __str__(self):
+                fmri = self._args["fmri"]
+                return _("'%(pkg_pub)s' is a reserved publisher and does not "
+                    "contain the requested package: pkg:/%(pkg_name)s") % \
+                    {"pkg_pub": fmri.publisher, "pkg_name": fmri.pkg_name}
+
+
 class BadRepositoryAttributeValue(PublisherError):
         """Used to indicate that the specified repository attribute value is
         invalid."""
@@ -2327,3 +2429,273 @@ def _convert_error(e, ignored_errors=EmptyI):
         if e.errno == errno.EROFS:
                 return ReadOnlyFileSystemException(e.filename)
         return e
+
+class LinkedImageException(ApiException):
+
+        def __init__(self, bundle=None, lin=None, exitrv=None,
+            attach_bad_prop=None,
+            attach_bad_prop_value=None,
+            attach_child_notsup=None,
+            attach_parent_notsup=None,
+            attach_root_as_child=None,
+            child_bad_img=None,
+            child_diverged=None,
+            child_dup=None,
+            child_nested=None,
+            child_not_in_altroot=None,
+            child_not_nested=None,
+            child_op_failed=None,
+            child_path_eaccess=None,
+            child_path_notabs=None,
+            child_unknown=None,
+            detach_child_notsup=None,
+            detach_from_parent=None,
+            detach_parent_notsup=None,
+            img_linked=None,
+            lin_malformed=False,
+            link_to_self=False,
+            parent_bad_img=None,
+            parent_bad_notabs=None,
+            parent_bad_path=None,
+            parent_not_in_altroot=None,
+            recursive_cmd_fail=None,
+            self_linked=None,
+            self_not_child=None):
+
+                self.attach_bad_prop = attach_bad_prop
+                self.attach_bad_prop_value = attach_bad_prop_value
+                self.attach_child_notsup = attach_child_notsup
+                self.attach_parent_notsup = attach_parent_notsup
+                self.attach_root_as_child = attach_root_as_child
+                self.child_bad_img = child_bad_img
+                self.child_diverged = child_diverged
+                self.child_dup = child_dup
+                self.child_nested = child_nested
+                self.child_not_in_altroot = child_not_in_altroot
+                self.child_not_nested = child_not_nested
+                self.child_op_failed = child_op_failed
+                self.child_path_eaccess = child_path_eaccess
+                self.child_path_notabs = child_path_notabs
+                self.child_unknown = child_unknown
+                self.detach_child_notsup = detach_child_notsup
+                self.detach_from_parent = detach_from_parent
+                self.detach_parent_notsup = detach_parent_notsup
+                self.img_linked = img_linked
+                self.lin_malformed = lin_malformed
+                self.link_to_self = link_to_self
+                self.parent_bad_img = parent_bad_img
+                self.parent_bad_notabs = parent_bad_notabs
+                self.parent_bad_path = parent_bad_path
+                self.parent_not_in_altroot = parent_not_in_altroot
+                self.recursive_cmd_fail = recursive_cmd_fail
+                self.self_linked = self_linked
+                self.self_not_child = self_not_child
+
+                # first deal with an error bundle
+                if bundle:
+                        assert type(bundle) in [tuple, list, set]
+                        for e in bundle:
+                                assert isinstance(e, LinkedImageException)
+
+                        # set default error return value
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_OOPS
+
+                        self.lix_err = None
+                        self.lix_bundle = bundle
+                        self.lix_exitrv = exitrv
+                        return
+
+                err = None
+
+                if attach_bad_prop:
+                        err = _("Invalid linked image attach property: %s") % \
+                            attach_bad_prop
+
+                if attach_bad_prop_value:
+                        assert type(attach_bad_prop_value) in [tuple, list]
+                        assert len(attach_bad_prop_value) == 2
+                        err =  _("Invalid linked image attach property "
+                            "value: %s") % "=".join(attach_bad_prop_value)
+
+                if attach_child_notsup:
+                        err = _("Linked image type does not support child "
+                            "attach: %s") % attach_child_notsup
+
+                if attach_parent_notsup:
+                        err = _("Linked image type does not support parent "
+                            "attach: %s") % attach_parent_notsup
+
+                if attach_root_as_child:
+                        err = _("Cannot attach root image as child")
+
+                if child_bad_img:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_EACCESS
+                        if lin:
+                                err = _("Can't initialize child image "
+                                    "(%(lin)s) at path: %(path)s") % {
+                                        "lin": lin,
+                                        "path": child_bad_img
+                                    }
+                        else:
+                                err = _("Can't initialize child image "
+                                    "at path: %s") % child_bad_img
+
+                if child_diverged:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_DIVERGED
+                        err = _("Linked image is diverged: %s") % \
+                            child_diverged
+
+                if child_dup:
+                        err = _("A linked child image with this name "
+                            "already exists: %s") % child_dup
+
+                if child_nested:
+                        cpath, ipath = child_nested
+                        err = _("Child image '%(cpath)s' is nested "
+                            "within another image: '%(ipath)s'") % {
+                                "cpath": cpath,
+                                "ipath": ipath,
+                            }
+
+                if child_not_in_altroot:
+                        path, altroot = child_not_in_altroot
+                        err = _("Child image '%(path)s' is not located "
+                           "within the parent's altroot '%(altroot)s'") % {
+                                "path": path,
+                                "altroot": altroot
+                            }
+
+                if child_not_nested:
+                        cpath, ppath = child_not_nested
+                        err = _("Child image '%(cpath)s' is not nested "
+                            "within the parent image '%(ppath)s'") % {
+                                "cpath": cpath,
+                                "ppath": ppath,
+                            }
+
+                if child_op_failed:
+                        assert lin
+                        err = _("Linked image %(op)s failed for: %(lin)s") % \
+                            {"op": child_op_failed, "lin": lin}
+
+                if child_path_eaccess:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_EACCESS
+                        if lin:
+                                err = _("Can't access child image "
+                                    "(%(lin)s) at path: %(path)s") % {
+                                        "lin": lin,
+                                        "path": child_path_eaccess
+                                    }
+                        else:
+                                err = _("Can't access child image "
+                                    "at path: %s") % child_path_eaccess
+
+                if child_path_notabs:
+                        err = _("Child path not absolute: %s") % \
+                            child_path_notabs
+
+                if child_unknown:
+                        err = _("Unknown child linked image: %s") % \
+                            child_unknown
+
+                if detach_child_notsup:
+                        err = _("Linked image type does not support "
+                            "child detach: %s") % detach_child_notsup
+
+                if detach_from_parent:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_PARENTOP
+                        err =  _("Parent linked to child, can not detach "
+                            "child: %s") % detach_from_parent
+
+                if detach_parent_notsup:
+                        err = _("Linked image type does not support "
+                            "parent detach: %s") % detach_parent_notsup
+
+                if img_linked:
+                        err = _("Image already a linked child: %s") % \
+                            img_linked
+
+                if lin_malformed:
+                        err = _("Invalid linked image name: %s") % \
+                            lin_malformed
+
+                if link_to_self:
+                        err = _("Can't link image to itself.")
+
+                if parent_bad_img:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_EACCESS
+                        err = _("Can't initialize parent image at path: %s") % \
+                            parent_bad_img
+
+                if parent_bad_notabs:
+                        err = _("Parent path not absolute: %s") % \
+                            parent_bad_notabs
+
+                if parent_bad_path:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_EACCESS
+                        err = _("Can't access parent image at path: %s") % \
+                            parent_bad_path
+
+                if parent_not_in_altroot:
+                        path, altroot = parent_not_in_altroot
+                        err = _("Parent image '%(path)s' is not located "
+                            "within the child's altroot '%(altroot)s'") % {
+                                "path": path,
+                                "altroot": altroot
+                            }
+
+                if recursive_cmd_fail:
+                        if type(recursive_cmd_fail) == list:
+                                recursive_cmd_fail = \
+                                    " ".join(recursive_cmd_fail)
+                        assert type(recursive_cmd_fail) == str
+                        err = _("""
+Recursive linked image operation failed for child '%(lin)s'.
+The following subprocess returned an unexpected exit code of %(exitrv)d:
+    %(recursive_cmd_fail)s"""
+                        ) % {
+                            "lin": lin,
+                            "exitrv": exitrv,
+                            "recursive_cmd_fail": recursive_cmd_fail,
+                        }
+
+                if self_linked:
+                        err = _("Current image already a linked child: %s") % \
+                            self_linked
+
+                if self_not_child:
+                        if exitrv == None:
+                                exitrv = pkgdefs.EXIT_NOPARENT
+                        err = _("Current image is not a linked child: %s") % \
+                            self_not_child
+
+                # set default error return value
+                if exitrv == None:
+                        exitrv = pkgdefs.EXIT_OOPS
+
+                self.lix_err = err
+                self.lix_bundle = None
+                self.lix_exitrv = exitrv
+
+        def __str__(self):
+                assert self.lix_err or self.lix_bundle
+                assert not (self.lix_err and self.lix_bundle), \
+                   "self.lix_err = %s, self.lix_bundle = %s" % \
+                   (str(self.lix_err), str(self.lix_bundle))
+
+                # single error
+                if self.lix_err:
+                        return self.lix_err
+
+                # concatenate multiple errors
+                bundle_str = []
+                for e in self.lix_bundle:
+                        bundle_str.append(str(e))
+                return "\n".join(bundle_str)

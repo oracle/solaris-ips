@@ -264,6 +264,65 @@ class Manifest(object):
                                 out += "%s -> %s\n" % (src, dest)
                 return out
 
+        @staticmethod
+        def _gen_dirs_to_str(dirs):
+                """ from a dictionary of paths, generate contents of dircache
+                file"""
+
+                for d in dirs:
+                        for v in dirs[d]:
+                                yield "dir path=%s %s\n" % \
+                                    (d, " ".join("%s=%s" % t \
+                                    for t in v.iteritems()))
+
+        def _actions_to_dirs(self):
+                """ create dictionary of all directories referenced
+                by actions explicitly or implicitly from self.actions...
+                include variants as values; collapse variants where possible"""
+
+                dirs = {}
+                # build a dictionary containing all directories tagged w/
+                # variants
+                for a in self.actions:
+                        v, f = a.get_varcet_keys()
+                        variants = dict((name, a.attrs[name]) for name in v + f)
+                        for d in expanddirs(a.directory_references()):
+                                if d not in dirs:
+                                        dirs[d] = [variants]
+                                elif variants not in dirs[d]:
+                                        dirs[d].append(variants)
+
+                # remove any tags if any entries are always installed (NULL)
+                for d in dirs:
+                        if {} in dirs[d]:
+                                dirs[d] = [{}]
+                                continue
+                        # could collapse dirs where all variants are present
+                return dirs
+
+        def get_directories(self, excludes):
+                """ return a list of directories implicitly or
+                explicitly referenced by this object"""
+
+                try:
+                        alist = self.dir_alist
+                except:
+                        # generate actions that contain directories
+                        self.dir_alist = [
+                            actions.fromstr(s.strip())
+                            for s in Manifest._gen_dirs_to_str(
+                                self._actions_to_dirs())
+                        ]
+                        alist = self.dir_alist
+
+                s = set([
+                    a.attrs["path"]
+                    for a in alist
+                    if a.include_this(excludes)
+                ])
+
+                return list(s)
+
         def gen_actions(self, excludes=EmptyI):
                 """Generate actions in manifest through ordered callable list"""
                 for a in self.actions:
@@ -838,50 +897,14 @@ class FactoredManifest(Manifest):
                 fd, fn = tempfile.mkstemp(dir=t_dir,
                     prefix="manifest.dircache.")
                 f = os.fdopen(fd, "wb")
-                dirs = self.__actions_to_dirs()
+                dirs = self._actions_to_dirs()
 
-                for s in self.__gen_dirs_to_str(dirs):
+                for s in Manifest._gen_dirs_to_str(dirs):
                         f.write(s)
 
                 f.close()
                 os.chmod(fn, PKG_FILE_MODE)
                 portable.rename(fn, self.__cache_path("manifest.dircache"))
-
-        @staticmethod
-        def __gen_dirs_to_str(dirs):
-                """ from a dictionary of paths, generate contents of dircache
-                file"""
-                for d in dirs:
-                        for v in dirs[d]:
-                                yield "dir path=%s %s\n" % \
-                                    (d, " ".join("%s=%s" % t \
-                                    for t in v.iteritems()))
-
-        def __actions_to_dirs(self):
-                """ create dictionary of all directories referenced
-                by actions explicitly or implicitly from self.actions...
-                include variants as values; collapse variants where possible"""
-                assert self.loaded
-
-                dirs = {}
-                # build a dictionary containing all directories tagged w/
-                # variants
-                for a in self.actions:
-                        v, f = a.get_varcet_keys()
-                        variants = dict((name, a.attrs[name]) for name in v + f)
-                        for d in expanddirs(a.directory_references()):
-                                if d not in dirs:
-                                        dirs[d] = [variants]
-                                elif variants not in dirs[d]:
-                                        dirs[d].append(variants)
-
-                # remove any tags if any entries are always installed (NULL)
-                for d in dirs:
-                        if {} in dirs[d]:
-                                dirs[d] = [{}]
-                                continue
-                        # could collapse dirs where all variants are present
-                return dirs
 
         @staticmethod
         def clear_cache(cache_root):
@@ -913,23 +936,14 @@ class FactoredManifest(Manifest):
                         if not self.loaded:
                                 # need to load from disk
                                 self.__load()
-                        # generate actions that contain directories
-                        alist = [
-                            actions.fromstr(s.strip())
-                            for s in self.__gen_dirs_to_str(
-                                self.__actions_to_dirs())
-                        ]
+                        assert self.loaded
                 else:
                         # we have cached copy on disk; use it
                         f = file(mpath)
-                        alist = [actions.fromstr(s.strip()) for s in f]
+                        self.dir_alist = [actions.fromstr(s.strip()) for s in f]
                         f.close()
-                s = set([
-                    a.attrs["path"]
-                    for a in alist
-                    if a.include_this(excludes)
-                ])
-                return list(s)
+
+                return Manifest.get_directories(self, excludes)
 
         def gen_actions_by_type(self, atype, excludes=EmptyI):
                 """ generate actions of the specified type;

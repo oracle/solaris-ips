@@ -23,7 +23,21 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-from pkg.misc import Singleton
+class Singleton(type):
+        """Set __metaclass__ to Singleton to create a singleton.
+        See http://en.wikipedia.org/wiki/Singleton_pattern """
+
+        def __init__(self, name, bases, dictionary):
+                super(Singleton, self).__init__(name, bases, dictionary)
+                self.instance = None
+
+        def __call__(self, *args, **kw):
+                if self.instance is None:
+                        self.instance = super(Singleton, self).__call__(*args,
+                            **kw)
+
+                return self.instance
+
 
 class DebugValues(dict):
         """Singleton dict that returns None if unknown value
@@ -39,5 +53,6 @@ class DebugValues(dict):
 
         def set_value(self, key, value):
                 self[key] = value
+
 
 DebugValues=DebugValues()

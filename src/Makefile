@@ -30,6 +30,9 @@ install := TARGET = install
 packages := TARGET = install
 clean := TARGET = clean
 clobber := TARGET = clobber
+lint := TARGET = lint
+clint := TARGET = clint
+pylint := TARGET = pylint
 test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
@@ -48,8 +51,22 @@ clobber: $(SUBDIRS)
 	$(PYTHON) setup.py clobber
 	@cd pkg; pwd; make clobber
 
+#
+# run pylint as part of the install target.
+# it's the best way to ensure things stay pylint clean.
+#
 install: $(SUBDIRS)
 	$(PYTHON) setup.py install
+	$(PYTHON) setup.py pylint
+
+lint:
+	$(PYTHON) setup.py lint
+
+clint:
+	$(PYTHON) setup.py clint
+
+pylint:
+	$(PYTHON) setup.py pylint
 
 #
 # This rule propagates the current make target through all of the
@@ -70,7 +87,7 @@ test:
 test-verbose:
 	$(PYTHON) setup.py test -v
 
-test-generate: 
+test-generate:
 	$(PYTHON) setup.py test -g
 
 test-leaks:

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import getopt
@@ -121,11 +121,23 @@ class CheckForUpdates:
                         self.__send_return(enumerations.UPDATES_UNDETERMINED)
                         return
                 try:
-                        plan_ret = \
-                            self.api_obj.plan_update_all(
-                            refresh_catalogs = True,
-                            noexecute = True, force = True)
-                        stuff_to_do = plan_ret[0]
+                        #
+                        # Since this program is intended to primarily be a
+                        # helper for the gui components, and since the gui
+                        # components are currently unaware of child images,
+                        # we'll limit the available update check we're about
+                        # to do to just the parent image.  If we didn't do
+                        # this we could end up in a situation where the parent
+                        # has no available updates, but a child image does,
+                        # and then the gui (which is unaware of children)
+                        # would show that no updates are available to the
+                        # parent.
+                        #
+                        for pd in self.api_obj.gen_plan_update(
+                            refresh_catalogs=True, noexecute=True,
+                            force=True, li_ignore=[]):
+                                continue
+                        stuff_to_do = not self.api_obj.planned_nothingtodo()
                 except api_errors.CatalogRefreshException, cre:
                         crerr = nongui_misc.get_catalogrefresh_exception_msg(cre)
                         if debug:

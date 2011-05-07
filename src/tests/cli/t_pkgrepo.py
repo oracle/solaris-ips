@@ -108,7 +108,7 @@ class TestPkgRepo(pkg5unittest.SingleDepotTestCase):
 
                 # --help, -? should exit with 0.
                 self.pkgrepo("--help", exit=0)
-                self.pkgrepo("-?", exit=0)
+                self.pkgrepo("'-?'", exit=0)
 
                 # unknown options should exit with 2.
                 self.pkgrepo("-U", exit=2)

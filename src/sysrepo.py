@@ -53,7 +53,7 @@ logger = global_settings.logger
 orig_cwd = None
 
 PKG_CLIENT_NAME = "pkg.sysrepo"
-CLIENT_API_VERSION = 58
+CLIENT_API_VERSION = 59
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 # exit codes

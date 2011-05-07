@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a driver packaging object.
@@ -56,22 +55,14 @@ class DriverAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
 
                 if not self.__class__.usr_sbin:
-                        usr_sbin = DebugValues.get("driver-cmd-dir",
-                            "/usr/sbin") + "/"
-                        self.__class__.usr_sbin = usr_sbin
-                        self.__class__.add_drv = usr_sbin + "add_drv"
-                        self.__class__.rem_drv = usr_sbin + "rem_drv"
-                        self.__class__.update_drv = usr_sbin + "update_drv"
+                        self.__usr_sbin_init()
 
                 #
                 # Clean up clone_perms.  This attribute may been specified either as:
-                # 
-                #  <minorname> <mode> <owner> <group>
-                #
+                #     <minorname> <mode> <owner> <group>
                 # or
+                #     <mode> <owner> <group>
                 #
-                #  <mode> <owner> <group>
-                # 
                 # In the latter case, the <minorname> is assumed to be
                 # the same as the driver name.  Correct any such instances
                 # here so that there is only one form, so that we can cleanly
@@ -93,6 +84,38 @@ class DriverAction(generic.Action):
                         self.attrs["clone_perms"] = new_cloneperms[0]
                 else:
                         self.attrs["clone_perms"] = new_cloneperms
+
+        def __usr_sbin_init(self):
+                """Initialize paths to device management commands that we will
+                execute when handling package driver actions"""
+
+                usr_sbin = DebugValues.get("driver-cmd-dir", "/usr/sbin") + "/"
+                self.__class__.usr_sbin = usr_sbin
+                self.__class__.add_drv = usr_sbin + "add_drv"
+                self.__class__.rem_drv = usr_sbin + "rem_drv"
+                self.__class__.update_drv = usr_sbin + "update_drv"
+
+        def __getstate__(self):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate this object's contents into a
+                dictionary for pickling"""
+
+                pstate = generic.Action.__getstate__(self)
+                return (None, pstate)
+
+        def __setstate__(self, state):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate a pickled dictionary copy of this
+                object's contents into a real in-memory object."""
+
+                (state, pstate) = state
+                assert state == None
+                generic.Action.__setstate__(self, pstate)
+
+                if not self.__class__.usr_sbin:
+                        self.__usr_sbin_init()
 
         @staticmethod
         def __call(args, fmt, fmtargs):

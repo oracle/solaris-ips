@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a package attribute
@@ -56,6 +55,31 @@ class AttributeAction(generic.Action):
                 if "name" not in self.attrs or "value" not in self.attrs:
                         raise pkg.actions.InvalidActionError(str(self),
                             'Missing "name" or "value" attribute')
+
+        def __getstate__(self):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate this object's contents into a
+                dictionary for pickling"""
+
+                pstate = generic.Action.__getstate__(self)
+                state = {}
+                for name in AttributeAction.__slots__:
+                        if not hasattr(self, name):
+                                continue
+                        state[name] = getattr(self, name)
+                return (state, pstate)
+
+        def __setstate__(self, state):
+                """This object doesn't have a default __dict__, instead it
+                stores its contents via __slots__.  Hence, this routine must
+                be provide to translate a pickled dictionary copy of this
+                object's contents into a real in-memory object."""
+
+                (state, pstate) = state
+                generic.Action.__setstate__(self, pstate)
+                for name in state:
+                        setattr(self, name, state[name])
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

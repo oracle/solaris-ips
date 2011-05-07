@@ -1181,7 +1181,7 @@ close
                 shutil.move(index_dir_tmp, index_dir)
 
         def _get_index_dirs(self):
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
                 index_dir_tmp = index_dir + "TMP"
                 return index_dir, index_dir_tmp
@@ -1312,7 +1312,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
                 shutil.rmtree(index_dir)
 
@@ -1360,7 +1360,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
 
                 first = True
@@ -1391,7 +1391,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 api_obj = self.image_create(durl)
                 self._api_install(api_obj, ["example_pkg@1.0"])
 
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
 
                 first = True
@@ -1419,13 +1419,15 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                         self._overwrite_version_number(orig_path)
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"],
+                            catch_wsie=False)
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg", set())
                         self._overwrite_version_number(orig_path)
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_install, api_obj, ["example_pkg"])
+                            self._api_install, api_obj, ["example_pkg"],
+                            catch_wsie=False)
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
@@ -1444,7 +1446,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                     self.res_local_pkg)
                 self._overwrite_hash(ffh_path)
                 self.assertRaises(api_errors.WrapSuccessfulIndexingException,
-                    self._api_uninstall, api_obj, ["example_pkg"])
+                    self._api_uninstall, api_obj, ["example_pkg"],
+                    catch_wsie=False)
                 self._search_op(api_obj, False, "example_pkg", set())
 
         def test_080_weird_patterns(self):
@@ -1467,7 +1470,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 durl = self.dc.get_depot_url()
                 api_obj = self.image_create(durl)
 
-                tmp_dir = os.path.join(self.img_path, "var", "pkg",
+                tmp_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index", "TMP")
                 self._api_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
@@ -1534,7 +1537,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._run_remove_root_search(self._search_op_multi, False,
                     api_obj, ip)
 
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
                 shutil.rmtree(index_dir)
                 # Do slow local searches
@@ -1637,7 +1640,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"],
+                            catch_wsie=False)
 
                         self.image_destroy()
 
@@ -1659,7 +1663,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_uninstall, api_obj, ["another_pkg"])
+                            self._api_uninstall, api_obj, ["another_pkg"],
+                            catch_wsie=False)
 
                         self.image_destroy()
 
@@ -1682,7 +1687,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_uninstall, api_obj, ["example_pkg"])
+                            self._api_uninstall, api_obj, ["example_pkg"],
+                            catch_wsie=False)
 
                         self.image_destroy()
 
@@ -1705,7 +1711,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_image_update, api_obj)
+                            self._api_image_update, api_obj, catch_wsie=False)
 
                         self.image_destroy()
 
@@ -1859,7 +1865,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 api_obj = self.image_create(durl)
 
-                index_dir = os.path.join(self.img_path, "var", "pkg",
+                index_dir = os.path.join(self.img_path(), "var", "pkg",
                     "cache", "index")
 
                 orig_fn = os.path.join(index_dir,
@@ -1872,7 +1878,8 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                 portable.rename(orig_fn, dest_fn)
                 self.assertRaises(api_errors.WrapSuccessfulIndexingException,
-                    self._api_uninstall, api_obj, ["example_pkg"])
+                    self._api_uninstall, api_obj, ["example_pkg"],
+                    catch_wsie=False)
 
         def test_bug_8492(self):
                 """Tests that field queries and phrase queries work together.

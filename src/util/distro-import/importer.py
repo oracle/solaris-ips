@@ -56,7 +56,7 @@ from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.misc import emsg
 from pkg.portable import PD_LOCAL_PATH, PD_PROTO_DIR, PD_PROTO_DIR_LIST
 
-CLIENT_API_VERSION = 58
+CLIENT_API_VERSION = 59
 PKG_CLIENT_NAME = "importer.py"
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
