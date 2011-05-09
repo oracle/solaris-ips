@@ -311,7 +311,7 @@ PKG_IMAGE=$ZONEROOT
 LC_ALL=C $PKG install $verbose pkg:///package/pkg/system-repository || \
     pkg_err_check "$f_sysrepo"
 
-dlog "\n$m_sync_done"
+log "\n$m_sync_done"
 log "$m_complete"
 
 EXIT_CODE=$ZONE_SUBPROC_OK
