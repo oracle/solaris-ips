@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,8 +30,11 @@ import unittest
 
 try:
         import ldtp
+        import ldtputils
+        if not "getmin" in dir(ldtp):
+            raise ImportError
 except ImportError:
-        raise ImportError, "SUNWldtp package not installed."
+        raise ImportError, "ldtp 2.X package not installed."
 
 class TestPkgGuiRmRepoBasics(pkg5unittest.ManyDepotTestCase):
 
@@ -47,7 +50,8 @@ class TestPkgGuiRmRepoBasics(pkg5unittest.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"],
+                    start_depots=True)
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -56,30 +60,36 @@ class TestPkgGuiRmRepoBasics(pkg5unittest.ManyDepotTestCase):
                 self.pkgsend_bulk(durl2, self.bar1)
 
                 self.image_create(durl1, prefix="test1")
+
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
         def testRmRepository(self):
                 repo_name = "test2"
+                pm_str = "%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area
+                ldtp.launchapp(pm_str,["-R", self.get_img_path()])
+                ldtp.waittillguiexist('Package Manager', state = ldtp.state.ENABLED)
 
-                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
-
-                ldtp.selectmenuitem('frmPackageManager', 'mnuManageRepositories')
+                ldtp.selectmenuitem('Package Manager', 'mnuFile;mnuManage Publishers...')
                 
-                ldtp.waittillguiexist('dlgManageRepositories')
+                ldtp.waittillguiexist('dlgManage Publishers')
 
-                ldtp.selectrow('dlgManageRepositories', 'Repositories', repo_name)
+                ldtp.selectrow('dlgManage Publishers', 'Publishers', repo_name)
 
-                ldtp.click('dlgManageRepositories', 'btnRemove')
+                ldtp.click('dlgManage Publishers', 'btnRemove')
 
-                ldtp.click('dlgManageRepositories', 'btnClose')
+                ldtp.click('dlgManage Publishers', 'btnOK')
 
-                ldtp.waittillguiexist('frmPackageManager')
+                ldtp.waittillguiexist('dlgManage Publishers Confirmation')
+
+                ldtp.click('dlgManage Publishers Confirmation', 'btnOK')
+
+                ldtp.waittillguinotexist('dlgManage Publishers')
 
                 # Verify result
                 self.pkg('publisher | grep %s' % repo_name, exit=1)
 
                 # Quit Package Manager
-                ldtp.selectmenuitem('frmPackageManager', 'mnuQuit')
+                ldtp.selectmenuitem('Package Manager', 'mnuFile;mnuQuit')
 
 if __name__ == "__main__":
 	unittest.main()

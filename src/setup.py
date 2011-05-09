@@ -860,6 +860,7 @@ class test_func(Command):
             ("port=", "z", "lowest port to start a depot on"),
             ("timing", "t", "timing file <file>"),
             ("verbosemode", 'v', "run tests in verbose mode"),
+            ("enableguitests", 'u', "enable IPS GUI tests, disabled by default"),
             ("stoponerr", 'x', "stop when a baseline mismatch occurs"),
             ("debugoutput", 'd', "emit debugging output"),
             ("showonexpectedfail", 'f',

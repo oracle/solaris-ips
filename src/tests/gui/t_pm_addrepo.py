@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,41 +30,60 @@ import unittest
 
 try:
         import ldtp
+        import ldtputils
+        if not "getmin" in dir(ldtp):
+            raise ImportError
 except ImportError:
-        raise ImportError, "SUNWldtp package not installed."
+        raise ImportError, "ldtp 2.X package not installed."
 
-class TestPkgGuiAddRepoBasics(pkg5unittest.SingleDepotTestCase):
+class TestPkgGuiAddRepoBasics(pkg5unittest.ManyDepotTestCase):
 
         # pygtk requires unicode as the default encoding.
         default_utf8 = True
 
-        foo10 = """
-            open package1@1.0,5.11-0
-            add set name="description" value="Some package1 description"
+        foo1 = """
+            open foo@1,5.11-0
             close """
 
+        bar1 = """
+            open bar@1,5.11-0
+            close """
+
+        def setUp(self):
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"],
+                    start_depots=True)
+
+                durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(durl1, self.foo1)
+
+                durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(durl2, self.bar1)
+
+                self.image_create(durl1, prefix="test1")
+
         def testAddRepository(self):
-                repo_name = 'testadd'
-                repo_url = self.dc.get_depot_url()
-                self.pkgsend_bulk(repo_url, self.foo10)
-                self.image_create(repo_url)
+                repo_name = "test2"
+                pm_str = "%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area
+                ldtp.launchapp(pm_str,["-R", self.get_img_path()])
+                ldtp.waittillguiexist('Package Manager', state = ldtp.state.ENABLED)
 
-                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
+                ldtp.selectmenuitem('Package Manager', 'mnuFile;mnuAdd Publisher...')
+                
+                ldtp.waittillguiexist('dlgAdd Publisher')
 
-                ldtp.selectmenuitem('frmPackageManager', 'mnuManageRepositories')
+                ldtp.settextvalue('dlgAdd Publisher', "txtURI", self.dcs[2].get_depot_url())
 
-                ldtp.waittillguiexist('dlgManageRepositories')
+                ldtp.click('dlgAdd Publisher', 'btnAdd')
 
-                ldtp.settextvalue("dlgManageRepositories", "txtName", repo_name)
-                ldtp.settextvalue("dlgManageRepositories", "txtURL", repo_url)
-                ldtp.click('dlgManageRepositories', 'btnAdd')
+                ldtp.waittillguiexist('dlgAdding Publisher Complete')
 
-                ldtp.click('dlgManageRepositories', 'btnClose')
+                ldtp.click('dlgAdding Publisher Complete', 'btnClose')
 
                 # Verify result
-                self.pkg('publisher | grep %s' % repo_name)
+                self.pkg('publisher | grep %s' % repo_name, exit=0)
+
                 # Quit Package Manager
-                ldtp.selectmenuitem('frmPackageManager', 'mnuQuit')
+                ldtp.selectmenuitem('Package Manager', 'mnuFile;mnuQuit')
 
 if __name__ == "__main__":
 	unittest.main()

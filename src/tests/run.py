@@ -200,6 +200,7 @@ def usage():
    -p             Parseable output format
    -s <regexp>    Run tests starting at regexp
    -t             Generate timing info file
+   -u             Enable IPS GUI tests, disabled by default
    -v             Verbose output
    -x             Stop after the first baseline mismatch
    -z <port>      Lowest port the test suite should use
@@ -218,7 +219,7 @@ if __name__ == "__main__":
                 # If you add options here, you need to also update setup.py's
                 # test_func to include said options.
                 #
-                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghptvxb:o:s:z:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghptuvxb:o:s:z:",
                     ["generate-baseline", "parseable", "port", "timing",
                     "verbose", "baseline-file", "only"])
         except getopt.GetoptError, e:
@@ -235,6 +236,7 @@ if __name__ == "__main__":
         do_coverage = False
         debug_output = False
         show_on_expected_fail = False
+        enable_gui_tests = False
         archive_dir = None
         port = 12001
 
@@ -255,6 +257,8 @@ if __name__ == "__main__":
                         bfile = arg
                 if opt == "-o":
                         onlyval.append(arg)
+                if opt == "-u":
+                        enable_gui_tests = True
                 if opt == "-x":
                         bailonfail = True
                 if opt == "-t":
@@ -315,21 +319,22 @@ if __name__ == "__main__":
         if ostype == "posix":
                 suites.append(cli_suite)
                 suites.append(distro_suite)
-                try:
-                        import gui.testutils
-                except Exception, e:
-                        print "# %s" % e
-                else:
-                        if not gui.testutils.check_for_gtk():
-                                print "# GTK not present or $DISPLAY not " \
-                                    "set, GUI tests disabled."
-                        elif not gui.testutils.check_if_a11y_enabled():
-                                print "# Accessibility not enabled, GUI " \
-                                    "tests disabled."
+                if enable_gui_tests:
+                        try:
+                                import gui.testutils
+                        except Exception, e:
+                                print "# %s" % e
                         else:
-                                gui_suite = find_tests("gui", onlyval,
-                                    startattest, output)
-                                suites.append(gui_suite)
+                                if not gui.testutils.check_for_gtk():
+                                        print "# GTK not present or $DISPLAY not " \
+                                            "set, GUI tests disabled."
+                                elif not gui.testutils.check_if_a11y_enabled():
+                                        print "# Accessibility not enabled, GUI " \
+                                            "tests disabled."
+                                else:
+                                        gui_suite = find_tests("gui", onlyval,
+                                            startattest, output)
+                                        suites.append(gui_suite)
 
         # This is primarily of interest to developers altering the test suite,
         # so don't enable it for now.  The testsuite suite tends to emit a bunch

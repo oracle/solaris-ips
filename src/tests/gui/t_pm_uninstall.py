@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -30,8 +30,11 @@ import unittest
 
 try:
         import ldtp
+        import ldtputils
+        if not "getmin" in dir(ldtp):
+            raise ImportError
 except ImportError:
-        raise ImportError, "SUNWldtp package not installed."
+        raise ImportError, "ldtp 2.X package not installed."
 
 class TestPkgGuiUninstallBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -43,40 +46,42 @@ class TestPkgGuiUninstallBasics(pkg5unittest.SingleDepotTestCase):
             add set name="description" value="Some package1 description"
             close """
 
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+
+        def tearDown(self):
+                pkg5unittest.SingleDepotTestCase.tearDown(self)
+
         def testUninstallSimplePackage(self):
                 pkgname = 'package1'
-                repo_url = self.dc.get_depot_url()
-                self.pkgsend_bulk(repo_url, self.foo10)
-                self.image_create(repo_url)
+                pm_str = "%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area
+
+                self.pkgsend_bulk(self.rurl, self.foo10)
+                self.image_create(self.rurl)
                 self.pkg("install %s" % pkgname)
 
-                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
-
-                ldtp.activatetext('frmPackageManager', 'txtSearch')
-                ldtp.enterstring('frmPackageManager', 'txtSearch', pkgname)
-                
-                ldtp.generatekeyevent('<enter>')
-
-                # Select the package to remove
-                ldtp.selectrow('frmPackageManager', 'Packages', pkgname)
-                ldtp.click('frmPackageManager', 'btnRemove')
-
-                # Get focus to the Remove confirmation dialog
+                ldtp.launchapp(pm_str,["-R", self.get_img_path()])
+                ldtp.waittillguiexist('Package Manager', state = ldtp.state.ENABLED)
+                ldtp.selectrow('Package Manager', 'Categories', "All Categories")
+                ldtp.selectrow('Package Manager', 'Packages', pkgname)
+                ldtp.selectmenuitem('Package Manager', 'mnuEdit;mnuSelect All')
+                ldtp.click('Package Manager', 'btnRemove')
                 ldtp.waittillguiexist('dlgRemoveConfirmation')
                 ldtp.click('dlgRemoveConfirmation', 'btnProceed')
 
                 while (ldtp.objectexist('dlgRemove', 'btnClose') == 0):
                         ldtp.wait(0.1)
-                
+
                 ldtp.click('dlgRemove', 'btnClose')
 
-                # Quit packagemanager
                 ldtp.waittillguinotexist('dlgRemove')
 
                 # Verify result
                 self.pkg('verify')
 
-                ldtp.click('frmPackageManager', 'mnuQuit')
+                # Quit packagemanager
+                ldtp.selectmenuitem('Package Manager', 'mnuFile;mnuQuit')
+                
 
 if __name__ == "__main__":
 	unittest.main()
