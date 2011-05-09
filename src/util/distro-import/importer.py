@@ -526,23 +526,19 @@ def end_package(pkg):
         elif "-" not in pkg.version:
                 pkg.version += "-%s" % pkg_branch
 
-       # add description actions
+        # add description actions
         if pkg.desc:
-                pkg.actions.append( actions.attribute.AttributeAction(None,
+                pkg.actions.append(actions.attribute.AttributeAction(None,
                     name="pkg.description", value=pkg.desc))
-
         if pkg.summary:
-                pkg.actions.extend([
-                    actions.attribute.AttributeAction(None,
-                        name="pkg.summary", value=pkg.summary),
-                    actions.attribute.AttributeAction(None,
-                        name="description", value=pkg.summary)
-                ])
+                pkg.actions.append(actions.attribute.AttributeAction(None,
+                    name="pkg.summary", value=pkg.summary))
         if pkg.classification:
                 pkg.actions.append(actions.attribute.AttributeAction(None,
                     name="info.classification", value=pkg.classification))
 
-        # add dependency on consolidation incorporation if not obsolete or renamed
+        # add dependency on consolidation incorporation if not obsolete
+        # or renamed
         if pkg.consolidation and not pkg.obsolete_branch and not pkg.rename_branch:
                 action = actions.fromstr(
                     "depend fmri=consolidation/%s/%s-incorporation "
@@ -861,7 +857,7 @@ def gen_hardlink_depend_actions(action):
         target = action.attrs["target"]
         path = action.attrs["path"]
         if not target.startswith("/"):
-                target = os.path.normpath( os.path.join(os.path.split(path)[0],
+                target = os.path.normpath(os.path.join(os.path.split(path)[0],
                     target))
         return [actions.fromstr(
             "depend importer.file=%s fmri=none type=require importer.source=hardlink" %

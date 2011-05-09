@@ -1,0 +1,11 @@
+package network/tor
+consolidation "sfw"
+obsoleted 165
+version 0.2.1.20
+end package
+
+package SUNWtor
+consolidation "sfw"
+obsoleted 165
+version 0.2.1.20
+end package

@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 ARCH:sh=	uname -p
@@ -42,6 +42,8 @@ VPANELS_REPO=http://localhost:20004
 USERLAND_REPO=http://localhost:20005
 L10N_REPO=http://localhost:20006
 DESKTOP_REPO=http://localhost:20007
+CDE_REPO=http://localhost:20008
+FOSS_REPO=http://localhost:20009
 
 INPUT_REPOS = \
     $(ON_REPO) \
@@ -51,7 +53,9 @@ INPUT_REPOS = \
     $(VPANELS_REPO) \
     $(USERLAND_REPO) \
     $(L10N_REPO) \
-    $(DESKTOP_REPO)
+    $(DESKTOP_REPO) \
+    $(CDE_REPO) \
+    $(FOSS_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
 L10N_EXTRA_REPO=http://localhost:30006
