@@ -226,7 +226,8 @@ pkglist="$pkglist
 	pkg:///compress/zip
 	pkg:///compress/unzip
 	pkg:///package/pkg
-        pkg:///package/pkg/system-repository"
+        pkg:///package/pkg/system-repository
+	pkg:///install/beadm"
 
 #
 # Get some diagnostic tools, truss, dtrace, etc.
