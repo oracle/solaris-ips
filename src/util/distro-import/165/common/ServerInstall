@@ -133,7 +133,6 @@ $(i386_ONLY)depend driver/storage/glm
 $(sparc_ONLY)depend driver/storage/ifp
 $(i386_ONLY)depend driver/storage/imraid_sas
 $(sparc_ONLY)depend driver/storage/isp
-$(i386_ONLY)depend driver/storage/lsimega
 $(i386_ONLY)depend driver/storage/marvell88sx
 $(i386_ONLY)depend driver/storage/mega_sas
 depend driver/storage/mpt_sas
