@@ -362,7 +362,8 @@ sysrepo_log_stubs = [
         'util/apache2/sysrepo/logs/access_log',
         'util/apache2/sysrepo/logs/error_log',
         ]
-execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']
+execattrd_files = ['util/misc/exec_attr.d/SUNWipkg',
+                   'util/misc/exec_attr.d/SUNWipkg-gui']
 authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
 syscallat_srcs = [
         'modules/syscallat.c'
