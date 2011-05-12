@@ -851,15 +851,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # the wrong location.
                 self.__init_catalogs()
 
-                # Prepare publishers for transport usage; this must be done
-                # just before configuration is written and transport caches
-                # are reset, but after all of the directory setup work done
-                # above.  This must be done before the format is updated.
-                for pub in self.gen_publishers(inc_disabled=True):
-                        pub.meta_root = self._get_publisher_meta_root(
-                            pub.prefix)
-                        pub.transport = self.transport
-
                 # Upgrade the image's format if needed.
                 self.update_format(allow_unprivileged=True,
                     progtrack=progtrack)
@@ -872,13 +863,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 get_package_counts_by_pub(),
                             self.imgdir, self.transport,
                             self.cfg.get_policy("use-system-repo"))
-
-                        # This must be done again because new publishers may
-                        # have been added.
-                        for pub in self.gen_publishers(inc_disabled=True):
-                                pub.meta_root = self._get_publisher_meta_root(
-                                    pub.prefix)
-                                pub.transport = self.transport
 
                         # Check to see if any system publishers have been
                         # removed.  If they have, remove their metadata and
@@ -1567,9 +1551,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         repo.reset_mirrors()
                                 except KeyError:
                                         new_pub = alt_src_pubs[pfx]
-                                        new_pub.meta_root = \
-                                            self._get_publisher_meta_root(pfx)
-                                        new_pub.transport = self.transport
 
                                 alt_pubs[pfx] = new_pub
 
@@ -1583,6 +1564,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 ))
 
                 for pub in publishers:
+                        # Prepare publishers for transport usage; this must be
+                        # done each time so that information reflects current
+                        # image state.  This is done whether or not the
+                        # publisher is returned so that in-memory state is
+                        # always current.
+                        pub.meta_root = self._get_publisher_meta_root(
+                            pub.prefix)
+                        pub.transport = self.transport
                         if inc_disabled or not pub.disabled:
                                 yield pub
 
