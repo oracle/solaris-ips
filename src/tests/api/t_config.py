@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -315,6 +315,38 @@ class TestProperty(pkg5unittest.Pkg5TestCase):
                     (("int", 0), ("int", 256)),
                 ]
                 self.__verify_equality(propcls, eqlist, nelist)
+
+                # Verify minimum works as expected.
+                p = propcls("int", minimum=-1)
+                self.assertEqual(p.minimum, -1)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, p, "value", -100)
+                p.value = 4294967295
+                self.assertEqual(p.value, 4294967295)
+
+                # Verify maximum works as expected.
+                p = propcls("int", maximum=65535)
+                self.assertEqual(p.maximum, 65535)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, p, "value", 42944967295)
+                p.value = 65535
+                self.assertEqual(p.value, 65535)
+
+                # Verify maximum and minimum work together.
+                p = propcls("int", maximum=1, minimum=-1)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, p, "value", -2)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, p, "value", 2)
+
+                # Verify maximum and minimum are copied when object is.
+                np = copy.copy(p)
+                self.assertEqual(np.maximum, 1)
+                self.assertEqual(np.minimum, -1)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, np, "value", -2)
+                self.assertRaises(cfg.InvalidPropertyValueError,
+                    setattr, np, "value", 2)
 
                 # Verify stringified form.
                 self.__verify_stringify(propcls, "int", [(0, "0"),
