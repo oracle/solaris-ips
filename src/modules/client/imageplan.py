@@ -1156,7 +1156,8 @@ class ImagePlan(object):
                                                 act = pkg.actions.fromstr(actstr)
                                                 if act.attrs[act.key_attr] != key:
                                                         break
-                                                if pns and act.namespace_group != pns:
+                                                if pns is not None and \
+                                                    act.namespace_group != pns:
                                                         break
                                                 pns = act.namespace_group
                                                 pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
@@ -1188,7 +1189,8 @@ class ImagePlan(object):
                                                 act = pkg.actions.fromstr(actstr)
                                                 if act.attrs[act.key_attr] != key:
                                                         break
-                                                if pns and act.namespace_group != pns:
+                                                if pns is not None and \
+                                                    act.namespace_group != pns:
                                                         break
                                                 pns = act.namespace_group
                                                 pfmri = pkg.fmri.PkgFmri(fmristr, "5.11")
