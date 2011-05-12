@@ -1280,6 +1280,9 @@ class PkgSolver(object):
                                 matching.extend(m)
                                 nonmatching.extend(nm)
 
+                        matching = set(matching)
+                        nonmatching = set(nonmatching)
+
                 elif dtype == "parent":
                         if self.__parent_pkgs == None:
                                 # ignore this dependency

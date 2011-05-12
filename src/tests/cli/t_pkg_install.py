@@ -3415,6 +3415,26 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        pkg_nosol = """
+            open pkg-nosol-A@1.0,5.11-0
+            add depend type=require-any fmri=pkg:/pkg-nosol-B fmri=pkg:/pkg-nosol-C
+            add depend type=require fmri=pkg:/pkg-nosol-D
+            close
+            open pkg-nosol-B@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkg-nosol-E@2.0
+            close
+            open pkg-nosol-C@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkg-nosol-E@2.0
+            close
+            open pkg-nosol-D@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkg-nosol-E@1.0
+            close
+            open pkg-nosol-E@1.0,5.11-0
+            close
+            open pkg-nosol-E@2.0,5.11-0
+            close
+        """
+
         pkg_renames = """
             open pkg_need_rename@1.0,5.11-0
             add depend type=require fmri=pkg_rename
@@ -3613,7 +3633,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                     self.pkg100, self.pkg101, self.pkg102,
                     self.pkg110, self.pkg111,
                     self.pkg121, self.pkg122, self.pkg123, self.pkg132,
-                    self.pkg142, self.pkg_renames, self.pkgSUNWcs075))
+                    self.pkg142, self.pkg_nosol, self.pkg_renames,
+                    self.pkgSUNWcs075))
 
                 for t in self.leaf_expansion:
                         self.pkgsend_bulk(self.rurl, self.leaf_template % t)
@@ -3779,6 +3800,10 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
         def test_require_any_dependencies(self):
                 """Get require-any dependencies working"""
                 self.image_create(self.rurl)
+
+                # test to see if solver will fail gracefully when no solution is
+                # possible and a require-any dependency is involved
+                self.pkg("install -vvv pkg-nosol-A pkg-nosol-E", exit=1)
 
                 # test to see if solver will pick one
                 self.pkg("install pkg8@1.0")  # install pkg
