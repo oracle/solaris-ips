@@ -49,4 +49,7 @@
 ^src/util/distro-import/redist_cluster$
 ^src/util/distro-import/slim_cluster$
 ^src/util/misc/extract_hostid$
+^src/zoneproxy/zoneproxy-adm/zoneproxy-adm$
+^src/zoneproxy/zoneproxy-client/zoneproxy-client$
+^src/zoneproxy/zoneproxyd/zoneproxyd$
 ^webrev

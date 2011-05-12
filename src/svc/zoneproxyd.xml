@@ -70,14 +70,14 @@
 		  name='sysrepo'
 	          type='service'
 	          grouping='require_all'
-	          restart_on='refresh'>
+	          restart_on='restart'>
 	          <service_fmri value='svc:/application/pkg/system-repository' />
 	</dependency>
 
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/lib/zones/zoneproxyd -s `svcprop -c -p config/host application/pkg/system-repository:default`:`svcprop -c -p config/port application/pkg/system-repository:default`'
+		exec='/usr/lib/zones/zoneproxyd'
 		timeout_seconds='300'>
 		<method_context>
 			<method_credential user='root'/>

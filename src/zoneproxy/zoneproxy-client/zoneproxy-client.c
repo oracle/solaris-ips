@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <thread.h>
 #include <unistd.h>
 #include <zone.h>
 #include <zoneproxy_impl.h>
@@ -50,10 +51,28 @@
 
 static int g_pipe_fd;
 
+static int zp_unregister_zone(void);
+
 /* ARGSUSED */
 static void
-exithandler(int sig)
+s_handler(void)
 {
+	int sig;
+	int do_exit = 0;
+	sigset_t wait_sigs;
+
+	sigfillset(&wait_sigs);
+
+	while (do_exit == 0) {
+		if ((sig = sigwait(&wait_sigs)) < 0)
+			continue;
+
+		if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
+			do_exit++;
+	}
+
+	(void) zp_unregister_zone();
+
 	exit(EXIT_SUCCESS);
 }
 
@@ -382,6 +401,7 @@ main(int argc, char **argv)
 	boolean_t quit = B_FALSE;
 	struct addrinfo hints;
 	struct addrinfo *ai = NULL;
+	sigset_t main_ss;
 
 	while ((rc = getopt(argc, argv, "s:")) != -1) {
 		switch (rc) {
@@ -421,9 +441,6 @@ main(int argc, char **argv)
 	}
 
 	(void) signal(SIGPIPE, SIG_IGN);
-	(void) signal(SIGINT, exithandler);
-	(void) signal(SIGTERM, exithandler);
-	(void) signal(SIGHUP, exithandler);
 
 	if (daemonize_start() < 0) {
 		(void) fprintf(stderr, "Unable to start daemon\n");
@@ -518,6 +535,20 @@ main(int argc, char **argv)
 	freeaddrinfo(ai);
 
 	daemonize_ready(0);
+
+	sigfillset(&main_ss);
+
+	if (thr_sigsetmask(SIG_BLOCK, &main_ss, NULL) < 0) {
+		perror("thr_sigsetmask");
+		exit(EXIT_FAILURE);
+	}
+
+	/* create signal handling thread */
+	if (thr_create(NULL, 0, (void *(*)(void *))s_handler, NULL,
+	    THR_BOUND, NULL) < 0) {
+		perror("thr_create");
+		exit(EXIT_FAILURE);
+	}
 
 	drop_privs();
 

@@ -33,11 +33,11 @@ ROOTHDIR =	$(PROTO_AREA)/usr/include
 ROOTHDR =	$(ROOTHDIR)/$(HDR)
 CLOBBERFILES +=	$(ROOTHDR)
 
-LDLIBS +=	-lcontract -lsocket -lumem
-CPPFLAGS +=	-D_REENTRANT -D_FILE_OFFSET_BITS=64
-LDFLAGS +=	-zassert-deflib=libcontract.so -zassert-deflib=libumem.so
+LDLIBS +=	-lcontract -lsocket -lumem -lscf
+CPPFLAGS +=	-mt -D_REENTRANT -D_FILE_OFFSET_BITS=64
+LDFLAGS +=	-zassert-deflib=libthread.so -zassert-deflib=libcontract.so \
+		-zassert-deflib=libumem.so -zassert-deflib=libscf.so
 LINTFLAGS +=	-erroff=E_SEC_CREAT_WITHOUT_EXCL -U__PRAGMA_REDEFINE_EXTNAME
-CFLAGS +=	../list/list.o
 
 .KEEP_STATE:
 

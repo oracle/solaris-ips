@@ -65,6 +65,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <libcontract.h>
+#include <libscf.h>
 #include <limits.h>
 #include <netdb.h>
 #include <port.h>
@@ -84,7 +85,7 @@
 #include <zoneproxy_impl.h>
 #include <sys/ctfs.h>
 #include <sys/contract/process.h>
-#include <sys/list.h>
+#include <sys/queue.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -100,7 +101,15 @@
 #define	TIMEOUT_COUNT			4
 #define	MAX_FDS_DEFAULT			6000
 
+#define	SYSREPO_FMRI    "svc:/application/pkg/system-repository:default"
+#define	SYSREPO_PG      "config"
+#define	SYSREPO_HOST    "host"
+#define	SYSREPO_PORT    "port"
+#define	DEFAULT_HOST	"127.0.0.1"
+#define	DEFAULT_PORT	"1008"
+
 #define	BUFFER_SIZ		8168
+#define	CONF_STR_SZ		2048
 
 typedef enum {
 	PROXY_USER_GENERIC = 0,
@@ -128,13 +137,16 @@ struct proxy_user {
 struct proxy_listener {
 	pu_type_t	pl_type;
 	void		(*pl_callback)(struct proxy_listener *, port_event_t *);
-	list_node_t	pl_list_link;
+	TAILQ_ENTRY(proxy_listener) pl_list_link;
 	zoneid_t	pl_zid;
 	int		pl_fd;
 	mutex_t		pl_lock;
 	boolean_t	pl_cleanup;
 	int		pl_pipefd;
 	int		pl_closefd;
+	char		*pl_proxy_host;
+	char		*pl_proxy_port;
+	uint64_t	pl_gen;
 };
 
 struct proxy_pair {
@@ -147,6 +159,17 @@ struct proxy_pair {
 	char		pp_buffer[BUFFER_SIZ];
 };
 
+struct proxy_config {
+	mutex_t			pc_lock;
+	scf_handle_t		*pc_hdl;
+	scf_instance_t		*pc_inst;
+	scf_propertygroup_t	*pc_pg;
+	scf_property_t		*pc_prop;
+	scf_value_t		*pc_val;
+	char			*pc_proxy_host;
+	char			*pc_proxy_port;
+	uint64_t		pc_gen;
+};
 
 /* global variables */
 int		g_port;
@@ -155,8 +178,6 @@ int		g_pipe_fd;
 int		g_max_door_thread = DOOR_THREAD_MAX;
 int		g_door_thread_count = 0;
 uint_t		g_proxy_pair_count = 0;
-char		*g_proxy_host;
-char		*g_proxy_port;
 thread_key_t	g_thr_info_key;
 mutex_t		*g_door_thr_lock;
 mutex_t		*g_listener_lock;
@@ -173,7 +194,12 @@ cond_t		g_thr_pool_cv = DEFAULTCV;
 mutex_t		g_quit_lock = DEFAULTMUTEX;
 cond_t		g_quit_cv = DEFAULTCV;
 
-static list_t	zone_listener_list;
+/* proxy config protected by internal lock */
+struct proxy_config	*g_proxy_config;
+boolean_t		g_config_smf;
+
+TAILQ_HEAD(zq_queuehead, proxy_listener);
+struct zq_queuehead	zone_listener_list;
 static volatile boolean_t g_quit;
 
 /* function declarations */
@@ -183,6 +209,9 @@ static int check_connect(struct proxy_pair *);
 static int clone_and_register(struct proxy_pair *);
 static void close_door_descs(door_desc_t *, uint_t);
 static int close_on_exec(int);
+static struct proxy_config *config_alloc(void);
+static void config_free(struct proxy_config *);
+static int config_read(struct proxy_config *);
 static int contract_abandon_id(ctid_t);
 static int contract_latest(ctid_t *);
 static int contract_open(ctid_t, const char *, const char *, int);
@@ -218,7 +247,7 @@ static int zpd_remove_zone(zoneid_t);
 static void
 usage(void)
 {
-	(void) fprintf(stderr, "Usage: zoneproxyd [-d] -s host:port\n");
+	(void) fprintf(stderr, "Usage: zoneproxyd [-s host:port]\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -307,6 +336,8 @@ free_proxy_listener(struct proxy_listener *listener)
 		}
 	}
 	(void) mutex_destroy(&listener->pl_lock);
+	free(listener->pl_proxy_host);
+	free(listener->pl_proxy_port);
 	free(listener);
 }
 
@@ -688,11 +719,28 @@ listen_func(struct proxy_listener *listener, port_event_t *ev)
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((err_code = getaddrinfo(g_proxy_host, g_proxy_port, &hints,
-	    &ai)) != 0) {
+	/* If proxy config has changed, pull the new info into the listener. */
+	if (g_proxy_config->pc_gen > listener->pl_gen) {
+		mutex_lock(&g_proxy_config->pc_lock);
+		free(listener->pl_proxy_host);
+		free(listener->pl_proxy_port);
+		listener->pl_proxy_host = strdup(g_proxy_config->pc_proxy_host);
+		listener->pl_proxy_port = strdup(g_proxy_config->pc_proxy_port);
+		if (listener->pl_proxy_host == NULL ||
+		    listener->pl_proxy_port == NULL) {
+			(void) fprintf(stderr, "Unable to allocate memory for "
+			    "listener configuration.\n");
+			exit(EXIT_FAILURE);
+		}
+		listener->pl_gen = g_proxy_config->pc_gen;
+		mutex_unlock(&g_proxy_config->pc_lock);
+	}
+
+	if ((err_code = getaddrinfo(listener->pl_proxy_host,
+	    listener->pl_proxy_port, &hints, &ai)) != 0) {
 		(void) fprintf(stderr, "zoneproxyd: Unable to "
 		    "perform name lookup\n");
-		(void) fprintf(stderr, "%s: %s\n", g_proxy_host,
+		(void) fprintf(stderr, "%s: %s\n", listener->pl_proxy_host,
 		    gai_strerror(err_code));
 		free_proxy_pair(pair);
 		goto out;
@@ -1240,8 +1288,8 @@ zpd_find_listener(zoneid_t zid)
 {
 	struct proxy_listener *wl;
 
-	for (wl = list_head(&zone_listener_list); wl != NULL;
-	    wl = list_next(&zone_listener_list, wl)) {
+	for (wl = TAILQ_FIRST(&zone_listener_list); wl != NULL;
+	    wl = TAILQ_NEXT(wl, pl_list_link)) {
 
 		if (wl->pl_zid == zid)
 			return (wl);
@@ -1270,7 +1318,7 @@ zpd_add_listener(zoneid_t zid, int fd, int pipefd, int closefd)
 	listener->pl_zid = zid;
 	listener->pl_pipefd = pipefd;
 	listener->pl_closefd = closefd;
-	list_insert_tail(&zone_listener_list, listener);
+	TAILQ_INSERT_TAIL(&zone_listener_list, listener, pl_list_link);
 	if (set_noblocking(fd) < 0) {
 		goto fail;
 	}
@@ -1288,7 +1336,7 @@ zpd_add_listener(zoneid_t zid, int fd, int pipefd, int closefd)
 fail:
 	if (listener) {
 		/* No cleanup required, since list lock was never dropped */
-		list_remove(&zone_listener_list, listener);
+		TAILQ_REMOVE(&zone_listener_list, listener, pl_list_link);
 		free_proxy_listener(listener);
 	}
 	(void) mutex_unlock(g_listener_lock);
@@ -1307,14 +1355,21 @@ static void
 zpd_listener_cleanup(struct proxy_listener *listener)
 {
 	int rc;
+	struct proxy_listener *wl;
 
 	(void) mutex_lock(&listener->pl_lock);
 	if (listener->pl_cleanup) {
 		(void) mutex_unlock(&listener->pl_lock);
 		return;
 	}
-	if (list_link_active(&listener->pl_list_link)) {
-		list_remove(&zone_listener_list, listener);
+
+	for (wl = TAILQ_FIRST(&zone_listener_list); wl != NULL;
+	    wl = TAILQ_NEXT(wl, pl_list_link)) {
+		if (wl == listener) {
+			TAILQ_REMOVE(&zone_listener_list, listener,
+			    pl_list_link);
+			break;
+		}
 	}
 	rc = port_dissociate(g_port, PORT_SOURCE_FD, listener->pl_fd);
 	if (rc == 0) {
@@ -1340,6 +1395,7 @@ zpd_listener_cleanup(struct proxy_listener *listener)
 static void
 zpd_remove_listener(struct proxy_listener *listener)
 {
+	struct proxy_listener *wl;
 
 	/*
 	 * Add and remove operations hold the list lock for the duration of
@@ -1348,9 +1404,15 @@ zpd_remove_listener(struct proxy_listener *listener)
 	 * thread.
 	 */
 	(void) mutex_lock(g_listener_lock);
-	if (list_link_active(&listener->pl_list_link)) {
-		list_remove(&zone_listener_list, listener);
+	for (wl = TAILQ_FIRST(&zone_listener_list); wl != NULL;
+	    wl = TAILQ_NEXT(wl, pl_list_link)) {
+		if (wl == listener) {
+			TAILQ_REMOVE(&zone_listener_list, listener,
+			    pl_list_link);
+			break;
+		}
 	}
+
 	(void) mutex_unlock(g_listener_lock);
 
 	free_proxy_listener(listener);
@@ -1634,6 +1696,185 @@ escalate_privs(void)
 	priv_freeset(ePrivSet);
 }
 
+static struct proxy_config *
+config_alloc(void)
+{
+	struct proxy_config *pc = NULL;
+
+	if ((pc = malloc(sizeof (struct proxy_config))) == NULL)
+		return (NULL);
+
+	(void) memset(pc, 0, sizeof (struct proxy_config));
+
+	if (mutex_init(&pc->pc_lock, USYNC_THREAD, NULL) < 0) {
+		goto out;
+	}
+
+	if ((pc->pc_hdl = scf_handle_create(SCF_VERSION)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_inst = scf_instance_create(pc->pc_hdl)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_pg = scf_pg_create(pc->pc_hdl)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_prop = scf_property_create(pc->pc_hdl)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_val = scf_value_create(pc->pc_hdl)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_proxy_host = strdup(DEFAULT_HOST)) == NULL) {
+		goto out;
+	}
+
+	if ((pc->pc_proxy_port = strdup(DEFAULT_PORT)) == NULL) {
+		goto out;
+	}
+
+	pc->pc_gen = 1;
+
+	return (pc);
+
+out:
+	config_free(pc);
+	return (NULL);
+}
+
+static void
+config_free(struct proxy_config *pc)
+{
+	if (pc == NULL)
+		return;
+
+	if (pc->pc_inst != NULL) {
+		scf_instance_destroy(pc->pc_inst);
+	}
+
+	if (pc->pc_pg != NULL) {
+		scf_pg_destroy(pc->pc_pg);
+	}
+
+	if (pc->pc_prop != NULL) {
+		scf_property_destroy(pc->pc_prop);
+	}
+
+	if (pc->pc_val != NULL) {
+		scf_value_destroy(pc->pc_val);
+	}
+
+	if (pc->pc_hdl != NULL) {
+		scf_handle_destroy(pc->pc_hdl);
+	}
+
+	free(pc->pc_proxy_host);
+	free(pc->pc_proxy_port);
+
+	(void) mutex_destroy(&pc->pc_lock);
+	free(pc);
+}
+
+static int
+config_read(struct proxy_config *pc)
+{
+	char *host = NULL;
+	char *port = NULL;
+
+	if ((host = malloc(CONF_STR_SZ)) == NULL) {
+		goto fail;
+	}
+
+	if ((port = malloc(CONF_STR_SZ)) == NULL) {
+		goto fail;
+	}
+
+	mutex_lock(&pc->pc_lock);
+
+	if (scf_handle_bind(pc->pc_hdl) != 0) {
+		(void) fprintf(stderr, "scf_handle_bind failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_handle_decode_fmri(pc->pc_hdl, SYSREPO_FMRI, NULL, NULL,
+	    pc->pc_inst, NULL, NULL, SCF_DECODE_FMRI_REQUIRE_INSTANCE) != 0) {
+		(void) fprintf(stderr, "scf_handle_decode_fmri failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_instance_get_pg(pc->pc_inst, SYSREPO_PG, pc->pc_pg) != 0) {
+		(void) fprintf(stderr, "scf_instance_get_pg failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_pg_get_property(pc->pc_pg, SYSREPO_HOST, pc->pc_prop) != 0) {
+		(void) fprintf(stderr, "scf_pg_get_property failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_property_get_value(pc->pc_prop, pc->pc_val) != 0) {
+		(void) fprintf(stderr, "scf_property_get_value failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_value_get_as_string_typed(pc->pc_val, SCF_TYPE_ASTRING,
+	    host, CONF_STR_SZ) < 0) {
+		(void) fprintf(stderr,
+		    "scf_value_get_as_string_typed failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_pg_get_property(pc->pc_pg, SYSREPO_PORT, pc->pc_prop) != 0) {
+		(void) fprintf(stderr, "scf_pg_get_property failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_property_get_value(pc->pc_prop, pc->pc_val) != 0) {
+		(void) fprintf(stderr, "scf_property_get_value failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_value_get_as_string_typed(pc->pc_val, SCF_TYPE_COUNT,
+	    port, CONF_STR_SZ) < 0) {
+		(void) fprintf(stderr,
+		    "scf_value_get_as_string_typed failed; %s\n",
+		    scf_strerror(scf_error()));
+		goto fail;
+	}
+
+	if (scf_handle_unbind(pc->pc_hdl) != 0) {
+		(void) fprintf(stderr, "scf_handle_unbind failed; %s\n",
+		    scf_strerror(scf_error()));
+	}
+
+	free(pc->pc_proxy_host);
+	free(pc->pc_proxy_port);
+	pc->pc_proxy_host = host;
+	pc->pc_proxy_port = port;
+	pc->pc_gen++;
+	mutex_unlock(&pc->pc_lock);
+	return (0);
+
+fail:
+	mutex_unlock(&pc->pc_lock);
+	free(host);
+	free(port);
+	return (-1);
+}
+
 static void
 s_handler(void)
 {
@@ -1650,6 +1891,13 @@ s_handler(void)
 			(void) cond_signal(&g_quit_cv);
 			(void) mutex_unlock(&g_quit_lock);
 		}
+
+		if (g_config_smf && rc == SIGUSR1) {
+			if (config_read(g_proxy_config) != 0) {
+				(void) fprintf(stderr, "Unable to re-load "
+				    "proxy configuration from SMF.\n");
+			}
+		}
 	}
 }
 
@@ -1658,51 +1906,75 @@ main(int argc, char **argv)
 {
 	extern char *optarg;
 	char *proxystr = NULL;
+	char *proxy_host, *proxy_port;
 	int rc;
 	int ncpu;
 	struct proxy_listener *wl;
 	sigset_t blockset;
 	struct rlimit rlp = {0};
 
-	while ((rc = getopt(argc, argv, "s:")) != -1) {
-		switch (rc) {
-		case 's':
-			proxystr = optarg;
-			break;
-		case ':':
-			(void) fprintf(stderr, "Option -%c requires operand\n",
-			    optopt);
+        while ((rc = getopt(argc, argv, "s:")) != -1) {
+                switch (rc) {
+                case 's':
+                        proxystr = optarg;
+                        break;
+                case ':':
+                        (void) fprintf(stderr, "Option -%c requires operand\n",
+                            optopt);
+                        usage();
+                        break;
+                case '?':
+                        (void) fprintf(stderr, "Unrecognized option -%c\n",
+                            optopt);
+                        usage();
+                        break;
+                default:
+                        break;
+                }
+        }
+
+	g_config_smf = (proxystr == NULL) ? B_TRUE : B_FALSE;
+
+	if (!g_config_smf) {
+		proxy_host = strtok(proxystr, ":");
+		if (proxy_host == NULL) {
+			(void) fprintf(stderr,
+			    "host must be of format hostname:port\n");
 			usage();
-			break;
-		case '?':
-			(void) fprintf(stderr, "Unrecognized option -%c\n",
-			    optopt);
-			usage();
-			break;
-		default:
-			break;
 		}
-	}
-
-	if (proxystr == NULL) {
-		usage();
-	}
-
-	g_proxy_host = strtok(proxystr, ":");
-	if (g_proxy_host == NULL) {
-		(void) fprintf(stderr,
-		    "host must be of format hostname:port\n");
-		usage();
-	}
-	g_proxy_port = strtok(NULL, ":");
-	if (g_proxy_port == NULL) {
-		(void) fprintf(stderr,
-		    "host must be of format hostname:port\n");
-		usage();
+		proxy_port = strtok(NULL, ":");
+		if (proxy_port == NULL) {
+			(void) fprintf(stderr,
+			    "host must be of format hostname:port\n");
+			usage();
+		}
 	}
 
 	g_quit = B_FALSE;
 	(void) signal(SIGPIPE, SIG_IGN);
+
+	if ((g_proxy_config = config_alloc()) == NULL) {
+		(void) fprintf(stderr, "Unable to allocate proxy config\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (g_config_smf) {
+		if (config_read(g_proxy_config) != 0) {
+			(void) fprintf(stderr, "Unable to read proxy config. "
+			    "Falling back to defaults.\n");
+		}
+	} else {
+		free(g_proxy_config->pc_proxy_host);
+		free(g_proxy_config->pc_proxy_port);
+		g_proxy_config->pc_proxy_host = strdup(proxy_host);
+		g_proxy_config->pc_proxy_port = strdup(proxy_port);
+		if (g_proxy_config->pc_proxy_host == NULL ||
+		    g_proxy_config->pc_proxy_port == NULL) {
+			(void) fprintf(stderr, "Unable to allocate memory for "
+			    "proxy configuration strings\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	if (daemonize_start() < 0)
 		(void) fprintf(stderr, "Unable to start daemon\n");
@@ -1731,8 +2003,7 @@ main(int argc, char **argv)
 	}
 
 	/* Setup listener list. */
-	list_create(&zone_listener_list, sizeof (struct proxy_listener),
-	    offsetof(struct proxy_listener, pl_list_link));
+	TAILQ_INIT(&zone_listener_list);
 
 	/* Initialize locks */
 	g_door_thr_lock = memalign(DEFAULT_LOCK_ALIGN, sizeof (mutex_t));
@@ -1866,16 +2137,17 @@ main(int argc, char **argv)
 	 * any remaining listener structures.
 	 */
 	(void) mutex_lock(g_listener_lock);
-	while (wl = list_head(&zone_listener_list)) {
+	while (!TAILQ_EMPTY(&zone_listener_list)) {
 		char pipeval = '0';
 
-		list_remove(&zone_listener_list, wl);
+		wl = TAILQ_FIRST(&zone_listener_list);
+		TAILQ_REMOVE(&zone_listener_list, wl, pl_list_link);
 		(void) write(wl->pl_pipefd, &pipeval, 1);
 		free_proxy_listener(wl);
 	}
 	(void) mutex_unlock(g_listener_lock);
 
-	list_destroy(&zone_listener_list);
+	config_free(g_proxy_config);
 
 	(void) mutex_destroy(g_door_thr_lock);
 	(void) mutex_destroy(g_listener_lock);

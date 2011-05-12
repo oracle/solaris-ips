@@ -139,6 +139,7 @@ case "$1" in
 "refresh")
 	cmd="graceful"
 	run_sysrepo
+	/usr/bin/pkill -USR1 -ox zoneproxyd
 	kill_htcacheclean
 	run_htcacheclean
 	${HTTPD} -f ${SYSREPO_RUNTIME_DIR}/sysrepo_httpd.conf \

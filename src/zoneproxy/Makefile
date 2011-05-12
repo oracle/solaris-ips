@@ -24,6 +24,6 @@
 
 .KEEP_STATE:
 
-SUBDIRS = list zoneproxy-adm zoneproxy-client zoneproxyd
+SUBDIRS = zoneproxy-adm zoneproxy-client zoneproxyd
 
 include Makefile.subdirs
