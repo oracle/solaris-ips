@@ -903,6 +903,25 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher -p %s" % self.durl2)
                 self.pkg("set-publisher -p %s" % self.durl3)
 
+        def test_bug_18283(self):
+                """Test that having a unset publisher with packages installed
+                doesn't break adding a publisher with the -P option."""
+
+                # Test what happens when another publisher is configured.
+                self.pkg("unset-publisher test2")
+                self.pkg("install foo")
+                self.pkg("unset-publisher test1")
+                self.pkg("set-publisher -P -p %s" % self.durl2)
+
+                # Test what happens when no publishers are configured
+                self.pkg("unset-publisher test2")
+                self.pkg("unset-publisher test3")
+                self.pkg("set-publisher -P -p %s" % self.durl2)
+
+                # set publishers to expected configuration
+                self.pkg("set-publisher -P -p %s" % self.durl1)
+                self.pkg("set-publisher -p %s" % self.durl3)
+
 
 class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.

@@ -1809,23 +1809,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if not self.cfg.allowed_to_move(pub):
                         raise apx.ModifyingSyspubException(_("Publisher '%s' "
                             "is a system publisher and cannot be moved.") % pub)
+
+                pubs = self.get_sorted_publishers()
                 relative = None
-                ranks = self.get_publisher_ranks()
-                rel_rank = None
-                for p in ranks:
-                        rel_pub = self.get_publisher(p)
-                        if not self.cfg.allowed_to_move(rel_pub):
-                                continue
-                        rank = ranks[p][0]
-                        if rel_rank is None or rank < rel_rank:
-                                rel_rank = rank
-                                relative = rel_pub
+                for p in pubs:
+                        # If we've gotten to the publisher we want to make
+                        # highest ranked, then there's nothing to do because
+                        # it's already as high as it can be.
+                        if p == pub:
+                                return
+                        if self.cfg.allowed_to_move(p):
+                                relative = p
+                                break
                 assert relative, "Expected %s to already be part of the " + \
                     "search order:%s" % (relative, ranks)
-                if relative == pub:
-                        # It's already first in the list of non-system
-                        # publishers, so nothing to do.
-                        return
                 self.cfg.change_publisher_search_order(pub.prefix,
                     relative.prefix, after=False)
 
