@@ -86,6 +86,19 @@
       </locale>
     </schema>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/last_add_pubcert_path</key>
+      <applyto>/apps/packagemanager/preferences/last_add_pubcert_path</applyto>
+      <owner>packagemanager</owner>
+      <type>string</type>
+      <default></default>
+      <locale name="C">
+         <short>Last Add Publisher Certificate Path</short>
+         <long>
+          The path for the last Publisher Certificate added to packagemanager.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/initial_section</key>
       <applyto>/apps/packagemanager/preferences/initial_section</applyto>
       <owner>packagemanager</owner>

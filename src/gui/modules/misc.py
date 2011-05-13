@@ -30,6 +30,17 @@ SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of 
 RELEASE_URL = "http://www.opensolaris.org" # Fallback url for release notes if api
                                            # does not gave us one.
 
+PUBCERT_COMMON_NAME =  _("  Common Name (CN):")
+PUBCERT_ORGANIZATION =  _("  Organization (O):")
+PUBCERT_ORGANIZATIONAL_UNIT =  _("  Organizational Unit (OU):")
+
+PROP_SIGNATURE_POLICY = "signature-policy"
+PROP_SIGNATURE_REQUIRED_NAMES = "signature-required-names"
+SIG_POLICY_IGNORE = "ignore"
+SIG_POLICY_VERIFY = "verify"
+SIG_POLICY_REQUIRE_SIGNATURES = "require-signatures"
+SIG_POLICY_REQUIRE_NAMES = "require-names"
+
 import os
 import sys
 import traceback
@@ -72,6 +83,103 @@ package_name = { 'SUNWcs' : 'SUNWcs',
     'SUNWipkg-gui' : 'package/pkg/package-manager',
     'SUNWipkg-um' : 'package/pkg/update-manager',
     'SUNWpython26-notify' : 'library/python-2/python-notify-26' }
+
+def set_signature_policy_names_for_textfield(widget, names):
+        txt = ""
+        if names != None and len(names) > 0:
+                txt = names[0]
+                for name in names[1:]:
+                        txt += ", " + name
+        widget.set_text(txt)
+
+def fetch_signature_policy_names_from_textfield(text):
+        names = []
+        names = __split_ignore_comma_in_quotes(text)
+        names = [x.strip(' ') for x in names]
+        if len(names) == 1 and names[0] == '':
+                del names[0]
+        return names
+
+def setup_signature_policy_properties(ignore, verify, req_sigs, req_names, names, orig):
+        set_props = {}
+        if ignore != orig[SIG_POLICY_IGNORE] and ignore:
+                set_props[PROP_SIGNATURE_POLICY] = SIG_POLICY_IGNORE
+        elif verify != orig[SIG_POLICY_VERIFY] and verify:
+                set_props[PROP_SIGNATURE_POLICY] = SIG_POLICY_VERIFY
+        elif req_sigs != orig[SIG_POLICY_REQUIRE_SIGNATURES] and req_sigs:
+                set_props[PROP_SIGNATURE_POLICY] = SIG_POLICY_REQUIRE_SIGNATURES
+        elif req_names != orig[SIG_POLICY_REQUIRE_NAMES] and req_names:
+                set_props[PROP_SIGNATURE_POLICY] = SIG_POLICY_REQUIRE_NAMES
+
+        if names != orig[PROP_SIGNATURE_REQUIRED_NAMES]:
+                set_props[PROP_SIGNATURE_REQUIRED_NAMES] = names
+        return set_props
+
+def create_sig_policy_from_property(prop_sig_pol, prop_sig_req_names):
+        names = []
+        #Names with embedded commas, the default name separator, need to
+        #be quoted to be treated as a single name
+        for name in prop_sig_req_names:
+                if name.split(",", 1) == 2:
+                        names.append("\"%s\"" % name)
+                else:
+                        names.append(name)
+        sig_policy = {}
+        sig_policy[SIG_POLICY_IGNORE] = False
+        sig_policy[SIG_POLICY_VERIFY] = False
+        sig_policy[SIG_POLICY_REQUIRE_SIGNATURES] = False
+        sig_policy[SIG_POLICY_REQUIRE_NAMES] = False
+        sig_policy[PROP_SIGNATURE_REQUIRED_NAMES] = []
+
+        if prop_sig_pol == SIG_POLICY_IGNORE:
+                sig_policy[SIG_POLICY_IGNORE] = True
+        elif prop_sig_pol == SIG_POLICY_VERIFY:
+                sig_policy[SIG_POLICY_VERIFY] = True
+        elif prop_sig_pol == SIG_POLICY_REQUIRE_SIGNATURES:
+                sig_policy[SIG_POLICY_REQUIRE_SIGNATURES] = True
+        elif prop_sig_pol == SIG_POLICY_REQUIRE_NAMES:
+                sig_policy[SIG_POLICY_REQUIRE_NAMES] = True
+        sig_policy[PROP_SIGNATURE_REQUIRED_NAMES] = names
+        return sig_policy
+
+def __split_ignore_comma_in_quotes(string):
+        split_char = ","
+        quote = "'"
+        string_split = []
+        current_word = ""
+        inside_quote = False
+        for letter in string:
+                if letter == "'" or letter == "\"":
+                        quote = letter
+                        current_word += letter
+                        if inside_quote:
+                                inside_quote = False
+                        else:
+                                inside_quote = True
+                elif letter == split_char and not inside_quote:
+                        if current_word != '':
+                                string_split.append(current_word)
+                        current_word = ""
+                else:
+                        current_word += letter
+        if current_word != "" and inside_quote:
+                current_word += quote
+        if current_word != '':
+                string_split.append(current_word)
+        return string_split
+
+def check_sig_required_names_policy(text, req_names, error_dialog_title):
+        if not req_names:
+                return True
+        names = fetch_signature_policy_names_from_textfield(text)
+        if len(names) == 0:
+                error_occurred(None,
+                    _("One or more certificate names must be specified "
+                        "with this option."),
+                    error_dialog_title,
+                    gtk.MESSAGE_INFO)
+                return False
+        return True
 
 def get_image_path():
         return g_image_path()
@@ -657,6 +765,82 @@ def set_package_details_text(labs, text, textview, installed_icon,
                 itr = infobuffer.get_iter_at_line(i)
                 infobuffer.insert(itr, text["desc"])
 
+def set_pub_cert_details_text(labs, text, textview, added=False, reinstated=False):
+        style = textview.get_style()
+        font_size_in_pango_unit = style.font_desc.get_size()
+        font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+        tab_array = pango.TabArray(3, True)
+
+        infobuffer = textview.get_buffer()
+        infobuffer.set_text("")
+
+        labs_issuer = {}
+        labs_issuer["common_name_to"] = PUBCERT_COMMON_NAME
+        labs_issuer["org_to"] = PUBCERT_ORGANIZATION
+        labs_issuer["org_unit_to"] = PUBCERT_ORGANIZATIONAL_UNIT
+        max_issuer_len = 0
+        for lab in labs_issuer:
+                __add_label_to_generalinfo(infobuffer, 0, labs_issuer[lab])
+                test_len = get_textview_width(textview)
+                if test_len > max_issuer_len:
+                        max_issuer_len = test_len
+                infobuffer.set_text("")
+
+        max_finger_len = 0
+        __add_label_to_generalinfo(infobuffer, 0, labs["fingerprints"])
+        max_finger_len = get_textview_width(textview)
+        infobuffer.set_text("")
+
+        tab_array.set_tab(0, pango.TAB_LEFT, max_finger_len + font_size_in_pixel)
+        tab_array.set_tab(1, pango.TAB_LEFT, max_issuer_len + font_size_in_pixel)
+        textview.set_tabs(tab_array)
+        infobuffer.set_text("")
+        i = 0
+        __add_label_to_generalinfo(infobuffer, i, labs["issued_to"] + '\n')
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["common_name_to"],
+           text["common_name_to"])
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["org_to"], text["org_to"],
+            bold_label=False)
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["org_unit_to"],
+            text["org_unit_to"])
+
+        i += 1
+        __add_label_to_generalinfo(infobuffer, i, labs["issued_by"] + '\n')
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["common_name_by"],
+            text["common_name_by"])
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["org_by"], text["org_by"])
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["org_unit_by"],
+            text["org_unit_by"])
+
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["validity"], "", bold_label=True)
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["issued_on"], text["issued_on"])
+
+        i += 1
+        __add_label_to_generalinfo(infobuffer, i, labs["fingerprints"] + '\n')
+
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["sha1"], text["sha1"])
+        i += 1
+        __add_line_to_pub_cert_info(infobuffer, i, labs["md5"], text["md5"])
+        i += 1
+        if not added and not reinstated:
+                __add_line_to_pub_cert_info(infobuffer, i, labs["ips"], text["ips"],
+                    add_return=False)
+        elif added and not reinstated:
+                __add_label_to_generalinfo(infobuffer, i,
+                    _("Note: \t Certificate is marked to be added"))
+        elif not added and reinstated:
+                __add_label_to_generalinfo(infobuffer, i,
+                    _("Note: \t Certificate is marked to be reinstated"))
+
 def __add_renamed_line_to_generalinfo(text_buffer, index, labs, text):
         if text["renamed_to"] != "":
                 rename_list = text["renamed_to"].split("\n", 1)
@@ -693,6 +877,24 @@ def __add_line_to_generalinfo(text_buffer, index, label, text,
                 text_buffer.get_end_iter()
                 text_buffer.insert_pixbuf(end_itr, resized_icon)
                 text_buffer.insert(end_itr, " %s\n" % text)
+
+def __add_line_to_pub_cert_info(text_buffer, index, label, text,
+    bold_label = False, add_return = True):
+        tab_str = "\t"
+        itr = text_buffer.get_iter_at_line(index)
+        if bold_label:
+                text_buffer.insert_with_tags_by_name(itr, label, "bold")
+        else:
+                text_buffer.insert_with_tags_by_name(itr, label, "normal")
+        end_itr = text_buffer.get_end_iter()
+
+        return_str = ""
+        if add_return:
+                return_str = "\n"
+
+        text_buffer.insert(end_itr, tab_str)
+        text_buffer.get_end_iter()
+        text_buffer.insert(end_itr, (" %s" + return_str) % text)
 
 def same_pkg_versions(info1, info2):
         if info1 == None or info2 == None:

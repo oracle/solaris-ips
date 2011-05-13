@@ -39,7 +39,8 @@ import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
 
 PREFERENCES_NOTEBOOK_GENERAL_PAGE = 0
-PREFERENCES_NOTEBOOK_LANGUAGES_PAGE = 1
+PREFERENCES_NOTEBOOK_SIG_POL_PAGE = 1
+PREFERENCES_NOTEBOOK_LANGUAGES_PAGE = 2
 GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 LOCALE_PREFIX = "facet.locale."
 LANG_STAR_SUFFIX = "_*"
@@ -99,6 +100,21 @@ class Preferences:
                 self.w_languages_treeview = builder.get_object(
                         "languages_treeview")
 
+                self.w_gsig_ignored_radiobutton =  builder.get_object(
+                    "gsig_ignored_radiobutton")
+                self.w_gsig_optional_radiobutton =  builder.get_object(
+                    "gsig_optional_but_valid_radiobutton")
+                self.w_gsig_valid_radiobutton =  builder.get_object(
+                    "gsig_valid_radiobutton")
+                self.w_gsig_name_radiobutton =  builder.get_object(
+                    "gsig_name_radiobutton")
+                self.w_gsig_name_entry =  builder.get_object(
+                    "gsig_name_entry")
+                self.w_gsig_cert_names_vbox =  builder.get_object(
+                    "gsig_cert_names_vbox")
+
+                self.orig_gsig_policy = None
+
                 self.watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
                 self.orig_lang_locale_count_dict = {}
                 self.orig_facets_dict = {}
@@ -107,11 +123,16 @@ class Preferences:
                 self.orig_facet_locale_dict = {}
                 self.facet_g11_locales_dict = {}
                 self.facetlocales_list = []
-                self.facets_to_set = None
+                self.facets_to_set = {}
                 self.locales_treeview_selection = []
                 self.locales_list = self.__get_locales_liststore()
                 self.__init_locales_tree_view(self.locales_list)
                 self.__init_locales_list()
+
+        def show_signature_policy(self):
+                self.w_preferences_notebook.set_current_page(
+                    PREFERENCES_NOTEBOOK_SIG_POL_PAGE)
+                self.w_preferencesdialog.show()
 
         def set_window_icon(self, window_icon):
                 self.w_preferencesdialog.set_icon(window_icon)
@@ -136,9 +157,76 @@ class Preferences:
                      self.__on_languages_treeview_button_and_key_events),
                     (self.w_languages_treeview, "key_press_event",
                      self.__on_languages_treeview_button_and_key_events),
+
+                    (self.w_gsig_ignored_radiobutton, "toggled",
+                        self.__on_gsig_radiobutton_toggled),
+                    (self.w_gsig_optional_radiobutton, "toggled",
+                        self.__on_gsig_radiobutton_toggled),
+                    (self.w_gsig_valid_radiobutton, "toggled",
+                        self.__on_gsig_radiobutton_toggled),
+                    (self.w_gsig_name_radiobutton, "toggled",
+                        self.__on_gsig_radiobutton_toggled),
                      ]
                 for widget, signal_name, callback in signals_table:
                         widget.connect(signal_name, callback)
+
+        def __on_gsig_radiobutton_toggled(self, widget):
+                self.w_gsig_cert_names_vbox.set_sensitive(
+                    self.w_gsig_name_radiobutton.get_active())
+
+        def __update_img_sig_policy_prop(self, set_props):
+                try:
+                        self.parent.get_api_object().img.set_properties(set_props)
+                except api_errors.ApiException, e:
+                        error_msg = str(e)
+                        msg_title = _("Preferences Error")
+                        msg_type = gtk.MESSAGE_ERROR
+                        gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
+                        return False
+                return True
+
+        def __update_img_sig_policy(self):
+                orig = self.orig_gsig_policy
+                ignore = self.w_gsig_ignored_radiobutton.get_active()
+                verify = self.w_gsig_optional_radiobutton.get_active()
+                req_sigs = self.w_gsig_valid_radiobutton.get_active()
+                req_names = self.w_gsig_name_radiobutton.get_active()
+                names = gui_misc.fetch_signature_policy_names_from_textfield(
+                    self.w_gsig_name_entry.get_text())
+                if req_names and len(names) == 0:
+                        return False
+                set_props = gui_misc.setup_signature_policy_properties(ignore,
+                    verify, req_sigs, req_names, names, orig)
+                if len(set_props) > 0:
+                        return self.__update_img_sig_policy_prop(set_props)
+                return True
+
+        def __prepare_img_signature_policy(self):
+                sig_policy = self.__fetch_img_signature_policy()
+                self.orig_gsig_policy = sig_policy
+                self.w_gsig_ignored_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_IGNORE])
+                self.w_gsig_optional_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_VERIFY])
+                self.w_gsig_valid_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_REQUIRE_SIGNATURES])
+                self.w_gsig_cert_names_vbox.set_sensitive(False)
+
+                if sig_policy[gui_misc.SIG_POLICY_REQUIRE_NAMES]:
+                        self.w_gsig_name_radiobutton.set_active(True)
+                        self.w_gsig_cert_names_vbox.set_sensitive(True)
+
+                names = sig_policy[gui_misc.PROP_SIGNATURE_REQUIRED_NAMES]
+                gui_misc.set_signature_policy_names_for_textfield(
+                    self.w_gsig_name_entry, names)
+
+        def __fetch_img_signature_policy(self):
+                prop_sig_pol = self.parent.get_api_object().img.get_property(
+                    gui_misc.PROP_SIGNATURE_POLICY)
+                prop_sig_req_names = self.parent.get_api_object().img.get_property(
+                    gui_misc.PROP_SIGNATURE_REQUIRED_NAMES)
+                return gui_misc.create_sig_policy_from_property(
+                    prop_sig_pol, prop_sig_req_names)
 
         def __on_notebook_change(self, widget, event, pagenum):
                 if pagenum == PREFERENCES_NOTEBOOK_LANGUAGES_PAGE:
@@ -147,6 +235,8 @@ class Preferences:
                                 self.w_preferencesdialog.window.set_cursor(
                                     self.watch )
                                 gobject.idle_add(self.__prepare_locales)
+                elif pagenum == PREFERENCES_NOTEBOOK_SIG_POL_PAGE:
+                        gobject.idle_add(self.__prepare_img_signature_policy)
 
         @staticmethod
         def __get_locales_liststore():
@@ -663,12 +753,22 @@ class Preferences:
                 if pagenum == PREFERENCES_NOTEBOOK_LANGUAGES_PAGE:
                         self.w_preferencesdialog.window.set_cursor(self.watch)
                         gobject.idle_add(self.__prepare_locales)
+                elif pagenum == PREFERENCES_NOTEBOOK_SIG_POL_PAGE:
+                        gobject.idle_add(self.__prepare_img_signature_policy)
                 return True
 
         def __on_preferencescancel_clicked(self, widget):
                 self.w_preferencesdialog.hide()
                 
         def __on_preferencesclose_clicked(self, widget):
+                error_dialog_title = _("Preferences")
+                text = self.w_gsig_name_entry.get_text()
+                req_names = self.w_gsig_name_radiobutton.get_active()
+                if not gui_misc.check_sig_required_names_policy(text,
+                    req_names, error_dialog_title):
+                        return
+                if self.orig_gsig_policy and not self.__update_img_sig_policy():
+                        return
                 self.__dump_locales_list()
                 self.__dump_optional_components()
                 self.w_preferencesdialog.hide()
@@ -676,7 +776,7 @@ class Preferences:
                         len(self.facets_to_set) == 1 \
                         and self.facets_to_set.has_key(ALL_LOCALES) and \
                         self.facets_to_set[ALL_LOCALES] == True
-                if not ignore_all_default and \
+                if not ignore_all_default and self.orig_facets_dict != {} and \
                         self.orig_facets_dict != self.facets_to_set:
                         self.parent.update_facets(self.facets_to_set)
                 self.gconf.set_show_startpage(

@@ -22,12 +22,25 @@
 # Copyright (c) 2008, 2011 Oracle and/or its affiliates. All rights reserved.
 #
 
-MODIFY_DIALOG_WIDTH_DEFAULT = 500
-MODIFY_DIALOG_SSL_WIDTH_DEFAULT = 410
+MODIFY_DIALOG_WIDTH_DEFAULT = 570
+MODIFY_DIALOG_SSL_WIDTH_DEFAULT = 480
+
+MODIFY_NOTEBOOK_GENERAL_PAGE = 0
+MODIFY_NOTEBOOK_CERTIFICATE_PAGE = 1
+MODIFY_NOTEBOOK_SIG_POLICY_PAGE = 2
+
+PUBCERT_APPROVED_STR = _("Approved")
+PUBCERT_REVOKED_STR = _("Revoked")
+PUBCERT_NOTSET_HASH = "HASH-NOTSET" #No L10N required
+PUBCERT_NOTAVAILABLE = _("Not available")
 
 import sys
 import os
 import pango
+import datetime
+import tempfile
+import M2Crypto as m2
+import errno
 from threading import Thread
 from gettext import ngettext
 
@@ -52,10 +65,11 @@ logger = global_settings.logger
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 class Repository(progress.GuiProgressTracker):
-        def __init__(self, parent, image_directory,
-            action = -1, webinstall_new = False, main_window = None):
+        def __init__(self, parent, image_directory, action = -1,
+            webinstall_new = False, main_window = None, gconf = None):
                 progress.GuiProgressTracker.__init__(self)
                 self.parent = parent
+                self.gconf = gconf
                 self.action = action
                 self.main_window = main_window
                 self.api_o = gui_misc.get_api_object(image_directory,
@@ -193,8 +207,6 @@ class Repository(progress.GuiProgressTracker):
                 self.w_repositorymodify_registration_link = \
                     builder.get_object(
                     "repositorymodifyregistrationlinkbutton")
-                self.w_repositoryssl_expander = \
-                    builder.get_object("repositorymodifysslexpander")
                 self.w_repositorymirror_expander = \
                     builder.get_object(
                     "repositorymodifymirrorsexpander")
@@ -224,6 +236,7 @@ class Repository(progress.GuiProgressTracker):
                     builder.get_object("manage_cancel")
                 self.w_manage_help_btn = \
                     builder.get_object("manage_help")
+                    
                 self.publishers_apply = \
                     builder.get_object("publishers_apply")
                 self.publishers_apply.set_icon(self.parent.window_icon)
@@ -238,6 +251,47 @@ class Repository(progress.GuiProgressTracker):
                 self.publishers_apply_progress = \
                     builder.get_object("publishers_apply_progress")
 
+                self.w_pub_cert_treeview = \
+                    builder.get_object("pub_certificate_treeview")
+                self.w_modify_pub_notebook = builder.get_object(
+                        "modify_pub_notebook")
+                self.w_pub_cert_details_textview = builder.get_object(
+                        "pub_certificate_details_textview")
+                manage_pub_cert_details_buf =  \
+                        self.w_pub_cert_details_textview.get_buffer()
+                manage_pub_cert_details_buf.create_tag("level0",
+                    weight=pango.WEIGHT_BOLD)
+                manage_pub_cert_details_buf.create_tag("bold",
+                    weight=pango.WEIGHT_BOLD)
+                manage_pub_cert_details_buf.create_tag("normal",
+                    weight=pango.WEIGHT_NORMAL)
+                self.w_pub_cert_label = \
+                    builder.get_object("mods_pub_label")
+                self.w_pub_cert_add_btn =  builder.get_object(
+                    "pub_certificate_add_button")
+                self.w_pub_cert_remove_btn =  builder.get_object(
+                    "pub_certificate_remove_button")
+                self.w_pub_cert_revoke_btn =  builder.get_object(
+                    "pub_certificate_revoke_button")
+                self.w_pub_cert_reinstate_btn =  builder.get_object(
+                    "pub_certificate_reinstate_button")
+
+
+                self.w_pub_sig_ignored_radiobutton =  builder.get_object(
+                    "sig_ignored_radiobutton")
+                self.w_pub_sig_optional_radiobutton =  builder.get_object(
+                    "sig_optional_but_valid_radiobutton")
+                self.w_pub_sig_valid_radiobutton =  builder.get_object(
+                    "sig_valid_radiobutton")
+                self.w_pub_sig_name_radiobutton =  builder.get_object(
+                    "sig_name_radiobutton")
+                self.w_pub_sig_name_entry =  builder.get_object(
+                    "sig_name_entry")
+                self.w_pub_sig_view_globpol_button =  builder.get_object(
+                    "sig_view_globpol_button")
+                self.w_pub_sig_cert_names_vbox =  builder.get_object(
+                    "sig_cert_names_vbox")
+
                 checkmark_icon = gui_misc.get_icon(
                     self.parent.icon_theme, "pm-check", 24)
 
@@ -250,6 +304,15 @@ class Repository(progress.GuiProgressTracker):
                 self.__init_mirrors_tree_view(self.modify_repo_mirrors_treeview)
                 self.__init_origins_tree_view(self.modify_repo_origins_treeview)
 
+                self.pub_cert_list = self.__get_pub_cert_liststore()
+                self.orig_pub_cert_added_dict = {}  # Orig Pub Certs added to model:
+                                                    # - key/val: [ips-hash] = status
+                self.all_pub_cert_added_dict = {}   # New/ Orig Pub Certs added to model
+                                                    # - key/val: [sha-hash] = ips-hash
+                self.removed_orig_pub_cert_dict = {}# Removed Orig Pub Certs from model
+                                                    # - key/val: [sha-hash] = ips-hash
+                self.orig_sig_policy = {}
+                
                 if self.action == enumerations.ADD_PUBLISHER:
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
                             self.main_window)
@@ -278,6 +341,7 @@ class Repository(progress.GuiProgressTracker):
 
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog,
                             self.w_manage_publishers_dialog)
+                        self.__init_pub_cert_tree_view(self.pub_cert_list)
                         self.w_manage_publishers_dialog.show_all()
                         return
 
@@ -367,13 +431,728 @@ class Repository(progress.GuiProgressTracker):
                     (self.w_confirm_ok_btn, "clicked", 
                         self.__on_ok_conf_clicked),
 
-                    (self.publishers_apply, "delete_event", 
+                    (self.publishers_apply, "delete_event",
                      self.__on_publishers_apply_delete_event),
-                    (self.publishers_apply_cancel, "clicked", 
+                    (self.publishers_apply_cancel, "clicked",
                      self.__on_apply_cancel_clicked),
+
+                    (self.w_pub_cert_add_btn, "clicked",
+                        self.__on_pub_cert_add_clicked),
+                    (self.w_pub_cert_remove_btn, "clicked",
+                        self.__on_pub_cert_remove_clicked),
+                    (self.w_pub_cert_revoke_btn, "clicked",
+                        self.__on_pub_cert_revoke_clicked),
+                    (self.w_pub_cert_reinstate_btn, "clicked",
+                        self.__on_pub_cert_reinstate_clicked),
+                    (self.w_modify_pub_notebook, "switch_page",
+                     self.__on_notebook_change),
+
+                    (self.w_pub_sig_ignored_radiobutton, "toggled",
+                        self.__on_pub_sig_radiobutton_toggled),
+                    (self.w_pub_sig_optional_radiobutton, "toggled",
+                        self.__on_pub_sig_radiobutton_toggled),
+                    (self.w_pub_sig_valid_radiobutton, "toggled",
+                        self.__on_pub_sig_radiobutton_toggled),
+                    (self.w_pub_sig_name_radiobutton, "toggled",
+                        self.__on_pub_sig_radiobutton_toggled),
+                    (self.w_pub_sig_view_globpol_button, "clicked",
+                        self.__on_pub_sig_view_globpol_clicked),
                     ]
                 for widget, signal_name, callback in signals_table:
                         widget.connect(signal_name, callback)
+
+        def __on_pub_sig_radiobutton_toggled(self, widget):
+                self.w_pub_sig_cert_names_vbox.set_sensitive(
+                    self.w_pub_sig_name_radiobutton.get_active())
+
+        def __on_pub_sig_view_globpol_clicked(self, widget):
+                #Preferences Dialog is modal so no need to hide the Modify Dialog
+                self.parent.preferences.show_signature_policy()
+        
+        def __update_pub_sig_policy_prop(self, set_props):
+                errors = []
+                try:
+                        pub = self.repository_modify_publisher
+                        if pub != None:
+                                pub.update_props(set_props=set_props)
+                except api_errors.ApiException, e:
+                        errors.append(("", e))
+                return errors
+
+        def __update_pub_sig_policy(self):
+                errors = []
+                orig = self.orig_sig_policy
+                if not orig:
+                        return errors
+                ignore = self.w_pub_sig_ignored_radiobutton.get_active()
+                verify = self.w_pub_sig_optional_radiobutton.get_active()
+                req_sigs = self.w_pub_sig_valid_radiobutton.get_active()
+                req_names = self.w_pub_sig_name_radiobutton.get_active()
+                names = gui_misc.fetch_signature_policy_names_from_textfield(
+                    self.w_pub_sig_name_entry.get_text())
+                set_props = gui_misc.setup_signature_policy_properties(ignore,
+                    verify, req_sigs, req_names, names, orig)
+                if len(set_props) > 0:
+                        errors = self.__update_pub_sig_policy_prop(set_props)
+                return errors
+        
+        def __prepare_pub_signature_policy(self):
+                sig_policy = self.__fetch_pub_signature_policy()
+                self.orig_sig_policy = sig_policy
+                self.w_pub_sig_ignored_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_IGNORE])
+                self.w_pub_sig_optional_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_VERIFY])
+                self.w_pub_sig_valid_radiobutton.set_active(
+                    sig_policy[gui_misc.SIG_POLICY_REQUIRE_SIGNATURES])
+                self.w_pub_sig_cert_names_vbox.set_sensitive(False)
+
+                if sig_policy[gui_misc.SIG_POLICY_REQUIRE_NAMES]:
+                        self.w_pub_sig_name_radiobutton.set_active(True)
+                        self.w_pub_sig_cert_names_vbox.set_sensitive(True)
+
+                names = sig_policy[gui_misc.PROP_SIGNATURE_REQUIRED_NAMES]
+                gui_misc.set_signature_policy_names_for_textfield(
+                    self.w_pub_sig_name_entry, names)
+
+        def __fetch_pub_signature_policy(self):
+                pub = self.repository_modify_publisher
+                prop_sig_pol = pub.signature_policy.name
+                prop_sig_req_names = \
+                        pub.properties[gui_misc.PROP_SIGNATURE_REQUIRED_NAMES]
+                return gui_misc.create_sig_policy_from_property(
+                    prop_sig_pol, prop_sig_req_names)
+
+        def __on_notebook_change(self, widget, event, pagenum):
+                if pagenum == MODIFY_NOTEBOOK_CERTIFICATE_PAGE:
+                        gobject.idle_add(self.__prepare_pub_certs)
+                elif pagenum == MODIFY_NOTEBOOK_SIG_POLICY_PAGE:
+                        gobject.idle_add(self.__prepare_pub_signature_policy)
+
+        @staticmethod
+        def __get_pub_cert_liststore():
+                return gtk.ListStore(
+                        gobject.TYPE_STRING,   # enumerations.PUBCERT_ORGANIZATION
+                        gobject.TYPE_STRING,   # enumerations.PUBCERT_NAME
+                        gobject.TYPE_STRING,   # enumerations.PUBCERT_STATUS
+                        gobject.TYPE_STRING,   # enumerations.PUBCERT_IPSHASH
+                        gobject.TYPE_STRING,   # enumerations.PUBCERT_PATH
+                        gobject.TYPE_PYOBJECT, # enumerations.PUBCERT_XCERT_OBJ
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBCERT_NEW
+                        )
+
+        @staticmethod
+        def __sort_func(treemodel, iter1, iter2, column):
+                col_val1 = treemodel.get_value(iter1, column)
+                col_val2 = treemodel.get_value(iter2, column)
+                ret = cmp(col_val1, col_val2)
+                if ret != 0:
+                        return ret
+                if column == enumerations.PUBCERT_ORGANIZATION:
+                        name1 = treemodel.get_value(iter1,
+                            enumerations.PUBCERT_NAME)
+                        name2 = treemodel.get_value(iter2,
+                            enumerations.PUBCERT_NAME)
+                        ret = cmp(name1, name2)
+                elif column == enumerations.PUBCERT_NAME:
+                        org1 = treemodel.get_value(iter1,
+                            enumerations.PUBCERT_ORGANIZATION)
+                        org2 = treemodel.get_value(iter2,
+                            enumerations.PUBCERT_ORGANIZATION)
+                        ret = cmp(org1, org2)
+                return ret
+
+        def __init_pub_cert_tree_view(self, pub_cert_list):
+                pub_cert_sort_model = gtk.TreeModelSort(pub_cert_list)
+                pub_cert_sort_model.set_sort_column_id(enumerations.PUBCERT_ORGANIZATION,
+                    gtk.SORT_ASCENDING)
+
+                pub_cert_sort_model.set_sort_func(enumerations.PUBCERT_ORGANIZATION,
+                    self.__sort_func,
+                    enumerations.PUBCERT_ORGANIZATION)
+                pub_cert_sort_model.set_sort_func(enumerations.PUBCERT_NAME,
+                    self.__sort_func,
+                    enumerations.PUBCERT_NAME)
+
+                # Organization column - sort using custom __sort_func()
+                org_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_("Organization"),
+                    org_renderer,  text = enumerations.PUBCERT_ORGANIZATION)
+                column.set_expand(False)
+                column.set_sort_column_id(enumerations.PUBCERT_ORGANIZATION)
+                column.set_sort_indicator(True)
+                column.set_resizable(True)
+                self.w_pub_cert_treeview.append_column(column)
+
+                # Name column - sort using custom __sort_func()
+                name_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_("Name"),
+                    name_renderer,  text = enumerations.PUBCERT_NAME)
+                column.set_expand(True)
+                column.set_sort_column_id(enumerations.PUBCERT_NAME)
+                column.set_sort_indicator(True)
+                column.set_resizable(True)
+                self.w_pub_cert_treeview.append_column(column)
+
+                # Status column
+                status_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_("Status"),
+                    status_renderer,  text = enumerations.PUBCERT_STATUS)
+                column.set_expand(False)
+                column.set_sort_column_id(enumerations.PUBCERT_STATUS)
+                self.w_pub_cert_treeview.append_column(column)
+
+                self.w_pub_cert_treeview.get_selection().connect('changed',
+                    self.__on_pub_cert_treeview_changed)
+                self.w_pub_cert_treeview.set_model(pub_cert_sort_model)
+
+        @staticmethod
+        def __get_pub_display_name(pub):
+                display_name = ""
+                if not pub:
+                        return display_name
+
+                name = pub.prefix
+                alias = pub.alias
+                use_name = False
+                use_alias = False
+                if len(name) > 0:
+                        use_name = True
+                if alias and len(alias) > 0 and alias != name:
+                        use_alias = True
+
+                if use_name and not use_alias:
+                        display_name = name
+                elif use_name and use_alias:
+                        display_name = "%s (%s)" % (name, alias)
+                return display_name
+
+        def __prepare_pub_certs(self):
+                pub = self.repository_modify_publisher
+                if not pub:
+                        return
+                sorted_model = self.w_pub_cert_treeview.get_model()
+                selection = self.w_pub_cert_treeview.get_selection()
+                selected_rows = selection.get_selected_rows()
+                self.w_pub_cert_treeview.set_model(None)
+                if not sorted_model:
+                        return
+                model = sorted_model.get_model()
+                if not model:
+                        return
+                model.clear()
+
+                self.orig_pub_cert_added_dict.clear() 
+                self.all_pub_cert_added_dict.clear() 
+                self.removed_orig_pub_cert_dict.clear() 
+
+                pub_display_name = self.__get_pub_display_name(pub)
+                if pub_display_name != "":
+                        self.w_pub_cert_label.set_markup(
+                            _("<b>Certificates for publisher %s</b>") % pub_display_name)
+                else:
+                        self.w_pub_cert_label.set_markup(
+                            _("<b>Publisher certificates</b>"))
+
+                for h in pub.approved_ca_certs:
+                        self.__add_cert_to_model(model,
+                            pub.get_cert_by_hash(h), h, PUBCERT_APPROVED_STR)
+                for h in pub.revoked_ca_certs:
+                        self.__add_cert_to_model(model,
+                            pub.get_cert_by_hash(h), h, PUBCERT_REVOKED_STR)
+
+                self.w_pub_cert_treeview.set_model(sorted_model)
+                if len(pub.revoked_ca_certs) == 0 and len(pub.approved_ca_certs) == 0:
+                        self.__set_empty_pub_cert()
+                        return
+
+                sel_path = (0,)
+                if len(selected_rows) > 1 and len(selected_rows[1]) > 0:
+                        sel_path = selected_rows[1][0]
+                self.__set_pub_cert_selection(sorted_model, sel_path)
+
+        def __add_cert_to_model(self, model, cert, ips_hash, status, path = "",
+            scroll_to=False, new=False):
+                pub = self.repository_modify_publisher
+                if not cert or not pub:
+                        return
+                i = cert.get_subject()
+                organization = PUBCERT_NOTAVAILABLE
+                if len(i.get_entries_by_nid(i.nid["O"])) > 0:
+                        organization = i.get_entries_by_nid(
+                            i.nid["O"])[0].get_data().as_text()
+                name = PUBCERT_NOTAVAILABLE
+                if len(i.get_entries_by_nid(i.nid["CN"])) > 0:
+                        name = i.get_entries_by_nid(
+                            i.nid["CN"])[0].get_data().as_text()
+                if self.all_pub_cert_added_dict.has_key(cert.get_fingerprint('sha1')):
+                        err = _("The publisher certificate:\n  %s\n"
+                            "has already been added.") % \
+                            self.__get_cert_display_name(cert)
+                        gui_misc.error_occurred(None, err,
+                            _("Modify Publisher - %s") % self.__get_pub_display_name(pub),
+                            gtk.MESSAGE_INFO)
+                        return
+
+                self.all_pub_cert_added_dict[cert.get_fingerprint('sha1')] = ips_hash
+                itr = model.append(
+                    [organization, name, status, ips_hash, path, cert, new])
+                if not new:
+                        self.orig_pub_cert_added_dict[ips_hash] = status
+
+                if scroll_to:
+                        path = model.get_path(itr)
+                        sorted_model = self.w_pub_cert_treeview.get_model()
+                        if not sorted_model:
+                                return
+                        sorted_path = sorted_model.convert_child_path_to_path(path)
+                        self.w_pub_cert_treeview.scroll_to_cell(sorted_path)
+                        selection = self.w_pub_cert_treeview.get_selection()
+                        selection.select_path(sorted_path)
+
+        def __on_pub_cert_treeview_changed(self, treeselection):
+                selection = treeselection.get_selected_rows()
+                pathlist = selection[1]
+                if not pathlist or len(pathlist) == 0:
+                        return
+                sorted_model = self.w_pub_cert_treeview.get_model()
+                if not sorted_model:
+                        return
+                model = sorted_model.get_model()
+                path = pathlist[0]
+                child_path = sorted_model.convert_path_to_child_path(path)
+                self.__enable_disable_pub_cert_buttons(model, child_path)
+                self.__set_pub_cert_details(model, child_path)
+
+        def __enable_disable_pub_cert_buttons(self, model, path):
+                if not model or not path:
+                        return
+                itr = model.get_iter(path)
+                status = model.get_value(itr, enumerations.PUBCERT_STATUS)
+                new = model.get_value(itr, enumerations.PUBCERT_NEW)
+
+                if status == PUBCERT_APPROVED_STR:
+                        self.w_pub_cert_revoke_btn.set_sensitive(True)
+                        self.w_pub_cert_reinstate_btn.set_sensitive(False)
+                else:
+                        self.w_pub_cert_revoke_btn.set_sensitive(False)
+                        self.w_pub_cert_reinstate_btn.set_sensitive(True)
+                if new:
+                        self.w_pub_cert_revoke_btn.set_sensitive(False)
+                        self.w_pub_cert_reinstate_btn.set_sensitive(False)
+                self.w_pub_cert_remove_btn.set_sensitive(True)
+
+        def __set_pub_cert_details(self, model, path):
+                itr = model.get_iter(path)
+                ips_hash = model.get_value(itr, enumerations.PUBCERT_IPSHASH)
+                cert = model.get_value(itr, enumerations.PUBCERT_XCERT_OBJ)
+                new = model.get_value(itr, enumerations.PUBCERT_NEW)
+                if not cert:
+                        return
+                details_buffer = self.w_pub_cert_details_textview.get_buffer()
+                details_buffer.set_text("")
+                itr = details_buffer.get_end_iter()
+
+                labs = {}
+                labs["issued_to"] = _("Issued To:")
+                labs["common_name_to"] = gui_misc.PUBCERT_COMMON_NAME
+                labs["org_to"] = gui_misc.PUBCERT_ORGANIZATION
+                labs["org_unit_to"] = gui_misc.PUBCERT_ORGANIZATIONAL_UNIT
+                labs["issued_by"] = _("Issued By:")
+                labs["common_name_by"] = _("  Common Name (CN):")
+                labs["org_by"] = gui_misc.PUBCERT_ORGANIZATION
+                labs["org_unit_by"] = gui_misc.PUBCERT_ORGANIZATIONAL_UNIT
+                labs["validity"] = _("Validity:")
+                labs["issued_on"] = _("  Issued On:")
+                labs["fingerprints"] = _("Fingerprints:")
+                labs["sha1"] = _("  SHA1:")
+                labs["md5"] = _("  MD5:")
+                labs["ips"] = _("  IPS:")
+
+                text = {}
+                text["issued_to"] = ""
+                text["common_name_to"] = ""
+                text["org_to"] = ""
+                text["org_unit_to"] = ""
+                text["issued_by"] = ""
+                text["common_name_by"] = ""
+                text["org_by"] = ""
+                text["org_unit_by"] = ""
+                text["validity"] = ""
+                text["issued_on"] = ""
+                text["fingerprints"] = ""
+                text["sha1"] = ""
+                text["md5"] = ""
+                text["ips"] = ""
+
+                self._set_cert_issuer(text, cert.get_subject(), "to")
+                self._set_cert_issuer(text, cert.get_issuer(), "by")
+
+                eo = cert.get_not_after().get_datetime().date().isoformat()
+                today = datetime.datetime.today().date().isoformat()
+                validity_str = _("Validity:")
+                #TBD: may have an issue here in some locales if Validity string
+                #is very long then would only need one \t.
+                if eo < today:
+                        validity_str += _("\t\t EXPIRED")
+                labs["validity"] = validity_str
+
+                io_str = cert.get_not_before().get_datetime().date().strftime("%x")
+                eo_str = cert.get_not_after().get_datetime().date().strftime("%x")
+                labs["issued_on"] += " " + io_str
+                text["issued_on"] = _("Expires On: %s") % eo_str
+
+                sha = cert.get_fingerprint('sha1')
+                md5 = cert.get_fingerprint('md5')
+                text["sha1"] = sha.lower()
+                text["md5"] = md5.lower()
+                text["ips"] = ips_hash.lower()
+
+                added = False
+                reinstated = False
+                if new:
+                        if ips_hash == PUBCERT_NOTSET_HASH:
+                                added = True
+                                reinstated = False
+                        else:
+                                reinstated = True
+                                added = False
+
+                gui_misc.set_pub_cert_details_text(labs, text,
+                    self.w_pub_cert_details_textview, added, reinstated)
+
+        @staticmethod
+        def _set_cert_issuer(text, issuer, itype):
+                if len(issuer.get_entries_by_nid(issuer.nid["CN"])) > 0:
+                        text["common_name_" + itype] = issuer.get_entries_by_nid(
+                                issuer.nid["CN"])[0].get_data().as_text()
+                if len(issuer.get_entries_by_nid(issuer.nid["O"])) > 0:
+                        text["org_" + itype] = issuer.get_entries_by_nid(
+                                issuer.nid["O"])[0].get_data().as_text()
+                if len(issuer.get_entries_by_nid(issuer.nid["OU"])) > 0:
+                        text["org_unit_" + itype] = issuer.get_entries_by_nid(
+                                issuer.nid["OU"])[0].get_data().as_text()
+                else:
+                        text["org_unit_" + itype] = PUBCERT_NOTAVAILABLE
+
+        def __get_pub_cert_filename(self, title, path = None):
+                if path == None or path == "":
+                        path = tempfile.gettempdir()
+                filename = None
+                chooser = gtk.FileChooserDialog(title,
+                    self.w_manage_publishers_dialog,
+                    gtk.FILE_CHOOSER_ACTION_OPEN,
+                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_OK, gtk.RESPONSE_OK))
+
+                file_filter = gtk.FileFilter()
+                file_filter.set_name(_("Certificate Files"))
+                file_filter.add_pattern("*.pem")
+                chooser.add_filter(file_filter)
+                chooser.set_current_folder(path)
+
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        filename = chooser.get_filename()
+                chooser.destroy()
+
+                if filename != None:
+                        info = os.path.split(filename)
+                        self.gconf.last_add_pubcert_path = info[0]
+                return filename
+
+        def __on_pub_cert_add_clicked(self, widget):
+                filename = self.__get_pub_cert_filename(
+                    _("Add Publisher Certificate"),
+                    self.gconf.last_add_pubcert_path)
+                if filename == None:
+                        return
+                try:
+                        cert = self.__get_new_cert(filename)
+                        sha = cert.get_fingerprint('sha1')
+                        ips_hash = PUBCERT_NOTSET_HASH
+                        status = PUBCERT_APPROVED_STR
+                        new = True
+                        #Restore orig cert if it was already added but just removed
+                        if self.removed_orig_pub_cert_dict.has_key(sha):
+                                ips_hash = self.removed_orig_pub_cert_dict[sha]
+                                status = self.orig_pub_cert_added_dict[ips_hash]
+                                filename = ""
+                                new = False
+                                del self.removed_orig_pub_cert_dict[sha]
+                        sorted_model = self.w_pub_cert_treeview.get_model()
+                        if not sorted_model:
+                                return
+                        model = sorted_model.get_model()
+                        self.__add_cert_to_model(model, cert, ips_hash, status,
+                            path=filename, scroll_to=True, new=new) 
+                except api_errors.ApiException, e:
+                        self.__show_errors([("", e)])
+                        return
+
+        @staticmethod
+        def __get_new_cert(filename):
+                cert = None
+                try:
+                        with open(filename, "rb") as fh:
+                                s = fh.read()
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                raise api_errors.MissingFileArgumentException(
+                                    filename)
+                        elif e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    filename)
+                        raise api_errors.ApiException(e)
+                try:
+                        cert = m2.X509.load_cert_string(s)
+                except m2.X509.X509Error, e:
+                        raise api_errors.BadFileFormat(_("The file:\n"
+                            " %s\nwas expected to be a PEM certificate but it "
+                            "could not be read.") % filename)
+                return cert
+
+        def __on_pub_cert_reinstate_clicked(self, widget):
+                itr, sorted_model = self.__get_selected_pub_cert_itr_model()
+                if not itr or not sorted_model:
+                        return
+                model = sorted_model.get_model()
+                child_itr = sorted_model.convert_iter_to_child_iter(None, itr)
+
+                ips_hash = model.get_value(child_itr, enumerations.PUBCERT_IPSHASH)
+                orig_status = ""
+                if self.orig_pub_cert_added_dict.has_key(ips_hash):
+                        orig_status = self.orig_pub_cert_added_dict[ips_hash]
+                else:
+                        #Should not be able to reinstate new cert, only existing ones
+                        return
+                #Originally approved so just reset as there is nothing to do
+                if orig_status == PUBCERT_APPROVED_STR:
+                        model.set_value(child_itr,
+                            enumerations.PUBCERT_STATUS,
+                            PUBCERT_APPROVED_STR)
+                        self.__set_pub_cert_details(model,
+                            model.get_path(child_itr))
+                        self.__enable_disable_pub_cert_buttons(model,
+                            model.get_path(child_itr))
+                        return
+
+                filename = self.__get_pub_cert_filename(
+                    _("Reinstate Publisher Certificate"),
+                    self.gconf.last_add_pubcert_path)
+                if filename == None:
+                        return
+
+                #Check the old cert and new ones match according to the sha fingerprint
+                cert = model.get_value(child_itr, enumerations.PUBCERT_XCERT_OBJ)
+                new_cert = self.__get_new_cert(filename)
+                if cert == None or new_cert == None:
+                        #Must have exisitng cert and new one to reinstate
+                        return
+                orig_sha = cert.get_fingerprint('sha1')
+                new_sha = new_cert.get_fingerprint('sha1')
+                if orig_sha != new_sha:
+                        pub = self.repository_modify_publisher
+                        if not pub:
+                                return
+                        gui_misc.error_occurred(None,
+                            _("To reinstate the publisher certificate:\n  %s\n"
+                            "the original certificate file must be selected.") %
+                            self.__get_cert_display_name(cert),
+                            _("Modify Publisher - %s") % self.__get_pub_display_name(pub),
+                            gtk.MESSAGE_INFO)
+                        return
+                #Update model of existing cert which is to be reinstated by
+                #re-adding the cert as new
+                model.set_value(child_itr, enumerations.PUBCERT_STATUS,
+                    PUBCERT_APPROVED_STR)
+                model.set_value(child_itr, enumerations.PUBCERT_PATH, filename)
+                model.set_value(child_itr, enumerations.PUBCERT_XCERT_OBJ, new_cert)
+                model.set_value(child_itr, enumerations.PUBCERT_NEW, True)
+                self.__set_pub_cert_details(model, model.get_path(child_itr))
+                self.__enable_disable_pub_cert_buttons(model,
+                    model.get_path(child_itr))
+
+        @staticmethod
+        def __get_cert_display_name(cert):
+                cert_display_name = ""
+                if cert == None:
+                        return cert_display_name
+                issuer = cert.get_subject()
+                cn = "-"
+                org = "-"
+                ou = "-"
+                if len(issuer.get_entries_by_nid(issuer.nid["CN"])) > 0:
+                        cn = issuer.get_entries_by_nid(
+                                issuer.nid["CN"])[0].get_data().as_text()
+                if len(issuer.get_entries_by_nid(issuer.nid["O"])) > 0:
+                        org = issuer.get_entries_by_nid(
+                                issuer.nid["O"])[0].get_data().as_text()
+                if len(issuer.get_entries_by_nid(issuer.nid["OU"])) > 0:
+                        ou = issuer.get_entries_by_nid(
+                                issuer.nid["OU"])[0].get_data().as_text()
+                else:
+                        ou = PUBCERT_NOTAVAILABLE
+
+                if ou != PUBCERT_NOTAVAILABLE:
+                        cert_display_name =  \
+                                "%s (CN) %s (O) %s (OU)" % (cn, org, ou) #No l10n required
+                else:
+                        cert_display_name =  "%s (CN) %s (O)" % (cn, org)#No l10n required
+                return cert_display_name
+
+        def __on_pub_cert_revoke_clicked(self, widget):
+                selection = self.w_pub_cert_treeview.get_selection()
+                if not selection:
+                        return
+                selected_rows = selection.get_selected_rows()
+                if not selected_rows or len(selected_rows) < 2:
+                        return
+                pathlist = selected_rows[1]
+                if not pathlist or len(pathlist) == 0:
+                        return
+                path = pathlist[0]
+                self.__revoked(None, path)
+
+
+        def __revoked(self, cell, sorted_path):
+                sorted_model = self.w_pub_cert_treeview.get_model()
+                if not sorted_model:
+                        return
+                model = sorted_model.get_model()
+                path = sorted_model.convert_path_to_child_path(sorted_path)
+                itr = model.get_iter(path)
+                if not itr:
+                        return
+                status = model.get_value(itr, enumerations.PUBCERT_STATUS)
+                if status == PUBCERT_APPROVED_STR:
+                        model.set_value(itr, enumerations.PUBCERT_STATUS,
+                            PUBCERT_REVOKED_STR)
+                        self.__enable_disable_pub_cert_buttons(model, path)
+                        self.__set_pub_cert_details(model, path)
+
+        def __on_pub_cert_remove_clicked(self, widget):
+                itr, sorted_model = self.__get_selected_pub_cert_itr_model()
+                if not itr or not sorted_model:
+                        return
+                sel_path = sorted_model.get_path(itr)
+                model = sorted_model.get_model()
+                child_itr = sorted_model.convert_iter_to_child_iter(None, itr)
+
+                cert = model.get_value(child_itr, enumerations.PUBCERT_XCERT_OBJ)
+                if self.all_pub_cert_added_dict.has_key(cert.get_fingerprint('sha1')):
+                        del self.all_pub_cert_added_dict[cert.get_fingerprint('sha1')]
+
+                new = model.get_value(child_itr, enumerations.PUBCERT_NEW)
+                if not new:
+                        sha = cert.get_fingerprint('sha1')
+                        ips_hash = model.get_value(child_itr,
+                            enumerations.PUBCERT_IPSHASH)
+                        self.removed_orig_pub_cert_dict[sha] = ips_hash
+
+                model.remove(child_itr)
+                self.__set_pub_cert_selection(sorted_model, sel_path)
+
+        def __set_pub_cert_selection(self, sorted_model, sel_path):
+                len_smodel = len(sorted_model)
+                if len_smodel == 0:
+                        self.__set_empty_pub_cert()
+                        return
+                if len_smodel <= sel_path[0]:
+                        sel_path = (len_smodel - 1,)
+                if sel_path[0] < 0:
+                        sel_path = (0,)
+
+                self.w_pub_cert_treeview.scroll_to_cell(sel_path)
+                selection = self.w_pub_cert_treeview.get_selection()
+                selection.select_path(sel_path)
+
+        def __set_empty_pub_cert(self):
+                details_buffer = self.w_pub_cert_details_textview.get_buffer()
+                details_buffer.set_text("")
+                self.w_pub_cert_remove_btn.set_sensitive(False)
+                self.w_pub_cert_revoke_btn.set_sensitive(False)
+                self.w_pub_cert_reinstate_btn.set_sensitive(False)
+                
+        def __get_selected_pub_cert_itr_model(self):
+                return self.__get_fitr_model_from_tree(self.w_pub_cert_treeview)
+
+        def __update_pub_certs(self):
+                errors = []
+                sorted_model = self.w_pub_cert_treeview.get_model()
+                if not sorted_model:
+                        return errors
+                model = sorted_model.get_model()
+                if not model:
+                        return errors
+
+                updated_pub_cert_dict = {}
+                add_pub_cert_dict = {}
+                iter_next = sorted_model.get_iter_first()
+                while iter_next != None:
+                        itr = sorted_model.convert_iter_to_child_iter(None, iter_next)
+                        ips_hash = model.get_value(itr, enumerations.PUBCERT_IPSHASH)
+                        status = model.get_value(itr, enumerations.PUBCERT_STATUS)
+                        path = model.get_value(itr, enumerations.PUBCERT_PATH)
+                        new = model.get_value(itr, enumerations.PUBCERT_NEW)
+                        #Both new and reinstated certs treated as new and to be added
+                        if new:
+                                add_pub_cert_dict[path] = True
+                        else:
+                                updated_pub_cert_dict[ips_hash] = status
+                        iter_next = sorted_model.iter_next(iter_next)
+                for ips_hash, status in self.orig_pub_cert_added_dict.items():
+                        if not updated_pub_cert_dict.has_key(ips_hash):
+                                errors += self.__remove_pub_cert_for_publisher(ips_hash)
+                        elif status != updated_pub_cert_dict[ips_hash] and \
+                                updated_pub_cert_dict[ips_hash] == PUBCERT_REVOKED_STR:
+                                errors += self.__revoke_pub_cert_for_publisher(ips_hash)
+                # Add and reinstate pub certs for publisher
+                for path in add_pub_cert_dict.keys():
+                        errors += self.__add_pub_cert_to_publisher(path)
+
+                return errors
+
+        def __add_pub_cert_to_publisher(self, path):
+                errors = []
+                try:
+                        with open(path, "rb") as fh:
+                                s = fh.read()
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                errors.append(("",
+                                    api_errors.MissingFileArgumentException(path)))
+                        elif e.errno == errno.EACCES:
+                                errors.append(("", api_errors.PermissionsException(path)))
+                        else:
+                                errors.append(("", e))
+                try:
+                        pub = self.repository_modify_publisher
+                        if pub != None:
+                                pub.approve_ca_cert(s)
+                except api_errors.ApiException, e:
+                        errors.append(("", e))
+                return errors
+
+        def __revoke_pub_cert_for_publisher(self, ips_hash):
+                errors = []
+                try:
+                        pub = self.repository_modify_publisher
+                        if pub != None:
+                                pub.revoke_ca_cert(ips_hash)
+                except api_errors.ApiException, e:
+                        errors.append(("", e))
+                return errors
+
+        def __remove_pub_cert_for_publisher(self, ips_hash):
+                errors = []
+                try:
+                        pub = self.repository_modify_publisher
+                        if pub != None:
+                                pub.unset_ca_cert(ips_hash)
+                except api_errors.ApiException, e:
+                        errors.append(("", e))
+                return errors
 
         def __init_pubs_tree_view(self, publishers_list):
                 publishers_list_filter = publishers_list.filter_new()
@@ -627,7 +1406,16 @@ class Repository(progress.GuiProgressTracker):
                     MODIFY_DIALOG_WIDTH_DEFAULT, -1)
 
                 if updated_modify_repository:
+                        self.w_modify_repository_dialog.set_title(
+                            _("Modify Publisher - %s") %
+                            self.__get_pub_display_name(pub))
                         self.w_modify_repository_dialog.show_all()
+
+                pagenum = self.w_modify_pub_notebook.get_current_page()
+                if pagenum == MODIFY_NOTEBOOK_CERTIFICATE_PAGE:
+                        gobject.idle_add(self.__prepare_pub_certs)
+                elif pagenum == MODIFY_NOTEBOOK_SIG_POLICY_PAGE:
+                        gobject.idle_add(self.__prepare_pub_signature_policy)
 
         def __update_repository_dialog_width(self, ssl_error):
                 if ssl_error == None:
@@ -719,10 +1507,6 @@ class Repository(progress.GuiProgressTracker):
                 if update_ssl:
                         self.w_repositorymodify_cert_entry.set_text(ssl_cert)
                         self.w_repositorymodify_key_entry.set_text(ssl_key)
-                        if len(ssl_cert) > 0 or len(ssl_key) > 0:
-                                self.w_repositoryssl_expander.set_expanded(True)
-                        else:
-                                self.w_repositoryssl_expander.set_expanded(False)
                 return True
 
         def __add_mirror(self, new_mirror):
@@ -1228,6 +2012,8 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.repository
                 pub.alias = alias
                 errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
+                errors += self.__update_pub_certs()
+                errors += self.__update_pub_sig_policy()
                 try:
                         errors += self.__update_publisher(pub, new_publisher=False)
                 except api_errors.UnknownRepositoryPublishers, e:
@@ -1598,6 +2384,17 @@ class Repository(progress.GuiProgressTracker):
                 self.__rm_origin()
                 
         def __on_repositorymodifyok_clicked(self, widget):
+                pub = self.repository_modify_publisher
+                if pub == None:
+                        return
+                error_dialog_title = _("Modify Publisher - %s") % \
+                        self.__get_pub_display_name(pub)
+                text = self.w_pub_sig_name_entry.get_text()
+                req_names = self.w_pub_sig_name_radiobutton.get_active()
+                if not gui_misc.check_sig_required_names_policy(text,
+                    req_names, error_dialog_title):
+                        return
+
                 self.publishers_apply.set_title(_("Applying Changes"))
                 self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok,
                     self.w_manage_publishers_dialog)

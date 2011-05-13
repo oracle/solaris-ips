@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates.  All rights reserved.
 #
 
 import sys
@@ -40,6 +40,8 @@ INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 LAST_EXPORT_SELECTION_PATH = \
         "/apps/packagemanager/preferences/last_export_selections_path"
+LAST_ADD_PUBCERT_PATH = \
+        "/apps/packagemanager/preferences/last_add_pubcert_path"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 SHOW_IMAGE_UPDATE_CONFIRMATION = "/apps/packagemanager/preferences/imageupdate_confirm"
 SHOW_INSTALL_CONFIRMATION = "/apps/packagemanager/preferences/install_confirm"
@@ -62,6 +64,8 @@ class PMGConf:
                             self.client.get_int(INITIAL_SECTION_PREFERENCES)
                         self.last_export_selection_path = \
                             self.client.get_string(LAST_EXPORT_SELECTION_PATH)
+                        self.last_add_pubcert_path = \
+                            self.client.get_string(LAST_ADD_PUBCERT_PATH)
                         self.show_startpage = \
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                         self.save_state = \
@@ -105,6 +109,7 @@ class PMGConf:
                         self.initial_show_filter = 0
                         self.initial_section = 2
                         self.last_export_selection_path = ""
+                        self.last_add_pubcert_path = ""
                         self.show_startpage = True
                         self.show_image_update = True
                         self.show_install = True
@@ -201,6 +206,9 @@ class PMGConf:
                         if self.last_export_selection_path:
                                 self.client.set_string(LAST_EXPORT_SELECTION_PATH,
                                     self.last_export_selection_path)
+                        if self.last_add_pubcert_path:
+                                self.client.set_string(LAST_ADD_PUBCERT_PATH,
+                                    self.last_add_pubcert_path)
                         self.client.set_string(LASTSOURCE_PREFERENCES, pub)
                         self.client.set_bool(START_INSEARCH_PREFERENCES,
                             start_insearch)

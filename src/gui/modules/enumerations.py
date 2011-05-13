@@ -174,3 +174,13 @@ LOCALE,             # <language>_<territory>(<codeset>)
 LOCALE_SELECTED,    # selected
 ) = range(5)
 
+# Publisher Certificate List in Modify Publisher Dialog - Certificates Tab
+(
+PUBCERT_ORGANIZATION, # O
+PUBCERT_NAME,         # CN
+PUBCERT_STATUS,       # Approved or Revoked
+PUBCERT_IPSHASH,      # IPS Cert hash
+PUBCERT_PATH,         # Path to Cert when added or reinstated
+PUBCERT_XCERT_OBJ,    # X509 certificate object
+PUBCERT_NEW,          # True if Cert just added, but not yet commited
+) = range(7)

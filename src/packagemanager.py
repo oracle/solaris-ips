@@ -1460,13 +1460,13 @@ class PackageManager:
                 ''' handler for manage publishers menu event '''
                 repository.Repository(self, self.image_directory,
                     action=enumerations.MANAGE_PUBLISHERS,
-                    main_window = self.w_main_window)
+                    main_window = self.w_main_window, gconf = self.gconf)
 
         def __on_file_add_publisher(self, widget):
                 ''' handler for add publisher menu event '''
                 repository.Repository(self, self.image_directory,
                     action=enumerations.ADD_PUBLISHER,
-                    main_window = self.w_main_window)
+                    main_window = self.w_main_window, gconf = self.gconf)
 
         def __on_file_be_activate(self, widget):
                 ''' handler for be menu event '''
