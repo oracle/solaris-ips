@@ -550,10 +550,10 @@ test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
                 # go through the user configured origin.
                 self.sc.conf = self.apache_confs["none"]
 
-                # Check that the catalog can be refreshed and that the
-                # communcation with the repository works.
+                # Check that the catalog can't be refreshed and that the
+                # communcation with the repository fails.
                 self.pkg("contents -rm example_pkg")
-                self.pkg("refresh --full")
+                self.pkg("refresh --full", exit=1)
 
                 # Check that removing the system configured origin fails.
                 self.pkg("set-publisher -G %s test1" % self.durl1, exit=1)

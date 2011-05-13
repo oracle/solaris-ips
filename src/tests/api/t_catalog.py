@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -972,7 +972,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # Update logging has to be disabled for this to work.
                 cat.log_updates = False
 
-                cat.update_entry(p2_fmri, { "foo": True })
+                cat.update_entry({ "foo": True }, pfmri=p2_fmri)
 
                 entry = cat.get_entry(p2_fmri)
                 self.assertEqual(entry["metadata"], { "foo": True })

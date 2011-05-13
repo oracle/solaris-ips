@@ -3518,28 +3518,39 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 incorp_info, inst_stems = self.get_incorp_info()
 
-                for pub in servers:
+                slist = []
+                for entry in servers:
                         descriptive_name = None
-
-                        if self.__canceling:
-                                raise apx.CanceledException()
-
-                        if isinstance(pub, dict):
-                                origin = pub["origin"]
+                        if isinstance(entry, dict):
+                                origin = entry["origin"]
                                 try:
                                         pub = self._img.get_publisher(
                                             origin=origin)
                                 except apx.UnknownPublisher:
                                         pub = publisher.RepositoryURI(origin)
                                         descriptive_name = origin
+                                slist.append((pub, None, descriptive_name))
+                                continue
 
-                        if not descriptive_name:
-                                descriptive_name = pub.prefix
+                        # Must be a publisher object.
+                        osets = entry.get_origin_sets()
+                        if not osets:
+                                unsupported.append((entry.prefix,
+                                    apx.NoPublisherRepositories(
+                                    entry.prefix)))
+                                continue
+                        for repo in osets:
+                                slist.append((entry, repo, entry.prefix))
+
+                for pub, alt_repo, descriptive_name in slist:
+                        if self.__canceling:
+                                raise apx.CanceledException()
 
                         try:
                                 res = self._img.transport.do_search(pub,
                                     query_str_and_args_lst,
-                                    ccancel=self.__check_cancel)
+                                    ccancel=self.__check_cancel,
+                                    alt_repo=alt_repo)
                         except apx.CanceledException:
                                 raise
                         except apx.NegativeSearchResult:

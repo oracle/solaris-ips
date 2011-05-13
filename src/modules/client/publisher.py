@@ -35,6 +35,7 @@
 #
 
 import calendar
+import collections
 import copy
 import cStringIO
 import datetime as dt
@@ -802,6 +803,7 @@ class Publisher(object):
         __client_uuid = None
         __disabled = False
         __meta_root = None
+        __origin_root = None
         __prefix = None
         __repository = None
         __sticky = True
@@ -1049,6 +1051,8 @@ class Publisher(object):
                 if self.__catalog:
                         self.__catalog.meta_root = self.catalog_root
                 if self.__meta_root:
+                        self.__origin_root = os.path.join(self.__meta_root,
+                            "origins")
                         self.cert_root = os.path.join(self.__meta_root, "certs")
                         self.__subj_root = os.path.join(self.cert_root,
                             "subject_hashes")
@@ -1077,12 +1081,12 @@ class Publisher(object):
         def __str__(self):
                 return self.prefix
 
-        def __validate_metadata(self):
+        def __validate_metadata(self, croot, repo):
                 """Private helper function to check the publisher's metadata
                 for configuration or other issues and log appropriate warnings
                 or errors.  Currently only checks catalog metadata."""
 
-                c = self.catalog
+                c = pkg.catalog.Catalog(meta_root=croot, read_only=True)
                 if not c.exists:
                         # Nothing to validate.
                         return
@@ -1096,10 +1100,10 @@ class Publisher(object):
                 # XXX For now, perform this check using the catalog data.
                 # In the future, it should be done using the output of the
                 # publisher/0 operation.
-                pubs = self.catalog.publishers()
+                pubs = c.publishers()
 
                 if self.prefix not in pubs:
-                        origins = self.repository.origins
+                        origins = repo.origins
                         origin = origins[0]
                         logger.error(_("""
 Unable to retrieve package data for publisher '%(prefix)s' from one
@@ -1210,7 +1214,8 @@ pkg unset-publisher %s
                                         # Otherwise, raise the exception.
                                         raise
                 # Optional roots not needed for all operations.
-                for path in (self.cert_root, self.__subj_root, self.__crl_root):
+                for path in (self.cert_root, self.__origin_root,
+                    self.__subj_root, self.__crl_root):
                         try:
                                 os.makedirs(path)
                         except EnvironmentError, e:
@@ -1221,6 +1226,43 @@ pkg unset-publisher %s
                                         # Otherwise, raise the exception.
                                         raise
 
+        def get_origin_sets(self):
+                """Returns a list of Repository objects representing the unique
+                groups of origins available.  Each group is based on the origins
+                that share identical package catalog data."""
+
+                if not self.repository or not self.repository.origins:
+                        # Guard against failure for publishers with no
+                        # transport information.
+                        return []
+
+                if not self.meta_root or not os.path.exists(self.__origin_root):
+                        # No way to identify unique sets.
+                        return [self.repository]
+
+                # Index origins by tuple of (catalog creation, catalog modified)
+                osets = collections.defaultdict(list)
+                
+                for origin, opath in self.__gen_origin_paths():
+                        cat = pkg.catalog.Catalog(meta_root=opath,
+                            read_only=True)
+                        if not cat.exists:
+                                key = None
+                        else:
+                                key = (str(cat.created), str(cat.last_modified))
+                        osets[key].append(origin)
+
+                # Now return a list of Repository objects (copies of the
+                # currently selected one) assigning each set of origins.
+                # Sort by index to ensure consistent ordering.
+                rval = []
+                for k in sorted(osets):
+                        nrepo = copy.copy(self.repository)
+                        nrepo.origins = osets[k]
+                        rval.append(nrepo)
+
+                return rval
+
         def has_configuration(self):
                 """Returns whether this publisher has any configuration which
                 should prevent its removal."""
@@ -1228,7 +1270,7 @@ pkg unset-publisher %s
                 return bool(self.__repository.origins or
                     self.__repository.mirrors or self.__sig_policy or
                     self.approved_ca_certs or self.revoked_ca_certs)
-
+ 
         @property
         def needs_refresh(self):
                 """A boolean value indicating whether the publisher's
@@ -1263,7 +1305,195 @@ pkg unset-publisher %s
                         return True
                 return False
 
-        def __convert_v0_catalog(self, v0_cat):
+        def __get_origin_path(self, origin):
+                if not os.path.exists(self.__origin_root):
+                        return
+                # A digest of the URI string is used here to attempt to avoid
+                # path length problems.
+                return os.path.join(self.__origin_root,
+                    hashlib.sha1(origin.uri).hexdigest())
+
+        def __gen_origin_paths(self):
+                if not os.path.exists(self.__origin_root):
+                        return
+                for origin in self.repository.origins:
+                        yield origin, self.__get_origin_path(origin)
+
+        def __rebuild_catalog(self):
+                """Private helper function that builds publisher catalog based
+                on catalog from each origin."""
+
+                # First, remove catalogs for any origins that no longer exist.
+                ohashes = [
+                    hashlib.sha1(o.uri).hexdigest()
+                    for o in self.repository.origins
+                ]
+
+                for entry in os.listdir(self.__origin_root):
+                        opath = os.path.join(self.__origin_root, entry)
+                        try:
+                                if entry in ohashes:
+                                        continue
+                        except Exception:
+                                # Discard anything that isn't an origin.
+                                pass
+
+                        # Not an origin or origin no longer exists; either way,
+                        # it shouldn't exist here.
+                        try:
+                                if os.path.isdir(opath):
+                                        shutil.rmtree(opath)
+                                else:
+                                        portable.remove(opath)
+                        except EnvironmentError, e:
+                                raise api_errors._convert_error(e)
+
+                # Discard existing catalog.
+                self.catalog.destroy()
+                self.__catalog = None
+
+                # Ensure all old catalog files are removed.
+                for entry in os.listdir(self.catalog_root):
+                        if entry == "attrs" or entry == "catalog" or \
+                            entry.startswith("catalog."):
+                                try:
+                                        portable.remove(os.path.join(
+                                            self.catalog_root, entry))
+                                except EnvironmentError, e:
+                                        raise apx._convert_error(e)
+
+                # If there's only one origin, then just symlink its catalog
+                # files into place.
+                opaths = [entry for entry in self.__gen_origin_paths()]
+                if len(opaths) == 1:
+                        opath = opaths[0][1]
+                        for fname in os.listdir(opath):
+                                if fname.startswith("catalog."):
+                                        src = os.path.join(opath, fname)
+                                        dest = os.path.join(self.catalog_root,
+                                            fname)
+                                        os.symlink(misc.relpath(src,
+                                            self.catalog_root), dest)
+                        return
+
+                # If there's more than one origin, then create a new catalog
+                # based on a composite of the catalogs for all origins.
+                ncat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=self.catalog_root, sign=False)
+
+                # Mark all operations as occurring at this time.
+                op_time = dt.datetime.utcnow()
+
+                # Copied from pkg.client.image.Image to avoid circular
+                # dependency.
+                PKG_STATE_V0 = 6
+
+                for origin, opath in opaths:
+                        src_cat = pkg.catalog.Catalog(meta_root=opath,
+                            read_only=True)
+                        for name in src_cat.parts:
+                                spart = src_cat.get_part(name, must_exist=True)
+                                if spart is None:
+                                        # Client hasn't retrieved this part.
+                                        continue
+
+                                npart = ncat.get_part(name)
+                                base = name.startswith("catalog.base.")
+                                
+                                # Avoid accessor overhead since these will be
+                                # used for every entry.
+                                cat_ver = src_cat.version
+
+                                for t, sentry in spart.tuple_entries(
+                                    pubs=[self.prefix]):
+                                        pub, stem, ver = t
+
+                                        entry = dict(sentry.iteritems())
+                                        try:
+                                                npart.add(metadata=entry,
+                                                    op_time=op_time, pub=pub,
+                                                    stem=stem, ver=ver)
+                                        except api_errors.DuplicateCatalogEntry:
+                                                if not base:
+                                                        # Don't care.
+                                                        continue
+
+                                                # Destination entry is in
+                                                # catalog already.
+                                                entry = npart.get_entry(
+                                                    pub=pub, stem=stem, ver=ver)
+
+                                                src_sigs = set(
+                                                    s
+                                                    for s in sentry
+                                                    if s.startswith("signature-")
+                                                )
+                                                dest_sigs = set(
+                                                    s
+                                                    for s in entry
+                                                    if s.startswith("signature-")
+                                                )
+
+                                                if src_sigs != dest_sigs:
+                                                        # Ignore any packages
+                                                        # that are different
+                                                        # from the first
+                                                        # encountered for this
+                                                        # package version.
+                                                        # The client expects
+                                                        # these to always be
+                                                        # the same.  This seems
+                                                        # saner than failing.
+                                                        continue
+                                        else:
+                                                if not base:
+                                                        # Nothing to do.
+                                                        continue
+
+                                                # Destination entry is one just
+                                                # added.
+                                                entry["metadata"] = {
+                                                    "sources": [],
+                                                    "states": [],
+                                                }
+
+                                        entry["metadata"]["sources"].append(
+                                            origin.uri)
+
+                                        states = entry["metadata"]["states"]
+                                        if src_cat.version == 0:
+                                                states.append(PKG_STATE_V0)
+
+                # Now go back and trim each entry to minimize footprint.  This
+                # ensures each package entry only has state and source info
+                # recorded when needed.
+                for t, entry in ncat.tuple_entries():
+                        pub, stem, ver = t
+                        mdata = entry["metadata"]
+                        if len(mdata["sources"]) == len(opaths):
+                                # Package is available from all origins, so
+                                # there's no need to require which ones
+                                # have it.
+                                del mdata["sources"]
+
+                        if len(mdata["states"]) < len(opaths):
+                                # At least one source is not V0, so the lazy-
+                                # load fallback for the package metadata isn't
+                                # needed.
+                                del mdata["states"]
+                        elif len(mdata["states"]) > 1:
+                                # Ensure only one instance of state value.
+                                mdata["states"] = [PKG_STATE_V0]
+                        if not mdata:
+                                mdata = None
+                        ncat.update_entry(mdata, pub=pub, stem=stem, ver=ver)
+
+                # Finally, write out publisher catalog.
+                ncat.batch_mode = False
+                ncat.finalize()
+                ncat.save()
+
+        def __convert_v0_catalog(self, v0_cat, v1_root):
                 """Transforms the contents of the provided version 0 Catalog
                 into a version 1 Catalog, replacing the current Catalog."""
 
@@ -1272,11 +1502,10 @@ pkg unset-publisher %s
                         # last_modified can be none if the catalog is empty.
                         v0_lm = pkg.catalog.ts_to_datetime(v0_lm)
 
-                v1_cat = self.catalog
-
                 # There's no point in signing this catalog since it's simply
                 # a transformation of a v0 catalog.
-                v1_cat.sign = False
+                v1_cat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=v1_root, sign=False)
 
                 # A check for a previous non-zero package count is made to
                 # determine whether the last_modified date alone can be
@@ -1288,8 +1517,8 @@ pkg unset-publisher %s
                 except (TypeError, ValueError):
                         n0_pkgs = 0
 
-                if n0_pkgs != v1_cat.package_version_count:
-                        if v0_lm == self.catalog.last_modified:
+                if v1_cat.exists and n0_pkgs != v1_cat.package_version_count:
+                        if v0_lm == v1_cat.last_modified:
                                 # Already converted.
                                 return
                         # Simply rebuild the entire v1 catalog every time, this
@@ -1297,10 +1526,10 @@ pkg unset-publisher %s
                         # deficiencies in the v0 implementation.
                         v1_cat.destroy()
                         self.__catalog = None
-                        v1_cat = self.catalog
+                        v1_cat = pkg.catalog.Catalog(meta_root=v1_root,
+                            sign=False)
 
                 # Now populate the v1 Catalog with the v0 Catalog's data.
-                v1_cat.batch_mode = True
                 for f in v0_cat.fmris():
                         v1_cat.add_package(f)
 
@@ -1320,20 +1549,23 @@ pkg unset-publisher %s
                 v1_cat.batch_mode = False
                 v1_cat.finalize()
                 v1_cat.save()
-                self.__catalog = v1_cat
 
-        def __refresh_v0(self, full_refresh, immediate):
+        def __refresh_v0(self, croot, full_refresh, immediate, repo):
                 """The method to refresh the publisher's metadata against
                 a catalog/0 source.  If the more recent catalog/1 version
-                isn't supported, this routine gets invoked as a fallback."""
+                isn't supported, this routine gets invoked as a fallback.
+                Returns a tuple of (changed, refreshed) where 'changed'
+                indicates whether new catalog data was found and 'refreshed'
+                indicates that catalog data was actually retrieved to determine
+                if there were any updates."""
 
                 if full_refresh:
                         immediate = True
 
                 # Catalog needs v0 -> v1 transformation if repository only
                 # offers v0 catalog.
-                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
-                    read_only=True, publisher=self.prefix)
+                v0_cat = old_catalog.ServerCatalog(croot, read_only=True,
+                    publisher=self.prefix)
 
                 new_cat = True
                 v0_lm = None
@@ -1341,7 +1573,7 @@ pkg unset-publisher %s
                         repo = self.repository
                         if full_refresh or v0_cat.origin() not in repo.origins:
                                 try:
-                                        v0_cat.destroy(root=self.catalog_root)
+                                        v0_cat.destroy(root=croot)
                                 except EnvironmentError, e:
                                         if e.errno == errno.EACCES:
                                                 raise api_errors.PermissionsException(
@@ -1357,18 +1589,19 @@ pkg unset-publisher %s
 
                 if not immediate and not self.needs_refresh:
                         # No refresh needed.
-                        return False
+                        return False, False
 
                 import pkg.updatelog as old_ulog
                 try:
                         # Note that this currently retrieves a v0 catalog that
                         # has to be converted to v1 format.
-                        self.transport.get_catalog(self, v0_lm)
+                        self.transport.get_catalog(self, v0_lm, path=croot,
+                            alt_repo=repo)
                 except old_ulog.UpdateLogException:
                         # If an incremental update fails, attempt a full
                         # catalog retrieval instead.
                         try:
-                                v0_cat.destroy(root=self.catalog_root)
+                                v0_cat.destroy(root=croot)
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
@@ -1377,25 +1610,28 @@ pkg unset-publisher %s
                                         raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
                                 raise
-                        self.transport.get_catalog(self)
+                        self.transport.get_catalog(self, path=croot,
+                            alt_repo=repo)
 
-                v0_cat = pkg.server.catalog.ServerCatalog(
-                    self.catalog_root, read_only=True,
+                v0_cat = pkg.server.catalog.ServerCatalog(croot, read_only=True,
                     publisher=self.prefix)
 
-                self.__convert_v0_catalog(v0_cat)
-                self.last_refreshed = dt.datetime.utcnow()
-
+                self.__convert_v0_catalog(v0_cat, croot)
                 if new_cat or v0_lm != v0_cat.last_modified():
                         # If the catalog was rebuilt, or the timestamp of the
                         # catalog changed, then an update has occurred.
-                        return True
-                return False
+                        return True, True
+                return False, True
 
-        def __refresh_v1(self, tempdir, full_refresh, immediate, mismatched):
+        def __refresh_v1(self, croot, tempdir, full_refresh, immediate,
+            mismatched, repo):
                 """The method to refresh the publisher's metadata against
                 a catalog/1 source.  If the more recent catalog/1 version
-                isn't supported, __refresh_v0 is invoked as a fallback."""
+                isn't supported, __refresh_v0 is invoked as a fallback.
+                Returns a tuple of (changed, refreshed) where 'changed'
+                indicates whether new catalog data was found and 'refreshed'
+                indicates that catalog data was actually retrieved to determine
+                if there were any updates."""
 
                 # If full_refresh is True, then redownload should be True to
                 # ensure a non-cached version of the catalog is retrieved.
@@ -1406,35 +1642,35 @@ pkg unset-publisher %s
                 redownload = full_refresh
                 revalidate = not redownload and mismatched
 
+                v1_cat = pkg.catalog.Catalog(meta_root=croot)
                 try:
                         self.transport.get_catalog1(self, ["catalog.attrs"],
                             path=tempdir, redownload=redownload,
-                            revalidate=revalidate)
+                            revalidate=revalidate, alt_repo=repo)
                 except api_errors.UnsupportedRepositoryOperation:
                         # No v1 catalogs available.
-                        if self.catalog.exists:
+                        if v1_cat.exists:
                                 # Ensure v1 -> v0 transition works right.
-                                self.catalog.destroy()
+                                v1_cat.destroy()
                                 self.__catalog = None
-                        return self.__refresh_v0(full_refresh, immediate)
+                        return self.__refresh_v0(croot, full_refresh, immediate,
+                            repo)
 
                 # If a v0 catalog is present, remove it before proceeding to
                 # ensure transitions between catalog versions work correctly.
-                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
-                    read_only=True, publisher=self.prefix)
+                v0_cat = old_catalog.ServerCatalog(croot, read_only=True,
+                    publisher=self.prefix)
                 if v0_cat.exists:
-                        v0_cat.destroy(root=self.catalog_root)
+                        v0_cat.destroy(root=croot)
 
                 # If above succeeded, we now have a catalog.attrs file.  Parse
                 # this to determine what other constituent parts need to be
                 # downloaded.
                 flist = []
-                if not full_refresh and self.catalog.exists:
-                        flist = self.catalog.get_updates_needed(tempdir)
+                if not full_refresh and v1_cat.exists:
+                        flist = v1_cat.get_updates_needed(tempdir)
                         if flist == None:
-                                # Catalog has not changed.
-                                self.last_refreshed = dt.datetime.utcnow()
-                                return False
+                                return False, True
                 else:
                         attrs = pkg.catalog.CatalogAttrs(meta_root=tempdir)
                         for name in attrs.parts:
@@ -1450,31 +1686,34 @@ pkg unset-publisher %s
                         try:
                                 self.transport.get_catalog1(self, flist,
                                     path=tempdir, redownload=redownload,
-                                    revalidate=revalidate)
+                                    revalidate=revalidate, alt_repo=repo)
                         except api_errors.UnsupportedRepositoryOperation:
                                 # Couldn't find a v1 catalog after getting one
                                 # before.  This would be a bizzare error, but we
                                 # can try for a v0 catalog anyway.
-                                return self.__refresh_v0(full_refresh,
-                                    immediate)
+                                return self.__refresh_v0(croot, full_refresh,
+                                    immediate, repo)
+
+                # Clear __catalog, so we'll read in the new catalog.
+                self.__catalog = None
+                v1_cat = pkg.catalog.Catalog(meta_root=croot)
 
                 # At this point the client should have a set of the constituent
                 # pieces that are necessary to construct a catalog.  If a
                 # catalog already exists, call apply_updates.  Otherwise,
                 # move the files to the appropriate location.
                 validate = False
-                if not full_refresh and self.catalog.exists:
-                        self.catalog.apply_updates(tempdir)
+                if not full_refresh and v1_cat.exists:
+                        v1_cat.apply_updates(tempdir)
                 else:
-                        if self.catalog.exists:
+                        if v1_cat.exists:
                                 # This is a full refresh.  Destroy
                                 # the existing catalog.
-                                self.catalog.destroy()
-                                self.__catalog = None
+                                v1_cat.destroy()
 
                         for fn in os.listdir(tempdir):
                                 srcpath = os.path.join(tempdir, fn)
-                                dstpath = os.path.join(self.catalog_root, fn)
+                                dstpath = os.path.join(croot, fn)
                                 pkg.portable.rename(srcpath, dstpath)
 
                         # Apply_updates validates the newly constructed catalog.
@@ -1482,15 +1721,10 @@ pkg unset-publisher %s
                         # have the new catalog validated.
                         validate = True
 
-                # Update refresh time.
-                self.last_refreshed = dt.datetime.utcnow()
-
-                # Clear __catalog, so we'll read in the new catalog.
-                self.__catalog = None
-
                 if validate:
                         try:
-                                self.catalog.validate()
+                                v1_cat = pkg.catalog.Catalog(meta_root=croot)
+                                v1_cat.validate()
                         except api_errors.BadCatalogSignatures:
                                 # If signature validation fails here, that means
                                 # that the attributes and individual parts were
@@ -1499,39 +1733,27 @@ pkg unset-publisher %s
                                 # be the result of a broken source providing
                                 # an attributes file that is much older or newer
                                 # than the catalog parts being provided.
-                                self.catalog.destroy()
-                                self.__catalog = None
+                                v1_cat.destroy()
                                 raise api_errors.MismatchedCatalog(self.prefix)
-                return True
+                return True, True
 
-        def __refresh(self, full_refresh, immediate, mismatched=False):
-                """The method to handle the overall refresh process.  It
-                determines if a refresh is actually needed, and then calls
-                the first version-specific refresh method in the chain."""
+        def __refresh_origin(self, croot, full_refresh, immediate, mismatched,
+            origin):
+                """Private helper method used to refresh catalog data for each
+                origin.  Returns a tuple of (changed, refreshed) where 'changed'
+                indicates whether new catalog data was found and 'refreshed'
+                indicates that catalog data was actually retrieved to determine
+                if there were any updates."""
 
-                assert self.catalog_root
-                assert self.transport
-
-                if full_refresh:
-                        immediate = True
-
-                # Ensure consistent directory structure.
-                self.create_meta_root()
-
-                # Check if we already have a v1 catalog on disk.
-                if not full_refresh and self.catalog.exists:
-                        # If catalog is on disk, check if refresh is necessary.
-                        if not immediate and not self.needs_refresh:
-                                # No refresh needed.
-                                return False
-
-                if not self.repository.origins:
-                        # Nothing to do.
-                        return False
+                # Create a copy of the current repository object that only
+                # contains the origin specified.
+                repo = copy.copy(self.repository)
+                repo.origins = [origin]
 
                 # Create temporary directory for assembly of catalog pieces.
                 try:
-                        tempdir = tempfile.mkdtemp(dir=self.catalog_root)
+                        misc.makedirs(croot)
+                        tempdir = tempfile.mkdtemp(dir=croot)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -1544,16 +1766,67 @@ pkg unset-publisher %s
                 # Ensure that the temporary directory gets removed regardless
                 # of success or failure.
                 try:
-                        rval = self.__refresh_v1(tempdir, full_refresh,
-                            immediate, mismatched)
+                        rval = self.__refresh_v1(croot, tempdir,
+                            full_refresh, immediate, mismatched, repo)
 
                         # Perform publisher metadata sanity checks.
-                        self.__validate_metadata()
+                        self.__validate_metadata(croot, repo)
 
                         return rval
                 finally:
                         # Cleanup tempdir.
                         shutil.rmtree(tempdir, True)
+
+        def __refresh(self, full_refresh, immediate, mismatched=False):
+                """The method to handle the overall refresh process.  It
+                determines if a refresh is actually needed, and then calls
+                the first version-specific refresh method in the chain."""
+
+                assert self.transport
+
+                if full_refresh:
+                        immediate = True
+
+                for origin, opath in self.__gen_origin_paths():
+                        misc.makedirs(opath)
+                        cat = pkg.catalog.Catalog(meta_root=opath,
+                            read_only=True)
+                        if not cat.exists:
+                                # If a catalog hasn't been retrieved for
+                                # any of the origins, then a refresh is
+                                # needed now.
+                                immediate = True
+                                break
+
+                # Ensure consistent directory structure.
+                self.create_meta_root()
+
+                # Check if we already have a v1 catalog on disk.
+                if not full_refresh and self.catalog.exists:
+                        # If catalog is on disk, check if refresh is necessary.
+                        if not immediate and not self.needs_refresh:
+                                # No refresh needed.
+                                return False
+
+                any_changed = False
+                any_refreshed = False
+                for origin, opath in self.__gen_origin_paths():
+                        changed, refreshed = self.__refresh_origin(opath,
+                            full_refresh, immediate, mismatched, origin)
+                        if changed:
+                                any_changed = True
+                        if refreshed:
+                                any_refreshed = True
+
+                if any_refreshed:
+                        # Update refresh time.
+                        self.last_refreshed = dt.datetime.utcnow()
+
+                # Finally, build a new catalog for this publisher based on a
+                # composite of the catalogs from all origins.
+                self.__rebuild_catalog()
+
+                return any_changed
 
         def refresh(self, full_refresh=False, immediate=False):
                 """Refreshes the publisher's metadata, returning a boolean

@@ -196,6 +196,25 @@ class TransportCfg(object):
                 """
                 raise NotImplementedError
 
+        def get_pkg_alt_repo(self, pfmri):
+                """Returns the repository object containing the origins that
+                should be used to retrieve the specified package or None.
+
+                'pfmri' is the FMRI object for the package."""
+
+                if not self.pkg_pub_map:
+                        return
+
+                # Package data should be retrieved from an alternative location.
+                pfx, stem, ver = pfmri.tuple()
+                sver = str(ver)
+                pmap = self.pkg_pub_map
+                try:
+                        return pmap[pfx][stem][sver].repository
+                except KeyError:
+                        # No alternate known for source.
+                        return
+
         def get_publisher(self, publisher_name):
                 raise NotImplementedError
 
@@ -295,6 +314,17 @@ class ImageTransportCfg(TransportCfg):
                 should be stored in and loaded from."""
 
                 return self.__img.get_manifest_path(pfmri)
+
+        def get_pkg_alt_repo(self, pfmri):
+                """Returns the repository object containing the origins that
+                should be used to retrieve the specified package or None.
+
+                'pfmri' is the FMRI object for the package."""
+
+                alt_repo = TransportCfg.get_pkg_alt_repo(self, pfmri)
+                if not alt_repo:
+                        alt_repo = self.__img.get_pkg_repo(pfmri)
+                return alt_repo
 
         def get_property(self, property_name):
                 if not self.__img.cfg:
@@ -606,7 +636,8 @@ class Transport(object):
                 return self.__cadir
 
         @LockedTransport()
-        def get_catalog(self, pub, ts=None, ccancel=None):
+        def get_catalog(self, pub, ts=None, ccancel=None, path=None,
+            alt_repo=None):
                 """Get the catalog for the specified publisher.  If
                 ts is defined, request only changes newer than timestamp
                 ts."""
@@ -614,7 +645,11 @@ class Transport(object):
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
-                croot = pub.catalog_root
+                download_dir = self.cfg.incoming_root
+                if path:
+                        croot = path
+                else:
+                        croot = pub.catalog_root
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -624,7 +659,8 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test(ccancel=ccancel)
 
-                for d in self.__gen_repo(pub, retry_count, origin_only=True):
+                for d in self.__gen_repo(pub, retry_count, origin_only=True,
+                    alt_repo=alt_repo):
 
                         repostats = self.stats[d.get_url()]
 
@@ -995,9 +1031,8 @@ class Transport(object):
                                 for o in tpub.repository.origins:
                                         if not alt_repo.has_origin(o):
                                                 alt_repo.add_origin(o)
-                elif self.cfg.pkg_pub_map:
-                        alt_repo = self.__get_alt_repo(fmri,
-                            self.cfg.pkg_pub_map)
+                elif fmri:
+                        alt_repo = self.cfg.get_pkg_alt_repo(fmri)
 
                 for d, v in self.__gen_repo(pub, retry_count, operation="file",
                     versions=[0, 1], alt_repo=alt_repo):
@@ -1109,9 +1144,8 @@ class Transport(object):
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
-                pmap = self.cfg.pkg_pub_map
-                if not alt_repo and pmap:
-                        alt_repo = self.__get_alt_repo(fmri, pmap)
+                if not alt_repo:
+                        alt_repo = self.cfg.get_pkg_alt_repo(fmri)
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -1170,9 +1204,8 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
 
-                pmap = self.cfg.pkg_pub_map
-                if not alt_repo and pmap:
-                        alt_repo = self.__get_alt_repo(fmri, pmap)
+                if not alt_repo:
+                        alt_repo = self.cfg.get_pkg_alt_repo(fmri)
 
                 for d in self.__gen_repo(pub, retry_count, origin_only=True,
                     alt_repo=alt_repo):
@@ -1220,15 +1253,6 @@ class Transport(object):
                                 failures.append(te)
 
                 raise failures
-
-        def __get_alt_repo(self, pfmri, pmap):
-                # Package data should be retrieved from an
-                # alternate location.
-                pfx, stem, ver = pfmri.tuple()
-                sver = str(ver)
-                if pfx in pmap and stem in pmap[pfx] and \
-                    sver in pmap[pfx][stem]:
-                        return pmap[pfx][stem][sver].repository
 
         @LockedTransport()
         def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
@@ -1285,13 +1309,10 @@ class Transport(object):
                 # this routine must process.
                 mx_pub = {}
 
-                pmap = None
-                if not alt_repo:
-                        pmap = self.cfg.pkg_pub_map
-
+                get_alt = not alt_repo
                 for fmri, intent in fetchlist:
-                        if pmap:
-                                alt_repo = self.__get_alt_repo(fmri, pmap)
+                        if get_alt:
+                                alt_repo = self.cfg.get_pkg_alt_repo(fmri)
 
                         # Multi transfer object must be created for each unique
                         # publisher or repository.
@@ -1313,10 +1334,6 @@ class Transport(object):
                         # Add requests keyed by requested package
                         # fmri.  Value contains (header, fmri) tuple.
                         mx_pub[eid].add_hash(fmri, (header, fmri))
-
-                        # Must reset every cycle if pmap is set.
-                        if pmap:
-                                alt_repo = None
 
                 for mxfr in mx_pub.values():
                         namelist = [k for k in mxfr]
@@ -2167,9 +2184,8 @@ class Transport(object):
                 if not self.__engine:
                         self.__setup()
 
-                pmap = self.cfg.pkg_pub_map
-                if not alt_repo and pmap:
-                        alt_repo = self.__get_alt_repo(fmri, pmap)
+                if not alt_repo:
+                        alt_repo = self.cfg.get_pkg_alt_repo(fmri)
 
                 try:
                         pub = self.cfg.get_publisher(fmri.publisher)

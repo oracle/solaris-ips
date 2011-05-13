@@ -2336,7 +2336,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         mdata["states"] = list(states)
 
                         # Now record the package state.
-                        kcat.update_entry(pfmri, metadata=mdata)
+                        kcat.update_entry(mdata, pfmri=pfmri)
 
                         # If the package is being marked as installed,
                         # then  it shouldn't already exist in the
@@ -2575,6 +2575,44 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return True
                 return False
 
+        def get_pkg_repo(self, pfmri):
+                """Returns the repository object containing the origins that
+                should be used to retrieve the specified package or None if
+                it can be retrieved from all sources or is not a known package.
+                """
+
+                assert pfmri.publisher
+                cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                entry = cat.get_entry(pfmri)
+                if entry is None:
+                        # Package not known.
+                        return
+
+                try:
+                        slist = entry["metadata"]["sources"]
+                except KeyError:
+                        # Can be retrieved from any source.
+                        return
+                else:
+                        if not slist:
+                                # Can be retrieved from any source.
+                                return
+
+                pub = self.get_publisher(prefix=pfmri.publisher)
+                repo = copy.copy(pub.repository)
+                norigins = [
+                    o for o in repo.origins
+                    if o.uri in slist
+                ]
+
+                if not norigins:
+                        # Known sources don't match configured; return so that
+                        # caller can fallback to default behaviour.
+                        return
+
+                repo.origins = norigins
+                return repo
+
         def get_pkg_state(self, pfmri):
                 """Returns the list of states a package is in for this image."""
 
@@ -2776,11 +2814,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                 # Only the base catalog part stores package
                                 # state information and/or other metadata.
-                                mdata = entry["metadata"] = {}
-                                states = [self.PKG_STATE_KNOWN]
+                                mdata = entry.setdefault("metadata", {})
+                                states = mdata.setdefault("states", [])
+                                states.append(self.PKG_STATE_KNOWN)
+
                                 if cat_ver == 0:
                                         states.append(self.PKG_STATE_V0)
-                                else:
+                                elif self.PKG_STATE_V0 not in states:
                                         # Assume V1 catalog source.
                                         states.append(self.PKG_STATE_V1)
 

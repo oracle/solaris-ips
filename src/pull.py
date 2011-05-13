@@ -269,14 +269,13 @@ def add_hashes_to_multi(mfst, multi):
         sendb = 0
         sendcb = 0
 
-        for atype in ("file", "license", "signature"):
-                for a in mfst.gen_actions_by_type(atype):
-                        if a.needsdata(None, None):
-                                multi.add_action(a)
-                                getb += get_pkg_otw_size(a)
-                                getf += 1
-                                sendb += int(a.attrs.get("pkg.size", 0))
-                                sendcb += int(a.attrs.get("pkg.csize", 0))
+        for a in mfst.gen_actions():
+                if a.has_payload:
+                        multi.add_action(a)
+                        getb += get_pkg_otw_size(a)
+                        getf += 1
+                        sendb += int(a.attrs.get("pkg.size", 0))
+                        sendcb += int(a.attrs.get("pkg.csize", 0))
         return getb, getf, sendb, sendcb
 
 def prune(fmri_list, all_versions, all_timestamps):

@@ -451,32 +451,38 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 durl4 = self.dcs[4].get_depot_url()
                 durl5 = self.dcs[5].get_depot_url()
 
-                # Test single add.
-                self.pkg("set-publisher %s http://%s1 test1" % (add_opt,
-                    self.bogus_url))
-                self.pkg("set-publisher %s http://%s2 test1" % (add_opt,
-                    self.bogus_url))
-                self.pkg("set-publisher %s http://%s5" % (add_opt,
+                # Test single add; --no-refresh must be used here since the URI
+                # being added is for a non-existent repository.
+                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
+                    (add_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh %s http://%s2 test1" %
+                    (add_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh %s http://%s5" % (add_opt,
                     self.bogus_url), exit=2)
                 self.pkg("set-publisher %s test1" % add_opt, exit=2)
-                self.pkg("set-publisher %s http://%s1 test1" % (add_opt,
-                    self.bogus_url), exit=1)
+                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
+                    (add_opt, self.bogus_url), exit=1)
                 self.pkg("set-publisher %s http://%s5 test11" % (add_opt,
                     self.bogus_url), exit=1)
                 if etype == "origin":
-                        self.pkg("set-publisher %s %s7 test1" % (add_opt,
-                            self.bogus_url), exit=1)
+                        self.pkg("set-publisher %s %s7 test1" %
+                            (add_opt, self.bogus_url), exit=1)
 
                 # Test single remove.
-                self.pkg("set-publisher %s http://%s1 test1" % (remove_opt,
-                    self.bogus_url))
-                self.pkg("set-publisher %s http://%s2 test1" % (remove_opt,
-                    self.bogus_url))
+                self.pkg("set-publisher --no-refresh %s http://%s1 test1" %
+                    (remove_opt, self.bogus_url))
+                self.pkg("set-publisher --no-refresh %s http://%s2 test1" %
+                    (remove_opt, self.bogus_url))
+                # URIs to remove not specified using options, so they are seen
+                # as publisher names -- only one publisher name may be
+                # specified at a time.
                 self.pkg("set-publisher %s test11 http://%s2 http://%s4" % (
                     remove_opt, self.bogus_url, self.bogus_url), exit=2)
                 self.pkg("set-publisher %s http://%s5" % (remove_opt,
                     self.bogus_url), exit=2)
+                # publisher name specified to remove as URI.
                 self.pkg("set-publisher %s test1" % remove_opt, exit=2)
+                # URI already removed or never existed.
                 self.pkg("set-publisher %s http://%s5 test11" % (remove_opt,
                     self.bogus_url), exit=1)
                 self.pkg("set-publisher %s http://%s6 test1" % (remove_opt,

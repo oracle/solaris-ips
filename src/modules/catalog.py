@@ -3387,27 +3387,44 @@ class Catalog(object):
 
                 return self._attrs.updates
 
-        def update_entry(self, pfmri, metadata):
+        def update_entry(self, metadata, pfmri=None, pub=None, stem=None,
+            ver=None):
                 """Updates the metadata stored in a package's BASE catalog
-                record for the specified FMRI.  Cannot be used when read_only
+                record for the specified package.  Cannot be used when read_only
                 or log_updates is enabled; should never be used with a Catalog
                 intended for incremental update usage.
 
+                'metadata' must be a dict of additional metadata to store with
+                the package's BASE record.
+
                 'pfmri' is the FMRI of the package to update the entry for.
 
-                'metadata' must be a dict of additional metadata to store with
-                the package's BASE record."""
+                'pub' is the publisher of the package.
 
+                'stem' is the stem of the package.
+
+                'ver' is the version string of the package.
+
+                'pfmri' or 'pub', 'stem', and 'ver' must be provided.
+                """
+
+                assert pfmri or (pub and stem and ver)
                 assert not self.log_updates and not self.read_only
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
                 if base is None:
+                        if not pfmri:
+                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    publisher=pub)
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 # get_entry returns the actual catalog entry, so updating it
                 # simply requires reassignment.
-                entry = base.get_entry(pfmri)
+                entry = base.get_entry(pfmri=pfmri, pub=pub, stem=stem, ver=ver)
                 if entry is None:
+                        if not pfmri:
+                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    publisher=pub)
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
                 if metadata is None:
                         if "metadata" in entry:
