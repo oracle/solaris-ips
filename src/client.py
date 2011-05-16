@@ -4083,7 +4083,7 @@ def publisher_list(api_inst, args):
                         else:
                                 msg(_("              Enabled:"), _("Yes"))
                         msg(_("     Signature Policy:"), pub.signature_policy.name)
-                        if "signature-required-names" in pub.properties.keys():
+                        if "signature-required-names" in pub.properties:
                                 names = pub.properties["signature-required-names"]
                                 if names:
                                         msg(_("  Sig. Required Names:"), names[0])
