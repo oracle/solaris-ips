@@ -871,8 +871,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         for p in self.cfg.removed_pubs:
                                 p.meta_root = self._get_publisher_meta_root(
                                     p.prefix)
-                                self.remove_publisher_metadata(p, rebuild=False)
-                                changed = True
+                                try:
+                                        self.remove_publisher_metadata(p,
+                                            rebuild=False)
+                                        changed = True
+                                except apx.PermissionsException:
+                                        pass
                         if changed:
                                 self.__rebuild_image_catalogs()
 

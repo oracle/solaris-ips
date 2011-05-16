@@ -79,6 +79,13 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
 
         misc_files = ["tmp/example_file"]
 
+        expected_all_access =  """\
+PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
+test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
+test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
+test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
+"""
+
         def killalldepots(self):
                 try:
                         pkg5unittest.ManyDepotTestCase.killalldepots(self)
@@ -371,8 +378,10 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
                 if update_conf and self.sc:
                         self.sc.conf = self.apache_confs[name]
 
-        def __check_publisher_info(self, expected, set_debug_value=True):
-                self.pkg("publisher -F tsv", debug_smf=set_debug_value)
+        def __check_publisher_info(self, expected, set_debug_value=True,
+            su_wrap=False):
+                self.pkg("publisher -F tsv", debug_smf=set_debug_value,
+                    su_wrap=su_wrap)
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output, bound_white_space=True)
 
@@ -409,12 +418,8 @@ class TestSysrepo(pkg5unittest.ManyDepotTestCase):
                 for n in ("test1", "test12", "test3"):
                         self.assert_(os.path.isdir(os.path.join(self.img_path(),
                             "var/pkg/publisher/%s" % n)))
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-""" % (self.durl1, self.durl2, self.durl3)
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected)
 
                 self.pkg("publisher test1")
@@ -453,12 +458,8 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
                 api_obj = self.image_create(props={"use-system-repo": True})
                 self.sc.conf = self.apache_confs["none"]
 
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-""" % (self.durl1, self.durl2, self.durl3)
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected)
 
                 self.pkg("list -a")
@@ -978,12 +979,8 @@ test1\ttrue\tfalse\ttrue\torigin\tonline\t%s/
                 os.environ["PKG_SYSREPO_URL"] = "localhost:%s" % \
                     self.sysrepo_alt_port
                 api_obj = self.image_create(props={"use-system-repo": True})
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-""" % (self.durl1, self.durl2, self.durl3)
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected, set_debug_value=False)
                 if old_psu:
                         os.environ["PKG_SYSREPO_URL"] = old_psu
@@ -1081,12 +1078,8 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("all-access")
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
-""" % (self.durl1, self.durl2, self.durl3)
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected)
 
         def test_10_test_mirrors(self):
@@ -1162,12 +1155,8 @@ test3\ttrue\ttrue\ttrue\tmirror\tonline\tproxy://%(durl3)s/
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("all-access")
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%(durl1)s/
-test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%(durl2)s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%(durl3)s/
-""" % {"durl1": self.durl1, "durl2": self.durl2, "durl3": self.durl3}
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected)
 
                 self.__set_responses("mirror-access")
@@ -1262,6 +1251,34 @@ test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1
 test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/
 """ % {"port": self.sysrepo_port, "hash1": hash1, "hash3": hash3}
 
+        def test_bug_18326(self):
+                """Test that an unprivileged user can use non-image modifying
+                commands and that image modifying commands don't trace back."""
+
+                self.__prep_configuration(["all-access", "none"])
+                self.__set_responses("all-access")
+                self.sc = pkg5unittest.SysrepoController(
+                    self.apache_confs["all-access"], self.sysrepo_port,
+                    self.common_config_dir, testcase=self)
+                self.sc.start()
+                api_obj = self.image_create(props={"use-system-repo": True})
+
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
+                self.__check_publisher_info(expected, su_wrap=True)
+                self.pkg("property", su_wrap=True)
+                self.pkg("install foo", su_wrap=True, exit=1)
+
+                self.__set_responses("none")
+                expected = """\
+PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
+"""
+                self.__check_publisher_info(expected, su_wrap=True)
+                self.__check_publisher_info(expected)
+                self.__set_responses("all-access")
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
+                self.__check_publisher_info(expected, su_wrap=True)
 
 
         __smf_cmds_template = { \

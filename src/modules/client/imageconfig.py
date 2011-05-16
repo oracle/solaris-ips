@@ -816,8 +816,11 @@ class NullSystemPublisher(object):
         """Dummy system publisher object for use when an image doesn't use a
         system publisher."""
 
+        __supported_props = ("publisher-search-order", "property.proxied-urls")
+
         def __init__(self):
                 self.publishers = {}
+                self.__props = dict([(p, []) for p in self.__supported_props])
 
         def write(self):
                 return
@@ -827,8 +830,14 @@ class NullSystemPublisher(object):
                 has any knowledge of it."""
 
                 if section == "property" and \
-                    name in ("publisher-search-order", "property.proxied-urls"):
-                        return []
+                    name in self.__supported_props:
+                        return self.__props[name]
+                raise NotImplementedError()
+
+        def set_property(self, section, name, value):
+                if section == "property" and name in self.__supported_props:
+                        self.__props[name] = value
+                        return
                 raise NotImplementedError()
 
 
@@ -902,13 +911,45 @@ class BlendedConfig(object):
                                 self.sys_cfg = old_sysconfig
                         else:
                                 try:
-                                        # Remove any previous system repository
-                                        # configuration.
-                                        portable.remove(syscfg_path)
+                                        try:
+                                                # Try to remove any previous
+                                                # system repository
+                                                # configuration.
+                                                portable.remove(syscfg_path)
+                                        except OSError, e:
+                                                if e.errno == errno.ENOENT:
+                                                        # Check to see whether
+                                                        # we'll be able to write
+                                                        # the configuration
+                                                        # later.
+                                                        with open(syscfg_path,
+                                                            "wb") as fh:
+                                                                fh.close()
+                                                        self.sys_cfg = \
+                                                            ImageConfig(
+                                                            syscfg_path, None)
+                                                else:
+                                                        raise
                                 except OSError, e:
-                                        if e.errno != errno.ENOENT:
+                                        if e.errno in \
+                                            (errno.EACCES, errno.EROFS):
+                                                # A permissions error means that
+                                                # either we couldn't remove the
+                                                # existing configuration or
+                                                # create a new configuration in
+                                                # that place.  In that case, use
+                                                # an in-memory only version of
+                                                # the ImageConfig.
+                                                self.sys_cfg = \
+                                                    NullSystemPublisher()
+                                        else:
                                                 raise
-                                self.sys_cfg = ImageConfig(syscfg_path, None)
+                                else:
+                                        # The previous configuration was
+                                        # successfully removed, so use that
+                                        # location for the new ImageConfig.
+                                        self.sys_cfg = \
+                                            ImageConfig(syscfg_path, None)
                                 for p in pubs:
                                         assert not p.disabled, "System " \
                                             "publisher %s was unexpectedly " \
