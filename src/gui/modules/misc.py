@@ -241,12 +241,18 @@ def get_um_name():
 
 def notify_log_error(app):
         if global_settings.client_name == PKG_CLIENT_NAME_PM:
-                gobject.idle_add(__notify_log_error, app)
+                gobject.idle_add(__notify_log_error, app,
+                    _("Errors logged: click to view"))
 
-def __notify_log_error(app):
+def notify_log_warning(app):
+        if global_settings.client_name == PKG_CLIENT_NAME_PM:
+                gobject.idle_add(__notify_log_error, app,
+                    _("Warnings logged: click to view"))
+
+def __notify_log_error(app, msg):
         app.error_logged = True
         app.w_infosearch_frame.show()
-        app.w_infosearch_frame.set_tooltip_text(_("Errors logged: click to view"))
+        app.w_infosearch_frame.set_tooltip_text(msg)
 
 def setup_logging():
         su_logging(global_settings.client_name)

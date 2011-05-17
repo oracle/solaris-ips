@@ -1645,8 +1645,6 @@ class Repository(progress.GuiProgressTracker):
                             self.main_window, self.__stop, None, None,  ssl_key,
                             ssl_cert, self.repository_modify_publisher)
                 else:
-                        repo = publisher.Repository()
-                        repo.add_origin(url)
                         self.__run_with_prog_in_thread(self.__add_repository,
                             self.w_add_publisher_dialog, self.__stop, alias,
                             url, ssl_key, ssl_cert, pub)
@@ -1661,12 +1659,15 @@ class Repository(progress.GuiProgressTracker):
             ssl_cert=None, pub=None):
                 errors = []
                 if pub == None:
-                        pub, repo, new_pub = self.__get_or_create_pub_with_url(self.api_o,
+                        if self.__check_publisher_exists(self.api_o, alias, 
+                                origin_url):
+                                self.progress_stop_thread = True
+                                return
+                        pub, repo, new_pub = self.__setup_publisher_from_uri(
                             alias, origin_url)
                         if pub == None:
                                 self.progress_stop_thread = True
                                 return
-                        name = alias
                 else:
                         repo = pub.repository
                         new_pub = True
@@ -2520,6 +2521,59 @@ class Repository(progress.GuiProgressTracker):
                 widget.hide()
                 return True
 
+        def __check_publisher_exists(self, api_o, name, origin_url):
+                try:
+                        pub = api_o.get_publisher(prefix=name, alias=name,
+                            duplicate=True)
+                        raise URIExistingPublisher(origin_url, pub)
+                except api_errors.UnknownPublisher:
+                        return False
+                except api_errors.ApiException, e:
+                        gobject.idle_add(self.__show_errors, [(name, e)])
+                        return True
+
+        def __setup_publisher_from_uri(self, alias, origin_url):
+                try:
+                        repo = publisher.RepositoryURI(origin_url)
+                        pubs = self.api_o.get_publisherdata(repo=repo)
+                        if not pubs:
+                                raise NoPublishersForURI(origin_url)
+                        src_pub = sorted(pubs)[0]
+                        #For now only handling single Pub per Origin
+                        if len(pubs) > 1:
+                                user_image_root = ""
+                                if self.parent.image_directory != "/":
+                                        user_image_root = "-R " + \
+                                                self.parent.image_directory + " "
+                                logger.warning(
+                                _("Origin URI: %(origin_url)s"
+                                "\nhas %(number_pubs)d publishers associated with it.\n"
+                                "Package Manager will only add the first publisher, "
+                                "%(pub_name)s.\n"
+                                "To add the remaining publishers use the command:\n"
+                                "'pkg %(user_image_root)sset-publisher "
+                                "-p %(origin_url)s'") %
+                                {"origin_url": origin_url,
+                                "number_pubs": len(pubs),
+                                "pub_name": src_pub.prefix,
+                                "user_image_root": user_image_root,
+                                })
+                                gui_misc.notify_log_warning(self.parent)
+                        src_repo = src_pub.repository
+                        add_origins = []
+                        if not src_repo or not src_repo.origins:
+                                add_origins.append(origin_url)
+                        repo = src_pub.repository
+                        if not repo:
+                                repo = publisher.Repository()
+                                src_pub.repository = repo
+                        for url in add_origins:
+                                repo.add_origin(url)
+                        return (src_pub, repo, True)
+                except api_errors.ApiException, e:
+                        gobject.idle_add(self.__show_errors, [(alias, e)])
+                        return (None, None, False)
+
         def __get_or_create_pub_with_url(self, api_o, name, origin_url):
                 new_pub = False
                 repo = None
@@ -2536,7 +2590,7 @@ class Repository(progress.GuiProgressTracker):
                         # fail and it is dealt with there.
                         if name == None:
                                 name = "None"
-                        pub = publisher.Publisher(name, repositories=[repo])
+                        pub = publisher.Publisher(name, repository=repo)
                         new_pub = True
                         # This part is copied from "def publisher_set(img, args)"
                         # from the client.py as the publisher API is not ready yet.
@@ -2801,3 +2855,11 @@ class URIExistingPublisher(api_errors.ApiException):
                     "on the system.") % { "uri": self.uri,
                     "publisher": self.pub }
 
+class NoPublishersForURI(api_errors.ApiException):
+        def __init__(self, uri):
+                api_errors.ApiException.__init__(self)
+                self.uri = uri
+
+        def __str__(self):
+                return _("There are no publishers associated with the URI "
+                   "'%s'.") % self.uri
