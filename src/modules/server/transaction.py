@@ -401,6 +401,10 @@ class Transaction(object):
                 self.types_found = set((
                     action.name for action in m.gen_actions()
                 ))
+                self.has_reqdeps = any(
+                    a.attrs["type"] == "require"
+                    for a in m.gen_actions_by_type("depend")
+                )
 
         def close(self, add_to_catalog=True):
                 """Closes an open transaction, returning the published FMRI for
