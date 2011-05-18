@@ -312,6 +312,7 @@ class Repository(progress.GuiProgressTracker):
                 self.removed_orig_pub_cert_dict = {}# Removed Orig Pub Certs from model
                                                     # - key/val: [sha-hash] = ips-hash
                 self.orig_sig_policy = {}
+                self.pub_certs_setup = False
                 
                 if self.action == enumerations.ADD_PUBLISHER:
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
@@ -396,7 +397,7 @@ class Repository(progress.GuiProgressTracker):
                      self.__on_manage_help_clicked),
 
                     (self.w_modify_repository_dialog, "delete_event", 
-                     self.__delete_widget_handler_hide),
+                     self.__on_modifydialog_delete_event),
                     (self.w_modkeybrowse, "clicked", 
                      self.__on_modkeybrowse_clicked),
                     (self.w_modcertbrowse, "clicked", 
@@ -497,6 +498,9 @@ class Repository(progress.GuiProgressTracker):
                 return errors
         
         def __prepare_pub_signature_policy(self):
+                if self.orig_sig_policy:
+                        return
+
                 sig_policy = self.__fetch_pub_signature_policy()
                 self.orig_sig_policy = sig_policy
                 self.w_pub_sig_ignored_radiobutton.set_active(
@@ -628,6 +632,9 @@ class Repository(progress.GuiProgressTracker):
                 return display_name
 
         def __prepare_pub_certs(self):
+                if self.pub_certs_setup:
+                        return
+
                 pub = self.repository_modify_publisher
                 if not pub:
                         return
@@ -664,13 +671,15 @@ class Repository(progress.GuiProgressTracker):
                 self.w_pub_cert_treeview.set_model(sorted_model)
                 if len(pub.revoked_ca_certs) == 0 and len(pub.approved_ca_certs) == 0:
                         self.__set_empty_pub_cert()
+                        self.pub_certs_setup = True
                         return
 
                 sel_path = (0,)
                 if len(selected_rows) > 1 and len(selected_rows[1]) > 0:
                         sel_path = selected_rows[1][0]
                 self.__set_pub_cert_selection(sorted_model, sel_path)
-
+                self.pub_certs_setup = True
+                
         def __add_cert_to_model(self, model, cert, ips_hash, status, path = "",
             scroll_to=False, new=False):
                 pub = self.repository_modify_publisher
@@ -1391,6 +1400,9 @@ class Repository(progress.GuiProgressTracker):
                     self.modify_repo_origins_treeview)
 
         def __modify_publisher_dialog(self, pub):
+                self.orig_sig_policy = {}
+                self.pub_certs_setup = False
+
                 gui_misc.set_modal_and_transient(self.w_modify_repository_dialog,
                     self.w_manage_publishers_dialog)
                 try:
@@ -2400,6 +2412,10 @@ class Repository(progress.GuiProgressTracker):
                 self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok,
                     self.w_manage_publishers_dialog)
 
+        def __on_modifydialog_delete_event(self, widget, event):
+                self.__on_repositorymodifyok_clicked(None)
+                return True
+                
         def __on_repositorymodifycancel_clicked(self, widget):
                 self.__delete_widget_handler_hide(
                     self.w_modify_repository_dialog, None)

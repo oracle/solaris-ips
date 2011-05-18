@@ -124,6 +124,7 @@ class Preferences:
                 self.facet_g11_locales_dict = {}
                 self.facetlocales_list = []
                 self.facets_to_set = {}
+                self.locales_setup = False
                 self.locales_treeview_selection = []
                 self.locales_list = self.__get_locales_liststore()
                 self.__init_locales_tree_view(self.locales_list)
@@ -202,6 +203,8 @@ class Preferences:
                 return True
 
         def __prepare_img_signature_policy(self):
+                if self.orig_gsig_policy:
+                        return
                 sig_policy = self.__fetch_img_signature_policy()
                 self.orig_gsig_policy = sig_policy
                 self.w_gsig_ignored_radiobutton.set_active(
@@ -230,11 +233,9 @@ class Preferences:
 
         def __on_notebook_change(self, widget, event, pagenum):
                 if pagenum == PREFERENCES_NOTEBOOK_LANGUAGES_PAGE:
-                        locales_not_setup = len(self.orig_facets_dict) == 0
-                        if locales_not_setup:
-                                self.w_preferencesdialog.window.set_cursor(
-                                    self.watch )
-                                gobject.idle_add(self.__prepare_locales)
+                        self.w_preferencesdialog.window.set_cursor(
+                            self.watch )
+                        gobject.idle_add(self.__prepare_locales)
                 elif pagenum == PREFERENCES_NOTEBOOK_SIG_POL_PAGE:
                         gobject.idle_add(self.__prepare_img_signature_policy)
 
@@ -366,6 +367,8 @@ class Preferences:
 
         def __prepare_locales(self):
                 try:
+                        if self.locales_setup:
+                                return
                         self.__prepare_locales_list()
                 finally:
                         self.w_preferencesdialog.window.set_cursor(None)
@@ -514,6 +517,7 @@ class Preferences:
                                 self.orig_facet_lang_dict, \
                                 self.orig_facet_lang_star_dict, \
                                 self.orig_facet_locale_dict
+                self.locales_setup = True
 
         def __get_system_locales(self):
                 try:
@@ -749,6 +753,9 @@ class Preferences:
                 return True
 
         def __on_preferencesdialog_show(self, widget):
+                self.orig_gsig_policy = {}
+                self.locales_setup = False
+
                 pagenum = self.w_preferences_notebook.get_current_page()
                 if pagenum == PREFERENCES_NOTEBOOK_LANGUAGES_PAGE:
                         self.w_preferencesdialog.window.set_cursor(self.watch)
