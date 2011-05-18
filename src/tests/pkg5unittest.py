@@ -1270,45 +1270,6 @@ class Pkg5TestSuite(unittest.TestSuite):
                 print >> sys.stderr, "Stopping tests..."
                 raise TestStopException()
 
-        def env_sanitize(self):
-                # save some DebugValues settings
-                smf_cmds_dir = DebugValues["smf_cmds_dir"]
-
-                # clear any existing DebugValues settings
-                DebugValues.clear()
-
-                # clear misc environment variables
-                for e in ["PKG_CMDPATH"]:
-                        if e in os.environ:
-                                del os.environ[e]
-
-                # Set image path to a path that's not actually an
-                # image to force failure of tests that don't
-                # explicitly provide an image root either through the
-                # default behaviour of the pkg() helper routine or
-                # another method.
-                os.environ["PKG_IMAGE"] = g_tempdir
-
-                # Test suite should never attempt to access the
-                # live root image.
-                os.environ["PKG_NO_LIVE_ROOT"] = "1"
-
-                # Pkg interfaces should never know they are being
-                # run from within the test suite.
-                os.environ["PKG_NO_RUNPY_CMDPATH"] = "1"
-
-                # always print out recursive linked image commands
-                os.environ["PKG_DISP_LINKED_CMDS"] = "1"
-
-                # Pretend that we're being run from the fakeroot image.
-                DebugValues["simulate_cmdpath"] = g_pkg_cmdpath
-
-                # Update the path to smf commands
-                DebugValues["smf_cmds_dir"] = smf_cmds_dir
-
-                # always get detailed data from the solver
-                DebugValues["plan"] = True
-
         def run(self, result):
                 self.timing = {}
                 inst = None
@@ -1345,8 +1306,8 @@ class Pkg5TestSuite(unittest.TestSuite):
 
                 # test case setUp() may require running pkg commands
                 # so setup a fakeroot to run them from.
-                fakeroot_init()
-                self.env_sanitize()
+                fakeroot_create()
+                env_sanitize()
 
                 if persistent_setup:
                         setUpFailed = False
@@ -1391,7 +1352,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                         # executed test cases may have messed with these
                         # environment settings.
                         #
-                        self.env_sanitize()
+                        env_sanitize(dv_keep=["smf_cmds_dir"])
 
                         # Populate test with the data from the instance
                         # already constructed, but update the method name.
@@ -1424,6 +1385,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                 if hasattr(inst, "killalldepots"):
                         inst.killalldepots()
 
+                fakeroot_destroy()
 
 
 def get_su_wrap_user():
@@ -2534,7 +2496,82 @@ def mkdir_eexist_ok(p):
                 if e.errno != errno.EEXIST:
                         raise e
 
-def fakeroot_init():
+def env_sanitize(dv_keep=None):
+        if dv_keep == None:
+                dv_keep = []
+
+        dv_saved = {}
+        for dv in dv_keep:
+                # save some DebugValues settings
+                dv_saved[dv] = DebugValues[dv]
+
+        # clear any existing DebugValues settings
+        DebugValues.clear()
+
+        # clear misc environment variables
+        for e in ["PKG_CMDPATH"]:
+                if e in os.environ:
+                        del os.environ[e]
+
+        # Set image path to a path that's not actually an
+        # image to force failure of tests that don't
+        # explicitly provide an image root either through the
+        # default behaviour of the pkg() helper routine or
+        # another method.
+        os.environ["PKG_IMAGE"] = g_tempdir
+
+        # Test suite should never attempt to access the
+        # live root image.
+        os.environ["PKG_NO_LIVE_ROOT"] = "1"
+
+        # Pkg interfaces should never know they are being
+        # run from within the test suite.
+        os.environ["PKG_NO_RUNPY_CMDPATH"] = "1"
+
+        # always print out recursive linked image commands
+        os.environ["PKG_DISP_LINKED_CMDS"] = "1"
+
+        # Pretend that we're being run from the fakeroot image.
+        if g_pkg_cmdpath != "TOXIC":
+                DebugValues["simulate_cmdpath"] = g_pkg_cmdpath
+
+        # Update the path to smf commands
+        for dv in dv_keep:
+                DebugValues[dv] = dv_saved[dv]
+
+        # always get detailed data from the solver
+        DebugValues["plan"] = True
+
+def fakeroot_destroy():
+        global g_fakeroot
+        global g_fakeroot_repo
+        global g_pkg_cmdpath
+
+        try:
+                os.stat(g_pkg_cmdpath)
+        except OSError, e:
+                # fakeroot already removed
+                return
+
+        test_root = os.path.join(g_tempdir, "ips.test.%d" % os.getpid())
+        for d in os.listdir(test_root):
+                path = os.path.join(test_root, d)
+
+                # make sure there are no turds
+                assert (path in [g_fakeroot, g_fakeroot_repo])
+                debug("removing: %s" % path)
+                if os.path.isdir(path):
+                        shutil.rmtree(path)
+                else:
+                        os.remove(path)
+        debug("removing: %s" % test_root)
+        shutil.rmtree(test_root)
+
+        g_fakeroot = "TOXIC"
+        g_fakeroot_repo = "TOXIC"
+        g_pkg_cmdpath = "TOXIC"
+
+def fakeroot_create():
         global g_fakeroot
         global g_fakeroot_repo
         global g_pkg_cmdpath
@@ -2546,6 +2583,10 @@ def fakeroot_init():
         else:
                 # fakeroot already exists
                 return
+
+        # when creating the fakeroot we want to make sure pkg doesn't
+        # touch the real root.
+        env_sanitize()
 
         #
         # When accessing images via the pkg apis those apis will try

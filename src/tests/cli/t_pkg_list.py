@@ -416,7 +416,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
         def test_12_matching(self):
                 """Verify that pkg list pattern matching works as expected."""
 
-                self.pkg("list -aHf foo*")
+                self.pkg("publisher")
+                self.pkg("list -aHf 'foo*'")
                 expected = \
                     "foo              1.2.1-0 ---\n" \
                     "foo              1.2-0   ---\n" \
@@ -449,7 +450,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -aH foo*")
+                self.pkg("list -aH 'foo*'")
                 expected = \
                     "foo              1.2.1-0 ---\n" \
                     "foo (test2)      1.2.1-0 ---\n" \
@@ -482,7 +483,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
         def test_13_multi_name(self):
                 """Test for multiple name match listing."""
-                self.pkg("list -aHf /foo*@1.2")
+                self.pkg("list -aHf '/foo*@1.2'")
                 expected = \
                     "foo          1.2.1-0 ---\n" + \
                     "foo          1.2-0   ---\n" + \
@@ -494,7 +495,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -aH /foo*@1.2")
+                self.pkg("list -aH '/foo*@1.2'")
                 expected = \
                     "foo          1.2.1-0 ---\n" + \
                     "foo  (test2) 1.2.1-0 ---\n" + \

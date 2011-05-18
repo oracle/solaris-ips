@@ -406,7 +406,7 @@ class pylint_func(Command):
         def escape(astring):
                 return astring.replace(' ', '\\ ')
 
-        def run(self):
+        def run(self, quiet=False):
                 proto = os.path.join(root_dir, py_install_dir)
                 sys.path.insert(0, proto)
 
@@ -427,9 +427,19 @@ class pylint_func(Command):
                 # files are made pylint clean they should be added to the
                 # pylint_targets list.
                 #
-                lint.Run(['--load-plugins=multiplatform', '--rcfile',
-                          os.path.join(pwd, 'tests', 'pylintrc')] +
-                          pylint_targets)
+                args = ['--load-plugins=multiplatform']
+                if quiet:
+                        args += ['--reports=no']
+                args += ['--rcfile', os.path.join(pwd, 'tests', 'pylintrc')]
+                args += pylint_targets
+                lint.Run(args)
+
+
+class pylint_func_quiet(pylint_func):
+
+        def run(self, quiet=False):
+                pylint_func.run(self, quiet=True)
+
 
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
@@ -967,6 +977,7 @@ cmdclasses = {
         'lint': lint_func,
         'clint': clint_func,
         'pylint': pylint_func,
+        'pylint_quiet': pylint_func_quiet,
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,

@@ -57,7 +57,7 @@ clobber: $(SUBDIRS)
 #
 install: $(SUBDIRS)
 	$(PYTHON) setup.py install
-	$(PYTHON) setup.py pylint
+	$(PYTHON) setup.py pylint_quiet
 
 lint:
 	$(PYTHON) setup.py lint

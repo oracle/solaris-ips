@@ -583,7 +583,7 @@ persistently.""")
 
                         res.append(_("""
 Invalid child image publisher configuration.  Child image publisher
-configuration must be a subset of the parent image publisher configuration.
+configuration must be a superset of the parent image publisher configuration.
 Please update the child publisher configuration to match the parent.  If the
 child image is a zone this can be done automatically by detaching and
 attaching the zone.

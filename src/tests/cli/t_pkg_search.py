@@ -323,7 +323,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(True, "'::com.sun.service.info_url:'",
                     self.res_remote_url)
                 self._search_op(True, "':::e* AND *path'", self.res_remote_path)
-                self._search_op(True, "e* AND *path", self.res_remote_path)
+                self._search_op(True, "'e* AND *path'", self.res_remote_path)
                 self._search_op(True, "'<e*>'", self.res_remote_pkg_ret_pkg)
                 self._search_op(True, "'<e*> AND <e*>'",
                     self.res_remote_pkg_ret_pkg)
@@ -336,7 +336,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     self.res_remote_path)
                 self._search_op(True, "'e*::: AND exam:::*path'",
                     self.res_remote_path_extra)
-                self._search_op(True, "example*", self.res_remote_wildcard)
+                self._search_op(True, "'example*'", self.res_remote_wildcard)
                 self._search_op(True, "/bin", self.res_remote_bin)
                 self._search_op(True, "4851433", self.res_remote_bug_id)
                 self._search_op(True, "'<4851433> AND <4725245>'",
@@ -352,20 +352,20 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(True, "4851433 OR 4725245",
                     self.res_remote_bug_id | self.res_remote_bug_id)
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
-                self._search_op(True, "6556?19", self.res_remote_inc_changes)
+                self._search_op(True, "'6556?19'", self.res_remote_inc_changes)
                 self._search_op(True, "42", self.res_remote_random_test)
                 self._search_op(True, "79", self.res_remote_random_test_79)
                 self._search_op(True, "separator", self.res_remote_keywords)
                 self._search_op(True, "'\"sort 0x86\"'",
                     self.res_remote_keywords)
-                self._search_op(True, "*example*", self.res_remote_glob)
+                self._search_op(True, "'*example*'", self.res_remote_glob)
                 self._search_op(True, "fooo", self.res_remote_foo)
-                self._search_op(True, "fo*", self.res_remote_foo)
+                self._search_op(True, "'fo*'", self.res_remote_foo)
                 self._search_op(True, "bar", self.res_remote_foo)
                 self._search_op(True, "openssl", self.res_remote_openssl)
                 self._search_op(True, "OPENSSL", self.res_remote_openssl)
                 self._search_op(True, "OpEnSsL", self.res_remote_openssl)
-                self._search_op(True, "OpEnS*", self.res_remote_openssl)
+                self._search_op(True, "'OpEnS*'", self.res_remote_openssl)
 
                 # Verify that search will work for an unprivileged user even if
                 # the download directory doesn't exist.
@@ -377,7 +377,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 for path in cache_dirs:
                         shutil.rmtree(path, ignore_errors=True)
                         self.assertFalse(os.path.exists(path))
-                self._search_op(True, "fo*", self.res_remote_foo, su_wrap=True)
+                self._search_op(True, "'fo*'", self.res_remote_foo,
+                    su_wrap=True)
 
                 # These tests are included because a specific bug
                 # was found during development. This prevents regression back
@@ -407,7 +408,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     self.res_remote_url)
                 self._search_op(False, "':::e* AND *path'",
                     self.res_remote_path)
-                self._search_op(False, "e* AND *path", self.res_local_path)
+                self._search_op(False, "'e* AND *path'", self.res_local_path)
                 self._search_op(False, "'<e*>'", self.res_local_pkg_ret_pkg)
                 self._search_op(False, "'<e*> AND <e*>'",
                     self.res_local_pkg_ret_pkg)
@@ -420,7 +421,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     self.res_remote_path)
                 self._search_op(False, "'e::: AND exam:::e*path'",
                     self.res_remote_path_extra)
-                self._search_op(False, "example*", self.res_local_wildcard)
+                self._search_op(False, "'example*'", self.res_local_wildcard)
                 self._search_op(False, "/bin", self.res_local_bin)
                 self._search_op(False, "4851433", self.res_local_bug_id)
                 self._search_op(False, "'<4851433> AND <4725245>'",
@@ -438,20 +439,20 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(False, "4851433 OR 4725245",
                     self.res_remote_bug_id | self.res_remote_bug_id)
                 self._search_op(False, "6556919", self.res_local_inc_changes)
-                self._search_op(False, "65569??", self.res_local_inc_changes)
+                self._search_op(False, "'65569??'", self.res_local_inc_changes)
                 self._search_op(False, "42", self.res_local_random_test)
                 self._search_op(False, "79", self.res_local_random_test_79)
                 self._search_op(False, "separator", self.res_local_keywords)
                 self._search_op(False, "'\"sort 0x86\"'",
                     self.res_remote_keywords)
-                self._search_op(False, "*example*", self.res_local_glob)
+                self._search_op(False, "'*example*'", self.res_local_glob)
                 self._search_op(False, "fooo", self.res_local_foo)
-                self._search_op(False, "fo*", self.res_local_foo)
+                self._search_op(False, "'fo*'", self.res_local_foo)
                 self._search_op(False, "bar", self.res_local_foo)
                 self._search_op(False, "openssl", self.res_local_openssl)
                 self._search_op(False, "OPENSSL", self.res_local_openssl)
                 self._search_op(False, "OpEnSsL", self.res_local_openssl)
-                self._search_op(False, "OpEnS*", self.res_local_openssl)
+                self._search_op(False, "'OpEnS*'", self.res_local_openssl)
 
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression
@@ -468,15 +469,15 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         def _run_local_empty_tests(self):
                 self.pkg("search -a -l example_pkg", exit=1)
                 self.pkg("search -a -l example_path", exit=1)
-                self.pkg("search -a -l example*", exit=1)
+                self.pkg("search -a -l 'example*'", exit=1)
                 self.pkg("search -a -l /bin", exit=1)
 
         def _run_remote_empty_tests(self):
                 self.pkg("search -a -r example_pkg", exit=1)
                 self.pkg("search -a -r example_path", exit=1)
-                self.pkg("search -a -r example*", exit=1)
+                self.pkg("search -a -r 'example*'", exit=1)
                 self.pkg("search -a -r /bin", exit=1)
-                self.pkg("search -a -r *unique*", exit=1)
+                self.pkg("search -a -r '*unique*'", exit=1)
 
         def _get_index_dirs(self):
                 index_dir = self.get_img_api_obj().img.index_dir
@@ -569,7 +570,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 # Should return nothing, as the server can't build catalog
                 # data for the package since the manifest is unparseable.
-                self._search_op(True, "*bogus*", set(), exit=1)
+                self._search_op(True, "'*bogus*'", set(), exit=1)
                 self._search_op(True, "6627937", set(), exit=1)
 
                 # Should fail since the bogus_pkg isn't even in the catalog.
@@ -597,7 +598,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 cat.save()
 
                 self.pkg("rebuild-index")
-                self._search_op(False, "*bogus*",
+                self._search_op(False, "'*bogus*'",
                     set(self.res_bogus_name_result))
                 self._search_op(False, "6627937",
                     set(self.res_bogus_number_result))
