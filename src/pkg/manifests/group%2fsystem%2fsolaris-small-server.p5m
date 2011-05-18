@@ -1,0 +1,64 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/group/system/solaris-small-server@$(PKGVERS)
+set name=pkg.description \
+    value="Provides a useful command-line Oracle Solaris environment"
+set name=pkg.summary value="Small Oracle Solaris Server"
+set name=info.classification \
+    value="org.opensolaris.category.2008:Meta Packages/Group Packages"
+set name=variant.arch value=$(ARCH)
+depend fmri=SUNWcs type=group
+depend fmri=SUNWcsd type=group
+depend fmri=compress/bzip2 type=group
+depend fmri=compress/gzip type=group
+depend fmri=compress/unzip type=group
+depend fmri=compress/zip type=group
+depend fmri=developer/dtrace type=group
+depend fmri=developer/linker type=group
+depend fmri=editor/vim/vim-core type=group
+depend fmri=naming/ldap type=group
+depend fmri=network/dns/bind type=group
+depend fmri=network/ping type=group
+depend fmri=network/ssh type=group
+depend fmri=network/ssh/ssh-key type=group
+depend fmri=package/pkg type=group
+depend fmri=package/pkg/system-repository type=group
+depend fmri=security/sudo type=group
+depend fmri=service/management/sysidtool type=group
+depend fmri=service/network/network-clients type=group
+depend fmri=service/network/ssh type=group
+depend fmri=shell/bash type=group
+depend fmri=system/extended-system-utilities type=group
+depend fmri=system/file-system/autofs type=group
+depend fmri=system/file-system/nfs type=group
+depend fmri=system/install type=group
+depend fmri=system/install/configuration type=group
+depend fmri=system/library/install type=group
+depend fmri=system/management/sysidtool type=group
+depend fmri=system/network type=group
+depend fmri=system/network/nis type=group
+depend fmri=system/network/routing type=group
+depend fmri=text/doctools type=group

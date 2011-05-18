@@ -1,0 +1,96 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/group/feature/trusted-desktop@$(PKGVERS)
+set name=pkg.description \
+    value="Provides a trusted desktop Oracle Solaris environment"
+set name=pkg.summary value="Oracle Solaris Trusted Desktop"
+set name=info.classification \
+    value="org.opensolaris.category.2008:Meta Packages/Group Packages"
+set name=variant.arch value=$(ARCH)
+dir path=etc group=sys
+dir path=etc/security group=sys
+dir path=etc/security/tsol group=sys
+dir path=etc/security/tsol/doors group=sys
+dir path=var/tsol group=sys
+link path=var/tsol/doors target=../../etc/security/tsol/doors
+depend fmri=pkg:/communication/im/pidgin type=group
+depend fmri=pkg:/desktop/archive-manager/file-roller type=group
+depend fmri=pkg:/desktop/calculator/gcalctool type=group
+depend fmri=pkg:/desktop/pdf-viewer/evince type=group
+depend fmri=pkg:/desktop/system-monitor/gnome-system-monitor type=group
+depend fmri=pkg:/desktop/xdg/menu-editor/alacarte type=group
+depend fmri=pkg:/developer/gnome/gnome-doc-utils type=group
+depend fmri=pkg:/documentation/gnome/gnome-user-docs type=group
+depend fmri=pkg:/editor/gedit type=group
+depend fmri=pkg:/gnome/config/gconf type=group
+depend fmri=pkg:/gnome/file-manager/nautilus type=group
+depend fmri=pkg:/gnome/ggv type=group
+depend fmri=pkg:/gnome/gnome-audio type=group
+depend fmri=pkg:/gnome/gnome-dictionary type=group
+depend fmri=pkg:/gnome/gnome-search-tool type=group
+depend fmri=pkg:/gnome/help-viewer/yelp type=group
+depend fmri=pkg:/gnome/media/gnome-media type=group
+depend fmri=pkg:/gnome/media/gnome-media-player type=group
+depend fmri=pkg:/gnome/theme/background/os-backgrounds type=group
+depend fmri=pkg:/gnome/theme/background/os-backgrounds-extra type=group
+depend fmri=pkg:/gnome/theme/blueprint type=group
+depend fmri=pkg:/gnome/theme/cursor/dmz-cursor type=group
+depend fmri=pkg:/gnome/theme/cursor/dmz-cursor-aa type=group
+depend fmri=pkg:/gnome/theme/gnome-icon-theme type=group
+depend fmri=pkg:/gnome/theme/gnome-themes type=group
+depend fmri=pkg:/gnome/theme/gnome-themes-extra type=group
+depend fmri=pkg:/gnome/theme/gtk2-engines type=group
+depend fmri=pkg:/gnome/theme/gtk2-engines-extra type=group
+depend fmri=pkg:/gnome/theme/hicolor-icon-theme type=group
+depend fmri=pkg:/gnome/theme/nimbus type=group
+depend fmri=pkg:/gnome/theme/nimbus-hires type=group
+depend fmri=pkg:/gnome/theme/tango-icon-theme type=group
+depend fmri=pkg:/gnome/trusted/trusted-stripe type=group
+depend fmri=pkg:/gnome/trusted/xagent type=group
+depend fmri=pkg:/gnome/zenity type=group
+depend fmri=pkg:/group/system/solaris-small-server type=require
+depend fmri=pkg:/image/gnome-backgrounds type=group
+depend fmri=pkg:/image/viewer/eog type=group
+depend fmri=pkg:/image/viewer/gthumb type=group
+depend fmri=pkg:/library/gnome/gnome-component type=group
+depend fmri=pkg:/library/gnome/print/gnome-print type=group
+depend fmri=pkg:/library/spell-checking/enchant type=group
+depend fmri=pkg:/mail/thunderbird type=group
+depend fmri=pkg:/mail/thunderbird/plugin/thunderbird-lightning type=group
+depend fmri=pkg:/package/pkg/package-manager type=group
+depend fmri=pkg:/package/svr4 type=group
+depend fmri=pkg:/system/font/isas-misc type=group
+depend fmri=pkg:/system/font/truetype/bh-luxi type=group
+depend fmri=pkg:/system/font/truetype/dejavu type=group
+depend fmri=pkg:/system/font/truetype/liberation type=group
+depend fmri=pkg:/system/font/xorg/iso8859-1 type=group
+depend fmri=pkg:/system/font/xorg/iso8859-15 type=group
+depend fmri=pkg:/system/font/xorg/xorg-core type=group
+depend fmri=pkg:/system/library/dbus type=group
+depend fmri=pkg:/system/locale/en_us type=group
+depend fmri=pkg:/system/trusted type=group
+depend fmri=pkg:/terminal/gnome-terminal type=group
+depend fmri=pkg:/x11/trusted/libxtsol type=group

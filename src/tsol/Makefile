@@ -18,10 +18,37 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+
+#
+# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/system/trusted/trusted-nonglobal@0.5.11,5.11-0.166 
-set name=pkg.renamed value=true 
-set name=nopublish.after value=166 
-depend fmri=pkg:/group/feature/trusted-desktop type=require
+MACH:sh = uname -p
+
+INSTALL = /usr/sbin/install -s
+
+ROOTSECTSOLDOOR = ../../proto/root_${MACH}/etc/security/tsol/doors
+ROOTSECTSOL = ../../proto/root_${MACH}/etc/security/tsol
+ROOTVARTSOL = ../../proto/root_${MACH}/var/tsol
+
+ROOTDIRS = \
+	$(ROOTSECTSOLDOOR) \
+	$(ROOTSECTSOL) \
+	$(ROOTVARTSOL)
+
+clobber: $(ROOTDIRS)
+	rm -f $(ROOTVARTSOL)/doors
+	rmdir $(ROOTDIRS)
+
+#
+# Make directories and create a symbolic link for tsol
+#
+
+$(ROOTDIRS):
+	$(INSTALL) -d -m 0755 $@
+
+install: $(ROOTDIRS)
+	@if [ ! -h $(ROOTVARTSOL)/doors ]; then \
+		cd $(ROOTVARTSOL); \
+		ln -s ../../etc/security/tsol/doors; \
+	fi

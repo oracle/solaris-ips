@@ -66,6 +66,16 @@ INCORP            = consolidation%2Fips%2Fips-incorporation
 
 PM_TRANSFORMS     = defaults
 
+i386_DEFINES=       \
+	i386_ONLY=''    \
+	sparc_ONLY=$(POUND_SIGN)
+
+sparc_DEFINES=      \
+	i386_ONLY=$(POUND_SIGN) \
+	sparc_ONLY=''
+
+ARCH_DEFINES=$($(ARCH)_DEFINES)
+
 PKGMOG_DEFVALS    = \
 	ARCH=$(ARCH) \
 	PKGVERS_COMPONENT=$(PKGVERS_COMPONENT) \
@@ -78,6 +88,7 @@ PKGMOG_DEFVALS    = \
 	PYDIRVP=usr/lib/python2.6/vendor-packages \
 	CHANGESET=$(CHANGESET)
 PKGMOG_DEFINES    = $(PKGMOG_DEFVALS:%=-D %)
+PKGMOG_DEFINES    += $(ARCH_DEFINES:%=-D %)
 
 all: $(MOGRIFESTS)
 install: lint
