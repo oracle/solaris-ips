@@ -58,7 +58,7 @@ f_cp=$(gettext "Failed to cp %s %s.")
 f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
 
 f_sysrepo_fail=$(gettext "Unable to enable svc:/application/pkg/system-repository, please enable the service manually.")
-f_zones_proxyd_fail=$(gettext "Unable to enable svc:/system/zones-proxyd, please enable the service manually.")
+f_zones_proxyd_fail=$(gettext "Unable to enable svc:/application/pkg/zones-proxyd, please enable the service manually.")
 f_set_sysrepo_prop_fail=$(gettext "Unable to set the use-system-repo property.")
 
 m_brnd_usage=$(gettext "brand-specific usage: ")
@@ -311,12 +311,12 @@ pkg_err_check() {
 # Enable the services needed to perform packaging operations inside a zone.
 #
 enable_zones_services() {                                                       
-	/usr/sbin/svcadm enable -t -s /application/pkg/system-repository
+	/usr/sbin/svcadm enable -s svc:/application/pkg/system-repository
 	if [[ $? -ne 0 ]]; then
 		error "$f_sysrepo_fail"
 		return 1
 	fi
-	/usr/sbin/svcadm enable -t -s /system/zones-proxyd
+	/usr/sbin/svcadm enable -s svc:/application/pkg/zones-proxyd
 	if [[ $? -ne 0 ]]; then
 		error "$f_zones_proxyd_fail"
 		return 1

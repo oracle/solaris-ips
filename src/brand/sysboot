@@ -35,4 +35,6 @@ init_zone zone "$1" "$2" || {
 # Mount the active boot environment on the zoneroot.
 mount_active_be -c zone || exit $ZONE_SUBPROC_NOTCOMPLETE
 
+enable_zones_services || exit $ZONE_SUBPROC_NOTCOMPLETE
+
 exit $ZONE_SUBPROC_OK

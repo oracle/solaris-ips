@@ -28,6 +28,19 @@
 APACHE_HOME=/usr/apache2/2.2
 APACHE_ETC_ROOT=/etc/pkg/sysrepo
 APACHE_BIN=${APACHE_HOME}/bin/64
+
+#
+# Calling $APACHE_BIN/apachectl would source $APACHE_BIN/envvars, which
+# in turn would source /etc/apache2/2.2/envvars, if it exists.
+#
+# We want to keep the system-repository service completely separate from
+# the site system configuration used by svc:/network/http:apache22 avoiding
+# /etc/apache2, which means we must avoid apachectl.
+#
+# In this method script, we call httpd directly instead, but as a result,
+# we also need to include the relevant contents of $APACHE_BIN/envvars -
+# setting $LD_LIBRARY_PATH as it does.
+#
 HTTPD=${APACHE_BIN}/httpd
 LD_LIBRARY_PATH=${APACHE_HOME}/lib/64:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
@@ -48,9 +61,13 @@ getprop() {
 check_failure() {
     RESULT=$1
     MESSAGE=$2
+    NON_FATAL=$3
     if [ $RESULT -ne 0 ]; then
         echo $MESSAGE
-        exit $SMF_EXIT_ERR_FATAL
+	if [ -n "$NON_FATAL" ]; then
+		return
+	fi
+	exit $SMF_EXIT_ERR_FATAL
     fi
 }
 
@@ -88,7 +105,8 @@ kill_htcacheclean() {
 	if [ -f ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid ]; then
                 PID=$(< ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid)
                 /usr/bin/kill -TERM $PID
-                check_failure $? "failed to kill htcacheclean process $PID"
+                check_failure $? "failed to kill htcacheclean process $PID" \
+		    "not_fatal"
         fi
 }
 

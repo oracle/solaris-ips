@@ -45,7 +45,7 @@ depend fmri=network/ping type=group
 depend fmri=network/ssh type=group
 depend fmri=network/ssh/ssh-key type=group
 depend fmri=package/pkg type=group
-depend fmri=package/pkg/system-repository type=group
+depend fmri=package/pkg/zones-proxy type=group
 depend fmri=security/sudo type=group
 depend fmri=service/management/sysidtool type=group
 depend fmri=service/network/network-clients type=group

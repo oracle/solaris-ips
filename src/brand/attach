@@ -54,7 +54,7 @@ no_installing=$(gettext "                Installing: Using pre-existing data in 
 f_sanity_variant=$(gettext "  Sanity Check: FAILED, couldn't determine %s from image.")
 f_sanity_global=$(gettext  "  Sanity Check: FAILED, appears to be a global zone (%s=%s).")
 f_update=$(gettext "Could not update attaching zone")
-f_sysrepo=$(gettext "Could not install system-repository")
+f_sysrepo=$(gettext "Could not install package/pkg/zones-proxy")
 f_ds_config=$(gettext  "Failed to configure dataset %s: could not set %s.")
 f_no_active_ds_mounted=$(gettext  "Failed to locate any dataset mounted at %s.  Attach requires a mounted dataset.")
 f_nonsticky=$(gettext "Could not set legacy publisher to non-sticky")
@@ -306,9 +306,10 @@ LC_ALL=C $PKG attach-linked $verbose -f --allow-relink --accept \
     $extra_flags \
     -c zone:${zone.name} $ZONEROOT || pkg_err_check "$f_update"
 
-# make sure the sysrepo is installed:
+# Make sure the zones proxy is installed so we can talk to the
+# system repository.
 PKG_IMAGE=$ZONEROOT
-LC_ALL=C $PKG install $verbose pkg:///package/pkg/system-repository || \
+LC_ALL=C $PKG install $verbose pkg:///package/pkg/zones-proxy || \
     pkg_err_check "$f_sysrepo"
 
 log "\n$m_sync_done"

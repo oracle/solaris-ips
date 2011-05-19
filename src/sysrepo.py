@@ -209,16 +209,16 @@ def _get_publisher_info(api_inst):
                         if uri.startswith("file:/"):
                                 urlresult = urllib2.urlparse.urlparse(uri)
                                 if not os.path.isdir(urlresult.path):
-                                        error(_("p5p-based file repository %s "
+                                        raise SysrepoException(
+                                            _("p5p-based file repository %s "
                                             "cannot be proxied.") % uri)
-                                        continue
                                 if not os.path.exists(os.path.join(
                                     urlresult.path, "pkg5.repository")):
-                                        error(_("unable to proxy file "
-                                            "repository %s: only file "
+                                        raise SysrepoException(
+                                            _("file repository %s cannot be "
+                                            "proxied. Only file "
                                             "repositories of version 4 or "
                                             "later are supported.") % uri)
-                                        continue
 
                         hash = _uri_hash(uri)
                         cert = repo_uri.ssl_cert

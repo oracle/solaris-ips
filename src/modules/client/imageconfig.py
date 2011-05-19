@@ -883,10 +883,10 @@ class BlendedConfig(object):
                         except KeyError:
                                 try:
                                         host = smf.get_prop(
-                                            "system/zones-proxy-client",
+                                            "application/pkg/zones-proxy-client",
                                             "config/listen_host")
                                         port = smf.get_prop(
-                                            "system/zones-proxy-client",
+                                            "application/pkg/zones-proxy-client",
                                             "config/listen_port")
                                 except smf.NonzeroExitException, e:
                                         # If we can't get information out of

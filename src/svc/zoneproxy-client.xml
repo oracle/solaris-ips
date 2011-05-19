@@ -30,10 +30,10 @@
 
 -->
 
-<service_bundle type='manifest' name='system/zones-proxy-client'>
+<service_bundle type='manifest' name='application/pkg/zones-proxy-client'>
 
 <service
-	name='system/zones-proxy-client'
+	name='application/pkg/zones-proxy-client'
 	type='service'
 	version='1'>
 	<create_default_instance enabled="true"/>

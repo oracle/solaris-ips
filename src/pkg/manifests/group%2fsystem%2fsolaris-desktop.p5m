@@ -474,6 +474,7 @@ depend fmri=package/pkg type=group
 depend fmri=package/pkg/package-manager type=group
 depend fmri=package/pkg/system-repository type=group
 depend fmri=package/pkg/update-manager type=group
+depend fmri=package/pkg/zones-proxy type=group
 depend fmri=package/rpm type=group
 depend fmri=package/svr4 type=group
 depend fmri=print/cups type=group

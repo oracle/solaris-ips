@@ -9,11 +9,10 @@ SYNOPSIS
      pkg.sysrepo -p <port> [ -c cache_dir] [-s cache_size]
 
 DESCRIPTION
-
-     pkg.sysrepo(1M) is used to generate the configuration files 
-     for the IPS System Repository.  This command is called by 
-     the svc:/application/pkg/system-repository SMF service.  
-     Changes in configuration should be made to the properties in 
+     pkg.sysrepo(1M) is used to generate the configuration  files
+     for  the  IPS  System Repository.  This command is called by
+     the  svc:/application/pkg/system-repository   SMF   service.
+     Changes in configuration should be made to the properties in
      the SMF service.
 
      The system repository is responsible for providing access to
@@ -26,8 +25,9 @@ DESCRIPTION
      The system repository is primarily used in the  global  zone
      to allow non-global zones to access the repositories config-
      ured   in   the   global    zone.     The    SMF    services
-     svc:/system/zones-proxyd  and svc:/system/zones-proxy-client
-     are also involved in providing this support.
+     svc:/application/pkg/zones-proxyd                        and
+     svc:/application/pkg/zones-proxy-client are also involved in
+     providing this support.
 
      Note that only http, https and v4 file repositories are sup-
      ported: p5p-based file repositories or older file-repository
@@ -54,7 +54,7 @@ OPTIONS
                           'config/cache_dir' SMF property.
 
 
-SunOS 5.11          Last change: 22 Apr 2011                    1
+SunOS 5.11          Last change: 16 May 2011                    1
 
 
 System Administration Commands                    pkg.sysrepo(1M)

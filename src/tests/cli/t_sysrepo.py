@@ -388,5 +388,22 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         self.pkg("search -r sample", exit=1)
                         self.sc.stop()
 
+        def test_9_unsupported_publishers(self):
+                """Ensure we fail when asked to proxy p5p or < v4 file repos"""
+
+                v3_repo_root = os.path.join(self.test_root, "sysrepo_test_9")
+                os.mkdir(v3_repo_root)
+                v3_repo_path = os.path.join(v3_repo_root, "repo")
+                p5a_path = os.path.join(v3_repo_root, "archive.p5p")
+                self.pkgrecv(server_url=self.durl1, command="-a -d %s sample" %
+                    p5a_path)
+
+                self.pkgrepo("create --version 3 %s" % v3_repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=foo" % v3_repo_path)
+                for path in [p5a_path, v3_repo_path]:
+                        self.image_create(repourl="file://%s" % path)
+                        self.sysrepo("-R %s" % self.img_path(), exit=1)
+
+
 if __name__ == "__main__":
         unittest.main()

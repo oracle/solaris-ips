@@ -34,10 +34,10 @@
 
 -->
 
-<service_bundle type='manifest' name='system/zones-proxyd'>
+<service_bundle type='manifest' name='application/pkg/zones-proxyd'>
 
 <service
-	name='system/zones-proxyd'
+	name='application/pkg/zones-proxyd'
 	type='service'
 	version='1'>
 	<create_default_instance enabled="false"/>
