@@ -2574,7 +2574,8 @@ class Repository(progress.GuiProgressTracker):
                                 "pub_name": src_pub.prefix,
                                 "user_image_root": user_image_root,
                                 })
-                                gui_misc.notify_log_warning(self.parent)
+                                if not self.webinstall_new:
+                                        gui_misc.notify_log_warning(self.parent)
                         src_repo = src_pub.repository
                         add_origins = []
                         if not src_repo or not src_repo.origins:

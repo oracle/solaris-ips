@@ -44,10 +44,11 @@ import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
 import pkg.gui.repository as repository
 import pkg.fmri as fmri
+import pkg.client.publisher as publisher
 from pkg.client import global_settings
 from gettext import ngettext
 logger = global_settings.logger
-       
+
 debug = False
 
 class Webinstall:
@@ -284,8 +285,8 @@ class Webinstall:
                         if not pub_registered:
                                 if repo and repo.origins and \
                                     repo.origins[0] != None and \
-                                    repo.origins[0].scheme in \
-                                    pkg.client.publisher.SSL_SCHEMES:
+                                    repo.origins[0].scheme in publisher.SSL_SCHEMES:
+
                                         #TBD: check for registration uri as well as scheme
                                         #    repo.registration_uri.uri != None:
                                         pub_new_reg_ssl_tasks.append(pub_info)
