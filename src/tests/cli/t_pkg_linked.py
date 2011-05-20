@@ -115,31 +115,6 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                      close\n"""
                 p_all.append(p_data)
 
-        # these packages will be synced indirectly by virtue of being
-        # incorporated by an osnet incorporation
-        p_sync3_name = dict()
-        p_sync3_name[0] = "sync3@1.0,5.11-144:19700101T000001Z"
-        p_sync3_name[1] = "sync3@1.0,5.11-144:19700101T000000Z" # old time
-        for i in p_sync3_name:
-                p_data = "open %s\n" % p_sync3_name[i]
-                p_data += """
-                    close\n"""
-                p_all.append(p_data)
-
-        # create an osnet incorporation
-        p_osnet_name = dict()
-        p_osnet_name[0] = "consolidation/osnet/osnet-incorporation@1.0,5.11-143:19700101T000001Z"
-        p_osnet_name[1] = "consolidation/osnet/osnet-incorporation@1.0,5.11-143:19700101T000000Z" # old time
-        p_osnet_dep = dict()
-        p_osnet_dep[0] = p_sync3_name[0]
-        p_osnet_dep[1] = p_sync3_name[1]
-        for i in p_osnet_name:
-                p_data = "open %s\n" % p_osnet_name[i]
-                p_data += "add depend fmri=%s type=incorporate\n" % p_osnet_dep[i]
-                p_data += """
-                    close\n"""
-                p_all.append(p_data)
-
         def setUp(self):
                 self.i_count = 5
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test"],
@@ -1099,37 +1074,6 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 rv = EXIT_DIVERGED
                 self._pkg([1, 2, 3], "audit-linked", rv=rv)
                 self._pkg_child(0, [1, 2, 3], "audit-linked", rv=rv)
-                self._pkg_child_all(0, "audit-linked", rv=rv)
-
-        def test_audit_osnet_1_synced(self):
-                self._imgs_create(2)
-
-                # install same version of osnet in parent and child
-                for i in [0, 1]:
-                        self._pkg([i], "install -v %s %s" % \
-                            (self.p_osnet_dep[0], self.p_osnet_name[0]))
-
-                # use --linked-md-only so we don't install constraints package
-                self._attach_child(0, [1], args="--linked-md-only")
-
-                self._pkg([1], "audit-linked")
-                self._pkg_child(0, [1], "audit-linked")
-                self._pkg_child_all(0, "audit-linked")
-
-        def test_audit_osnet_2_diverged(self):
-                self._imgs_create(2)
-
-                # install different version of osnet in parent and child
-                for i in [0, 1]:
-                        self._pkg([i], "install -v %s %s" % \
-                            (self.p_osnet_dep[i], self.p_osnet_name[i]))
-
-                # use --linked-md-only so we don't install constraints package
-                self._attach_child(0, [1], args="--linked-md-only")
-
-                rv = EXIT_DIVERGED
-                self._pkg([1], "audit-linked", rv=rv)
-                self._pkg_child(0, [1], "audit-linked", rv=rv)
                 self._pkg_child_all(0, "audit-linked", rv=rv)
 
         def test_sync_fail(self):

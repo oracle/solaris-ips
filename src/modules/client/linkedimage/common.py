@@ -1899,14 +1899,22 @@ class LinkedImage(object):
                 # all the fmris we want to add dependencies to.
                 all_fmris = inc_fmris | dep_fmris
 
-                # eliminate renamed or obsoleted fmris
+                # remove some unwanted fmris
                 rm_fmris = set()
                 for pfmri in all_fmris:
+                        # eliminate renamed or obsoleted fmris
                         entry = cat.get_entry(pfmri)
                         state = entry["metadata"]["states"]
                         if self.__img.PKG_STATE_OBSOLETE in state or \
                             self.__img.PKG_STATE_RENAMED in state:
                                 rm_fmris |= set([pfmri])
+                                continue
+
+                        # eliminate any group packages
+                        if pfmri.pkg_name.startswith("group/"):
+                                rm_fmris |= set([pfmri])
+                                continue
+
                 all_fmris -= rm_fmris
 
                 return dict([(fmri, [pda]) for fmri in all_fmris])

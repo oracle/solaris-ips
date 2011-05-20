@@ -173,6 +173,50 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                     close\n"""
                 p_all.append(p_data)
 
+        # these packages will be synced indirectly by virtue of being
+        # incorporated by an osnet incorporation
+        p_osnet_sync1_name_gen = "osnet_sync1"
+        pkgs = [p_osnet_sync1_name_gen + ver for ver in p_vers]
+        p_osnet_sync1_name = dict(zip(range(len(pkgs)), pkgs))
+        for i in p_osnet_sync1_name:
+                p_data = "open %s\n" % p_osnet_sync1_name[i]
+                p_data += """
+                    add set name=variant.foo value=bar value=baz
+                    add file tmp/bar mode=0555 owner=root group=bin path=osnet_sync1_bar variant.foo=bar
+                    add file tmp/baz mode=0555 owner=root group=bin path=osnet_sync1_baz variant.foo=baz
+                    close\n"""
+                p_all.append(p_data)
+
+        # these packages don't get synced indirectly by virtue of being
+        # incorporated by an osnet incorporation because they are group
+        # packages.
+        p_osnet_group1_name_gen = "group/osnet_group1"
+        pkgs = [p_osnet_group1_name_gen + ver for ver in p_vers]
+        p_osnet_group1_name = dict(zip(range(len(pkgs)), pkgs))
+        for i in p_osnet_group1_name:
+                p_data = "open %s\n" % p_osnet_group1_name[i]
+                p_data += """
+                    add set name=variant.foo value=bar value=baz
+                    add file tmp/bar mode=0555 owner=root group=bin path=osnet_group1_bar variant.foo=bar
+                    add file tmp/baz mode=0555 owner=root group=bin path=osnet_group1_baz variant.foo=baz
+                    close\n"""
+                p_all.append(p_data)
+
+        # osnet incorporation is magical
+        p_osnet_name_gen = "consolidation/osnet/osnet-incorporation"
+        pkgs = [p_osnet_name_gen + ver for ver in p_vers]
+        p_osnet_name = dict(zip(range(len(pkgs)), pkgs))
+        p_osnet_dep = dict()
+        for i in p_osnet_name:
+                p_data = "open %s\n" % p_osnet_name[i]
+                p_data += "add depend fmri=%s type=incorporate\n" % \
+                    p_osnet_sync1_name[i]
+                p_data += "add depend fmri=%s type=incorporate\n" % \
+                    p_osnet_group1_name[i]
+                p_data += """
+                    close\n"""
+                p_all.append(p_data)
+
         def setUp(self):
                 self.i_count = 5
                 pkg5unittest.ManyDepotTestCase.setUp(self,
@@ -213,7 +257,14 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
 
                 self.pkgsend_bulk(self.rurl1, [p_data])
 
-        def _list_packages(self, apio):
+        def _list_inst_packages(self, apio):
+                pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_INSTALLED)
+                return set(sorted([
+                        "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
+                        for pfmri, summ, cats, states in pkg_list
+                ]))
+
+        def _list_all_packages(self, apio):
                 pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_ALL)
                 return set(sorted([
                         "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
@@ -222,7 +273,10 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
 
         # utility functions for use by test cases
         def _imgs_create(self, limit, **ic_opts):
-                variants = { "variant.foo": "bar" }
+                variants = {
+                    "variant.foo": "bar",
+                    "variant.opensolaris.zone": "nonglobal",
+                }
 
                 rv = []
 
@@ -318,7 +372,7 @@ pinfo: %s""" % \
 
         def assertKnownPkgCount(self, api_objs, i, pl_init, offset=0):
                 apio = api_objs[i]
-                pl = self._list_packages(apio)
+                pl = self._list_all_packages(apio)
 
                 pl_removed = pl_init - pl
                 pl_added = pl - pl_init
@@ -461,7 +515,7 @@ packages known:
                 # get a list of all known packages
                 pl_init = dict()
                 for i in range(3):
-                        pl_init[i] = self._list_packages(api_objs[i])
+                        pl_init[i] = self._list_all_packages(api_objs[i])
 
                 # update the catalog with a new package
                 self._cat_update()
@@ -517,7 +571,7 @@ packages known:
                 # get a list of all known packages
                 pl_init = dict()
                 for i in range(3):
-                        pl_init[i] = self._list_packages(api_objs[i])
+                        pl_init[i] = self._list_all_packages(api_objs[i])
 
                 # update the catalog with a new package
                 self._cat_update()
@@ -852,6 +906,74 @@ packages known:
                 # no pub check during detach
                 for c in [1, 2, 3, 4]:
                         self._api_detach(api_objs[c])
+
+        def test_osnet_magic(self):
+                """Verify that osnet is magical and automatically
+                causes packages that it incorporates to be synced, except
+                for group packages."""
+
+                api_objs = self._imgs_create(2)
+                self._parent_attach(0, [1])
+
+                # can't install osnet because it's synced
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1], [self.p_osnet_name[4]])
+
+                # install osnet into the parent
+                self._api_install(api_objs[0], [self.p_osnet_name[3]])
+
+                # can't newer or older osnet
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1], [self.p_osnet_name[4]])
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1], [self.p_osnet_name[2]])
+
+                # can install synced osnet
+                self._api_install(api_objs[1], [self.p_osnet_name[3]])
+                self._api_uninstall(api_objs[1], [self.p_osnet_name[3]])
+                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
+
+                # can't install osnet_sync1 because it's synced
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1],
+                    [self.p_osnet_sync1_name[4]])
+
+                # install osnet_sync1 into the parent
+                self._api_install(api_objs[0], [self.p_osnet_sync1_name[3]])
+
+                # can't newer or older osnet_sync1
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1],
+                    [self.p_osnet_sync1_name[4]])
+                assertRaises(
+                    (apx_verify, {"e_type": apx.PlanCreationException}),
+                    self._api_install, api_objs[1],
+                    [self.p_osnet_sync1_name[2]])
+
+                # can install synced osnet_sync1
+                self._api_install(api_objs[1], [self.p_osnet_sync1_name[3]])
+                self._api_uninstall(api_objs[1], [self.p_osnet_sync1_name[3]])
+                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
+
+                # ok to install osnet_group1 because it's a group package
+                self._api_install(api_objs[1], [self.p_osnet_group1_name[3]])
+                self._api_uninstall(api_objs[1], [self.p_osnet_group1_name[3]])
+                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
+
+                # install osnet_group1 into the parent
+                self._api_install(api_objs[0], [self.p_osnet_group1_name[3]])
+
+                # ok to install newer, older, or synced osnet_group1 because
+                # it's a group package
+                self._api_install(api_objs[1], [self.p_osnet_group1_name[4]])
+                self._api_install(api_objs[1], [self.p_osnet_group1_name[3]])
+                self._api_install(api_objs[1], [self.p_osnet_group1_name[2]])
+
 
 if __name__ == "__main__":
         unittest.main()
