@@ -251,6 +251,8 @@ class Repository(progress.GuiProgressTracker):
                 self.publishers_apply_progress = \
                     builder.get_object("publishers_apply_progress")
 
+                self.w_modify_alias_error_label = builder.get_object(
+                        "mod_alias_error_label")
                 self.w_pub_cert_treeview = \
                     builder.get_object("pub_certificate_treeview")
                 self.w_modify_pub_notebook = builder.get_object(
@@ -398,6 +400,8 @@ class Repository(progress.GuiProgressTracker):
 
                     (self.w_modify_repository_dialog, "delete_event", 
                      self.__on_modifydialog_delete_event),
+                    (self.w_modify_pub_alias, "changed",
+                     self.__on_modify_pub_alias_changed),
                     (self.w_modkeybrowse, "clicked", 
                      self.__on_modkeybrowse_clicked),
                     (self.w_modcertbrowse, "clicked", 
@@ -2225,6 +2229,19 @@ class Repository(progress.GuiProgressTracker):
                 ok_btn = self.w_publisher_add_button
                 self.__validate_alias_addpub(ok_btn, widget, url_widget, error_label)
 
+        def __on_modify_pub_alias_changed(self, widget):
+                error_label = self.w_modify_alias_error_label
+                ok_btn = self.w_repositorymodifyok_button
+                name = widget.get_text()
+                self.is_alias_valid = self.__is_alias_valid(name)
+                if not self.is_alias_valid and self.name_error != None:
+                        self.__show_error_label_with_format(error_label,
+                                    self.name_error)
+                        ok_btn.set_sensitive(False)
+                else:
+                        error_label.set_text("")
+                        ok_btn.set_sensitive(True)
+
         def __on_add_publisher_add_clicked(self, widget):
                 if self.w_publisher_add_button.get_property('sensitive') == 0:
                         return
@@ -2413,7 +2430,14 @@ class Repository(progress.GuiProgressTracker):
                     self.w_manage_publishers_dialog)
 
         def __on_modifydialog_delete_event(self, widget, event):
-                self.__on_repositorymodifyok_clicked(None)
+                if self.w_repositorymodifyok_button.get_sensitive():
+                        self.__on_repositorymodifyok_clicked(None)
+                elif not self.is_alias_valid and self.name_error:
+                        pub = self.repository_modify_publisher
+                        gui_misc.error_occurred(None, self.name_error,
+                            _("Modify Publisher - %s") %
+                            self.__get_pub_display_name(pub),
+                            gtk.MESSAGE_INFO)
                 return True
                 
         def __on_repositorymodifycancel_clicked(self, widget):

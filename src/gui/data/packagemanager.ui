@@ -5106,29 +5106,27 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">5</property>
                         <child>
-                          <object class="GtkAlignment" id="gen_alignment11">
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <object class="GtkAlignment" id="alignment8">
                             <property name="visible">True</property>
                             <property name="top_padding">5</property>
                             <child>
-                              <object class="GtkLabel" id="label30">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="label" translatable="yes">&lt;b&gt;Publisher&lt;/b&gt;</property>
-                                <property name="use_markup">True</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkHBox" id="hbox14">
-                            <property name="visible">True</property>
-                            <child>
-                              <object class="GtkVBox" id="vbox13">
+                              <object class="GtkVBox" id="vbox12">
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="label30">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Publisher&lt;/b&gt;</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
                                 <child>
                                   <object class="GtkHBox" id="hbox42">
                                     <property name="visible">True</property>
@@ -5223,6 +5221,17 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                 <property name="position">1</property>
                                               </packing>
                                             </child>
+                                            <child>
+                                              <object class="GtkLabel" id="mod_alias_error_label">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes"> </property>
+                                                <property name="use_markup">True</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                           <packing>
                                             <property name="position">1</property>
@@ -5247,18 +5256,18 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                     </child>
                                   </object>
                                   <packing>
-                                    <property name="position">0</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                               </object>
-                              <packing>
-                                <property name="position">0</property>
-                              </packing>
                             </child>
                           </object>
                           <packing>
                             <property name="position">1</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                         <child>
                           <object class="GtkHBox" id="modify_registration_box">
@@ -5308,13 +5317,12 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="position">2</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkAlignment" id="alignment16">
                             <property name="visible">True</property>
-                            <property name="top_padding">12</property>
                             <child>
                               <object class="GtkVBox" id="vbox404">
                                 <property name="visible">True</property>
@@ -5507,7 +5515,7 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                             </child>
                           </object>
                           <packing>
-                            <property name="position">3</property>
+                            <property name="position">4</property>
                           </packing>
                         </child>
                         <child>
@@ -5713,7 +5721,7 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                             </child>
                           </object>
                           <packing>
-                            <property name="position">4</property>
+                            <property name="position">5</property>
                           </packing>
                         </child>
                         <child>
@@ -5905,7 +5913,7 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                             </child>
                           </object>
                           <packing>
-                            <property name="position">5</property>
+                            <property name="position">6</property>
                           </packing>
                         </child>
                         <child>
