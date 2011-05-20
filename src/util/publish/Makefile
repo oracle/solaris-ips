@@ -33,6 +33,7 @@ SPARC_REPO=http://localhost:10001
 i386_REPO=http://localhost:10002
 EXTRA_ARGS=
 JUST_THESE_PKGS=
+EXCLUDE_THESE_PKGS=
 
 ON_REPO=http://localhost:20000
 INSTALL_REPO=http://localhost:20001
@@ -44,6 +45,10 @@ L10N_REPO=http://localhost:20006
 DESKTOP_REPO=http://localhost:20007
 CDE_REPO=http://localhost:20008
 FOSS_REPO=http://localhost:20009
+CACAO_REPO=http://localhost:20010
+CNS_REPO=http://localhost:20011
+JDMK_REPO=http://localhost:20012
+NVIDIA_REPO=http://localhost:20013
 
 INPUT_REPOS = \
     $(ON_REPO) \
@@ -55,7 +60,11 @@ INPUT_REPOS = \
     $(L10N_REPO) \
     $(DESKTOP_REPO) \
     $(CDE_REPO) \
-    $(FOSS_REPO)
+    $(FOSS_REPO) \
+    $(CACAO_REPO) \
+    $(CNS_REPO) \
+    $(JDMK_REPO) \
+    $(NVIDIA_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
 L10N_EXTRA_REPO=http://localhost:30006
@@ -104,7 +113,8 @@ publish: $(MERGEDIR)
 publish_setpublisher: $(SETPUBLISHERDIR)
 	PATH=$(PROTO)/usr/bin:${PATH} PYTHONPATH=$(PYTHONPATH) \
 	    ./set-publisher.sh $(BUILDID:%=-b %) -d $(SETPUBLISHERDIR) \
-	    $(JUST_THESE_PKGS:%=-j %) -p $(REPO) $(INPUT_REPOS)
+	    $(JUST_THESE_PKGS:%=-j %) $(EXCLUDE_THESE_PKGS:%=-x %) -p $(REPO) \
+	    $(INPUT_REPOS)
 
 publish_setpublisher-extra: $(SETPUBLISHERDIR)
 	INPUT_REPOS="$(ON_EXTRA_REPO) $(L10N_EXTRA_REPO)" \

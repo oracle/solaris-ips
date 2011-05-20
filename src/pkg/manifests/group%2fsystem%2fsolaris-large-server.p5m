@@ -25,15 +25,14 @@
 
 set name=pkg.fmri value=pkg:/group/system/solaris-large-server@$(PKGVERS)
 set name=pkg.description \
-    value="Provides a large server Oracle Solaris environment"
-set name=pkg.summary value="Large Oracle Solaris Server"
+    value="Provides an Oracle Solaris large server environment"
+set name=pkg.summary value="Oracle Solaris Large Server"
 set name=info.classification \
     value="org.opensolaris.category.2008:Meta Packages/Group Packages"
 set name=variant.arch value=$(ARCH)
 depend fmri=SUNWcs type=group
 depend fmri=SUNWcsd type=group
 depend fmri=archiver/gnu-tar type=group
-depend fmri=benchmark/x11perf type=group
 depend fmri=compress/bzip2 type=group
 depend fmri=compress/gzip type=group
 depend fmri=compress/p7zip type=group
@@ -42,8 +41,6 @@ depend fmri=compress/zip type=group
 depend fmri=crypto/ca-certificates type=group
 depend fmri=data/iso-codes type=group
 depend fmri=database/sqlite-3 type=group
-depend fmri=desktop/window-manager/twm type=group
-depend fmri=developer/build/autoconf/xorg-macros type=group
 depend fmri=developer/build/gnu-make type=group
 depend fmri=developer/build/make type=group
 depend fmri=developer/debug/mdb type=group
@@ -74,7 +71,6 @@ $(sparc_ONLY)depend fmri=driver/graphics/ast type=group
 $(i386_ONLY)depend fmri=driver/graphics/atiatom type=group
 $(i386_ONLY)depend fmri=driver/graphics/drm type=group
 $(sparc_ONLY)depend fmri=driver/graphics/efb type=group
-$(sparc_ONLY)depend fmri=driver/graphics/kfb type=group
 $(i386_ONLY)depend fmri=driver/graphics/nvidia type=group
 $(i386_ONLY)depend fmri=driver/i86pc/fipe type=group
 $(i386_ONLY)depend fmri=driver/i86pc/ioat type=group
@@ -132,6 +128,7 @@ depend fmri=driver/network/sdp type=group
 depend fmri=driver/network/sdpib type=group
 depend fmri=driver/network/sfe type=group
 $(sparc_ONLY)depend fmri=driver/network/socal type=group
+depend fmri=driver/network/sxge type=group
 depend fmri=driver/network/tavor type=group
 depend fmri=driver/network/usbecm type=group
 depend fmri=driver/network/vr type=group
@@ -179,7 +176,6 @@ $(sparc_ONLY)depend fmri=driver/storage/ssd type=group
 depend fmri=driver/usb type=group
 $(i386_ONLY)depend fmri=driver/xvm/pv type=group
 depend fmri=editor/nano type=group
-depend fmri=editor/vim type=group
 depend fmri=editor/vim/vim-core type=group
 depend fmri=file/gnu-coreutils type=group
 depend fmri=file/gnu-findutils type=group
@@ -188,6 +184,7 @@ depend fmri=image/library/libjpeg type=group
 depend fmri=image/library/libpng type=group
 depend fmri=image/library/libtiff type=group
 depend fmri=install/beadm type=group
+depend fmri=install/distribution-constructor type=group
 depend fmri=install/installadm type=group
 depend fmri=library/apr-13 type=group
 depend fmri=library/apr-util-13 type=group
@@ -318,8 +315,10 @@ depend fmri=system/data/hardware-registry type=group
 depend fmri=system/data/keyboard/keytables type=group
 depend fmri=system/data/terminfo type=group
 depend fmri=system/data/timezone type=group
-$(sparc_ONLY)depend fmri=system/domain-configuration/sparc-enterprise type=group
-$(sparc_ONLY)depend fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
+$(sparc_ONLY)depend fmri=system/domain-configuration/sparc-enterprise \
+    type=group
+$(sparc_ONLY)depend \
+    fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
 $(sparc_ONLY)depend fmri=system/embedded-fcode-interpreter type=group
 depend fmri=system/extended-system-utilities type=group
 depend fmri=system/file-system/autofs type=group
@@ -329,11 +328,8 @@ depend fmri=system/file-system/udfs type=group
 depend fmri=system/file-system/zfs type=group
 depend fmri=system/flash/fwflash type=group
 $(sparc_ONLY)depend fmri=system/floating-point-scrubber type=group
-depend fmri=system/font/xorg/iso8859-1 type=group
-depend fmri=system/font/xorg/xorg-core type=group
 depend fmri=system/fru-id type=group
 depend fmri=system/fru-id/platform type=group
-$(sparc_ONLY)depend fmri=system/graphics/fbconfig/fbconfig-kfb type=group
 depend fmri=system/install type=group
 depend fmri=system/install/auto-install type=group
 depend fmri=system/install/auto-install/auto-install-common type=group
@@ -346,10 +342,15 @@ depend fmri=system/kernel/cpu-counters type=group
 $(sparc_ONLY)depend fmri=system/kernel/cpu/sun4v type=group
 depend fmri=system/kernel/dtrace/providers type=group
 $(i386_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/i86pc type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-880 type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 type=group
+$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 \
+    type=group
+$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-880 \
+    type=group
+$(sparc_ONLY)depend \
+    fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 \
+    type=group
+$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 \
+    type=group
 $(sparc_ONLY)depend fmri=system/kernel/io-performance-counters type=group
 depend fmri=system/kernel/platform type=group
 $(sparc_ONLY)depend fmri=system/kernel/platform/netra type=group
@@ -393,6 +394,7 @@ depend fmri=system/library/storage/libmpscsi_vhci type=group
 depend fmri=system/library/storage/scsi-plugins type=group
 depend fmri=system/library/sysidtool type=group
 depend fmri=system/locale type=group
+depend fmri=system/management/ilomconfig type=group
 $(i386_ONLY)depend fmri=system/management/intel-amt type=group
 depend fmri=system/management/ipmitool type=group
 depend fmri=system/management/product-registry type=group
@@ -423,7 +425,6 @@ depend fmri=system/zones/brand/ipkg type=group
 depend fmri=terminal/fbconsole type=group
 depend fmri=terminal/luit type=group
 depend fmri=terminal/screen type=group
-depend fmri=terminal/xterm type=group
 depend fmri=text/doctools type=group
 depend fmri=text/doctools/ja type=group
 depend fmri=text/gawk type=group
@@ -432,77 +433,32 @@ depend fmri=text/gnu-grep type=group
 depend fmri=text/gnu-patch type=group
 depend fmri=text/gnu-sed type=group
 depend fmri=text/groff type=group
+depend fmri=text/groff/groff-core type=group
 depend fmri=text/less type=group
 depend fmri=text/locale type=group
 depend fmri=text/texinfo type=group
 depend fmri=web/curl type=group
 depend fmri=web/server/apache-22 type=group
 depend fmri=web/wget type=group
-depend fmri=x11/colormap-utilities type=group
-depend fmri=x11/compatibility/links-svid type=group
 depend fmri=x11/compatibility/links-xorg type=group
-depend fmri=x11/data/workspace-patterns type=group
-depend fmri=x11/data/xbitmaps type=group
-depend fmri=x11/demo type=group
-depend fmri=x11/diagnostic/x11-info-clients type=group
-depend fmri=x11/font-utilities type=group
 depend fmri=x11/header/x11-protocols type=group
-depend fmri=x11/keyboard/xkb-utilities type=group
-depend fmri=x11/library/dps type=group
 depend fmri=x11/library/libdga type=group
-depend fmri=x11/library/libdmx type=group
 depend fmri=x11/library/libfontenc type=group
-depend fmri=x11/library/libfs type=group
 depend fmri=x11/library/libice type=group
-depend fmri=x11/library/libowconfig type=group
 depend fmri=x11/library/libpthread-stubs type=group
 depend fmri=x11/library/libsm type=group
 depend fmri=x11/library/libx11 type=group
 depend fmri=x11/library/libxau type=group
 depend fmri=x11/library/libxcb type=group
-depend fmri=x11/library/libxcomposite type=group
-depend fmri=x11/library/libxcursor type=group
-depend fmri=x11/library/libxdamage type=group
 depend fmri=x11/library/libxdmcp type=group
-depend fmri=x11/library/libxevie type=group
 depend fmri=x11/library/libxext type=group
-depend fmri=x11/library/libxfixes type=group
-depend fmri=x11/library/libxfont type=group
 depend fmri=x11/library/libxft type=group
 depend fmri=x11/library/libxi type=group
-depend fmri=x11/library/libxinerama type=group
-depend fmri=x11/library/libxkbfile type=group
 depend fmri=x11/library/libxmu type=group
 depend fmri=x11/library/libxmuu type=group
-depend fmri=x11/library/libxp type=group
 depend fmri=x11/library/libxpm type=group
-depend fmri=x11/library/libxrandr type=group
 depend fmri=x11/library/libxrender type=group
-depend fmri=x11/library/libxres type=group
-depend fmri=x11/library/libxscrnsaver type=group
 depend fmri=x11/library/libxtst type=group
-depend fmri=x11/library/libxv type=group
-depend fmri=x11/library/libxvmc type=group
-depend fmri=x11/library/libxxf86misc type=group
 depend fmri=x11/library/libxxf86vm type=group
-depend fmri=x11/library/toolkit/libxaw4 type=group
-depend fmri=x11/library/toolkit/libxaw5 type=group
 depend fmri=x11/library/toolkit/libxaw7 type=group
 depend fmri=x11/library/toolkit/libxt type=group
-depend fmri=x11/library/xcb-util type=group
-depend fmri=x11/library/xtrans type=group
-depend fmri=x11/session/sessreg type=group
-depend fmri=x11/session/smproxy type=group
-depend fmri=x11/session/winsysck type=group
-depend fmri=x11/session/xauth type=group
-depend fmri=x11/session/xinit type=group
-depend fmri=x11/trusted/libxtsol type=group
-depend fmri=x11/x11-server-utilities type=group
-depend fmri=x11/x11-window-dump type=group
-depend fmri=x11/xcalc type=group
-depend fmri=x11/xfd type=group
-depend fmri=x11/xfs/xfs-utilities type=group
-depend fmri=x11/xkill type=group
-depend fmri=x11/xlock type=group
-depend fmri=x11/xmag type=group
-depend fmri=x11/xvidtune type=group

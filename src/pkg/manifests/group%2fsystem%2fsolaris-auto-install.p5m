@@ -25,7 +25,7 @@
 
 set name=pkg.fmri value=pkg:/group/system/solaris-auto-install@$(PKGVERS)
 set name=pkg.description \
-    value="Provides an Automated Installer client for Oracle Solaris"
+    value="Provides an Oracle Solaris Automated Installer client"
 set name=pkg.summary value="Oracle Solaris Automated Installer Client"
 set name=info.classification \
     value="org.opensolaris.category.2008:Meta Packages/Group Packages"
@@ -60,7 +60,6 @@ depend fmri=driver/crypto/tpm type=group
 depend fmri=driver/firewire type=group
 $(sparc_ONLY)depend fmri=driver/graphics/ast type=group
 $(sparc_ONLY)depend fmri=driver/graphics/efb type=group
-$(sparc_ONLY)depend fmri=driver/graphics/kfb type=group
 $(i386_ONLY)depend fmri=driver/i86pc/fipe type=group
 $(i386_ONLY)depend fmri=driver/i86pc/ioat type=group
 $(i386_ONLY)depend fmri=driver/i86pc/platform type=group
@@ -184,7 +183,9 @@ depend fmri=driver/storage/smp type=group
 $(sparc_ONLY)depend fmri=driver/storage/ssd type=group
 depend fmri=driver/usb type=group
 $(i386_ONLY)depend fmri=driver/xvm/pv type=group
+depend fmri=editor/vim/vim-core type=group
 depend fmri=install/beadm type=group
+depend fmri=install/distribution-constructor type=group
 depend fmri=library/database/gdbm type=group
 depend fmri=library/expat type=group
 depend fmri=library/glib2 type=group
@@ -249,6 +250,7 @@ depend fmri=service/resource-pools type=group
 depend fmri=service/security/gss type=group
 depend fmri=service/security/kerberos-5 type=group
 depend fmri=service/storage/fibre-channel/fc-fabric type=group
+depend fmri=service/storage/media-volume-manager type=group
 depend fmri=service/storage/removable-media type=group
 depend fmri=shell/bash type=group
 $(sparc_ONLY)depend fmri=storage/library/network-array type=group
@@ -262,7 +264,8 @@ depend fmri=system/data/hardware-registry type=group
 depend fmri=system/data/keyboard/keytables type=group
 depend fmri=system/data/terminfo type=group
 depend fmri=system/data/timezone type=group
-$(sparc_ONLY)depend fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
+$(sparc_ONLY)depend \
+    fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
 $(sparc_ONLY)depend fmri=system/embedded-fcode-interpreter type=group
 depend fmri=system/extended-system-utilities type=group
 depend fmri=system/file-system/autofs type=group
@@ -273,7 +276,6 @@ depend fmri=system/file-system/zfs type=group
 depend fmri=system/flash/fwflash type=group
 depend fmri=system/fru-id type=group
 depend fmri=system/fru-id/platform type=group
-$(sparc_ONLY)depend fmri=system/graphics/fbconfig/fbconfig-kfb type=group
 depend fmri=system/install type=group
 depend fmri=system/install/auto-install type=group
 depend fmri=system/install/auto-install/auto-install-common type=group
@@ -283,9 +285,13 @@ depend fmri=system/kernel type=group
 depend fmri=system/kernel/cpu-counters type=group
 $(sparc_ONLY)depend fmri=system/kernel/cpu/sun4v type=group
 depend fmri=system/kernel/dtrace/providers type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 type=group
+$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 \
+    type=group
+$(sparc_ONLY)depend \
+    fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 \
+    type=group
+$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 \
+    type=group
 $(sparc_ONLY)depend fmri=system/kernel/io-performance-counters type=group
 depend fmri=system/kernel/platform type=group
 $(sparc_ONLY)depend fmri=system/kernel/platform/netra type=group
@@ -340,7 +346,6 @@ depend fmri=text/less type=group
 depend fmri=text/locale type=group
 depend fmri=web/curl type=group
 depend fmri=web/wget type=group
-depend fmri=x11/compatibility/links-svid type=group
 depend fmri=x11/compatibility/links-xorg type=group
 depend fmri=x11/header/x11-protocols type=group
 depend fmri=x11/library/libpthread-stubs type=group

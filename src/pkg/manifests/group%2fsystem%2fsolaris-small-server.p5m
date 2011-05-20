@@ -26,7 +26,7 @@
 set name=pkg.fmri value=pkg:/group/system/solaris-small-server@$(PKGVERS)
 set name=pkg.description \
     value="Provides a useful command-line Oracle Solaris environment"
-set name=pkg.summary value="Small Oracle Solaris Server"
+set name=pkg.summary value="Oracle Solaris Small Server"
 set name=info.classification \
     value="org.opensolaris.category.2008:Meta Packages/Group Packages"
 set name=variant.arch value=$(ARCH)

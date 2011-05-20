@@ -29,26 +29,23 @@ INSTALL = /usr/sbin/install -s
 
 ROOTSECTSOLDOOR = ../../proto/root_${MACH}/etc/security/tsol/doors
 ROOTSECTSOL = ../../proto/root_${MACH}/etc/security/tsol
+ROOTVARTSOLDOOR = ../../proto/root_${MACH}/var/tsol/doors
 ROOTVARTSOL = ../../proto/root_${MACH}/var/tsol
 
 ROOTDIRS = \
 	$(ROOTSECTSOLDOOR) \
 	$(ROOTSECTSOL) \
+	$(ROOTVARTSOLDOOR) \
 	$(ROOTVARTSOL)
 
 clobber: $(ROOTDIRS)
-	rm -f $(ROOTVARTSOL)/doors
-	rmdir $(ROOTDIRS)
+	rm -fr $(ROOTDIRS)
 
 #
-# Make directories and create a symbolic link for tsol
+# Make directories
 #
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@
 
 install: $(ROOTDIRS)
-	@if [ ! -h $(ROOTVARTSOL)/doors ]; then \
-		cd $(ROOTVARTSOL); \
-		ln -s ../../etc/security/tsol/doors; \
-	fi

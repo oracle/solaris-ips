@@ -25,7 +25,7 @@
 
 set name=pkg.fmri value=pkg:/group/system/solaris-desktop@$(PKGVERS)
 set name=pkg.description \
-    value="Provides a desktop Oracle Solaris environment"
+    value="Provides an Oracle Solaris desktop environment"
 set name=pkg.summary value="Oracle Solaris Desktop"
 set name=info.classification \
     value="org.opensolaris.category.2008:Meta Packages/Group Packages"
@@ -75,7 +75,6 @@ depend fmri=desktop/xdg/menu-editor/alacarte type=group
 depend fmri=desktop/xdg/xdg-user-dirs-gtk type=group
 depend fmri=desktop/xdg/xdg-utils type=group
 depend fmri=desktop/xscreensaver type=group
-depend fmri=developer/build/autoconf/xorg-macros type=group
 depend fmri=developer/build/gnu-make type=group
 depend fmri=developer/build/make type=group
 depend fmri=developer/debug/mdb type=group
@@ -126,7 +125,6 @@ depend fmri=driver/graphics/av1394 type=group
 depend fmri=driver/graphics/dcam1394 type=group
 $(i386_ONLY)depend fmri=driver/graphics/drm type=group
 $(sparc_ONLY)depend fmri=driver/graphics/efb type=group
-$(sparc_ONLY)depend fmri=driver/graphics/kfb type=group
 $(i386_ONLY)depend fmri=driver/graphics/nvidia type=group
 depend fmri=driver/graphics/usbvc type=group
 $(i386_ONLY)depend fmri=driver/i86pc/fipe type=group
@@ -191,6 +189,7 @@ $(i386_ONLY)depend fmri=driver/network/rwd type=group
 $(i386_ONLY)depend fmri=driver/network/rwn type=group
 depend fmri=driver/network/sfe type=group
 $(sparc_ONLY)depend fmri=driver/network/socal type=group
+depend fmri=driver/network/sxge type=group
 $(i386_ONLY)depend fmri=driver/network/uath type=group
 $(i386_ONLY)depend fmri=driver/network/ural type=group
 $(i386_ONLY)depend fmri=driver/network/urtw type=group
@@ -312,6 +311,7 @@ depend fmri=image/library/libtiff type=group
 depend fmri=image/scanner/xsane/sane-backends type=group
 depend fmri=image/viewer/eog type=group
 depend fmri=install/beadm type=group
+depend fmri=install/distribution-constructor type=group
 depend fmri=library/aalib type=group
 depend fmri=library/accessibility/brltty type=group
 depend fmri=library/apr-13 type=group
@@ -547,8 +547,10 @@ depend fmri=system/data/terminfo type=group
 depend fmri=system/data/timezone type=group
 depend fmri=system/display-manager/desktop-startup type=group
 depend fmri=system/display-manager/gdm type=group
-$(sparc_ONLY)depend fmri=system/domain-configuration/sparc-enterprise type=group
-$(sparc_ONLY)depend fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
+$(sparc_ONLY)depend fmri=system/domain-configuration/sparc-enterprise \
+    type=group
+$(sparc_ONLY)depend \
+    fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
 $(sparc_ONLY)depend fmri=system/embedded-fcode-interpreter type=group
 depend fmri=system/extended-system-utilities type=group
 depend fmri=system/file-system/autofs type=group
@@ -572,7 +574,6 @@ depend fmri=system/fru-id/platform type=group
 $(sparc_ONLY)depend fmri=system/graphics/fbconfig type=group
 $(sparc_ONLY)depend fmri=system/graphics/fbconfig/fbconfig-ast type=group
 $(sparc_ONLY)depend fmri=system/graphics/fbconfig/fbconfig-efb type=group
-$(sparc_ONLY)depend fmri=system/graphics/fbconfig/fbconfig-kfb type=group
 depend fmri=system/input-method/ibus type=group
 depend fmri=system/input-method/ibus/anthy type=group
 depend fmri=system/input-method/ibus/chewing type=group
@@ -600,10 +601,15 @@ depend fmri=system/kernel/cpu-counters type=group
 $(sparc_ONLY)depend fmri=system/kernel/cpu/sun4v type=group
 depend fmri=system/kernel/dtrace/providers type=group
 $(i386_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/i86pc type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-880 type=group
-$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 type=group
-$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 type=group
+$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-15000 \
+    type=group
+$(sparc_ONLY)depend fmri=system/kernel/dynamic-reconfiguration/sun-fire-880 \
+    type=group
+$(sparc_ONLY)depend \
+    fmri=system/kernel/dynamic-reconfiguration/ultra-enterprise-10000 \
+    type=group
+$(sparc_ONLY)depend fmri=system/kernel/inter-domain/ultra-enterprise-10000 \
+    type=group
 $(sparc_ONLY)depend fmri=system/kernel/io-performance-counters type=group
 depend fmri=system/kernel/platform type=group
 $(sparc_ONLY)depend fmri=system/kernel/platform/netra type=group
@@ -652,6 +658,7 @@ depend fmri=system/library/usb/libusb type=group
 depend fmri=system/library/usb/libusbugen type=group
 depend fmri=system/locale type=group
 depend fmri=system/locale/support type=group
+depend fmri=system/management/ilomconfig type=group
 $(i386_ONLY)depend fmri=system/management/intel-amt type=group
 depend fmri=system/management/ipmitool type=group
 depend fmri=system/management/product-registry type=group
@@ -703,6 +710,7 @@ depend fmri=text/gnu-grep type=group
 depend fmri=text/gnu-patch type=group
 depend fmri=text/gnu-sed type=group
 depend fmri=text/groff type=group
+depend fmri=text/groff/groff-core type=group
 depend fmri=text/less type=group
 depend fmri=text/locale type=group
 depend fmri=text/texinfo type=group
@@ -796,7 +804,6 @@ depend fmri=x11/server/xorg/driver/xorg-input-keyboard type=group
 depend fmri=x11/server/xorg/driver/xorg-input-mouse type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-input-synaptics type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-input-vmmouse type=group
-$(sparc_ONLY)depend fmri=x11/server/xorg/driver/xorg-kfb type=group
 depend fmri=x11/server/xorg/driver/xorg-video type=group
 depend fmri=x11/server/xorg/driver/xorg-video-ast type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-ati type=group
@@ -805,7 +812,8 @@ $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-intel type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-mach64 type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-mga type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-nv type=group
-$(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-openchrome type=group
+$(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-openchrome \
+    type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-r128 type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-trident type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-vesa type=group

@@ -45,27 +45,34 @@
 #   -j <package>
 #     A specific package to republish.  More than one package may be
 #     specified this way and only those packages will be republished.  This
-#     option is optional.
+#     option is optional and mutually exclusive with -x.
 #
 #   -p repository
 #     A file: or http: repository path to publish the results.  This
 #     repository should have already been created with opensolaris.org
 #     as its publisher.  This option is required.
 #
+#   -x <package>
+#     A specific package to avoid republishing.  More than one package may be
+#     specified this way and those packages will not be republished.  This
+#     option is optional and mutually exclusive with -j.
+#
 
 recv_dir=
 publish_repo=
 only_this_build=
 just_these_pkgs=
+exclude_these_pkgs=
 
-while getopts b:d:j:p: opt; do
+while getopts b:d:j:p:x: opt; do
 	case $opt in
 	b)	only_this_build="$OPTARG";;
 	d)	recv_dir="$OPTARG";;
 	j)	just_these_pkgs="$just_these_pkgs $OPTARG";;
 	p)	publish_repo="$OPTARG";;
-	?)	print "Usage: $0: [-b build] -d directory -p publish_repo "
-		    "input_repos" 
+	x)	exclude_these_pkgs="$exclude_these_pkg $OPTARG";;
+	?)	print "Usage: $0: [-b build] -d directory [-j package ...]" \
+		    "-p publish_repo [-x package ...] input_repos"
 		exit 2;;
 	esac
 done
@@ -73,7 +80,8 @@ shift $(expr $OPTIND - 1)
 
 if [[ -z $recv_dir || -z $publish_repo ]]; then
 	echo "one of the options not specified."
-	print "Usage: $0: [-b build] -d directory -p publish_repo input_repos" 
+	print "Usage: $0: [-b build] -d directory [-j package ...]" \
+	    "-p publish_repo [-x package ...] input_repos"
 	exit 2
 fi
 if [ ! -d $recv_dir ]; then
@@ -125,6 +133,12 @@ done
 # publish.
 #
 if [ -z $just_these_pkgs ]; then
+	for unquoted in $exclude_these_pkgs; do
+		quoted=$(python -c \
+		    'import sys, urllib; print urllib.quote(sys.argv[1], "")' \
+		    ${unquoted})
+		rm -fr ${recv_dir}/${quoted}
+	done
 	for pkg in $(echo $recv_dir/*/*); do
 		./pkgmogrify.py -O $pkg/manifest $pkg/manifest \
 		    ./set-publisher.transforms

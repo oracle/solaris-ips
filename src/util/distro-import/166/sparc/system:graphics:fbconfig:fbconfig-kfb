@@ -1,0 +1,9 @@
+package system/graphics/fbconfig/fbconfig-kfb
+consolidation "smcc"
+obsoleted 166
+end package
+
+package SUNWkfbcf
+consolidation "smcc"
+obsoleted 166
+end package
