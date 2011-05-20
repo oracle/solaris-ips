@@ -51,7 +51,7 @@ MANIFESTS.cmd     = \
 	buildnum=$(BUILDNUM); \
 	m=$$($(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish); \
 	echo "$$m" | while read name build; do \
-		[[ $$build -gt $${buildnum%%.*} ]] && echo $$name; \
+		[[ $$build -ge $${buildnum%%.*} ]] && echo $$name; \
 	done
 MANIFESTS         = $(MANIFESTS.cmd:sh)
 $(PUBLISHALL)MANIFESTS:sh      = (cd manifests; print *.p5m)
