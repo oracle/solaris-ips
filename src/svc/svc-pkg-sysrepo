@@ -85,6 +85,9 @@ run_sysrepo() {
 }
 
 run_htcacheclean() {
+	# if we dropped to maintenance and are in the process of clearing
+	# that state,  we may have a htcacheclean processes hanging around.
+	kill_htcacheclean
 	if [ "${SYSREPO_CACHE_DIR}" != "None" ] && \
 	    [ "${SYSREPO_CACHE_DIR}" != "memory" ]; then
                # Start a cache cleaning daemon, scanning every 120 minutes,

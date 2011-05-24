@@ -155,10 +155,6 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
                 self.htdocs_dir = os.path.join(self.common_config_dir, "htdocs")
                 self.apache_confs = {}
 
-                self.rurl2_old = self.rurl2.rstrip("/") + ".old"
-                self.pkgsend(self.rurl2_old, "create-repository "
-                    "--set-property publisher.prefix=test12")
-
                 # Establish the different publisher configurations that tests
                 # will need.
                 self.configs = {
@@ -192,10 +188,6 @@ test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%s/
                             mirrors=[("test12", self.durl2)]),
                         PC(self.rurl3, mirrors=[("test3", self.durl3)])]),
                     "none": [],
-                    "old-file": ([
-                        PC(self.rurl1),
-                        PC(self.rurl2_old, sticky=False),
-                        PC(self.rurl3)]),
                     "test1": ([PC(self.durl1)]),
                     "test1-test12": ([
                         PC(self.durl1),
@@ -1225,31 +1217,6 @@ test12\tfalse\ttrue\ttrue\torigin\tonline\tproxy://%(durl2)s/
 test3\ttrue\ttrue\ttrue\torigin\tonline\tproxy://%(durl3)s/
 """ % {"durl2": self.durl2, "durl3": self.durl3}
                 self.__check_publisher_info(expected)
-
-        def test_13_old_file_repos(self):
-                """Test that file repos created with pkgsend are not configured
-                for the system repository."""
-
-                self.__prep_configuration(["old-file"])
-                self.__set_responses("old-file")
-                self.sc = pkg5unittest.SysrepoController(
-                    self.apache_confs["old-file"], self.sysrepo_port,
-                    self.common_config_dir, testcase=self)
-                self.sc.start()
-                api_obj = self.image_create(props={"use-system-repo": True})
-
-                # Find the hashes that will be included in the urls of the
-                # proxied file repos.
-                hash1 = hashlib.sha1("file://" +
-                    self.dcs[1].get_repodir().rstrip("/")).hexdigest()
-                hash3 = hashlib.sha1("file://" +
-                    self.dcs[3].get_repodir().rstrip("/")).hexdigest()
-
-                expected = """\
-PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
-test1\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test1/%(hash1)s/
-test3\ttrue\ttrue\ttrue\torigin\tonline\thttp://localhost:%(port)s/test3/%(hash3)s/
-""" % {"port": self.sysrepo_port, "hash1": hash1, "hash3": hash3}
 
         def test_bug_18326(self):
                 """Test that an unprivileged user can use non-image modifying
