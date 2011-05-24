@@ -266,9 +266,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 else:
                         if not force and self.image_type(self.root) != None:
                                 raise apx.ImageAlreadyExists(self.root)
-                        if not force and os.path.exists(self.root) and \
-                            len(os.listdir(self.root)) > 0:
-                                raise apx.CreatingImageInNonEmptyDir(self.root)
+                        if not force and os.path.exists(self.root):
+                                # ignore .zfs snapdir if it's present
+                                snapdir = os.path.join(self.root, ".zfs")
+                                listdir = set(os.listdir(self.root))
+                                if os.path.isdir(snapdir):
+                                        listdir -= set([".zfs"])
+                                if len(listdir) > 0:
+                                        raise apx.CreatingImageInNonEmptyDir(
+                                            self.root)
                         self.__set_dirs(root=self.root, imgtype=imgtype,
                             progtrack=progtrack, purge=True)
 

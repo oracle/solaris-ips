@@ -1525,7 +1525,7 @@ class CliTestCase(Pkg5TestCase):
 
                 if destroy:
                         self.image_destroy()
-                os.mkdir(self.img_path())
+                mkdir_eexist_ok(self.img_path())
 
                 self.debug("image_create %s" % self.img_path())
                 progtrack = pkg.client.progress.NullProgressTracker()

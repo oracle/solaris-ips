@@ -495,6 +495,26 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.image_create(self.rurl, prefix="bobcat")
                 self.assertEqual(api_obj.root, self.img_path())
 
+        def test_snapdir(self):
+                """Verify that image create ignores .zfs snapdir."""
+
+                # snapdir path
+                path = self.img_path()
+                snapdir = os.path.join(path, ".zfs")
+
+                # a .zfs directory is allowed
+                self.image_destroy()
+                os.mkdir(self.img_path())
+                os.mkdir(snapdir)
+                api_obj = self.image_create(destroy=False)
+
+                # a .zfs file is not allowed
+                self.image_destroy()
+                os.mkdir(self.img_path())
+                open(snapdir, 'w').close()
+                self.assertRaises(api_errors.CreatingImageInNonEmptyDir,
+                    self.image_create, destroy=False)
+
         def test_publisher_apis(self):
                 """Verify that the publisher api methods work as expected.
 
