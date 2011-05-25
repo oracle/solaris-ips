@@ -93,16 +93,15 @@ def get_state(fmri):
         if "maintenance" in props.get("restarter/state", []):
                 return SMF_SVC_MAINTENANCE
 
-        if "true" not in props.get("general/enabled", []) :
-                if "general_ovr/enabled" not in props:
-                        return SMF_SVC_DISABLED
-                elif "true" in props.get("general_ovr/enabled", []):
+        status = props.get("general_ovr/enabled", None)
+        if status is not None:
+                if "true" in status:
                         return SMF_SVC_TMP_ENABLED
-        else:
-                if "general_ovr/enabled" not in props:
-                        return SMF_SVC_ENABLED
-                elif "false" in props.get("general_ovr/enabled", []):
-                        return SMF_SVC_TMP_DISABLED
+                return SMF_SVC_TMP_DISABLED
+        status = props.get("general/enabled", None)
+        if status is not None and "true" in status:
+                return SMF_SVC_ENABLED
+        return SMF_SVC_DISABLED
 
 def is_disabled(fmri):
         return get_state(fmri) < SMF_SVC_TMP_ENABLED

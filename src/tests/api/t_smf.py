@@ -210,8 +210,72 @@ stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method""",
 
+                "svcprop_temp_enabled2" :
+"""general/enabled boolean true
+general/entity_stability astring Unstable
+general/single_instance boolean true
+restarter/start_pid count 7816
+restarter/start_method_timestamp time 1222992237.506096000
+restarter/start_method_waitstatus integer 0
+restarter/transient_contract count
+restarter/auxiliary_state astring none
+restarter/next_state astring none
+restarter/state astring online
+restarter/state_timestamp time 1222992237.527408000
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
+general_ovr/enabled boolean true
+local-filesystems/entities fmri svc:/system/filesystem/local
+local-filesystems/grouping astring require_all
+local-filesystems/restart_on astring none
+local-filesystems/type astring service
+remote-filesystems/entities fmri svc:/network/nfs/client svc:/system/filesystem/autofs
+remote-filesystems/grouping astring optional_all
+remote-filesystems/restart_on astring none
+remote-filesystems/type astring service
+startd/duration astring transient
+start/timeout_seconds count 0
+start/type astring method
+stop/exec astring :true
+stop/timeout_seconds count 0
+stop/type astring method""",
+
                 "svcprop_temp_disabled" :
 """general/enabled boolean true
+general/entity_stability astring Unstable
+general/single_instance boolean true
+restarter/start_pid count 7816
+restarter/start_method_timestamp time 1222992237.506096000
+restarter/start_method_waitstatus integer 0
+restarter/transient_contract count
+restarter/auxiliary_state astring none
+restarter/next_state astring none
+restarter/state astring disabled
+restarter/state_timestamp time 1222992278.822335000
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
+general_ovr/enabled boolean false
+local-filesystems/entities fmri svc:/system/filesystem/local
+local-filesystems/grouping astring require_all
+local-filesystems/restart_on astring none
+local-filesystems/type astring service
+remote-filesystems/entities fmri svc:/network/nfs/client svc:/system/filesystem/autofs
+remote-filesystems/grouping astring optional_all
+remote-filesystems/restart_on astring none
+remote-filesystems/type astring service
+startd/duration astring transient
+start/timeout_seconds count 0
+start/type astring method
+stop/exec astring :true
+stop/timeout_seconds count 0
+stop/type astring method""",
+
+                "svcprop_temp_disabled2" :
+"""general/enabled boolean false
 general/entity_stability astring Unstable
 general/single_instance boolean true
 restarter/start_pid count 7816
@@ -367,7 +431,15 @@ stop/type astring method""",
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_ENABLED)
                 self.assert_(not smf.is_disabled("foo"))
 
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_enabled2"
+                self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_ENABLED)
+                self.assert_(not smf.is_disabled("foo"))
+
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_disabled"
+                self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_DISABLED)
+                self.assert_(smf.is_disabled("foo"))
+
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_disabled2"
                 self.assertEqual(smf.get_state("foo"), smf.SMF_SVC_TMP_DISABLED)
                 self.assert_(smf.is_disabled("foo"))
 
