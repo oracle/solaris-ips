@@ -873,6 +873,7 @@ class BlendedConfig(object):
                 else:
                         old_sysconfig = NullSystemPublisher()
 
+                write_sys_cfg = True
                 if use_system_pub:
                         # get new syspub data from sysdepot
                         try:
@@ -909,6 +910,7 @@ class BlendedConfig(object):
                                     sysdepot_uri)
                         except TransportFailures:
                                 self.sys_cfg = old_sysconfig
+                                write_sys_cfg = False
                         else:
                                 try:
                                         try:
@@ -942,6 +944,7 @@ class BlendedConfig(object):
                                                 # the ImageConfig.
                                                 self.sys_cfg = \
                                                     NullSystemPublisher()
+                                                write_sys_cfg = False
                                         else:
                                                 raise
                                 else:
@@ -964,11 +967,12 @@ class BlendedConfig(object):
                         self.sys_cfg = NullSystemPublisher()
                 self.__publishers, self.added_pubs, self.removed_pubs = \
                     self.__merge_publishers(self.img_cfg, self.sys_cfg,
-                        pkg_counts, old_sysconfig, self.__proxy_url)
+                        pkg_counts, old_sysconfig, self.__proxy_url,
+                        write_sys_cfg)
 
         @staticmethod
         def __merge_publishers(img_cfg, sys_cfg, pkg_counts, old_sysconfig,
-            proxy_url):
+            proxy_url, write_sys_cfg):
                 """This funcion merges an old publisher configuration from the
                 system repository with the new publisher configuration from the
                 system repository.  It retuns a tuple containing a dictionary
@@ -992,6 +996,9 @@ class BlendedConfig(object):
                 whether the system publisher should be used.
 
                 The 'proxy_url' parameter is the url for the system repository.
+
+                The 'write_sys_cfg' parameter indicates whether the new sys_cfg
+                object should attempt to save its configuration to disk.
                 """
 
                 pubs_with_installed_pkgs = set()
@@ -1016,7 +1023,8 @@ class BlendedConfig(object):
                         sys_cfg.publishers[prefix].disabled = True
 
                 # Write out the new system publisher configuration.
-                sys_cfg.write()
+                if write_sys_cfg:
+                        sys_cfg.write()
                 for p in sys_cfg.publishers.values():
                         for o in p.repository.origins:
                                 o.system = True

@@ -1247,6 +1247,30 @@ PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
                     (self.durl1, self.durl2, self.durl3)
                 self.__check_publisher_info(expected, su_wrap=True)
 
+                # Test that when the sysrepo isn't available, unprivileged users
+                # don't lose functionality.
+                self.sc.stop()
+                # Since the last priviledged command was done when no
+                # system-publishers were available, that's what's expected when
+                # the system repository isn't available.
+                expected = """\
+PUBLISHER\tSTICKY\tSYSPUB\tENABLED\tTYPE\tSTATUS\tURI
+"""
+                self.__check_publisher_info(expected, su_wrap=True)
+                self.pkg("property", su_wrap=True)
+                self.pkg("install foo", su_wrap=True, exit=1)
+
+                # Now do a privileged command command to change what the state
+                # on disk is.
+                self.sc.start()
+                expected =  self.expected_all_access % \
+                    (self.durl1, self.durl2, self.durl3)
+                self.__check_publisher_info(expected)
+                self.sc.stop()
+                self.__check_publisher_info(expected, su_wrap=True)
+                self.pkg("property", su_wrap=True)
+                self.pkg("install foo", su_wrap=True, exit=1)
+
 
         __smf_cmds_template = { \
             "usr/bin/svcprop" : """\
