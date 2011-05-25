@@ -387,7 +387,9 @@ class PackageManager:
                 self.detailspanel = detailspanel.DetailsPanel(self, self.builder)
                 self.exportconfirm = exportconfirm.ExportConfirm(self.builder,
                     self.window_icon, self.gconf, self)
-                self.logging = logging.PMLogging(self.builder, self.window_icon)
+                is_normal_logging_setup = gui_misc.setup_logging()
+                self.logging = logging.PMLogging(self.builder, self.window_icon,
+                    is_normal_logging_setup)
                 self.preferences = preferences.Preferences(self, self.builder,
                     self.window_icon, self.gconf)
                 self.searcherror = searcherror.SearchError(self.builder,
@@ -432,7 +434,6 @@ class PackageManager:
                 self.versioninfo.set_modal_and_transient(self.w_main_window)
 
                 self.__setup_text_signals()
-                gui_misc.setup_logging()
 
                 # Theme: prevent cell background being set for Inverse themes
                 self.is_inverse_theme = False

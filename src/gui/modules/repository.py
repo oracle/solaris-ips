@@ -2627,6 +2627,10 @@ class Repository(progress.GuiProgressTracker):
                         src_pub = sorted(pubs)[0]
                         #For now only handling single Pub per Origin
                         if len(pubs) > 1:
+                                if self.webinstall_new:
+                                        client_name = _("Web Install")
+                                else:
+                                        client_name = _("Package Manager")
                                 user_image_root = ""
                                 if self.parent.image_directory != "/":
                                         user_image_root = "-R " + \
@@ -2634,13 +2638,14 @@ class Repository(progress.GuiProgressTracker):
                                 logger.warning(
                                 _("Origin URI: %(origin_url)s"
                                 "\nhas %(number_pubs)d publishers associated with it.\n"
-                                "Package Manager will only add the first publisher, "
-                                "%(pub_name)s.\n"
+                                "%(client_name)s will attempt to add the first "
+                                "publisher, %(pub_name)s.\n"
                                 "To add the remaining publishers use the command:\n"
                                 "'pkg %(user_image_root)sset-publisher "
                                 "-p %(origin_url)s'") %
                                 {"origin_url": origin_url,
                                 "number_pubs": len(pubs),
+                                "client_name": client_name,
                                 "pub_name": src_pub.prefix,
                                 "user_image_root": user_image_root,
                                 })

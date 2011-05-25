@@ -87,17 +87,48 @@ def get_os_version_and_build():
         return os_ver
 
 def setup_logging(client_name):
+        normal_setup = True
         log_path = os.path.join(LOG_DIR, client_name)
-        log_fmt = logging.Formatter(
-            "<b>%(levelname)s:</b> " + client_name + \
-            "\n%(asctime)s: %(filename)s: %(module)s: %(lineno)s:\n%(message)s")
+        err_str = ""
 
         infolog_path = log_path + LOG_INFO_EXT
         try:
                 info_h = logging.handlers.RotatingFileHandler(infolog_path,
                     maxBytes=1000000, backupCount=1)
-        except IOError:
+        except IOError, e:
+                err_str = _("WARNING: %s\nUnable to setup log:\n ") % client_name
+                err_str += str(e)
+                err_str += _("\n  All info messages will be logged to stdout")
+                normal_setup = False
+
+        errlog_path = log_path + LOG_ERROR_EXT
+        try:
+                err_h = logging.handlers.RotatingFileHandler(errlog_path,
+                    maxBytes=1000000, backupCount=1)
+        except IOError, e:
+                if err_str == "":
+                        err_str =  _("WARNING: %s\nUnable to setup log:\n ") % \
+                                client_name
+                else:
+                        err_str +=  _("\n ")
+                err_str += str(e)
+                err_str += _("\n  All errors and warnings will be logged to stderr")
+                normal_setup = False
+
+        if  normal_setup:
+                log_fmt = logging.Formatter(
+                    "<b>%(levelname)s:</b> " + client_name + \
+                    "\n%(asctime)s: %(filename)s: %(module)s: "
+                    "%(lineno)s:\n%(message)s")
+        else:
+                if client_name != PKG_CLIENT_NAME_UM and err_str != "":
+                        print err_str
+                log_fmt = logging.Formatter(
+                    "%(levelname)s: " + client_name + \
+                    "\n%(asctime)s: %(filename)s: %(module)s: "
+                    "%(lineno)s:\n%(message)s")
                 info_h = logging.StreamHandler(sys.stdout)
+                err_h = logging.StreamHandler(sys.stderr)
 
         info_t = _LogFilter(logging.INFO)
         info_h.addFilter(info_t)
@@ -105,16 +136,11 @@ def setup_logging(client_name):
         info_h.setLevel(logging.INFO)
         global_settings.info_log_handler = info_h
 
-        errlog_path = log_path + LOG_ERROR_EXT
-        try:
-                err_h = logging.handlers.RotatingFileHandler(errlog_path,
-                    maxBytes=1000000, backupCount=1)
-        except IOError:
-                err_h = logging.StreamHandler(sys.stderr)
-
         err_h.setFormatter(log_fmt)
         err_h.setLevel(logging.WARNING)
         global_settings.error_log_handler = err_h
+        
+        return normal_setup
 
 def shutdown_logging():
         try:

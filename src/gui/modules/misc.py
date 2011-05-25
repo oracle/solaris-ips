@@ -255,7 +255,7 @@ def __notify_log_error(app, msg):
         app.w_infosearch_frame.set_tooltip_text(msg)
 
 def setup_logging():
-        su_logging(global_settings.client_name)
+        return su_logging(global_settings.client_name)
 
 def shutdown_logging():
         sd_logging()

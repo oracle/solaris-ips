@@ -36,7 +36,8 @@ REGEX_BOLD_MARKUP = re.compile(r'^<b>')
 REGEX_STRIP_MARKUP = re.compile(r'<.*?>')
 
 class PMLogging:
-        def __init__(self, builder, window_icon):
+        def __init__(self, builder, window_icon, is_normal_logging_setup=True):
+                self.is_normal_logging_setup = is_normal_logging_setup
                 self.w_view_log_dialog = builder.get_object("view_log_dialog")
                 self.w_view_log_dialog.set_icon(window_icon)
                 self.w_view_log_dialog.set_title(_("Logs"))
@@ -106,14 +107,31 @@ class PMLogging:
                         pass
 
         def log_activate(self):
-                textbuffer = self.w_log_errors_textview.get_buffer()
-                textbuffer.set_text(_("Loading ..."))
-                textbuffer = self.w_log_info_textview.get_buffer()
-                textbuffer.set_text(_("Loading ..."))
+                textbuffer_err = self.w_log_errors_textview.get_buffer()
+                textbuffer_info = self.w_log_info_textview.get_buffer()
+                if self.is_normal_logging_setup:
+                        textbuffer_err.set_text(_("Loading ..."))
+                        textbuffer_info.set_text(_("Loading ..."))
+                else:
+                        textbuffer_err.set_text("")
+                        textbuffer_info.set_text("")
+                        textiter = textbuffer_err.get_end_iter()
+                        textbuffer_err.insert_with_tags_by_name(textiter,
+                            _("Unable to setup log:\n"), "bold")
+                        textbuffer_err.insert(textiter,
+                            _("All errors and warnings will be logged to stderr"))
+                        textiter = textbuffer_info.get_end_iter()
+                        textbuffer_info.insert_with_tags_by_name(textiter,
+                            _("Unable to setup log:\n"), "bold")
+                        textbuffer_info.insert(textiter,
+                            _("All info messages will be logged to stdout"))
+
                 self.w_log_close_button.grab_focus()
                 self.w_view_log_dialog.show()
-                gobject.idle_add(self.__load_err_view_log)
-                gobject.idle_add(self.__load_info_view_log)
+
+                if self.is_normal_logging_setup: 
+                        gobject.idle_add(self.__load_err_view_log)
+                        gobject.idle_add(self.__load_info_view_log)
 
         def __load_err_view_log(self):
                 textbuffer = self.w_log_errors_textview.get_buffer()
