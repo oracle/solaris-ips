@@ -373,7 +373,8 @@ def trans_publish(repo_uri, fargs):
                         error(_("Manifest does not set fmri and " +
                             "--fmri-in-manifest specified"))
                         return 1
-                pkg_name = pkg.fmri.PkgFmri(m["pkg.fmri"]).get_short_fmri()
+                pkg_name = pkg.fmri.PkgFmri(m["pkg.fmri"],
+                    "5.11").get_short_fmri()
 
         xport, pub = setup_transport_and_pubs(repo_uri)
         t = trans.Transaction(repo_uri, pkg_name=pkg_name,
