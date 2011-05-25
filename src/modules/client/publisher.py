@@ -2363,6 +2363,8 @@ pkg unset-publisher %s
                 for i in range(0, cert.get_ext_count()):
                         ext = cert.get_ext_at(i)
                         name = ext.get_name()
+                        if name == "UNDEF":
+                                continue
                         v = ext.get_value().upper()
                         # Check whether the extension name is recognized.
                         if name in SUPPORTED_EXTENSION_VALUES:
