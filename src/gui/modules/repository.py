@@ -34,6 +34,8 @@ PUBCERT_REVOKED_STR = _("Revoked")
 PUBCERT_NOTSET_HASH = "HASH-NOTSET" #No L10N required
 PUBCERT_NOTAVAILABLE = _("Not available")
 
+PREFERRED_PRIORITY = 0
+
 import sys
 import os
 import pango
@@ -221,6 +223,7 @@ class Repository(progress.GuiProgressTracker):
                 self.w_manage_publishers_dialog.set_icon(self.parent.window_icon)
                 self.w_manage_publishers_details = \
                     builder.get_object("manage_publishers_details")
+                self.w_manage_publishers_details.set_wrap_mode(gtk.WRAP_WORD)
                 manage_pub_details_buf =  self.w_manage_publishers_details.get_buffer()
                 manage_pub_details_buf.create_tag("level0", weight=pango.WEIGHT_BOLD)
                 self.w_manage_add_btn =  builder.get_object("manage_add")
@@ -1580,6 +1583,9 @@ class Repository(progress.GuiProgressTracker):
                 itr = model.get_iter(path)
                 if itr == None:
                         return
+                pub = model.get_value(itr, enumerations.PUBLISHER_OBJECT)
+                if pub.sys_pub:
+                        return
                 is_sticky = model.get_value(itr, enumerations.PUBLISHER_STICKY)
                 changed = model.get_value(itr, enumerations.PUBLISHER_STICKY_CHANGED)
                 model.set_value(itr, enumerations.PUBLISHER_STICKY, not is_sticky)
@@ -1598,6 +1604,9 @@ class Repository(progress.GuiProgressTracker):
                     enumerations.PUBLISHER_PRIORITY_CHANGED)
                 if preferred:
                         return
+                pub = model.get_value(itr, enumerations.PUBLISHER_OBJECT)
+                if pub.sys_pub:
+                        return
                 enabled = model.get_value(itr, enumerations.PUBLISHER_ENABLED)
                 changed = model.get_value(itr, enumerations.PUBLISHER_ENABLE_CHANGED)
                 model.set_value(itr, enumerations.PUBLISHER_ENABLED, not enabled)
@@ -1611,45 +1620,78 @@ class Repository(progress.GuiProgressTracker):
                         return True
                 return False
 
-        def __enable_disable_remove_btn(self, itr):
-                if itr:
-                        if self.__is_at_least_one_entry(self.w_publishers_treeview):
-                                self.w_manage_remove_btn.set_sensitive(True)
-                                return
-                self.w_manage_remove_btn.set_sensitive(False)
+        def __enable_disable_remove_modify_btn(self, itr, model):
+                if itr == None:
+                        return
+                remove_val = False
+                modify_val = False
+                if self.__is_at_least_one_entry(self.w_publishers_treeview):
+                        pub = model.get_value(itr,
+                                enumerations.PUBLISHER_OBJECT)
+                        if not  pub.sys_pub:
+                                current_priority = model.get_value(itr,
+                                    enumerations.PUBLISHER_PRIORITY_CHANGED)
+                                if current_priority != PREFERRED_PRIORITY:
+                                        remove_val = True
+                                modify_val = True
+                self.w_manage_modify_btn.set_sensitive(modify_val)
+                self.w_manage_remove_btn.set_sensitive(remove_val)
 
         def __enable_disable_updown_btn(self, itr, model):
                 up_enabled = True
                 down_enabled = True
                 sorted_size = len(self.w_publishers_treeview.get_model())
-                i = 0
 
                 if itr:
                         enabled = model.get_value(itr,
                             enumerations.PUBLISHER_ENABLED)
-                        cur_priority = model.get_value(itr,
+                        current_priority = model.get_value(itr,
                             enumerations.PUBLISHER_PRIORITY_CHANGED)
-                        self.__enable_disable_remove_btn(itr)
-                        if cur_priority == 0:
-                                self.__enable_disable_remove_btn(None)
+                        is_sys_pub = model.get_value(itr,
+                            enumerations.PUBLISHER_OBJECT).sys_pub
+                        next_sys_pub = False
+                        prev_sys_pub = False
+                        path = model.get_path(itr)
+                        next_itr = model.iter_next(itr)
+                        if next_itr:
+                                next_pub = model.get_value(next_itr,
+                                    enumerations.PUBLISHER_OBJECT)
+                                if next_pub.sys_pub:
+                                        next_sys_pub = True
+                        if path[0] > 0:
+                                prev_path = (path[0] - 1,)
+                                prev_itr = model.get_iter(prev_path)
+                                prev_pub = model.get_value(prev_itr,
+                                    enumerations.PUBLISHER_OBJECT)
+                                if prev_pub.sys_pub:
+                                        prev_sys_pub = True
+             
+                        if current_priority == PREFERRED_PRIORITY:
                                 up_enabled = False
-                                for row in self.w_publishers_treeview.get_model():
-                                        if i == 1:
-                                                down_enabled = \
-                                                    row[enumerations.PUBLISHER_ENABLED]
-                                                break
-                                        i += 1
-                        elif cur_priority == 1 and not enabled:
+                                if next_sys_pub or is_sys_pub:
+                                        down_enabled = False
+                                else:
+                                        if next_itr:
+                                                down_enabled = model.get_value(
+                                                    next_itr, 
+                                                    enumerations.PUBLISHER_ENABLED)
+                        elif (current_priority == PREFERRED_PRIORITY + 1) and not enabled:
                                 up_enabled = False
                                 down_enabled = True
-                                if cur_priority == sorted_size - 1:
+                                if current_priority == sorted_size - 1:
                                         down_enabled = False
-                        elif cur_priority == sorted_size - 1:
+                        elif current_priority == sorted_size - 1:
                                 up_enabled = True
                                 down_enabled = False
+
                         if sorted_size == 1:
                                 up_enabled = False
                                 down_enabled = False
+                        else:
+                                if next_sys_pub or is_sys_pub:
+                                        down_enabled = False 
+                                if prev_sys_pub or is_sys_pub:
+                                        up_enabled = False 
                 self.w_manage_up_btn.set_sensitive(up_enabled)
                 self.w_manage_down_btn.set_sensitive(down_enabled)
 
@@ -2027,13 +2069,14 @@ class Repository(progress.GuiProgressTracker):
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
                 pub = self.repository_modify_publisher
                 repo = pub.repository
-                pub.alias = alias
-                errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
-                errors += self.__update_pub_certs()
-                errors += self.__update_pub_sig_policy()
                 try:
+                        if pub.alias != alias:
+                                pub.alias = alias
+                        errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
+                        errors += self.__update_pub_certs()
+                        errors += self.__update_pub_sig_policy()
                         errors += self.__update_publisher(pub, new_publisher=False)
-                except api_errors.UnknownRepositoryPublishers, e:
+                except api_errors.ApiException, e:
                         errors.append((pub, e))
                 self.progress_stop_thread = True
                 if len(errors) > 0:
@@ -2085,13 +2128,10 @@ class Repository(progress.GuiProgressTracker):
                 itr, model = self.__get_selected_publisher_itr_model()
                 if itr and model:
                         self.__enable_disable_updown_btn(itr, model)
+                        self.__enable_disable_remove_modify_btn(itr, model)
                         self.__update_publisher_details(
                             model.get_value(itr, enumerations.PUBLISHER_OBJECT),
                             self.w_manage_publishers_details)
-                        if 0 == model.get_value(itr,
-                            enumerations.PUBLISHER_PRIORITY_CHANGED):
-                                itr = None
-                self.__enable_disable_remove_btn(itr)
 
         def __on_mirror_selection_changed(self, selection, widget):
                 model_itr = selection.get_selected()
@@ -2339,21 +2379,21 @@ class Repository(progress.GuiProgressTracker):
         def __on_manage_move_up_clicked(self, widget):
                 before_name = None
                 itr, model = self.__get_selected_publisher_itr_model()
-                cur_priority = model.get_value(itr,
+                current_priority = model.get_value(itr,
                             enumerations.PUBLISHER_PRIORITY_CHANGED)
-                cur_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                current_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
                 for element in model:
-                        if cur_priority == \
+                        if current_priority == \
                             element[enumerations.PUBLISHER_PRIORITY_CHANGED]:
                                 element[
                                     enumerations.PUBLISHER_PRIORITY_CHANGED] -= 1
                         elif element[enumerations.PUBLISHER_PRIORITY_CHANGED] \
-                            == cur_priority - 1 :
+                            == current_priority - 1 :
                                 before_name = element[enumerations.PUBLISHER_NAME]
                                 element[
                                     enumerations.PUBLISHER_PRIORITY_CHANGED] += 1
                 self.priority_changes.append([enumerations.PUBLISHER_MOVE_BEFORE,
-                    cur_name, before_name])
+                    current_name, before_name])
                 self.__enable_disable_updown_btn(itr, model)
                 self.__move_to_cursor()
 
@@ -2366,21 +2406,21 @@ class Repository(progress.GuiProgressTracker):
         def __on_manage_move_down_clicked(self, widget):
                 after_name = None
                 itr, model = self.__get_selected_publisher_itr_model()
-                cur_priority = model.get_value(itr,
+                current_priority = model.get_value(itr,
                             enumerations.PUBLISHER_PRIORITY_CHANGED)
-                cur_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                current_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
                 for element in model:
-                        if cur_priority == \
+                        if current_priority == \
                             element[enumerations.PUBLISHER_PRIORITY_CHANGED]:
                                 element[
                                     enumerations.PUBLISHER_PRIORITY_CHANGED] += 1
                         elif element[enumerations.PUBLISHER_PRIORITY_CHANGED] \
-                            == cur_priority + 1 :
+                            == current_priority + 1 :
                                 after_name = element[enumerations.PUBLISHER_NAME]
                                 element[
                                     enumerations.PUBLISHER_PRIORITY_CHANGED] -= 1
                 self.priority_changes.append([enumerations.PUBLISHER_MOVE_AFTER,
-                    cur_name, after_name])
+                    current_name, after_name])
                 self.__enable_disable_updown_btn(itr, model)
                 self.__move_to_cursor()
 
@@ -2490,15 +2530,21 @@ class Repository(progress.GuiProgressTracker):
                         return
                 details_buffer = details_view.get_buffer()
                 details_buffer.set_text("")
-                uri_s_itr = details_buffer.get_start_iter()
+                uri_itr = details_buffer.get_start_iter()
                 repo = pub.repository
                 num = len(repo.origins)
+                if pub.sys_pub:
+                        details_buffer.insert_with_tags_by_name(uri_itr,
+                            _("System Publisher"),
+                            "level0")
+                        sys_pub_str = _("Cannot be modified or removed.")
+                        details_buffer.insert(uri_itr, "\n%s\n" % sys_pub_str)
                 origin_txt = ngettext("Origin:\n", "Origins:\n", num)
-                details_buffer.insert_with_tags_by_name(uri_s_itr,
+                details_buffer.insert_with_tags_by_name(uri_itr,
                     origin_txt, "level0")
                 uri_itr = details_buffer.get_end_iter()
                 for origin in repo.origins:
-                        details_buffer.insert(uri_itr, "%s\n" % origin.uri)
+                        details_buffer.insert(uri_itr, "%s\n" % str(origin))
 
         def __show_errors(self, errors, msg_type=gtk.MESSAGE_ERROR, title = None):
                 error_msg = ""
@@ -2784,8 +2830,18 @@ class Repository(progress.GuiProgressTracker):
         def __toggle_data_function(column, renderer, model, itr, data):
                 if itr:
                         # Do not allow to remove the publisher of first priority search
-                        renderer.set_property("sensitive", (0 != model.get_value(itr, 
-                            enumerations.PUBLISHER_PRIORITY_CHANGED)))
+                        # or if it is a system publisher
+                        val = True
+                        priority = model.get_value(itr, 
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)
+                        if priority == PREFERRED_PRIORITY:
+                                val = False
+                        else:
+                                pub = model.get_value(itr, 
+                                    enumerations.PUBLISHER_OBJECT)
+                                if pub.sys_pub:
+                                        val = False
+                        renderer.set_property("sensitive", val)
 
         @staticmethod
         def __get_registration_uri(repo):
