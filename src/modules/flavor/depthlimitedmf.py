@@ -63,7 +63,7 @@ class ModuleInfo(object):
 
 class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
-        def __init__(self, proto_dir, *args, **kwargs):
+        def __init__(self, install_dir, *args, **kwargs):
                 """Produce a module finder that ignores PYTHONPATH and only
                 reports the direct imports of a module.
 
@@ -85,9 +85,10 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 # Remove any paths that start with the defined python paths.
                 new_path = [
                     fp
-                    for fp in sys.path
+                    for fp in sys.path[1:]
                     if not self.startswith_path(fp, py_path)
                 ]
+                new_path.append(install_dir)
 
                 if run_paths:
                         # add our detected runpath into the user-supplied one
@@ -95,15 +96,8 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         new_path = base.insert_default_runpath(new_path,
                             run_paths)
 
-                # Map the run paths into the proto area.
-                new_path = [
-                    os.path.join(proto_dir, fp.lstrip("/"))
-                    for fp in new_path
-                ]
-
                 modulefinder.ModuleFinder.__init__(self, path=new_path,
                     *args, **kwargs)
-                self.proto_dir = proto_dir
 
         @staticmethod
         def startswith_path(path, lst):
@@ -217,6 +211,14 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
         def import_hook(self, name, caller=None, fromlist=None, level=-1):
                 """Find all the modules that importing name will import."""
+
+                # Special handling for os.path is needed because the os module
+                # manipulates sys.modules directly to provide both os and
+                # os.path.
+                if name == "os.path":
+                        self.msg(2, "bypassing os.path import - importing os "
+                            "instead", name, caller, fromlist, level)
+                        name = "os"
 
                 self.msg(3, "import_hook", name, caller, fromlist, level)
                 parent = self.determine_parent(caller, level=level)

@@ -59,6 +59,10 @@ class TestDependencyAnalyzer(pkg5unittest.Pkg5TestCase):
             "pkg_path":
                 "usr/lib/python2.6/vendor-packages/pkg_test/client/__init__.py",
             "bypass_path": "pkgdep_test/file.py",
+            "relative_dependee":
+                "usr/lib/python2.6/vendor-packages/pkg_test/client/bar.py",
+            "relative_depender":
+                "usr/lib/python2.6/vendor-packages/pkg_test/client/foo.py",
             "runpath_mod_path": "opt/pkgdep_runpath/__init__.py",
             "runpath_mod_test_path": "opt/pkgdep_runpath/pdtest.py",
             "script_path": "lib/svc/method/svc-pkg-depot",
@@ -129,6 +133,14 @@ file NOHASH group=bin mode=0755 owner=root path=%(pkg_path)s
         python_mod_manf = """ \
 file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path)s
 file NOHASH group=bin mode=0755 owner=root path=%(py_mod_path24)s
+""" % paths
+
+        relative_ext_depender_manf = """ \
+file NOHASH group=bin mode=0755 owner=root path=%(relative_depender)s
+""" % paths
+        relative_int_manf = """ \
+file NOHASH group=bin mode=0755 owner=root path=%(relative_dependee)s
+file NOHASH group=bin mode=0755 owner=root path=%(relative_depender)s
 """ % paths
 
         variant_manf_1 = """ \
@@ -884,6 +896,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     "#!/usr/bin/python")
                 self.make_proto_text_file("%s/cProfile.py" % pdir,
                     self.python_module_text)
+                self.make_proto_text_file("%s/pkg_test/client/foo.py" % pdir,
+                    "#!/usr/bin/python\nimport bar")
+                self.make_proto_text_file("%s/pkg_test/client/bar.py" % pdir,
+                    "#!/usr/bin/python\n")
                 # install these in non-sys.path locations
                 self.make_proto_text_file(self.paths["bypass_path"],
                     self.python_bypass_text)
@@ -891,6 +907,11 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     "#!/usr/bin/python2.6")
                 self.make_proto_text_file(self.paths["runpath_mod_test_path"],
                     "#!/usr/bin/python2.6")
+
+        def make_broken_python_test_file(self, py_version):
+                pdir = "usr/lib/python%s/vendor-packages" % py_version
+                self.make_proto_text_file("%s/cProfile.py" % pdir,
+                    "#!/usr/bin/python\n\\1" + self.python_module_text)
                 
 	def make_smf_test_files(self):
                 for manifest in self.smf_paths.keys():
@@ -1281,7 +1302,9 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                                         suffix = path_suffixes[bn]
                                         for p in d.run_paths:
                                                 self.assert_(
-                                                    p.endswith(suffix),
+                                                    p.endswith(suffix) or
+                                                    p == os.path.dirname(
+                                                    self.paths["pkg_path"]),
                                                     "suffix %s not found in "
                                                     "paths for %s: %s" %
                                                     (suffix, bn, " ".join(
@@ -1318,6 +1341,96 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     [self.proto_dir], {}, [], convert=False)
                 self.assert_(es != 0, "Unexpected errors reported: %s" % es)
                 self.assert_(ds != 2, "Unexpected deps reported: %s" % ds)
+
+        def test_python_relative_import_generation(self):
+                """This is a test for bug 14094.  It ensures that a python
+                dependency's paths include the directory into which the file
+                will be delivered."""
+
+                t_path = self.make_manifest(
+                    self.relative_ext_depender_manf)
+                self.make_python_test_files(2.6)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=True,
+                    convert=False)
+
+                pddt = "pkg.debug.depend.type"
+                pddp = "pkg.debug.depend.path"
+                pddf = "pkg.debug.depend.file"
+
+                mod_suffs = ["/__init__.py", ".py", ".pyc", ".pyo", ".so",
+                    "module.so"]
+                expected_deps = set(["bar%s" % s for s in mod_suffs])
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assertEqual(len(ds), 2)
+                got_relative_import = False
+                for d in ds:
+                        if d.attrs[pddt] == "script":
+                                continue
+                        self.assertEqual(d.attrs[pddt], "python")
+                        self.assertEqualDiff(expected_deps, set(d.attrs[pddf]))
+                        ep = os.path.dirname(self.paths["relative_depender"])
+                        if ep not in d.attrs[pddp]:
+                                raise RuntimeError("Expected %s to be in the "
+                                    "list of pkg.debug.depend.path attribute "
+                                    "values, but it wasn't seen." % ep)
+
+                t_path = self.make_manifest(
+                    self.relative_int_manf)
+                self.assert_(os.path.exists(os.path.join(self.proto_dir,
+                    self.paths["relative_dependee"])))
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=True,
+                    convert=False)
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assertEqual(len(ds), 2, "Expected two dependencies, "
+                    "got:\n%s" % "\n".join([str(d) for d in ds]))
+                for d in ds:
+                        self.assertEqual(d.attrs[pddt], "script", "Got this "
+                            "dependency which wasn't of the expected type:%s" %
+                            d)
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
+                if es != []:
+                        raise RuntimeError("Got errors in results:" +
+                            "\n".join([str(s) for s in es]))
+                self.assertEqual(ms, {})
+                self.assertEqual(len(ds), 3)
+                got_relative_import = False
+                for d in ds:
+                        if d.attrs[pddt] == "script":
+                                continue
+                        self.assertEqual(d.attrs[pddt], "python")
+                        self.assertEqualDiff(expected_deps, set(d.attrs[pddf]))
+                        ep = os.path.dirname(self.paths["relative_depender"])
+                        if ep not in d.attrs[pddp]:
+                                raise RuntimeError("Expected %s to be in the "
+                                    "list of pkg.debug.depend.path attribute "
+                                    "values, but it wasn't seen." % ep)
+
+        def test_bug_18031(self):
+                """Test that an python file which python cannot import due to a
+                syntax error doesn't cause a traceback."""
+
+                t_path = self.make_manifest(self.python_mod_manf)
+                self.make_broken_python_test_file(2.4)
+                self.make_broken_python_test_file(2.6)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], convert=False)
+                self.assert_(es != 2, "Unexpected errors reported: %s" % es)
+                self.assert_(ds != 0, "Unexpected deps reported: %s" % ds)
+                for e in es:
+                        self.debug(str(e))
 
         def test_variants_1(self):
                 """Test that a file which satisfies a dependency only under a
@@ -1610,10 +1723,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
-                if es[0].file_path != \
-                    os.path.join(self.proto_dir, self.paths["curses_path"]):
+                if es[0].file_path != self.paths["curses_path"]:
                         raise RuntimeError("Wrong file was found missing:\n%s" %
                             es[0])
+                self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assertEqual(ms, {})
                 self.assert_(len(d_map) == 0)
 
@@ -1668,10 +1781,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
-                if es[0].file_path != \
-                    os.path.join(self.proto_dir, self.paths["syslog_path"]):
+                if es[0].file_path != self.paths["syslog_path"]:
                         raise RuntimeError("Wrong file was found missing:\n%s" %
                             es[0])
+                self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assert_(len(ms) == 0)
                 self.assert_(len(ds) == 1)
 
@@ -1739,10 +1852,10 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                 if len(es) != 1:
                         raise RuntimeError("Got errors in results:" +
                             "\n".join([str(s) for s in es]))
-                if es[0].file_path != \
-                    os.path.join(self.proto_dir, self.paths["indexer_path"]):
+                if es[0].file_path != self.paths["indexer_path"]:
                         raise RuntimeError("Wrong file was found missing:\n%s" %
                             es[0])
+                self.assertEqual(es[0].dirs, [self.proto_dir])
                 self.assertEqual(len(ds), 0)
                 self.assertEqual(len(ms), 0)
 

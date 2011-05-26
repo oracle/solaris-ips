@@ -483,6 +483,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=i38
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=global variant.debug=True
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.arch=foo variant.opensolaris.zone=nonglobal variant.debug=False
 """
+
         bug_18172_top = """\
 set name=pkg.fmri value=top@0.5.11,5.11-1
 depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=usr/lib/brand/shared/dsconvert pkg.debug.depend.type=script type=require
@@ -531,6 +532,77 @@ file NOHASH path=usr/lib/brand/shared/dsconvert mode=0755
 depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=usr/lib/brand/shared/dsconvert pkg.debug.depend.type=script type=require
 """
 
+        bug_18315_link1_manf = """ \
+set name=pkg.fmri value=link1@1,5.11-1
+link path=lib/64 target=amd64
+"""
+
+        bug_18315_link2_manf = """ \
+set name=pkg.fmri value=link2@1,5.11-1
+link path=lib/64 target=amd64
+"""
+
+        bug_18315_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+"""
+
+        bug_18315_dependee_manf = """ \
+set name=pkg.fmri value=dependee@1,5.11-1
+file NOHASH path=lib/amd64/libc.so.1
+"""
+
+        bug_18315_var_link1_manf = """ \
+set name=pkg.fmri value=link1@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=i386
+link path=lib/64 target=amd64 variant.arch=sparc
+"""
+
+        bug_18315_var_link2_manf = """ \
+set name=pkg.fmri value=link2@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=i386
+link path=lib/64 target=amd64 variant.arch=sparc
+"""
+
+        bug_18315_var_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+"""
+
+        bug_18315_var_dependee_manf = """ \
+set name=pkg.fmri value=dependee@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+file NOHASH path=lib/amd64/libc.so.1
+"""
+
+        bug_18315_var_link3_manf = """ \
+set name=pkg.fmri value=link3@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=i386
+"""
+
+        bug_18315_var_link4_manf = """ \
+set name=pkg.fmri value=link4@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=i386 variant.opensolaris.zone=global
+"""
+
+        bug_18315_var_link5_manf = """ \
+set name=pkg.fmri value=link5@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=foo
+"""
+
         misc_files = ["tmp/foo"]
 
         def setUp(self):
@@ -539,6 +611,46 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
 
                 self.image_create(self.rurl)
                 self.api_obj = self.get_img_api_obj()
+
+        def test_broken_manifests(self):
+                """Test that resolving manifests which have strange or
+                unexpected depend actions doesn't cause a traceback."""
+
+                bad_require_dep_manf = """\
+set name=pkg.fmri value=badreq@1,5.11
+depend fmri=pkg://// type=require
+"""
+                m1_path = self.make_manifest(bad_require_dep_manf)
+                pkg_deps, errs = dependencies.resolve_deps([m1_path],
+                    self.api_obj)
+                self.assertEqual(len(errs), 1)
+                err_text = """\
+The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
+	pkg:////
+"""
+                self.assertEqualDiff(err_text, str(errs[0]))
+
+                bad_require_any_dep_manf = """\
+set name=pkg.fmri value=badreq@1,5.11
+depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
+"""
+                m1_path = self.make_manifest(bad_require_any_dep_manf)
+                pkg_deps, errs = dependencies.resolve_deps([m1_path],
+                    self.api_obj)
+                self.assertEqual(len(errs), 1)
+                err_text = """\
+The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
+	pkg:////
+	pkg:////////
+"""
+                self.assertEqualDiff(err_text, str(errs[0]))
+
+        def test_resolve_permissions(self):
+                """Test that a manifest that pkgdepend resolve can't access
+                doesn't cause a traceback."""
+
+                m1_path = self.make_manifest(self.hardlink1_manf_deps)
+                self.pkgdepend_resolve("-m %s" % m1_path, su_wrap=True, exit=1)
 
         def test_resolve_cross_package(self):
                 """test that cross dependencies between published packages
@@ -655,7 +767,8 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                     (d.attrs["fmri"], d))
                 if errs:
                         raise RuntimeError("Got the following unexpected "
-                            "errors:\n%s" % "\n".join(["%s" % (e,) for e in errs]))
+                            "errors:\n%s" % "\n".join([
+                            "%s" % (e,) for e in errs]))
                 self.assertEqual(len(pkg_deps), 3)
                 self.assertEqual(len(pkg_deps[m1_path]), 2)
                 self.assertEqual(len(pkg_deps[m2_path]), 0)
@@ -774,8 +887,8 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                 for mf_path in [col_path, col_fullpath_path]:
                         pkg_deps, errs = dependencies.resolve_deps(
                             [mf_path, both_path], self.api_obj)
-                        __check_results(pkg_deps, errs, "pkg:/sat_both", both_path,
-                            mf_path)
+                        __check_results(pkg_deps, errs, "pkg:/sat_both",
+                            both_path, mf_path)
 
                         pkg_deps, errs = dependencies.resolve_deps(
                             [mf_path, py_path], self.api_obj)
@@ -784,11 +897,11 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
 
                         pkg_deps, errs = dependencies.resolve_deps(
                             [mf_path, pyc_path], self.api_obj)
-                        __check_results(pkg_deps, errs, "pkg:/sat_pyc", pyc_path,
-                            mf_path)
+                        __check_results(pkg_deps, errs, "pkg:/sat_pyc",
+                            pyc_path, mf_path)
 
-                        # This resolution should fail because files which satisfy the
-                        # dependency are delivered in two packages.
+                        # This resolution should fail because files which
+                        # satisfy the dependency are delivered in two packages.
                         pkg_deps, errs = dependencies.resolve_deps(
                             [mf_path, py_path, pyc_path], self.api_obj)
                         self.assertEqual(len(pkg_deps), 3)
@@ -802,7 +915,8 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                                     for k in pkg_deps
                                                 ]))
                         if len(errs) != 2:
-                                raise RuntimeError("Didn't get two errors:\n%s" %
+                                raise RuntimeError("Didn't get two "
+                                    "errors:\n%s" %
                                     "\n".join(str(e) for e in errs))
                         for e in errs:
                                 if isinstance(e,
@@ -811,11 +925,15 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                                 if d.attrs["fmri"] not in \
                                                     ("pkg:/sat_py",
                                                     "pkg:/sat_pyc"):
-                                                        raise RuntimeError("Unexpected "
-                                                            "dependency action:%s" % d)
+                                                        raise RuntimeError(
+                                                            "Unexpected "
+                                                            "dependency "
+                                                            "action:%s" % d)
                                         self.assertEqual(
-                                            e.source.attrs["%s.file" % self.depend_dp],
-                                            ["search_storage.py", "search_storage.pyc",
+                                            e.source.attrs["%s.file" %
+                                                self.depend_dp],
+                                            ["search_storage.py",
+                                            "search_storage.pyc",
                                             "search_storage/__init__.py"])
                                 elif isinstance(e,
                                     dependencies.UnresolvedDependencyError):
@@ -823,11 +941,12 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                         self.assertEqual(
                                             e.file_dep.attrs[
                                                 "%s.file" % self.depend_dp],
-                                            ["search_storage.py", "search_storage.pyc",
+                                            ["search_storage.py",
+                                            "search_storage.pyc",
                                             "search_storage/__init__.py"])
                                 else:
-                                        raise RuntimeError("Unexpected error:%s" % e)
-
+                                        raise RuntimeError(
+                                            "Unexpected error:%s" % e)
 
         def test_bug_11518(self):
                 """Test that resolving against an installed, cached, manifest
@@ -1209,7 +1328,8 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                 with open(res_path, "r") as fh:
                         s = fh.read()
                 s = s.splitlines()
-                self.assertEqualDiff("\n".join(sorted(manf)),
+                self.assertEqualDiff("\n".join(sorted(
+                    [l for l in manf if "require-any" not in l])),
                     "\n".join(sorted(s)))
 
         def test_bug_18130(self):
@@ -1219,7 +1339,7 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                 VA = "variant.arch"
                 VOZ = "variant.opensolaris.zone"
                 VD = "variant.debug"
-                
+
                 d_path = self.make_manifest(self.bug_18130_dep)
 
                 # Test that a single variant with two values is collapsed
@@ -1463,7 +1583,8 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                 got_l2 = False
                 got_l3 = False
                 for d in pkg_deps[top_path]:
-                        if d.attrs["fmri"].startswith("pkg:/dest"):
+                        pfmri = d.attrs["fmri"]
+                        if pfmri.startswith("pkg:/dest"):
                                 self.assertEqual(
                                     d.attrs[dependencies.files_prefix],
                                     ["usr/lib/isaexec"])
@@ -1473,12 +1594,12 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                 self.assertEqual(
                                     d.attrs[dependencies.type_prefix], "script")
                                 got_top = True
-                        elif d.attrs["fmri"].startswith("pkg:/ksh"):
+                        elif pfmri.startswith("pkg:/ksh"):
                                 got_l1 = True
-                        elif d.attrs["fmri"].startswith("pkg:/l2"):
+                        elif pfmri.startswith("pkg:/l2"):
                                 got_l2 = True
                         else:
-                                self.assert_(d.attrs["fmri"].startswith(
+                                self.assert_(pfmri.startswith(
                                     "pkg:/l3"))
                                 got_l3 = True
                 self.assert_(got_top and got_l1 and got_l2 and got_l3, "Got "
@@ -1516,8 +1637,9 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                 got_cs2 = False
                 got_ksh = False
                 for d in pkg_deps[zones_path]:
-                        if d.attrs["fmri"].startswith("pkg:/cs"):
-                                self.assert_(d.attrs["fmri"].endswith("-2"))
+                        pfmri = d.attrs["fmri"]
+                        if pfmri.startswith("pkg:/cs"):
+                                self.assert_(pfmri.endswith("-2"))
                                 self.assertEqual(
                                     d.attrs[dependencies.files_prefix],
                                     ["usr/lib/isaexec"])
@@ -1528,7 +1650,7 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                                     d.attrs[dependencies.type_prefix], "script")
                                 got_cs2 = True
                         else:
-                                self.assert_(d.attrs["fmri"].startswith(
+                                self.assert_(pfmri.startswith(
                                     "pkg:/ksh"))
                                 self.assertEqual(
                                     d.attrs[dependencies.files_prefix],
@@ -1540,6 +1662,407 @@ depend fmri=__TBD pkg.debug.depend.file=ksh pkg.debug.depend.path=usr/bin pkg.de
                     "of dependencies but missed one of the expected ones. "
                     "Deps were:\n%s" %
                     "\n".join([str(d) for d in pkg_deps[zones_path]]))
+
+        def test_bug_18315_1(self):
+                """Test that when two packages deliver a link which is needed in
+                a dependency, a require-any dependency is created."""
+
+                l1_path = self.make_manifest(self.bug_18315_link1_manf)
+                l2_path = self.make_manifest(self.bug_18315_link2_manf)
+                der_path = self.make_manifest(self.bug_18315_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [l1_path, l2_path, der_path, dee_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 2,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        if d.attrs["type"] == "require":
+                                self.assert_(d.attrs["fmri"].startswith(
+                                    "pkg:/dependee"))
+                        else:
+                                self.assertEqual(d.attrs["type"], "require-any")
+                                self.assertEqual(len(d.attrs["fmri"]), 2)
+                                fmri0 = d.attrs["fmri"][0]
+                                fmri1 = d.attrs["fmri"][1]
+                                self.assert_(
+                                    (fmri0.startswith("pkg:/link1") and
+                                    fmri1.startswith("pkg:/link2")) or
+                                    (fmri0.startswith("pkg:/link2") and
+                                    fmri1.startswith("pkg:/link1")))
+
+        def test_bug_18315_2(self):
+                """Test that variants are handled correctly when multiple
+                packages deliver a link under various combinations of
+                variants."""
+
+                lv1_path = self.make_manifest(self.bug_18315_var_link1_manf)
+                lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
+                lv3_path = self.make_manifest(self.bug_18315_var_link3_manf)
+                l1_path = self.make_manifest(self.bug_18315_var_link4_manf)
+                l2_path = self.make_manifest(self.bug_18315_var_link5_manf)
+                der_path = self.make_manifest(self.bug_18315_var_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_var_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([l1_path, l2_path,
+                    der_path, dee_path, lv1_path, lv2_path, lv3_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 7)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 5,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        if d.attrs["type"] == "require":
+                                if d.attrs.get("variant.arch", None) == "foo":
+                                        self.assert_(d.attrs["fmri"].startswith(
+                                            "pkg:/link5"))
+                                else:
+                                        self.assert_(d.attrs["fmri"].startswith(
+                                            "pkg:/dependee"))
+                                continue
+                        self.assertEqual(d.attrs["type"], "require-any")
+                        if d.attrs["variant.arch"] == "sparc":
+                                self.assertEqual(len(d.attrs["fmri"]), 2)
+                        elif d.attrs["variant.opensolaris.zone"] == "nonglobal":
+                                self.assertEqual(d.attrs["variant.arch"],
+                                    "i386")
+                                self.assertEqual(len(d.attrs["fmri"]), 3)
+                        else:
+                                self.assertEqual(
+                                    d.attrs["variant.opensolaris.zone"],
+                                    "global")
+                                self.assertEqual(d.attrs["variant.arch"],
+                                    "i386")
+                                self.assertEqual(len(d.attrs["fmri"]), 4)
+
+        def test_bug_18318_1(self):
+                """Test that require-any dependencies are correctly removed when
+                no variants are involved and a manual dependency has been set on
+                one of the members of a require-any dependency."""
+
+                bug_18318_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1 type=require
+"""
+                l1_path = self.make_manifest(self.bug_18315_link1_manf)
+                l2_path = self.make_manifest(self.bug_18315_link2_manf)
+                der_path = self.make_manifest(bug_18318_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [l1_path, l2_path, der_path, dee_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 2,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        self.assertEqual(d.attrs["type"], "require")
+                        if d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        else:
+                                self.assertEqual(d.attrs["fmri"], "link1")
+
+                # Test that things work when the order of the require-any and
+                # require dependencies are changed and when the require
+                # dependency is on the second fmri instead of the first.
+                bug_18318_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+depend fmri=link2 type=require
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+"""
+                der_path = self.make_manifest(bug_18318_depender_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [l1_path, l2_path, der_path, dee_path], self.api_obj,
+                    use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 2,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        self.assertEqual(d.attrs["type"], "require")
+                        if d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        else:
+                                self.assertEqual(d.attrs["fmri"], "link2")
+
+        def test_bug_18318_2(self):
+                """Test that a manually tagged dependency cancels out
+                require-any dependencies which contain that fmri."""
+
+                bug_18318_var_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1 type=require
+"""
+                lv1_path = self.make_manifest(self.bug_18315_var_link1_manf)
+                lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
+                lv3_path = self.make_manifest(self.bug_18315_var_link3_manf)
+                l1_path = self.make_manifest(self.bug_18315_var_link4_manf)
+                l2_path = self.make_manifest(self.bug_18315_var_link5_manf)
+                der_path = self.make_manifest(bug_18318_var_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_var_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([l1_path, l2_path,
+                    der_path, dee_path, lv1_path, lv2_path, lv3_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 7)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 3,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        self.assertEqual(d.attrs["type"], "require")
+                        if d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        elif d.attrs["fmri"].startswith("pkg:/link5"):
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "link")
+                        else:
+                                self.assertEqual(d.attrs["fmri"],"link1")
+
+        def test_bug_18318_3(self):
+                """Test that a manually tagged dependency with variants cancels
+                out require-any dependencies which contain that fmri."""
+
+                bug_18318_var_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1 type=require variant.arch=sparc
+"""
+                lv1_path = self.make_manifest(self.bug_18315_var_link1_manf)
+                lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
+                lv3_path = self.make_manifest(self.bug_18315_var_link3_manf)
+                l1_path = self.make_manifest(self.bug_18315_var_link4_manf)
+                l2_path = self.make_manifest(self.bug_18315_var_link5_manf)
+                der_path = self.make_manifest(bug_18318_var_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_var_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([l1_path, l2_path,
+                    der_path, dee_path, lv1_path, lv2_path, lv3_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 7)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 5,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        if d.attrs.get("variant.opensolaris.zone", None) == \
+                            "nonglobal":
+                                self.assertEqual(d.attrs["variant.arch"],
+                                    "i386")
+                                self.assertEqual(len(d.attrs["fmri"]), 3)
+                        elif d.attrs.get("variant.opensolaris.zone", None) == \
+                            "global":
+                                self.assertEqual(d.attrs["variant.arch"],
+                                    "i386")
+                                self.assertEqual(len(d.attrs["fmri"]), 4)
+                        elif d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        elif d.attrs["fmri"].startswith("pkg:/link5"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "link")
+                        else:
+                                self.assertEqual(d.attrs["fmri"], "link1")
+                                self.assertEqual(d.attrs["type"], "require")
+
+                # Now test with the manual dependency valid when variant.arch is
+                # i386, this should clobber more require-any dependencies.
+                bug_18318_var_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1 type=require variant.arch=i386
+"""
+
+                der_path = self.make_manifest(bug_18318_var_depender_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([l1_path, l2_path,
+                    der_path, dee_path, lv1_path, lv2_path, lv3_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 7)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 4,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        if d.attrs.get("variant.arch", None) == "sparc":
+                                self.assertEqual(len(d.attrs["fmri"]), 2)
+                        elif d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        elif d.attrs["fmri"].startswith("pkg:/link5"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "link")
+                        else:
+                                self.assertEqual(d.attrs["fmri"], "link1")
+                                self.assertEqual(d.attrs["type"], "require")
+
+        def test_bug_18318_4(self):
+                """Test that automatically generated dependencies can cancel
+                require-any dependencies."""
+
+                bug_18318_var_depender_manf = """ \
+set name=pkg.fmri value=depender@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib/64 pkg.depend.reason=usr/bin/binary pkg.debug.depend.type=elf type=require
+depend fmri=link1@2 fmri=link2@2 fmri=link3@2 fmri=link4@2 type=require-any variant.arch=i386
+depend fmri=link2@2 fmri=link3@2 fmri=link4@2 type=require-any
+depend fmri=__TBD pkg.debug.depend.reason=usr/bin/bar pkg.debug.depend.file=usr/bin/baz pkg.debug.depend.type=hardlink type=require variant.arch=i386
+"""
+
+                bug_18318_var_link1_manf = """ \
+set name=pkg.fmri value=link1@1,5.11-1
+set name=variant.arch value=i386 value=sparc value=foo
+set name=variant.opensolaris.zone value=global value=nonglobal
+link path=lib/64 target=amd64 variant.arch=i386
+link path=lib/64 target=amd64 variant.arch=sparc
+file NOHASH path=usr/bin/baz
+"""
+
+                lv1_path = self.make_manifest(bug_18318_var_link1_manf)
+                lv2_path = self.make_manifest(self.bug_18315_var_link2_manf)
+                lv3_path = self.make_manifest(self.bug_18315_var_link3_manf)
+                l1_path = self.make_manifest(self.bug_18315_var_link4_manf)
+                l2_path = self.make_manifest(self.bug_18315_var_link5_manf)
+                der_path = self.make_manifest(bug_18318_var_depender_manf)
+                dee_path = self.make_manifest(self.bug_18315_var_dependee_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([l1_path, l2_path,
+                    der_path, dee_path, lv1_path, lv2_path, lv3_path],
+                    self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 7)
+                self.assertEqual(len(pkg_deps[l1_path]), 0)
+                self.assertEqual(len(pkg_deps[l2_path]), 0)
+                self.assertEqual(len(pkg_deps[dee_path]), 0)
+                self.assertEqual(len(pkg_deps[der_path]), 5,
+                    "Got wrong number of pkgdeps for the dependent package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[der_path]]))
+                for d in pkg_deps[der_path]:
+                        if d.attrs.get("variant.arch", None) == "sparc":
+                                self.assertEqual(len(d.attrs["fmri"]), 2)
+                        elif d.attrs["type"] == "require-any":
+                                self.assertEqual(len(d.attrs["fmri"]), 3)
+                        elif d.attrs["fmri"].startswith("pkg:/dependee"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "elf")
+                        elif d.attrs["fmri"].startswith("pkg:/link5"):
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix], "link")
+                        else:
+                                self.assert_(
+                                    d.attrs["fmri"].startswith("pkg:/link1"))
+                                self.assertEqual(d.attrs["type"], "require")
+                                self.assertEqual(
+                                    d.attrs[dependencies.type_prefix],
+                                    "hardlink")
+
+        def test_bug_18359(self):
+                """Test that if package A needs another package to provide a
+                link so one of its files can depend on the other, that A doesn't
+                have a dependency on itself."""
+
+                file_manf = """ \
+set name=pkg.fmri value=file1@1,5.11-1
+file NOHASH path=usr/lib/amd64/lib.so.1
+file NOHASH path=usr/bin/prog
+depend fmri=__TBD pkg.debug.depend.reason=usr/bin/prog pkg.debug.depend.file=usr/lib/64/lib.so.1 pkg.debug.depend.type=elf type=require
+"""
+
+                link_manf = """ \
+set name=pkg.fmri value=link1@1,5.11-1
+link path=usr/lib/64 target=amd64
+"""
+                file_path = self.make_manifest(file_manf)
+                link_path = self.make_manifest(link_manf)
+
+                pkg_deps, errs = dependencies.resolve_deps([file_path,
+                    link_path], self.api_obj, use_system=False)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[link_path]), 0)
+                self.assertEqual(len(pkg_deps[file_path]), 1,
+                    "Got wrong number of pkgdeps for the file package. "
+                    "Deps were:\n%s" %
+                    "\n".join([str(d) for d in pkg_deps[file_path]]))
+                dep = pkg_deps[file_path][0]
+                self.assertEqual(dep.attrs["type"], "require")
+                self.assert_(dep.attrs["fmri"], "link1")
+                self.assertEqual(dep.attrs[self.depend_dp + ".type"], "link")
+
 
 if __name__ == "__main__":
         unittest.main()

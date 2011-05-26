@@ -1591,18 +1591,20 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, exit=exit, comment=comment,
                     prefix=prefix, su_wrap=su_wrap, out=out, stderr=stderr)
 
-        def pkgdepend_resolve(self, args, exit=0, comment=""):
+        def pkgdepend_resolve(self, args, exit=0, comment="", su_wrap=False):
                 ops = ""
                 if "-R" not in args:
                         ops = "-R %s" % self.get_img_path()
                 cmdline = "%s/usr/bin/pkgdepend %s resolve %s" % (
                     g_proto_area, ops, args)
-                return self.cmdline_run(cmdline, comment=comment, exit=exit)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap)
 
-        def pkgdepend_generate(self, args, exit=0, comment=""):
+        def pkgdepend_generate(self, args, exit=0, comment="", su_wrap=False):
                 cmdline = "%s/usr/bin/pkgdepend generate %s" % (g_proto_area,
                     args)
-                return self.cmdline_run(cmdline, exit=exit, comment=comment)
+                return self.cmdline_run(cmdline, comment=comment, exit=exit,
+                    su_wrap=su_wrap)
 
         def pkglint(self, args, exit=0, comment="", testrc=True):
                 if testrc:

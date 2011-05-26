@@ -176,6 +176,9 @@ def generate(args):
                     "following line:\n%(line)s") % { 'manifest': manf ,
                     'line': e.actionstr})
                 return 1
+        except api_errors.ApiException, e:
+                error(e)
+                return 1
 
         if echo_manf:
                 fh = open(manf, "rb")
@@ -209,9 +212,9 @@ def resolve(args, img_dir):
         verbose = False
         use_system_to_resolve = True
         try:
-            opts, pargs = getopt.getopt(args, "d:mos:Sv")
+                opts, pargs = getopt.getopt(args, "d:mos:Sv")
         except getopt.GetoptError, e:
-            usage(_("illegal global option -- %s") % e.opt)
+                usage(_("illegal global option -- %s") % e.opt)
         for opt, arg in opts:
                 if opt == "-d":
                         out_dir = arg
@@ -232,9 +235,9 @@ def resolve(args, img_dir):
         manifest_paths = [os.path.abspath(fp) for fp in pargs]
 
         for manifest in manifest_paths:
-            if not os.path.isfile(manifest):
-                usage(_("The manifest file %s could not be found.") % manifest,
-                    retcode=2)
+                if not os.path.isfile(manifest):
+                        usage(_("The manifest file %s could not be found.") %
+                            manifest, retcode=2)
 
         if out_dir:
                 out_dir = os.path.abspath(out_dir)
@@ -318,12 +321,16 @@ pkgdepend -R / %(args)s
                 return 1
 
         try:
-            pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst,
-                prune_attrs=not verbose, use_system=use_system_to_resolve)
+                pkg_deps, errs = dependencies.resolve_deps(manifest_paths,
+                    api_inst, prune_attrs=not verbose,
+                    use_system=use_system_to_resolve)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
-            error(_("Could not parse one or more manifests because of the " +
-                "following line:\n%s") % e.actionstr)
-            return 1
+                error(_("Could not parse one or more manifests because of "
+                    "the following line:\n%s") % e.actionstr)
+                return 1
+        except api_errors.ApiException, e:
+                error(e)
+                return 1
 
         ret_code = 0
 

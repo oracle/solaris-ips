@@ -92,7 +92,7 @@ class MultipleDefaultRunPaths(Exception):
 
 class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
-        def __init__(self, proto_dir, *args, **kwargs):
+        def __init__(self, install_dir, *args, **kwargs):
                 """Produce a module finder that ignores PYTHONPATH and only
                 reports the direct imports of a module.
 
@@ -114,9 +114,10 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 # Remove any paths that start with the defined python paths.
                 new_path = [
                     fp
-                    for fp in sys.path
+                    for fp in sys.path[1:]
                     if not self.startswith_path(fp, py_path)
                 ]
+                new_path.append(install_dir)
 
                 if run_paths:
                         # insert our default search path where the
@@ -134,15 +135,8 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                                 pass
                         new_path = run_paths
 
-                # Map the standard system paths into the proto area.
-                new_path = [
-                    os.path.join(proto_dir, fp.lstrip("/"))
-                    for fp in new_path
-                ]
-
                 modulefinder.ModuleFinder.__init__(self, path=new_path,
                     *args, **kwargs)
-                self.proto_dir = proto_dir
 
         @staticmethod
         def startswith_path(path, lst):
@@ -251,6 +245,14 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
         def import_hook(self, name, caller=None, fromlist=None, level=-1):
                 """Find all the modules that importing name will import."""
 
+                # Special handling for os.path is needed because the os module
+                # manipulates sys.modules directly to provide both os and
+                # os.path.
+                if name == "os.path":
+                        self.msg(2, "bypassing os.path import - importing os "
+                            "instead", name, caller, fromlist, level)
+                        name = "os"
+
                 self.msg(3, "import_hook", name, caller, fromlist, level)
                 parent = self.determine_parent(caller)
                 q, tail = self.find_head_package(parent, name)
@@ -348,14 +350,16 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
 
 if __name__ == "__main__":
         """Usage:
-              depthlimitedmf24.py <proto_dir> <script> [ run_path run_path ... ]
+              depthlimitedmf24.py <install_path> <script>
+                  [ run_path run_path ... ]
         """
         run_paths = sys.argv[3:]
         try:
                 mf = DepthLimitedModuleFinder(sys.argv[1], run_paths=run_paths)
                 loaded_modules = mf.run_script(sys.argv[2])
                 for res in set([
-                    (tuple(m.get_file_names()), tuple(m.dirs)) for m in loaded_modules
+                    (tuple(m.get_file_names()), tuple(m.dirs))
+                    for m in loaded_modules
                 ]):
                         print "DEP %s" % (res,)
                 missing, maybe =  mf.any_missing_maybe()

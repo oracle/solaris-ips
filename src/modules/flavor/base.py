@@ -44,12 +44,18 @@ class MissingFile(DependencyAnalysisError):
         """Exception that is raised when a dependency checker can't find the
         file provided."""
 
-        def __init__(self, file_path):
+        def __init__(self, file_path, dirs=None):
                 Exception.__init__(self)
                 self.file_path = file_path
+                self.dirs = dirs
 
         def __str__(self):
-                return _("Couldn't find %s") % self.file_path
+                if not self.dirs:
+                        return _("Couldn't find '%s'") % self.file_path
+                else:
+                        return _("Couldn't find '%s' in any of the specified "
+                            "search directories:\n%s") % (self.file_path,
+                            "\n".join(["\t" + d for d in sorted(self.dirs)]))
 
 class MultipleDefaultRunpaths(DependencyAnalysisError):
         """Exception that is raised when multiple $PGKDEPEND_RUNPATH tokens

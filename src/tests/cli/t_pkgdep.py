@@ -32,11 +32,13 @@ import subprocess
 import sys
 import unittest
 
+import pkg.actions as actions
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
+DDP = base.Dependency.DEPEND_DEBUG_PREFIX
 
 class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
@@ -102,16 +104,13 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
 
                 cur_ver = "%s.%s" % sys.version_info[0:2]
                 if cur_ver == ver:
-                        # Add the directory from which pkgdepend will be run.
-                        res =  [os.path.join(proto, "usr","bin")]
                         # Remove any paths that start with the defined python
                         # paths.
-                        res.extend(
-                            sorted(set([
+                        res = sorted(set([
                             fp for fp in sys.path
                             if not mf.DepthLimitedModuleFinder.startswith_path(
                                 fp, self.py_path)
-                            ])))
+                            ]))
                         return res
 
                 sp = subprocess.Popen(
@@ -132,7 +131,7 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                 ]))
 
         @staticmethod
-        def __make_paths(added, paths):
+        def __make_paths(added, paths, install_path):
                 """ Append a dependency path for "added" to each of
                 the paths in the list "paths" """
 
@@ -140,13 +139,18 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                     ("%(pfx)s.path=%(p)s/%(added)s" % {
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "p":p.lstrip("/"),
+                        "p": p.lstrip("/"),
                         "added": added
                     }).rstrip("/")
                     for p in paths
-                ])
+                ] + [("%(pfx)s.path=%(p)s/%(added)s" % {
+                    "pfx":
+                        base.Dependency.DEPEND_DEBUG_PREFIX,
+                    "p": os.path.dirname(install_path),
+                    "added": added,
+                }).rstrip("/")])
 
-        def make_res_manf_1(self, proto_area):
+        def make_res_manf_1(self, proto_area, reason, include_os=False):
                 return ("depend %(pfx)s.file=python "
                     "%(pfx)s.path=usr/bin fmri=%(dummy_fmri)s "
                     "type=require %(pfx)s.reason=%(reason)s "
@@ -157,17 +161,20 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                     "%(pfx)s.path=var/log "
                     "type=require %(pfx)s.reason=baz "
                     "%(pfx)s.type=hardlink\n" +
-                    self.make_pyver_python_res("2.6", proto_area)) % {
+                    self.make_pyver_python_res("2.6", proto_area, reason,
+                        include_os=include_os)) % {
                     "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
                     "dummy_fmri": base.Dependency.DUMMY_FMRI,
-                    "reason": "%(reason)s"
+                    "reason": reason
                 }
 
-        def make_full_res_manf_1(self, proto_area):
-                return self.make_res_manf_1(proto_area) + self.test_manf_1
+        def make_full_res_manf_1(self, proto_area, reason, include_os=False):
+                return self.make_res_manf_1(proto_area, reason,
+                    include_os=include_os) + self.test_manf_1
 
         err_manf_1 = """\
-Couldn't find %s/usr/xpg4/lib/libcurses.so.1
+Couldn't find 'usr/xpg4/lib/libcurses.so.1' in any of the specified search directories:
+	%s
 """
         res_manf_2 = """\
 depend %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo %(pfx)s.type=elf
@@ -184,8 +191,10 @@ depend %(pfx)s.file=syslog %(pfx)s.path=var/log fmri=%(dummy_fmri)s type=require
 variant.arch:foo
 """
 
-        def make_full_res_manf_1_mod_proto(self, proto_area):
-                return self.make_full_res_manf_1(proto_area) + \
+        def make_full_res_manf_1_mod_proto(self, proto_area, reason,
+            include_os=False):
+                return self.make_full_res_manf_1(proto_area, reason,
+                    include_os=include_os) + \
                     """\
 depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require
 """ % {
@@ -193,17 +202,17 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
-        def make_res_payload_1(self, proto_area):
+        def make_res_payload_1(self, proto_area, reason):
                 return ("depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=python "
                     "%(pfx)s.path=usr/bin "
                     "%(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=script type=require\n" +
-                    self.make_pyver_python_res("2.6", proto_area)) % {
+                    self.make_pyver_python_res("2.6", proto_area, reason)) % {
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "dummy_fmri":base.Dependency.DUMMY_FMRI,
-                        "reason": "%(reason)s"
+                        "reason": reason
                     }
 
         two_variant_deps = """\
@@ -367,7 +376,8 @@ depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug
 }
 
         miss_payload_manf_error = """\
-Couldn't find %(path_pref)s/tmp/file/should/not/exist/here/foo
+Couldn't find 'foo/bar.py' in any of the specified search directories:
+	%(path_pref)s
 """
 
         double_plat_error = """\
@@ -439,22 +449,20 @@ file NOHASH path=platform/foo/baz/no_such_named_file
 """
 
         run_path_errors = """\
-The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require has paths which resolve to multiple packages under this combination of variants:
-%(vc)s
-The actions are as follows:
+The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require has paths which resolve to multiple packages.
+The actions are:
 	depend fmri=pkg:/sat_bar_libc %(pfx)s.file=platform/bar/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
 	depend fmri=pkg:/sat_foo_libc %(pfx)s.file=platform/foo/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
-%(unresolved_path)s has unresolved dependency 'depend fmri=__TBD %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require' under the following combinations of variants:
+%(unresolved_path)s has unresolved dependency 'depend fmri=__TBD %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require'.
 """ % {
     "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
     "unresolved_path":"%(unresolved_path)s",
-    "vc":"%(vc)s"
 }
 
         amb_path_errors = """\
 The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
-%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require' under the following combinations of variants:
+%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require'.
 """ % {
     "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
@@ -467,6 +475,26 @@ The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %
 import pkg.indexer as indexer
 import pkg.search_storage as ss
 from pkg.misc import EmptyI
+"""
+
+        python_amd_text = """\
+#!/usr/bin/amd64/python2.6
+
+import pkg.indexer as indexer
+"""
+
+        python_amd_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/bin/amd64/python2.6-config
+"""
+
+        python_sparcv9_text = """\
+#!/usr/bin/sparcv9/python2.6
+
+from pkg.misc import EmptyI
+"""
+
+        python_sparcv9_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/bin/sparcv9/python2.6-config
 """
 
         py_in_usr_bin_manf = """\
@@ -482,6 +510,7 @@ file NOHASH group=bin mode=0644 owner=root path=usr/bin/pkg \
 """
 import pkg.indexer as indexer
 import pkg.search_storage as ss
+import os.path
 from pkg.misc import EmptyI
 """
 
@@ -516,7 +545,7 @@ depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bi
 """
 
         unsatisfied_error_1 = """\
-%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require' under the following combinations of variants:
+%s has unresolved dependency 'depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require'.
 """
 
         unsatisfied_error_2 = """\
@@ -540,7 +569,8 @@ file NOHASH path=usr/bin/unsatisfied owner=root group=staff mode=0555
 depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
 """
 
-        def make_pyver_python_res(self, ver, proto_area=None):
+        def make_pyver_python_res(self, ver, proto_area, reason,
+            include_os=False):
                 """Create the python dependency results with paths expected for
                 the pyver tests.
 
@@ -551,8 +581,8 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                 """
                 vp = self.get_ver_paths(ver, proto_area)
                 self.debug("ver_paths is %s" % vp)
-                pkg_path = self.__make_paths("pkg", vp)
-                return ("depend fmri=%(dummy_fmri)s "
+                pkg_path = self.__make_paths("pkg", vp, reason)
+                res = ("depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=indexer.py "
                     "%(pfx)s.file=indexer.pyc "
                     "%(pfx)s.file=indexer.pyo "
@@ -570,14 +600,13 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "%(pfx)s.file=misc.so "
                     "%(pfx)s.file=misc/__init__.py "
                     "%(pfx)s.file=miscmodule.so " +
-
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
 
                     "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=pkg/__init__.py " +
-                    self.__make_paths("", vp) +
+                    self.__make_paths("", vp, reason) +
                     " %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=python type=require\n"
 
@@ -588,14 +617,27 @@ depend fmri=pkg:/satisfying_manf type=require variant.foo=baz
                     "%(pfx)s.file=search_storage.so "
                     "%(pfx)s.file=search_storage/__init__.py "
                     "%(pfx)s.file=search_storagemodule.so " +
-
                     pkg_path +
                     " %(pfx)s.reason=%(reason)s "
-                    "%(pfx)s.type=python type=require\n") % {
+                    "%(pfx)s.type=python type=require\n")
+
+                if include_os:
+                        res += (
+                            "depend fmri=%(dummy_fmri)s "
+                            "%(pfx)s.file=os.py "
+                            "%(pfx)s.file=os.pyc "
+                            "%(pfx)s.file=os.pyo "
+                            "%(pfx)s.file=os.so "
+                            "%(pfx)s.file=os/__init__.py "
+                            "%(pfx)s.file=osmodule.so " +
+                            self.__make_paths("", vp, reason) +
+                            " %(pfx)s.reason=%(reason)s "
+                            "%(pfx)s.type=python type=require\n")
+                return res % {
                     "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
                     "dummy_fmri": base.Dependency.DUMMY_FMRI,
-                    "reason": "%(reason)s"
-               }
+                    "reason": reason
+                }
 
         pyver_24_script_full_manf_1 = """\
 file NOHASH group=bin mode=0755 owner=root path=%(reason)s
@@ -607,7 +649,7 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %
     "bin_ver": "%(bin_ver)s"
 }
 
-        def pyver_res_full_manf_1(self, ver, proto):
+        def pyver_res_full_manf_1(self, ver, proto, reason, include_os=False):
                 """Build the full manifest results for the pyver tests."""
 
                 if ver == "2.4":
@@ -615,7 +657,8 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %
                 else:
                         raise RuntimeError("Unexcepted version for "
                             "pyver_res_full_manf_1 %s" % ver)
-                return tmp + self.make_pyver_python_res(ver, proto)
+                return tmp + self.make_pyver_python_res(ver, proto, reason,
+                    include_os=include_os)
 
         pyver_resolve_dep_manf = """
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py
@@ -893,6 +936,15 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     (self.test_proto_dir, pth))
 
         def check_res(self, expected, seen):
+                def pick_file(act):
+                        fs = act.attrs[DDP + ".file"]
+                        if isinstance(fs, basestring):
+                                fs = [fs]
+                        for f in fs:
+                                if f.endswith(".py") and "__init__" not in f:
+                                        return f
+                        return fs[0]
+
                 seen = seen.strip()
                 expected = expected.strip()
                 if seen == expected:
@@ -901,11 +953,71 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 expected = set(expected.splitlines())
                 seen_but_not_expected = self.__compare_res(seen, expected)
                 expected_but_not_seen = self.__compare_res(expected, seen)
-                self.assertEqualDiff(expected_but_not_seen,
-                    seen_but_not_expected)
+                try:
+                        self.assertEqualDiff(expected_but_not_seen,
+                            seen_but_not_expected)
+                except AssertionError, e:
+                        # This code is used to make the differences between
+                        # expected and seen depend actions with all their debug
+                        # information clearer.
+                        res = str(e)
+                        res += "\n\n\n"
+                        try:
+                                seen = [
+                                    actions.fromstr(a)
+                                    for a in seen_but_not_expected
+                                ]
+                                tmp = [
+                                    actions.fromstr(a)
+                                    for a in expected_but_not_seen
+                                ]
+                        except:
+                                raise e
+                        exp = dict([(pick_file(a), a) for a in tmp])
+                        new = set()
+                        conflicting = set()
+                        for a in seen:
+                                n = pick_file(a)
+                                t = "the results for %s differ in the " \
+                                    "following attributes:\n" % n
+                                if n in exp:
+                                        ea = exp[n]
+                                        for ak in a.attrs.keys():
+                                                if ak not in ea.attrs:
+                                                        t += "\thas an " \
+                                                            "unexpected " \
+                                                            "attribute %s\n" % \
+                                                            ak
+                                                        continue
+                                                av = a.attrs[ak]
+                                                ev = ea.attrs[ak]
+                                                if not isinstance(av, list):
+                                                        av = [av]
+                                                if not isinstance(ev, list):
+                                                        ev = [ev]
+                                                av = set(av)
+                                                ev = set(ev)
+                                                diffs = sorted([
+                                                    "%s:S" % d
+                                                    for d in
+                                                    (av - ev)
+                                                    ] + [
+                                                    "%s:E" % d
+                                                    for d in (ev - av)
+                                                ])
+                                                if diffs:
+                                                        t += "\t%s has " \
+                                                            "different " \
+                                                            "values:\n" % ak
+                                                        for d in diffs:
+                                                                t += "\t\t%s" \
+                                                                    "\n" % d
+                                res += t
+                        raise RuntimeError(res)
 
         def test_opts(self):
-                """Ensure that incorrect arguments don't cause a traceback."""
+                """Ensure that incorrect arguments or permissions errors don't
+                cause a traceback."""
 
                 proto = pkg5unittest.g_proto_area
                 self.pkgdepend_generate("-d %s" % proto, exit=2)
@@ -915,6 +1027,9 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     proto, exit=2)
                 self.pkgdepend_generate("-\?")
                 self.pkgdepend_generate("--help")
+                tp = self.make_manifest(self.test_manf_1)
+                self.pkgdepend_generate("-d %s %s" % (proto, tp),
+                    su_wrap=True, exit=1)
 
         def test_output(self):
                 """Check that the output is in the format expected."""
@@ -925,7 +1040,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.pkgdepend_generate("-d %s %s" %
                     (pkg5unittest.g_proto_area, tp), exit=1)
                 self.check_res(self.make_res_manf_1(
-                        pkg5unittest.g_proto_area) % {"reason": fp},
+                        pkg5unittest.g_proto_area, fp),
                     self.output)
                 self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
                     self.errout)
@@ -934,7 +1049,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     (pkg5unittest.g_proto_area, tp), exit=1)
                 self.check_res(
                     self.make_full_res_manf_1(
-                        pkg5unittest.g_proto_area) % {"reason": fp},
+                        pkg5unittest.g_proto_area, fp),
                     self.output)
                 self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
                     self.errout)
@@ -946,7 +1061,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     (self.test_proto_dir, tp))
                 self.check_res(
                     self.make_full_res_manf_1_mod_proto(
-                        pkg5unittest.g_proto_area)  % {"reason": fp},
+                        pkg5unittest.g_proto_area, fp),
                     self.output)
                 self.check_res("", self.errout)
 
@@ -1033,8 +1148,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
                      exit=1)
                 self.check_res(self.pyver_mismatch_results +
-                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
-                        {"reason": fp, "bin_ver": "2.6"},
+                    self.make_pyver_python_res("2.4", self.test_proto_dir, fp,
+                        include_os=True) % {"bin_ver": "2.6"},
                     self.output)
                 self.check_res(self.pyver_mismatch_errs % self.test_proto_dir,
                     self.errout)
@@ -1047,8 +1162,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.pkgdepend_generate("-m -d %s %s" %
                     (self.test_proto_dir, tp))
                 self.check_res(
-                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir) %
-                        {"reason": fp, "bin_ver": ""},
+                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir, fp,
+                        include_os=True) % {"reason": fp, "bin_ver": ""},
                     self.output)
                 self.check_res("", self.errout)
 
@@ -1059,8 +1174,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.pkgdepend_generate("-m -d %s %s" %
                     (self.test_proto_dir, tp))
                 self.check_res(
-                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir) %
-                        {"reason": fp, "bin_ver": "2.4"},
+                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir, fp,
+                        include_os=True) % {"reason": fp, "bin_ver": "2.4"},
                     self.output)
                 self.check_res("", self.errout)
 
@@ -1084,8 +1199,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
                 self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
                 self.check_res(
-                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
-                        {"reason": fp},
+                    self.make_pyver_python_res("2.4", self.test_proto_dir, fp,
+                        include_os=True),
                     self.output)
                 self.check_res("", self.errout)
 
@@ -1096,8 +1211,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 self.make_proto_text_file(fp, self.pyver_python_text % "")
                 self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp))
                 self.check_res(
-                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
-                        {"reason": fp},
+                    self.make_pyver_python_res("2.4", self.test_proto_dir, fp,
+                        include_os=True),
                     self.output)
                 self.check_res("", self.errout)
 
@@ -1135,7 +1250,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                             (self.test_proto_dir, tp))
                         self.check_res(
                             self.pyver_res_full_manf_1(py_ver,
-                                self.test_proto_dir) %
+                                self.test_proto_dir, fp) %
                                 {"bin_ver": "", "reason":fp},
                             self.output)
                         self.check_res("", self.errout)
@@ -1245,9 +1360,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 proto = pkg5unittest.g_proto_area
                 tp = self.make_manifest(self.payload_manf)
                 self.pkgdepend_generate("-d %s %s" % (proto, tp))
-                self.check_res(self.make_res_payload_1(proto) %\
-                        {"reason": "usr/lib/python2.6/foo/bar.py"},
-                    self.output)
+                self.check_res(self.make_res_payload_1(proto,
+                    "usr/lib/python2.6/foo/bar.py"), self.output)
                 self.check_res("", self.errout)
 
         def test_bug_11829(self):
@@ -1404,7 +1518,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     ["# %s" % l for l in [col_path, bar_path, foo_path]]),
                     self.output)
                 self.check_res(self.run_path_errors %
-                    {"unresolved_path": col_path, "vc": ""}, self.errout)
+                    {"unresolved_path": col_path}, self.errout)
 
                 self.pkgdepend_resolve("-o %s %s %s" %
                     (col_path, bar_path, bar2_path), exit=1)
@@ -1587,7 +1701,8 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     exit=1)
                 self.check_res("", self.output)
                 self.check_res("\n".join([
-                    "Couldn't find %s" % os.path.join(self.test_proto_dir, d)
+                    "Couldn't find '%s' in any of the specified search "
+                    "directories:\n\t%s" % (d, self.test_proto_dir)
                     for d in (curses, pam)]),
                     self.errout)
 
@@ -2360,6 +2475,83 @@ file NOHASH group=bin mode=0755 owner=root path=etc/file.py \
                     "same action in this manifest.")
                 self.check_res(expected, self.errout)
                 self.check_res("", self.output)
+
+        def test_bug_16271(self):
+                """Test that scripts which reference a specific platform in the
+                path to python are treated as python files which need
+                dependencies analyzed."""
+
+                self.make_proto_text_file("usr/bin/amd64/python2.6-config",
+                    self.python_amd_text)
+                mp = self.make_manifest(self.python_amd_manf)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
+                self.assertEqual(len(ds), 3, "\n".join([str(d) for d in ds]))
+                for d in ds:
+                        if d.attrs[DDP + ".type"] == "script":
+                                self.assertEqual(d.attrs[DDP + ".file"],
+                                    ["python2.6"])
+                                self.assertEqual(d.attrs[DDP + ".path"],
+                                    ["usr/bin/amd64"])
+                                continue
+                        self.assertEqual(d.attrs[DDP + ".type"], "python")
+
+                self.make_proto_text_file("usr/bin/sparcv9/python2.6-config",
+                    self.python_amd_text)
+                mp = self.make_manifest(self.python_sparcv9_manf)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
+                self.assertEqual(len(ds), 3, "\n".join([str(d) for d in ds]))
+                for d in ds:
+                        if d.attrs[DDP + ".type"] == "script":
+                                self.assertEqual(d.attrs[DDP + ".file"],
+                                    ["python2.6"])
+                                self.assertEqual(d.attrs[DDP + ".path"],
+                                    ["usr/bin/amd64"])
+                                continue
+                        self.assertEqual(d.attrs[DDP + ".type"], "python")
+
+        def test_bug_18011(self):
+                """Test that a missing file delivers a helpful error message."""
+
+                mp = self.make_manifest(self.python_amd_manf)
+                foo_dir = os.path.join(self.test_proto_dir, "foo")
+                bar_dir = os.path.join(self.test_proto_dir, "bar")
+                os.makedirs(foo_dir)
+                os.makedirs(bar_dir)
+                self.pkgdepend_generate("-d %s -d %s -d %s %s" % (
+                    self.test_proto_dir,foo_dir, bar_dir, mp), exit=1)
+                self.assertEqual("Couldn't find "
+                    "'usr/bin/amd64/python2.6-config' in any of the specified "
+                    "search directories:\n%s\n" % "\n".join(
+                    "\t" + d for d in sorted(
+                        [foo_dir, bar_dir, self.test_proto_dir])),
+                    self.errout)
+
+        def test_bug_18101(self):
+                """Test that importing os.path in a file using the system python
+                results in the right set of dependencies.  The test
+                test_python_combinations handles testing when python 2.4 is
+                used."""
+
+                # Set up the files for generate.
+                fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py"
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
+                mp = self.make_manifest(self.pyver_test_manf_1_non_ex %
+                    {"py_ver": "2.6"})
+
+                # Run generate and check the output.
+                self.pkgdepend_generate("-d %s %s" %
+                    (self.test_proto_dir, mp))
+                self.check_res(
+                    self.make_pyver_python_res("2.6",
+                        pkg5unittest.g_proto_area, fp, include_os=True) %
+                        {"bin_ver": "2.6"},
+                    self.output)
+                self.check_res("", self.errout)
+
 
 if __name__ == "__main__":
         unittest.main()

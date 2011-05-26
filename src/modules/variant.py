@@ -235,9 +235,8 @@ class VariantCombinations(object):
                 #  [(1, "b"), (2, "x"), (3, "n")],
                 #  [(1, "b"), (2, "y"), (3, "m")],
                 #  [(1, "b"), (2, "y"), (3, "n")]]
-                res = set()
-                for lst in tmp:
-                        res.add(frozenset(lst))
+                self.__combinations = [frozenset(l) for l in tmp]
+                res = set(self.__combinations)
                 if satisfied:
                         self.__sat_set = res
                 else:
@@ -268,6 +267,7 @@ class VariantCombinations(object):
                 vc.__sat_set = copy.copy(self.__sat_set)
                 vc.__not_sat_set = copy.copy(self.__not_sat_set)
                 vc.__simpl_template = self.__simpl_template
+                vc.__combinations = self.__combinations
                 return vc
 
         def is_empty(self):
@@ -314,12 +314,26 @@ class VariantCombinations(object):
 
         def mark_as_satisfied(self, vc):
                 """For all instances in vc, mark those instances as being
-                satisfied."""
+                satisfied.  Returns a boolean indicating whether any changes
+                have been made."""
 
-                for s in vc.__sat_set:
-                        if s in self.__not_sat_set:
-                                self.__not_sat_set.remove(s)
-                                self.__sat_set.add(s)
+                i = vc.__sat_set & self.__not_sat_set
+                if not i:
+                        return False
+                self.__not_sat_set -= i
+                self.__sat_set |= i
+                return True
+
+        def mark_as_unsatisfied(self, vc):
+                """For all satisfied instances in vc, mark those instances as
+                being unsatisfied."""
+
+                i = vc.__sat_set & self.__sat_set
+                if not i:
+                        return False
+                self.__sat_set -= i
+                self.__not_sat_set |= i
+                return True
 
         def mark_all_as_satisfied(self):
                 """Mark all instances as being satisfied."""
@@ -345,6 +359,29 @@ class VariantCombinations(object):
                                     "template:%s\nvct:%s" % \
                                     (self.__template, vct)
                 self.__simpl_template = vct
+
+        def split_combinations(self):
+                """Create one VariantCombination object for each possible
+                combination of variants.  This is useful when each combination
+                needs to be associated with other information."""
+
+                tmp = []
+                for c in self.__combinations:
+                        vc = VariantCombinations(self.__template, False)
+                        vc.__sat_set.add(c)
+                        vc.__not_sat_set = set()
+                        tmp.append(vc)
+                # If there weren't any combinations, then this is an empty
+                # variant combination, so just return a copy of ourselves.
+                if not tmp:
+                        tmp.append(copy.copy(self))
+                return tmp
+
+        def unsatisfied_copy(self):
+                """Create a copy of this variant combination, but make sure all
+                the variant combinations are marked as unsatisifed."""
+
+                return VariantCombinations(self.__template, False)
 
         def __calc_simple(self, sat):
                 """Given VariantCombinationTemplate to be simplified against,
@@ -449,8 +486,7 @@ class VariantCombinations(object):
                                         new_rel_set.add(frozenset(k))
                                 rel_set = new_rel_set
                 return rel_set
-                                        
 
         def __repr__(self):
-                return "VC Sat:%s Unsat:%s" % (sorted(self.sat_set),
-                    sorted(self.not_sat_set))
+                return "VC Sat:%s Unsat:%s" % (sorted(self.__sat_set),
+                    sorted(self.__not_sat_set))
