@@ -1349,8 +1349,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 continue
                 elif self.action == enumerations.REMOVE:
                         for pd in self.api_o.gen_plan_uninstall(
-                            self.list_of_packages,
-                            recursive_removal=False, noexecute=False):
+                            self.list_of_packages, noexecute=False):
                                 continue
                 elif self.action == enumerations.IMAGE_UPDATE:
                         # we are passing force, since we already checked if the

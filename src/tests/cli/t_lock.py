@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -117,9 +117,9 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Restart plan process.
                 api_obj2.reset()
-                for pd in api_obj2.gen_plan_uninstall(["foo"], False):
+                for pd in api_obj2.gen_plan_uninstall(["foo"]):
                         continue
-                for pd in api_obj.gen_plan_uninstall(["foo"], False):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
 
                 # Prepare second and first plan.
@@ -156,7 +156,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Now plan an uninstall using the API object.
                 api_obj.reset()
-                for pd in api_obj.gen_plan_uninstall(["foo"], False):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
                 api_obj.prepare()
 

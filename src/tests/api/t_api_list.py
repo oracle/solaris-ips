@@ -733,7 +733,7 @@ add set name=pkg.description value="%(desc)s"
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # uninstalling 'quux' and 'qux'.
-                for pd in api_obj.gen_plan_uninstall(["quux"], False):
+                for pd in api_obj.gen_plan_uninstall(["quux"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -769,7 +769,7 @@ add set name=pkg.description value="%(desc)s"
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
-                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                for pd in api_obj.gen_plan_uninstall(["*"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -946,7 +946,7 @@ add set name=pkg.description value="%(desc)s"
                 # LIST_INSTALLED_NEWEST.  corge, grault, qux, and
                 # quux should be listed since none of them are
                 # listed in an installed incorporation.
-                for pd in api_obj.gen_plan_uninstall(["corge"], False):
+                for pd in api_obj.gen_plan_uninstall(["corge"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -989,7 +989,7 @@ add set name=pkg.description value="%(desc)s"
                 # Now verify that publisher search order determines the entries
                 # that are listed when those entries are part of an installed
                 # incorporation.
-                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                for pd in api_obj.gen_plan_uninstall(["*"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -1192,7 +1192,7 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Reset image state for following tests.
-                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                for pd in api_obj.gen_plan_uninstall(["*"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -1232,7 +1232,7 @@ add set name=pkg.description value="%(desc)s"
                 self.assertPrettyEqual(returned, expected)
 
                 # Reset image state for following tests.
-                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                for pd in api_obj.gen_plan_uninstall(["*"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -1329,7 +1329,7 @@ add set name=pkg.description value="%(desc)s"
                                 p
                                 for p in pkgs
                                 if not p.startswith("corge@1.0")
-                            ], False):
+                            ]):
                                 continue
                         api_obj.prepare()
                         api_obj.execute_plan()

@@ -126,7 +126,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 59
+CLIENT_API_VERSION = 60
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -2127,7 +2127,7 @@ class CliTestCase(Pkg5TestCase):
 
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
-                for pd in api_obj.gen_plan_uninstall(pkg_list, False, **kwargs):
+                for pd in api_obj.gen_plan_uninstall(pkg_list, **kwargs):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 

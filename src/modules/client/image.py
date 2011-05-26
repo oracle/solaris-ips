@@ -3776,13 +3776,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     li_pkg_updates=li_pkg_updates)
 
         def make_uninstall_plan(self, op, progtrack, check_cancel, ip_mode,
-            noexecute, pkgs_to_uninstall, recursive_removal):
-                """Create uninstall plan to remove the specified packages;
-                do so recursively iff recursive_removal is set"""
+            noexecute, pkgs_to_uninstall):
+                """Create uninstall plan to remove the specified packages."""
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, pkgs_to_uninstall=pkgs_to_uninstall,
-                    recursive_removal=recursive_removal)
+                    ip_mode, noexecute, pkgs_to_uninstall=pkgs_to_uninstall)
 
         def make_update_plan(self, op, progtrack, check_cancel, ip_mode,
             noexecute, pkgs_update=None, reject_list=None):

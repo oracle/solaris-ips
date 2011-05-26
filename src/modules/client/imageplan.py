@@ -465,7 +465,7 @@ class ImagePlan(object):
                 self.__plan_install(li_pkg_updates=li_pkg_updates,
                     li_sync_op=True, reject_list=reject_list)
 
-        def plan_uninstall(self, pkgs_to_uninstall, recursive_removal=False):
+        def plan_uninstall(self, pkgs_to_uninstall):
                 self.__plan_op(self.PLANNED_UNINSTALL)
                 proposed_dict, self.__match_rm = self.__match_user_fmris(
                     pkgs_to_uninstall, self.MATCH_INST_VERSIONS)
@@ -491,8 +491,9 @@ class ImagePlan(object):
                     self.image.linked.extra_dep_actions(self.__new_excludes),
                     self.__progtrack)
 
-                new_vector, self.__new_avoid_obs = self.__pkg_solver.solve_uninstall([],
-                    proposed_removals, recursive_removal, self.__new_excludes)
+                new_vector, self.__new_avoid_obs = \
+                    self.__pkg_solver.solve_uninstall([],  proposed_removals,
+                    self.__new_excludes)
 
                 self.__fmri_changes = [
                     (a, b)

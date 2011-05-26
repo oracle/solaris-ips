@@ -88,7 +88,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 59
+CLIENT_API_VERSION = 60
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -152,7 +152,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ... ]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
-            "[-nrvq] [--no-be-activate] [--no-index] [--deny-new-be |\n"
+            "[-nvq] [--no-be-activate] [--no-index] [--deny-new-be |\n"
             "            --require-new-be] [--be-name name] pkg_fmri_pattern ...")
         basic_usage["update"] = _(
             "[-fnvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
@@ -1813,10 +1813,7 @@ opts_uninstall = \
     opts_table_li_ignore + \
     opts_table_no_index + \
     opts_table_nqv + \
-    opts_table_stage + \
-    [
-    ("r", "",               "recursive_removal",    False)
-]
+    opts_table_stage
 
 opts_audit_linked = \
     opts_table_li_no_psync + \
@@ -1984,7 +1981,7 @@ def install(op, api_inst, pargs,
 
 def uninstall(op, api_inst, pargs,
     be_activate, be_name, new_be, li_ignore, update_index, noexecute,
-    quiet, verbose, stage, recursive_removal):
+    quiet, verbose, stage):
         """Attempt to take package specified to DELETED state."""
 
         api_inst.progresstracker = get_tracker(quiet, verbose)
@@ -2002,8 +1999,7 @@ def uninstall(op, api_inst, pargs,
         return __api_op(op, api_inst, _li_ignore=li_ignore,
             _noexecute=noexecute, _quiet=quiet, _stage=stage,
             _verbose=verbose, be_activate=be_activate, be_name=be_name,
-            new_be=new_be, pkgs_to_uninstall=pargs,
-            recursive_removal=recursive_removal, update_index=update_index)
+            new_be=new_be, pkgs_to_uninstall=pargs, update_index=update_index)
 
 def update(op, api_inst, pargs,
     accept, be_activate, be_name, force, li_ignore, li_parent_sync,

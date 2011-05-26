@@ -1,3 +1,12 @@
+Version 60:
+Incompatible with clients using versions 0-59.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * Uninstall no longer supports recursive removal.  As such,
+          the recursive_removal parameter of plan_uninstall and
+          gen_plan_uninstall has been removed.
+
 Version 59:
 Compatible with clients using versions 57-59.
 

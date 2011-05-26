@@ -72,7 +72,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 59
+CURRENT_API_VERSION = 60
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -282,7 +282,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([57, 58, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -1218,20 +1218,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _noexecute=noexecute, _refresh_catalogs=False,
                     _update_index=False, li_pkg_updates=False)
 
-        def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
-            update_index=True, be_name=None, new_be=False, be_activate=True):
+        def plan_uninstall(self, pkg_list, noexecute=False, update_index=True,
+            be_name=None, new_be=False, be_activate=True):
                 """DEPRECATED.  use gen_plan_uninstall()."""
-                for pd in self.gen_plan_uninstall(
-                    pkgs_to_uninstall=pkg_list,
-                    recursive_removal=recursive_removal, noexecute=noexecute,
-                    update_index=update_index, be_name=be_name,
-                    new_be=new_be, be_activate=be_activate):
+                for pd in self.gen_plan_uninstall(pkgs_to_uninstall=pkg_list,
+                    noexecute=noexecute, update_index=update_index,
+                    be_name=be_name, new_be=new_be, be_activate=be_activate):
                         continue
                 return not self.planned_nothingtodo()
 
-        def gen_plan_uninstall(self, pkgs_to_uninstall, recursive_removal=False,
-            accept=False, be_activate=True, be_name=None, li_ignore=None,
-            new_be=False, noexecute=False, update_index=True):
+        def gen_plan_uninstall(self, pkgs_to_uninstall, accept=False,
+            be_activate=True, be_name=None, li_ignore=None, new_be=False,
+            noexecute=False, update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.
 
@@ -1246,9 +1244,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 'pkgs_to_uninstall' is a list of packages to uninstall.
 
-                'recursive_removal' controls whether recursive removal is
-                allowed.
-
                 For all other parameters, refer to the 'gen_plan_install'
                 function for an explanation of their usage and effects."""
 
@@ -1261,8 +1256,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _li_ignore=li_ignore, _li_parent_sync=False,
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=False, _update_index=update_index,
-                    pkgs_to_uninstall=pkgs_to_uninstall,
-                    recursive_removal=recursive_removal)
+                    pkgs_to_uninstall=pkgs_to_uninstall)
 
         def plan_change_varcets(self, variants=None, facets=None,
             noexecute=False, be_name=None, new_be=None, repos=None,

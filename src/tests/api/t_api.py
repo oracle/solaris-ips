@@ -169,7 +169,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.assertRaises(api_errors.PlanExistsException,
                     lambda *args, **kwargs: list(
                         api_obj.gen_plan_uninstall(*args, **kwargs)),
-                    ["foo"], False)
+                    ["foo"])
                 self.assertRaises(api_errors.PlanExistsException,
                     lambda *args, **kwargs: list(
                         api_obj.gen_plan_update(*args, **kwargs)))
@@ -232,7 +232,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                     api_obj.prepare)
                 self.assert_(api_obj.describe() is None)
 
-                for pd in api_obj.gen_plan_uninstall(["foo"], False):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
                 self.__try_bad_combinations_and_complete(api_obj)
                 api_obj.reset()
@@ -246,8 +246,6 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 self.pkgsend_bulk(self.rurl, self.foo10)
                 api_obj = self.image_create(self.rurl, prefix="bobcat")
-
-                recursive_removal = False
 
                 facets = facet.Facets({ "facet.devel": True })
                 for pd in api_obj.gen_plan_change_varcets(facets=facets):
@@ -301,21 +299,18 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("verify")
 
-                for pd in api_obj.gen_plan_uninstall(["foo"],
-                    recursive_removal):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
                 self.assert_(api_obj.describe() is not None)
                 api_obj.reset()
                 self.assert_(api_obj.describe() is None)
-                for pd in api_obj.gen_plan_uninstall(["foo"],
-                    recursive_removal):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
                 self.assert_(api_obj.describe() is not None)
                 api_obj.prepare()
                 api_obj.reset()
                 self.assert_(api_obj.describe() is None)
-                for pd in api_obj.gen_plan_uninstall(["foo"],
-                    recursive_removal):
+                for pd in api_obj.gen_plan_uninstall(["foo"]):
                         continue
                 self.assert_(api_obj.describe() is not None)
                 api_obj.prepare()
@@ -831,8 +826,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
 
                 # verify the old change uninstall interface
-                stuff_to_do = api_obj.plan_uninstall(["foo"], False,
-                    noexecute=False)
+                stuff_to_do = api_obj.plan_uninstall(["foo"], noexecute=False)
                 self.assertTrue(stuff_to_do)
                 api_obj.prepare()
                 try:
@@ -1071,7 +1065,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 # Finally, verify that an uninstall won't trigger license
                 # errors as acceptance should never be applied to it.
-                for pd in api_obj.gen_plan_uninstall(["*"], False):
+                for pd in api_obj.gen_plan_uninstall(["*"]):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()

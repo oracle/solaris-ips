@@ -14,7 +14,7 @@ SYNOPSIS
          --require-new-be] [--be-name name] [--reject pkg_fmri_pattern ...]
          pkg_fmri_pattern ...
 
-     /usr/bin/pkg uninstall [-nrvq] [--no-be-activate] [--no-index]
+     /usr/bin/pkg uninstall [-nvq] [--no-be-activate] [--no-index]
          [--deny-new-be | --require-new-be] [--be-name name]
          pkg_fmri_pattern ...
 
@@ -229,15 +229,10 @@ SUBCOMMANDS
           operation.  Rejected packages that are the target of group
           dependencies will be placed on the avoid list.
 
-     uninstall [-nrvq] [--no-be-activate] [--no-index] [--deny-new-be |
+     uninstall [-nvq] [--no-be-activate] [--no-index] [--deny-new-be |
        --require-new-be] [--be-name name] pkg_fmri_pattern ...
 
           Removes installed packages that match pkg_fmri_pattern.
-
-          With -r, recursively uninstall any packages that contain
-          'require' dependencies on the initial package.  (Packages
-          containing 'optional' or 'incorporate' dependencies are
-          not included in the removal.)
 
           If a package is the subject of a group dependency, uninstalling
           it will place it on the avoid list.  See the avoid subcommand

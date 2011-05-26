@@ -755,7 +755,7 @@ class PkgSolver(object):
                 return self.__cleanup((self.__elide_possible_renames(solution,
                     excludes), (self.__avoid_set, self.__obs_set)))
 
-        def solve_uninstall(self, existing_freezes, uninstall_list, recursive, excludes):
+        def solve_uninstall(self, existing_freezes, uninstall_list, excludes):
                 """Compute changes needed for uninstall"""
 
                 # Once solution has been returned or failure has occurred, a new
@@ -769,16 +769,7 @@ class PkgSolver(object):
                 renamed_set = orig_installed_set - \
                     self.__elide_possible_renames(orig_installed_set, excludes)
 
-                if recursive is True:
-                        needs_processing = set(uninstall_list) | renamed_set
-                        proposed_removals = set()
-
-                        while needs_processing:
-                                pfmri = needs_processing.pop()
-                                proposed_removals.add(pfmri)
-                                needs_processing |= self.__get_dependents(pfmri, excludes) - proposed_removals
-                else:
-                        proposed_removals = set(uninstall_list) | renamed_set
+                proposed_removals = set(uninstall_list) | renamed_set
 
                 # check for dependents
                 for pfmri in proposed_removals:

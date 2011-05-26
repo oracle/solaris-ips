@@ -499,27 +499,9 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall bar foo")
                 self.pkg("verify")
 
-        def test_recursive_uninstall(self):
-                """Install bar@1.0, dependent on foo@1.0, uninstall foo
-                recursively."""
-
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
-                    self.bar10))
-                self.image_create(self.rurl)
-
-                self.pkg("install bar@1.0")
-
-                # Here's the real part of the regression test;
-                # at this point foo and bar are installed, and
-                # bar depends on foo.  foo and bar should both
-                # be removed by this action.
-                self.pkg("uninstall -vr foo")
-                self.pkg("list bar", exit=1)
-                self.pkg("list foo", exit=1)
-
-        def test_nonrecursive_dependent_uninstall(self):
+        def test_dependent_uninstall(self):
                 """Trying to remove a package that's a dependency of another
-                package should fail if the uninstall isn't recursive."""
+                package should fail since uninstall isn't recursive."""
 
                 self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10))
                 self.image_create(self.rurl)
@@ -4351,7 +4333,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list")
                 self.pkg("info baz | grep test1")
                 self.pkg("info corge | grep test1")
-                self.pkg("uninstall -r corge")
+                self.pkg("uninstall baz corge")
 
                 # Next, verify that naming the specific publishers for a package
                 # and all of its dependencies will install the package from the
@@ -4360,7 +4342,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install pkg://test1/baz pkg://test2/corge")
                 self.pkg("info baz | grep test1")
                 self.pkg("info corge | grep test2")
-                self.pkg("uninstall -r corge")
+                self.pkg("uninstall baz corge")
 
                 # Finally, cleanup for the next test.
                 self.pkg("set-publisher -P test1")

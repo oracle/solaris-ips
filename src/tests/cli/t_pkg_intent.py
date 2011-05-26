@@ -138,10 +138,9 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                         api_obj.execute_plan()
 
         @staticmethod
-        def __do_uninstall(api_obj, fmris, recursive_removal=False,
-            noexecute=False):
+        def __do_uninstall(api_obj, fmris, noexecute=False):
                 api_obj.reset()
-                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal,
+                for pd in api_obj.gen_plan_uninstall(fmris,
                     noexecute=noexecute):
                         continue
                 if not noexecute:
@@ -302,7 +301,7 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                 api_obj.execute_plan()
 
                 # uninstall foo & bar
-                self.__do_uninstall(api_obj, ["foo"], True)
+                self.__do_uninstall(api_obj, ["foo", "bar"])
 
                 entries = self.get_intent_entries()
                 # Verify that foo11 was installed when upgrading to foo12.
@@ -318,13 +317,12 @@ class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
                     "new_fmri" : fmris["bar11"],
                     "old_fmri" : fmris["bar10"]
                 }))
-                # Verify that bar was uninstalled along w/ foo
+                # Verify that bar and foo were uninstalled
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
-                    "old_fmri" : fmris["bar11"]
+                    "old_fmri" : fmris["bar11"],
+                    "reference": "bar"
                 }))
-
-                # Verify that bar was uninstalled along w/ foo
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
                     "old_fmri" : fmris["foo12"],

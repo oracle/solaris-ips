@@ -219,9 +219,9 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.execute_plan()
 
         @staticmethod
-        def __do_uninstall(api_obj, fmris, recursive_removal=False):
+        def __do_uninstall(api_obj, fmris):
                 api_obj.reset()
-                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal):
+                for pd in api_obj.gen_plan_uninstall(fmris):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -667,40 +667,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 for pd in api_obj.gen_plan_update():
                         continue
 
-        def test_recursive_uninstall(self):
-                """Install bar@1.0, dependent on foo@1.0, uninstall foo
-                recursively."""
-
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.foo11,
-                    self.bar10))
-                api_obj = self.image_create(self.rurl)
-
-                self.__do_install(api_obj, ["bar@1.0"])
-
-                # Here's the real part of the regression test;
-                # at this point foo and bar are installed, and
-                # bar depends on foo.  foo and bar should both
-                # be removed by this action.
-                self.__do_uninstall(api_obj, ["foo"], True)
-
-                self.pkg("list bar", exit=1)
-                self.pkg("list foo", exit=1)
-
-        def test_nonrecursive_dependent_uninstall(self):
-                """Trying to remove a package that's a dependency of another
-                package should fail if the uninstall isn't recursive."""
-
-                self.pkgsend_bulk(self.rurl, (self.foo10, self.bar10))
-                api_obj = self.image_create(self.rurl)
-
-                self.__do_install(api_obj, ["bar@1.0"])
-
-                api_obj.reset()
-                self.assertRaises(api_errors.NonLeafPackageException,
-                    self.__do_uninstall, api_obj, ["foo"])
-                self.pkg("list bar")
-                self.pkg("list foo")
-
         def test_basics_5(self):
                 """ Add bar@1.1, install bar@1.0. """
 
@@ -1070,10 +1036,10 @@ class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
                             warnings))
 
         @staticmethod
-        def __do_uninstall(api_obj, fmris, recursive_removal=False):
+        def __do_uninstall(api_obj, fmris):
                 fmris = [str(f) for f in fmris]
                 api_obj.reset()
-                for pd in api_obj.gen_plan_uninstall(fmris, recursive_removal):
+                for pd in api_obj.gen_plan_uninstall(fmris):
                         continue
                 api_obj.prepare()
                 api_obj.execute_plan()
