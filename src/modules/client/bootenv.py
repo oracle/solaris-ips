@@ -22,6 +22,7 @@
 
 # Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
 
+import errno
 import os
 import tempfile
 
@@ -30,6 +31,7 @@ logger = global_settings.logger
 
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
+import pkg.portable as portable
 import pkg.pkgsubprocess as subprocess
 
 # Since pkg(1) may be installed without libbe installed
@@ -79,20 +81,9 @@ class BootEnv(object):
 
                 assert self.root != None
 
-                # Check for the old beList() API since pkg(1) can be
-                # back published and live on a system without the latest libbe.
-                beVals = be.beList()
-                if isinstance(beVals[0], int):
-                        rc, self.beList = beVals
-                else:
-                        self.beList = beVals
-
-                # Happens e.g. in zones (at least, for now)
-                if not self.beList or rc != 0:
-                        raise RuntimeError, "nobootenvironments"
-
                 # Need to find the name of the BE we're operating on in order
                 # to create a snapshot and/or a clone of the BE.
+                self.beList = self.get_be_list(raise_error=True)
 
                 for i, beVals in enumerate(self.beList):
                         # pkg(1) expects a directory as the target of an
@@ -245,18 +236,44 @@ class BootEnv(object):
                         raise api_errors.BENamingNotSupported(be_name)
 
         @staticmethod
-        def get_be_list():
+        def get_be_list(raise_error=False):
                 # Check for the old beList() API since pkg(1) can be
                 # back published and live on a system without the 
                 # latest libbe.
                 rc = 0
+
                 beVals = be.beList()
+                # XXX temporary workaround for ON bug #7043482 (needed for
+                # successful test suite runs on b166-b167).
+                if portable.util.get_canonical_os_name() == "sunos":
+                        for entry in os.listdir("/proc/self/path"):
+                                try:
+                                        int(entry)
+                                except ValueError:
+                                        # Only interested in file descriptors.
+                                        continue
+
+                                fpath = os.path.join("/proc/self/path", entry)
+                                try:
+                                        if os.readlink(fpath) == \
+                                            "/etc/dev/cro_db":
+                                                os.close(int(entry))
+                                except OSError, e:
+                                        if e.errno not in (errno.ENOENT,
+                                            errno.EBADFD):
+                                                raise
+
                 if isinstance(beVals[0], int):
                         rc, beList = beVals
                 else:
                         beList = beVals
                 if not beList or rc != 0:
+                        if raise_error:
+                                # Happens e.g. in zones (for now) or live CD
+                                # environment.
+                                raise RuntimeError, "nobootenvironments"
                         beList = []
+
                 return beList
 
         @staticmethod
