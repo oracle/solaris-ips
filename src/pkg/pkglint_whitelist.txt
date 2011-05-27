@@ -1,11 +1,3 @@
-ERROR opensolaris.manifest001.2   Missing attribute 'pkg.summary' in pkg://pkg5-nightly/auto_install
-ERROR opensolaris.manifest001.2   Missing attribute 'pkg.summary' in pkg://pkg5-nightly/babel_install
-ERROR opensolaris.manifest001.2   Missing attribute 'pkg.summary' in pkg://pkg5-nightly/server_install
-ERROR opensolaris.manifest001.2   Missing attribute 'pkg.summary' in pkg://pkg5-nightly/slim_install
-WARNING opensolaris.manifest001.1 Missing attribute 'info.classification' in pkg://pkg5-nightly/auto_install
-WARNING opensolaris.manifest001.1 Missing attribute 'info.classification' in pkg://pkg5-nightly/babel_install
-WARNING opensolaris.manifest001.1 Missing attribute 'info.classification' in pkg://pkg5-nightly/server_install
-WARNING opensolaris.manifest001.1 Missing attribute 'info.classification' in pkg://pkg5-nightly/slim_install
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/package/pkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/SUNWcs for pkg://pkg5-nightly/system/zones/brand/ipkg
@@ -41,11 +33,11 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/zlib for pkg://pkg5-nightly/library/python-2/pycurl
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/package/svr4 for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/runtime/perl-584/extra for pkg://pkg5-nightly/developer/opensolaris/pkg5
-WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/runtime/python-26 for pkg://pkg5-nightly/library/python-2/coverage
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/runtime/python-26 for pkg://pkg5-nightly/library/python-2/cherrypy
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/service/network/dns/mdns for pkg://pkg5-nightly/library/python-2/pybonjour
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/extended-system-utilities for pkg://pkg5-nightly/system/zones/brand/ipkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/font/xorg/xorg-core for pkg://pkg5-nightly/package/pkg/package-manager
-WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/library for pkg://pkg5-nightly/library/python-2/pycurl
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/library for pkg://pkg5-nightly/library/python-2/m2crypto
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/library for pkg://pkg5-nightly/system/desktop/ldtp
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/library for pkg://pkg5-nightly/system/zones/brand/ipkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/system/library/dbus for pkg://pkg5-nightly/package/pkg/package-manager

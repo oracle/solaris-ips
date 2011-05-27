@@ -155,7 +155,7 @@ class LintEngineCache():
                         raise LintException("Cache has not been seeded")
 
                 if api_inst in self.latest_cache:
-                        for item in self.latest_cache[api_inst]:
+                        for item in sorted(self.latest_cache[api_inst]):
                                 mf = self.latest_cache[api_inst][item]
                                 if pattern and pkg.fmri.glob_match(
                                     str(mf.fmri), pattern):
@@ -506,7 +506,7 @@ class LintEngine(object):
                 self.ref_uris = ref_uris
                 self.lint_uris = lint_uris
                 self.lint_manifests = lint_manifests
-                self.lint_manifests.sort()
+                self.lint_manifests.sort(key=_manifest_sort_key)
                 self.pattern = pattern
                 self.release = release
                 self.in_setup = True
@@ -1075,3 +1075,11 @@ def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
 
         # everything is equal, or old has no version and we'll favour new
         return True
+
+def _manifest_sort_key(mf):
+        """The lint engine uses the FMRI of a package to deterine the order in
+        which to iterate over manifests.  This is done using the 'key' attribute
+        to the Python sort() and sorted() methods."""
+        if mf.fmri:
+                return mf.fmri
+        return mf.get("pkg.fmri")

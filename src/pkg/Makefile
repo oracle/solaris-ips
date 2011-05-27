@@ -178,7 +178,7 @@ lint: repository-metadata
 	@rm -rf $(PDIR)/pkglint-cache
 	@rm -f $(PDIR)/pkglint-out*
 	@if [ -n "$(PKGLINT_REF_REPO)" ]; then				\
-		$(PKGLINT) -f $(PDIR)/pkglintrc -c $(PDIR)/pkglint-cache\
+		env LC_ALL=C $(PKGLINT) -f $(PDIR)/pkglintrc -c $(PDIR)/pkglint-cache\
 			-r $(PKGLINT_REF_REPO) -l file://$(PKGDEST)/repo; \
 	fi
 	-@if [ -z "$(PKGLINT_REF_REPO)" ]; then 			\

@@ -78,6 +78,20 @@ set name=org.opensolaris.consolidation value=ON
 set name=variant.arch value=i386 value=sparc
 """
 
+        # a basic manifest with a given fmri, used to test ordering
+        # - when linting 'manifest' and 'manifest_ordered' together,
+        # we should always visit this one first, regardless of the
+        # order used on the command line.
+        manifest_ordered = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/jkernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+set name=test value=i386 variant.arch=sparc
+"""
+
         # for the rcfiles below, we also need to point the
         # info_classification_path field to the sections file we deliver in the
         # proto area
@@ -231,6 +245,17 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
                     "verbose output detected in non-verbose mode")
                 self.assert_("duplicate set actions" in err)
 
+        def test_9_order(self):
+                """Checks that we always visit manifests in the same order."""
+                mpath = self.make_manifest(self.manifest)
+                mpath1 = self.make_manifest(self.manifest_ordered)
+                ret, out, err = self.pkglint("-v %s %s" % (mpath, mpath1))
+                ret, out2, err2 = self.pkglint("-v %s %s" % (mpath1, mpath))
+
+                self.assert_(out == out2,
+                    "different stdout with different cli order")
+                self.assert_(err == err2,
+                    "different stderr with different cli order")
 
 class TestPkglintCliDepot(pkg5unittest.ManyDepotTestCase):
         """Tests that exercise the CLI aspect of dealing with repositories"""
