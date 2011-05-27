@@ -25,7 +25,7 @@ set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
 set name=pkg.summary value="Update Manager for Image Packaging System"
 set name=pkg.description value="The Update Manager is a simplified graphical interface to the Image Packaging System which simply updates all packages installed on your system.  There is also a desktop widget which notifies you when updates are available."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
-set name=org.opensolaris.smf.fmri value=svc:/application/pkg/update:default
+set name=variant.arch value=$(ARCH)
 
 dir path=etc
 dir path=etc/gconf
@@ -104,10 +104,7 @@ file path=usr/share/update-manager/icons/hicolor/48x48/actions/updatemanager.png
 license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-um version=0.1.1
 
-depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)
 depend type=require fmri=archiver/gnu-tar
 depend type=require fmri=gnome/config/gconf
-depend type=require fmri=package/pkg/package-manager
-depend type=require fmri=runtime/python-26@2.6.4
 depend type=require fmri=text/gnu-grep
 depend type=require fmri=web/wget

@@ -26,8 +26,6 @@ set name=pkg.description \
 set name=pkg.summary value="IPS System Repository"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
-set name=org.opensolaris.smf.fmri \
-    value=svc:/application/pkg/system-repository:default
 set name=variant.arch value=$(ARCH)
 dir path=etc
 dir path=etc/pkg
@@ -56,10 +54,6 @@ file path=etc/pkg/sysrepo/sysrepo_publisher_response.mako
 file path=var/log/pkg/sysrepo/access_log preserve=renamenew
 file path=var/log/pkg/sysrepo/error_log preserve=renamenew
 license cr_Oracle license=cr_Oracle
-# manual dependencies on pkg and python can be detected by
-# pkgdepend once in use on our gate. The manual dependency
-# on apache results from our calling httpd from our
-# method script, and can't be detected by pkgdepend.
-depend fmri=package/pkg type=require
-depend fmri=runtime/python-26@2.6.4 type=require
+# The manual dependency on apache results from our calling apachectl from
+# our method script, and can't be detected by pkgdepend.
 depend fmri=web/server/apache-22 type=require

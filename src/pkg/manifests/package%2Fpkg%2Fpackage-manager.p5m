@@ -25,6 +25,7 @@ set name=pkg.fmri value=pkg:/package/pkg/package-manager@$(PKGVERS)
 set name=pkg.summary value="GUI for Image Packaging System"
 set name=pkg.description value="The graphical interface for the Image Packaging System allows you to perform many core packaging tasks in a user-friendly fashion."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=variant.arch value=$(ARCH)
 
 dir path=etc
 dir path=etc/gconf
@@ -332,14 +333,7 @@ file path=usr/share/package-manager/icons/hicolor/48x48/actions/pm-update_all.pn
 file path=usr/share/package-manager/packagemanager.ui
 license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-gui version=0.1.1
-
 depend type=require fmri=desktop/gksu
 depend type=require fmri=gnome/theme/hicolor-icon-theme
-depend type=require fmri=library/python-2/locale-services
-depend type=require fmri=library/python-2/pygobject-26
-depend type=require fmri=library/python-2/pygtk2-26
-depend type=require fmri=library/python-2/python-gnome-26
-depend type=require fmri=package/pkg
-depend type=require fmri=runtime/python-26@2.6.4
 depend type=require fmri=system/font/xorg/xorg-core
 depend type=require fmri=system/library/dbus

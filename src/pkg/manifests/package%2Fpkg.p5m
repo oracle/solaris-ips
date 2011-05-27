@@ -25,7 +25,6 @@ set name=pkg.fmri value=pkg:/package/pkg@$(PKGVERS)
 set name=pkg.summary value="Image Packaging System"
 set name=pkg.description value="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server."
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
-set name=org.opensolaris.smf.fmri value=svc:/application/pkg/server:default value=svc:/application/pkg/dynamic-mirror:default
 set name=variant.arch value=$(ARCH)
 
 dir path=etc
@@ -97,7 +96,9 @@ file path=$(PYDIRVP)/pkg/client/__init__.py
 file path=$(PYDIRVP)/pkg/client/actuator.py
 file path=$(PYDIRVP)/pkg/client/api.py
 file path=$(PYDIRVP)/pkg/client/api_errors.py
-file path=$(PYDIRVP)/pkg/client/bootenv.py
+# Don't worry about the libbe import; the python code looks for it in case
+# it can't import libbe_py, and is graceful in the face of its absence.
+file path=$(PYDIRVP)/pkg/client/bootenv.py pkg.depend.bypass-generate=.*libbe.*
 file path=$(PYDIRVP)/pkg/client/debugvalues.py
 file path=$(PYDIRVP)/pkg/client/history.py
 file path=$(PYDIRVP)/pkg/client/image.py
@@ -170,10 +171,12 @@ file path=$(PYDIRVP)/pkg/pkgtarfile.py
 dir path=$(PYDIRVP)/pkg/portable
 file path=$(PYDIRVP)/pkg/portable/__init__.py
 file path=$(PYDIRVP)/pkg/portable/os_aix.py
-file path=$(PYDIRVP)/pkg/portable/os_darwin.py
+# Python on Solaris doesn't deliver the macostools module.
+file path=$(PYDIRVP)/pkg/portable/os_darwin.py pkg.depend.bypass-generate=.*macostools.*
 file path=$(PYDIRVP)/pkg/portable/os_sunos.py
 file path=$(PYDIRVP)/pkg/portable/os_unix.py
-file path=$(PYDIRVP)/pkg/portable/os_windows.py
+# Python on Solaris doesn't deliver the win32api module.
+file path=$(PYDIRVP)/pkg/portable/os_windows.py pkg.depend.bypass-generate=.*win32api.*
 file path=$(PYDIRVP)/pkg/portable/util.py
 file path=$(PYDIRVP)/pkg/pspawn.so
 dir path=$(PYDIRVP)/pkg/publish
@@ -297,19 +300,7 @@ legacy pkg=SUNWipkg version=0.0.0
 group groupname=pkg5srv gid=97
 user username=pkg5srv uid=97 group=pkg5srv gcos-field="pkg(5) server UID"
 
-depend type=require fmri=SUNWcs
 depend type=require fmri=crypto/ca-certificates
-depend type=require fmri=library/python-2/cherrypy@3.1.2
-depend type=require fmri=library/python-2/mako@0.2.2
-depend type=require fmri=library/python-2/m2crypto@0.21.1
-depend type=require fmri=library/python-2/ply@3.1
-depend type=require fmri=library/python-2/pybonjour@1.1.1
-depend type=require fmri=library/python-2/pycurl@7.19.0.1
-depend type=require fmri=library/python-2/pyopenssl-26@0.8
-depend type=require fmri=library/python-2/simplejson-26
-depend type=require fmri=runtime/python-26@2.6.4
-depend type=require fmri=system/library/math
-depend type=require fmri=system/library
 # cross zone dependency on linked image metadata
 depend fmri=feature/package/dependency/self type=parent \
     variant.opensolaris.zone=nonglobal

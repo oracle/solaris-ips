@@ -27,7 +27,7 @@ BUILDNUM.cmd      = hg tags | nawk '$$1 ~ /^in[0-9]*$$/ {print substr($$1, 3) + 
 BUILDNUM          = $(BUILDNUM.cmd:sh)
 CHANGESET.cmd     = hg id -i
 CHANGESET         = $(CHANGESET.cmd:sh)
-CURBUILD.cmd      = pkg -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
+CURBUILD.cmd      = $(PKG) -R / list -H osnet-incorporation | sed -e 's/.*-0\.\([^ ]*\).*/\1/'
 CURBUILD          = $(CURBUILD.cmd:sh)
 PKGVERS_BRANCH    = 0.$(BUILDNUM)
 PKGVERS           = $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
@@ -39,8 +39,7 @@ REV               = $(REV.cmd:sh)
 PDIR              = pkgtmp
 PWD:sh            = pwd
 PKGDEST           = $(PWD)/../../packages/$(ARCH)
-PKGROOT           = ../../proto/root_$(ARCH)
-PKGLINT           = $(PKGROOT)/usr/bin/pkglint
+PKGROOT           = $(PWD)/../../proto/root_$(ARCH)
 
 PKGPUBLISHER      = pkg5-nightly
 
@@ -57,11 +56,16 @@ MANIFESTS         = $(MANIFESTS.cmd:sh)
 $(PUBLISHALL)MANIFESTS:sh      = (cd manifests; print *.p5m)
 PKGS.cmd          = print $(MANIFESTS:%.p5m=%) | sed -e s/%2F/\\//g
 PKGS              = $(PKGS.cmd:sh)
-PKGMOGRIFY        = pkgmogrify
-PKGSEND           = pkgsend
-PKGREPO           = pkgrepo
+PKGCMDENV         = PATH=$(PKGROOT)/usr/bin:/usr/bin PYTHONPATH=$(PKGROOT)/usr/lib/python2.6/vendor-packages
+PKG               = $(PKGCMDENV) pkg
+PKGDEPEND         = $(PKGCMDENV) pkgdepend
+PKGLINT           = $(PKGCMDENV) pkglint
+PKGMOGRIFY        = $(PKGCMDENV) pkgmogrify
+PKGREPO           = $(PKGCMDENV) pkgrepo
+PKGSEND           = $(PKGCMDENV) pkgsend
 MOGRIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.mog)
 PUBLIFESTS        = $(MANIFESTS:%.p5m=$(PDIR)/%.pub)
+DEPENDED          = $(MANIFESTS:%.p5m=$(PDIR)/%.dep)
 INCORP            = consolidation%2Fips%2Fips-incorporation
 
 PM_TRANSFORMS     = defaults
@@ -136,10 +140,20 @@ $(PDIR)/$(INCORP).mog: manifests/$(INCORP).p5m $(PDIR) \
 $(PDIR)/%.mog: manifests/%.p5m $(PM_TRANSFORMS:%=transforms/%) $(PDIR) $(PM_TRANSFORMS:%=transforms/%)
 	$(PKGMOGRIFY) $(PKGMOG_DEFINES) -I transforms -O $@ $< $(PM_TRANSFORMS)
 
+# The main dependency generation rule
+$(PDIR)/%.dep: $(PDIR)/%.mog
+	$(PKGDEPEND) generate -m -d $(PKGROOT) $< > $@
+
+# Resolve all dependencies at once, providing a single target that publication
+# can use.
+$(PDIR)/.resolved: $(DEPENDED)
+	$(PKGDEPEND) resolve -m $(DEPENDED)
+	touch $@
+
 # The main publication rule
-$(PDIR)/%.pub: $(PDIR)/%.mog $(PKGDEST)/repo
+$(PDIR)/%.pub: $(PDIR)/.resolved $(PKGDEST)/repo
 	$(PKGSEND) -s file://$(PKGDEST)/repo publish -d $(PKGROOT) -d license_files \
-		-T \*.py --fmri-in-manifest --no-index --no-catalog $<
+		-T \*.py --fmri-in-manifest --no-index --no-catalog $(@:%.pub=%.dep.res)
 	touch $@
 
 # Compare the proto area with the package manifests; if they've got different

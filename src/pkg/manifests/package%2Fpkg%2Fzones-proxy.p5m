@@ -26,9 +26,6 @@ set name=pkg.description \
 set name=pkg.summary value="System Repository Zone support"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
-set name=org.opensolaris.smf.fmri \
-    value=svc:/application/pkg/zones-proxyd:default \
-    value=svc:/application/pkg/zones-proxy-client:default
 set name=variant.arch value=$(ARCH)
 dir path=lib
 dir path=lib/svc
@@ -50,9 +47,6 @@ file path=usr/lib/zones/zoneproxy-client mode=0555 \
     variant.opensolaris.zone=nonglobal
 file path=usr/lib/zones/zoneproxyd mode=0555 variant.opensolaris.zone=global
 license cr_Oracle license=cr_Oracle
-depend type=require fmri=pkg:/package/pkg/system-repository \
-    variant.opensolaris.zone=global
-depend type=require fmri=pkg:/package/pkg
 # cross zone dependency on private door interfaces
 depend fmri=feature/package/dependency/self type=parent \
     variant.opensolaris.zone=nonglobal

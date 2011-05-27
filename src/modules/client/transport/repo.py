@@ -43,7 +43,7 @@ import pkg.p5p
 import pkg.server.repository as svr_repo
 import pkg.server.query_parser as sqp
 
-from email.Utils import formatdate
+from email.utils import formatdate
 
 
 class TransportRepo(object):

@@ -57,11 +57,7 @@ file path=usr/lib/brand/ipkg/sysboot mode=0755
 file path=usr/lib/brand/ipkg/uninstall mode=0755
 license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-brand version=0.0.0
-depend type=require fmri=SUNWcs@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
 depend type=require fmri=package/pkg
 depend type=require fmri=package/pkg/system-repository
 depend type=require fmri=package/pkg/zones-proxy
-depend type=require fmri=runtime/python-26@2.6.4
 depend type=require fmri=system/extended-system-utilities@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
-depend type=require fmri=system/library@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
-depend type=require fmri=system/zones@$(PKGVERS_COMPONENT)-$(CURBUILD_BRANCH)
