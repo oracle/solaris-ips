@@ -523,7 +523,7 @@ class Preferences:
                 try:
                         api_o = self.parent.get_api_object()
                         res = api_o.get_pkg_list(
-                            pkg_list = api.ImageInterface.LIST_NEWEST, #remote
+                            pkg_list = api.ImageInterface.LIST_INSTALLED,
                             patterns = ['system/locale'],
                             repos=[],
                             raise_unmatched=False, return_fmris=True,
