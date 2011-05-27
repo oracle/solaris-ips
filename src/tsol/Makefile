@@ -38,14 +38,23 @@ ROOTDIRS = \
 	$(ROOTVARTSOLDOOR) \
 	$(ROOTVARTSOL)
 
-clobber: $(ROOTDIRS)
-	rm -fr $(ROOTDIRS)
-
 #
 # Make directories
 #
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@
+
+all := TARGET = all
+clean := TARGET = clean
+clobber := TARGET = clobber
+install := TARGET = install
+
+all:
+
+clean:
+
+clobber:
+	rm -fr $(ROOTDIRS)
 
 install: $(ROOTDIRS)
