@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
-<book id="pkgmgr" label="fcs" lang="en"><title><trademark class="registered">Oracle</trademark> Solaris 11 Express Package Manager Online Help</title>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<book id="pkgmgr"><title><trademark class="registered">Oracle</trademark> Solaris 11 Package Manager Online Help</title>
 <bookinfo><authorgroup><author><firstname>Oracle</firstname>
 <surname>Corporation</surname>
 </author>
 </authorgroup>
-<pubsnumber>822-7173-11</pubsnumber>
-<releaseinfo>Oracle Solaris 11 Express</releaseinfo>
-<pubdate>November 2010</pubdate>
+<releaseinfo>Oracle Solaris 11</releaseinfo>
+<pubdate>November 2011</pubdate>
 <publisher><publishername>Oracle Corporation</publishername>
 <address><street>500 Oracle Parkway</street>
 <city>Redwood City</city>
@@ -16,24 +16,23 @@
 <country>U.S.A.</country>
 </address>
 </publisher>
-<copyright><year>2008, 2010</year>
-</copyright>
+<copyright><year>2008, 2011</year></copyright>
 <legalnotice><para>This software and related documentation are provided under a license agreement containing restrictions on use and disclosure and are protected by intellectual property laws. Except as expressly permitted in your license agreement or allowed by law, you may not use, copy, reproduce, translate, broadcast, modify, license, transmit, distribute, exhibit, perform, publish, or display any part, in any form, or by any means. Reverse engineering, disassembly, or decompilation of this software, unless required by law for interoperability, is prohibited.</para>
 <para>The information contained herein is subject to change without notice and is not warranted to be error-free. If you find any errors, please report them to us in writing.</para>
 <para>If this is software or related software documentation that is delivered to the U.S. Government or anyone licensing it on behalf of the U.S. Government, the following notice is applicable:</para>
-<para>U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are &#8220;commercial computer software&#8221; or &#8220;commercial technical data&#8221; pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065.</para>
+<para>U.S. GOVERNMENT RIGHTS Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are “commercial computer software” or “commercial technical data” pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065.</para>
 <para>This software or hardware is developed for general use in a variety of information management applications. It is not developed or intended for use in any inherently dangerous applications, including applications which may create a risk of personal injury. If you use this software or hardware in dangerous applications, then you shall be responsible to take all appropriate fail-safe, backup, redundancy, and other measures to ensure its safe use. Oracle Corporation and its affiliates disclaim any liability for any damages caused by use of this software or hardware in dangerous applications.</para>
 <para>Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners.</para>
 <para>AMD, Opteron, the AMD logo, and the AMD Opteron logo are trademarks or registered trademarks of Advanced Micro Devices. Intel and Intel Xeon are trademarks or registered trademarks of Intel Corporation. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. UNIX is a registered trademark licensed through X/Open Company, Ltd.</para>
 <para>This software or hardware and documentation may provide access to or information on content, products, and services from third parties. Oracle Corporation and its affiliates are not responsible for and expressly disclaim all warranties of any kind with respect to third-party content, products, and services. Oracle Corporation and its affiliates will not be responsible for any loss, costs, or damages incurred due to your access to or use of third-party content, products, or services.</para>
-<para lang="fr"></para>
-<para>Ce logiciel et la documentation qui l&#8217;accompagne sont prot&#233;g&#233;s par les lois sur la propri&#233;t&#233; intellectuelle. Ils sont conc&#233;d&#233;s sous licence et soumis &#224; des restrictions d&#8217;utilisation et de divulgation. Sauf disposition de votre contrat de licence ou de la loi, vous ne pouvez pas copier, reproduire, traduire, diffuser, modifier, breveter, transmettre, distribuer, exposer, ex&#233;cuter, publier ou afficher le logiciel, m&#234;me partiellement, sous quelque forme et par quelque proc&#233;d&#233; que ce soit. Par ailleurs, il est interdit de proc&#233;der &#224; toute ing&#233;nierie inverse du logiciel, de le d&#233;sassembler ou de le d&#233;compiler, except&#233; &#224; des fins d&#8217;interop&#233;rabilit&#233; avec des logiciels tiers ou tel que prescrit par la loi.</para>
-<para>Les informations fournies dans ce document sont susceptibles de modification sans pr&#233;avis. Par ailleurs, Oracle Corporation ne garantit pas qu&#8217;elles soient exemptes d&#8217;erreurs et vous invite, le cas &#233;ch&#233;ant, &#224; lui en faire part par &#233;crit.</para>
-<para>Si ce logiciel, ou la documentation qui l&#8217;accompagne, est conc&#233;d&#233; sous licence au Gouvernement des Etats-Unis, ou &#224; toute entit&#233; qui d&#233;livre la licence de ce logiciel ou l&#8217;utilise pour le compte du Gouvernement des Etats-Unis, la notice suivante s&#8217;applique :</para>
+<para lang="fr"/>
+<para>Ce logiciel et la documentation qui l’accompagne sont protégés par les lois sur la propriété intellectuelle. Ils sont concédés sous licence et soumis à des restrictions d’utilisation et de divulgation. Sauf disposition de votre contrat de licence ou de la loi, vous ne pouvez pas copier, reproduire, traduire, diffuser, modifier, breveter, transmettre, distribuer, exposer, exécuter, publier ou afficher le logiciel, même partiellement, sous quelque forme et par quelque procédé que ce soit. Par ailleurs, il est interdit de procéder à toute ingénierie inverse du logiciel, de le désassembler ou de le décompiler, excepté à des fins d’interopérabilité avec des logiciels tiers ou tel que prescrit par la loi.</para>
+<para>Les informations fournies dans ce document sont susceptibles de modification sans préavis. Par ailleurs, Oracle Corporation ne garantit pas qu’elles soient exemptes d’erreurs et vous invite, le cas échéant, à lui en faire part par écrit.</para>
+<para>Si ce logiciel, ou la documentation qui l’accompagne, est concédé sous licence au Gouvernement des Etats-Unis, ou à toute entité qui délivre la licence de ce logiciel ou l’utilise pour le compte du Gouvernement des Etats-Unis, la notice suivante s’applique :</para>
 <para>U.S. GOVERNMENT RIGHTS. Programs, software, databases, and related documentation and technical data delivered to U.S. Government customers are "commercial computer software" or "commercial technical data" pursuant to the applicable Federal Acquisition Regulation and agency-specific supplemental regulations. As such, the use, duplication, disclosure, modification, and adaptation shall be subject to the restrictions and license terms set forth in the applicable Government contract, and, to the extent applicable by the terms of the Government contract, the additional rights set forth in FAR 52.227-19, Commercial Computer Software License (December 2007). Oracle America, Inc., 500 Oracle Parkway, Redwood City, CA 94065.</para>
-<para>Ce logiciel ou mat&#233;riel a &#233;t&#233; d&#233;velopp&#233; pour un usage g&#233;n&#233;ral dans le cadre d&#8217;applications de gestion des informations. Ce logiciel ou mat&#233;riel n&#8217;est pas con&#231;u ni n&#8217;est destin&#233; &#224; &#234;tre utilis&#233; dans des applications &#224; risque, notamment dans des applications pouvant causer des dommages corporels. Si vous utilisez ce logiciel ou mat&#233;riel dans le cadre d&#8217;applications dangereuses, il est de votre responsabilit&#233; de prendre toutes les mesures de secours, de sauvegarde, de redondance et autres mesures n&#233;cessaires &#224; son utilisation dans des conditions optimales de s&#233;curit&#233;. Oracle Corporation et ses affili&#233;s d&#233;clinent toute responsabilit&#233; quant aux dommages caus&#233;s par l&#8217;utilisation de ce logiciel ou mat&#233;riel pour ce type d&#8217;applications.</para>
-<para>Oracle et Java sont des marques d&#233;pos&#233;es d&#8217;Oracle Corporation et/ou de ses affili&#233;s.Tout autre nom mentionn&#233; peut correspondre &#224; des marques appartenant &#224; d&#8217;autres propri&#233;taires qu&#8217;Oracle.</para>
-<para>AMD, Opteron, le logo AMD et le logo AMD Opteron sont des marques ou des marques d&#233;pos&#233;es d&#8217;Advanced Micro Devices. Intel et Intel Xeon sont des marques ou des marques d&#233;pos&#233;es d&#8217;Intel Corporation. Toutes les marques SPARC sont utilis&#233;es sous licence et sont des marques ou des marques d&#233;pos&#233;es de SPARC International, Inc. UNIX est une marque d&#233;pos&#233;e conc&#233;d&#233; sous license par X/Open Company, Ltd.</para>
+<para>Ce logiciel ou matériel a été développé pour un usage général dans le cadre d’applications de gestion des informations. Ce logiciel ou matériel n’est pas conçu ni n’est destiné à être utilisé dans des applications à risque, notamment dans des applications pouvant causer des dommages corporels. Si vous utilisez ce logiciel ou matériel dans le cadre d’applications dangereuses, il est de votre responsabilité de prendre toutes les mesures de secours, de sauvegarde, de redondance et autres mesures nécessaires à son utilisation dans des conditions optimales de sécurité. Oracle Corporation et ses affiliés déclinent toute responsabilité quant aux dommages causés par l’utilisation de ce logiciel ou matériel pour ce type d’applications.</para>
+<para>Oracle et Java sont des marques déposées d’Oracle Corporation et/ou de ses affiliés.Tout autre nom mentionné peut correspondre à des marques appartenant à d’autres propriétaires qu’Oracle.</para>
+<para>AMD, Opteron, le logo AMD et le logo AMD Opteron sont des marques ou des marques déposées d’Advanced Micro Devices. Intel et Intel Xeon sont des marques ou des marques déposées d’Intel Corporation. Toutes les marques SPARC sont utilisées sous licence et sont des marques ou des marques déposées de SPARC International, Inc. UNIX est une marque déposée concédé sous license par X/Open Company, Ltd.</para>
 </legalnotice>
 </bookinfo>
 <chapter id="about"><title>About Package Manager</title>
@@ -42,7 +41,7 @@
 <sect1 id="gikcw"><title>Oracle Solaris Image Packaging System</title>
 <para>Oracle Solaris Image Packaging System (IPS) is a software delivery system that interacts with a package repository on a network. IPS is a framework that provides software lifecycle management capabilities, including software installation, upgrade, and removal.</para>
 <para>After you install the Oracle Solaris operating system, you might find that some of the software you want to use is not available. This software probably is available in an IPS package repository. You can use Package Manager or the <literal>pkg</literal>(1M) command to download and install packages from a package repository.</para>
-<para>IPS also enables you to create your own IPS package repository, publish your own IPS packages, and create a mirror of an existing repository. For more information about IPS, see the <citetitle>Oracle Solaris 11 Express Image Packaging System Guide</citetitle>.</para>
+<para>IPS also enables you to create a copy of an existing IPS package repository, create your own IPS package repository, and publish your own IPS packages. For more information about IPS, see the Oracle Solaris 11 Information Library. Go to <literal>download.oracle.com</literal>, select Documentation Index on the left, select Systems Software, select Oracle Solaris 11, and select View Library. See especially <citetitle>Adding and Updating Oracle Solaris 11 Software Packages</citetitle>.</para>
 </sect1>
 <sect1 id="pm-win"><title>Package Manager</title>
 <para>Package Manager provides a subset of the functionality offered by the IPS command-line interface.</para>
@@ -67,11 +66,11 @@
 </listitem>
 <listitem><para>The Search field on the right of the tool bar helps control the content of the package list pane. See <xref linkend="search-pkg"/>.</para>
 </listitem>
-<listitem><para>The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend="list-pkg"/> &#8220;By Publisher.&#8221;</para>
+<listitem><para>The <guimenu>Publisher</guimenu> drop-down menu below the buttons helps control the content of the package list pane and also enables you to add a new publisher. See <xref linkend="list-pkg"/> “By Publisher.”</para>
 </listitem>
-<listitem><para>The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages &#8220;By Package Status.&#8221;</para>
+<listitem><para>The <guimenu>View</guimenu> drop-down menu below the Search field helps control the content of the package list pane. See Listing Packages “By Package Status.”</para>
 </listitem>
-<listitem><para>The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages &#8220;By Category.&#8221;</para>
+<listitem><para>The category pane below the <guimenu>Publisher</guimenu> menu helps control the content of the package list pane. See Listing Packages “By Category.”</para>
 </listitem>
 <listitem><para>Below the list of software categories is a list of searches that you have performed in this session.</para>
 </listitem>
@@ -86,44 +85,45 @@
 <para>The list of packages in the Package Manager list pane is affected by the selections you make in the <guimenu>Publisher</guimenu> drop-down menu, the <guimenu>View</guimenu> drop-down menu, the categories pane, and the Search field.</para>
 <para>You can reorder the package list by clicking the column headings.</para>
 <para>You can use the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option to reread repository catalogs and update the list of packages and package status. A refresh also is attempted whenever you open Package Manager.</para>
-<subtopic id="gkihe"><title>By Publisher</title>
+<sect2 id="gkihe"><title>By Publisher</title>
 <para>The <guimenu>Publisher</guimenu> drop-down menu enables you to list packages according to publisher.</para>
 <itemizedlist><listitem><para>The top of the menu lists the name of each publisher that you have added using the Add Publisher dialog or using the <literal>pkg</literal> command. When you select one of these publishers, the package list pane shows only packages that are available from that selected publisher. The package list pane shows only the Name, Status, and Summary columns because the publisher is the same for every package.</para>
 </listitem>
-<listitem><para><guimenuitem>All Publishers</guimenuitem> &#8212; Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary.</para>
+<listitem><para><guimenuitem>All Publishers</guimenuitem> — Shows packages from all publishers in the package list pane. The package list pane shows columns Name, Status, Publisher, and Summary.</para>
 <para>Example: To list all media device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Drivers</guimenu><guimenuitem>Media</guimenuitem></menuchoice> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
 </listitem>
-<listitem><para><guimenuitem>All Installed Packages</guimenuitem> &#8212; Shows all packages that are installed from all publishers.</para>
-<para>Example: To list all the font packages that are currently installed from the <literal>oracle.com</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>oracle.com</literal> entries.</para>
+<listitem><para><guimenuitem>All Installed Packages</guimenuitem> — Shows all packages that are installed from all publishers.</para>
+<para>Example: To list all the font packages that are currently installed from the <literal>solaris</literal> publisher, select <guimenuitem>All Installed Packages</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, click on the Publisher column heading to sort the list by Publisher, and scroll down to the <literal>solaris</literal> entries.</para>
 </listitem>
-<listitem><para><guimenuitem>All Publishers (Search)</guimenuitem> &#8212; Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend="search-pkg"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>.</para>
+<listitem><para><guimenuitem>All Publishers (Search)</guimenuitem> — Shows an informational message in the package list pane instead of a list of packages. The message lists all publishers that you have configured and reminds you how to view all packages from those publishers. See <xref linkend="search-pkg"/> for information about searching with <guimenuitem>All Publishers (Search)</guimenuitem>.</para>
 </listitem>
-<listitem><para><guimenuitem>Add...</guimenuitem> &#8212; Opens the Add Publisher window.</para>
+<listitem><para><guimenuitem>Add...</guimenuitem> — Opens the Add Publisher window.</para>
 </listitem>
 </itemizedlist>
-</subtopic>
-<subtopic id="gkihp"><title>By Package Status</title>
+</sect2>
+<sect2 id="gkihp"><title>By Package Status</title>
 <para>The <guimenu>View</guimenu> drop-down menu enables you to list packages according to package status. Package status can be installed, not installed, or an update is available. The icons displayed on the <guimenu>View</guimenu> menu match the icons displayed in the Status column of the package list pane.</para>
-<itemizedlist><listitem><para><guimenuitem>All Packages</guimenuitem> &#8212; Shows all packages available from the selected publisher in the selected category or matching the specified search string.</para>
-<para>Example: To list all Oracle Solaris Studio packages that are available from the <literal>oracle.com</literal> publisher, select <literal>oracle.com</literal> from the <guimenu>Publisher</guimenu> menu, select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu, and enter <literal>studio</literal> in the Search field.</para>
+<itemizedlist><listitem><para><guimenuitem>All Packages</guimenuitem> — Shows all packages available from the selected publisher in the selected category or matching the specified search string.</para>
+<para>Example: To list all web services packages from the <literal>solaris</literal> publisher that are installed, not installed, or have updates available, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and
+select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
 </listitem>
-<listitem><para><guimenuitem>Installed Packages</guimenuitem> &#8212; Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option.</para>
-<para>Example: To list all web server packages that are installed from the <literal>oracle.com</literal> publisher, select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu, select <literal>oracle.com</literal> from the <guimenu>Publisher</guimenu> menu, and select the <menuchoice><guimenu>Web Services</guimenu><guimenuitem>Application and Web Servers</guimenuitem></menuchoice> category.</para>
+<listitem><para><guimenuitem>Installed Packages</guimenuitem> — Shows all installed packages from the selected publisher in the selected category or matching the specified search string. See also the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Installed Packages</guimenuitem></menuchoice> option.</para>
+<para>Example: To list only the web server packages that are installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>Web Services</guimenu></menuchoice> category, and select <guimenuitem>Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
 </listitem>
-<listitem><para><guimenuitem>Updates</guimenuitem> &#8212; Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available.</para>
-<para>Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, and select the <guimenu>Drivers</guimenu> category.</para>
+<listitem><para><guimenuitem>Updates</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that have updates available.</para>
+<para>Example: To list all device drivers that have updates available from all publishers, select <guimenuitem>All Publishers</guimenuitem> from the <guimenu>Publisher</guimenu> menu, select the <guimenu>Drivers</guimenu> category, and select <guimenuitem>Updates</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
 </listitem>
-<listitem><para><guimenuitem>Not Installed Packages</guimenuitem> &#8212; Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed.</para>
-<para>Example: To list all the font packages that are currently not installed from the <literal>oracle.com</literal> publisher, select <literal>oracle.com</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
+<listitem><para><guimenuitem>Not Installed Packages</guimenuitem> — Shows all packages from the selected publisher in the selected category or matching the specified search string that are not installed.</para>
+<para>Example: To list all the font packages that are currently not installed from the <literal>solaris</literal> publisher, select <literal>solaris</literal> from the <guimenu>Publisher</guimenu> menu, select the <menuchoice><guimenu>System</guimenu><guimenuitem>Fonts</guimenuitem></menuchoice> category, and then select <guimenuitem>Not Installed Packages</guimenuitem> from the <guimenu>View</guimenu> menu.</para>
 </listitem>
-<listitem><para><guimenuitem>Selected Packages</guimenuitem> &#8212; Lists all packages that are currently selected. See <xref linkend="select-pkg"/>.</para>
+<listitem><para><guimenuitem>Selected Packages</guimenuitem> — Lists all packages that are currently selected. See <xref linkend="select-pkg"/>.</para>
 </listitem>
 </itemizedlist>
-</subtopic>
-<subtopic id="gkigv"><title>By Category</title>
+</sect2>
+<sect2 id="gkigv"><title>By Category</title>
 <para>You can browse the available packages by type of software in the category pane on the left side of the Package Manager window. Click a category name to show subcategories. Packages in the selected category or subcategory are listed in the package list pane according to the selected publisher and package status and the specified search criteria.</para>
-<para>In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend="search-pkg"/> &#8220;Repeat a Previous Search&#8221;for information about <guimenuitem>Recent Searches</guimenuitem>.</para>
-</subtopic>
+<para>In addition to named types of software, the categories pane also enables you to select <guimenuitem>All Categories</guimenuitem> and <guimenuitem>Recent Searches</guimenuitem>. See <xref linkend="search-pkg"/> “Repeat a Previous Search” for information about <guimenuitem>Recent Searches</guimenuitem>.</para>
+</sect2>
 </sect1>
 <sect1 id="search-pkg"><title>Searching for Packages</title>
 <para>Use one of the following two methods to search for packages:</para>
@@ -132,12 +132,12 @@
 <listitem><para>Use the Search field in the tool bar.</para>
 </listitem>
 </itemizedlist>
-<subtopic id="gkjbd"><title>Enter a Search String</title>
+<sect2 id="gkjbd"><title>Enter a Search String</title>
 <para>Enter a string in the Search field and then press the Enter key or click the magnifying glass icon to the right of the Search field.</para>
-<itemizedlist><listitem><para><guimenu>Publisher</guimenu> menu selection &#8212; Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu.</para>
-<para>Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The diffrence is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane.</para>
+<itemizedlist><listitem><para><guimenu>Publisher</guimenu> menu selection — Package Manager searches for the search string in the information about each package from a particular publisher or from all publishers, according to what you have selected on the <guimenu> Publisher</guimenu> menu.</para>
+<para>Search results are the same whether you select <guimenuitem>All Publishers</guimenuitem> or <guimenuitem>All Publishers (Search)</guimenuitem>. The difference is that using <guimenuitem>All Publishers (Search)</guimenuitem> is faster because you avoid the delay to load data from all publishers that you incur when you select <guimenuitem>All Publishers</guimenuitem>. With <guimenuitem>All Publishers (Search)</guimenuitem>, the search is performed on all publishers without loading data from all publishers in the package list pane.</para>
 </listitem>
-<listitem><para><guimenu>View</guimenu> menu selection &#8212; Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search.</para>
+<listitem><para><guimenu>View</guimenu> menu selection — Search results are displayed in the package list pane according to the package status selected on the <guimenu>View</guimenu> menu. You can display different subsets of the same search results in the package list pane by changing the <guimenu>View</guimenu> menu selection without redoing the search.</para>
 </listitem>
 </itemizedlist>
 <para>Package Manager searches package information including name, summary, description, category, and names of files contained within the package. Only exact matches are found if you do not use wild cards.</para>
@@ -148,12 +148,13 @@
 </varlistentry>
 <varlistentry><term>Double quotation marks</term>
 <listitem><para>Enclose the search term in double quotation marks to match that search term exactly.</para>
-<para>Example: <literal>"IDE"</literal> matches <literal>NetBeans IDE</literal> but does not match <literal>NetBeans cluster ide</literal>.</para>
+<para>Example: <literal>"ethernet driver"</literal> in double quotation marks matches <literal>Fast Ethernet Driver</literal> but does not match <literal>Ethernet Adapter Driver</literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term>Wild card</term>
 <listitem><para>You can use the <literal>*</literal> wild card in your search string. Using wild cards can be slower.</para>
-<para>Example: <literal>plug*in</literal> matches both <literal>plugin</literal> and <literal>plug-in</literal>.</para>
+<para>Example: <literal>802.11*</literal> matches <literal>802.11b/g</literal> and <literal>802.11a/b/g</literal>.</para>
+<para>Note that <literal>802.11*</literal> does not match <literal>IEEE802.11b/g</literal>. To match <literal>IEEE802.11b/g</literal>, use search string <literal>*802.11*</literal>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><literal>OR</literal></term>
@@ -162,65 +163,65 @@
 </listitem>
 </varlistentry>
 </variablelist>
-<para>You can combine these search string modifiers. For example, you can perform the following search:</para>
-<programlisting>netbeans AND plug*in OR ide</programlisting>
-</subtopic>
-<subtopic id="gkjao"><title>Clear the Search Field</title>
+<para>You can combine these search string modifiers. You can use AND, OR, doublt quotation marks, and * all in one search string.</para>
+</sect2>
+<sect2 id="gkjao"><title>Clear the Search Field</title>
 <para>To clear both the search string and the list of search results, use the Search field or the Edit menu.</para>
 <itemizedlist><listitem><para>In the Search field, click the <literal>X</literal> icon.</para>
 </listitem>
 <listitem><para>On the <guimenu>Edit</guimenu> menu, select the <guimenuitem>Clear Search</guimenuitem> option.</para>
 </listitem>
 </itemizedlist>
-</subtopic>
-<subtopic id="gkjbe"><title>Cancel the Search</title>
+</sect2>
+<sect2 id="gkjbe"><title>Cancel the Search</title>
 <para>During a search operation, a busy bar displays at the right end of the status bar at the bottom of the Package Manager window. On the right end of the busy bar is an <literal>X</literal> icon. Click the <literal>X</literal> icon in the busy bar to cancel the search in progress.</para>
-</subtopic>
-<subtopic id="gkjbb"><title>Repeat a Previous Search</title>
-<para>Searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane.</para>
-<para>Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results.</para>
-<para>Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane.</para>
-<para>Select an item in the list of recent searches to redisplay those search results.</para>
+</sect2>
+<sect2 id="gkjbb"><title>Redisplay Previous Search Results</title>
+<para>Results from searches that you have already performed during the current Package Manager session are saved in <guimenuitem>Recent Searches</guimenuitem> in the categories pane.</para>
+<para>Select the <guimenuitem>Recent Searches</guimenuitem> label in the categories pane to display an informational message in the package list pane. The package list pane shows the list of previous search results. Click a "results" link to redisplay those results.</para>
+<para>Select the arrow to the left of the <guimenuitem>Recent Searches</guimenuitem> label to expand or hide the list of previous search results in the categories pane. Select an item in the list of recent searches to redisplay those search results.</para>
 <para>A search that matched no packages does not appear in the recent searches list.</para>
-</subtopic>
+<para>Selecting the <guibutton>Refresh</guibutton> button or the <menuchoice><guimenu>Package</guimenu><guimenuitem>Refresh</guimenuitem></menuchoice> menu option deletes all recent searches results.</para>
+</sect2>
 </sect1>
 <sect1 id="package-version"><title>Showing More Information</title>
 <para>See more information about a package in the package details pane or on the Package Version Info dialog.</para>
-<subtopic id="gkiti"><title>Package Details Pane</title>
+<sect2 id="gkiti"><title>Package Details Pane</title>
 <para>To show more information about a package, click your left mouse button to highlight the package in the package list. The package details pane below the package list pane shows information such as the latest version available from this publisher, the size of the package, the files in the package, dependencies, and license terms.</para>
 <para>If a package has been renamed since it was installed, the Renamed To field on the General tab shows the new name of the package.</para>
 <para>The Versions tab shows a list of versions of this package that are available for you to install. Select a version from the list and click the <guibutton>Install/Update</guibutton> button to the right of the list to install that version. See <xref linkend="install-pkg"/>.</para>
 <para>The package details pane is not displayed if the package list pane contains an informational message.</para>
-</subtopic>
-<subtopic id="gkitc"><title>Package Version Info Dialog</title>
+</sect2>
+<sect2 id="gkitc"><title>Package Version Info Dialog</title>
 <para>Click your right mouse button on a package in the package list to pop up the <guimenu>Package</guimenu> menu.</para>
 <para>Select the <menuchoice><guimenu>Package</guimenu><guimenuitem>Package Version Info</guimenuitem></menuchoice> menu option either from the pop-up menu or from the menu bar to display a separate window that shows the version of the package that is installed and the latest version that you can install or upgrade to if applicable.</para>
-</subtopic>
+</sect2>
 </sect1>
 <sect1 id="select-pkg"><title>Selecting Packages</title>
 <para>Selected packages can be installed, updated, or removed. To select a package, use the package list pane or the <guimenu>Edit</guimenu> menu.</para>
 <para>In the package list pane, do one of the following actions to select a package. You can select multiple packages.</para>
-<itemizedlist><listitem><para>Click the box to the left of the package name.</para>
+<itemizedlist><listitem><para>Click the box to the left of the package name. Click the box again to deselect the package.</para>
 </listitem>
 <listitem><para>Click the package name one time to highlight the package. Then double-click the highlighted package to select the package. Double-click again to deselect the package.</para>
 </listitem>
-<listitem><para>Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane.</para>
+<listitem><para>Click the checkbox icon in the column heading to select all packages that are currently listed in the package list pane. Click the checkbox icon again to deselect all packages currently listed in the package list pane.</para>
 </listitem>
 </itemizedlist>
 <para>The <guimenu>Edit</guimenu> menu has the following options for selecting packages:</para>
-<itemizedlist><listitem><para><guimenuitem>Select All</guimenuitem> &#8212; Selects all packages that are currently listed in the package list pane.</para>
+<itemizedlist><listitem><para><guimenuitem>Select All</guimenuitem> — Selects all packages that are currently listed in the package list pane.</para>
 </listitem>
-<listitem><para><guimenuitem>Select Updates</guimenuitem> &#8212; Selects all packages that are currently listed in the package list pane that have updates available.</para>
+<listitem><para><guimenuitem>Select Updates</guimenuitem> — Selects all packages that are currently listed in the package list pane that have updates available.</para>
 </listitem>
-<listitem><para><guimenuitem>Deselect All</guimenuitem> &#8212; Deselects all selected packages. Packages do not need to be listed in the package list pane to be deselected.</para>
+<listitem><para><guimenuitem>Deselect All</guimenuitem> — Deselects all packages that are currently listed in the package list pane.</para>
 </listitem>
 </itemizedlist>
 <para>In all cases when you select a package, packages that were previously selected are still selected.</para>
-<para>The number of packages in the currently selected category and the number of packages that are selected in the current category are shown on the left side of the status bar at the bottom of the Package Manager window.</para>
-<para>Use the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all categories in the package list pane.</para>
+<para>The number of packages currently listed in the package list pane and the number of those packages that are selected are shown on the left side of the status bar at the bottom of the Package Manager window.</para>
+<para>Select the <menuchoice><guimenu>Publisher</guimenu><guimenuitem>All Publishers</guimenuitem></menuchoice> option, the <guimenuitem>All Categories</guimenuitem> category, and the <menuchoice><guimenu>View</guimenu><guimenuitem>Selected Packages</guimenuitem></menuchoice> option to list all selected packages from all publishers in the package list pane.</para>
 <para>A package can be highlighted but not selected. When a package is highlighted, detailed information about that package is displayed in the package details pane below the package list pane. When a package is selected, a check mark displays in the box to the left of the package name. If you want to install, update, or delete a package, make sure a check mark appears in the selection box for that package.</para>
 </sect1>
 <sect1 id="install-pkg"><title>Installing and Updating Packages</title>
+<para>Before you install or update, check your Optional Components preference settings. Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option. In the Preferences window, select the Optional Components tab. By default, Install all languages, Install all development files, and Install all documentation are selected. You can save space in your installation by selecting a subset of languages to install or deselecting development files, for example. Click the OK button to save your changes. These settings apply to all installed packages as well as future package installations and updates.</para>
 <para>Perform the following steps to install or update a package:</para>
 <orderedlist><listitem><para>Select the package. See <xref linkend="select-pkg"/>.</para>
 </listitem>
@@ -278,7 +279,7 @@
 <orderedlist><listitem><para>The system refreshes all catalogs.</para>
 </listitem>
 <listitem><para>The system evaluates all installed packages to determine which packages have updates available.</para>
-<itemizedlist><listitem><para>If no packages have updates available, the message &#8220;No Updates Available&#8221; is displayed and processing stops.</para>
+<itemizedlist><listitem><para>If no packages have updates available, the message “No Updates Available” is displayed and processing stops.</para>
 </listitem>
 <listitem><para>If package updates are available, the packages to be updated are listed for your review. This is your last chance to click the <guibutton>Cancel</guibutton> button to abort the update.</para>
 </listitem>
@@ -306,16 +307,16 @@
 </sect1>
 <sect1 id="using_um"><title>Using Update Manager</title>
 <para>You can open Update Manager from a system notification or from the desktop menu bar. Update Manager executes the same process as described above in <xref linkend="um_info"/>.</para>
-<subtopic id="gkiso"><title>Software Updates Notification</title>
+<sect2 id="gkiso"><title>Software Updates Notification</title>
 <para>The system periodically checks whether updates are available for any of your installed packages. If the system detects that updates are available, an Updates Available notification icon and popup are displayed in the system notification tray. Click the notification icon to open Update Manager.</para>
-</subtopic>
-<subtopic id="gkisz"><title>Desktop System Menu</title>
+</sect2>
+<sect2 id="gkisz"><title>Desktop System Menu</title>
 <para>Select <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> from the menu bar on the desktop to open Update Manager.</para>
-</subtopic>
+</sect2>
 </sect1>
 </chapter>
 <chapter id="manage-publisher"><title>Managing Publishers</title>
-<para>You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add a publisher origin, set an SSL key and certificate, and add a publisher mirror.</para>
+<para>You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy.</para>
 <sect1 id="add-publisher"><title>Adding Publishers</title>
 <para>To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:</para>
 <itemizedlist><listitem><para>Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu.</para>
@@ -326,7 +327,7 @@
 </listitem>
 </itemizedlist>
 <para>In the Add Publisher window, perform the following steps to add an IPS package publisher:</para>
-<orderedlist><listitem><para>In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris11/release</literal> or <literal>http://localhost:5555</literal>.</para>
+<orderedlist><listitem><para>In the URI field, enter the URI of the publisher. The URI is a network location such as <literal>http://pkg.oracle.com/solaris/release/</literal> or <literal>http://localhost:5555</literal>.</para>
 </listitem>
 <listitem><para>In the Alias field, you can enter an alternate name for this publisher.</para>
 </listitem>
@@ -341,36 +342,32 @@
 </listitem>
 </orderedlist>
 <para>The new publisher is the last publisher listed in the Manage Publishers window and is enabled and sticky.</para>
-<para>See <xref linkend="modify-publisher"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, and adding a publisher mirror.</para>
+<para>See <xref linkend="modify-publisher"/> for information about changing the priority of the new publisher, changing the enabled and sticky settings, changing the publisher alias, adding a publisher origin, setting an SSL key and certificate, adding a publisher mirror, and managing publisher certificates and signature policy.</para>
 </sect1>
 <sect1 id="modify-publisher"><title>Modifying Publishers</title>
 <para>To modify the attributes of a publisher, select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option. Currently configured publishers are listed in the Manage Publishers window.</para>
-<para>In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher.</para>
-<para>Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, set an SSL key and certificate, and add or remove a publisher mirror.</para>
-<subtopic id="set-pub-order"><title>Publisher Priority</title>
+<para>In the Manage Publishers window you can change the priority of a publisher, enable or disable a publisher, set the publisher to be sticky or non-sticky, and remove a publisher. See <xref linkend="priority-stickiness"/> and <xref linkend="remove-publisher"/>.</para>
+<para>Click the <guibutton>Modify</guibutton> button to open the Modify Publisher window. In the Modify Publisher window you can change the publisher alias, add or remove a publisher origin, add or remove a publisher mirror, set an SSL key and certificate, and manage publisher certificates and signature policy. See <xref linkend="origin-mirror"/> and <xref linkend="pub-security"/>.</para>
+<sect2 id="priority-stickiness"><title>Changing Priority and Stickiness</title>
+<para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to display the Manage Publishers window.</para>
+<sect3 id="set-pub-order"><title>Publisher Priority</title>
 <para>Publishers are listed in priority order in the Manage Publishers window. The publisher at the top of the list is the highest priority publisher. The publisher at the bottom of the list is the lowest priority publisher.</para>
-<itemizedlist><listitem><para>The publisher at the top of the list is also known as the preferred publisher.</para>
-</listitem>
-<listitem><para>The publisher at the top of the list cannot be disabled or removed.</para>
-</listitem>
-<listitem><para>When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first.</para>
-</listitem>
-<listitem><para>When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates.</para>
-</listitem>
+<itemizedlist><listitem><para>The publisher at the top of the list is also known as the preferred publisher.</para></listitem>
+<listitem><para>The preferred publisher cannot be disabled or removed.</para></listitem>
+<listitem><para>When you search for packages and do not specify a publisher, the catalogs of higher priority publishers are searched first.</para></listitem>
+<listitem><para>When you update a package that was installed from a non-sticky publisher, the catalogs of higher priority publishers are searched first for updates.</para></listitem>
 </itemizedlist>
 <para>To change the priority of a publisher, perform the following steps:</para>
-<orderedlist><listitem><para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window.</para>
-</listitem>
-<listitem><para>Click to highlight a publisher row in the list in the Manage Publishers window.</para>
+<orderedlist><listitem><para>Click to highlight a publisher row in the list in the Manage Publishers window.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons to the right of the publisher list to increase or reduce the priority of the selected publisher. The selected publisher listing moves up and down in the list to show its new priority.</para>
-</listitem>
+<para>If the selected publisher is a system publisher, then the <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons are disabled. You cannot change the priority of a system publisher. Because you cannot change the priority of a system publisher, you cannot lower the priority of the publisher that is the next higher priority above a system publisher, and you cannot raise the priority of a publisher that is the next lower priority below a system publisher.</para></listitem>
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
 </orderedlist>
-</subtopic>
-<subtopic id="gjlab"><title>Enabled and Sticky</title>
-<para>When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see &#8220;Publisher Priority&#8221; above) cannot be disabled. All other enabled and sticky settings can be changed.</para>
+</sect3>
+<sect3 id="gjlab"><title>Enabled and Sticky</title>
+<para>When you add a publisher, the enabled and sticky attributes are set by default. The preferred publisher (see <xref linkend="set-pub-order"/> above) cannot be disabled. A system publisher cannot be disabled, and the sticky setting of a system publisher cannot be changed. All other enabled and sticky settings can be changed.</para>
 <para>If the sticky attribute is set for a publisher, then a package that was installed from that publisher cannot be updated from a different publisher. If the sticky attribute is not set for a publisher, then that publisher is non-sticky. If a publisher is non-sticky, then a package that originally came from that publisher can be updated from another publisher. A different publisher might have a newer version of a package than the original publisher of the package. If you want to update to that newer version, the original publisher needs to be non-sticky. Also, if a lower priority publisher is non-sticky, then higher-priority publishers will be searched first for updates for packages installed from that non-sticky publisher.</para>
 <para>A publisher that is disabled is not searched for updates or for packages to install. Catalogs of a disabled publisher are not refreshed. A disabled publisher is not shown on the <guimenu>Publisher</guimenu> drop-down menu.</para>
 <para>To change the Enabled and Sticky settings for a publisher, perform the following steps:</para>
@@ -381,40 +378,76 @@
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
 </orderedlist>
-</subtopic>
-<subtopic id="modify-publisher-alias"><title>Publisher Alias</title>
-<para>The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane.</para>
-<para>To change the alias of a publisher, perform the following steps:</para>
+</sect3>
+</sect2>
+<sect2 id="origin-mirror"><title>Changing Alias, Origins, and Mirrors</title>
 <orderedlist><listitem><para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window.</para>
 </listitem>
-<listitem><para>Select the publisher whose alias you want to modify.</para>
+<listitem><para>Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
+<para>If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
 </listitem>
-<listitem><para>Enter a new name in the Alias field.</para>
+<listitem><para>Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors.</para></listitem>
+</orderedlist>
+<sect3 id="modify-publisher-alias"><title>Publisher Alias</title>
+<para>The publisher alias is another name for the publisher. The alias name is used in the <guimenu>Publisher</guimenu> drop-down menu and in the package list pane.</para>
+<para>To change the alias of this publisher, perform the following steps:</para>
+<orderedlist><listitem><para>On the General tab of the Modify Publisher window, enter a new name in the Alias field.</para>
 </listitem>
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para>
 </listitem>
-<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
+<listitem><para>The publisher alias has changed in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
 </orderedlist>
-</subtopic>
-<subtopic id="gjkza"><title>Publisher Origins</title>
-<para>An origin is an original source of packages, as opposed to a mirror.</para>
-<para>An origin value is the URI of a IPS package repository.</para>
-<para>To change, add, or remove a publisher origin, perform the following steps:</para>
-<orderedlist><listitem><para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window.</para>
+</sect3>
+<sect3 id="gjkza"><title>Publisher Origins</title>
+<para>An origin is the location of an IPS package repository or archive that contains both package metadata (package manifests and catalogs) and package content (package files).</para>
+<para>An origin value is the URI of an IPS package repository.</para>
+<para>To change, add, or remove an origin for this publisher, perform the following steps:</para>
+<orderedlist><listitem><para>Select the General tab of the Modify Publisher window.</para>
+<itemizedlist><listitem><para>Add an origin.</para>
+<orderedlist type="a"><listitem><para>In the Origin field, enter the URI of the new origin you want to associate with this publisher.</para></listitem>
+<listitem><para>Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field.</para></listitem>
+</orderedlist>
 </listitem>
-<listitem><para>Select the publisher whose origin you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher.</para>
+<listitem><para>Remove an origin.</para>
+<orderedlist type="a"><listitem><para>In the list below the Origin field, select the URI you want to delete.</para></listitem>
+<listitem><para>Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list. If only one origin is defined for this publisher, you cannot remove that origin.</para></listitem>
+</orderedlist>
 </listitem>
-<listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
+<listitem><para>Change an origin.</para>
+<orderedlist type="a"><listitem><para>Add the new origin.</para></listitem>
+<listitem><para>Delete the origin you want to change.</para></listitem>
+</orderedlist>
 </listitem>
-<listitem><para>You can change, add, or remove an origin for this publisher.</para>
-<itemizedlist><listitem><para>To change an origin, delete the origin you want to change and then add a new origin.</para>
+</itemizedlist>
 </listitem>
-<listitem><para>To add an origin, enter the URI of the new origin you want to associate with the publisher in the Origin field and click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Origin field.</para>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para>
 </listitem>
-<listitem><para>To remove an origin, select the URI you want to delete from the list below the Origin field and click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list.</para>
+<listitem><para>The origin changes are reflected in the Details pane in the Manage Publishers window. Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
+</listitem>
+</orderedlist>
+</sect3>
+<sect3 id="gjkyr"><title>Publisher Mirrors</title>
+<para>A mirror is a location of an IPS package repository that contains only package content (package files). A mirror does not contain package metadata (package manifests and catalogs). Mirrors provide a subset of the data that origins provide. Mirrors can be used only for downloading package files. Package metadata is downloaded from the origin. IPS clients access the origin to obtain a publisher's catalog, even when the clients download package content from a mirror.</para>
+<para>To add, remove, or change a mirror for this publisher, perform the following steps:</para>
+<orderedlist><listitem><para>Select the General tab of the Modify Publisher window.</para></listitem>
+<listitem><para>Click the Mirrors label to display the Mirror field and the list of mirrors.</para>
+<itemizedlist><listitem><para>Add a mirror.</para>
+<orderedlist type="a"><listitem><para>In the Mirror field, enter the URI of the new mirror you want to associate with this publisher.</para></listitem>
+<listitem><para>Click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field.</para></listitem>
+</orderedlist>
+</listitem>
+<listitem><para>Remove a mirror.</para>
+<orderedlist type="a"><listitem><para>In the list below the Mirror field, select the URI you want to delete.</para></listitem>
+<listitem><para>Click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list.</para></listitem>
+</orderedlist>
+</listitem>
+<listitem><para>Change a mirror.</para>
+<orderedlist type="a"><listitem><para>Delete the mirror you want to change.</para></listitem>
+<listitem><para>Add a new mirror.</para></listitem>
+</orderedlist>
 </listitem>
 </itemizedlist>
 </listitem>
@@ -423,53 +456,63 @@
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
 </orderedlist>
-</subtopic>
-<subtopic id="gjkyy"><title>Publisher Security</title>
-<para>If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher.</para>
+</sect3>
+</sect2>
+<sect2 id="security"><title>Managing Publisher Security</title>
+<para>Certificates are used to verify that packages have been appropriately signed before being installed, depending on the signature policy of the image or the publisher, whichever is more restrictive.</para>
 <orderedlist><listitem><para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window.</para>
 </listitem>
 <listitem><para>Select the publisher whose security you want to modify.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
-</listitem>
-<listitem><para>Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field.</para>
-</listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file.</para>
-</listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file.</para>
-</listitem>
-<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para>
-</listitem>
-<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
-</listitem>
-</orderedlist>
-</subtopic>
-<subtopic id="gjkyr"><title>Publisher Mirrors</title>
-<para>A mirror repository is an identical copy of data in an origin repository. A repository can be copied and the data synchronized to maintain identical repositories in separate locations.</para>
-<para>To change, add, or remove a publisher mirror, perform the following steps:</para>
-<orderedlist><listitem><para>Select the <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> menu option to open the Manage Publishers window.</para>
-</listitem>
-<listitem><para>Select the publisher whose mirrors you want to modify.</para>
-</listitem>
-<listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
-</listitem>
-<listitem><para>Click the Mirrors label to display the Mirror field and the list of mirrors.</para>
-</listitem>
-<listitem><para>You can change, add, or remove a mirror for this publisher.</para>
-<itemizedlist><listitem><para>To change a mirror, delete the mirror you want to change and then add a new mirror.</para>
-</listitem>
-<listitem><para>To add a mirror, enter the URI of the new mirror you want to associate with the publisher in the Mirror field and click the <guibutton>Add</guibutton> button. The new URI is added to the list below the Mirror field.</para>
-</listitem>
-<listitem><para>To remove a mirror, select the URI you want to delete from the list below the Mirror field and click the <guibutton>Remove</guibutton> button. The selected URI is removed from the list.</para>
-</listitem>
+<listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window. The publisher that was selected in the Manage Publishers window is listed in the title of the Modify Publisher window.</para>
+<itemizedlist><listitem><para>Select the General tab to add the SSL key and SSL certificate if a publisher has a secure origin.</para></listitem>
+<listitem><para>Select the Certificates tab to manage certificates for this publisher.</para></listitem>
+<listitem><para>Select the Signature Policy tab to manage signature policy for this publisher.</para></listitem>
 </itemizedlist>
 </listitem>
-<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para>
-</listitem>
-<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
-</listitem>
 </orderedlist>
-</subtopic>
+<sect3 id="keys-certs"><title>Adding SSL Keys and Certificates</title>
+<para>If a publisher has a secure origin, add the SSL key and SSL certificate for the publisher.</para>
+<orderedlist><listitem><para>Click the General tab of the Modify Publisher window.</para></listitem>
+<listitem><para>Click the SSL Key and Certificate label to display the SSL Key field and the SSL Certificate field.</para></listitem>
+<listitem><para>Click the <guibutton>Browse</guibutton> button to the right of the SSL Key field to select the SSL Key file.</para></listitem>
+<listitem><para>Click the <guibutton>Browse</guibutton> button to the right of the SSL Certificate field to select the SSL Certificate file.</para> </listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para></listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para></listitem>
+</orderedlist>
+</sect3>
+<sect3 id="manage-certs"><title>Managing Certificates</title>
+<orderedlist><listitem><para>Click the Certificates tab of the Modify Publisher window.</para></listitem>
+<listitem><para>Use the buttons below the list of certificates to add a certificate or to remove, revoke, or reinstate the certificate that is currently selected in the list.</para>
+<para>Note that any actions you take in the Modify Publisher window are applied to the selected publisher's certificates only after you click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window. If you click the <guibutton>Cancel</guibutton> button, no changes are applied.</para>
+<itemizedlist><listitem><para><guibutton>Add</guibutton>. Add a new publisher certificate for the publisher listed in the Modify Publisher window title. In the Add Publisher Certificate window, browse to select the certificate (<tt>.pem</tt>) file. Click the <guibutton>OK</guibutton> button at the bottom of the Add Publisher Certificate window. The newly added certificate is selected in the certificates list in the Certificates tab of the Modify Publisher window. The details pane indicates that this certificate is "marked to be added." This certificate will be added after you click the <guibutton>OK</guibutton> button on the Modify Publisher window.</para></listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>In the list of certificates for this publisher, select the certificate you want to modify or whose details you want to check. Details about the selected certificate are shown below the list of certificates and row of buttons. Note that an expired certificate can still be Approved and used to validate signed packages that were published (not necessarily installed) before the certificate expired.</para>
+<para>Click the headings of the list of certificates to resort the list. The Organization and Name columns are resizable.</para>
+<itemizedlist><listitem><para><guibutton>Remove</guibutton>. Remove the certificate that is currently selected in the certificates list.</para></listitem>
+<listitem><para><guibutton>Revoke</guibutton>. If the certificate currently selected in the certificates list is Approved, click the <guibutton>Revoke</guibutton> button to treat this certificate as revoked. In the certificates list, the Status of this certificate changes to Revoked. This change is applied to the certificate after you click the <guibutton>OK</guibutton> button on the Modify Publisher window.</para></listitem>
+<listitem><para><guibutton>Reinstate</guibutton>. If the certificate currently selected in the certificates list is Revoked, click the <guibutton>Reinstate</guibutton> button to treat this certificate as approved. The details pane indicates that this certificate is "marked to be reinstated." This certificate will be reinstated after you click the <guibutton>OK</guibutton> button on the Modify Publisher window.</para></listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para></listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para></listitem>
+</orderedlist>
+</sect3>
+<sect3 id="pub-sig-policy"><title>Managing Signature Policy</title>
+<orderedlist><listitem><para>Click the Signature Policy tab of the Modify Publisher window.</para></listitem>
+<listitem><para>Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title.</para>
+<para>To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend="img-sig-policy"/>).</para>
+<itemizedlist><listitem><para>Signatures are ignored: Ignore signatures for all manifests.</para></listitem>
+<listitem><para>Signatures are optional, but must be valid if provided: Verify that all manifests with signatures are validly signed, but do not require all installed packages to be signed.</para></listitem>
+<listitem><para>One or more valid signatures are required: Require that all newly installed packages have at least one valid signature.</para></listitem>
+<listitem><para>Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated.</para></listitem></itemizedlist>
+</listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Modify Publisher window.</para></listitem>
+<listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para></listitem>
+</orderedlist>
+</sect3>
+</sect2>
 </sect1>
 <sect1 id="remove-publisher"><title>Removing Publishers</title>
 <para>Perform the following steps to remove a publisher:</para>
@@ -477,7 +520,8 @@
 </listitem>
 <listitem><para>Select the publisher that you want to remove.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Remove</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
+<listitem><para>Click the <guibutton>Remove</guibutton> button to the right of the publisher list.</para>
+<para>If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
 </listitem>
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
@@ -486,13 +530,13 @@
 </chapter>
 <chapter id="manage-be"><title>Managing Boot Environments</title>
 <para>A boot environment (BE) is a bootable image. You can maintain multiple BEs on your Oracle Solaris system. One BE is the default BE at startup or reboot. Other BEs are available as alternate boot selections. The BE you are booted into is the active BE.</para>
-<para>You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Managing Boot Environments With Oracle Solaris 11 Express</citetitle>.</para>
+<para>You can use the <literal>beadm</literal>(1) command to create, rename, mount, unmount, activate, or destroy BEs. For complete information about BEs, see <citetitle>Creating and Managing Boot Environments After Installation</citetitle>.</para>
 <para>Package Manager provides a subset of the functionality that the <literal>beadm</literal>(1) command provides. Use the Package Manager <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> option to open the Manage Boot Environments window. The Manage Boot Environments window lists the BEs on this system and enables you to activate, rename, and delete those BEs as described below.</para>
 <sect1 id="create-be"><title>Creating a BE</title>
 <para>A new BE is automatically created when you do one of the following actions:</para>
 <itemizedlist><listitem><para>Install the Oracle Solaris OS.</para>
 </listitem>
-<listitem><para>Update particular key system packages such as some drivers and other kernel components.</para>
+<listitem><para>Install or update particular key system packages such as some drivers and other kernel components.</para>
 </listitem>
 <listitem><para>Use the <literal>beadm create</literal> command.</para>
 </listitem>
@@ -513,7 +557,7 @@
 <para>You cannot rename the currently active BE.</para>
 <para>You cannot rename a BE that you have marked for deletion.</para>
 <para>To rename a BE, perform the following steps:</para>
-<orderedlist><listitem><para>Double-click the name of the BE that you want to rename.</para>
+<orderedlist><listitem><para>Double-click the name of the BE that you want to rename. The name field becomes editable.</para>
 </listitem>
 <listitem><para>Enter the new name.</para>
 </listitem>
@@ -560,7 +604,7 @@
 <orderedlist><listitem><para>Locate the <filename>.p5i</filename> file. This file might be on your desktop or on a web site.</para>
 </listitem>
 <listitem><para>Use one of the following methods to start Package Manager in WebInstall mode:</para>
-<itemizedlist><listitem><para>Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager in WebInstall mode) is launched.</para>
+<itemizedlist><listitem><para>Click on a <filename>.p5i</filename> file on your desktop. The associated application (Package Manager Web Installer) is launched.</para>
 </listitem>
 <listitem><para>Start Package Manager from the command line along with a path to the <filename>.p5i</filename> file. For example, enter the following command:</para>
 <screen># <userinput>packagemanager/<replaceable>path_to_p5i_file/file.p5i</replaceable></userinput></screen>
@@ -570,7 +614,7 @@
 </listitem>
 </itemizedlist>
 </listitem>
-<listitem><para>The Install/Update window is displayed. The label at the top of the window is: &#8220;Package Manager Web Installer/The following will be added to your system:&#8221; Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation.</para>
+<listitem><para>The Install/Update window is displayed. The label at the top of the window is: “Package Manager Web Installer/The following will be added to your system:” Then the publishers and packages are listed. Click the <guibutton>Proceed</guibutton> button to continue with the installation.</para>
 <itemizedlist><listitem><para>If the package publisher is not already configured on your system, the Add Publisher window is displayed. The name and URI of the publisher are already entered.</para>
 <para>If the publishers to be added are secure publishers, an SSL key and certificate are required. Browse to locate the SSL Key and SSL Certificate on your system.</para>
 <para>The Adding Publisher Complete dialog displays if the publisher is added successfully. Click the <guibutton>OK</guibutton> button to continue with the installation.</para>
@@ -580,7 +624,6 @@
 </itemizedlist>
 </listitem>
 <listitem><para>The Install/Update window now looks the same as when you select <guibutton>Install/Update</guibutton> from within Package Manager.</para>
-<para>The application closes when all packages are installed.</para>
 </listitem>
 </orderedlist>
 </sect1>
@@ -593,23 +636,43 @@
 <para>If an error or warning is logged, a yellow triangle is displayed on the left side of the status bar. Click the yellow triangle to display the Logs window.</para>
 </sect1>
 </chapter>
-<chapter id="pkg-mgr-prefs"><title>Setting GUI Preferences</title>
+<chapter id="pkg-mgr-prefs"><title>Setting Preferences</title>
 <para>Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> menu option to change some of the Package Manager user interface settings.</para>
+<para>The Preferences window has three tabs:</para>
+<itemizedlist><listitem><para>The General tab enables you to set exit preferences and confirmation dialog preferences.</para></listitem>
+<listitem><para>The Optional Components tab enables you to set preferences for which optional package components to install when you install or update a package.</para></listitem>
+<listitem><para>The Signature Policy tab enables you to set signature policy for this image.</para></listitem>
+</itemizedlist>
 <sect1 id="gjktu"><title>Exit Preferences</title>
-<para>If the &#8220;Remember current state on exit&#8221; box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:</para>
-<itemizedlist><listitem><para><emphasis role="strong">Vertical and horizontal separators</emphasis> &#8212; Widths and heights of the panes in the window</para>
+<para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab.</para>
+<para>If the “Remember current state on exit” box is checked, Package Manager saves the following settings and restores them the next time you start Package Manager:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Vertical and horizontal separators</emphasis> — Widths and heights of the panes in the window</para>
 </listitem>
-<listitem><para><emphasis role="strong">Window size</emphasis> &#8212; Overall size of the Package Manager window</para>
+<listitem><para><emphasis role="strong">Window size</emphasis> — Overall size of the Package Manager window</para>
 </listitem>
-<listitem><para><emphasis role="strong">Publisher option</emphasis> &#8212; The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed</para>
+<listitem><para><emphasis role="strong">Publisher option</emphasis> — The publisher or other option that is selected in the <guimenu>Publisher</guimenu> drop-down menu when Package Manager is closed</para>
 </listitem>
-<listitem><para><emphasis role="strong">Categories</emphasis> &#8212; The selected category and the expanded and collapsed categories for each publisher</para>
+<listitem><para><emphasis role="strong">Categories</emphasis> — The selected category and the expanded and collapsed categories for each publisher</para>
 </listitem>
 </itemizedlist>
 </sect1>
 <sect1 id="gjkug"><title>Confirmation Dialog Preferences</title>
+<para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the General tab.</para>
 <para>When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window.</para>
-<para>Clicking the &#8220;Do not show this confirmation dialog again&#8221; check box in a particular confirmation dialog also unsets this preference for that dialog.</para>
+<para>Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog.</para>
+</sect1>
+<sect1 id="languages"><title>Language Options Preferences</title>
+<para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab.</para>
+<para>By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install.</para>
+<para>Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings.</para>
+</sect1>
+<sect1 id="dev-doc"><title>Other Optional Component Preferences</title>
+<para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab.</para>
+<para>By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation.</para>
+<para>Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings.</para>
+</sect1>
+<sect1 id="img-sig-policy"><title>Signature Policy Preferences</title>
+<para>Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, use the Signature Policy tab of the Modify Publishers window. The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend="pub-sig-policy"/>.</para>
 </sect1>
 </chapter>
 <glossary id="glossary"><title>Glossary</title>
@@ -645,7 +708,11 @@
 </glossdef>
 </glossentry>
 <glossentry><glossterm>publisher</glossterm>
-<glossdef lang="en"><para>A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes.</para>
+<glossdef><para>A person, group, or corporation that designs, creates, and publishes a package to a package server. The package server in turn serves the packages from the (default) publisher, for downloading purposes.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>system publisher</glossterm>
+<glossdef><para>?</para>
 </glossdef>
 </glossentry>
 </glossary>

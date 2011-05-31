@@ -797,9 +797,13 @@ class Preferences:
                 self.gconf.set_show_remove(
                     self.w_confirm_remove_checkbutton.get_active())
 
-        @staticmethod
-        def __on_preferenceshelp_clicked(widget):
-                gui_misc.display_help("pkg-mgr-prefs")
+        def __on_preferenceshelp_clicked(self, widget):
+                pagenum = self.w_preferences_notebook.get_current_page()
+                if pagenum == PREFERENCES_NOTEBOOK_SIG_POL_PAGE:
+                        tag = "img-sig-policy"
+                else:
+                        tag = "pkg-mgr-prefs"
+                gui_misc.display_help(tag)
 
         def __on_languages_all_radiobutton_toggled(self, widget):
                 self.w_locales_treeview.set_sensitive(

@@ -2519,9 +2519,15 @@ class Repository(progress.GuiProgressTracker):
         def __on_manage_help_clicked(widget):
                 gui_misc.display_help("manage-publisher")
 
-        @staticmethod
-        def __on_modify_repo_help_clicked(widget):
-                gui_misc.display_help("manage-publisher")
+        def __on_modify_repo_help_clicked(self, widget):
+                pagenum = self.w_modify_pub_notebook.get_current_page()
+                if pagenum == MODIFY_NOTEBOOK_GENERAL_PAGE:
+                        tag = "modify-publisher"
+                elif pagenum == MODIFY_NOTEBOOK_CERTIFICATE_PAGE:
+                        tag = "manage-certs"
+                else:
+                        tag = "pub-sig-policy"
+                gui_misc.display_help(tag)
 
         @staticmethod
         def __update_publisher_details(pub, details_view):
