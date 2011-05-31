@@ -119,11 +119,12 @@ def create_sig_policy_from_property(prop_sig_pol, prop_sig_req_names):
         names = []
         #Names with embedded commas, the default name separator, need to
         #be quoted to be treated as a single name
-        for name in prop_sig_req_names:
-                if name.split(",", 1) == 2:
-                        names.append("\"%s\"" % name)
-                else:
-                        names.append(name)
+        if prop_sig_req_names:
+                for name in prop_sig_req_names:
+                        if name.split(",", 1) == 2:
+                                names.append("\"%s\"" % name)
+                        else:
+                                names.append(name)
         sig_policy = {}
         sig_policy[SIG_POLICY_IGNORE] = False
         sig_policy[SIG_POLICY_VERIFY] = False

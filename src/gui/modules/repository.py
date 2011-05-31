@@ -34,8 +34,6 @@ PUBCERT_REVOKED_STR = _("Revoked")
 PUBCERT_NOTSET_HASH = "HASH-NOTSET" #No L10N required
 PUBCERT_NOTAVAILABLE = _("Not available")
 
-PREFERRED_PRIORITY = 0
-
 import sys
 import os
 import pango
@@ -529,8 +527,10 @@ class Repository(progress.GuiProgressTracker):
         def __fetch_pub_signature_policy(self):
                 pub = self.repository_modify_publisher
                 prop_sig_pol = pub.signature_policy.name
-                prop_sig_req_names = \
-                        pub.properties[gui_misc.PROP_SIGNATURE_REQUIRED_NAMES]
+                prop_sig_req_names = None
+                if gui_misc.PROP_SIGNATURE_REQUIRED_NAMES in pub.properties:
+                        prop_sig_req_names = \
+                                pub.properties[gui_misc.PROP_SIGNATURE_REQUIRED_NAMES]
                 return gui_misc.create_sig_policy_from_property(
                     prop_sig_pol, prop_sig_req_names)
 
@@ -1266,6 +1266,8 @@ class Repository(progress.GuiProgressTracker):
                                 model.insert(j, publisher_row)
 
                 self.w_publishers_treeview.set_model(sorted_model)
+                if len(sorted_model) == 0:
+                        self.__set_empty_pub_list()
 
                 if restore_changes:
                         if self.new_pub:
@@ -1278,6 +1280,14 @@ class Repository(progress.GuiProgressTracker):
                                         self.w_publishers_treeview.scroll_to_cell(
                                             selected_rows[1][0])
                                         selection.select_path(selected_rows[1][0])
+
+        def __set_empty_pub_list(self):
+                details_buffer = self.w_manage_publishers_details.get_buffer()
+                details_buffer.set_text("")
+                self.w_manage_modify_btn.set_sensitive(False)
+                self.w_manage_remove_btn.set_sensitive(False)
+                self.w_manage_up_btn.set_sensitive(False)
+                self.w_manage_down_btn.set_sensitive(False)
 
         def __select_last_publisher(self):
                 sorted_model = self.w_publishers_treeview.get_model()
@@ -1599,10 +1609,10 @@ class Repository(progress.GuiProgressTracker):
                 model = filtered_model.get_model()
                 itr = model.get_iter(path)
                 if itr == None:
-                        return
-                preferred = 0 == model.get_value(itr,
-                    enumerations.PUBLISHER_PRIORITY_CHANGED)
-                if preferred:
+                        self.w_manage_modify_btn.set_sensitive(False)
+                        self.w_manage_remove_btn.set_sensitive(False)
+                        self.w_manage_up_btn.set_sensitive(False)
+                        self.w_manage_down_btn.set_sensitive(False)
                         return
                 pub = model.get_value(itr, enumerations.PUBLISHER_OBJECT)
                 if pub.sys_pub:
@@ -1616,24 +1626,27 @@ class Repository(progress.GuiProgressTracker):
         @staticmethod
         def __is_at_least_one_entry(treeview):
                 model = treeview.get_model()
-                if len(model) > 1:
+                if len(model) >= 1:
                         return True
                 return False
 
         def __enable_disable_remove_modify_btn(self, itr, model):
                 if itr == None:
+                        self.w_manage_modify_btn.set_sensitive(False)
+                        self.w_manage_remove_btn.set_sensitive(False)
+                        self.w_manage_up_btn.set_sensitive(False)
+                        self.w_manage_down_btn.set_sensitive(False)
                         return
                 remove_val = False
                 modify_val = False
                 if self.__is_at_least_one_entry(self.w_publishers_treeview):
+                        remove_val = True
+                        modify_val = True
                         pub = model.get_value(itr,
                                 enumerations.PUBLISHER_OBJECT)
-                        if not  pub.sys_pub:
-                                current_priority = model.get_value(itr,
-                                    enumerations.PUBLISHER_PRIORITY_CHANGED)
-                                if current_priority != PREFERRED_PRIORITY:
-                                        remove_val = True
-                                modify_val = True
+                        if pub.sys_pub:
+                                remove_val = False
+                                modify_val = False
                 self.w_manage_modify_btn.set_sensitive(modify_val)
                 self.w_manage_remove_btn.set_sensitive(remove_val)
 
@@ -1643,8 +1656,6 @@ class Repository(progress.GuiProgressTracker):
                 sorted_size = len(self.w_publishers_treeview.get_model())
 
                 if itr:
-                        enabled = model.get_value(itr,
-                            enumerations.PUBLISHER_ENABLED)
                         current_priority = model.get_value(itr,
                             enumerations.PUBLISHER_PRIORITY_CHANGED)
                         is_sys_pub = model.get_value(itr,
@@ -1666,21 +1677,7 @@ class Repository(progress.GuiProgressTracker):
                                 if prev_pub.sys_pub:
                                         prev_sys_pub = True
              
-                        if current_priority == PREFERRED_PRIORITY:
-                                up_enabled = False
-                                if next_sys_pub or is_sys_pub:
-                                        down_enabled = False
-                                else:
-                                        if next_itr:
-                                                down_enabled = model.get_value(
-                                                    next_itr, 
-                                                    enumerations.PUBLISHER_ENABLED)
-                        elif (current_priority == PREFERRED_PRIORITY + 1) and not enabled:
-                                up_enabled = False
-                                down_enabled = True
-                                if current_priority == sorted_size - 1:
-                                        down_enabled = False
-                        elif current_priority == sorted_size - 1:
+                        if current_priority == sorted_size - 1:
                                 up_enabled = True
                                 down_enabled = False
 
@@ -2375,6 +2372,8 @@ class Repository(progress.GuiProgressTracker):
                                 row = sorted_path[0]-1
                                 if row >= 0:
                                         tsel.select_path((row,))
+                if len(sorted_model) == 0:
+                        self.__set_empty_pub_list()
 
         def __on_manage_move_up_clicked(self, widget):
                 before_name = None
@@ -2834,18 +2833,13 @@ class Repository(progress.GuiProgressTracker):
         @staticmethod
         def __toggle_data_function(column, renderer, model, itr, data):
                 if itr:
-                        # Do not allow to remove the publisher of first priority search
-                        # or if it is a system publisher
+                        # Do not allow to remove the publisher if it is a system
+                        # publisher
                         val = True
-                        priority = model.get_value(itr, 
-                            enumerations.PUBLISHER_PRIORITY_CHANGED)
-                        if priority == PREFERRED_PRIORITY:
+                        pub = model.get_value(itr,
+                            enumerations.PUBLISHER_OBJECT)
+                        if pub.sys_pub:
                                 val = False
-                        else:
-                                pub = model.get_value(itr, 
-                                    enumerations.PUBLISHER_OBJECT)
-                                if pub.sys_pub:
-                                        val = False
                         renderer.set_property("sensitive", val)
 
         @staticmethod

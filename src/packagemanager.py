@@ -88,6 +88,7 @@ import pkg.misc as misc
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
+import pkg.client.publisher as publisher
 import pkg.portable as portable
 import pkg.fmri as fmri
 import pkg.nrlock as nrlock
@@ -3132,7 +3133,11 @@ class PackageManager:
                                    enumerations.REPOSITORY_PREFIX)
                 self.__disconnect_repository_model()
                 self.repositories_list = self.__get_new_repositories_liststore()
-                default_pub = api_o.get_highest_ranked_publisher().prefix
+                highest_ranked_pub = api_o.get_highest_ranked_publisher()
+                default_pub = None
+                if highest_ranked_pub != None and  \
+                        isinstance(highest_ranked_pub, publisher.Publisher):
+                        default_pub = highest_ranked_pub.prefix
                 if self.default_publisher != default_pub:
                         self.__clear_pkg_selections()
                         self.default_publisher = default_pub

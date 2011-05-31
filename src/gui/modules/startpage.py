@@ -38,6 +38,8 @@ except ImportError:
 import pkg.gui.misc as gui_misc
 import pkg.gui.parseqs as parseqs
 from pkg.client import global_settings
+import pkg.gui.enumerations as enumerations
+import pkg.gui.repository as repository
 
 logger = global_settings.logger
 
@@ -71,6 +73,9 @@ INTERNAL_SEARCH_ALL_PUBS = "search_all_publishers" #Internal field: search all p
 INTERNAL_SEARCH_ALL_PUBS_INSTALLED = "search_all_publishers_installed"
                                #Internal field: search all publishers installed
 INTERNAL_SEARCH_HELP = "search_help" # Internal field: display search help
+
+INTERNAL_SEARCH_MNG_PUBS = "search_mng_pubs"
+                                # Internal field: display Manage Publishers dialog
 
 FONTSIZE_H3_DEFAULT = 16        # Default H3 font size when display web page
 FONTSIZE_BODY_DEFAULT = 10      # Default Body font size when display web page
@@ -346,6 +351,21 @@ class StartPage:
                         gui_misc.display_help("search-pkg")
                         return
 
+                if search_action and search_action == INTERNAL_SEARCH_MNG_PUBS:
+                        if handle_what == DISPLAY_LINK:
+                                return _("Display %(s1)sManage Publishers%(e1)s") % \
+                                        {"s1": s1, "e1": e1}
+                        self.parent.update_statusbar_message(
+                            _("Loading %(s1)sManage Publishers%(e1)s ...") %
+                            {"s1": s1, "e1": e1})
+
+                        repository.Repository(self.parent,
+                            self.parent.image_directory,
+                            action=enumerations.MANAGE_PUBLISHERS,
+                            main_window = self.parent.w_main_window,
+                            gconf = self.parent.gconf)
+                        return
+
                 # View Recent Search Results
                 if search_action and \
                         search_action.find(INTERNAL_SEARCH_VIEW_RESULTS) > -1:
@@ -479,7 +499,31 @@ class StartPage:
 
                 self.__load_internal_page(self.cached_internal_stream)
 
+        def setup_search_all_no_pubs_page(self):
+                tbl_header = INFORMATION_TABLE_HEADER % {"base": START_PAGE_IMAGES_BASE,
+                    "prefix": self.image_prefix}
+                tbl_header += _("alt='[Information]' title='Information' ALIGN='bottom'>"
+                    "</TD><TD><h3><b>Search All Publishers</b></h3><TD></TD>"
+                    "</TR><TR><TD></TD><TD> There is nothing to search as there are no "
+                    "configured or enabled publishers.</TD></TR>"
+                    )
+
+                tbl_body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD>"
+                    "</TR><TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
+                    "<TR><TD></TD><TD<TD>"
+                    )
+
+                tbl_body += _("<li style='padding-left:7px'>"
+                    "Add or enable publishers: <a href='pm?pm-action=internal&search="
+                    "%s'>Manage Publishers</a></li></TD></TR>") % INTERNAL_SEARCH_MNG_PUBS
+                tbl_footer = "</table>"
+                self.__load_internal_page(tbl_header + tbl_body + tbl_footer)
+
+
         def setup_search_all_page(self, publisher_list, publisher_all):
+                if not publisher_list:
+                        self.setup_search_all_no_pubs_page()
+                        return
                 tbl_header = INFORMATION_TABLE_HEADER % {"base": START_PAGE_IMAGES_BASE,
                     "prefix": self.image_prefix}
                 tbl_header += _("alt='[Information]' title='Information' ALIGN='bottom'>"
