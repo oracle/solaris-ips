@@ -1,0 +1,33 @@
+package system/manual
+consolidation "man"
+classification "System/Text Tools"
+import SUNWman
+#
+# Drop any manual pages that are being delivered by both SUNWman and any
+# other packages. These typically reflect pages that are newly being
+# delivered by their relevant component packages but SUNWman has not yet
+# been updated to reflect the change.
+#
+drop usr/share/man/man1/netcat.1
+drop usr/share/man/man1/xgrep.1
+drop usr/share/man/man1m/asradm.1m
+drop usr/share/man/man1m/croinfo.1m
+drop usr/share/man/man1m/devchassisd.1m
+drop usr/share/man/man1m/zonep2vchk.1m
+drop usr/share/man/man3c/localelist.3c
+drop usr/share/man/man3c/localelistfree.3c
+drop usr/share/man/man3socket/sctp_connectx.3socket
+drop usr/share/man/man3socket/sctp_recvv.3socket
+drop usr/share/man/man3socket/sctp_sendv.3socket
+drop usr/share/man/man5/KSSL.5
+drop usr/share/man/man5/MWAC.5
+drop usr/share/man/man5/kssl.5
+drop usr/share/man/man5/locale_alias.5
+drop usr/share/man/man7fs/devchassis.7fs
+end package
+
+package SUNWman
+consolidation "man"
+renamed 133
+depend system/manual
+end package

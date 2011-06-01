@@ -52,6 +52,8 @@ depend fmri=diagnostic/cpu-counters type=group
 depend fmri=diagnostic/ddu/data type=group
 depend fmri=diagnostic/ddu/library type=group
 depend fmri=diagnostic/scanpci type=group
+depend fmri=diagnostic/snoop type=group
+depend fmri=diagnostic/spray type=group
 depend fmri=driver/audio type=group
 $(sparc_ONLY)depend fmri=driver/cpu/us type=group
 depend fmri=driver/crypto/dca type=group
@@ -217,6 +219,7 @@ depend fmri=network/ftp type=group
 depend fmri=network/ipfilter type=group
 depend fmri=network/iscsi/initiator type=group
 depend fmri=network/iscsi/iser type=group
+depend fmri=network/legacy-remote-utilities type=group
 depend fmri=network/ping type=group
 depend fmri=network/rsync type=group
 depend fmri=network/ssh type=group
@@ -238,8 +241,6 @@ depend fmri=service/hal type=group
 $(sparc_ONLY)depend fmri=service/key-management/sun-fire-15000 type=group
 depend fmri=service/management/sysidtool type=group
 depend fmri=service/network/dns/mdns type=group
-depend fmri=service/network/network-clients type=group
-depend fmri=service/network/network-servers type=group
 depend fmri=service/network/ntp type=group
 depend fmri=service/network/smtp/sendmail type=group
 depend fmri=service/network/ssh type=group

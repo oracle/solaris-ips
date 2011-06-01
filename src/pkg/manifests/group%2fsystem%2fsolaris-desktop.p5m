@@ -100,6 +100,8 @@ depend fmri=diagnostic/ddu/locale type=group
 depend fmri=diagnostic/latencytop type=group
 depend fmri=diagnostic/powertop type=group
 depend fmri=diagnostic/scanpci type=group
+depend fmri=diagnostic/snoop type=group
+depend fmri=diagnostic/spray type=group
 depend fmri=diagnostic/top type=group
 depend fmri=diagnostic/xload type=group
 depend fmri=documentation/gnome/gnome-user-docs type=group
@@ -246,6 +248,7 @@ depend fmri=editor/gedit type=group
 depend fmri=editor/nano type=group
 depend fmri=editor/vim type=group
 depend fmri=editor/vim/vim-core type=group
+depend fmri=file/filesync type=group
 depend fmri=file/gnu-coreutils type=group
 depend fmri=file/gnu-findutils type=group
 depend fmri=file/slocate type=group
@@ -390,7 +393,7 @@ depend fmri=library/neon type=group
 depend fmri=library/nspr type=group
 depend fmri=library/pcre type=group
 depend fmri=library/perl-5/authen-pam type=group
-depend fmri=library/perl-5/xml-parser type=group
+depend fmri=library/perl-5/xml-parser-584 type=group
 depend fmri=library/popt type=group
 depend fmri=library/print/cups-libs type=group
 depend fmri=library/print/open-printing type=group
@@ -460,16 +463,20 @@ depend fmri=media/cdrtools type=group
 depend fmri=naming/ldap type=group
 depend fmri=network/bridging type=group
 depend fmri=network/dns/bind type=group
+depend fmri=network/finger type=group
 depend fmri=network/ftp type=group
 depend fmri=network/ftp/ncftp type=group
 depend fmri=network/ipfilter type=group
 depend fmri=network/iscsi/initiator type=group
 depend fmri=network/iscsi/iser type=group
+depend fmri=network/legacy-remote-utilities type=group
 depend fmri=network/ping type=group
 depend fmri=network/rsync type=group
 depend fmri=network/ssh type=group
 depend fmri=network/ssh/ssh-key type=group
+depend fmri=network/talk type=group
 depend fmri=network/telnet type=group
+depend fmri=network/whois type=group
 depend fmri=package/pkg type=group
 depend fmri=package/pkg/package-manager type=group
 depend fmri=package/pkg/system-repository type=group
@@ -500,6 +507,7 @@ depend fmri=runtime/tcl-8 type=group
 depend fmri=runtime/tk-8 type=group
 depend fmri=security/bart type=group
 depend fmri=security/sudo type=group
+depend fmri=service/diagnostic/spray type=group
 depend fmri=service/fault-management type=group
 depend fmri=service/file-system/nfs type=group
 depend fmri=service/file-system/smb type=group
@@ -507,14 +515,16 @@ depend fmri=service/gnome/desktop-cache type=group
 depend fmri=service/hal type=group
 $(sparc_ONLY)depend fmri=service/key-management/sun-fire-15000 type=group
 depend fmri=service/management/sysidtool type=group
+depend fmri=service/network/comsat type=group
 depend fmri=service/network/dns/mdns type=group
+depend fmri=service/network/finger type=group
 depend fmri=service/network/ftp type=group
-depend fmri=service/network/network-clients type=group
-depend fmri=service/network/network-servers type=group
+depend fmri=service/network/legacy-remote-utilities type=group
 depend fmri=service/network/ntp type=group
 depend fmri=service/network/slp type=group
 depend fmri=service/network/smtp/sendmail type=group
 depend fmri=service/network/ssh type=group
+depend fmri=service/network/talk type=group
 depend fmri=service/network/telnet type=group
 depend fmri=service/network/tftp type=group
 depend fmri=service/network/wpa type=group
@@ -528,6 +538,7 @@ depend fmri=service/security/kerberos-5 type=group
 depend fmri=service/storage/fibre-channel/fc-fabric type=group
 depend fmri=service/storage/media-volume-manager type=group
 depend fmri=service/storage/removable-media type=group
+depend fmri=service/storage/rmt type=group
 depend fmri=shell/bash type=group
 depend fmri=shell/expect type=group
 depend fmri=shell/pipe-viewer type=group
@@ -592,6 +603,7 @@ depend fmri=system/input-method/library/libthai type=group
 depend fmri=system/input-method/library/m17n type=group
 depend fmri=system/input-method/library/m17n/contrib type=group
 depend fmri=system/install type=group
+depend fmri=system/install/auto-install/auto-install-common type=group
 depend fmri=system/install/configuration type=group
 depend fmri=system/install/locale type=group
 depend fmri=system/install/tests type=group
@@ -804,7 +816,6 @@ depend fmri=x11/server/xorg/driver/xorg-input-keyboard type=group
 depend fmri=x11/server/xorg/driver/xorg-input-mouse type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-input-synaptics type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-input-vmmouse type=group
-depend fmri=x11/server/xorg/driver/xorg-video type=group
 depend fmri=x11/server/xorg/driver/xorg-video-ast type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-ati type=group
 $(i386_ONLY)depend fmri=x11/server/xorg/driver/xorg-video-cirrus type=group
