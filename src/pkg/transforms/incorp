@@ -32,6 +32,13 @@
 # from the incorporation manifest itself.
 <transform set name=pkg.fmri -> emit depend type=$(DEPTYPE) fmri=%(value) pkg.debug.keepme=true>
 <transform file dir link hardlink license user group driver legacy signature -> drop>
+
+#
+# if any packages that we incorporate have a parent dependency on
+# themselves, then we need to have a parent dependency on ourselves.
+#
+<transform depend type=parent fmri=feature/package/dependency/self -> default pkg.debug.keepme true>
+
 <transform depend set -> default pkg.debug.keepme false>
 <transform depend set pkg.debug.keepme=false -> drop>
 <transform depend set pkg.debug.keepme=true -> delete pkg.debug.keepme .*>

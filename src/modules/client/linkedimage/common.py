@@ -1865,7 +1865,6 @@ class LinkedImage(object):
                     "consolidation/osnet/osnet-incorporation",
                     "consolidation/ips/ips-incorporation"]:
                         for (ver, fmris) in cat.fmris_by_version(tgt):
-                                inc_fmris |= set(fmris)
                                 for fmri in fmris:
                                         if not self.__has_parent_dep(fmri, cat,
                                             excludes):

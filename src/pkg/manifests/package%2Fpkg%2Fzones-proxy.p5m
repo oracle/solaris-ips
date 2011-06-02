@@ -53,3 +53,6 @@ license cr_Oracle license=cr_Oracle
 depend type=require fmri=pkg:/package/pkg/system-repository \
     variant.opensolaris.zone=global
 depend type=require fmri=pkg:/package/pkg
+# cross zone dependency on private door interfaces
+depend fmri=feature/package/dependency/self type=parent \
+    variant.opensolaris.zone=nonglobal

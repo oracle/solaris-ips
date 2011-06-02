@@ -52,7 +52,6 @@ depend fmri=network/ssh/ssh-key type=group
 depend fmri=network/talk type=group
 depend fmri=network/whois type=group
 depend fmri=package/pkg type=group
-depend fmri=package/pkg/zones-proxy type=group
 depend fmri=security/sudo type=group
 depend fmri=service/management/sysidtool type=group
 depend fmri=service/network/ssh type=group

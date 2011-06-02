@@ -126,9 +126,9 @@ $(PKGDEST)/repo:
 # looks at all manifests, not just the ones listed in $(MANIFESTS).  This is
 # because we need to incorporate obsolete and renamed packages, even if we
 # choose not to continue republishing them.
-$(PDIR)/$(INCORP).mog: manifests/$(INCORP).p5m $(PDIR) transforms/incorp \
-	transforms/incorp2 $(MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
-	$(PKGMOGRIFY) -I transforms incorp2 manifests/$(INCORP).p5m | \
+$(PDIR)/$(INCORP).mog: manifests/$(INCORP).p5m $(PDIR) \
+	$(MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
+	$(PKGMOGRIFY) -I transforms defaults incorp2 manifests/$(INCORP).p5m | \
 		$(PKGMOGRIFY) $(PKGMOG_DEFINES) -D DEPTYPE=incorporate \
 		-I transforms -O $@ /dev/stdin incorp $(MOGRIFESTS:$(PDIR)/$(INCORP).mog=)
 

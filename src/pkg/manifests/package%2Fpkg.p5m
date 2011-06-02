@@ -310,3 +310,8 @@ depend type=require fmri=library/python-2/simplejson-26
 depend type=require fmri=runtime/python-26@2.6.4
 depend type=require fmri=system/library/math
 depend type=require fmri=system/library
+# cross zone dependency on linked image metadata
+depend fmri=feature/package/dependency/self type=parent \
+    variant.opensolaris.zone=nonglobal
+depend fmri=package/pkg/zones-proxy type=group \
+    variant.opensolaris.zone=nonglobal

@@ -1880,6 +1880,11 @@ def main_func():
                     "org.opensolaris.category.2008:Meta Packages/Incorporations"
                 curpkg.actions.append(actions.fromstr(
                     "set name=pkg.depend.install-hold value=core-os"))
+                curpkg.actions.append(actions.fromstr(
+                    "set name=variant.opensolaris.zone value=global value=nonglobal"))
+                curpkg.actions.append(actions.fromstr(
+                    "depend fmri=feature/package/dependency/self type=parent " \
+                    "variant.opensolaris.zone=nonglobal"))
 
                 for incorp in consolidation_incorporations:
                         action = actions.fromstr("depend fmri=%s type=incorporate" % incorp)
