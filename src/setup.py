@@ -70,87 +70,6 @@ elif osname == 'aix':
         arch = "aix"
         ostype = "posix"
 
-# 3rd party software required for the build
-CP = 'CherryPy'
-CPIDIR = 'cherrypy'
-CPVER = '3.1.2'
-CPARC = '%s-%s.tar.gz' % (CP, CPVER)
-CPDIR = '%s-%s' % (CP, CPVER)
-CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
-CPHASH = 'a94aedfd0e675858dbcc32dd250c23d285ee9b88'
-
-PO = 'pyOpenSSL'
-POIDIR = 'OpenSSL'
-POVER = '0.7'
-POARC = '%s-%s.tar.gz' % (PO, POVER)
-PODIR = '%s-%s' % (PO, POVER)
-POURL = 'http://downloads.sourceforge.net/pyopenssl/%s' % (POARC)
-POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
-
-COV = 'coveragepy'
-COVIDIR = 'coverage'
-COVVER = '3.2b2'
-COVPVER = '3.2'
-COVARC = '%s-%s.tar.gz' % (COVIDIR, COVVER)
-COVDIR = '%s-%s' % (COVIDIR, COVVER)
-COVURL = 'http://pypi.python.org/packages/source/c/coverage/%s' % COVARC
-COVHASH = '4710d033b8c6de1efaa562243e5b29e0a31fb8b9'
-
-LDTP = 'ldtp'
-LDTPIDIR = 'ldtp'
-LDTPVER = '1.7.1'
-LDTPMINORVER = '1.7.x'
-LDTPMAJORVER = '1.x'
-LDTPARC = '%s-%s.tar.gz' % (LDTP, LDTPVER)
-LDTPDIR = '%s-%s' % (LDTP, LDTPVER)
-LDTPURL = 'http://download.freedesktop.org/ldtp/%s/%s/%s' % \
-    (LDTPMAJORVER, LDTPMINORVER, LDTPARC)
-LDTPHASH = 'd31213d2b1449a0dadcace723b9ff7041169f7ce'
-
-MAKO = 'Mako'
-MAKOIDIR = 'mako'
-MAKOVER = '0.2.2'
-MAKOARC = '%s-%s.tar.gz' % (MAKO, MAKOVER)
-MAKODIR = '%s-%s' % (MAKO, MAKOVER)
-MAKOURL = 'http://www.makotemplates.org/downloads/%s' % (MAKOARC)
-MAKOHASH = '85c04ab3a6a26a1cab47067449712d15a8b29790'
-
-PLY = 'ply'
-PLYIDIR = 'ply'
-PLYVER = '3.1'
-PLYARC = '%s-%s.tar.gz' % (PLY, PLYVER)
-PLYDIR = '%s-%s' % (PLY, PLYVER)
-PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
-PLYHASH = '38efe9e03bc39d40ee73fa566eb9c1975f1a8003'
-
-PBJ = 'pybonjour'
-PBJIDIR = 'pybonjour'
-PBJVER = '1.1.1'
-PBJARC = '%s-%s.tar.gz' % (PBJ, PBJVER)
-PBJDIR = '%s-%s' % (PBJ, PBJVER)
-PBJURL = 'http://pybonjour.googlecode.com/files/%s' % (PBJARC)
-PBJHASH = '92cabd14e04c5f62ce067c47c2057ee3d424d29b'
-
-PC = 'pycurl'
-PCIDIR = 'curl'
-PCVER = '7.19.0'
-PCPVER= '7.19.0.1'
-PCARC = '%s-%s.tar.gz' % (PC, PCVER)
-PCDIR = '%s-%s' % (PC, PCVER)
-PCURL = 'http://pycurl.sourceforge.net/download/%s' % PCARC
-PCHASH = '3fb59eca1461331bb9e9e8d6fe3b23eda961a416'
-PCENVIRON = {}
-if osname in ("sunos", "linux", "darwin"):
-        PCENVIRON = {'CFLAGS': '-O3'}
-
-M2C = 'M2Crypto'
-M2CIDIR = 'm2crypto'
-M2CVER = '0.21.1'
-M2CARC = '%s-%s.tar.gz' % (M2C, M2CVER)
-M2CDIR = '%s-%s' % (M2C, M2CVER)
-M2CURL = 'http://pypi.python.org/packages/source/M/M2Crypto/%s' % (M2CARC)
-M2CHASH = '3c7135b952092e4f2eee7a94c5153319cccba94e'
-
 pwd = os.path.normpath(sys.path[0])
 
 #
@@ -575,63 +494,6 @@ class install_func(_install):
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-                prep_sw(CP, CPARC, CPDIR, CPURL, CPHASH)
-                install_sw(CP, CPDIR, CPIDIR)
-                if osname == "sunos" and platform.uname()[2] == "5.11":
-                        prep_sw(LDTP, LDTPARC, LDTPDIR, LDTPURL,
-                            LDTPHASH)
-                        saveenv = os.environ.copy()
-                        os.environ["LDFLAGS"] = os.environ.get("LDFLAGS", "") + \
-                            " -lsocket -lnsl"
-                        install_ldtp(LDTP, LDTPDIR, LDTPIDIR)
-                        os.environ = saveenv
-
-                if "BUILD_PYOPENSSL" in os.environ and \
-                    os.environ["BUILD_PYOPENSSL"] != "":
-                        #
-                        # Include /usr/sfw/lib in the build environment
-                        # to ensure that this builds and runs on older
-                        # nevada builds, before openssl moved out of /usr/sfw.
-                        #
-                        saveenv = os.environ.copy()
-                        if osname == "sunos":
-                                os.environ["CFLAGS"] = "-I/usr/sfw/include " + \
-                                    os.environ.get("CFLAGS", "")
-                                os.environ["LDFLAGS"] = \
-                                    "-L/usr/sfw/lib -R/usr/sfw/lib " + \
-                                    os.environ.get("LDFLAGS", "")
-                        prep_sw(PO, POARC, PODIR, POURL, POHASH)
-                        install_sw(PO, PODIR, POIDIR)
-                        os.environ = saveenv
-                prep_sw(M2C, M2CARC, M2CDIR, M2CURL, M2CHASH)
-                install_sw(M2C, M2CDIR, M2CIDIR)
-                prep_sw(MAKO, MAKOARC, MAKODIR, MAKOURL, MAKOHASH)
-                install_sw(MAKO, MAKODIR, MAKOIDIR)
-                prep_sw(PLY, PLYARC, PLYDIR, PLYURL, PLYHASH)
-                install_sw(PLY, PLYDIR, PLYIDIR)
-                prep_sw(PC, PCARC, PCDIR, PCURL, PCHASH)
-                install_sw(PC, PCDIR, PCIDIR, extra_env=PCENVIRON)
-                prep_sw(COV, COVARC, COVDIR, COVURL, COVHASH)
-                install_sw(COV, COVDIR, COVIDIR)
-                prep_sw(PBJ, PBJARC, PBJDIR, PBJURL, PBJHASH)
-                install_sw(PBJ, PBJDIR, PBJIDIR)
-
-                # Remove some bits that we're not going to package, but be sure
-                # not to complain if we try to remove them twice.
-                def onerror(func, path, exc_info):
-                        if exc_info[1].errno != errno.ENOENT:
-                                raise
-
-                for dir in ("cherrypy/scaffold", "cherrypy/test",
-                    "cherrypy/tutorial"):
-                        shutil.rmtree(os.path.join(root_dir, py_install_dir, dir),
-                            onerror=onerror)
-                try:
-                        os.remove(os.path.join(root_dir, "usr/bin/mako-render"))
-                except EnvironmentError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-
 def hash_sw(swname, swarc, swhash):
         if swhash == None:
                 return True
@@ -913,35 +775,6 @@ class dist_func(_bdist):
                 _bdist.initialize_options(self)
                 self.dist_dir = dist_dir
 
-class info_func(Command):
-        user_options = [
-            ("pkg=", None, "Component package name")
-        ]
-        description = "Print component information"
-
-        def initialize_options(self):
-                self.pkg = ""
-
-        def finalize_options(self):
-                self.pkg = urllib.unquote(self.pkg.rsplit(".", 1)[0])
-
-        pkginfo = {
-            "library/python-2/cherrypy": (CPVER, CPVER, CPURL),
-            "library/python-2/coverage": (COVVER, COVPVER, COVURL),
-            "library/python-2/m2crypto": (M2CVER, M2CVER, M2CURL),
-            "library/python-2/mako": (MAKOVER, MAKOVER, MAKOURL),
-            "library/python-2/ply": (PLYVER, PLYVER, PLYURL),
-            "library/python-2/pybonjour": (PBJVER, PBJVER, PBJURL),
-            "library/python-2/pycurl": (PCVER, PCPVER, PCURL),
-            "system/desktop/ldtp": (LDTPVER, LDTPVER, LDTPURL)
-        }
-
-        def run(self):
-                if self.pkg in self.pkginfo:
-                        print "-D SOURCE_VER=%s -D PKG_VER=%s " \
-                            "-D SOURCE_URL=%s" % self.pkginfo[self.pkg]
-
-
 # These are set to real values based on the platform, down below
 compile_args = None
 if osname in ("sunos", "linux", "darwin"):
@@ -978,7 +811,6 @@ cmdclasses = {
         'clean': clean_func,
         'clobber': clobber_func,
         'test': test_func,
-        'info': info_func,
         }
 
 # all builds of IPS should have manpages
