@@ -179,8 +179,7 @@ man1_dir = 'usr/share/man/cat1'
 man1m_dir = 'usr/share/man/cat1m'
 man5_dir = 'usr/share/man/cat5'
 resource_dir = 'usr/share/lib/pkg'
-smf_app_dir = 'lib/svc/manifest/application'
-smf_sys_dir = 'lib/svc/manifest/system'
+smf_app_dir = 'lib/svc/manifest/application/pkg'
 zones_dir = 'etc/zones'
 etcbrand_dir = 'etc/brand/ipkg'
 brand_dir = 'usr/lib/brand/ipkg'
@@ -343,10 +342,8 @@ etcbrand_files = [
 smf_app_files = [
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
-        'svc/pkg-system-repository.xml',
         'svc/pkg-update.xml',
-        ]
-smf_sys_files = [
+        'svc/pkg-system-repository.xml',
         'svc/zoneproxy-client.xml',
         'svc/zoneproxyd.xml'
         ]
@@ -999,7 +996,6 @@ if osname == 'sunos':
                 (brand_dir, brand_files),
                 (etcbrand_dir, etcbrand_files),
                 (smf_app_dir, smf_app_files),
-                (smf_sys_dir, smf_sys_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
                 (sysrepo_dir, sysrepo_files),

@@ -311,12 +311,12 @@ pkg_err_check() {
 # Enable the services needed to perform packaging operations inside a zone.
 #
 enable_zones_services() {                                                       
-	/usr/sbin/svcadm enable -s svc:/application/pkg/system-repository
+	/usr/sbin/svcadm enable -st svc:/application/pkg/system-repository
 	if [[ $? -ne 0 ]]; then
 		error "$f_sysrepo_fail"
 		return 1
 	fi
-	/usr/sbin/svcadm enable -s svc:/application/pkg/zones-proxyd
+	/usr/sbin/svcadm enable -st svc:/application/pkg/zones-proxyd
 	if [[ $? -ne 0 ]]; then
 		error "$f_zones_proxyd_fail"
 		return 1

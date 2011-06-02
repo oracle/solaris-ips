@@ -33,14 +33,15 @@ set name=variant.arch value=$(ARCH)
 dir path=lib
 dir path=lib/svc
 dir path=lib/svc/manifest
-dir path=lib/svc/manifest/system
+dir path=lib/svc/manifest/application
+dir path=lib/svc/manifest/application/pkg
 dir path=usr
 dir path=usr/include
 dir path=usr/lib
 dir path=usr/lib/zones
-file path=lib/svc/manifest/system/zoneproxy-client.xml \
+file path=lib/svc/manifest/application/pkg/zoneproxy-client.xml \
     variant.opensolaris.zone=nonglobal
-file path=lib/svc/manifest/system/zoneproxyd.xml \
+file path=lib/svc/manifest/application/pkg/zoneproxyd.xml \
     variant.opensolaris.zone=global
 file path=usr/include/zoneproxy_impl.h
 file path=usr/lib/zones/zoneproxy-adm mode=0555 \

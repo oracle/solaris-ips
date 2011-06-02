@@ -51,14 +51,6 @@
 	 	<service_fmri value='svc:/system/filesystem/minimal' />
 	 </dependency>
 
-	 <dependency
-		  name='zones'
-		  type='service'
-		  grouping='require_any'
-		  restart_on='none'>
-		  <service_fmri value='svc:/system/zones' />
-	 </dependency>
-
         <dependency name='network'
                 grouping='require_any'
                 restart_on='error'
