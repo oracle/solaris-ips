@@ -60,6 +60,9 @@ f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
 f_sysrepo_fail=$(gettext "Unable to enable svc:/application/pkg/system-repository, please enable the service manually.")
 f_zones_proxyd_fail=$(gettext "Unable to enable svc:/application/pkg/zones-proxyd, please enable the service manually.")
 f_set_sysrepo_prop_fail=$(gettext "Unable to set the use-system-repo property.")
+# Used by install and attach during argument processing
+f_arg_not_dir=$(gettext "Argument %s is not a directory")
+f_arg_not_file=$(gettext "Argument %s is not a regular file")
 
 m_brnd_usage=$(gettext "brand-specific usage: ")
 
