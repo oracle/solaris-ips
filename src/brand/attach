@@ -31,7 +31,7 @@
 
 m_attach_log=$(gettext "Log File: %s")
 m_zfs=$(gettext "A ZFS file system was created for the zone.")
-m_usage=$(gettext  "attach [-a archive] [-d dataset] [-r zfs-recv] [-v] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.\n\tThe -v option enables verbose output.")
+m_usage=$(gettext  "attach [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u] [-v] [-c profile | dir]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.\n\tThe -v option enables verbose output.\n\tThe -c option gives a profile or a directory of profiles to be applied to the system after attach.")
 m_attach_root=$(gettext "               Attach Path: %s")
 m_attach_ds=$(gettext   "        Attach ZFS Dataset: %s")
 m_gzinc=$(gettext       "       Global zone version: %s")
@@ -153,6 +153,7 @@ allow_update=0
 noexecute=0
 
 unset inst_type
+unset sc_config
 
 # Get publisher information for global zone.  These structures are used
 # to store information about the global zone publishers and
@@ -163,7 +164,7 @@ typeset gz_incorporations=""
 #
 verbose=""
 # Other brand attach options are invalid for this brand.
-while getopts "a:d:n:r:uv" opt; do
+while getopts "a:c:d:n:r:uv" opt; do
 	case $opt in
 		a)
 			if [[ -n "$inst_type" ]]; then
@@ -172,6 +173,7 @@ while getopts "a:d:n:r:uv" opt; do
 		 	inst_type="archive"
 			install_media="$OPTARG"
 			;;
+		c)	sc_config="$OPTARG" ;;
 		d)
 			if [[ -n "$inst_type" ]]; then
 				fatal "$incompat_options" "$m_usage"
@@ -311,6 +313,8 @@ LC_ALL=C $PKG attach-linked $verbose -f --allow-relink --accept \
 PKG_IMAGE=$ZONEROOT
 LC_ALL=C $PKG install $verbose pkg:///package/pkg/zones-proxy || \
     pkg_err_check "$f_sysrepo"
+
+[[ -n $sc_config ]] && reconfigure_zone $sc_config
 
 log "\n$m_sync_done"
 log "$m_complete"

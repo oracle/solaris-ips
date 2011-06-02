@@ -24,7 +24,7 @@
 
 . /usr/lib/brand/ipkg/common.ksh
 
-m_usage=$(gettext "clone {sourcezone}")
+m_usage=$(gettext "clone {sourcezone} [-c profile | dir]\n\tThe -c option gives a profile or a directory of profiles to be applied to the system after clone.")
 f_nosource=$(gettext "Error: unable to determine source zone dataset.")
 
 # Clean up on failure
@@ -39,8 +39,9 @@ trap_exit()
 }
 
 # Source and destination zones
+unset sc_config
 typeset src dst	
-# Other brand clone options are invalid for this brand.
+# Brand clone options are handled below
 while getopts "R:z:" opt; do
 	case $opt in
 		R)	opt_R="$OPTARG" ;;
@@ -50,12 +51,22 @@ while getopts "R:z:" opt; do
 done
 shift $((OPTIND-1))
 
-if (($# != 1)); then
-	fail_usage "";
+if (($# < 1)); then
+	fail_usage ""
 fi
 
 init_zone dst "$opt_z" "$opt_R"
 init_zone src "$1"
+shift
+
+let OPTIND=1
+# Other brand clone options are invalid for this brand.
+while getopts "c:" opt; do
+	case $opt in
+		c)	sc_config="$OPTARG" ;;
+		*)	fail_usage "";;
+	esac
+done
 
 get_current_gzbe
 get_active_be src || fatal "$e_no_active_be"
@@ -74,11 +85,11 @@ ZONE_IS_MOUNTED=1
 trap trap_exit EXIT
 
 #
-# Completion of unconfigure_zone will leave the zone root mounted for
+# Completion of reconfigure_zone will leave the zone root mounted for
 # ipkg brand zones.  The root won't be mounted for labeled brand zones.
 #
 is_brand_labeled
-(( $? == 0 )) && unconfigure_zone
+(( $? == 0 )) && reconfigure_zone $sc_config
 
 trap - EXIT
 exit $ZONE_SUBPROC_OK

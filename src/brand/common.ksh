@@ -63,8 +63,8 @@ f_set_sysrepo_prop_fail=$(gettext "Unable to set the use-system-repo property.")
 
 m_brnd_usage=$(gettext "brand-specific usage: ")
 
-v_unconfig=$(gettext "Performing zone sys-unconfig")
-e_unconfig=$(gettext "sys-unconfig failed")
+v_reconfig=$(gettext "Performing zone system configuration")
+e_reconfig=$(gettext "System configuration failed")
 v_mounting=$(gettext "Mounting the zone")
 e_badmount=$(gettext "Zone mount failed")
 v_unmount=$(gettext "Unmounting zone")
@@ -237,10 +237,11 @@ function set_active_be {
 }
 
 #
-# Run sys-unconfig on the zone.
+# Run system configuration inside a zone.
 #
-unconfigure_zone() {
-	vlog "$v_unconfig"
+reconfigure_zone() {
+	typeset sc_config=$1
+	vlog "$v_reconfig"
 
 	vlog "$v_mounting"
 	ZONE_IS_MOUNTED=1
@@ -250,17 +251,32 @@ unconfigure_zone() {
 	SC_ONLINE=$(svcprop -p restarter/state \
 	    svc:/milestone/unconfig:default 2> /dev/null)
 	if (( $? == 0 )) && [[ $SC_ONLINE == "online" ]]; then
-		zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
-		    /usr/sbin/sysconfig unconfigure -g system; \
-		    export _UNCONFIG_ALT_ROOT= ;" \
-		    </dev/null >/dev/null 2>&1
+		if [[ -n $sc_config ]]; then
+			safe_copy $sc_config \
+			    $ZONEPATH/lu/system/volatile/$sc_config
+			zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
+			    /usr/sbin/sysconfig configure -g system \
+			    -c /system/volatile/$sc_config;
+			    export _UNCONFIG_ALT_ROOT= ;" \
+			    </dev/null >/dev/null 2>&1
+		else
+			zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
+			    /usr/sbin/sysconfig unconfigure -g system; \
+			    export _UNCONFIG_ALT_ROOT= ;" \
+			    </dev/null >/dev/null 2>&1
+		fi
+		ret=$?
 	else
 		zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
 		    </dev/null >/dev/null 2>&1
+		ret=$?
+		if [[ -n $sc_config ]]; then
+			safe_copy $sc_config $ZONEPATH/lu/a/etc/sysidcfg
+		fi
 	fi
 
-	if (( $? != 0 )); then
-		error "$e_unconfig"
+	if (( $ret != 0 )); then
+		error "$e_reconfig"
 		failed=1
 	fi
 

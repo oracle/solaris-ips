@@ -37,8 +37,9 @@
 
 # Allows developer to override some things like PATH and PYTHONPATH
 . /usr/lib/brand/ipkg/developerenv.ksh
+m_usage=$(gettext "\n        install {-a archive|-d path} {-p|-u} [-s|-v] \
+	[-c profile | dir]")
 
-m_usage=$(gettext "\n        install {-a archive|-d path} {-p|-u} [-s|-v]")
 install_log=$(gettext   "    Log File: %s")
 
 p2ving=$(gettext        "Postprocessing: This may take a while...")
@@ -109,6 +110,7 @@ unset inst_type
 unset msg
 unset silent_mode
 unset verbose_mode
+unset OPT_C
 
 #
 # It is worth noting here that we require the end user to pick one of
@@ -120,7 +122,7 @@ unset verbose_mode
 unset unconfig_zone
 unset preserve_zone
 
-while getopts "a:d:psuv" opt
+while getopts "a:c:d:psuv" opt
 do
 	case "$opt" in
 		a)
@@ -130,6 +132,7 @@ do
 		 	inst_type="archive"
 			install_media="$OPTARG"
 			;;
+		c)	OPT_C="-c $OPTARG";;
 		d)
 			if [[ -n "$inst_type" ]]; then
 				fatal "$both_kinds" "zoneadm install"
@@ -194,9 +197,9 @@ install_image "$inst_type" "$install_media"
 # to find the log file and then reopen the log (O_APPEND) when p2v is done.
 #
 log "$p2ving"
-vlog "running: p2v $verbose_mode $unconfig_zone $ZONENAME $ZONEPATH"
+vlog "running: p2v $verbose_mode $unconfig_zone $ZONENAME $ZONEPATH $OPT_C"
 /usr/lib/brand/ipkg/p2v -l "$LOGFILE" $verbose_mode $unconfig_zone $ZONENAME \
-    $ZONEPATH
+    $ZONEPATH $OPT_C
 p2v_result=$?
 exec 2>>$LOGFILE
 
