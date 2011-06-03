@@ -1979,20 +1979,23 @@ main(int argc, char **argv)
 	if (daemonize_start() < 0)
 		(void) fprintf(stderr, "Unable to start daemon\n");
 
+	/* Increase the number of maximum file descriptors */
+	(void) getrlimit(RLIMIT_NOFILE, &rlp);
+	if (rlp.rlim_cur < MAX_FDS_DEFAULT)
+		rlp.rlim_cur = MAX_FDS_DEFAULT;
+	if (rlp.rlim_max < rlp.rlim_cur)
+		rlp.rlim_max = rlp.rlim_cur;
+	if (setrlimit(RLIMIT_NOFILE, &rlp) < 0) {
+		perror("setrlimit");
+		exit(EXIT_FAILURE);
+	}
+
 	drop_privs();
 
 	(void) sigfillset(&blockset);
 
 	if (thr_sigsetmask(SIG_BLOCK, &blockset, NULL) < 0) {
 		perror("thr_sigsetmask");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Increase the number of maximum file descriptors */
-	(void) getrlimit(RLIMIT_NOFILE, &rlp);
-	rlp.rlim_cur = MAX_FDS_DEFAULT;
-	if (setrlimit(RLIMIT_NOFILE, &rlp) < 0) {
-		perror("setrlimit");
 		exit(EXIT_FAILURE);
 	}
 
