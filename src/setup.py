@@ -566,37 +566,6 @@ def prep_sw(swname, swarc, swdir, swurl, swhash):
                                 sys.exit(1)
                 file(already_patched, "w").close()
 
-def install_ldtp(swname, swdir, swidir):
-        swdir = os.path.join(extern_dir, swdir)
-        swinst_file = os.path.join(root_dir, py_install_dir, swidir + ".py")
-        if not os.path.exists(swinst_file):
-                print "installing %s" % swname
-                args_config = ['./configure',
-                    '--prefix=/usr',
-                    '--bindir=/usr/bin',
-                    'PYTHONPATH=""',
-                       ]
-                args_make_install = ['make', 'install', 
-                    'DESTDIR=%s' % root_dir
-                       ]
-                run_cmd(args_config, swdir)
-                run_cmd(args_make_install, swdir)
-
-def install_sw(swname, swdir, swidir, extra_env=None):
-        swdir = os.path.join(extern_dir, swdir)
-        swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
-        inst_env = os.environ.copy()
-        if extra_env:
-                inst_env.update(extra_env)
-
-        if not os.path.exists(swinst_dir):
-                print "installing %s" % swname
-                args = ['python2.6', 'setup.py', 'install',
-                    '--root=%s' % root_dir,
-                    '--install-lib=%s' % py_install_dir,
-                    '--install-data=%s' % py_install_dir]
-                run_cmd(args, swdir, env=inst_env)
-
 def run_cmd(args, swdir, env=None):
                 if env is None:
                         env = os.environ
