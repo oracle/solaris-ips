@@ -16,6 +16,7 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/config/gconf for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/gnome/theme/hicolor-icon-theme for pkg://pkg5-nightly/package/pkg/package-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/python-2/cherrypy for pkg://pkg5-nightly/package/pkg
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/python-2/coverage for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/python-2/locale-services for pkg://pkg5-nightly/package/pkg/package-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/python-2/m2crypto for pkg://pkg5-nightly/package/pkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/library/python-2/mako for pkg://pkg5-nightly/package/pkg

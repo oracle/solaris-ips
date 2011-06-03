@@ -85,7 +85,7 @@ class TestImporter(pkg5unittest.SingleDepotTestCase):
                 retcode, stdout, stderr = \
                     self.importer(args=args, out=True, stderr=True, exit=0)
                 dep_err = ("package/pkg: unresolved dependency depend fmri=none"
-                    " importer.depsource=lib/svc/manifest/application/pkg-server.xml"
+                    " importer.depsource=lib/svc/manifest/application/pkg/pkg-server.xml"
                     " importer.file=lib/svc/manifest/milestone/network.xml "
                     "type=require: suggest None")
                 self.assert_(dep_err in stdout, "Unable to find expected "
