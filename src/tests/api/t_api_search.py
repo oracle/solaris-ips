@@ -1606,7 +1606,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                 self._run_local_tests(api_obj)
                 self.pkgsend_bulk(durl, self.example_pkg11)
                 api_obj.refresh(immediate=True)
-                self._api_image_update(api_obj, update_index=False)
+                self._api_update(api_obj, update_index=False)
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.
                 self.assertRaises(api_errors.IncorrectIndexFileHash,
@@ -1711,7 +1711,7 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
 
                         self.assertRaises(
                             api_errors.WrapSuccessfulIndexingException,
-                            self._api_image_update, api_obj, catch_wsie=False)
+                            self._api_update, api_obj, catch_wsie=False)
 
                         self.image_destroy()
 
@@ -2126,7 +2126,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg11)
                 api_obj.refresh(immediate=True)
 
-                self._api_image_update(api_obj)
+                self._api_update(api_obj)
 
                 self._run_local_tests_example11_installed(api_obj)
 
@@ -2397,7 +2397,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                             "open pkg%s@2.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
                 api_obj.refresh(immediate=True)
-                self._api_image_update(api_obj)
+                self._api_update(api_obj)
                 self._check(set((
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_add_loc)
@@ -2414,7 +2414,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                             "open pkg%s@2.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
                 api_obj.refresh(immediate=True)
-                self._api_image_update(api_obj)
+                self._api_update(api_obj)
                 self._check(set((
                     _remove_extra_info(v)
                     for v in self._get_lines(fast_add_loc)

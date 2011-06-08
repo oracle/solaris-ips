@@ -379,15 +379,19 @@ class PkgSolver(object):
 
                 # remove any versions from proposed_dict that are in trim_dict
                 self.__timeit("phase 5")
+                ret = []
                 for name in proposed_dict:
                         tv = self.__dotrim(proposed_dict[name])
                         if tv:
                                 proposed_dict[name] = tv
                                 continue
 
-                        ret = [_("No matching version of %s can be "
-                            "installed:") % name]
+                        ret.extend([_("No matching version of %s can be "
+                            "installed:") % name])
                         ret.extend(self.__fmri_list_errors(proposed_dict[name]))
+                        # continue processing and accumulate all errors
+
+                if ret:
                         solver_errors = None
                         if DebugValues["plan"]:
                                 solver_errors = self.get_trim_errors()
@@ -427,15 +431,18 @@ class PkgSolver(object):
                 # remove any versions from proposed_dict that are in trim_dict
                 # as trim dict has been updated w/ missing dependencies
                 self.__timeit("phase 8")
+                ret = []
                 for name in proposed_dict:
                         tv = self.__dotrim(proposed_dict[name])
                         if tv:
                                 proposed_dict[name] = tv
                                 continue
 
-                        ret = [_("No matching version of %s can be "
-                            "installed:") % name]
+                        ret.extend([_("No matching version of %s can be "
+                            "installed:") % name])
                         ret.extend(self.__fmri_list_errors(proposed_dict[name]))
+                        # continue processing and accumulate all errors
+                if ret:
                         solver_errors = None
                         if DebugValues["plan"]:
                                 solver_errors = self.get_trim_errors()
@@ -478,6 +485,7 @@ class PkgSolver(object):
                                 set(proposed_dict[name]) &
                                 set(self.__possible_dict[name])))
 
+                ret = []
                 for name in self.__installed_pkgs - proposed_pkgs - \
                     reject_set - self.__avoid_set:
                         if (self.__installed_dict[name] in
@@ -492,10 +500,12 @@ class PkgSolver(object):
                                 continue
 
                         # no version of this package is allowed
-                        ret = [_("The installed package %s is not "
-                            "permissible.") % name]
+                        ret.extend([_("The installed package %s is not "
+                            "permissible.") % name])
                         ret.extend(self.__fmri_list_errors(
                             [self.__installed_dict[name]]))
+                        # continue processing and accumulate all errors
+                if ret:
                         solver_errors = None
                         if DebugValues["plan"]:
                                 solver_errors = self.get_trim_errors()
@@ -685,6 +695,7 @@ class PkgSolver(object):
                 self.__timeit("phase 4")
 
                 # generate clauses for installed pkgs
+                ret = []
                 for name in self.__installed_pkgs - self.__avoid_set:
                         if (self.__installed_dict[name] in
                             self.__removal_fmris):
@@ -699,10 +710,12 @@ class PkgSolver(object):
                                 continue
 
                         # no version of this package is allowed
-                        ret = [_("The installed package %s is not "
-                            "permissible.") % name]
+                        ret.extend([_("The installed package %s is not "
+                            "permissible.") % name])
                         ret.extend(self.__fmri_list_errors(
                             [self.__installed_dict[name]]))
+                        # continue processing and accumulate all errors
+                if ret:
                         solver_errors = None
                         if DebugValues["plan"]:
                                 solver_errors = self.get_trim_errors()

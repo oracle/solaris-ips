@@ -1779,10 +1779,20 @@ class LinkedImage(object):
                         # no child images to recurse into
                         return
 
-                # given the api operation being performed on the
-                # current image, figure out what api operation should
-                # be performed on child images.
-                if op == pkgdefs.API_OP_UPDATE:
+                #
+                # given the api operation being performed on the current
+                # image, figure out what api operation should be performed on
+                # child images.
+                #
+                # the recursion policy which hard coded here is that if we do
+                # an pkg update in the parent image without any packages
+                # specified (ie, we want to update everything) then when we
+                # recurse we'll also do an update of everything.  but if we're
+                # doing any other operation like install, uninstall, an update
+                # of specific packages, etc, then when we recurse we'll do a
+                # sync in the child.
+                #
+                if op == pkgdefs.API_OP_UPDATE and not args["pkgs_update"]:
                         pkg_op = pkgdefs.PKG_OP_UPDATE
                 else:
                         pkg_op = pkgdefs.PKG_OP_SYNC

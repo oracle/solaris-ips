@@ -2131,7 +2131,7 @@ class CliTestCase(Pkg5TestCase):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_image_update(self, api_obj, catch_wsie=True, **kwargs):
+        def _api_update(self, api_obj, catch_wsie=True, **kwargs):
                 self.debug("planning update")
                 for pd in api_obj.gen_plan_update(**kwargs):
                         continue
