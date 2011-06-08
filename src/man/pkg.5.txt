@@ -135,6 +135,30 @@ DESCRIPTION
                above, such as 'strawberry'), then the existing file will
                be left alone, and the new file will not be installed.
 
+     overlay   This specifies whether the action allows other packages to
+               deliver a file at the same location or whether it delivers
+               a file intended to overlay another.  This functionality is
+               intended for use with configuration files that don't
+               participate in any self-assembly (e.g. /etc/motd) and that
+               can be safely overwritten.
+
+               If overlay is not specified, multiple packages may not deliver
+               files to the same location.
+
+               If the value of overlay is 'allow', one other package is
+               allowed to deliver a file to the same location.  This value
+               has no effect unless the preserve attribute is also set.
+
+               If the value of overlay is 'true', the file delivered by the
+               action will overwrite any other action that has specified
+               'allow'.  Changes to the installed file will be preserved
+               based on the value of the preserve attribute of the overlaying
+               file.  On removal, the contents of the file will be preserved
+               if the action being overlayed is still installed regardless of
+               whether the preserve attribute was specified.  Only one action
+               may overlay another, and the 'mode', 'owner', and 'group'
+               attributes must match.
+
      Files may also be 'tasted', and depending on the flavor, may have
      additional interesting attributes.  For ELF files, the following
      attributes are recognized:

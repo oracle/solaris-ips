@@ -699,7 +699,8 @@ class InconsistentActionAttributeError(ConflictingActionError):
                         ua = dict(
                             (k, v)
                             for k, v in action.attrs.iteritems()
-                            if k in action.unique_attrs
+                            if k in action.unique_attrs and
+                                not (k == "preserve" and "overlay" in action.attrs)
                         )
                         action.attrs = ua
                         return action

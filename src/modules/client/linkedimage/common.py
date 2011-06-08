@@ -2160,7 +2160,6 @@ class LinkedImageChild(object):
 
                 # propagate certain debug options
                 for k in [
-                    "allow-overlays",
                     "broken-conflicting-action-handling",
                     "disp_linked_cmds",
                     "plan"]:

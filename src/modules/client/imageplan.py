@@ -608,20 +608,31 @@ class ImagePlan(object):
                         # look through all the packages, looking for our files
                         # we could use search for this.
 
-                        def peelslash(a):
-                                if os.path.isabs(a):
-                                        return a[1:]
-                                return a
-                        revertpaths = set([peelslash(a) for a in args])
+                        revertpaths = set([a.lstrip(os.path.sep) for a in args])
+                        overlaypaths = set()
                         for f in self.image.gen_installed_pkgs():
                                 self.__progtrack.evaluate_progress()
                                 m = self.image.get_manifest(f)
                                 for act in m.gen_actions_by_type("file",
                                     self.__new_excludes):
-                                        if act.attrs["path"] in revertpaths:
-                                                revert_dict[(f,m)].append(act)
-                                                revertpaths.remove(
-                                                    act.attrs["path"])
+                                        path = act.attrs["path"]
+                                        if path in revertpaths or \
+                                            path in overlaypaths:
+                                                revert_dict[(f, m)].append(act)
+                                                if act.attrs.get("overlay") == \
+                                                    "allow":
+                                                        # Action allows overlay,
+                                                        # all matching actions
+                                                        # must be collected.
+                                                        # The imageplan will
+                                                        # automatically handle
+                                                        # the overlaid action
+                                                        # if an overlaying
+                                                        # action is present.
+                                                        overlaypaths.add(path)
+                                                revertpaths.discard(path)
+
+                        revertpaths.difference_update(overlaypaths)
                         if revertpaths:
                                 raise api_errors.PlanCreationException(
                                     nofiles=list(revertpaths))
@@ -929,18 +940,45 @@ class ImagePlan(object):
                     all(o[0] == n[0] for o, n, in zip(oactions, actions)):
                         return "nothing", None
 
-                # Some very rare cases require us to allow two actions to be
-                # delivered at a single point in their namespace.  Don't use
-                # this unless you know you're supposed to!
-                if DebugValues["allow-overlays"] and \
-                    any(act[0].attrs.get("overlay") == "true" for act in actions):
-                        return None
+                # For file actions, delivery of two actions to a single point is
+                # permitted if:
+                #   * there are only two actions in conflict
+                #   * one action has 'preserve' set and 'overlay=allow'
+                #   * the other action has 'overlay=true'
+                if len(actions) == 2:
+                        overlayable = overlay = None
+                        for act, ignored in actions:
+                                if (act.name == "file" and
+                                    act.attrs.get("overlay") == "allow" and
+                                    "preserve" in act.attrs):
+                                        overlayable = act
+                                elif (act.name == "file" and
+                                    act.attrs.get("overlay") == "true"):
+                                        overlay = act
+                        if overlayable and overlay:
+                                # Found both an overlayable action and the
+                                # action that overlays it.
+                                errors = self.__find_inconsistent_attrs(actions,
+                                    ignore=["preserve"])
+                                if errors:
+                                        # overlay is not permitted if unique
+                                        # attributes (except 'preserve') are
+                                        # inconsistent
+                                        return ("error", actions,
+                                            api_errors.InconsistentActionAttributeError)
+                                return "overlay", None
 
                 return "error", actions
 
         @staticmethod
-        def __find_inconsistent_attrs(actions):
-                """Find all the problem action pairs."""
+        def __find_inconsistent_attrs(actions, ignore=misc.EmptyI):
+                """Find all the problem Action pairs.
+
+                'ignore' is an optional list of attributes to ignore when
+                checking for inconsistent attributes.  By default, all
+                attributes listed in the 'unique_attrs' property of an
+                Action are checked.
+                """
 
                 # We iterate over all pairs of actions to see if any conflict
                 # with the rest.  If two actions are "safe" together, then we
@@ -969,7 +1007,10 @@ class ImagePlan(object):
 
                         # If none of the different attributes is one that must
                         # be identical, then we can skip this action.
-                        if not any(d for d in diffs if d in a1[0].unique_attrs):
+                        if not any(
+                            d for d in diffs
+                            if (d in a1[0].unique_attrs and
+                                d not in ignore)):
                                 seen.add(a2)
                                 continue
 
@@ -1042,22 +1083,57 @@ class ImagePlan(object):
                 if ret is None:
                         return False
 
-                msg, actions = ret
+                if len(ret) == 3:
+                        # Allow checking functions to override default errclass.
+                        msg, actions, errclass = ret
+                else:
+                        msg, actions = ret
 
                 if not isinstance(msg, basestring):
                         return False
 
                 if msg == "nothing":
                         for i, ap in enumerate(self.removal_actions):
-                                if ap and ap.src.attrs.get(ap.src.key_attr, None) == key:
+                                if ap and ap.src.attrs.get(ap.src.key_attr,
+                                    None) == key:
                                         self.removal_actions[i] = None
+                elif msg == "overlay":
+                        pp_needs_trimming = {}
+                        for al in (self.install_actions, self.update_actions):
+                                for i, ap in enumerate(al):
+                                        if not (ap and ap.dst.attrs.get(
+                                            ap.dst.key_attr, None) == key):
+                                            continue
+                                        if ap.dst.attrs.get("overlay") == \
+                                            "allow":
+                                                # Remove overlaid actions from
+                                                # plan.
+                                                al[i] = None
+                                                pp_needs_trimming.setdefault(id(ap.p),
+                                                    { "plan": ap.p, "trim": [] })
+                                                pp_needs_trimming[id(ap.p)]["trim"].append(
+                                                    id(ap.dst))
+                                                break
+
+                        for entry in pp_needs_trimming.values():
+                                p = entry["plan"]
+                                trim = entry["trim"]
+                                # Can't modify the p.actions tuple, so modify
+                                # the added member in-place.
+                                for prop in ("added", "changed"):
+                                        pval = getattr(p.actions, prop)
+                                        pval[:] = [
+                                            a
+                                            for a in pval
+                                            if id(a) not in trim
+                                        ]
                 elif msg == "fixup":
                         self.__propose_fixup(*actions)
                 elif msg == "error":
                         errs.append(errclass(actions))
                 else:
                         assert False, "%s() returned something other than " \
-                            "'nothing', 'error', or 'fixup': '%s'" % \
+                            "'nothing', 'overlay', 'error', or 'fixup': '%s'" % \
                             (func.__name__, msg)
 
                 return True
@@ -1563,7 +1639,6 @@ class ImagePlan(object):
                 for i, ap in enumerate(self.removal_actions):
                         if ap is None:
                                 continue
-
                         self.__progtrack.evaluate_progress()
 
                         # If the action type needs to be reference-counted, make
@@ -1640,6 +1715,8 @@ class ImagePlan(object):
 
                 new_updates = []
                 for i, ap in enumerate(self.install_actions):
+                        if ap is None:
+                                continue
                         self.__progtrack.evaluate_progress()
                         # In order to handle editable files that move their path
                         # or change pkgs, for all new files with original_name
@@ -1745,17 +1822,14 @@ class ImagePlan(object):
 
                 del dest_pkgplans, nu_chg
 
-                self.removal_actions = [
-                    a
-                    for a in self.removal_actions
-                    if a is not None
-                ]
-
-                self.install_actions = [
-                    a
-                    for a in self.install_actions
-                    if a is not None
-                ]
+                for prop in ("removal_actions", "install_actions",
+                    "update_actions"):
+                        pval = getattr(self, prop)
+                        pval[:] = [
+                            a
+                            for a in pval
+                            if a is not None
+                        ]
 
                 self.__progtrack.evaluate_progress()
                 # Go over update actions

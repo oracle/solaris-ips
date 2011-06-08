@@ -5947,13 +5947,48 @@ class TestConflictingActions(pkg5unittest.SingleDepotTestCase):
 
         pkg_overlaid = """
             open overlaid@0,5.11-0
-            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=allow
+            close
+        """
+
+        # 'overlay' is ignored unless 'preserve' is also set.
+        pkg_invalid_overlaid = """
+            open invalid-overlaid@0,5.11-0
+            add file tmp/file1 path=etc/pam.conf mode=644 owner=root group=sys overlay=allow
             close
         """
 
         pkg_overlayer = """
             open overlayer@0,5.11-0
             add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+        """
+
+        pkg_multi_overlayer = """
+            open multi-overlayer@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true overlay=true
+            close
+        """
+
+        # overlaying file is treated as conflicting file if its mode, owner, and
+        # group attributes don't match the action being overlaid
+        pkg_mismatch_overlayer = """
+            open mismatch-overlayer@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=640 owner=root group=bin preserve=true overlay=true
+            close
+        """
+
+        # overlaying file is treated as conflicting file if it doesn't set overlay=true
+        # even if file being overlaid allows overlay.
+        pkg_invalid_overlayer = """
+            open invalid-overlayer@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys preserve=true
+            close
+        """
+
+        pkg_unpreserved_overlayer = """
+            open unpreserved-overlayer@0,5.11-0
+            add file tmp/file2 path=etc/pam.conf mode=644 owner=root group=sys overlay=true
             close
         """
 
@@ -6535,30 +6570,14 @@ adm
                 self.pkg("uninstall dupfilesp2 dupotherfilesp2")
                 self.pkg("verify")
 
-                # Make sure the overlay hack works.
-                self.pkg("install overlaid")
-                self.pkg("install overlayer", exit=1)
-                self.pkg("-D allow-overlays=1 install overlayer")
-                # Verify won't work here, on a preserve=true file!
-                self.file_contains("etc/pam.conf", "file2")
-                self.pkg("uninstall overlayer")
-
-                # If we make a change to the file after installing the
-                # overlayer, we shouldn't touch the file on uninstall.
-                self.pkg("-D allow-overlays=1 install overlayer")
-                self.file_append("etc/pam.conf", "zigit")
-                self.pkg("uninstall overlayer")
-                self.file_contains("etc/pam.conf", "zigit")
-                self.file_contains("etc/pam.conf", "file2")
-
                 # Re-use the overlay packages for some preserve testing.
-                self.pkg("revert /etc/pam.conf")
-                self.file_contains("etc/pam.conf", "file1")
-                self.pkg("-D broken-conflicting-action-handling=1 install overlayer")
+                self.pkg("install overlaid")
+                self.pkg("-D broken-conflicting-action-handling=1 install "
+                    "invalid-overlayer")
                 # We may have been able to lay down the package, but because the
                 # file is marked preserve=true, we didn't actually overwrite
                 self.file_contains("etc/pam.conf", "file2")
-                self.pkg("uninstall overlayer")
+                self.pkg("uninstall invalid-overlayer")
                 self.file_contains("etc/pam.conf", "file2")
 
                 # Make sure we get rid of all implicit directories.
@@ -6596,6 +6615,120 @@ adm
                 self.dc.stop()
                 self.pkg("uninstall pkg2", exit=1)
                 self.pkg("verify pkg2")
+
+        def test_overlay_files(self):
+                """Test the behaviour of pkg(1) when actions for editable files
+                overlay other actions."""
+
+                # Ensure that overlay is allowed for file actions when one
+                # action has specified preserve attribute and overlay=allow,
+                # and *one* (only) other action has specified overlay=true
+                # (preserve does not have to be set).
+                self.image_create(self.rurl)
+
+                # Should fail because one action specified overlay=allow,
+                # but not preserve (it isn't editable).
+                self.pkg("install invalid-overlaid")
+                self.pkg("install overlayer", exit=1)
+                self.pkg("uninstall invalid-overlaid")
+
+                # Should fail because one action is overlayable but overlaying
+                # action doesn't declare its intent to overlay.
+                self.pkg("install overlaid")
+                self.file_contains("etc/pam.conf", "file1")
+                self.pkg("install invalid-overlayer", exit=1)
+
+                # Should fail because one action is overlayable but overlaying
+                # action mode, owner, and group attributes don't match.
+                self.pkg("install mismatch-overlayer", exit=1)
+
+                # Should succeed because one action is overlayable and
+                # overlaying action declares its intent to overlay.
+                self.pkg("contents -m overlaid")
+                self.pkg("contents -mr overlayer")
+                self.pkg("install overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Should fail because multiple actions are not allowed to
+                # overlay a single action.
+                self.pkg("install multi-overlayer", exit=1)
+
+                # Should succeed even though file is different than originally
+                # delivered since original package permits file modification.
+                self.pkg("verify overlaid overlayer")
+
+                # Should succeed because package delivering overlayable file
+                # permits modification and because package delivering overlay
+                # file permits modification.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("verify overlaid overlayer")
+
+                # Verify that the file isn't touched on uninstall of the
+                # overlaying package if package being overlaid is still
+                # installed.
+                self.pkg("uninstall overlayer")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Verify that removing the last package delivering an overlaid
+                # file removes the file.
+                self.pkg("uninstall overlaid")
+                self.file_doesnt_exist("etc/pam.conf")
+
+                # Verify that installing both packages at the same time results
+                # in only the overlaying file being delivered.
+                self.pkg("install overlaid overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Verify that the file isn't touched on uninstall of the
+                # overlaid package if overlaying package is still installed.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("uninstall overlaid")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "zigit")
+
+                # Re-install overlaid package and verify that file content
+                # does not change.
+                self.pkg("install overlaid")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_contains("etc/pam.conf", "zigit")
+                self.pkg("uninstall overlaid overlayer")
+
+                # Should succeed because one action is overlayable and
+                # overlaying action declares its intent to overlay even
+                # though the overlaying action isn't marked with preserve.
+                self.pkg("install overlaid unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+
+                # Should succeed because overlaid action permits modification
+                # and contents matches overlaying action.
+                self.pkg("verify overlaid unpreserved-overlayer")
+
+                # Should succeed even though file has been modified since
+                # overlaid action permits modification.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("verify overlaid")
+
+                # Should fail because overlaying action does not permit
+                # modification.
+                self.pkg("verify unpreserved-overlayer", exit=1)
+
+                # Should revert to content delivered by overlaying action.
+                self.pkg("fix unpreserved-overlayer")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+
+                # Should revert to content delivered by overlaying action.
+                self.file_append("etc/pam.conf", "zigit")
+                self.pkg("revert /etc/pam.conf")
+                self.file_contains("etc/pam.conf", "file2")
+                self.file_doesnt_contain("etc/pam.conf", "zigit")
+                self.pkg("uninstall unpreserved-overlayer")
+
+                # Should revert to content delivered by overlaid action.
+                self.file_contains("etc/pam.conf", "file2")
+                self.pkg("revert /etc/pam.conf")
+                self.file_contains("etc/pam.conf", "file1")
 
         def test_different_types(self):
                 """Test the behavior of pkg(1) when multiple actions of

@@ -3220,7 +3220,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         continue
                                 for key in act.attrs.keys():
                                         if (act.unique_attrs and
-                                            key not in act.unique_attrs) or \
+                                            key not in act.unique_attrs and
+                                            not (act.name == "file" and
+                                                key == "overlay")) or \
                                             key.startswith("variant.") or \
                                             key.startswith("facet."):
                                                 del act.attrs[key]

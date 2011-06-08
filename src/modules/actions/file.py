@@ -445,7 +445,7 @@ class FileAction(generic.Action):
                 # system expected it to be, then we preserve the original file
                 # in some way, depending on the value of preserve.  If the
                 # action is an overlay, then we always overwrite.
-                overlay = self.attrs.get("overlay", "false") == "true"
+                overlay = self.attrs.get("overlay") == "true"
                 if is_file and not overlay:
                         chash, cdata = misc.get_data_digest(final_path)
                         if not orig or chash != orig.hash:
