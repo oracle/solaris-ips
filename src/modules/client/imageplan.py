@@ -1125,7 +1125,7 @@ class ImagePlan(object):
                                         pval[:] = [
                                             a
                                             for a in pval
-                                            if id(a) not in trim
+                                            if id(a[1]) not in trim
                                         ]
                 elif msg == "fixup":
                         self.__propose_fixup(*actions)
