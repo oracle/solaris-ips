@@ -6,9 +6,8 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkgsign [-a hash_algorithm] [-c path_to_signing_certificate]
-         [-i path_to_intermediate_cert] ... [-k path_to_private_key]
-         -s path_or_uri [--help] [--no-index] [--no-catalog] [--sign-all |
-         fmri_with_timestamp ...]
+         [-i path_to_intermediate_cert] ... [-k path_to_private_key] [-n]
+         -s path_or_uri [--help] [--no-index] [--no-catalog] (fmri|patten) ...
 
 DESCRIPTION
      pkgsign updates the manifest for the given fmri(s) in place in the
@@ -39,6 +38,9 @@ OPTIONS
      manifest.  It can only be used if -c is also used.  If -k is not set,
      then the signature value will be the hash of the manifest.
 
+     With -n, perform a trial run which does not change the repository in any
+     way.
+
      With -s, sign packages in the repository at the given path or URI.
 
      With --help, show the usage information for the command.
@@ -48,8 +50,6 @@ OPTIONS
 
      With --no-catalog, tell the repository not to update the catalog after
      the signed manifest has been republished.
-
-     With --sign-all, sign all the packages in the repository.
 
 EXAMPLES
      Example 1:  Sign a package published to http://localhost:10000 using the

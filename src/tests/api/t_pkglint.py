@@ -1386,8 +1386,8 @@ dir group=sys mode=0755 owner=root path=etc
                 self.pkgsend(depot_url=self.lint_uri,
                             command="refresh-index")
                 # we should sign the repositories for additional coverage
-                self.pkgsign(self.lint_uri, "--sign-all")
-                self.pkgsign(self.ref_uri, "--sign-all")
+                self.pkgsign(self.lint_uri, "'*'")
+                self.pkgsign(self.ref_uri, "'*'")
 
         def test_lint_repo_basics(self):
                 """Test basic handling of repo URIs with the lint engine,

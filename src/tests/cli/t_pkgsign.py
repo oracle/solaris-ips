@@ -95,6 +95,15 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
             add depend fmri=renamed type=require
             close """
 
+        pub2_example = """
+            open pkg://pub2/example_pkg@1.0,5.11-0
+            add set description='a package with an alternate publisher'
+            close """
+
+        pub2_pkg = """
+            open pkg://pub2/pub2pkg@1.0,5.11-0
+            add set description='a package with an alternate publisher'
+            close """
 
         image_files = ['simple_file']
         misc_files = ['tmp/example_file']
@@ -739,23 +748,22 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.durl1, "--help")
                 self.dcs[1].start()
                 self.pkgsign(self.durl1, "foo@1.2.3", exit=1)
+                self.pkgsign(self.durl1, "example_pkg", exit=1)
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
 
                 # Test that not specifying a destination repository fails.
-                self.pkgsign("", "--sign-all", exit=2)
+                self.pkgsign("", "'*'", exit=2)
 
-                # Test that passing sign-all and a fmri results in an error.
-                self.pkgsign(self.durl1, "--sign-all %(name)s" % {
-                      "name": plist[0]
-                    }, exit=2)
+                # Test that passing two patterns which match the same name
+                # fails.
+                self.pkgsign(self.durl1, "'e*' '*x*'", exit=1)
 
                 # Test that passing a repo that doesn't exist doesn't cause
                 # a traceback.
                 self.pkgsign("http://foobar.baz",
                     "%(name)s" % { "name": plist[0] }, exit=1)
 
-                # Test that passing neither sign-all nor a fmri results in an
-                # error.
+                # Test that passing no fmris or patterns results in an error.
                 self.pkgsign(self.durl1, "", exit=2)
 
                 # Test bad sig.alg setting.
@@ -871,6 +879,29 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 api_obj = self.get_img_api_obj()
                 self.assertRaises(apx.InvalidPropertyValue, self._api_install,
                     api_obj, ["example_pkg"])
+
+        def test_dry_run_option(self):
+                """Test that -n doesn't actually sign packages."""
+
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-n -k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1":os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=\
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.RequiredSignaturePolicyException,
+                    self._api_install, api_obj, ["example_pkg"])
 
         def test_multiple_hash_algs(self):
                 """Test that signing with other hash algorithms works
@@ -1445,14 +1476,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.assertRaises(action.ActionDataError, sig_act.set_signature,
                     [sig_act], key_path=key_pth, chain_paths=[self.test_root])
 
-        def test_sign_all(self):
-                """Test that the --sign-all option works correctly, signing
-                all packages in a repository."""
+        def test_signing_all(self):
+                """Test that using '*' works correctly, signing all packages in
+                a repository."""
 
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
                 plist = self.pkgsend_bulk(self.rurl1, self.var_pkg)
 
-                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s --sign-all" % {
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s '*'" % {
                         "key": os.path.join(self.keys_dir,
                             "cs1_ch1_ta3_key.pem"),
                         "cert": os.path.join(self.cs_dir,
@@ -2321,6 +2352,142 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # This should fail because the manifest already has almost
                 # identical signature actions in it.
                 self.pkgsign(self.rurl1, sign_args, exit=1)
+
+        def test_bug_17740_default_pub(self):
+                """Test that signing a package in the default publisher of a
+                multi-publisher repository works."""
+
+                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "'ex*'",
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, plist)
+
+        def test_bug_17740_alternate_pub(self):
+                """Test that signing a package in an alternate publisher of a
+                multi-publisher repository works."""
+
+                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                plist = self.pkgsend_bulk(self.rurl1, self.pub2_pkg)
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "'*2pk*'",
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, plist)
+
+        def test_bug_17740_name_collision_1(self):
+                """Test that when two publishers have packages with the same
+                name, the publisher in the sign command is respected.  This test
+                signs the package from the default publisher."""
+
+                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.pub2_example])
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "pkg://test/example_pkg",
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.RequiredSignaturePolicyException,
+                    self._api_install, api_obj, ["pkg://pub2/example_pkg"])
+                self._api_install(api_obj, ["pkg://test/example_pkg"])
+
+        def test_bug_17740_name_collision_2(self):
+                """Test that when two publishers have packages with the same
+                name, the publisher in the sign command is respected.  This test
+                signs the package from the non-default publisher."""
+
+                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.pub2_example])
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "pkg://pub2/example_pkg",
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self.assertRaises(apx.RequiredSignaturePolicyException,
+                    self._api_install, api_obj, ["pkg://test/example_pkg"])
+                self._api_install(api_obj, ["pkg://pub2/example_pkg"])
+
+        def test_bug_17740_anarchistic_pkg(self):
+                """Test that signing a package present in both repositories
+                signs both packages."""
+
+                self.pkgrepo("add_publisher -s %s pub2" % self.rurl1)
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.pub2_example])
+
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "example_pkg",
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1_ta3_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(additional_args=
+                    "--set-property signature-policy=require-signatures")
+                self.seed_ta_dir("ta3")
+                self.pkg("set-publisher -p %s" % self.rurl1)
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["pkg://test/example_pkg"])
+                self._api_uninstall(api_obj, ["example_pkg"])
+                self._api_install(api_obj, ["pkg://pub2/example_pkg"])
 
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
