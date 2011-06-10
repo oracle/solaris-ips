@@ -306,14 +306,14 @@ close
         # but no variant.opensolaris.zone values
         installed_18045 = """\
 open runtime/python26@2.6.4,5.11-0.161
-add set name=variant.arch value=i386
+add set name=variant.foo value=i386
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
 close
 """
         # a file dependency that declares variant.opensolaris.zone values
         bug_18045_dep = """
 set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
-set name=variant.arch value=i386
+set name=variant.foo value=i386
 set name=variant.opensolaris.zone value=global value=nonglobal
 depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
 """
@@ -322,7 +322,7 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
         # and variant.opensolaris.zone values
         installed_18045_reverse = """\
 open runtime/python26@2.6.4,5.11-0.161
-add set name=variant.arch value=i386
+add set name=variant.foo value=i386
 add set name=variant.opensolaris.zone value=global value=nonglobal
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
 close
@@ -330,7 +330,7 @@ close
         # a file dependency that doesn't declare variant.opensolaris.zone values
         bug_18045_dep_reverse = """
 set name=pkg.fmri value=system/kernel/platform@1.0,5.11-1
-set name=variant.arch value=i386
+set name=variant.foo value=i386
 depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin type=require
 """
 
@@ -338,7 +338,7 @@ depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin typ
         # but no variant.opensolaris.zone values
         installed_18045_mixed = """\
 open runtime/python26@2.6.4,5.11-0.161
-add set name=variant.arch value=i386
+add set name=variant.foo value=i386
 add file tmp/foo group=bin mode=0755 owner=root path=usr/bin/python
 close
 """
