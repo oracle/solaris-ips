@@ -62,6 +62,10 @@ file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
 file NOHASH group=bin mode=0755 owner=root path=etc/libc.so.1
 """
 
+        test_64bit_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/bin/x64
+"""
+
         int_hardlink_manf = """\
 hardlink path=usr/foo target=../var/log/syslog
 file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
@@ -920,13 +924,15 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 contents = contents + "\n"
                 self.make_misc_files({ path: contents }, prefix="proto")
 
-        def make_elf(self, run_paths=[], output_path="elf_test"):
+        def make_elf(self, run_paths=[], output_path="elf_test", bit64=False):
                 out_file = os.path.join(self.test_proto_dir, output_path)
 
                 # Make sure to quote the runpaths, as they may contain tokens
                 # like $PLATFORM which we do not want the shell to evaluate.
-                self.c_compile("int main(){}\n",
-                    ["-R'%s'" % rp for rp in run_paths], out_file)
+                opts = ["-R'%s'" % rp for rp in run_paths]
+                if bit64:
+                        opts.append("-m64")
+                self.c_compile("int main(){}\n", opts, out_file)
 
                 return out_file[len(self.test_proto_dir)+1:]
 
@@ -2413,6 +2419,21 @@ file NOHASH group=bin mode=0555 owner=root path=b/bin/perl variant.foo=d variant
                 self.pkgdepend_generate("-d %s %s" % (self.test_proto_dir, tp),
                     exit=1)
                 self.check_res(self.bug_16808_error, self.errout)
+
+        def test_bug_17808(self):
+                """Test that a 64-bit binary has its runpaths set to /lib/64 and
+                /usr/lib/64 instead of /lib and /usr/lib."""
+
+                self.make_elf(bit64=True, output_path="usr/bin/x64")
+                mp = self.make_manifest(self.test_64bit_manf)
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(
+                    mp, [self.test_proto_dir], {}, [], convert=False)
+                self.assertEqual(len(es), 0, "\n".join([str(d) for d in es]))
+                self.assertEqual(len(ds), 1, "\n".join([str(d) for d in ds]))
+                d = ds[0]
+                self.assertEqual(d.attrs[DDP + ".file"], ["libc.so.1"])
+                self.assertEqual(set(d.attrs[DDP + ".path"]),
+                    set(["lib/64", "usr/lib/64"]))
 
         def test_elf_warning(self):
                 """Test that if an action uses a variant not declared at the

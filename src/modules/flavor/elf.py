@@ -221,6 +221,8 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
                                     ei["arch"])
         else:
                 for p in default_run_paths:
+                        if ei["bits"] == 64:
+                                p += "/64"
                         if p not in rp:
                                 rp.append(p)
 
@@ -251,19 +253,6 @@ def process_elf_dependencies(action, pkg_vars, dyn_tok_conv, run_paths,
                                     os.path.join(p, pn, kernel64, fn).lstrip(
                                     os.path.sep)
                         else:
-                                # This is a hack for when a runpath uses the 64
-                                # symlink to the actual 64-bit directory.
-                                # Better would be to see if the runpath was a
-                                # link, and if so, use its resolution, but
-                                # extracting that information from used list is
-                                # a pain, especially because you potentially
-                                # have to resolve symlinks at all levels of the
-                                # path.
-                                if p.endswith("/64"):
-                                        if ei["arch"] == "i386":
-                                                p = p[:-2] + "amd64"
-                                        elif ei["arch"] == "sparc":
-                                                p = p[:-2] + "sparcv9"
                                 deppath = os.path.join(p, d).lstrip(os.path.sep)
                         # deppath includes filename; remove that.
                         head, tail = os.path.split(deppath)
