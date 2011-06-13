@@ -1063,3 +1063,17 @@ def liveroot():
         if not live_root:
                 live_root = "/"
         return live_root
+
+def spaceavail(path):
+        """Find out how much space is available at the specified path if
+        it exists; return -1 if path doesn't exist"""
+        try:
+                res = os.statvfs(path)
+                return res.f_frsize * res.f_bavail
+        except OSError:
+                return -1
+
+
+
+
+

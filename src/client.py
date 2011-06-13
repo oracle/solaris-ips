@@ -88,7 +88,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 60
+CLIENT_API_VERSION = 61
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -910,31 +910,39 @@ def __display_plan(api_inst, verbose):
                         if v:
                                 logger.info(s % v)
 
-                cond_show(_("                Packages to remove: %5d"), len(r))
-                cond_show(_("               Packages to install: %5d"), len(i))
-                cond_show(_("                Packages to update: %5d"), len(c))
-                cond_show(_("         Variants/facets to change: %5d"), len(v))
+                cond_show(_("                Packages to remove: %6d"), len(r))
+                cond_show(_("               Packages to install: %6d"), len(i))
+                cond_show(_("                Packages to update: %6d"), len(c))
+                cond_show(_("         Variants/facets to change: %6d"), len(v))
+
+                bytes = plan.bytes_added
+                if bytes:
+                        logger.info(_("Additional filesystem space needed: %6s"),
+                            misc.bytes_to_str(bytes))
+                        logger.info(_("        Filesystem space available: %6s"),
+                            misc.bytes_to_str(plan.bytes_avail))
+
                 if len(v):
-                        s = "                Packages to change: %5d"
+                        s = "                Packages to change: %6d"
                 else:
-                        s = "                   Packages to fix: %5d"
+                        s = "                   Packages to fix: %6d"
                 cond_show(s, len(a))
 
-                logger.info(_("           Create boot environment: %5s") %
+                logger.info(_("           Create boot environment: %6s") %
                     bool_str(plan.new_be))
 
                 if plan.new_be and (verbose or not plan.activate_be):
                         # Only show activation status if verbose or if new BE
                         # will not be activated.
-                        logger.info(_("         Activate boot environment: %5s") %
+                        logger.info(_("         Activate boot environment: %6s") %
                             bool_str(plan.activate_be))
 
                 if not plan.new_be:
-                        cond_show(_("               Services to restart: %5d"),
+                        cond_show(_("               Services to restart: %6d"),
                             len(plan.get_services()))
 
         if "boot-archive" in disp:
-                logger.info(_("              Rebuild boot archive: %5s") %
+                logger.info(_("              Rebuild boot archive: %6s") %
                     bool_str(plan.update_boot_archive))
 
         if "variants/facets" in disp and v:
@@ -1066,6 +1074,9 @@ def __api_prepare(operation, api_inst, accept=False):
         except api_errors.ImageFormatUpdateNeeded, e:
                 format_update_error(e)
                 return EXIT_OOPS
+        except api_errors.ImageInsufficentSpace, e:
+                error(str(e))
+                return EXIT_OOPS
         except KeyboardInterrupt:
                 raise
         except:
@@ -1124,6 +1135,9 @@ def __api_execute_plan(operation, api_inst):
                 rval = EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException:
                 raise
+        except api_errors.ImageInsufficentSpace, e:
+                error(str(e))
+                return EXIT_OOPS
         except Exception, e:
                 error(_("An unexpected error happened during "
                     "%s: %s") % (operation, e))
@@ -3463,7 +3477,7 @@ assistance."""))
                                 # that the origin for the new publisher
                                 # matches the URI provided.
                                 add_origins.append(repo_uri)
-                                
+
                         rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
                             [], api_inst, prefix, pub=src_pub,
                             add_origins=add_origins, ssl_cert=ssl_cert,

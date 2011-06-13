@@ -72,7 +72,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 60
+CURRENT_API_VERSION = 61
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -282,7 +282,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION, 60])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -4403,6 +4403,26 @@ class PlanDescription(object):
                 will be rebuilt"""
                 return self.__plan.boot_archive_needed()
 
+        @property
+        def bytes_added(self):
+                """Returns approximate number of bytes added"""
+                return self.__plan.bytes_added
+
+        @property
+        def cbytes_added(self):
+                """Returns approximate number of download cache bytes added"""
+                return self.__plan.cbytes_added
+
+        @property
+        def bytes_avail(self):
+                """Returns approximate number of bytes available in image /"""
+                return self.__plan.bytes_avail
+
+        @property
+        def cbytes_avail(self):
+                """Returns approximate number of space in download cache"""
+                return self.__plan.cbytes_avail
+         
 
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
     cancel_state_callable=None, facets=misc.EmptyDict, force=False,

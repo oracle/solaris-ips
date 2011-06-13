@@ -1,3 +1,17 @@
+Version 61:
+Compatible with clients using version 60.
+    pkg.client.api.PlanDescription has changed as follows:
+        * Added the following new interfaces
+                get_bytes_added()
+		get_cbytes_added()
+                get_bytes_avail()
+                get_cbytes_avail()
+    pkg.client.api.prepare has changed as follows:
+        * may now raise api_errors.ImageInsufficientSpace exception
+
+    pkg.client.api.execute has changed as follows:
+        * may now raise api_errors.ImageInsufficientSpace exception
+
 Version 60:
 Incompatible with clients using versions 0-59.
 

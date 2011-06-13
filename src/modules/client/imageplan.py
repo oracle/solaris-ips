@@ -174,6 +174,10 @@ class ImagePlan(object):
                 self.__new_avoid_obs = (None, None)
                 self.__salvaged = []
                 self.__mode = mode
+                self.__cbytes_added = 0  # size of compressed files
+                self.__bytes_added = 0   # size of files added
+                self.__cbytes_avail = 0  # avail space for downloads
+                self.__bytes_avail = 0   # avail space for fs
 
                 if noexecute:
                         return
@@ -286,6 +290,24 @@ class ImagePlan(object):
         def plan_desc(self):
                 """Get the proposed fmri changes."""
                 return self.__fmri_changes
+
+        @property
+        def bytes_added(self):
+                """get the (approx) number of bytes added"""
+                return self.__bytes_added
+        @property
+        def cbytes_added(self):
+                """get the (approx) number of bytes needed in download cache"""
+                return self.__cbytes_added
+
+        @property
+        def bytes_avail(self):
+                """get the (approx) number of bytes space available"""
+                return self.__bytes_avail
+        @property
+        def cbytes_avail(self):
+                """get the (approx) number of download space available"""
+                return self.__cbytes_avail
 
         def __vector_2_fmri_changes(self, installed_dict, vector,
             li_pkg_updates=True, new_variants=None, new_facets=None):
@@ -1476,6 +1498,24 @@ class ImagePlan(object):
 
                 self.merge_actions()
 
+                for p in self.pkg_plans:
+                        cbytes, bytes = p.get_bytes_added()
+                        self.__cbytes_added += cbytes
+                        self.__bytes_added += bytes
+
+                self.__update_avail_space()
+
+        def __update_avail_space(self):
+                """Update amount of available space on FS"""                
+                self.__cbytes_avail = misc.spaceavail(
+                    self.image.write_cache_path)
+                        
+                self.__bytes_avail = misc.spaceavail(self.image.root)
+                # if we don't have a full image yet
+                if self.__cbytes_avail < 0:
+                        self.__cbytes_avail = self.__bytes_avail
+
+ 
         def evaluate_pkg_plans(self):
                 """Internal helper function that does the work of converting
                 fmri changes into pkg plans."""
@@ -1969,6 +2009,20 @@ class ImagePlan(object):
                         # No longer needed.
                         del ind
 
+                # check if we're going to have enough room
+                # stat fs again just in case someone else is using space...
+                self.__update_avail_space()
+                if self.__cbytes_added > self.__cbytes_avail * 1.2: 
+                        raise api_errors.ImageInsufficentSpace(
+                            self.__cbytes_added,
+                            self.__cbytes_avail * 1.2,
+                            _("Download cache"))
+                if self.__bytes_added > self.__bytes_avail * 1.2:
+                        raise api_errors.ImageInsufficentSpace(
+                            self.__bytes_added,
+                            self.__bytes_avail * 1.2,
+                            _("Root filesystem"))
+                
                 # Remove history about manifest/catalog transactions.  This
                 # helps the stats engine by only considering the performance of
                 # bulk downloads.
@@ -2034,6 +2088,14 @@ class ImagePlan(object):
                         # plan is no longer valid.
                         self.state = EXECUTED_ERROR
                         raise api_errors.InvalidPlanError()
+
+                # check for available space
+                self.__update_avail_space()
+                if self.__bytes_added > self.__bytes_avail * 1.2:
+                        raise api_errors.ImageInsufficentSpace(
+                            self.__bytes_added,
+                            self.__bytes_avail * 1.2,
+                            _("Root filesystem"))
 
                 #
                 # what determines execution order?

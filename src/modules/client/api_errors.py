@@ -142,6 +142,22 @@ class ImageFormatUpdateNeeded(ApiException):
                     "and must be updated before the requested operation can be "
                     "performed.") % self.path
 
+class ImageInsufficentSpace(ApiException):
+        """Used when insuffcient space exists for proposed operation"""
+        def __init__(self, needed, avail, use):
+                self.needed = needed
+                self.avail = avail
+                self.use = use
+
+        def __str__(self):
+                from pkg.misc import bytes_to_str
+                return _("Insufficent disk space available (%(avail)s)"
+                    "for estimated need (%(needed)s) for %(use)s") % {
+                    "avail":  bytes_to_str(self.avail),
+                    "needed": bytes_to_str(self.needed),
+                    "use": self.use
+                    }
+                    
 
 class VersionException(ApiException):
         def __init__(self, expected_version, received_version):
