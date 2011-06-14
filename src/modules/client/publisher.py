@@ -813,6 +813,10 @@ class Publisher(object):
         # from during __copy__.
         _source_object_id = None
 
+        # Used to record those CRLs which are unreachable during the current
+        # operation.
+        __bad_crls = set()
+
         def __init__(self, prefix, alias=None, catalog=None, client_uuid=None,
             disabled=False, meta_root=None, repository=None,
             transport=None, sticky=True, props=None, revoked_ca_certs=EmptyI,
@@ -1242,7 +1246,7 @@ pkg unset-publisher %s
 
                 # Index origins by tuple of (catalog creation, catalog modified)
                 osets = collections.defaultdict(list)
-                
+
                 for origin, opath in self.__gen_origin_paths():
                         cat = pkg.catalog.Catalog(meta_root=opath,
                             read_only=True)
@@ -1270,7 +1274,7 @@ pkg unset-publisher %s
                 return bool(self.__repository.origins or
                     self.__repository.mirrors or self.__sig_policy or
                     self.approved_ca_certs or self.revoked_ca_certs)
- 
+
         @property
         def needs_refresh(self):
                 """A boolean value indicating whether the publisher's
@@ -1399,7 +1403,7 @@ pkg unset-publisher %s
 
                                 npart = ncat.get_part(name)
                                 base = name.startswith("catalog.base.")
-                                
+
                                 # Avoid accessor overhead since these will be
                                 # used for every entry.
                                 cat_ver = src_cat.version
@@ -2242,6 +2246,10 @@ pkg unset-publisher %s
                         cur_time = dt.datetime.now(nu.tzinfo)
                         if cur_time < nu:
                                 return crl
+                # If the CRL is already known to be unavailable, don't try
+                # connecting to it again.
+                if uri in Publisher.__bad_crls:
+                        return crl
                 # If no CRL already exists or it's time to try to get a new one,
                 # try to retrieve it from the server.
                 tmp_pth = fpath + ".tmp"
@@ -2250,9 +2258,14 @@ pkg unset-publisher %s
                         hdl.setopt(pycurl.URL, uri)
                         hdl.setopt(pycurl.WRITEDATA, fh)
                         hdl.setopt(pycurl.FAILONERROR, 1)
+                        hdl.setopt(pycurl.CONNECTTIMEOUT,
+                            global_settings.PKG_CLIENT_CONNECT_TIMEOUT)
                         try:
                                 hdl.perform()
                         except pycurl.error:
+                                # If the CRL is unavailable, add it to the list
+                                # of bad crls.
+                                Publisher.__bad_crls.add(uri)
                                 # If we should treat failure to get a new CRL
                                 # as a failure, raise an exception here. If not,
                                 # if we should use an old CRL if it exists,
@@ -2388,7 +2401,7 @@ pkg unset-publisher %s
                         elif ext.get_critical():
                                 raise api_errors.UnsupportedCriticalExtension(
                                     cert, ext)
-        
+
         def verify_chain(self, cert, ca_dict, cur_pathlen, required_names=None,
             usages=None):
                 """Validates the certificate against the given trust anchors.

@@ -60,7 +60,7 @@ renamed_pkg = """
 class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         # Tests in this suite use the read only data directory.
         need_ro_data = True
-        
+
         example_pkg10 = """
             open example_pkg@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
@@ -620,7 +620,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def test_sign_5(self):
                 """Test that http repos work."""
 
-                self.dcs[1].start()                
+                self.dcs[1].start()
                 plist = self.pkgsend_bulk(self.durl1, self.example_pkg10)
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s -i %(i2)s " \
                     "-i %(i3)s -i %(i4)s -i %(i5)s %(pkg)s" % {
@@ -698,7 +698,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "cert": os.path.join(self.cs_dir, "cs1_ta2_cert.pem"),
                       "pkg": plist[0]
                     }
-                
+
                 self.pkgsign(self.rurl1, sign_args)
                 self.pkg_image_create(self.rurl1)
 
@@ -1224,7 +1224,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 portable.copyfile(os.path.join(self.crl_dir,
                     "ch1.1_ta4_crl.pem"),
                     os.path.join(rstore.file_root, "ch", "ch1.1_ta4_crl.pem"))
-                
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -1239,7 +1239,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.rurl1, sign_args)
 
                 self.dcs[1].start()
-                
+
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
 
@@ -1513,7 +1513,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 portable.copyfile(os.path.join(self.crl_dir,
                     "ch1_ta4_crl.pem"),
                     os.path.join(rstore.file_root, "ch", "ch1_ta4_crl.pem"))
-                
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -1609,7 +1609,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def test_crl_4(self):
                 """Test that a CRL which cannot be retrieved does not cause
                 breakage."""
-                
+
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -1715,7 +1715,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
         def test_crl_7(self):
                 """Test that a CRL location which isn't in a known URI format
                 doesn't cause breakage."""
-                
+
                 r = self.get_repo(self.dcs[1].get_repodir())
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
 
@@ -1989,7 +1989,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_install(api_obj, ["example_pkg"])
 
         def test_higher_signature_version(self):
-                
+
                 r = self.get_repo(self.dcs[1].get_repodir())
                 plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
                 sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
@@ -2190,7 +2190,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                             "ch1_ta3_cert.pem")
                 }
                 self.pkgsign(self.rurl1, sign_args)
-                
+
                 self.pkg_image_create(self.rurl1,
                     additional_args="--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
@@ -2216,7 +2216,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                                     "ch1_ta3_cert.pem")
                         }
                         self.pkgsign(self.rurl1, sign_args)
-                
+
                 self.pkg_image_create(self.rurl1,
                     additional_args="--set-property signature-policy=require-signatures")
                 self.seed_ta_dir("ta3")
@@ -2509,6 +2509,10 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
             add set name='weirdness' value='] [ * ?'
             close """
 
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
         image_files = ['simple_file']
         misc_files = ['tmp/example_file']
 
@@ -2543,13 +2547,24 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                         with open(os.path.join(self.img_path(), f), "wb") as fh:
                                 fh.close()
 
+        def pkg(self, command, *args, **kwargs):
+                # The value for crl_host is pulled from DebugValues because
+                # crl_host needs to be set there so the api object calls work
+                # as desired.
+                command = "--debug crl_host=%s %s" % \
+                    (DebugValues["crl_host"], command)
+                return pkg5unittest.ManyDepotTestCase.pkg(self, command,
+                    *args, **kwargs)
+
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test", "test"])
+                pkg5unittest.ManyDepotTestCase.setUp(self,
+                    ["test", "test", "crl"])
                 self.make_misc_files(self.misc_files)
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.rurl1 = self.dcs[1].get_repo_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.rurl2 = self.dcs[2].get_repo_url()
+                DebugValues["crl_host"] = self.dcs[3].get_depot_url()
                 self.ta_dir = None
 
                 self.path_to_certs = os.path.join(self.ro_data_root,
@@ -2626,6 +2641,37 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
                         self.pkgsign(self.rurl2, sign_args)
 
                 self.pkgrecv(self.rurl2, "-d %s renamed obs" % self.rurl1)
+
+        def test_bug_18463(self):
+                """Check that the crl host is only contacted once, instead of
+                once per package."""
+
+                self.dcs[3].start()
+
+                plist = self.pkgsend_bulk(self.rurl1,
+                    [self.example_pkg10, self.foo10])
+                sign_args = "-k %(key)s -c %(cert)s -i %(i1)s %(name)s" % {
+                        "name": "%s %s" % (plist[0], plist[1]),
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1.1_ta4_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1.1_ta4_cert.pem"),
+                        "i1": os.path.join(self.chain_certs_dir,
+                            "ch1.1_ta4_cert.pem")
+                }
+                self.pkgsign(self.rurl1, sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta4")
+                self.pkg("set-property signature-policy require-signatures")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg", "foo"])
+                cnt = 0
+                with open(self.dcs[3].get_logpath(), "rb") as fh:
+                        for l in fh:
+                                if "ch1.1_ta4_crl.pem" in l:
+                                        cnt += 1
+                self.assertEqual(cnt, 1)
 
 
 if __name__ == "__main__":
