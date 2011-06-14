@@ -1664,6 +1664,18 @@ class MoveRelativeToSelf(PublisherError):
                 return _("Cannot search a repository before or after itself")
 
 
+class MoveRelativeToUnknown(PublisherError):
+        """Used to indicate an attempt to order a publisher relative to an
+        unknown publisher."""
+
+        def __init__(self, unknown_pub):
+                self.__unknown_pub = unknown_pub
+
+        def __str__(self):
+                return _("%s is an unknown publisher; no other publishers can "
+                    "be ordered relative to it.") % self.__unknown_pub
+
+
 class SelectedRepositoryRemoval(PublisherError):
         """Used to indicate that an attempt to remove the selected repository
         for a publisher was made."""

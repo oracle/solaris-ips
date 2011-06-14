@@ -255,10 +255,14 @@ class ImageConfig(cfg.FileConfig):
 
                 so = self.get_property("property", "publisher-search-order")
                 so.remove(being_moved)
+                try:
+                        ind = so.index(staying_put)
+                except ValueError:
+                        raise apx.MoveRelativeToUnknown(staying_put)
                 if after:
-                        so.insert(so.index(staying_put) + 1, being_moved)
+                        so.insert(ind + 1, being_moved)
                 else:
-                        so.insert(so.index(staying_put), being_moved)
+                        so.insert(ind, being_moved)
                 self.set_property("property", "publisher-search-order", so)
 
         def __get_publisher(self, prefix):

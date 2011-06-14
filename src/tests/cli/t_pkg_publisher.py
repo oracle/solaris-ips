@@ -231,6 +231,12 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh --remove-property-value "
                     "bar=baz test1", exit=1)
 
+                self.pkg("publisher")
+                self.pkg("set-publisher --no-refresh --search-after foo test1",
+                    exit=1)
+                self.pkg("set-publisher --no-refresh --search-before foo test1",
+                    exit=1)
+
         def test_publisher_validation(self):
                 """Verify that we catch poorly formed auth prefixes and URL"""
 
