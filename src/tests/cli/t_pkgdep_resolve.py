@@ -631,7 +631,6 @@ The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri
                 self.assertEqualDiff(err_text, str(errs[0]))
 
                 bad_require_any_dep_manf = """\
-set name=pkg.fmri value=badreq@1,5.11
 depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
 """
                 m1_path = self.make_manifest(bad_require_any_dep_manf)
@@ -639,11 +638,12 @@ depend fmri=example_pkg fmri=pkg://////// fmri=pkg://// type=require-any
                     self.api_obj)
                 self.assertEqual(len(errs), 1)
                 err_text = """\
-The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
+The package %s contains depend actions with values in their fmri attributes which are not valid fmris.  The bad values are:
 	pkg:////
 	pkg:////////
 """
-                self.assertEqualDiff(err_text, str(errs[0]))
+                self.assertEqualDiff(err_text % os.path.basename(m1_path),
+                    str(errs[0]))
 
         def test_resolve_permissions(self):
                 """Test that a manifest that pkgdepend resolve can't access
@@ -935,6 +935,9 @@ The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri
                                             ["search_storage.py",
                                             "search_storage.pyc",
                                             "search_storage/__init__.py"])
+                                        self.assertEqual(
+                                            os.path.basename(mf_path),
+                                            e.pkg_name)
                                 elif isinstance(e,
                                     dependencies.UnresolvedDependencyError):
                                         self.assertEqual(e.path, mf_path)
@@ -1090,6 +1093,8 @@ The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri
                                 self.assertEqual(
                                     e.source.attrs["%s.file" % self.depend_dp],
                                     "no_such_named_file")
+                                self.assertEqual("pkg:/collision_manf",
+                                    e.pkg_name)
                         elif isinstance(e,
                             dependencies.UnresolvedDependencyError):
                                 self.assertEqual(e.path, col_path_num_var)
@@ -1129,6 +1134,8 @@ The package pkg:/badreq@1,5.11 contains depend actions with values in their fmri
                                 self.assertEqual(
                                     e.source.attrs["%s.file" % self.depend_dp],
                                     "no_such_named_file")
+                                self.assertEqual("pkg:/collision_manf",
+                                    e.pkg_name)
                         elif isinstance(e,
                             dependencies.UnresolvedDependencyError):
                                 self.assertEqual(e.path, col_path)

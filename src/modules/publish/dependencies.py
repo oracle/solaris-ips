@@ -72,14 +72,37 @@ class MultiplePackagesPathError(DependencyError):
         two or more packages to deliver files which fulfill the dependency under
         some combination of variants."""
 
-        def __init__(self, res, source, vc):
+        def __set_pkg_name(self, name):
+                self.__pkg_name = str(name)
+
+        pkg_name = property(lambda self: self.__pkg_name, __set_pkg_name)
+        
+        def __init__(self, res, source, vc, pkg_name=None):
                 self.res = res
                 self.source = source
                 self.vc = vc
-
+                self.pkg_name = pkg_name
+                
         def __str__(self):
-                if self.vc.sat_set:
-                        return _("The file dependency %(src)s has paths which "
+                if self.vc.sat_set and self.pkg_name:
+                        return _("The file dependency %(src)s delivered in "
+                            "package %(pkg)s has paths which resolve to "
+                            "multiple packages under this combination of "
+                            "variants:\n%(vars)s\nThe actions "
+                            "are:\n%(acts)s") % {
+                                "src":self.source,
+                                "acts":"\n".join(
+                                    ["\t%s" % a for a in self.res]),
+                                "vars":"\n".join([
+                                    " ".join([
+                                        ("%s:%s" % (name, val))
+                                        for name, val in grp
+                                    ])
+                                    for grp in self.vc.sat_set]),
+                                "pkg": self.pkg_name
+                            }
+                elif self.vc.sat_set:
+                        return _("The file dependency %(src)s has paths which"
                             "resolve to multiple packages under this "
                             "combination of variants:\n%(vars)s\nThe actions "
                             "are:\n%(acts)s") % {
@@ -92,6 +115,15 @@ class MultiplePackagesPathError(DependencyError):
                                         for name, val in grp
                                     ])
                                     for grp in self.vc.sat_set])
+                            }
+                elif self.pkg_name:
+                        return _("The file dependency %(src)s delivered in "
+                            "%(pkg)s has paths which resolve to multiple "
+                            "packages.\nThe actions are:\n%(acts)s") % {
+                                "src":self.source,
+                                "acts":"\n".join(
+                                ["\t%s" % a for a in self.res]),
+                                "pkg":self.pkg_name
                             }
                 else:
                         return _("The file dependency %(src)s has paths which "
@@ -997,7 +1029,7 @@ def merge_deps(dest, src):
                                 t.extend(v)
                                 dest.attrs[k] = t
 
-def combine(deps, pkg_vars, pkg_fmri):
+def combine(deps, pkg_vars, pkg_fmri, pkg_name):
         """Combine duplicate dependency actions.
 
         'deps' is a list of tuples. Each tuple contains a dependency action and
@@ -1006,7 +1038,10 @@ def combine(deps, pkg_vars, pkg_fmri):
         'pkg_vars' are the variants that the package for which dependencies are
         being generated was published against.
 
-        'pkg_fmri' is the name of the package being resolved."""
+        'pkg_fmri' is the name of the package being resolved.  This can be None.
+
+        'pkg_name' is either the same as 'pkg_fmri', if 'pkg_fmri' is not None,
+        or it's the basename of the path to the manifest being resolved."""
 
         def action_group_key(d):
                 """Return a key on which the tuples can be sorted and grouped
@@ -1128,7 +1163,7 @@ def combine(deps, pkg_vars, pkg_fmri):
                 res.extend(add_vars(d, vc, pkg_vars))
 
         if bad_fmris:
-                errs.append(BadDependencyFmri(pkg_fmri, bad_fmris))
+                errs.append(BadDependencyFmri(pkg_name, bad_fmris))
         return res, errs
 
 def split_off_variants(dep, pkg_vars, satisfied=False):
@@ -1269,6 +1304,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         pkg_deps = {}
         errs = []
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
+                name_to_use = pfmri or name
                 # The add_fmri_path_mapping function moved the actions it found
                 # into the distro_vars universe of variants, so we need to move
                 # pkg_vars (and by extension the variants on depend actions)
@@ -1292,6 +1328,9 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                     if not is_file_dependency(d)
                 ]
                 for file_dep, (res, dep_vars, pkg_errs) in pkg_res:
+                        for e in pkg_errs:
+                                if hasattr(e, "pkg_name"):
+                                        e.pkg_name = name_to_use
                         errs.extend(pkg_errs)
                         dep_vars.simplify(pkg_vars)
                         if not res:
@@ -1304,7 +1343,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                                             mp, file_dep, dep_vars))
                 # Add variant information to the dependency actions and combine
                 # what would otherwise be duplicate dependencies.
-                deps, combine_errs = combine(deps, pkg_vars, pfmri)
+                deps, combine_errs = combine(deps, pkg_vars, pfmri, name_to_use)
                 errs.extend(combine_errs)
 
                 if prune_attrs:
