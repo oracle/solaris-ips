@@ -935,7 +935,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return True
 
         def plan_update(self, pkg_list, refresh_catalogs=True,
-            reject_list=None, noexecute=False, update_index=True,
+            reject_list=misc.EmptyI, noexecute=False, update_index=True,
             be_name=None, new_be=False, repos=None, be_activate=True):
                 """DEPRECATED.  use gen_plan_update()."""
                 for pd in self.gen_plan_update(
@@ -947,7 +947,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return not self.planned_nothingtodo()
 
         def plan_update_all(self, refresh_catalogs=True,
-            reject_list=None, noexecute=False, force=False,
+            reject_list=misc.EmptyI, noexecute=False, force=False,
             update_index=True, be_name=None, new_be=True, repos=None,
             be_activate=True):
                 """DEPRECATED.  use gen_plan_update()."""
@@ -962,7 +962,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_update(self, pkgs_update=None, accept=False,
             be_activate=True, be_name=None, force=False, li_ignore=None,
             li_parent_sync=True, new_be=True, noexecute=False,
-            refresh_catalogs=True, reject_list=None, repos=None,
+            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
             update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.
@@ -1005,7 +1005,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, update_index=True, be_name=None,
-            reject_list=None, new_be=False, repos=None,
+            reject_list=misc.EmptyI, new_be=False, repos=None,
             be_activate=True):
                 """DEPRECATED.  use gen_plan_install()."""
                 for pd in self.gen_plan_install(
@@ -1018,7 +1018,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         def gen_plan_install(self, pkgs_inst, accept=False, be_activate=True,
             be_name=None, li_ignore=None, li_parent_sync=True, new_be=False,
-            noexecute=False, refresh_catalogs=True, reject_list=None,
+            noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
             repos=None, update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.
@@ -1095,7 +1095,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_sync(self, accept=False, be_activate=True, be_name=None,
             li_ignore=None, li_md_only=False, li_parent_sync=True,
             li_pkg_updates=True, new_be=False, noexecute=False,
-            refresh_catalogs=True, reject_list=None, repos=None,
+            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
             update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.
@@ -1140,7 +1140,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             allow_relink=False, be_activate=True, be_name=None,
             force=False, li_ignore=None, li_md_only=False,
             li_pkg_updates=True, li_props=None, new_be=False,
-            noexecute=False, refresh_catalogs=True, reject_list=None,
+            noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
             repos=None, update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.
@@ -1272,7 +1272,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def gen_plan_change_varcets(self, facets=None, variants=None,
             accept=False, be_activate=True, be_name=None, li_ignore=None,
             li_parent_sync=True, new_be=None, noexecute=False,
-            refresh_catalogs=True, reject_list=None, repos=None,
+            refresh_catalogs=True, reject_list=misc.EmptyI, repos=None,
             update_index=True):
                 """This is a generator function that returns PlanDescription
                 objects.

@@ -886,27 +886,27 @@ packages known:
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "recursive_cmd_fail"}),
+                        "e_member": "cmd_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_install(*args, **kwargs)),
                         [self.p_sync1_name[0]])
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "recursive_cmd_fail"}),
+                        "e_member": "cmd_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_update(*args, **kwargs)))
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "recursive_cmd_fail"}),
+                        "e_member": "cmd_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_change_varcets(*args, **kwargs)),
                         variants={"variant.foo": "baz"})
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "recursive_cmd_fail"}),
+                        "e_member": "cmd_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_uninstall(*args, **kwargs)),
                         [self.p_sync1_name_gen])
@@ -1176,6 +1176,41 @@ packages known:
                 substring_verify(str(e), self.p_sync3_name[1])
                 substring_verify(str(e), self.p_sync4_name[1])
 
+
+        def test_sync_nosolver(self):
+                """Verify that the solver is not invoked when syncing in-sync
+                images."""
+
+                api_objs = self._imgs_create(2)
+
+                # install a synced package into the images
+                self._api_install(api_objs[0], [self.p_sync1_name[1]])
+                self._api_install(api_objs[1], [self.p_sync1_name[1]])
+
+                # install a random package into the image
+                self._api_install(api_objs[1], [self.p_foo1_name[1]])
+
+                # link the images
+                self._parent_attach(0, [1])
+
+                # raise an exception of the solver is invoked
+                DebugValues["no_solver"] = 1
+
+                # the child is in sync and we're not rejecting an installed
+                # package, so a sync shound not invoke the solver.
+                self._api_sync(api_objs[1])
+                self._api_sync(api_objs[1], reject_list=[self.p_foo2_name[1]])
+
+                # the child is in sync, but we're rejecting an installed
+                # package, so a sync must invoke the solver.
+                assertRaises(
+                    (apx_verify, {"e_type": RuntimeError}),
+                    self._api_sync, api_objs[1],
+                    reject_list=[self.p_sync1_name[1]])
+                assertRaises(
+                    (apx_verify, {"e_type": RuntimeError}),
+                    self._api_sync, api_objs[1],
+                    reject_list=[self.p_sync1_name[1], self.p_foo2_name[1]])
 
 if __name__ == "__main__":
         unittest.main()

@@ -39,10 +39,11 @@ logger = global_settings.logger
 import pkg.actions
 import pkg.catalog
 import pkg.client.actuator as actuator
-import pkg.client.indexer as indexer
 import pkg.client.api_errors as api_errors
-import pkg.client.pkgplan as pkgplan
+import pkg.client.indexer as indexer
 import pkg.client.pkg_solver as pkg_solver
+import pkg.client.pkgdefs as pkgdefs
+import pkg.client.pkgplan as pkgplan
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
@@ -367,7 +368,7 @@ class ImagePlan(object):
 
         def __plan_install_solver(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
-            reject_list=None):
+            reject_list=misc.EmptyI):
                 """Use the solver to determine the fmri changes needed to
                 install the specified pkgs, sync the specified image, and/or
                 change facets/variants within the current image."""
@@ -436,7 +437,7 @@ class ImagePlan(object):
 
         def __plan_install(self, li_pkg_updates=True, li_sync_op=False,
             new_facets=None, new_variants=None, pkgs_inst=None,
-            reject_list=None):
+            reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to install the specified
                 pkgs, sync the image, and/or change facets/variants within the
                 current image."""
@@ -463,7 +464,7 @@ class ImagePlan(object):
 
                 self.state = EVALUATED_PKGS
 
-        def plan_install(self, pkgs_inst=None, reject_list=None):
+        def plan_install(self, pkgs_inst=None, reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to install the specified
                 pkgs"""
 
@@ -472,7 +473,7 @@ class ImagePlan(object):
                      reject_list=reject_list)
 
         def plan_change_varcets(self, new_facets=None, new_variants=None,
-            reject_list=None):
+            reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to change the specified
                 facets/variants."""
 
@@ -480,10 +481,31 @@ class ImagePlan(object):
                 self.__plan_install(new_facets=new_facets,
                      new_variants=new_variants, reject_list=reject_list)
 
-        def plan_sync(self, li_pkg_updates=True, reject_list=None):
+        def plan_sync(self, li_pkg_updates=True, reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to sync the image."""
 
                 self.__plan_op(self.PLANNED_SYNC)
+
+                # check if the sync will try to uninstall packages.
+                uninstall = False
+                reject_set = self.match_user_stems(reject_list,
+                    self.MATCH_INST_VERSIONS, not_inst_ok=True)
+                if reject_set:
+                        # at least one reject pattern matched an installed
+                        # package
+                        uninstall = True
+
+                # audits are fast, so do an audit to check if we're in sync.
+                rv, err = self.image.linked.audit_self(li_parent_sync=False)
+
+                # if we're not trying to uninstall packages and we're
+                # already in sync then don't bother invoking the solver.
+                if not uninstall and rv == pkgdefs.EXIT_OK:
+                        # we don't need to do anything
+                        self.__fmri_changes = []
+                        self.state = EVALUATED_PKGS
+                        return
+
                 self.__plan_install(li_pkg_updates=li_pkg_updates,
                     li_sync_op=True, reject_list=reject_list)
 
@@ -526,7 +548,8 @@ class ImagePlan(object):
 
                 self.state = EVALUATED_PKGS
 
-        def __plan_update_solver(self, pkgs_update=None, reject_list=None):
+        def __plan_update_solver(self, pkgs_update=None,
+            reject_list=misc.EmptyI):
                 """Use the solver to determine the fmri changes needed to
                 update the specified pkgs or all packages if none were
                 specified."""
@@ -579,7 +602,7 @@ class ImagePlan(object):
                 self.__fmri_changes = self.__vector_2_fmri_changes(
                     installed_dict, new_vector)
 
-        def plan_update(self, pkgs_update=None, reject_list=None):
+        def plan_update(self, pkgs_update=None, reject_list=misc.EmptyI):
                 """Determine the fmri changes needed to update the specified
                 pkgs or all packages if none were specified."""
                 self.__plan_op(self.PLANNED_UPDATE)
@@ -2346,7 +2369,7 @@ class ImagePlan(object):
                 except StopIteration:
                         return True
 
-        def match_user_stems(self, patterns, match_type):
+        def match_user_stems(self, patterns, match_type, not_inst_ok=False):
                 """Given a user specified list of patterns, return a set
                 of matching package stems.  Any versions specified are
                 ignored.
@@ -2375,7 +2398,8 @@ class ImagePlan(object):
                 Routine raises PlanCreationException if errors occur: it is
                 illegal to specify multiple different patterns that match the
                 same pkg name.  Only patterns that contain wildcards are allowed
-                to match multiple packages.
+                to match multiple packages.  Patterns that don't match any
+                packages are not allowed unless 'not_inst_ok' is true.
                 """
                 # avoid checking everywhere
                 if not patterns:
@@ -2491,7 +2515,8 @@ class ImagePlan(object):
                             self.image.IMG_CATALOG_INSTALLED).names()
                             if name in matchdict
                         ]
-                if illegals or nonmatch or multimatch or not_installed or \
+                if illegals or nonmatch or multimatch or \
+                    (not_installed and not not_inst_ok) or \
                     multispec or already_installed:
                         raise api_errors.PlanCreationException(
                             already_installed=already_installed,

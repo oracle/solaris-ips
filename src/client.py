@@ -1536,7 +1536,7 @@ def opts_table_cb_li_target(op, api_inst, opts, opts_new):
         if "require_new_be" in opts and opts["require_new_be"]:
                 opts_err_incompat(arg1, "--require-new-be", op)
         if "reject_pats" in opts and opts["reject_pats"]:
-                opts_err_incompat(arg1, "--require", op)
+                opts_err_incompat(arg1, "--reject", op)
         if "origins" in opts and opts["origins"]:
                 opts_err_incompat(arg1, "-g", op)
 

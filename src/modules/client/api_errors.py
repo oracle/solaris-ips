@@ -2473,10 +2473,10 @@ class LinkedImageException(ApiException):
             child_nested=None,
             child_not_in_altroot=None,
             child_not_nested=None,
-            child_op_failed=None,
             child_path_eaccess=None,
             child_path_notabs=None,
             child_unknown=None,
+            cmd_failed=None,
             detach_child_notsup=None,
             detach_from_parent=None,
             detach_parent_notsup=None,
@@ -2487,7 +2487,6 @@ class LinkedImageException(ApiException):
             parent_bad_notabs=None,
             parent_bad_path=None,
             parent_not_in_altroot=None,
-            recursive_cmd_fail=None,
             self_linked=None,
             self_not_child=None):
 
@@ -2502,10 +2501,10 @@ class LinkedImageException(ApiException):
                 self.child_nested = child_nested
                 self.child_not_in_altroot = child_not_in_altroot
                 self.child_not_nested = child_not_nested
-                self.child_op_failed = child_op_failed
                 self.child_path_eaccess = child_path_eaccess
                 self.child_path_notabs = child_path_notabs
                 self.child_unknown = child_unknown
+                self.cmd_failed = cmd_failed
                 self.detach_child_notsup = detach_child_notsup
                 self.detach_from_parent = detach_from_parent
                 self.detach_parent_notsup = detach_parent_notsup
@@ -2516,7 +2515,6 @@ class LinkedImageException(ApiException):
                 self.parent_bad_notabs = parent_bad_notabs
                 self.parent_bad_path = parent_bad_path
                 self.parent_not_in_altroot = parent_not_in_altroot
-                self.recursive_cmd_fail = recursive_cmd_fail
                 self.self_linked = self_linked
                 self.self_not_child = self_not_child
 
@@ -2605,11 +2603,6 @@ class LinkedImageException(ApiException):
                                 "ppath": ppath,
                             }
 
-                if child_op_failed:
-                        assert lin
-                        err = _("Linked image %(op)s failed for: %(lin)s") % \
-                            {"op": child_op_failed, "lin": lin}
-
                 if child_path_eaccess:
                         if exitrv == None:
                                 exitrv = pkgdefs.EXIT_EACCESS
@@ -2630,6 +2623,26 @@ class LinkedImageException(ApiException):
                 if child_unknown:
                         err = _("Unknown child linked image: %s") % \
                             child_unknown
+
+                if cmd_failed:
+                        assert lin
+                        assert len(cmd_failed) == 3
+                        op = cmd_failed[0]
+                        exitrv = cmd_failed[1]
+                        errout = cmd_failed[2]
+
+                        err = _("""
+A '%(op)s' operation failed for child '%(lin)s' with an unexpected
+return value of %(exitrv)d and the following error message:
+%(errout)s
+
+"""
+                        ) % {
+                            "lin": lin,
+                            "op": op,
+                            "exitrv": exitrv,
+                            "errout": errout,
+                        }
 
                 if detach_child_notsup:
                         err = _("Linked image type does not support "
@@ -2679,21 +2692,6 @@ class LinkedImageException(ApiException):
                                 "path": path,
                                 "altroot": altroot
                             }
-
-                if recursive_cmd_fail:
-                        if type(recursive_cmd_fail) == list:
-                                recursive_cmd_fail = \
-                                    " ".join(recursive_cmd_fail)
-                        assert type(recursive_cmd_fail) == str
-                        err = _("""
-Recursive linked image operation failed for child '%(lin)s'.
-The following subprocess returned an unexpected exit code of %(exitrv)d:
-    %(recursive_cmd_fail)s"""
-                        ) % {
-                            "lin": lin,
-                            "exitrv": exitrv,
-                            "recursive_cmd_fail": recursive_cmd_fail,
-                        }
 
                 if self_linked:
                         err = _("Current image already a linked child: %s") % \

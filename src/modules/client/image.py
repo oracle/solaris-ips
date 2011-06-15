@@ -3746,7 +3746,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.__cleanup_alt_pkg_certs()
 
         def make_install_plan(self, op, progtrack, check_cancel, ip_mode,
-            noexecute, pkgs_inst=None, reject_list=None):
+            noexecute, pkgs_inst=None, reject_list=misc.EmptyI):
                 """Take a list of packages, specified in pkgs_inst, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
@@ -3757,7 +3757,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     reject_list=reject_list)
 
         def make_change_varcets_plan(self, op, progtrack, check_cancel,
-            ip_mode, noexecute, facets=None, reject_list=None,
+            ip_mode, noexecute, facets=None, reject_list=misc.EmptyI,
             variants=None):
                 """Take a list of variants and/or facets and attempt to
                 assemble an image plan which changes them.  This is a helper
@@ -3774,7 +3774,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     reject_list=reject_list)
 
         def make_sync_plan(self, op, progtrack, check_cancel, ip_mode,
-            noexecute, li_pkg_updates=True, reject_list=None):
+            noexecute, li_pkg_updates=True, reject_list=misc.EmptyI):
                 """Attempt to create an appropriate image plan to bring an
                 image in sync with it's linked image constraints.  This is a
                 helper routine for some common operations in the client."""
@@ -3791,7 +3791,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     ip_mode, noexecute, pkgs_to_uninstall=pkgs_to_uninstall)
 
         def make_update_plan(self, op, progtrack, check_cancel, ip_mode,
-            noexecute, pkgs_update=None, reject_list=None):
+            noexecute, pkgs_update=None, reject_list=misc.EmptyI):
                 """Create a plan to update all packages or the specific ones as
                 far as possible.  This is a helper routine for some common
                 operations in the client.

@@ -73,6 +73,10 @@ class PkgSolver(object):
                 a dictionary, indexed by fmris, of extra dependency actions
                 that should be added to packages."""
 
+                # check if we're allowed to use the solver
+                if DebugValues["no_solver"]:
+                        raise RuntimeError, "no_solver set, but solver invoked"
+
                 self.__catalog = cat
                 self.__publisher = {}		# indexed by stem
                 self.__possible_dict = defaultdict(list) # indexed by stem
