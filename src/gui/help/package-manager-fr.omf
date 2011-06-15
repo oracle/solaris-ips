@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>alta.elstad@oracle.com (Alta Elstad)</creator>
+    <creator>padraig.obrian@oracle.com (Padraig O'Brian)</creator>
+    <creator>michal.pyrc@oracle.com (Michal Pyrc)</creator>
+    <creator>john.rice@oracle.com (John Rice)</creator>
+    <maintainer>john.rice@oracle.com (John Rice)</maintainer>
+    <title>Package Manager</title>
+    <date>2011</date>
+    <version identifier="Package Manager V0.5.11" date="2011"/>
+    <subject category="GNOME|System"/>
+    <description>
+      The graphical interface for the Image Packaging System allows
+      you to perform many core packaging tasks in a user-friendly
+      fashion.
+    </description>
+    <type>
+      user's guide
+    </type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/share/gnome/help/package-manager/fr/package-manager.xml"/>
+    <language code="fr"/>
+    <relation seriesid="09df903c-bf82-a380-3bd5-4b85420411c510"/>
+    <rights type="GNU FDL" license.version="1.1" holder="Oracle and/or its affiliates"/>
+  </resource>
+</omf>

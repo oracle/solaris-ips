@@ -54,6 +54,7 @@ ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
+ROOTOMFSHARE = $(ROOT)/share/omf/package-manager
 ROOTPYTHON = $(ROOTUSRLIB)/python2.6
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
@@ -79,6 +80,7 @@ ROOTDIRS = \
    $(ROOTMIMEICONSHARE) \
    $(ROOTMIMETYPESHARE) \
    $(ROOTPYTHONPKG) \
+   $(ROOTOMFSHARE) \
    $(ROOTSHARE) \
    $(ROOTSPSHARE)
 
@@ -194,6 +196,27 @@ ICONS48 = \
    data/icons/48x48/pm-remove.png \
    data/icons/48x48/pm-update_all.png
 
+OMFFILES = \
+   help/package-manager-ar.omf \
+   help/package-manager-C.omf \
+   help/package-manager-ca.omf \
+   help/package-manager-cs.omf \
+   help/package-manager-de.omf \
+   help/package-manager-es.omf \
+   help/package-manager-fr.omf \
+   help/package-manager-hu.omf \
+   help/package-manager-id.omf \
+   help/package-manager-it.omf \
+   help/package-manager-ja.omf \
+   help/package-manager-ko.omf \
+   help/package-manager-pl.omf \
+   help/package-manager-pt_BR.omf \
+   help/package-manager-ru.omf \
+   help/package-manager-sv.omf \
+   help/package-manager-zh_CN.omf \
+   help/package-manager-zh_HK.omf \
+   help/package-manager-zh_TW.omf
+
 PYMODS = \
    modules/__init__.py \
    modules/beadmin.py \
@@ -265,6 +288,8 @@ ROOTMIMEICONS = $(MIMEICONS:data/%=$(ROOTMIMEICONSHARE)/%)
 
 ROOTMIMETYPE = $(MIMETYPE:data/%=$(ROOTMIMETYPESHARE)/%)
 
+ROOTOMFFILES = $(OMFFILES:help/%=$(ROOTOMFSHARE)/%)
+
 ROOTSPDIRS = \
 	$(SP_LOCALES:%=$(ROOTSPSHARE)/%)
 
@@ -313,6 +338,7 @@ ROOTCOMPONENTS = \
    $(ROOTPYGLADE) \
    $(ROOTPYMODS) \
    $(ROOTPYCALLMODS) \
+   $(ROOTOMFFILES) \
    $(ROOTSPFILES)
 
 #
@@ -372,6 +398,9 @@ $(ROOTMIMETYPESHARE)/%: $(ROOTDIRS) data/%
 # Breaking Alphabetical layout
 $(ROOTMIMEICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTMIMEICONSHARE) -m 0644 $<
+
+$(ROOTOMFSHARE)/%: $(ROOTDIRS) help/%
+	$(INSTALL) -f $(ROOTOMFSHARE) -m 0644 $<
 
 $(ROOTSPDIRS): $(ROOTDIRS)
 	$(INSTALL) -d -m 0755 $@
