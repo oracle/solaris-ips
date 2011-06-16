@@ -2013,38 +2013,32 @@ pkg unset-publisher %s
                         self.revoked_ca_certs = list(t)
 
         @staticmethod
-        def __hash_cert(s):
-                return hashlib.sha1(s).hexdigest()
+        def __hash_cert(c):
+                return hashlib.sha1(c.as_pem()).hexdigest()
 
         def __add_cert(self, s):
-                """Add the certificate stored as a string in 's' to the
-                certificates this publisher knows about."""
+                """Add the pem representation of the certificate stored as a
+                string in 's' to the certificates this publisher knows about."""
 
                 self.create_meta_root()
-                pkg_hash = self.__hash_cert(s)
-                pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
                 try:
-                        with open(pkg_hash_pth, "wb") as fh:
-                                fh.write(s)
-                except EnvironmentError, e:
-                        raise api_errors._convert_error(e)
-                try:
-                        c = m2.X509.load_cert_string(s)
+                        cert = m2.X509.load_cert_string(s)
                 except m2.X509.X509Error, e:
-                        try:
-                                portable.remove(pkg_hash_pth)
-                        except:
-                                # Pass because the bad file format error is the
-                                # more important one.
-                                pass
                         raise api_errors.BadFileFormat(_("The file with hash "
                             "%s was expected to be a PEM certificate but it "
                             "could not be read.") % pkg_hash)
+                pkg_hash = self.__hash_cert(cert)
+                pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
+                try:
+                        with open(pkg_hash_pth, "wb") as fh:
+                                fh.write(cert.as_pem())
+                except EnvironmentError, e:
+                        raise api_errors._convert_error(e)
 
                 # Note that while we store certs by their subject hashes,
                 # M2Crypto's subject hashes differ from what openssl reports
                 # the subject hash to be.
-                subj_hsh = c.get_subject().as_hash()
+                subj_hsh = cert.get_subject().as_hash()
                 c = 0
                 made_link = False
                 while not made_link:
@@ -2343,8 +2337,7 @@ pkg unset-publisher %s
                         raise api_errors.RevokedCertificate(cert, rev[1])
 
         def __check_revocation(self, cert, ca_dict):
-                txt = cert.as_text() + cert.as_pem()
-                hsh = self.__hash_cert(txt)
+                hsh = self.__hash_cert(cert)
                 if hsh in self.revoked_ca_certs:
                         raise api_errors.RevokedCertificate(cert,
                             "User manually revoked certificate.")

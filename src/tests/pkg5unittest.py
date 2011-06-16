@@ -61,6 +61,7 @@ import textwrap
 import pkg.client.api_errors as apx
 import pkg.client.publisher as publisher
 import pkg.server.repository as sr
+import M2Crypto as m2
 
 from pkg.client.debugvalues import DebugValues
 
@@ -693,14 +694,10 @@ if __name__ == "__main__":
                 return t_path
 
         @staticmethod
-        def calc_file_hash(pth):
-                # Find the hash of the file.
-                fh = open(pth, "rb")
-                s = fh.read()
-                fh.close()
-                hsh = hashlib.sha1()
-                hsh.update(s)
-                return hsh.hexdigest()
+        def calc_pem_hash(pth):
+                # Find the hash of pem representation the file.
+                cert = m2.X509.load_cert(pth)
+                return hashlib.sha1(cert.as_pem()).hexdigest()
 
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""

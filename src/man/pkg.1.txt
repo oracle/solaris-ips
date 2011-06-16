@@ -665,8 +665,7 @@ SUBCOMMANDS
           Display publisher information.  With no arguments, display
           the list of all publishers, their origin URIs, and mirrors
           in order of search preference.  If specific publishers are
-          requested, display the configuration values, including
-          mirrors, associated with those publishers.
+          requested, display detailed configuration for those publishers.
 
           With -H, omit the headers from the listing.
 
@@ -722,14 +721,13 @@ SUBCOMMANDS
           publishers.
 
           With --approve-ca-cert, add the given certificate as a CA certificate
-          that is trusted.  The hashes of the user approved CA certificates are
-          listed in the output of the detailed pkg publisher view for a
-          publisher.
+          that is trusted.  The hashes of the PEM representation of the user-
+          approved CA certificates are listed in the detailed output of "pkg
+          publisher."
 
-          With --revoked-ca-cert, treat the certificate with the given hash as
-          revoked.  The hashes of the user revoked CA certificates are
-          listed in the output of the detailed pkg publisher view for a
-          publisher.
+          With --revoke-ca-cert, treat the certificate with the given hash of
+          its PEM representation as revoked.  The hashes of the user-revoked CA
+          certificates are listed in the detailed output of "pkg publisher."
 
           With --unset-ca-cert, remove the certificate with the given hash from
           the list of approved and the list of revoked certificates.

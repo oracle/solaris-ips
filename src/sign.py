@@ -43,6 +43,7 @@ import pkg.misc as misc
 import pkg.publish.transaction as trans
 from pkg.client import global_settings
 from pkg.misc import emsg, msg, PipeError
+import M2Crypto as m2
 
 PKG_CLIENT_NAME = "pkgsign"
 
@@ -99,6 +100,17 @@ def fetch_catalog(src_pub, xport, temp_root):
         src_pub.refresh(True, True)
 
         return src_pub.catalog
+
+def __make_tmp_cert(d, pth):
+        try:
+                cert = m2.X509.load_cert(pth)
+        except m2.X509.X509Error, e:
+                raise api_errors.BadFileFormat(_("The file %s was expected to "
+                    "be a PEM certificate but it could not be read.") % pth)
+        fd, fp = tempfile.mkstemp(dir=d)
+        with os.fdopen(fd, "wb") as fh:
+                fh.write(cert.as_pem())
+        return fp
 
 def main_func():
         misc.setlocale(locale.LC_ALL, "", error)
@@ -197,8 +209,15 @@ def main_func():
         cache_dir = tempfile.mkdtemp(dir=temp_root)
         incoming_dir = tempfile.mkdtemp(dir=temp_root)
         chash_dir = tempfile.mkdtemp(dir=temp_root)
+        cert_dir = tempfile.mkdtemp(dir=temp_root)
 
         try:
+                chain_certs = [
+                    __make_tmp_cert(cert_dir, c) for c in chain_certs
+                ]
+                if cert_path is not None:
+                        cert_path = __make_tmp_cert(cert_dir, cert_path)
+
                 xport, xport_cfg = transport.setup_transport()
                 xport_cfg.add_cache(cache_dir, readonly=False)
                 xport_cfg.incoming_root = incoming_dir

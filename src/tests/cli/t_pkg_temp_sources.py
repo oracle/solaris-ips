@@ -514,7 +514,7 @@ Packaging Date: %(quux10_pkg_date)s
  Build Release: 5.11
         Branch: None
 Packaging Date: %(signed10_pkg_date)s
-          Size: 22.92 kB
+          Size: 7.79 kB
           FMRI: %(signed10_pkg_fmri)s
 """ % { "foo10_pkg_date": pd(self.foo10), "foo10_pkg_fmri": self.foo10,
     "incorp20_pkg_date": pd(self.incorp20), "incorp20_pkg_fmri": self.incorp20,

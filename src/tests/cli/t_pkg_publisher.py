@@ -346,10 +346,10 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
                 rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
                 rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
-                app1_h = self.calc_file_hash(app1)
-                app2_h = self.calc_file_hash(app2)
-                rev1_h = self.calc_file_hash(rev1)
-                rev2_h = self.calc_file_hash(rev2)
+                app1_h = self.calc_pem_hash(app1)
+                app2_h = self.calc_pem_hash(app2)
+                rev1_h = self.calc_pem_hash(rev1)
+                rev2_h = self.calc_pem_hash(rev2)
                 self.image_create(self.rurl)
                 self.pkg("set-publisher "
                     "--approve-ca-cert %s "
@@ -953,10 +953,10 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
                 rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
                 rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
-                app1_h = self.calc_file_hash(app1)
-                app2_h = self.calc_file_hash(app2)
-                rev1_h = self.calc_file_hash(rev1)
-                rev2_h = self.calc_file_hash(rev2)
+                app1_h = self.calc_pem_hash(app1)
+                app2_h = self.calc_pem_hash(app2)
+                rev1_h = self.calc_pem_hash(rev1)
+                rev2_h = self.calc_pem_hash(rev2)
                 self.pkg("set-publisher -O %s "
                     "--approve-ca-cert %s "
                     "--approve-ca-cert %s --revoke-ca-cert %s "
@@ -1003,10 +1003,10 @@ class TestPkgPublisherCACerts(pkg5unittest.ManyDepotTestCase):
                 app2 = os.path.join(cert_dir, "ch1_ta3_cert.pem")
                 rev1 = os.path.join(cert_dir, "ch1_ta4_cert.pem")
                 rev2 = os.path.join(cert_dir, "ch1_ta5_cert.pem")
-                app1_h = self.calc_file_hash(app1)
-                app2_h = self.calc_file_hash(app2)
-                rev1_h = self.calc_file_hash(rev1)
-                rev2_h = self.calc_file_hash(rev2)
+                app1_h = self.calc_pem_hash(app1)
+                app2_h = self.calc_pem_hash(app2)
+                rev1_h = self.calc_pem_hash(rev1)
+                rev2_h = self.calc_pem_hash(rev2)
                 self.pkg("set-publisher -O %s --no-refresh "
                     "--approve-ca-cert %s "
                     "--approve-ca-cert %s --revoke-ca-cert %s "

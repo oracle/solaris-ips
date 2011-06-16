@@ -313,7 +313,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.seed_ta_dir("ta3")
 
                 # Find the hash of the publisher CA cert used.
-                hsh = self.calc_file_hash(chain_cert_path)
+                hsh = self.calc_pem_hash(chain_cert_path)
 
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
@@ -841,20 +841,14 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                       "cert": os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                       "name": plist[0]
                     }, exit=2)
-                # Test that installing a package signed using a bogus
-                # certificate fails.
+                # Test that signing a package using a bogus certificate fails.
                 self.pkgsign(self.durl1, "-k %(key)s -c %(cert)s %(name)s" %
                     { "key": os.path.join(self.keys_dir, "cs1_ch5_ta1_key.pem"),
                       "cert": os.path.join(self.test_root, "tmp/example_file"),
                       "name": plist[0]
-                    })
+                    }, exit =1)
                 self.pkg_image_create(self.durl1)
                 self.pkg("set-property signature-policy verify")
-                api_obj = self.get_img_api_obj()
-                self.assertRaises(apx.BadFileFormat, self._api_install, api_obj,
-                    ["example_pkg"])
-                # Test that the cli handles a BadFileFormat exception.
-                self.pkg("install example_pkg", exit=1)
                 self.pkg("set-property trust-anchor-directory %s" %
                     os.path.join("simple_file"))
                 api_obj = self.get_img_api_obj()
@@ -1412,7 +1406,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_uninstall(api_obj, ["example_pkg"])
 
                 # Replace the client CS cert.
-                hsh = self.calc_file_hash(cs_path)
+                hsh = self.calc_pem_hash(cs_path)
                 pth = os.path.join(self.img_path(), "var", "pkg", "publisher",
                     "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)
@@ -1434,7 +1428,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 # cert.
 
                 # Replace the client chain cert.
-                hsh = self.calc_file_hash(chain_cert_path)
+                hsh = self.calc_pem_hash(chain_cert_path)
                 pth = os.path.join(self.img_path(), "var", "pkg", "publisher",
                     "test", "certs", hsh)
                 portable.copyfile(cs2_path, pth)

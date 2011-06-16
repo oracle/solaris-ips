@@ -378,7 +378,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # Verify the result.
                 arc = ptf.PkgTarFile(name=arc_path, mode="r")
                 expected = self.multi_expected[:]
-                action_certs = [self.calc_file_hash(t) for t in (
+                action_certs = [self.calc_pem_hash(t) for t in (
                     os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
@@ -440,7 +440,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # packages created from a repo.
                 expected = sorted(self.multi_expected +
                     ["publisher/test/pub.p5i"])
-                action_certs = [self.calc_file_hash(t) for t in (
+                action_certs = [self.calc_pem_hash(t) for t in (
                     os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
@@ -788,7 +788,7 @@ class TestP5P(pkg5unittest.SingleDepotTestCase):
                 # packages created from a repo.
                 expected = sorted(self.multi_expected +
                     ["publisher/test/pub.p5i"])
-                action_certs = [self.calc_file_hash(t) for t in (
+                action_certs = [self.calc_pem_hash(t) for t in (
                     os.path.join(self.cs_dir, "cs1_ch5_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch1_ta1_cert.pem"),
                     os.path.join(self.chain_certs_dir, "ch2_ta1_cert.pem"),
