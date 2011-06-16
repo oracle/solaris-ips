@@ -3005,7 +3005,8 @@ class PackageManager:
                 if self.force_reload_packages and (self.in_search_mode 
                     or self.is_all_publishers_search):
                         self.__unset_search(False)
-                self.__set_empty_details_panel()
+                if self.force_reload_packages:
+                        self.__set_empty_details_panel()
                 self.in_setup = True
                 self.last_visible_publisher = None
                 self.set_busy_cursor()
