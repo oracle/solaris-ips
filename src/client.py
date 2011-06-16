@@ -2103,8 +2103,8 @@ def revert(api_inst, args):
                         continue
                 stuff_to_do = not api_inst.planned_nothingtodo()
         except:
-                ret_code = __api_plan_exception(op, api_inst, noexecute,
-                    verbose)
+                ret_code = __api_plan_exception(op, noexecute, verbose,
+                    api_inst)
                 if ret_code != EXIT_OK:
                         return ret_code
 
@@ -2139,7 +2139,7 @@ def avoid(api_inst, args):
                 api_inst.avoid_pkgs(args)
                 return EXIT_OK
         except:
-                return __api_plan_exception("avoid", api_inst, False, 0)
+                return __api_plan_exception("avoid", False, 0, api_inst)
 
 def unavoid(api_inst, args):
         """Remove the specified packages from the avoid list"""
@@ -2150,7 +2150,7 @@ def unavoid(api_inst, args):
                 api_inst.avoid_pkgs(args, unavoid=True)
                 return EXIT_OK
         except:
-                return __api_plan_exception("unavoid", api_inst, False, 0)
+                return __api_plan_exception("unavoid", False, 0, api_inst)
 
 def __display_avoids(api_inst):
         """Display the current avoid list, and the pkgs that are tracking
