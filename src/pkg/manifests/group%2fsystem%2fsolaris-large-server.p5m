@@ -41,15 +41,18 @@ depend fmri=compress/zip type=group
 depend fmri=crypto/ca-certificates type=group
 depend fmri=data/iso-codes type=group
 depend fmri=database/sqlite-3 type=group
+depend fmri=developer/assembler type=group
 depend fmri=developer/build/gnu-make type=group
 depend fmri=developer/build/make type=group
 depend fmri=developer/debug/mdb type=group
 depend fmri=developer/debug/mdb/module/module-fibre-channel type=group
 depend fmri=developer/dtrace type=group
 depend fmri=developer/dtrace/toolkit type=group
+depend fmri=developer/library/xprofile type=group
 depend fmri=developer/linker type=group
 depend fmri=developer/macro/cpp type=group
 depend fmri=developer/object-file type=group
+depend fmri=developer/versioning/sccs type=group
 $(i386_ONLY)depend fmri=diagnostic/acpidump type=group
 depend fmri=diagnostic/constype type=group
 depend fmri=diagnostic/cpu-counters type=group
@@ -187,11 +190,9 @@ depend fmri=image/library/libjpeg type=group
 depend fmri=image/library/libpng type=group
 depend fmri=image/library/libtiff type=group
 depend fmri=install/beadm type=group
-depend fmri=install/distribution-constructor type=group
 depend fmri=install/installadm type=group
 depend fmri=library/apr-13 type=group
 depend fmri=library/apr-util-13 type=group
-depend fmri=library/apr-util-13/apr-ldap type=group
 depend fmri=library/database/gdbm type=group
 depend fmri=library/desktop/atk type=group
 depend fmri=library/desktop/cairo type=group
@@ -253,6 +254,7 @@ depend fmri=network/telnet type=group
 depend fmri=network/whois type=group
 depend fmri=package/pkg type=group
 depend fmri=package/pkg/system-repository type=group
+depend fmri=package/pkg/zones-proxy type=group
 depend fmri=package/rpm type=group
 depend fmri=package/svr4 type=group
 depend fmri=print/cups type=group
@@ -268,6 +270,7 @@ depend fmri=release/name type=group
 depend fmri=release/notices type=group
 depend fmri=release/registration type=group
 depend fmri=runtime/java type=group
+depend fmri=runtime/perl-512 type=group
 depend fmri=runtime/perl-584 type=group
 depend fmri=runtime/perl-584/extra type=group
 depend fmri=runtime/perl-584/manual type=group
@@ -372,7 +375,7 @@ depend fmri=system/kernel/ultra-wideband type=group
 depend fmri=system/keyboard/kbd_mode type=group
 $(sparc_ONLY)depend fmri=system/ldoms type=group
 depend fmri=system/library type=group
-depend fmri=system/library/c++/sunpro type=group
+depend fmri=system/library/c++-runtime type=group
 depend fmri=system/library/dbus type=group
 depend fmri=system/library/flex-runtime type=group
 depend fmri=system/library/fontconfig type=group
@@ -387,6 +390,7 @@ depend fmri=system/library/libdiskmgt type=group
 depend fmri=system/library/libfcoe type=group
 depend fmri=system/library/math type=group
 depend fmri=system/library/mozilla-nss type=group
+depend fmri=system/library/openmp type=group
 depend fmri=system/library/platform type=group
 depend fmri=system/library/policykit type=group
 depend fmri=system/library/processor type=group
@@ -434,6 +438,7 @@ depend fmri=system/zones type=group
 depend fmri=system/zones/brand/ipkg type=group
 depend fmri=terminal/fbconsole type=group
 depend fmri=terminal/luit type=group
+depend fmri=terminal/resize type=group
 depend fmri=terminal/screen type=group
 depend fmri=text/doctools type=group
 depend fmri=text/doctools/ja type=group
@@ -464,6 +469,7 @@ depend fmri=x11/library/libxdmcp type=group
 depend fmri=x11/library/libxext type=group
 depend fmri=x11/library/libxft type=group
 depend fmri=x11/library/libxi type=group
+depend fmri=x11/library/libxinerama type=group
 depend fmri=x11/library/libxmu type=group
 depend fmri=x11/library/libxmuu type=group
 depend fmri=x11/library/libxpm type=group

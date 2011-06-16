@@ -49,6 +49,7 @@ CACAO_REPO=http://localhost:20010
 CNS_REPO=http://localhost:20011
 JDMK_REPO=http://localhost:20012
 NVIDIA_REPO=http://localhost:20013
+DEVPRO_REPO=http://localhost:20014
 
 INPUT_REPOS = \
     $(ON_REPO) \
@@ -64,7 +65,8 @@ INPUT_REPOS = \
     $(CACAO_REPO) \
     $(CNS_REPO) \
     $(JDMK_REPO) \
-    $(NVIDIA_REPO)
+    $(NVIDIA_REPO) \
+    $(DEVPRO_REPO)
 
 ON_EXTRA_REPO=http://localhost:30000
 L10N_EXTRA_REPO=http://localhost:30006

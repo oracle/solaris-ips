@@ -66,4 +66,5 @@ depend fmri=system/management/sysidtool type=group
 depend fmri=system/network type=group
 depend fmri=system/network/nis type=group
 depend fmri=system/network/routing type=group
+depend fmri=terminal/resize type=group
 depend fmri=text/doctools type=group

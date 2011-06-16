@@ -187,7 +187,6 @@ depend fmri=driver/usb type=group
 $(i386_ONLY)depend fmri=driver/xvm/pv type=group
 depend fmri=editor/vim/vim-core type=group
 depend fmri=install/beadm type=group
-depend fmri=install/distribution-constructor type=group
 depend fmri=library/database/gdbm type=group
 depend fmri=library/expat type=group
 depend fmri=library/glib2 type=group
@@ -229,6 +228,7 @@ depend fmri=package/pkg type=group
 depend fmri=package/svr4 type=group
 depend fmri=release/name type=group
 depend fmri=release/notices type=group
+depend fmri=runtime/perl-512 type=group
 depend fmri=runtime/perl-584 type=group
 depend fmri=runtime/perl-584/extra type=group
 depend fmri=runtime/python-26 type=group
@@ -303,7 +303,7 @@ depend fmri=system/kernel/suspend-resume type=group
 depend fmri=system/kernel/ultra-wideband type=group
 $(sparc_ONLY)depend fmri=system/ldoms type=group
 depend fmri=system/library type=group
-depend fmri=system/library/c++/sunpro type=group
+depend fmri=system/library/c++-runtime type=group
 depend fmri=system/library/dbus type=group
 depend fmri=system/library/gcc-3-runtime type=group
 depend fmri=system/library/iconv/utf-8 type=group
@@ -314,6 +314,7 @@ depend fmri=system/library/libdiskmgt type=group
 depend fmri=system/library/libfcoe type=group
 depend fmri=system/library/math type=group
 depend fmri=system/library/mozilla-nss type=group
+depend fmri=system/library/openmp type=group
 depend fmri=system/library/platform type=group
 depend fmri=system/library/policykit type=group
 depend fmri=system/library/processor type=group
@@ -343,11 +344,11 @@ depend fmri=system/storage/fibre-channel/port-utility type=group
 depend fmri=system/storage/luxadm type=group
 depend fmri=system/xopen/xcu4 type=group
 depend fmri=system/zones type=group
+depend fmri=terminal/resize type=group
 depend fmri=text/less type=group
 depend fmri=text/locale type=group
 depend fmri=web/curl type=group
 depend fmri=web/wget type=group
-depend fmri=x11/compatibility/links-xorg type=group
 depend fmri=x11/header/x11-protocols type=group
 depend fmri=x11/library/libpthread-stubs type=group
 depend fmri=x11/library/libx11 type=group

@@ -1,0 +1,72 @@
+package system/manual
+consolidation "man"
+classification "System/Text Tools"
+import SUNWman
+#
+# Drop any manual pages that are being delivered by both SUNWman and any
+# other packages. These typically reflect pages that are newly being
+# delivered by their relevant component packages but SUNWman has not yet
+# been updated to reflect the change.
+#
+drop usr/share/man/man1m/nscfg.1m
+drop usr/share/man/man3lib/libzonestat.3lib
+drop usr/share/man/man3zonestat/zs_close.3zonestat
+drop usr/share/man/man3zonestat/zs_open.3zonestat
+drop usr/share/man/man3zonestat/zs_property.3zonestat
+drop usr/share/man/man3zonestat/zs_property_double.3zonestat
+drop usr/share/man/man3zonestat/zs_property_int.3zonestat
+drop usr/share/man/man3zonestat/zs_property_int64.3zonestat
+drop usr/share/man/man3zonestat/zs_property_string.3zonestat
+drop usr/share/man/man3zonestat/zs_property_type.3zonestat
+drop usr/share/man/man3zonestat/zs_property_uint.3zonestat
+drop usr/share/man/man3zonestat/zs_property_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_pset.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_list.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_property.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_total_cpus.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_total_time.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_used_cpus.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_used_pct.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_used_time.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_walk.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_get_pset.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_get_zone.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_list.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_property.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_used_cpus.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_used_pct.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_used_time.3zonestat
+drop usr/share/man/man3zonestat/zs_pset_zone_walk.3zonestat
+drop usr/share/man/man3zonestat/zs_resource.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_property.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_total_time.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_total_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_type.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_pct.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_time.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_zone_pct.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_zone_time.3zonestat
+drop usr/share/man/man3zonestat/zs_resource_used_zone_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_usage.3zonestat
+drop usr/share/man/man3zonestat/zs_usage_diff.3zonestat
+drop usr/share/man/man3zonestat/zs_usage_free.3zonestat
+drop usr/share/man/man3zonestat/zs_usage_read.3zonestat
+drop usr/share/man/man3zonestat/zs_zone.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_time.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_type.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_used_pct.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_used_time.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_limit_used_uint64.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_list.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_property.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_pset.3zonestat
+drop usr/share/man/man3zonestat/zs_zone_walk.3zonestat
+end package
+
+package SUNWman
+consolidation "man"
+renamed 133
+depend system/manual
+end package

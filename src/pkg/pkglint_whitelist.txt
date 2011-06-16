@@ -2,6 +2,7 @@ WARNING pkglint.action005.1       obsolete dependency check skipped: unable to f
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/archiver/gnu-tar for pkg://pkg5-nightly/package/pkg/update-manager
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/crypto/ca-certificates for pkg://pkg5-nightly/package/pkg
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/desktop/gksu for pkg://pkg5-nightly/package/pkg/package-manager
+WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/assembler for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/build/make for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/build/onbld for pkg://pkg5-nightly/developer/opensolaris/pkg5
 WARNING pkglint.action005.1       obsolete dependency check skipped: unable to find dependency pkg:/developer/gnome/gettext for pkg://pkg5-nightly/developer/opensolaris/pkg5
