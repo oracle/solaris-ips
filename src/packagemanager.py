@@ -2794,8 +2794,8 @@ class PackageManager:
                         self.api_o.refresh(pubs=pubs, immediate=immediate)
                         success = True
                 except api_errors.CatalogRefreshException, cre:
-                        crerr = gui_misc.get_catalogrefresh_exception_msg(cre)
-                        logger.error(crerr)
+                        res = gui_misc.get_catalogrefresh_exception_msg(cre)
+                        logger.error(res[0])
                         gui_misc.notify_log_error(self)
                 except api_errors.TransportError, tpex:
                         err = str(tpex)

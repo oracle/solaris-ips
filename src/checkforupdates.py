@@ -139,10 +139,10 @@ class CheckForUpdates:
                                 continue
                         stuff_to_do = not self.api_obj.planned_nothingtodo()
                 except api_errors.CatalogRefreshException, cre:
-                        crerr = nongui_misc.get_catalogrefresh_exception_msg(cre)
+                        res = nongui_misc.get_catalogrefresh_exception_msg(cre)
                         if debug:
-                                print >> sys.stderr, "Exception occurred: %s" % crerr
-                        logger.error(crerr)
+                                print >> sys.stderr, "Exception occurred: %s" % res[0]
+                        logger.error(res[0])
                         self.__send_return(enumerations.UPDATES_UNDETERMINED)
                         return
                 except api_errors.ApiException, e:

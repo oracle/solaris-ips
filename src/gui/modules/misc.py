@@ -69,6 +69,7 @@ from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
 from pkg.gui.misc_non_gui import get_catalogrefresh_exception_msg as get_msg
 from pkg.gui.misc_non_gui import get_um_name as get_um
 from pkg.gui.misc_non_gui import get_image_path as g_image_path
+from pkg.gui.misc_non_gui import is_frameworkerror as is_frameworke
 
 from pkg.client import global_settings
 
@@ -239,6 +240,9 @@ def get_wi_name():
 
 def get_um_name():
         return get_um()
+
+def is_frameworkerror(err):
+        return is_frameworke(err)
 
 def notify_log_error(app):
         if global_settings.client_name == PKG_CLIENT_NAME_PM:

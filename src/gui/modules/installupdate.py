@@ -719,8 +719,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CatalogRefreshException, e:
-                        msg = gui_misc.get_catalogrefresh_exception_msg(e)
-                        self.__g_error_stage(msg)
+                        res = gui_misc.get_catalogrefresh_exception_msg(e)
+                        self.__g_error_stage(res[0])
                         return
                 except api_errors.TransportError, ex:
                         msg = _("Please check the network "

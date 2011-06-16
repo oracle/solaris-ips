@@ -1719,7 +1719,7 @@ class Repository(progress.GuiProgressTracker):
                                 self.progress_stop_thread = True
                                 return
                         pub, repo, new_pub = self.__setup_publisher_from_uri(
-                            alias, origin_url)
+                            alias, origin_url, ssl_key, ssl_cert)
                         if pub == None:
                                 self.progress_stop_thread = True
                                 return
@@ -2066,7 +2066,18 @@ class Repository(progress.GuiProgressTracker):
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
                 pub = self.repository_modify_publisher
                 repo = pub.repository
+                missing_ssl = False
                 try:
+                        prefix = pub.prefix
+                        mirrors = repo.mirrors
+                        origins = repo.origins
+                        self.api_o.reset()
+                        self.repository_modify_publisher = self.api_o.get_publisher(
+                            prefix=prefix, alias=prefix, duplicate=True)
+                        pub = self.repository_modify_publisher
+                        repo = pub.repository
+                        repo.mirrors = mirrors
+                        repo.origins = origins
                         if pub.alias != alias:
                                 pub.alias = alias
                         errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
@@ -2077,13 +2088,28 @@ class Repository(progress.GuiProgressTracker):
                         errors.append((pub, e))
                 self.progress_stop_thread = True
                 if len(errors) > 0:
-                        gobject.idle_add(self.__show_errors, errors)
+                        missing_ssl = self.__is_missing_ssl_creds(pub, ssl_key, ssl_cert)
+                        gobject.idle_add(self.__show_errors, errors, missing_ssl)
                 else:
                         gobject.idle_add(self.__g_delete_widget_handler_hide,
                             self.w_modify_repository_dialog, None)
                         if self.action == enumerations.MANAGE_PUBLISHERS:
                                 gobject.idle_add(self.__prepare_publisher_list, True)
                                 self.no_changes += 1
+
+        @staticmethod
+        def __is_missing_ssl_creds(pub, ssl_key, ssl_cert):
+                repo = pub.repository
+                if ssl_key and len(ssl_key) > 0 and ssl_cert and len(ssl_cert) > 0:
+                        return False
+                for uri in repo.origins:
+                        print uri
+                        if uri.scheme in publisher.SSL_SCHEMES:
+                                return True
+                for uri in repo.mirrors:
+                        if uri.scheme in publisher.SSL_SCHEMES:
+                                return True
+                return False
 
         def __run_with_prog_in_thread(self, func, parent_window = None,
             cancel_func = None, *f_args):
@@ -2165,7 +2191,7 @@ class Repository(progress.GuiProgressTracker):
 
         def __on_publisherurl_changed(self, widget):
                 url = widget.get_text()
-                if url.startswith("https"):
+                if self.__is_ssl_scheme(url):
                         self.w_ssl_box.show()
                 else:
                         self.w_ssl_box.hide()
@@ -2205,22 +2231,16 @@ class Repository(progress.GuiProgressTracker):
 
         def __on_addmirror_entry_changed(self, widget):
                 uri_list_model = self.modify_repo_mirrors_treeview.get_model()
-                error_text = _("Mirrors for a secure publisher\n"
-                            "need to begin with https://")
                 self.__validate_mirror_origin_url(self.w_addmirror_entry.get_text(),
-                    self.w_addmirror_button, self.w_modmirrerror_label, uri_list_model,
-                    error_text)
+                    self.w_addmirror_button, self.w_modmirrerror_label, uri_list_model)
 
         def __on_addorigin_entry_changed(self, widget):
                 uri_list_model = self.modify_repo_origins_treeview.get_model()
-                error_text = _("Origins for a secure publisher\n"
-                            "need to begin with https://")
                 self.__validate_mirror_origin_url(self.w_addorigin_entry.get_text(),
-                    self.w_addorigin_button, self.w_modoriginerror_label, uri_list_model,
-                    error_text)
+                    self.w_addorigin_button, self.w_modoriginerror_label, uri_list_model)
 
         def __validate_mirror_origin_url(self, url, add_button, error_label,
-            uri_list_model, error_text):
+            uri_list_model):
                 url_error = None
                 is_url_valid, url_error = self.__is_url_valid(url)
                 add_button.set_sensitive(False)
@@ -2239,12 +2259,6 @@ class Repository(progress.GuiProgressTracker):
                                 self.__show_error_label_with_format(
                                             error_label, url_error)
                                 return
-
-                ssl_specified = self.__is_ssl_specified()
-                is_mirror_ssl = url.startswith("https")
-                if ssl_specified and is_mirror_ssl == False:
-                        self.__show_error_label_with_format(error_label, error_text)
-                        return
 
                 if is_url_valid == False:
                         if url_error != None:
@@ -2288,7 +2302,7 @@ class Repository(progress.GuiProgressTracker):
                 url = self.w_add_publisher_url.get_text()
                 ssl_key = self.w_key_entry.get_text()
                 ssl_cert = self.w_cert_entry.get_text()
-                if not url.startswith("https") or not \
+                if not self.__is_ssl_scheme(url) or not \
                     (ssl_key and ssl_cert and os.path.isfile(ssl_cert) and
                     os.path.isfile(ssl_key)):
                         ssl_key = None
@@ -2465,8 +2479,7 @@ class Repository(progress.GuiProgressTracker):
                         return
 
                 self.publishers_apply.set_title(_("Applying Changes"))
-                self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok,
-                    self.w_manage_publishers_dialog)
+                self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok)
 
         def __on_modifydialog_delete_event(self, widget, event):
                 if self.w_repositorymodifyok_button.get_sensitive():
@@ -2551,20 +2564,37 @@ class Repository(progress.GuiProgressTracker):
                 for origin in repo.origins:
                         details_buffer.insert(uri_itr, "%s\n" % str(origin))
 
-        def __show_errors(self, errors, msg_type=gtk.MESSAGE_ERROR, title = None):
+        def __show_errors(self, errors, missing_ssl = False):
                 error_msg = ""
-                if title != None:
-                        msg_title = title
-                else:   # More Generic for WebInstall
-                        msg_title = _("Publisher Error")
+                crerr = ""
+                msg_type = gtk.MESSAGE_ERROR
+                framework_error = False
+
+                msg_title = _("Publisher Error")
                 for err in errors:
                         if isinstance(err[1], api_errors.CatalogRefreshException):
-                                crerr = gui_misc.get_catalogrefresh_exception_msg(err[1])
+                                res = gui_misc.get_catalogrefresh_exception_msg(err[1])
+                                crerr = res[0]
+                                framework_error = res[1]
                                 logger.error(crerr)
                                 gui_misc.notify_log_error(self.parent)
                         else:
                                 error_msg += str(err[1])
                                 error_msg += "\n\n"
+                # If the only error is a CatalogRefreshException, which we
+                # normally just log but do not display to the user, then
+                # display it to the user.
+                if error_msg == "":
+                        error_msg = crerr
+                        error_msg += "\n"
+                        if framework_error and missing_ssl:
+                                error_msg += _("Note: this may may be the result "
+                                             "of specifying a https Origin, "
+                                             "but no SSL key and certificate.\n")
+                elif missing_ssl:
+                        error_msg += _("Note: this error may be the result of "
+                                     "specifing a https URI, "
+                                     "but no SSL key and certificate.\n")
                 if error_msg != "":
                         gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
 
@@ -2623,9 +2653,11 @@ class Repository(progress.GuiProgressTracker):
                         gobject.idle_add(self.__show_errors, [(name, e)])
                         return True
 
-        def __setup_publisher_from_uri(self, alias, origin_url):
+        def __setup_publisher_from_uri(self, alias, origin_url, ssl_key, ssl_cert):
                 try:
-                        repo = publisher.RepositoryURI(origin_url)
+                        self.api_o.reset()
+                        repo = publisher.RepositoryURI(origin_url,
+                            ssl_key = ssl_key, ssl_cert = ssl_cert)
                         pubs = self.api_o.get_publisherdata(repo=repo)
                         if not pubs:
                                 raise NoPublishersForURI(origin_url)
@@ -2668,7 +2700,14 @@ class Repository(progress.GuiProgressTracker):
                                 repo.add_origin(url)
                         return (src_pub, repo, True)
                 except api_errors.ApiException, e:
-                        gobject.idle_add(self.__show_errors, [(alias, e)])
+                        if  self.__is_ssl_scheme(origin_url) and \
+                            ((not ssl_key or len(ssl_key) == 0) or \
+                            (not ssl_cert or len(ssl_cert) == 0)) and \
+                            gui_misc.is_frameworkerror(e):
+                                ssl_missing = True
+                        else:
+                                ssl_missing = False
+                        gobject.idle_add(self.__show_errors, [(alias, e)], ssl_missing)
                         return (None, None, False)
 
         def __get_or_create_pub_with_url(self, api_o, name, origin_url):
@@ -2707,15 +2746,15 @@ class Repository(progress.GuiProgressTracker):
                 # Assume the user wanted to update the ssl_cert or ssl_key
                 # information for *all* of the currently selected
                 # repository's origins and mirrors.
-                origin = repo.origins[0]
-                if not origin.uri.startswith("https"):
-                        ssl_cert = None
-                        ssl_key = None
                 try:
                         for uri in repo.origins:
+                                if uri.scheme not in publisher.SSL_SCHEMES:
+                                        continue
                                 uri.ssl_cert = ssl_cert
                                 uri.ssl_key = ssl_key
                         for uri in repo.mirrors:
+                                if uri.scheme not in publisher.SSL_SCHEMES:
+                                        continue
                                 uri.ssl_cert = ssl_cert
                                 uri.ssl_key = ssl_key
                 except api_errors.ApiException, e:
@@ -2764,13 +2803,12 @@ class Repository(progress.GuiProgressTracker):
                         self.__show_errors([("", e)])
                         return False, url_error
 
-        @staticmethod
-        def __validate_ssl_key_cert(origin_url, ssl_key, ssl_cert, 
+        def __validate_ssl_key_cert(self, origin_url, ssl_key, ssl_cert, 
             ignore_ssl_check_for_not_https = False):
                 '''The SSL Cert and SSL Key may be valid and contain no error'''
                 ssl_error = None
                 ssl_valid = True
-                if origin_url and not origin_url.startswith("https:"):
+                if origin_url and not self.__is_ssl_scheme(origin_url):
                         if ignore_ssl_check_for_not_https:
                                 return ssl_valid, ssl_error
                         if (ssl_key != None and len(ssl_key) != 0) or \
@@ -2780,10 +2818,11 @@ class Repository(progress.GuiProgressTracker):
                         elif (ssl_key == None or len(ssl_key) == 0) or \
                             (ssl_cert == None or len(ssl_cert) == 0):
                                 ssl_valid = True
-                elif origin_url == None or origin_url.startswith("https"):
+                elif origin_url == None or self.__is_ssl_scheme(origin_url):
                         if (ssl_key == None or len(ssl_key) == 0) or \
                             (ssl_cert == None or len(ssl_cert) == 0):
-                                ssl_valid = False
+                        # Key and Cert need not be specified 
+                                ssl_valid = True
                         elif not os.path.isfile(ssl_key):
                                 ssl_error = _("SSL Key not found at specified location")
                                 ssl_valid = False
@@ -2792,6 +2831,15 @@ class Repository(progress.GuiProgressTracker):
                                     _("SSL Certificate not found at specified location")
                                 ssl_valid = False
                 return ssl_valid, ssl_error
+
+        @staticmethod
+        def __is_ssl_scheme(uri):
+                ret_val = False
+                for val in publisher.SSL_SCHEMES:
+                        if uri.startswith(val):
+                                ret_val = True
+                                break 
+                return ret_val 
 
         @staticmethod
         def __init_mirrors_tree_view(treeview):
@@ -2879,7 +2927,7 @@ class Repository(progress.GuiProgressTracker):
                 origin_uri = ""
                 if repo != None and repo.origins != None and len(repo.origins) > 0:
                         origin_uri = repo.origins[0].uri
-                if origin_uri != None and origin_uri.startswith("https"):
+                if origin_uri != None and self.__is_ssl_scheme(origin_uri):
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
                             parent)
                         self.main_window = self.w_add_publisher_dialog

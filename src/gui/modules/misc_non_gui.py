@@ -36,6 +36,7 @@ import pkg
 import pkg.portable as portable
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
+import pkg.client.transport.exception as transport
 from pkg.client import global_settings
 
 # The current version of the Client API the PM, UM and
@@ -195,8 +196,9 @@ def get_um_name():
         return PKG_CLIENT_NAME_UM
 
 def get_catalogrefresh_exception_msg(cre):
+        framework_error = False
         if not isinstance(cre, api_errors.CatalogRefreshException):
-                return ""
+                return ("", False)
         msg = _("Catalog refresh error:\n")
         if cre.succeeded < cre.total:
                 msg += _(
@@ -221,10 +223,19 @@ def get_catalogrefresh_exception_msg(cre):
                                         msg += "%s: %s" % \
                                             (pub["origin"], err.args[0][1])
                 else:
+                        framework_error = is_frameworkerror(err)
                         msg += str(err)
 
         if cre.errmessage:
                 msg += cre.errmessage
 
-        return msg
+        return (msg, framework_error)
 
+def is_frameworkerror(err):
+        if isinstance(err, transport.TransportFailures):
+                for exp in err.exceptions:
+                        if isinstance(exp, transport.TransportFrameworkError) and \
+                            exp.code == 56:
+                                return True
+        return False
+            
