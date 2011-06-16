@@ -500,7 +500,7 @@ fi
 # now but this can be removed once 'zoneadm attach' is fixed.
 #
 log "$v_update"
-zoneadm -z $ZONENAME attach -U >&2 || fatal "$e_badupdate"
+zoneadm -z $ZONENAME attach -X >&2 || fatal "$e_badupdate"
 zoneadm -z $ZONENAME mark incomplete || fatal "$e_badupdate"
 log "$v_updatedone"
 
