@@ -2826,11 +2826,10 @@ class ImagePlan(object):
                         if l == 0: # no matches at all
                                 if p in rejected_vars:
                                         wrongvar.add(p)
-                                elif match_type != self.MATCH_INST_VERSIONS or \
-                                    p not in rejected_pubs:
-                                        nonmatch.append(p)
                                 elif p in rejected_pubs:
                                         wrongpub.append((p, rejected_pubs[p]))
+                                else:
+                                        nonmatch.append(p)
                         elif l > 1 and p not in wildcard_patterns:
                                 # multiple matches
                                 multimatch.append((p, set([
