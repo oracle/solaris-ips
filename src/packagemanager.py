@@ -281,7 +281,7 @@ class PackageManager:
                         self.w_main_statusbar_label.set_use_markup(True) 
     
                 self.w_statusbar_hbox = self.builder.get_object("statusbar_hbox")
-                self.w_infosearch_frame = self.builder.get_object("infosearch_frame")
+                self.w_logalert_frame = self.builder.get_object("logalert_frame")
 
                 self.w_progress_frame = self.builder.get_object("progress_frame")
                 self.w_status_progressbar = self.builder.get_object("status_progressbar")
@@ -366,8 +366,8 @@ class PackageManager:
                 self.w_edit_preferences_menuitem = self.builder.get_object(
                     "edit_preferences")
                 self.w_log_menuitem = self.builder.get_object("log")
-                self.w_infosearch_eventbox = self.builder.get_object(
-                    "infosearch_eventbox")
+                self.w_logalert_eventbox = self.builder.get_object(
+                    "logalert_eventbox")
                 self.progress_cancel = self.builder.get_object("progress_cancel")
                 self.progress_cancel.set_tooltip_text(
                     _("Cancel current operation"))
@@ -537,8 +537,8 @@ class PackageManager:
                      self.__on_remove),
                      (self.w_info_notebook, "switch_page", 
                      self.__on_notebook_change),
-                     (self.w_infosearch_eventbox, "button_press_event", 
-                     self.__on_infosearch_button_press_event),
+                     (self.w_logalert_eventbox, "button_press_event",
+                     self.__on_logalert_button_press_event),
                      (self.w_application_treeview, "button_press_event", 
                      self.__on_applicationtreeview_button_and_key_events),
                      (self.w_application_treeview, "key_press_event", 
@@ -795,7 +795,7 @@ class PackageManager:
                         self.current_repos_with_search_errors.append(
                             (pub, _("unsupported search"), err))
 
-        def __on_infosearch_button_press_event(self, widget, event):
+        def __on_logalert_button_press_event(self, widget, event):
                 if len(self.current_repos_with_search_errors) > 0:
                         self.__handle_api_search_error(True)
                         return
@@ -807,7 +807,7 @@ class PackageManager:
                         return
                 if len(self.current_repos_with_search_errors) == 0:
                         if not self.error_logged:
-                                self.w_infosearch_frame.hide()
+                                self.w_logalert_frame.hide()
                         return
 
                 repo_count = 0
@@ -816,13 +816,13 @@ class PackageManager:
                                 repo_count += 1
                 if repo_count == 0:
                         if not self.error_logged:
-                                self.w_infosearch_frame.hide()
+                                self.w_logalert_frame.hide()
                         return
 
-                self.w_infosearch_frame.set_tooltip_text(
+                self.w_logalert_frame.set_tooltip_text(
                     _("Search Errors: click to view"))
 
-                self.w_infosearch_frame.show()
+                self.w_logalert_frame.show()
                 self.searcherror.display_search_errors(show_all)
 
         def __get_publisher_combobox_index(self, pub_name):
@@ -1507,7 +1507,8 @@ class PackageManager:
                 self.is_all_publishers_installed = False
                 self.is_all_publishers = False
                 self.is_all_publishers_search = True
-                self.w_infosearch_frame.hide()
+                if not self.first_run:
+                    self.w_logalert_frame.hide()
                 if not self.w_searchentry.is_focus():
                         self.__set_searchentry_to_prompt()
                 
@@ -1606,7 +1607,7 @@ class PackageManager:
                 self.in_search_mode = False
                 self.in_recent_search = False
                 self.is_all_publishers_search = False
-                self.w_infosearch_frame.hide()
+                self.w_logalert_frame.hide()
                 if self.last_visible_publisher == \
                         self.publisher_options[PUBLISHER_INSTALLED]:
                         self.is_all_publishers_installed = True
@@ -1707,7 +1708,7 @@ class PackageManager:
                 self.set_busy_cursor()
                 self.in_search_mode = True
                         
-                self.w_infosearch_frame.hide()
+                self.w_logalert_frame.hide()
                 gobject.idle_add(self.__set_main_view_package_list)
                 Thread(target = self.__do_api_search,
                     args = (is_search_all, )).start()
@@ -2671,7 +2672,7 @@ class PackageManager:
                 self.__refilter_on_idle()
 
         def __unset_search(self, same_repo):
-                self.w_infosearch_frame.hide()
+                self.w_logalert_frame.hide()
                 self.__update_tooltips()
                 self.in_search_mode = False
                 self.in_recent_search = False
@@ -2865,7 +2866,7 @@ class PackageManager:
         def __on_log_activate(self, widget):                                
                 if self.error_logged:
                         self.error_logged = False
-                        self.w_infosearch_frame.hide()
+                        self.w_logalert_frame.hide()
                 self.logging.log_activate()
                 
         def __on_version_info(self, widget):

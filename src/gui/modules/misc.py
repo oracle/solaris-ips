@@ -256,8 +256,8 @@ def notify_log_warning(app):
 
 def __notify_log_error(app, msg):
         app.error_logged = True
-        app.w_infosearch_frame.show()
-        app.w_infosearch_frame.set_tooltip_text(msg)
+        app.w_logalert_frame.show()
+        app.w_logalert_frame.set_tooltip_text(msg)
 
 def setup_logging():
         return su_logging(global_settings.client_name)

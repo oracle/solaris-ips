@@ -10,9 +10,9 @@
     <property name="window_position">center</property>
     <property name="default_width">800</property>
     <property name="default_height">615</property>
-    <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
-    <signal name="style_set" handler="on_mainwindow_style_set"/>
     <signal name="check_resize" handler="on_mainwindow_check_resize"/>
+    <signal name="style_set" handler="on_mainwindow_style_set"/>
+    <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
     <signal name="delete_event" handler="on_mainwindow_delete_event"/>
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -513,9 +513,9 @@
                               </object>
                             </child>
                             <signal name="changed" handler="on_searchentry_changed"/>
-                            <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
-                            <signal name="icon_press" handler="on_clear_search_clicked"/>
                             <signal name="activate" handler="on_searchentry_activate"/>
+                            <signal name="icon_press" handler="on_clear_search_clicked"/>
+                            <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
                             <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
                           </object>
                           <packing>
@@ -1150,7 +1150,7 @@
                 <property name="xscale">0</property>
                 <property name="yscale">0</property>
                 <child>
-                  <object class="GtkAspectFrame" id="infosearch_frame">
+                  <object class="GtkAspectFrame" id="logalert_frame">
                     <property name="width_request">24</property>
                     <property name="height_request">30</property>
                     <property name="no_show_all">True</property>
@@ -1160,7 +1160,7 @@
                     <property name="yalign">0</property>
                     <property name="obey_child">False</property>
                     <child>
-                      <object class="GtkEventBox" id="infosearch_eventbox">
+                      <object class="GtkEventBox" id="logalert_eventbox">
                         <property name="visible">True</property>
                         <signal name="button_press_event" handler="on_infosearch_eventbox_button_press_event"/>
                         <child>
@@ -5391,8 +5391,8 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                     <property name="no_show_all">True</property>
                                                     <property name="invisible_char">&#x25CF;</property>
                                                     <signal name="changed" handler="on_add_repo_changed"/>
-                                                    <signal name="focus_in_event" handler="on_add_repo_focus_in_event"/>
                                                     <signal name="activate" handler="on_pub_add_repo_clicked"/>
+                                                    <signal name="focus_in_event" handler="on_add_repo_focus_in_event"/>
                                                   </object>
                                                   <packing>
                                                     <property name="position">0</property>
@@ -5791,8 +5791,8 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                       </object>
                                                     </child>
                                                     <signal name="changed" handler="on_addmirror_entry_changed"/>
-                                                    <signal name="focus_in_event" handler="on_addmirror_entry_focus_in_event"/>
                                                     <signal name="activate" handler="on_addmirror_button_clicked"/>
+                                                    <signal name="focus_in_event" handler="on_addmirror_entry_focus_in_event"/>
                                                   </object>
                                                   <packing>
                                                     <property name="position">0</property>
