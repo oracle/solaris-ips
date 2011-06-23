@@ -783,13 +783,12 @@ class PackageManager:
                 self.current_repos_with_search_errors = []
 
                 for pub, err in error.failed_servers:
-                        logger.error(_("Publisher:") + " " + pub + ": " +
-                            _("failed to respond") + "\n" + str(err))
+                        logger.error(_("Publisher: %(o)s failed to respond\n%(msg)s") % \
+                            {"o": pub, "msg": err})
                         gui_misc.notify_log_error(self)
                 for pub in error.invalid_servers:
-                        logger.error(_("Publisher:") + " " + pub + ": " +
-                            _("invalid response") + "\n" +
-                            _("A valid response was not returned."))
+                        logger.error(_("Publisher: %s: invalid response\n" 
+                            "A valid response was not returned.") % pub)
                         gui_misc.notify_log_error(self)
                 for pub, err in error.unsupported_servers:
                         self.current_repos_with_search_errors.append(
