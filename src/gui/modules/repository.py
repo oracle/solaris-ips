@@ -1678,8 +1678,9 @@ class Repository(progress.GuiProgressTracker):
                                         prev_sys_pub = True
              
                         if current_priority == sorted_size - 1:
-                                up_enabled = True
                                 down_enabled = False
+                        elif current_priority == 0:
+                                up_enabled = False
 
                         if sorted_size == 1:
                                 up_enabled = False
@@ -1988,6 +1989,8 @@ class Repository(progress.GuiProgressTracker):
                 image_lock_err = False
                 for row in self.priority_changes:
                         try:
+                                if row[1] == None or row[2] == None:
+                                        continue
                                 pub1 = self.api_o.get_publisher(row[1],
                                     duplicate=True)
                                 pub2 = self.api_o.get_publisher(row[2],
