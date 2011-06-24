@@ -10,10 +10,6 @@
     <property name="window_position">center</property>
     <property name="default_width">800</property>
     <property name="default_height">615</property>
-    <signal name="check_resize" handler="on_mainwindow_check_resize"/>
-    <signal name="style_set" handler="on_mainwindow_style_set"/>
-    <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
-    <signal name="delete_event" handler="on_mainwindow_delete_event"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
@@ -38,7 +34,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Add Publisher...</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_file_add_publisher_activate"/>
                       </object>
                     </child>
                     <child>
@@ -46,7 +41,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Manage Publishers...</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_file_manage_publishers_activate"/>
                       </object>
                     </child>
                     <child>
@@ -54,7 +48,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Manage _Boot Environments...</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_file_be_activate"/>
                       </object>
                     </child>
                     <child>
@@ -67,7 +60,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Export Selections...</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_file_export_selections"/>
                       </object>
                     </child>
                     <child>
@@ -83,7 +75,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="Q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_file_quit_activate"/>
                       </object>
                     </child>
                   </object>
@@ -109,7 +100,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="X" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_cut_activate"/>
                       </object>
                     </child>
                     <child>
@@ -121,7 +111,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="C" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_copy_activate"/>
                       </object>
                     </child>
                     <child>
@@ -133,7 +122,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="V" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_paste_activate"/>
                       </object>
                     </child>
                     <child>
@@ -145,7 +133,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="Delete" signal="activate"/>
-                        <signal name="activate" handler="on_edit_delete_activate"/>
                       </object>
                     </child>
                     <child>
@@ -162,7 +149,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="A" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_select_all_activate"/>
                       </object>
                     </child>
                     <child>
@@ -171,7 +157,6 @@
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="label" translatable="yes">Select _Updates</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_edit_select_updates_activate"/>
                       </object>
                     </child>
                     <child>
@@ -182,7 +167,6 @@
                         <property name="label" translatable="yes">D_eselect All</property>
                         <property name="use_underline">True</property>
                         <accelerator key="A" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_deselect_activate"/>
                       </object>
                     </child>
                     <child>
@@ -197,7 +181,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_edit_search_activate"/>
                       </object>
                     </child>
                     <child>
@@ -206,7 +189,6 @@
                         <property name="label" translatable="yes">Go to package _list</property>
                         <property name="use_underline">True</property>
                         <accelerator key="L" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="on_goto_list_activate"/>
                       </object>
                     </child>
                     <child>
@@ -216,7 +198,6 @@
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_clear_search_activate"/>
                       </object>
                     </child>
                     <child>
@@ -249,7 +230,6 @@
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_edit_preferences_activate"/>
                       </object>
                     </child>
                   </object>
@@ -269,8 +249,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Logs</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_view_log_activate"/>
-                        <signal name="activate" handler="on_log_activate"/>
                       </object>
                     </child>
                   </object>
@@ -293,8 +271,6 @@
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate_item" handler="on_package_version_info_activate"/>
-                        <signal name="activate" handler="on_package_version_info_activate"/>
                       </object>
                     </child>
                     <child>
@@ -305,7 +281,6 @@
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_package_install_update_activate"/>
                       </object>
                     </child>
                     <child>
@@ -316,7 +291,6 @@
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_package_remove_activate"/>
                       </object>
                     </child>
                     <child>
@@ -332,7 +306,6 @@
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_package_update_all_activate"/>
                       </object>
                     </child>
                     <child>
@@ -341,7 +314,6 @@
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_reload_button_clicked" after="yes"/>
                       </object>
                     </child>
                   </object>
@@ -365,7 +337,6 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F1" signal="activate"/>
-                        <signal name="activate" handler="on_help_help_activate"/>
                       </object>
                     </child>
                     <child>
@@ -380,7 +351,6 @@
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_help_about_activate"/>
                       </object>
                     </child>
                   </object>
@@ -403,7 +373,6 @@
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Updates</property>
-                <signal name="clicked" handler="on_update_all_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -417,7 +386,6 @@
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Refresh</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_reload_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -439,7 +407,6 @@
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Install/Update</property>
-                <signal name="clicked" handler="on_install_update_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -453,7 +420,6 @@
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Remove</property>
-                <signal name="clicked" handler="on_remove_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -512,11 +478,6 @@
                                 <property name="AtkObject::accessible-name">Search</property>
                               </object>
                             </child>
-                            <signal name="changed" handler="on_searchentry_changed"/>
-                            <signal name="activate" handler="on_searchentry_activate"/>
-                            <signal name="icon_press" handler="on_clear_search_clicked"/>
-                            <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
-                            <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -534,8 +495,6 @@
                             <property name="focus_on_click">False</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
-                            <signal name="button_press_event" handler="on_do_search_button_press_event"/>
-                            <signal name="clicked" handler="on_do_search_clicked"/>
                             <child>
                               <object class="GtkHBox" id="hbox23">
                                 <property name="visible">True</property>
@@ -604,7 +563,6 @@
                   <object class="GtkComboBox" id="repositorycombobox">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <signal name="changed" handler="on_repositorycombobox_changed"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -638,7 +596,6 @@
                   <object class="GtkComboBox" id="filtercombobox">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <signal name="changed" handler="on_filtercombobox_changed"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -745,8 +702,6 @@
                                     <property name="AtkObject::accessible-name">Packages</property>
                                   </object>
                                 </child>
-                                <signal name="button_press_event" handler="on_applicationtreeview_button_press_event"/>
-                                <signal name="query_tooltip" handler="on_applicationtreeview_query_tooltip"/>
                               </object>
                             </child>
                           </object>
@@ -767,7 +722,6 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <signal name="switch_page" handler="on_details_notebook_switch_page"/>
                                 <child>
                                   <object class="GtkScrolledWindow" id="scrolledwindow7">
                                     <property name="visible">True</property>
@@ -1019,7 +973,6 @@
                                                             <property name="can_focus">True</property>
                                                             <property name="receives_default">True</property>
                                                             <property name="use_underline">True</property>
-                                                            <signal name="clicked" handler="on_versions_install_button_clicked"/>
                                                             </object>
                                                             <packing>
                                                             <property name="expand">False</property>
@@ -1162,7 +1115,6 @@
                     <child>
                       <object class="GtkEventBox" id="logalert_eventbox">
                         <property name="visible">True</property>
-                        <signal name="button_press_event" handler="on_infosearch_eventbox_button_press_event"/>
                         <child>
                           <object class="GtkImage" id="image10">
                             <property name="visible">True</property>
@@ -1237,7 +1189,6 @@
                                 <property name="AtkObject::accessible-name" translatable="yes">Cancel current operation</property>
                               </object>
                             </child>
-                            <signal name="clicked" handler="on_progress_cancel_clicked"/>
                             <child>
                               <object class="GtkImage" id="image9">
                                 <property name="visible">True</property>
@@ -1311,7 +1262,6 @@
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_createplandialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox4">
         <property name="visible">True</property>
@@ -1592,7 +1542,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <signal name="activate" handler="on_details_expander_activate"/>
                 <child>
                   <object class="GtkFrame" id="frame1">
                     <property name="visible">True</property>
@@ -1701,7 +1650,6 @@
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancelcreateplan_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1715,7 +1663,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_closecreateplan_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1804,7 +1751,6 @@
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_progressdialog_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1836,7 +1782,6 @@
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_beadmin_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox18">
         <property name="visible">True</property>
@@ -1948,7 +1893,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_help_bebutton_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1964,7 +1908,6 @@
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_be_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1980,7 +1923,6 @@
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_ok_be_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2015,7 +1957,6 @@
     <property name="deletable">False</property>
     <property name="transient_for">beadmin</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_confirmationdialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox21">
         <property name="visible">True</property>
@@ -2117,7 +2058,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_help_conf_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2133,7 +2073,6 @@
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_conf_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2149,7 +2088,6 @@
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_ok_conf_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2181,7 +2119,6 @@
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_preferencesdialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox140">
         <property name="visible">True</property>
@@ -2257,7 +2194,6 @@
                                         <property name="receives_default">False</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_startpage_checkbutton_toggled"/>
                                       </object>
                                       <packing>
                                         <property name="position">0</property>
@@ -2333,7 +2269,6 @@
                                         <property name="receives_default">False</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_exit_checkbutton_toggled"/>
                                       </object>
                                       <packing>
                                         <property name="position">0</property>
@@ -2405,7 +2340,6 @@
                                         <property name="receives_default">False</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_confirm_updateall_checkbutton_toggled"/>
                                       </object>
                                       <packing>
                                         <property name="position">0</property>
@@ -2461,7 +2395,6 @@
                                         <property name="receives_default">False</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_confirm_install_checkbutton_toggled"/>
                                       </object>
                                       <packing>
                                         <property name="position">0</property>
@@ -2517,7 +2450,6 @@
                                         <property name="receives_default">False</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_confirm_remove_checkbutton_toggled"/>
                                       </object>
                                       <packing>
                                         <property name="position">0</property>
@@ -3320,7 +3252,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_preferenceshelp_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3349,7 +3280,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_preferencesclose_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3378,9 +3308,6 @@
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
-    <signal name="destroy_event" handler="on_webinstalldialog_close"/>
-    <signal name="close" handler="on_webinstalldialog_close"/>
-    <signal name="delete_event" handler="on_webinstalldialog_close"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox16">
         <property name="visible">True</property>
@@ -3582,7 +3509,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_help_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3597,7 +3523,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3612,7 +3537,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_proceed_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3627,7 +3551,6 @@
                 <property name="receives_default">True</property>
                 <property name="no_show_all">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_cancel_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3660,7 +3583,6 @@
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
-    <signal name="delete_event" handler="on_remote_search_error_delete_event"/>
     <child>
       <object class="GtkVBox" id="vbox31">
         <property name="visible">True</property>
@@ -3747,7 +3669,6 @@
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
             <property name="draw_indicator">True</property>
-            <signal name="toggled" handler="on_api_search_checkbox_toggled"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -3765,7 +3686,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_api_search_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -3791,7 +3711,6 @@
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_ua_completed_dialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox3">
         <property name="visible">True</property>
@@ -3925,7 +3844,6 @@ following name.</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x25CF;</property>
-                    <signal name="changed" handler="on_ua_be_entry_changed"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -3941,7 +3859,6 @@ following name.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="relief">none</property>
-                        <signal name="clicked" handler="on_ua_whats_this_button_clicked"/>
                         <child>
                           <object class="GtkLabel" id="label201">
                             <property name="visible">True</property>
@@ -3985,7 +3902,6 @@ following name.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_ua_help_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4001,7 +3917,6 @@ following name.</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
                 <property name="yalign">0.49000000953674316</property>
-                <signal name="clicked" handler="on_ua_restart_later_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4016,7 +3931,6 @@ following name.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_underline">True</property>
-                <signal name="clicked" handler="on_ua_restart_now_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4048,7 +3962,6 @@ following name.</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_add_publisher_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox141">
         <property name="visible">True</property>
@@ -4136,8 +4049,6 @@ following name.</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">&#x25CF;</property>
-                        <signal name="changed" handler="on_publisherurl_changed"/>
-                        <signal name="activate" handler="on_add_publisher_add_clicked"/>
                       </object>
                       <packing>
                         <property name="position">0</property>
@@ -4152,8 +4063,6 @@ following name.</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">&#x25CF;</property>
-                            <signal name="changed" handler="on_publisheralias_changed"/>
-                            <signal name="activate" handler="on_add_publisher_add_clicked"/>
                           </object>
                           <packing>
                             <property name="position">0</property>
@@ -4326,7 +4235,6 @@ Specify the location of these files.</property>
                                 <property name="AtkObject::accessible-name">keyentry</property>
                               </object>
                             </child>
-                            <signal name="changed" handler="on_keyentry_changed"/>
                           </object>
                           <packing>
                             <property name="position">0</property>
@@ -4346,7 +4254,6 @@ Specify the location of these files.</property>
                                     <property name="AtkObject::accessible-name">certentry</property>
                                   </object>
                                 </child>
-                                <signal name="changed" handler="on_certentry_changed"/>
                               </object>
                               <packing>
                                 <property name="position">0</property>
@@ -4394,7 +4301,6 @@ Specify the location of these files.</property>
                                 <property name="AtkObject::accessible-name" translatable="yes">Browse for SSL Key</property>
                               </object>
                             </child>
-                            <signal name="clicked" handler="on_keybrowse_clicked"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -4413,7 +4319,6 @@ Specify the location of these files.</property>
                                 <property name="AtkObject::accessible-name" translatable="yes">Browse for SSL Certificate</property>
                               </object>
                             </child>
-                            <signal name="clicked" handler="on_certbrowse_clicked"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -4453,7 +4358,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_add_publisher_cancel_clicked" after="yes"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4468,7 +4372,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_add_publisher_add_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4483,7 +4386,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_add_pub_help_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4516,7 +4418,6 @@ Specify the location of these files.</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_manage_publishers_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox170">
         <property name="visible">True</property>
@@ -4688,7 +4589,6 @@ Specify the location of these files.</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_underline">True</property>
-                            <signal name="clicked" handler="on_manage_add_clicked"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -4703,7 +4603,6 @@ Specify the location of these files.</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_underline">True</property>
-                            <signal name="clicked" handler="on_manage_modify_clicked"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -4718,7 +4617,6 @@ Specify the location of these files.</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_underline">True</property>
-                            <signal name="clicked" handler="on_manage_remove_clicked"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -4743,7 +4641,6 @@ Specify the location of these files.</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="on_manage_move_up_clicked"/>
                             <child>
                               <object class="GtkHBox" id="hbox41">
                                 <property name="visible">True</property>
@@ -4781,7 +4678,6 @@ Specify the location of these files.</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="on_manage_move_down_clicked"/>
                             <child>
                               <object class="GtkHBox" id="hbox302">
                                 <property name="visible">True</property>
@@ -4846,7 +4742,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_manage_help_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4861,7 +4756,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_manage_cancel_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4876,7 +4770,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_manage_ok_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4908,7 +4801,6 @@ Specify the location of these files.</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_publishers_apply_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox20">
         <property name="visible">True</property>
@@ -5004,7 +4896,6 @@ Specify the location of these files.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_apply_cancel_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -5078,7 +4969,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_modify_repository_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox200">
         <property name="visible">True</property>
@@ -5390,9 +5280,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="no_show_all">True</property>
                                                     <property name="invisible_char">&#x25CF;</property>
-                                                    <signal name="changed" handler="on_add_repo_changed"/>
-                                                    <signal name="activate" handler="on_pub_add_repo_clicked"/>
-                                                    <signal name="focus_in_event" handler="on_add_repo_focus_in_event"/>
                                                   </object>
                                                   <packing>
                                                     <property name="position">0</property>
@@ -5476,7 +5363,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_underline">True</property>
-                                            <signal name="clicked" handler="on_pub_add_repo_clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -5492,7 +5378,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_underline">True</property>
-                                            <signal name="clicked" handler="on_pub_remove_repo_clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -5615,8 +5500,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                     <property name="AtkObject::accessible-name">modkeyentry</property>
                                                   </object>
                                                 </child>
-                                                <signal name="changed" handler="on_modkeyentry_changed"/>
-                                                <signal name="focus_in_event" handler="on_modkeyentry_focus_in_event"/>
                                               </object>
                                               <packing>
                                                 <property name="position">0</property>
@@ -5636,8 +5519,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                         <property name="AtkObject::accessible-name">modcertentry</property>
                                                       </object>
                                                     </child>
-                                                    <signal name="changed" handler="on_modcertentry_changed"/>
-                                                    <signal name="focus_in_event" handler="on_modcertentry_focus_in_event"/>
                                                   </object>
                                                   <packing>
                                                     <property name="position">0</property>
@@ -5677,7 +5558,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="use_underline">True</property>
-                                                <signal name="clicked" handler="on_modkeybrowse_clicked"/>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -5692,7 +5572,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
                                                 <property name="use_underline">True</property>
-                                                <signal name="clicked" handler="on_modcertbrowse_clicked"/>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -5734,7 +5613,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                 <property name="can_focus">True</property>
                                 <property name="use_underline">True</property>
                                 <property name="spacing">10</property>
-                                <signal name="activate" handler="on_repositorymodifymirrorsexpander_activate"/>
                                 <child>
                                   <object class="GtkHBox" id="hbox21">
                                     <property name="visible">True</property>
@@ -5790,9 +5668,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                                         <property name="AtkObject::accessible-name">addmirror_entry</property>
                                                       </object>
                                                     </child>
-                                                    <signal name="changed" handler="on_addmirror_entry_changed"/>
-                                                    <signal name="activate" handler="on_addmirror_button_clicked"/>
-                                                    <signal name="focus_in_event" handler="on_addmirror_entry_focus_in_event"/>
                                                   </object>
                                                   <packing>
                                                     <property name="position">0</property>
@@ -5869,7 +5744,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_underline">True</property>
-                                            <signal name="clicked" handler="on_addmirror_button_clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -5884,7 +5758,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_underline">True</property>
-                                            <signal name="clicked" handler="on_mirrorremove_clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -6551,7 +6424,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_repositorymodifycancel_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -6566,7 +6438,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_repositorymodifyok_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -6581,7 +6452,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_modify_repo_help_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -6614,7 +6484,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_add_publisher_complete_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox201">
         <property name="visible">True</property>
@@ -6835,7 +6704,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_add_publisher_c_close_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -6866,7 +6734,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_confirmdialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox160">
         <property name="visible">True</property>
@@ -7058,7 +6925,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
-                <signal name="toggled" handler="on_confirm_donotshow_toggled"/>
               </object>
               <packing>
                 <property name="position">4</property>
@@ -7080,7 +6946,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_confirm_cancel_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7095,7 +6960,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_confirm_ok_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7127,7 +6991,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_version_info_dialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox161">
         <property name="visible">True</property>
@@ -7308,7 +7171,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_info_help_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7323,7 +7185,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_info_ok_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7353,7 +7214,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_view_log_dialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox162">
         <property name="visible">True</property>
@@ -7500,7 +7360,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_log_clear_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7515,7 +7374,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_log_close_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7546,7 +7404,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_license_dialog_delete_event"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox19">
         <property name="visible">True</property>
@@ -7639,7 +7496,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
                     <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="on_license_accept_checkbutton_toggled"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -7665,7 +7521,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_license_reject_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -7680,7 +7535,6 @@ Jyothi Srinath &lt;jyothi.srinath@oracle.com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_license_accept_button_clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
