@@ -2790,8 +2790,15 @@ class PackageManager:
         def __do_refresh(self, pubs=None, immediate=False):
                 success = False
                 try:
-                        self.api_o.reset()
+                        if debug_perf:
+                                print "Time before reset",time.time()
+                        if immediate:
+                                self.api_o.reset()
+                        if debug_perf:
+                                print "Time after reset", time.time()
                         self.api_o.refresh(pubs=pubs, immediate=immediate)
+                        if debug_perf:
+                                print "after refresh", time.time()
                         success = True
                 except api_errors.CatalogRefreshException, cre:
                         res = gui_misc.get_catalogrefresh_exception_msg(cre)
@@ -2998,9 +3005,9 @@ class PackageManager:
 
         def __on_reload(self, widget):
                 self.force_reload_packages = True
-                self.__do_reload(widget)
+                self.__do_reload(widget, True)
 
-        def __do_reload(self, widget):
+        def __do_reload(self, widget, immediate):
                 self.w_repository_combobox.grab_focus()
                 if self.force_reload_packages and (self.in_search_mode 
                     or self.is_all_publishers_search):
@@ -3012,17 +3019,17 @@ class PackageManager:
                 self.set_busy_cursor()
                 status_str = _("Refreshing package catalog information")
                 self.update_statusbar_message(status_str)
-                Thread(target = self.__catalog_refresh).start()
+                Thread(target = self.__catalog_refresh, args = (immediate,)).start()
 
-        def __catalog_refresh(self):
+        def __catalog_refresh(self, immediate):
                 self.api_lock.acquire()
                 gobject.idle_add(self.set_busy_cursor)
-                self.__catalog_refresh_without_lock()
+                self.__catalog_refresh_without_lock(immediate)
                 gui_misc.release_lock(self.api_lock)
 
-        def __catalog_refresh_without_lock(self):
+        def __catalog_refresh_without_lock(self, immediate):
                 """Update image's catalogs."""
-                success = self.__do_refresh(immediate=True)
+                success = self.__do_refresh(immediate=immediate)
                 if not success:
                         gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.update_statusbar)
@@ -4558,7 +4565,7 @@ class PackageManager:
                     self.pr, self.w_main_window)
                 self.cache_o = self.__get_cache_obj(self.api_o)
                 self.force_reload_packages = False
-                self.__do_reload(None)
+                self.__do_reload(None, False)
 
         def update_facets(self, facets_to_set):
                 if facets_to_set == None or \
