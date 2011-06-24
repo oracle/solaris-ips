@@ -7,7 +7,7 @@
 </author>
 </authorgroup>
 <releaseinfo>Oracle Solaris 11</releaseinfo>
-<pubdate>November 2011</pubdate>
+<pubdate>June 2011</pubdate>
 <publisher><publishername>Oracle Corporation</publishername>
 <address><street>500 Oracle Parkway</street>
 <city>Redwood City</city>
@@ -317,6 +317,7 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 </chapter>
 <chapter id="manage-publisher"><title>Managing Publishers</title>
 <para>You can add, modify, and remove IPS package publishers. You can change the priority of a publisher, change the enabled and sticky settings, change the publisher alias, add or remove a publisher origin, and add or remove a publisher mirror. You can manage keys, certificates, and signature policy.</para>
+<para>Note that system publishers are an exception. System publishers can only be viewed in the Manage Publishers window. System publishers cannot be removed or modified, and you cannot change their priority. See <xref linkend="glossary"/>. The Details pane indicates whether the selected publisher is a system publisher.</para>
 <sect1 id="add-publisher"><title>Adding Publishers</title>
 <para>To add an IPS package publisher, use the Add Publisher window. To open the Add Publisher window, do one of the following actions:</para>
 <itemizedlist><listitem><para>Select the <guimenuitem>Add</guimenuitem> option from the <guimenu>Publisher</guimenu> drop-down menu.</para>
@@ -386,7 +387,7 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 <listitem><para>Select the publisher you want to modify. The Details pane below the publisher list in the Manage Publishers window displays the current origins for the selected publisher.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Modify</guibutton> button to the right of the publisher list to open the Modify Publisher window.</para>
-<para>If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
+<para>If the selected publisher is a system publisher, the <guibutton>Modify</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
 </listitem>
 <listitem><para>Select the General tab to modify the publisher alias, add and remove origins, and add and remove mirrors.</para></listitem>
 </orderedlist>
@@ -503,8 +504,8 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 <orderedlist><listitem><para>Click the Signature Policy tab of the Modify Publisher window.</para></listitem>
 <listitem><para>Use the buttons on the Signature Policy tab to set the signature policy to use when installing packages from the publisher listed in the Modify Publisher window title.</para>
 <para>To set the global signature policy, use the Signature Policy tab of the Preferences window (see <xref linkend="img-sig-policy"/>).</para>
-<itemizedlist><listitem><para>Signatures are ignored: Ignore signatures for all manifests.</para></listitem>
-<listitem><para>Signatures are optional, but must be valid if provided: Verify that all manifests with signatures are validly signed, but do not require all installed packages to be signed.</para></listitem>
+<itemizedlist><listitem><para>Signatures are ignored: Ignore signatures for all packages.</para></listitem>
+<listitem><para>Signatures are optional, but must be valid if provided: Verify that all packages with signatures are validly signed, but do not require all installed packages to be signed.</para></listitem>
 <listitem><para>One or more valid signatures are required: Require that all newly installed packages have at least one valid signature.</para></listitem>
 <listitem><para>Signatures are required and the certificate name must include the name or names specified in the text field when validating the signatures of a package. If more than one name is specified, the names must be comma-separated.</para></listitem></itemizedlist>
 </listitem>
@@ -521,7 +522,7 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 <listitem><para>Select the publisher that you want to remove.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Remove</guibutton> button to the right of the publisher list.</para>
-<para>If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
+<para>If the selected publisher is a system publisher, the <guibutton>Remove</guibutton> button is disabled. The Details pane indicates that the selected publisher is a system publisher and displays a message that this publisher cannot be modified or removed.</para>
 </listitem>
 <listitem><para>Click the <guibutton>OK</guibutton> button at the bottom of the Manage Publishers window.</para>
 </listitem>
@@ -661,18 +662,21 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 <para>When a package is installed, updated, or removed, a confirmation dialog is displayed that shows the list of packages and the action to be performed. If you do not want to see these confirmation dialogs, uncheck these selections in the Preferences window.</para>
 <para>Clicking the “Do not show this confirmation dialog again” check box in a particular confirmation dialog also unsets this preference for that dialog.</para>
 </sect1>
-<sect1 id="languages"><title>Language Options Preferences</title>
+<sect1 id="img-sig-policy"><title>Signature Policy Preferences</title>
+<para>Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, select the publisher in the Manage Publishers window, click the <guibutton>Modify</guibutton> button, and use the Signature Policy tab of the Modify Publisher window.</para>
+<para>The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend="pub-sig-policy"/>.</para>
+</sect1>
+<sect1 id="languages"><title>Optional Component Preferences Language Choices</title>
 <para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab.</para>
 <para>By default, Install all languages is selected under Language choices for any package. You can save space in your installation by selecting a subset of languages to install.</para>
+<para>When Install only these languages is selected, you can click the checkbox icon in the left most column heading of the language list to select all languages. Click the column heading again to deselect all languages. Click the Language and Territory column headings to sort the list.</para>
 <para>Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings.</para>
+<para>If you have previously updated your image to include only a subset of languages, Install only these languages is the default selection in this window, and that language list is grayed out if you select the Install all languages option.</para>
 </sect1>
 <sect1 id="dev-doc"><title>Other Optional Component Preferences</title>
 <para>Select the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> option and select the Optional Components tab.</para>
 <para>By default, Install all development files and Install all documentation are selected under Other component choices. You can save space in your installation by deselecting development files or documentation.</para>
 <para>Click the OK button to save your changes. These settings apply to currently installed packages as well as future package installations and updates. The image is updated as necessary to install or remove optional package components based on the new settings.</para>
-</sect1>
-<sect1 id="img-sig-policy"><title>Signature Policy Preferences</title>
-<para>Use the buttons on the Signature Policy tab to ignore or require signatures when installing packages in this image. To set signature policy for specific publishers, use the Signature Policy tab of the Modify Publishers window. The choices for image signature policy are the same as the choices for publisher signature policy except that the settings apply to all packages installed in the image, not just to packages installed from a particular publisher. See <xref linkend="pub-sig-policy"/>.</para>
 </sect1>
 </chapter>
 <glossary id="glossary"><title>Glossary</title>
@@ -712,7 +716,7 @@ select <guimenuitem>All Packages</guimenuitem> from the <guimenu>View</guimenu> 
 </glossdef>
 </glossentry>
 <glossentry><glossterm>system publisher</glossterm>
-<glossdef><para>?</para>
+<glossdef><para>System publishers are special publishers used in linked images and non-global zones in particular, to ensure that certain packages stay in sync with the global zone. The global zone constrains packages within the non-global zones by configuring these special system publishers in the non-global zone. They are special because the non-global zones cannot make certain changes to them including removing, disabling, modifying, or changing their priority.</para>
 </glossdef>
 </glossentry>
 </glossary>
