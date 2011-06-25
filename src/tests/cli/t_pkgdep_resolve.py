@@ -266,6 +266,26 @@ file NOHASH group=sys mode=0755 owner=root path=kernel/exec/amd64/elfexec reboot
 file NOHASH group=sys mode=0755 owner=root path=kernel/exec/elfexec reboot-needed=true variant.opensolaris.zone=global
 """
 
+        bug_16849_missing_build_version = """
+set name=pkg.fmri value=pkg:/foo/bar@2.0.0
+file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
+"""
+
+        bug_16849_corrupted_version = """
+set name=pkg.fmri value=pkg:/foo/bar@__whee__,5.11-1
+file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
+"""
+
+        bug_16849_leading_zeros = """
+set name=pkg.fmri value=pkg:/foo/bar@2.06
+file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
+"""
+
+        bug_16849_depender = """
+set name=pkg.fmri value=depender
+depend fmri=__TBD pkg.debug.depend.file=var/log/syslog pkg.debug.depend.reason=usr/bar pkg.debug.depend.type=hardlink type=require
+"""
+
         bug_17700_dep = """\
 set name=pkg.fmri value=b17700_dep@1.0,5.11-1
 set name=variant.opensolaris.zone value=global value=nonglobal
@@ -1206,6 +1226,34 @@ The package %s contains depend actions with values in their fmri attributes whic
                         fmri = PkgFmri(d.attrs["fmri"], build_release="5.11")
                         if str(fmri).startswith("pkg:/double_provides"):
                                 self.assertEqual(str(fmri.version.branch), "1")
+
+        def test_bug_16849(self):
+                """Test that when packages have bad fmris, or should resolve to
+                depend on packages with bad fmris, pkgdep provides a reasonable
+                error."""
+
+                missing_build = self.make_manifest(
+                    self.bug_16849_missing_build_version)
+                corrupted_version = self.make_manifest(
+                    self.bug_16849_corrupted_version)
+                leading_zeros = self.make_manifest(
+                    self.bug_16849_leading_zeros)
+                depender = self.make_manifest(
+                    self.bug_16849_depender)
+
+                # This is a valid FMRI since bug 18243 was fixed.
+                self.pkgdepend_resolve("-m %s" % missing_build)
+
+                self.pkgdepend_resolve("-m %s" % corrupted_version, exit=1)
+                self.pkgdepend_resolve("-m %s" % leading_zeros, exit=1)
+
+                # This is a valid FMRI since bug 18243 was fixed.
+                self.pkgdepend_resolve("-m %s %s" % (depender, missing_build))
+
+                self.pkgdepend_resolve("-m %s %s" %
+                    (corrupted_version, depender), exit=1)
+                self.pkgdepend_resolve("-m %s %s" % (depender, leading_zeros),
+                    exit=1)
 
         def test_bug_17700(self):
                 """Test that when multiple packages satisfy a dependency under

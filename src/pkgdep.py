@@ -328,6 +328,9 @@ pkgdepend -R / %(args)s
                 error(_("Could not parse one or more manifests because of "
                     "the following line:\n%s") % e.actionstr)
                 return 1
+        except dependencies.DependencyError, e:
+                error(e)
+                return 1
         except api_errors.ApiException, e:
                 error(e)
                 return 1

@@ -76,13 +76,13 @@ class MultiplePackagesPathError(DependencyError):
                 self.__pkg_name = str(name)
 
         pkg_name = property(lambda self: self.__pkg_name, __set_pkg_name)
-        
+
         def __init__(self, res, source, vc, pkg_name=None):
                 self.res = res
                 self.source = source
                 self.vc = vc
                 self.pkg_name = pkg_name
-                
+
         def __str__(self):
                 if self.vc.sat_set and self.pkg_name:
                         return _("The file dependency %(src)s delivered in "
@@ -216,6 +216,18 @@ class BadDependencyFmri(DependencyError):
                     "pkg": self.pkg,
                     "fmris": "\n".join(["\t%s" % f for f in sorted(self.fmris)])
                 }
+
+
+class BadPackageFmri(DependencyError):
+        """This exception is used when a manifest's fmri isn't a valid fmri."""
+
+        def __init__(self, path, e):
+                self.path = path
+                self.exc = e
+
+        def __str__(self):
+                return _("The manifest '%(path)s' has an invalid package "
+                    "FMRI:\n\t%(exc)s") % { "path": self.path, "exc": self.exc }
 
 
 def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
@@ -1283,10 +1295,13 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
 
         # Build a list of all files delivered in the manifests being resolved.
         for mp, (name, pfmri), mfst, pkg_vars, miss_files in manifests:
-                if pfmri is None:
-                        pfmri = fmri.PkgFmri(name)
-                add_fmri_path_mapping(files.delivered, links, pfmri,
-                    mfst, distro_vars)
+                try:
+                        if pfmri is None:
+                                pfmri = fmri.PkgFmri(name, "5.11")
+                except fmri.IllegalFmri, e:
+                        raise BadPackageFmri(mp, e)
+                add_fmri_path_mapping(files.delivered, links, pfmri, mfst,
+                    distro_vars)
 
         # Build a list of all files delivered in the packages installed on
         # the system.
