@@ -754,7 +754,7 @@ def parse_uri(uri, cwd=None):
                 if not cwd:
                         uri = os.path.abspath(uri)
                 elif not os.path.isabs(uri):
-                        uri = os.path.join(cwd, uri)
+                        uri = os.path.normpath(os.path.join(cwd, uri))
 
                 uri = urlparse.urlunparse(("file", "",
                     urllib.pathname2url(uri), "", "", ""))

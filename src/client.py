@@ -4648,16 +4648,18 @@ def image_create(args):
                         except ValueError:
                                 pub_name = None
                                 pub_url = arg
+                        if pub_url:
+                                pub_url = misc.parse_uri(pub_url, cwd=orig_cwd)
                 elif opt == "-c":
                         ssl_cert = arg
                 elif opt == "-f" or opt == "--force":
                         force = True
                 elif opt in ("-g", "--origin"):
-                        add_origins.add(arg)
+                        add_origins.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-k":
                         ssl_key = arg
                 elif opt in ("-m", "--mirror"):
-                        add_mirrors.add(arg)
+                        add_mirrors.add(misc.parse_uri(arg, cwd=orig_cwd))
                 elif opt == "-z" or opt == "--zone":
                         is_zone = True
                         imgtype = IMG_TYPE_ENTIRE

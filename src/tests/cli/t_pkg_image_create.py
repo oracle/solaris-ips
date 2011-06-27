@@ -56,6 +56,10 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 self.rurl4 = self.dcs[4].get_repo_url()
                 self.durl5 = self.dcs[5].get_depot_url()
 
+                self.rpath1 = self.dcs[1].get_repodir()
+                self.rpath3 = self.dcs[3].get_repodir()
+                self.rpath4 = self.dcs[4].get_repodir()
+
                 # The fifth depot is purposefully one with the publisher
                 # operation disabled.
                 self.dcs[5].set_disable_ops(["publisher/0", "publisher/1"])
@@ -231,6 +235,29 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 )
 
                 self.pkg("image-create -p test1=%s %s %s %s" % (self.rurl1,
+                    mirrors, origins, img_path))
+
+                self.pkg("-R %s publisher | grep origin.*%s" % (img_path,
+                    self.rurl1))
+                for u in (self.rurl3, self.rurl4):
+                        self.pkg("-R %s publisher | grep mirror.*%s" % (
+                            img_path, u))
+                        self.pkg("-R %s publisher | grep origin.*%s" % (
+                            img_path, u))
+                shutil.rmtree(img_path, True)
+
+                # Verify that simple paths to file repositories can be used
+                # (not just file:// URIs).
+                mirrors = " ".join(
+                    "-m %s" % u
+                    for u in (self.rpath3, self.rpath4)
+                )
+                origins = " ".join(
+                    "-g %s" % u
+                    for u in (self.rpath3, self.rpath4)
+                )
+
+                self.pkg("image-create -p test1=%s %s %s %s" % (self.rpath1,
                     mirrors, origins, img_path))
 
                 self.pkg("-R %s publisher | grep origin.*%s" % (img_path,
