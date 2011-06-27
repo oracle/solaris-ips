@@ -4763,7 +4763,7 @@ class PackageManager:
                 self.after_install_remove = True
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
-                self.__do_refresh()
+                self.__do_refresh(immediate=True)
                 if update_list == None and not self.img_timestamp:
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__on_reload(None)
