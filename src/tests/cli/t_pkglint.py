@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 import testutils
 if __name__ == "__main__":
@@ -57,7 +57,7 @@ set name=variant.arch value=i386 value=sparc
 
         # has two set actions, one of which is linted
         linted_action = """
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.fmri value=pkg://opensolaris.org/system/lintedaction@0.5.11,5.11-0.141:20100603T215050Z
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.summary value="Core Solaris Kernel"
@@ -68,7 +68,7 @@ set name=variant.arch value=i386 value=sparc
 
         # has two set actions, one of which is linted
         linted_manifest = """
-set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.fmri value=pkg://opensolaris.org/system/lintedmf@0.5.11,5.11-0.141:20100603T215050Z
 set name=pkg.description value="core kernel software for a specific instruction-set architecture"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=pkg.linted value=True
@@ -92,6 +92,59 @@ set name=variant.arch value=i386 value=sparc
 set name=test value=i386 variant.arch=sparc
 """
 
+        # has two set actions, one of which is linted
+        linted_manifest1 = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/lintedmf1@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+# allow the System/Noodles info.classification value in this manifest
+set name=pkg.linted.opensolaris.manifest003.6 value=True
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles
+set name=pkg.summary value="Core Solaris Kernel"
+# allow a duplicate set action in this case
+set name=org.opensolaris.consolidation value=ON pkg.linted=True
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+# we should still get this warning
+depend fmri=foo type=require
+"""
+
+        # has a dependency which we'll be unable to resolve at runtime,
+        # resulting in a pkglint.action005.1 warning, unless we run with
+        # a pkglintrc file that specifies pkglint.action005.1.missing-deps
+        # parameter
+        missing_dep_manifest = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+depend type=require fmri=does/not/exist
+"""
+
+        missing_dep_manifest_action = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+# pass the parameter to the action directly
+depend type=require fmri=does/not/exist pkg.lint.pkglint.action005.1.missing-deps=pkg:/does/not/exist
+"""
+
+        missing_dep_manifest_mf = """
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=org.opensolaris.consolidation value=ON
+set name=variant.arch value=i386 value=sparc
+# pass the parameter as a set action in the manifest
+set name=pkg.lint.pkglint.action005.1.missing-deps value="pkg:/does/not/exist pkg:/foo"
+depend type=require fmri=does/not/exist
+"""
+
         # for the rcfiles below, we also need to point the
         # info_classification_path field to the sections file we deliver in the
         # proto area
@@ -111,6 +164,18 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
 [pkglint]
 log_level = CRITICAL
 info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
+"""
+
+        missing_dep_rc = """
+[pkglint]
+info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
+pkglint.action005.1.missing-deps = pkg:/does/not/exist
+"""
+
+        missing_dep_rc_versioned = """
+[pkglint]
+info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
+pkglint.action005.1.missing-deps = pkg:/does/not/exist@2.0
 """
 
         def setUp(self):                
@@ -144,7 +209,11 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
                         elif flag == "-L":
                                 self.assert_(
                                     "Paths should be unique." in output,
-                                    "description didn't appear in -L output: %s" % output)
+                                    "description didn't appear in "
+                                    "-L output: %s" % output)
+                                self.assert_("pkg.lint." not in output,
+                                    "description contained pkg.lint, possible "
+                                    "missing <checker>.pkglint_desc attribute.")
 
         def test_4_manifests(self):
                 """Tests that we exit normally with a correct manifest."""
@@ -204,6 +273,7 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
                 mpath1 = self.make_manifest(self.broken_manifest)
                 linted_action_path = self.make_manifest(self.linted_action)
                 linted_manifest_path = self.make_manifest(self.linted_manifest)
+                linted_manifest_path1 = self.make_manifest(self.linted_manifest1)
 
                 # verify we fail first
                 self.pkglint("%s" % mpath1, exit=1)
@@ -211,6 +281,12 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
                 # now we should succeed
                 self.pkglint(linted_action_path, exit=0)
                 self.pkglint(linted_manifest_path, exit=0)
+
+                # we should succeed, but get a warning from one check
+                ret, output, err = self.pkglint(linted_manifest_path1, exit=0)
+                self.assert_("pkglint.action005.1" in err,
+                    "Expected to get a pkglint.action005.1 warning from "
+                    "linted_manifest_path_1:\n%s" % err)
 
         def test_8_verbose(self):
                 """Checks that the -v flag works, overriding the log level
@@ -256,6 +332,57 @@ info_classification_path: %s/usr/share/lib/pkg/opensolaris.org.sections
                     "different stdout with different cli order")
                 self.assert_(err == err2,
                     "different stderr with different cli order")
+
+        def test_10_rcfile_params(self):
+                """Loading pkglint parameters from an rcfile works"""
+
+                mpath = self.make_manifest(self.missing_dep_manifest)
+                self.make_misc_files({"rcfile": self.missing_dep_rc %
+                    pkg5unittest.g_proto_area,
+                    "versioned": self.missing_dep_rc_versioned %
+                    pkg5unittest.g_proto_area})
+
+                # verify we fail first
+                ret, output, err = self.pkglint("%s" % mpath)
+                self.assert_("pkglint.action005.1" in err,
+                    "Expected missing dependency warning not printed")
+
+                # verify that with the given rc file, we don't report an error
+                # since our pkglintrc now passes a parameter to
+                # pkglint.action005.1 whitelisting that particular dependency
+                ret, output, err = self.pkglint("-f %s/rcfile %s" %
+                    (self.test_root, mpath), testrc=False)
+                self.assert_("pkglint.action005.1" not in err,
+                    "Missing dependency warning printed, despite paramter")
+
+                # this time, we've whitelisted a versioned dependency, but
+                # we don't depend on any given version - we should still
+                # complain
+                ret, output, err = self.pkglint("-f %s/versioned %s" %
+                    (self.test_root, mpath), testrc=False)
+                self.assert_("pkglint.action005.1" in err,
+                    "Missing dep warning not printed, despite versioned rcfile")
+
+                # finally, verify the parameter set in either the action or
+                # manifest works
+                for mf in [self.missing_dep_manifest_action,
+                    self.missing_dep_manifest_mf]:
+                        mpath = self.make_manifest(mf)
+                        ret, output, err = self.pkglint(mpath)
+                        self.assert_("pkglint.action005.1" not in err,
+                            "Missing dependency warning printed, despite "
+                            "paramter set in %s" % mf)
+
+        def test_11_broken_missing_rcfile(self):
+                """Tests that we fail gracefully with a broken or missing
+                config file argument """
+                mpath = self.make_manifest(self.missing_dep_manifest)
+                self.pkglint("-f /dev/null %s" % mpath, testrc=False, exit=1)
+                self.pkglint("-f /no/such/pkg5/file %s" % mpath, testrc=False,
+                    exit=1)
+                self.pkglint("-f /etc/shadow %s" % mpath, testrc=False, exit=1)
+
+
 
 class TestPkglintCliDepot(pkg5unittest.ManyDepotTestCase):
         """Tests that exercise the CLI aspect of dealing with repositories"""

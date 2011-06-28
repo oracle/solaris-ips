@@ -22,7 +22,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # aspects of pkglint configuration
@@ -44,12 +44,41 @@ defaults = {
     "version.pattern": "*,5.11-0."
     }
 
+class PkglintConfigException(Exception):
+        """An exception thrown when something fatal happens while reading the
+        config.
+        """
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
 class PkglintConfig(object):
         def __init__(self, config_file=None):
 
-                self.config = ConfigParser.SafeConfigParser(defaults)
-                if not config_file:
-                        self.config.readfp(open("/usr/share/lib/pkg/pkglintrc"))
-                        self.config.read([os.path.expanduser("~/.pkglintrc")])
-                else:
-                        self.config.read(config_file)
+                if config_file:
+                        try:
+                                # ConfigParser doesn't do a good job of
+                                # error reporting, so we'll just try to open
+                                # the file
+                                file(config_file, "r").close()
+                        except (EnvironmentError), err:
+                                raise PkglintConfigException(
+                                    _("unable to read config file: %s ") % err)
+                try:
+                        self.config = ConfigParser.SafeConfigParser(defaults)
+                        if not config_file:
+                                self.config.readfp(
+                                    open("/usr/share/lib/pkg/pkglintrc"))
+                                self.config.read(
+                                    [os.path.expanduser("~/.pkglintrc")])
+                        else:
+                                self.config.read(config_file)
+
+                        # sanity check our config by looking for a known key
+                        self.config.get("pkglint", "log_level")
+                except ConfigParser.Error, err:
+                        raise PkglintConfigException(
+                            _("missing or corrupt pkglintrc file "
+                            "%(config_file)s: %(err)s") % locals())

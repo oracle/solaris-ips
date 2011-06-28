@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Some opensolaris distribution specific lint checks
@@ -162,6 +162,8 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                         return
 
                 value = manifest["info.classification"]
+                action = engine.get_attr_action("info.classification", manifest)
+                engine.advise_loggers(action=action, manifest=manifest)
 
                 # we allow multiple values for info.classification
                 if isinstance(value, list):
@@ -253,10 +255,16 @@ class OpenSolarisManifestChecker(base.ManifestChecker):
                 summ = manifest.get("pkg.summary", None)
 
                 if desc == "":
+                        action = engine.get_attr_action("pkg.description",
+                            manifest)
+                        engine.advise_loggers(action=action, manifest=manifest)
                         engine.warning(_("Empty description in %s") %
                             manifest.fmri,
                             msgid="%s%s.1" % (self.name, pkglint_id))
+
                 elif desc == summ and desc is not None:
+                        action = engine.get_attr_action("pkg.summary", manifest)
+                        engine.advise_loggers(action=action, manifest=manifest)
                         engine.warning(_("Description matches summary in %s") %
                             manifest.fmri,
                             msgid="%s%s.2" % (self.name, pkglint_id))

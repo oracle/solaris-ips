@@ -53,14 +53,14 @@ DESCRIPTION
      attribute "pkg.linted" set to "True" will  not  produce  any
      lint output for that manifest or action.
 
-     The behavior of pkglint can  be  changed  using  a  supplied
-     pkglintrc   file.    By   default,   the  tool  searches  in
-     /usr/share/lib/pkg/pkglintrc and $HOME/.pkglintrc for confi-
-     guration  options. The command line option -f can be used to
+     More granular pkg.linted settings can  be  made  using  sub-
+     strings of pkglint check names, eg. "pkg.linted.<check>.<id>"
+     set to "True" will bypass all checks with the name
+     <check>.<id>  for the given manifest or action.
 
 
 
-SunOS 5.11          Last change: 27 Sep 2010                    1
+SunOS 5.11          Last change: 13 Jun 2011                    1
 
 
 
@@ -71,6 +71,10 @@ User Commands                                          pkglint(1)
 
 
 
+     The behavior of pkglint can  be  changed  using  a  supplied
+     pkglintrc   file.    By   default,   the  tool  searches  in
+     /usr/share/lib/pkg/pkglintrc and $HOME/.pkglintrc for confi-
+     guration  options. The command line option -f can be used to
      specify a different configuration file.
 
      During the lint run, any errors or warnings encountered  are
@@ -126,7 +130,7 @@ OPTIONS
 
 
 
-SunOS 5.11          Last change: 27 Sep 2010                    2
+SunOS 5.11          Last change: 13 Jun 2011                    2
 
 
 
@@ -192,7 +196,7 @@ CONFIGURATION FILE
 
 
 
-SunOS 5.11          Last change: 27 Sep 2010                    3
+SunOS 5.11          Last change: 13 Jun 2011                    3
 
 
 
@@ -218,6 +222,16 @@ DEVELOPERS
      super   class.    Methods   should   also   be   assigned  a
      "pkglint_desc" attribute, which is used as the  description,
      printed by pkglint -L.
+
+     Parameters are available  to  Checker  subclasses,  allowing
+     them  to  tune  their behaviour.  It is recommended they are
+     named using the convention "<pkglint_id>.<name>".  Parameter
+     values  can be stored in the configuration file, or accessed
+     in   manifest    or    actions,    retrieved    using    the
+     <LintEngine>.get_param(..)  method.   When accessing parame-
+     ters from the manifest, the prefix "pkg.lint"  is  prepended
+     to  the  key  name (to ensure that pkglint parameters do not
+     overlap with any existing action or manifest values)
 
 EXAMPLES
      Example 1:  Running a pkglint session for the first time.
@@ -258,7 +272,7 @@ EXAMPLES
 
 
 
-SunOS 5.11          Last change: 27 Sep 2010                    4
+SunOS 5.11          Last change: 13 Jun 2011                    4
 
 
 
@@ -321,7 +335,7 @@ NOTES
 
 
 
-SunOS 5.11          Last change: 27 Sep 2010                    5
+SunOS 5.11          Last change: 13 Jun 2011                    5
 
 
 

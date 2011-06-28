@@ -1,0 +1,57 @@
+#
+# This is a fragment of a pkglintrc file used for the pkg(5) build
+# to acknowledge that some dependencies will be missing at lint
+# runtime.  When used with a reference repository, we expect that
+# these dependencies would be available.
+#
+# If version numbers are missing from the dependencies below, we
+# match all versions of that particular package.  If version
+# numbers are specified, we only match the given version.
+#
+pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
+    pkg:/crypto/ca-certificates
+    pkg:/desktop/gksu
+    pkg:/developer/assembler
+    pkg:/developer/build/make
+    pkg:/developer/build/onbld
+    pkg:/developer/gnome/gettext
+    pkg:/developer/gnome/gnome-doc-utils
+    pkg:/developer/object-file
+    pkg:/developer/python/pylint
+    pkg:/developer/swig
+    pkg:/developer/versioning/mercurial
+    pkg:/gnome/accessibility/gnome-a11y-libs
+    pkg:/gnome/config/gconf
+    pkg:/gnome/theme/hicolor-icon-theme
+    pkg:/library/python-2/cherrypy
+    pkg:/library/python-2/coverage
+    pkg:/library/python-2/locale-services
+    pkg:/library/python-2/m2crypto
+    pkg:/library/python-2/mako
+    pkg:/library/python-2/ply
+    pkg:/library/python-2/pybonjour
+    pkg:/library/python-2/pycurl
+    pkg:/library/python-2/pygobject-26
+    pkg:/library/python-2/pygtk2-26
+    pkg:/library/python-2/pyopenssl-26
+    pkg:/library/python-2/python-gnome-26
+    pkg:/library/python-2/python-gnome-extras-26
+    pkg:/library/python-2/python-notify-26
+    pkg:/library/python-2/setuptools-26
+    pkg:/library/python-2/simplejson-26
+    pkg:/package/svr4
+    pkg:/runtime/perl-584/extra
+    pkg:/runtime/python-26
+    pkg:/SUNWcs
+    pkg:/system/extended-system-utilities
+    pkg:/system/font/xorg/xorg-core
+    pkg:/system/library
+    pkg:/system/library/dbus
+    pkg:/system/library/math
+    pkg:/system/zones
+    pkg:/system/zones/internal
+    pkg:/text/gnu-grep
+    pkg:/text/tidy
+    pkg:/web/server/apache-22
+    pkg:/web/wget
+    pkg:/x11/library/libx11

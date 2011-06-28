@@ -117,9 +117,6 @@ class PkgDupActionChecker(base.ActionChecker):
                                         continue
                                 if attr not in action.attrs:
                                         continue
-                                if "pkg.linted" in action.attrs and \
-                                    action.attrs["pkg.linted"].lower() == "true":
-                                        continue
 
                                 variants = action.get_variant_template()
                                 variants.merge_unknown(pkg_vars)
@@ -290,17 +287,23 @@ class PkgDupActionChecker(base.ActionChecker):
                 if p in self.processed_refcount_paths:
                         return
 
+                lint_id = "%s%s" % (self.name, pkglint_id)
+
                 fmris = set()
                 target = action
                 differences = set()
                 for (pfmri, a) in self.ref_paths[p]:
+                        if engine.linted(action=a, manifest=manifest,
+                            lint_id=lint_id):
+                                continue
                         fmris.add(pfmri)
                         for key in a.differences(target):
                                 # target, used in link actions often differs
                                 # between variants of those actions.
                                 if key.startswith("variant") or \
                                     key.startswith("facet") or \
-                                    key.startswith("target"):
+                                    key.startswith("target") or \
+                                    key.startswith("pkg.linted"):
                                         continue
                                 conflicting_vars, variants = \
                                     self.conflicting_variants([a, target],
@@ -315,6 +318,9 @@ class PkgDupActionChecker(base.ActionChecker):
                                 # the fmris that deliver them
                                 attr = {}
                                 for (pfmri, a) in self.ref_paths[p]:
+                                        if engine.linted(action=a,
+                                            manifest=manifest, lint_id=lint_id):
+                                                continue
                                         if key in a.attrs:
                                                 val = a.attrs[key]
                                                 if val in attr:
@@ -333,7 +339,7 @@ class PkgDupActionChecker(base.ActionChecker):
                             {"path": p,
                             "count": len(fmris) + 1,
                             "suspects": " ".join([key for key in suspects])},
-                            msgid="%s%s" % (self.name, pkglint_id))
+                            msgid=lint_id, ignore_linted=True)
                 self.processed_refcount_paths[p] = True
 
         duplicate_refcount_path_attrs.pkglint_desc = _(
@@ -424,10 +430,19 @@ class PkgDupActionChecker(base.ActionChecker):
                 if p in self.seen_dup_types:
                         return
 
+                # we could have a linted action, which would have prevented
+                # us from adding this path to the dictionary.
+                if p not in self.ref_paths:
+                        return
+
+                lint_id = "%s%s" % (self.name, pkglint_id)
                 types = set()
                 fmris = set()
                 actions = set()
                 for (pfmri, a) in self.ref_paths[p]:
+                        if engine.linted(action=a, manifest=manifest,
+                            lint_id=lint_id):
+                                continue
                         actions.add(a)
                         types.add(a.name)
                         fmris.add(pfmri)
@@ -444,7 +459,7 @@ class PkgDupActionChecker(base.ActionChecker):
                                     {"path": p,
                                     "pkgs":
                                     " ".join(plist)},
-                                    msgid="%s%s" % (self.name, pkglint_id))
+                                    msgid=lint_id, ignore_linted=True)
                 self.seen_dup_types[p] = True
 
         duplicate_path_types.pkglint_desc = _(
@@ -568,7 +583,7 @@ class PkgActionChecker(base.ActionChecker):
                                     "%(fmri)s") %
                                     {"key": key,
                                     "fmri": manifest.fmri},
-                                    msgid="%s%s" % (self.name, pkglint_id))
+                                    msgid="%s%s.1" % (self.name, pkglint_id))
 
                 if action.name != "set":
                         return
@@ -579,7 +594,7 @@ class PkgActionChecker(base.ActionChecker):
                     "info.upstream_url", "info.source_url",
                     "info.repository_url", "info.repository_changeset",
                     "info.defect_tracker.url", "opensolaris.arc_url"]:
-                            return
+                        return
 
                 engine.warning(_("underscore in 'set' action name %(name)s in "
                     "%(fmri)s") % {"name": name,
@@ -652,6 +667,9 @@ class PkgActionChecker(base.ActionChecker):
                                     "mode": mode},
                                     msgid="%s%s.4" % (self.name, pkglint_id))
 
+        unusual_perms.pkglint_desc = _(
+            "Paths should not have unusual permissions.")
+
         def legacy(self, action, manifest, engine, pkglint_id="003"):
                 """Cross-check that the 'pkg' attribute points to a package
                 that depends on the package containing this legacy action.
@@ -665,14 +683,13 @@ class PkgActionChecker(base.ActionChecker):
 
                 for required in [ "category", "desc", "hotline", "name",
                     "pkg", "vendor", "version" ]:
-                            if required not in action.attrs:
-                                    engine.error(
-                                        _("%(attr)s missing from legacy "
-                                        "action in %(pkg)s") %
-                                        {"attr": required,
-                                        "pkg": manifest.fmri},
-                                        msgid="%s%s.1" %
-                                        (self.name, pkglint_id))
+                        if required not in action.attrs:
+                                engine.error(
+                                    _("%(attr)s missing from legacy "
+                                    "action in %(pkg)s") %
+                                    {"attr": required,
+                                    "pkg": manifest.fmri},
+                                    msgid="%s%s.1" % (self.name, pkglint_id))
 
                 if "pkg" in action.attrs:
 
@@ -752,7 +769,13 @@ class PkgActionChecker(base.ActionChecker):
                 to check for their obsoletion.  This can help to detect errors
                 in the fmri attribute field of the depend action, though can be
                 noisy if all dependencies are intentionally not present in the
-                repository being linted or referenced."""
+                repository being linted or referenced.
+
+                The pkglint paramter pkglint.action005.1.missing-deps can be
+                used to declare which fmris we know could be missing, and for
+                which we should not emit a warning message if those manifests
+                are not available.
+                """
 
                 msg = _("dependency on obsolete package in %s:")
 
@@ -823,8 +846,28 @@ class PkgActionChecker(base.ActionChecker):
                         engine.error("%s %s" % (msg % manifest.fmri, err),
                             msgid=lint_id)
 
+                # We maintain a whitelist of dependencies which may be missing
+                # during this lint run (eg. packages that are present in a
+                # different repository)  Consult that list before complaining
+                # about each fmri being missing.
+
+                # If unversioned FMRIs are present in the list, versioned
+                # dependencies will match those if their package name and
+                # publisher match.
+                known_missing_deps = engine.get_param("%s.1.missing-deps" %
+                    lint_id, action=action, manifest=manifest)
+                if known_missing_deps:
+                        known_missing_deps = known_missing_deps.split(" ")
+                else:
+                        known_missing_deps = []
+
                 if not mf and not found_obsolete:
                         self.missing_deps.append(dep_fmri)
+                        if dep_fmri in known_missing_deps:
+                                return
+                        if "@" in dep_fmri and \
+                            dep_fmri.split("@")[0] in known_missing_deps:
+                                return
                         engine.warning(_("obsolete dependency check "
                             "skipped: unable to find dependency %(dep)s"
                             " for %(pkg)s") %
@@ -841,20 +884,26 @@ class PkgActionChecker(base.ActionChecker):
 
                 if "fmri" not in action.attrs:
                         return
-                try:
-                        pfmri = pkg.fmri.PkgFmri(action.attrs["fmri"])
-                except pkg.fmri.IllegalFmri:
-                        # we also need to just verify that the fmri isn't
-                        # just missing a build_release value
+                fmris = action.attrs["fmri"]
+                if isinstance(fmris, basestring):
+                        fmris = [fmris]
+
+                for fmri in fmris:
                         try:
-                                pfmri = pkg.fmri.PkgFmri(action.attrs["fmri"],
-                                    build_release="5.11")
+                                pfmri = pkg.fmri.PkgFmri(fmri)
                         except pkg.fmri.IllegalFmri:
-                                engine.error("invalid FMRI in action %(action)s"
-                                    " in %(pkg)s" %
-                                    {"pkg": manifest.fmri,
-                                    "action": action},
-                                    msgid="%s%s" % (self.name, pkglint_id))
+                                # we also need to just verify that the fmri
+                                # isn't just missing a build_release value
+                                try:
+                                        pfmri = pkg.fmri.PkgFmri(fmri,
+                                            build_release="5.11")
+                                except pkg.fmri.IllegalFmri:
+                                        engine.error("invalid FMRI in action "
+                                            "%(action)s in %(pkg)s" %
+                                            {"pkg": manifest.fmri,
+                                            "action": action},
+                                            msgid="%s%s" %
+                                            (self.name, pkglint_id))
 
         valid_fmri.pkglint_desc = _("pkg(5) FMRIs should be valid.")
 
@@ -870,3 +919,26 @@ class PkgActionChecker(base.ActionChecker):
                             msgid="%s%s" % (self.name, pkglint_id))
 
         license.pkglint_desc = _("'license' actions should not have paths.")
+
+        def linted(self, action, manifest, engine, pkglint_id="008"):
+                """Log an INFO message with the key/value pairs of all
+                pkg.linted* attributes set on this action.
+
+                Essentially this exists to prevent users from adding
+                pkg.linted values to manifests that don't really need them."""
+
+                linted_attrs = [(key, action.attrs[key])
+                    for key in sorted(action.attrs.keys())
+                    if key.startswith("pkg.linted")]
+
+                if linted_attrs:
+                        engine.info(_("pkg.linted attributes detected for "
+                            "%(pkg)s %(action)s: %(linted)s") %
+                            {"pkg": manifest.fmri,
+                            "action": str(action),
+                            "linted": ", ".join(["%s=%s" % (key, val)
+                             for key,val in linted_attrs])},
+                             msgid="%s%s" % (self.name, pkglint_id),
+                             ignore_linted=True)
+
+        linted.pkglint_desc = _("Show actions with pkg.linted attributes.")

@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
 #
 
 import inspect
 
 import pkg.variant as variant
+import traceback
 
 class LintException(Exception):
         """An exception thrown when something fatal has gone wrong during
@@ -37,6 +38,10 @@ class LintException(Exception):
                 # have a chance of being stringified correctly.
                 return str(self)
 
+class DuplicateLintedAttrException(Exception):
+        """An exception thrown when we've found duplicate pkg.linted* keys."""
+        def __unicode__(self):
+                return str(self)
 
 class Checker(object):
         """A base class for all lint checks.  pkg.lint.engine discovers classes
@@ -68,9 +73,31 @@ class Checker(object):
                 documentation on the keys we expect it to contain."""
                 self.config = config
 
-                # lists of lint methods
+                # lists of (lint method, pkglint_id) tuples
                 self.included_checks = []
                 self.excluded_checks = []
+
+                def get_pkglint_id(method):
+                        """Inspects a given checker method to find the
+                        'pkglint_id' keyword argument default and returns it."""
+
+                        # the short name for this checker class, Checker.name
+                        name = method.im_class.name
+
+                        arg_spec = inspect.getargspec(method)
+
+                        # arg_spec.args is a tuple of the method args,
+                        # populating the tuple with both arg values for
+                        # non-keyword arguments, and keyword arg names
+                        # for keyword args
+                        c = len(arg_spec.args) - 1
+                        try:
+                                i = arg_spec.args.index("pkglint_id")
+                        except ValueError:
+                                return "%s.?" % name
+                        # arg_spec.defaults are the default values for
+                        # any keyword args, in order.
+                        return "%s%s" % (name, arg_spec.defaults[c - i])
 
                 excl = self.config.get("pkglint", "pkglint.exclude").split()
                 for item in inspect.getmembers(self, inspect.ismethod):
@@ -81,10 +108,13 @@ class Checker(object):
                                 value = "%s.%s.%s" % (
                                     self.__module__,
                                     self.__class__.__name__, method.__name__)
+                                pkglint_id = get_pkglint_id(method)
                                 if value not in excl:
-                                        self.included_checks.append(method)
+                                        self.included_checks.append(
+                                            (method, pkglint_id))
                                 else:
-                                        self.excluded_checks.append(method)
+                                        self.excluded_checks.append(
+                                            (method, pkglint_id))
 
         def startup(self, engine):
                 """Called to initialise a given checker using the supplied
@@ -130,25 +160,94 @@ class Checker(object):
                                                         conflict_vars.add(k)
                 return conflicts, conflict_vars
 
+
 class ActionChecker(Checker):
         """A class to check individual actions."""
 
         def check(self, action, manifest, engine):
-                """'action' is a pkg.actions.generic.Action
+                """'action' is a pkg.actions.generic.Action subclass
                 'manifest' is a pkg.manifest.Manifest"""
 
-                for func in self.included_checks:
-                        func(action, manifest, engine)
+                for func, pkglint_id in self.included_checks:
+                        engine.advise_loggers(action=action, manifest=manifest)
+                        try:
+                                func(action, manifest, engine)
+                        except Exception, err:
+                                # Checks are still run on actions that are
+                                # marked as pkg.linted. If one of those checks
+                                # results in an exception, we need to handle
+                                # that to avoid one bad Checker crashing
+                                # lint session.
+                                if engine.linted(action=action,
+                                    manifest=manifest, lint_id=pkglint_id):
+                                        engine.info("Checker exception ignored "
+                                            "from %(check)s on linted action "
+                                            "%(action)s in %(mf)s: %(err)s" %
+                                            {"check": pkglint_id,
+                                            "action": action,
+                                            "mf": manifest.fmri,
+                                            "err": err},
+                                            msgid="pkglint001.3")
+                                else:
+                                        engine.error("Checker exception from "
+                                            "%(check)s on action "
+                                            "%(action)s in %(mf)s: %(err)s"
+                                            % {"check": pkglint_id,
+                                            "action": action,
+                                            "mf": manifest.fmri,
+                                            "err": err}, msgid="lint.error")
+                                        engine.debug(traceback.format_exc(err),
+                                            msgid="lint.error")
 
 
 class ManifestChecker(Checker):
-        """A class to check manifests."""
+        """A class to check manifests.
+
+        In order for proper 'pkg.linted.*' functionality, checker methods that
+        examine individual manifest attributes, should obtain the original 'set'
+        action that was the origin of the manifest attribute, advising the
+        logging system of the attributes being examined, then examining the
+        attribute, before advising the logging system that subsequent
+        lint errors on other attributes are no longer related to that action.
+
+        For example, when looking at the pkg.summary attribute, a checker
+        method would do:
+
+        action = engine.get_attr_action("pkg.summary", manifest)
+        engine.advise_loggers(action=action, manifest=manifest)
+        .
+        . [ perform checks on the attribute ]
+        .
+        engine.advise_loggers(manifest=manifest)
+
+        """
 
         def check(self, manifest, engine):
                 """'manifest' is a pkg.manifest.Manifest"""
 
-                for func in self.included_checks:
-                        func(manifest, engine)
+                for func, pkglint_id in self.included_checks:
+                        engine.advise_loggers(manifest=manifest)
+                        try:
+                                func(manifest, engine)
+                        except Exception, err:
+                                # see ActionChecker.check(..)
+                                if engine.linted(manifest=manifest,
+                                    lint_id=pkglint_id):
+                                        engine.info("Checker exception ignored "
+                                            "from %(check)s on linted manifest "
+                                            "%(mf)s: %(err)s" %
+                                            {"check": pkglint_id,
+                                            "mf": manifest.fmri,
+                                            "err": err},
+                                            msgid="pkglint001.3")
+                                else:
+                                        engine.error("Checker exception from "
+                                            "%(check)s on %(mf)s: %(err)s"
+                                            % {"check": pkglint_id,
+                                            "mf": manifest.fmri,
+                                            "err": err}, msgid="lint.error")
+                                        engine.debug(traceback.format_exc(err),
+                                            msgid="lint.error")
 
 
 def get_checkers(module, config):
@@ -172,3 +271,55 @@ def get_checkers(module, config):
                                 excluded_checkers.append(obj)
 
         return (checkers, excluded_checkers)
+
+def linted(manifest=None, action=None, lint_id=None):
+        """Determine whether a given action or manifest is marked as linted.
+        We check for manifest or action attributes set to "true" where
+        the attribute starts with "pkg.linted" and is a substring of
+        pkg.linted.<lint_id> anchored at the start of the string.
+
+        So, pkg.linted.foo  matches checks for foo, foo001 foo004.5, etc.
+
+        pkglint Checker methods should use
+        pkg.lint.engine.<LintEngine>.linted() instead of this method."""
+
+        if manifest and action:
+                return _linted_action(action, lint_id) or \
+                    _linted_manifest(manifest, lint_id)
+        if manifest:
+                return _linted_manifest(manifest, lint_id)
+        if action:
+                return _linted_action(action, lint_id)
+        return False
+
+def _linted_action(action, lint_id):
+        """Determine whether a given action is marked as linted"""
+        linted = "pkg.linted.%s" % lint_id
+        for key in action.attrs.keys():
+                if key.startswith("pkg.linted") and linted.startswith(key):
+                        val = action.attrs.get(key, "false")
+                        if isinstance(val, basestring):
+                                if val.lower() == "true":
+                                        return True
+                        else:
+                                raise DuplicateLintedAttrException(
+                                    _("Multiple values for %(key)s "
+                                    "in %(actions)s") % {"key": key,
+                                    "action": str(action)})
+        return False
+
+def _linted_manifest(manifest, lint_id):
+        """Determine whether a given manifest is marked as linted"""
+        linted = "pkg.linted.%s" % lint_id
+        for key in manifest.attributes.keys():
+                if key.startswith("pkg.linted") and linted.startswith(key):
+                        val = manifest.attributes.get(key, "false")
+                        if isinstance(val, basestring):
+                                if val.lower() == "true":
+                                        return True
+                        else:
+                                raise DuplicateLintedAttrException(
+                                    _("Multiple values for %(key)s "
+                                    "in %(manifest)s") % {"key": key,
+                                    "manifest": manifest.fmri})
+        return False

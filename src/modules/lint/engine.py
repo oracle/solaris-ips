@@ -29,10 +29,10 @@ import pkg.client.progress as progress
 import pkg.lint.base as base
 import pkg.lint.config
 import pkg.fmri
+from pkg.client.api_errors import ApiException
 from pkg.version import DotSequence, Version
 
 import ConfigParser
-import inspect
 import logging
 import os
 import shutil
@@ -74,10 +74,12 @@ class LintEngineCache():
                         combined = "%s%s" % \
                             (version_pattern.split(",")[1], release)
                         try:
-                                self.branch = DotSequence(combined.split("-")[1])
+                                self.branch = DotSequence(
+                                    combined.split("-")[1])
                         except pkg.version.IllegalDotSequence:
                                 raise LintEngineException(
-                                    _("Invalid release string: %s") % self.release)
+                                    _("Invalid release string: %s") %
+                                    self.release)
 
         def seed_latest(self, api_inst, tracker, phase):
                 """Builds a cache of latest manifests for this api_inst, using
@@ -97,15 +99,15 @@ class LintEngineCache():
                 self.misc_cache[api_inst] = {}
 
                 if not self.release:
-                    for item in api_inst.get_pkg_list(
-                        search_type, patterns=pattern_list, variants=True):
-                            pub_name, name, version = item[0]
-                            pub = api_inst.get_publisher(prefix=pub_name)
-                            fmri ="pkg://%s/%s@%s" % (pub, name, version)
-                            pfmri = pkg.fmri.PkgFmri(fmri)
-                            # index with just the pkg name, allowing us to use
-                            # this cache when searching for dependencies
-                            packages["pkg:/%s" % name] = pfmri
+                        for item in api_inst.get_pkg_list(
+                            search_type, patterns=pattern_list, variants=True):
+                                pub_name, name, version = item[0]
+                                pub = api_inst.get_publisher(prefix=pub_name)
+                                fmri ="pkg://%s/%s@%s" % (pub, name, version)
+                                pfmri = pkg.fmri.PkgFmri(fmri)
+                                # index with just the pkg name, allowing us to
+                                # use this cache when searching for dependencies
+                                packages["pkg:/%s" % name] = pfmri
 
                 else:
                         # take a bit more time building up the latest version
@@ -152,7 +154,7 @@ class LintEngineCache():
                 packages matching the supplied pattern from the publishers set
                 for api_inst"""
                 if not self.seeded:
-                        raise LintException("Cache has not been seeded")
+                        raise LintEngineException("Cache has not been seeded")
 
                 if api_inst in self.latest_cache:
                         for item in sorted(self.latest_cache[api_inst]):
@@ -276,8 +278,7 @@ class LintEngine(object):
         when comparing package FMRIs.
 
         The engine has support for a "/* LINTED */"-like functionality,
-        omitting lint checks for actions or manifests that contain
-        a pkg.linted attribute set to True."""
+        see the comment for <LintEngine>.execute()"""
 
         def __init__(self, formatter, verbose=False, config_file=None,
             use_tracker=None):
@@ -319,7 +320,6 @@ class LintEngine(object):
                 self.ignore_pubs = True
 
                 self.conf = self.load_config(config_file, verbose=verbose)
-
                 # overrides config_file entry
                 if use_tracker is not None:
                         self.use_tracker = use_tracker
@@ -374,43 +374,29 @@ class LintEngine(object):
                         unique_names.add(checker.name)
                         unique_methods = set()
 
-                        for method in checker.included_checks + \
+                        for method, pkglint_id in checker.included_checks + \
                             checker.excluded_checks:
-                                mname = "%s.%s" % (method.im_class.__name__,
-                                    method.im_func.func_name)
 
-                                # identify the value of each pkglint_id argument
-                                # for this method.
-                                arg_spec = inspect.getargspec(method)
-
-                                # arg_spec.args is a tuple of the method args,
-                                # populating the tuple with both arg values for
-                                # non-keyword arguments, and keyword arg names
-                                # for keyword args
-                                c = len(arg_spec.args) - 1
-                                i = arg_spec.args.index("pkglint_id")
-
-                                if not arg_spec.defaults:
-                                        continue
-                                # arg_spec.defaults are the default values for
-                                # any keyword args, in order.
-                                name = arg_spec.defaults[c - i]
-
-                                if name in unique_methods:
+                                if pkglint_id in unique_methods:
                                         raise LintEngineException(_(
                                             "loading extension "
                                             "%(checker)s: duplicate pkglint_id "
-                                            "%(name)s in %(method)s") %
+                                            "%(pkglint_id)s in %(method)s") %
                                             {"checker": checker.name,
-                                            "name": name,
-                                            "method": mname})
-                                unique_methods.add(name)
+                                            "pkglint_id": pkglint_id,
+                                            "method": method})
+                                unique_methods.add(pkglint_id)
 
         def load_config(self, config, verbose=False):
                 """Loads configuration from supplied config file, allowing
                 a verbosity override."""
 
-                conf = pkg.lint.config.PkglintConfig(config_file=config).config
+                try:
+                        conf = pkg.lint.config.PkglintConfig(
+                            config_file=config).config
+                except (pkg.lint.config.PkglintConfigException), err:
+                        raise LintEngineException(err)
+
                 excl = []
 
                 try:
@@ -581,7 +567,8 @@ class LintEngine(object):
                                             self.ref_image, self.ref_uris)
 
                                 if self.ref_api_inst:
-                                        self.tracker_phase = self.tracker_phase + 1
+                                        self.tracker_phase = \
+                                            self.tracker_phase + 1
                                         self.mf_cache.seed_latest(
                                             self.ref_api_inst,
                                             self.get_tracker(),
@@ -606,7 +593,19 @@ class LintEngine(object):
                 """Run the checks that have been configured for this engine.
                 We run checks on all lint_manifests as well as all manifests
                 in a configured lint repository that match both our pattern
-                and release (if they have been configured)."""
+                and release (if they have been configured).
+
+                We allow for pkg.linted=True and pkg.linted.<name>=True, where
+                <name> is a substring of a pkglint id to skip logging errors
+                for that action or manifest.
+
+                As much of the pkg.linted functionality as possible is handled
+                by the logging system, in combination with the engine calling
+                advise_loggers() as appropriate, however some ManifestChecker
+                methods may still need to use engine.linted() or
+                <LintEngine>.advise_loggers() manually when iterating over
+                manifest actions in order to properly respect pkg.linted
+                attributes."""
 
                 manifest_checks = []
                 action_checks = []
@@ -694,8 +693,8 @@ class LintEngine(object):
                                             build_release="5.11")
                                         return fmri
                                 except:
-                                        msg = _("unable to construct fmri from %s") % \
-                                            pkg_name
+                                        msg = _("unable to construct fmri from "
+                                            "%s") %  pkg_name
                                         raise base.LintException(msg)
 
                 def get_fmri(api_inst, pkg_name):
@@ -755,7 +754,8 @@ class LintEngine(object):
                                 # double-check the publishers match, since we
                                 # searched for just a package name
                                 if search_fmri.publisher:
-                                        if search_fmri.publisher == mf.fmri.publisher:
+                                        if search_fmri.publisher == \
+                                            mf.fmri.publisher:
                                                 return mf
                                 else:
                                         return mf
@@ -849,69 +849,87 @@ class LintEngine(object):
                             facets=pkg.facet.Facets(), force=False,
                             progtrack=tracker, refresh_allowed=refresh_allowed,
                             repo_uri=repo_uris[0])
-                except (pkg.client.api_errors.ApiException, OSError, IOError), err:
+                except (ApiException, OSError, IOError), err:
                         raise LintEngineException(err)
                 return api_inst
 
         def _check_manifest(self, manifest, manifest_checks, action_checks):
                 """Check a given manifest."""
 
-                if "pkg.linted" in manifest and \
-                    manifest["pkg.linted"].lower() == "true":
-                        self.info("Not checking linted manifest %s" %
-                            manifest.fmri, msgid="pkglint001.1")
-                        return
-
                 self.debug(_("Checking %s") % manifest.fmri, "pkglint001.3")
 
                 for checker in manifest_checks:
-                        try:
-                                checker.check(manifest, self)
-                        except base.LintException, err:
-                                self.error(err, msgid="lint.error")
+                        checker.check(manifest, self)
 
                 if action_checks:
                         for action in manifest.gen_actions():
-                                try:
-                                        self._check_action(action, manifest,
-                                            action_checks)
-                                except base.LintException, err:
-                                        self.error(err, msgid="lint.error")
+                                self._check_action(action, manifest,
+                                    action_checks)
 
         def _check_action(self, action, manifest, action_checks):
-                if "pkg.linted" in action.attrs and \
-                    action.attrs["pkg.linted"].lower() == "true":
-                        self.info("Not checking linted action %s" %
-                            str(action), msgid="pkglint001.2")
-                        return
+                """Check a given action."""
 
                 for checker in action_checks:
-                        try:
-                                checker.check(action, manifest, self)
-                        except base.LintException, err:
-                                self.error(err, msgid="lint.error")
+                        checker.check(action, manifest, self)
+
+        def advise_loggers(self, action=None, manifest=None):
+                """Called to advise any loggers we have set that we're about
+                to perform lint checks on the given action or manifest.
+
+                In particular, this is used to let the logger objects access
+                the manifest or action being linted without needing to pass
+                those objects each time we log a message.
+
+                Care must be taken in base.ManifestChecker methods to call
+                this any time they're iterating over actions and are likely to
+                report lint errors that may be related to that action.  When
+                finished iterating, they should re-call this method with only
+                the manifest keyword argument, to clear the last action used.
+
+                Between each Checker method invocation, the Checker subclass
+                calls this automatically to clear any state set by those method
+                calls.
+                """
+                for log in self.logs:
+                        log.advise(action=action, manifest=manifest)
 
         # convenience methods to log lint messages to all loggers
         # configured for this engine
-        def debug(self, message, msgid=None):
+        def debug(self, message, msgid=None, ignore_linted=False):
+                """Log a debug message to all loggers."""
                 for log in self.logs:
-                        log.debug(message, msgid=msgid)
+                        log.debug(message, msgid=msgid,
+                            ignore_linted=ignore_linted)
 
-        def info(self, message, msgid=None):
+        def info(self, message, msgid=None, ignore_linted=False):
+                """Log an info message to all loggers."""
                 for log in self.logs:
-                        log.info(message, msgid=msgid)
+                        log.info(message, msgid=msgid,
+                            ignore_linted=ignore_linted)
 
-        def warning(self, message, msgid=None):
+        def warning(self, message, msgid=None, ignore_linted=False):
+                """Log a warning message to all loggers."""
                 for log in self.logs:
-                        log.warning(message, msgid=msgid)
+                        log.warning(message, msgid=msgid,
+                            ignore_linted=ignore_linted)
 
-        def error(self, message, msgid=None,):
+        def error(self, message, msgid=None, ignore_linted=False):
+                """Log an error message to all loggers."""
                 for log in self.logs:
-                        log.error(message, msgid=msgid)
+                        log.error(message, msgid=msgid,
+                            ignore_linted=ignore_linted)
 
-        def critical(self, message, msgid=None):
+        def critical(self, message, msgid=None, ignore_linted=False):
+                """Log a critical message to all loggers."""
                 for log in self.logs:
-                        log.critical(message, msgid=msgid)
+                        log.critical(message, msgid=msgid,
+                            ignore_linted=ignore_linted)
+
+        def skip_check_msg(self, action, msgid):
+                """Log a message saying we're skipping a particular check."""
+                self.info(_("Not running %(check)s checks on linted action "
+                    "%(action)s") % {"check": msgid, "action": str(action)},
+                    msgid="pkglint001.4", ignore_linted=True)
 
         def teardown(self, clear_cache=False):
                 """Ends a pkglint session.
@@ -934,6 +952,7 @@ class LintEngine(object):
 
                 if clear_cache:
                         shutil.rmtree(self.basedir)
+                self.advise_loggers()
 
         def get_tracker(self):
                 """Creates a ProgressTracker if we don't already have one,
@@ -948,9 +967,11 @@ class LintEngine(object):
                         self.tracker = progress.QuietProgressTracker()
                 else:
                         try:
-                                self.tracker = progress.FancyUNIXProgressTracker()
+                                self.tracker = \
+                                    progress.FancyUNIXProgressTracker()
                         except progress.ProgressTrackerException:
-                                self.tracker = progress.CommandLineProgressTracker()
+                                self.tracker = \
+                                    progress.CommandLineProgressTracker()
                 return self.tracker
 
         def follow_renames(self, pkg_name, target=None, old_mfs=[],
@@ -1011,6 +1032,68 @@ class LintEngine(object):
                                         ignore_pubs=self.ignore_pubs):
                                         return mf
                 return mf
+
+        def get_param(self, key, action=None, manifest=None):
+                """Returns a string value of a given pkglint parameter,
+                intended for use by pkglint Checker objects to provide hints as
+                to how particular checks should be run.
+
+                Keys are searched for first in the action, if provided, then as
+                manifest attributes, finally falling back to the pkglintrc
+                config file.
+
+                The return value is a space-separated string of parameters.
+
+                When searching for keys in the manifest or action, we prepend
+                "pkg.lint" to the key name to ensure that we play in our own
+                namespace and don't clash with other manifest or action attrs.
+                """
+
+                param_key = "pkg.lint.%s" % key
+                val = None
+                if action and param_key in action.attrs:
+                        val = action.attrs[param_key]
+                if manifest and param_key in manifest:
+                        val = manifest[param_key]
+                if val:
+                        if isinstance(val, basestring):
+                                return val
+                        else:
+                                return " ".join(val)
+                try:
+                        val = self.conf.get("pkglint", key)
+                        if val:
+                                return val.replace("\n", " ")
+                except ConfigParser.NoOptionError:
+                        return None
+
+        def get_attr_action(self, attr, manifest):
+                """Return the AttributeAction that sets a given attribute in a
+                manifest.
+
+                This is available for clients, particularly ManifestCheckers
+                that need to see whether a lint flag has been set on a given
+                'set' action.
+                """
+                if attr not in manifest:
+                        raise KeyError(_("%s is not set in manifest") % attr)
+                for action in manifest.gen_actions_by_type("set"):
+                        if action.attrs.get("name", "") == attr:
+                                return action
+                return None
+
+        def linted(self, action=None, manifest=None, lint_id=None):
+                """Determine whether pkg.linted.* flags are present on the
+                action and/or manifest passed as arguments.  If lint_id is set,
+                we look for pkg.linted.<lint_id> attributes as well."""
+                ret = False
+                try:
+                        ret = base.linted(action=action, manifest=manifest,
+                            lint_id=lint_id)
+                except base.DuplicateLintedAttrException, err:
+                        self.error(err, msgid="pkglint001.6")
+                return ret
+
 
 def lint_fmri_successor(new, old, ignore_pubs=True, ignore_timestamps=True):
         """Given two FMRIs, determine if new_fmri is a successor of old_fmri.

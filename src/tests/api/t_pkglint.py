@@ -39,6 +39,7 @@ import pkg.fmri as fmri
 import pkg.manifest
 
 from pkg.lint.engine import lint_fmri_successor
+from pkg.lint.base import linted, DuplicateLintedAttrException
 
 import logging
 log_fmt_string = "%(asctime)s - %(levelname)s - %(message)s"
@@ -206,6 +207,55 @@ depend fmri=consolidation/sfw/sfw-incorporation type=require
 depend fmri=shell/zsh@4.3.9-0.134 type=require variant.foo=baz
 """
 
+expected_failures["dup-depend-linted.mf"] = ["pkglint.action005.1",
+    "pkglint.action008"]
+broken_manifests["dup-depend-linted.mf"] = \
+"""
+#
+# We deliver duplicate dependencies, one coming from a require-any dep
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/bar type=require pkg.linted.pkglint.manifest005.2=True
+depend fmri=foo/bar fmri=foo/baz type=require-any
+"""
+
+expected_failures["dup-depend-require-any.mf"] = ["pkglint.manifest005.2",
+    "pkglint.action005.1"]
+broken_manifests["dup-depend-require-any.mf"] = \
+"""
+#
+# We deliver duplicate dependencies, one coming from a require-any dep
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/bar type=require
+depend fmri=foo/bar fmri=foo/baz type=require-any
+"""
+
+expected_failures["license-has-path.mf"] = ["pkglint.action007"]
+broken_manifests["license-has-path.mf"] = \
+"""
+#
+# We deliver a license action that also specifies a path
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+license license="Foo" path=usr/share/lib/legalese.txt
+"""
+
 expected_failures["dup-no-vars.mf"] = ["pkglint.dupaction001.1"]
 broken_manifests["dup-no-vars.mf"] = \
 """
@@ -230,7 +280,6 @@ file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
-
 
 expected_failures["dup-refcount-diff-attrs.mf"] = ["pkglint.dupaction007"]
 broken_manifests["dup-refcount-diff-attrs.mf"] = \
@@ -308,7 +357,6 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
-
 expected_failures["duplicate_sets.mf"] = ["pkglint.manifest006"]
 broken_manifests["duplicate_sets.mf"] = \
 """
@@ -355,6 +403,47 @@ set name=pkg.summary value="Core Solaris Kernel"
 set name=variant.arch value=i386 value=sparc
 set name=test value=i386 variant.arch=sparc
 set name=test value=i386 variant.arch=sparc
+"""
+
+expected_failures["duplicate_sets-linted.mf"] = ["pkglint.manifest006",
+    "pkglint.action008"]
+broken_manifests["duplicate_sets-linted.mf"] = \
+"""
+#
+# We try to deliver the same set action twice, the second time we do this,
+# we mark one of the actions as linted
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+set name=test value=i386
+set name=test value=i386
+set name=foo value=bar pkg.linted.pkglint.manifest006=True
+set name=foo value=bar
+"""
+
+
+expected_failures["duplicate_sets-not-enough-lint.mf"] = ["pkglint.manifest006",
+    "pkglint.action008"]
+broken_manifests["duplicate_sets-not-enough-lint.mf"] = \
+"""
+#
+# We try to deliver the same set action twice, the second time we do this,
+# we mark one of the actions as linted, but still should have a broken manifest
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+set name=test value=i386
+set name=foo value=bar pkg.linted.pkglint.manifest006=True
+set name=foo value=bar
+set name=foo value=bar
 """
 
 expected_failures["info_class_valid.mf"] = []
@@ -469,6 +558,44 @@ set name=pkg.summary value="Pkglint test package"
 set name=variant.arch value=i386 value=sparc
 """
 
+expected_failures["invalid_fmri.mf"] = ["pkglint.action006",
+    "pkglint.action006"]
+broken_manifests["invalid_fmri.mf"] = \
+"""
+#
+# We deliver some broken fmri values
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+depend fmri=foo/bar@@134 type=require
+depend fmri=foo/bar fmri="" type=require-any
+"""
+
+expected_failures["invalid_linted.mf"] = ["pkglint.action006",
+    "pkglint.action006", "pkglint001.6", "pkglint001.6", "pkglint.manifest007"]
+broken_manifests["invalid_linted.mf"] = \
+"""
+#
+# We have a broken pkg.linted action, so we report both broken depend actions
+# due to the corrupt FMRI values.  We also report two failed attempts
+# to use the pkg.linted.pkglint.action006 value, as well as the existence of a
+# pkg.linted value.
+#
+set name=variant.arch value=i386 value=sparc
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=org.opensolaris.consolidation value=osnet
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=pkg.linted.pkglint.action006 value=True value=False
+depend fmri=foo/bar@@134 type=require
+depend fmri=foo/bar fmri="" type=require-any
+"""
+
 expected_failures["invalid_usernames.mf"] = ["opensolaris.action001.2",
     "opensolaris.action001.3", "opensolaris.action001.2",
     "opensolaris.action001.3", "opensolaris.action001.1",
@@ -507,17 +634,20 @@ set name=pkg.summary value="Core Solaris Kernel"
 license license="Foo" path=usr/share/lib/legalese.txt
 """
 
-# We actually emit 3 messages here in testing, 1 for the legitmate error,
-# 2 for the "linted"-handling code, saying that we're not linting these actions
+# We actually emit 10 messages here in testing, 3 for the legitmate errors,
+# 5 saying that we've found pkg.linted attributes in these actions, and 2
+# for the errors that would be thrown were they not marked as linted.
 #
-expected_failures["linted-action.mf"] = ["pkglint001.2", "pkglint001.2",
-    "pkglint.dupaction003.1"]
+expected_failures["linted-action.mf"] = ["pkglint.action001.2",
+    "pkglint.dupaction003.1", "pkglint.dupaction007",
+    "pkglint.action008", "pkglint.action008", "pkglint.action008",
+    "pkglint.action008", "pkglint.action008", "pkglint001.5", "pkglint001.5"]
 broken_manifests["linted-action.mf"] = \
 """
 #
-# we deliver some duplicate ref-counted actions (dir, link, hardlink) with differing
-# attributes, but since they're marked as linted, we should get no output, we should
-# still get the duplicate user though.
+# we deliver some duplicate ref-counted actions (dir, link, hardlink) with
+# differing attributes, but since they're marked as linted, we should get no
+# output, we should still get the duplicate user though.
 #
 set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
 set name=org.opensolaris.consolidation value=osnet
@@ -528,19 +658,38 @@ set name=pkg.description value="Description of pkglint test package"
 set name=description value="Pkglint test package"
 set name=info.classification value=org.opensolaris.category.2008:System/Packaging
 set name=pkg.summary value="Pkglint test package"
+
+# underscores in the name and another attr, but only bypassing the name check
+set name=here_be_underscores value=nothing underscore_attr=Foo pkg.linted.pkglint.action001.1=True
+
+# completely linting these actions.  No errors for the first, because
+# the other duplicate paths are linted.  The second will result in us logging
+# a message saying we're ignoring the strange mode.
 dir group=bin mode=0755 owner=root path=usr/lib/X11 pkg.linted=True
-dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs pkg.linted=True
-dir group=staff mode=0751 owner=root path=/usr/lib/X11
+dir group=bin mode=0155 alt=foo owner=root path=usr/lib/X11/fs pkg.linted=True
+
+# only linting this action against a specific dupaction check
+dir group=staff mode=0751 owner=root path=/usr/lib/X11 pkg.linted.pkglint.dupaction007=True
+
+# only linting this action against the dupaction group
+dir group=staff mode=0751 owner=root path=/usr/lib/X11 pkg.linted.pkglint.dupaction=True
+
+# we should still report this error:
+dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
+dir group=bin mode=0755 alt=bar owner=root path=usr/lib/X11/fs
+
 user ftpuser=false gcos-field="Network Configuration Admin" group=netadm uid=17 username=netcfg
 user ftpuser=false gcos-field="Network Configuration Admin" group=netadm uid=19 username=netcfg
 """
 
-# We'll actually report one lint message here, that we're not
-# doing any linting for this manifest because of pkg.linted
+# We'll actually report two lint messages here, the existence of the
+# pkg.linted attribute in the manifest, and the message bypassing
+# the duplicate user action error.
 # - the default log handler used by the pkglint CLI only marks
 # a failure if it's > level.INFO, but for testing, we record all
 # messages
-expected_failures["linted-manifest.mf"] = ["pkglint001.1"]
+expected_failures["linted-manifest.mf"] = ["pkglint001.5",
+    "pkglint.manifest007"]
 broken_manifests["linted-manifest.mf"] = \
 """
 #
@@ -563,6 +712,147 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 dir group=staff mode=0751 owner=root path=/usr/lib/X11
 user ftpuser=false gcos-field="Network Configuration Admin" group=netadm uid=17 username=netcfg
 user ftpuser=false gcos-field="Network Configuration Admin" group=netadm uid=19 username=netcfg
+"""
+
+expected_failures["linted-manifest-check.mf"] = ["pkglint001.5",
+    "pkglint.manifest007", "pkglint.action008"]
+broken_manifests["linted-manifest-check.mf"] = \
+"""
+#
+# This manifest is delivers a weird info.classification value
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.other value=carrots
+# set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+set name=pkg.summary value="Pkglint test package"
+set name=pkg.linted value=True
+dir group=bin mode=0755 owner=root path=usr/lib/X11
+"""
+
+expected_failures["linted-manifest-check2.mf"] = ["pkglint001.5",
+    "pkglint001.5", "pkglint001.5", "pkglint.manifest007", "pkglint.action008"]
+broken_manifests["linted-manifest-check2.mf"] = \
+"""
+#
+# This manifest delivers actions with underscores in attribute names
+# and values, but they're all marked linted because we have a manifest-level
+# pkg.linted key that covers just that check.  This produces info messages
+# for each action that we're not running the pkglint.action001 check on.
+
+# So we report 3 linted actions INFO messages, and INFO messages about the
+# presence of pkg.linted attributes in one action and the manifest.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+# an underscore in they key "under_score", linted
+set name=variant.other value=carrots under_score=oh_yes
+# set name=variant.arch value=i386 value=sparc
+set name=pkg.linted.pkglint.action001 value=True
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+# this is linted due to our our action attribute
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+# an underscore the key "foo_name"
+set name=pkg.summary value="Pkglint test package" foo_name=bar
+# this action is ok, underscores in attribute values are fine
+dir group=bin mode=0755 owner=root path=usr/lib/X11 bar=has_underscore
+"""
+
+expected_failures["linted-manifest-check3.mf"] = ["pkglint.action008",
+    "pkglint.manifest007", "pkglint.action001.1", "pkglint.action001.1",
+    "pkglint001.5", "pkglint001.5"]
+broken_manifests["linted-manifest-check3.mf"] = \
+"""
+#
+# This manifest delivers lots of actions with underscores in attribute names
+# and values, but we have a manifest-level check that bypasses only one
+# of the checks within that method.  We should still catch the errors for
+# underscores in 'set' action 'name' values, but not in other attribute names
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.other value=carrots under_score=oh_yes
+# set name=variant.arch value=i386 value=sparc
+set name=pkg.linted.pkglint.action001.2 value=True
+set name=pkg.description value="Description of pkglint test package"
+set name=description value="Pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Noodles pkg.linted.opensolaris.manifest003.6=True
+set name=pkg.summary value="Pkglint test package" foo_name=bar
+set name=foo_bar value=baz
+dir group=bin mode=0755 owner=root path=usr/lib/X11 bar=has_underscore
+"""
+
+expected_failures["linted-missing-summary.mf"] = ["pkglint001.5",
+    "pkglint.manifest007"]
+broken_manifests["linted-missing-summary.mf"] = \
+"""
+# We don't care we don't have a summary
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+"""
+
+expected_failures["linted-desc-match-summary.mf"] = ["pkglint001.5", "pkglint.action008"]
+broken_manifests["linted-desc-match-summary.mf"] = \
+"""
+# We don't care that the description matches the summary
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.description value="Description of pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.summary value="Description of pkglint test package" pkg.linted.opensolaris.manifest004.2=True
+"""
+
+expected_failures["linted-dup-path-types.mf"] = ["pkglint.dupaction001.1",
+    "pkglint.action008", "pkglint.manifest007"]
+broken_manifests["linted-dup-path-types.mf"] = \
+"""
+# We don't care that usr/bin/ls is a different type across two actions, but
+# make sure we still complain about the duplicate path attribute
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=pkg.summary value="Summary of pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+file path=usr/bin/ls owner=root group=staff mode=755 pkg.linted.pkglint.dupaction008=True
+dir path=usr/bin/ls owner=root group=staff mode=755
+"""
+
+# three messages: saying we're linting the duplicate attribute path, that we've
+# got a manifest with linted attributes, and an action with a linted attribute.
+expected_failures["linted-dup-attrs.mf"] = ["pkglint001.5", "pkglint.action008",
+    "pkglint.manifest007"]
+broken_manifests["linted-dup-attrs.mf"] = \
+"""
+# We don't care that usr/bin/ls about the duplicate path attribute
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/TIMFtest@1.1.0,5.11-0.141:20100604T143737Z
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=i386 value=sparc
+set name=pkg.linted.opensolaris.manifest001.2 value=True
+set name=pkg.summary value="Summary of pkglint test package"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+file path=usr/bin/ls owner=root group=staff mode=755 pkg.linted.pkglint.dupaction001.1=True
+file path=usr/bin/ls owner=root group=staff mode=755
 """
 
 expected_failures["no_desc-legacy.mf"] = ["pkglint.action003.1"]
@@ -725,6 +1015,34 @@ set name=variant.arch value=i386
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
+expected_failures["obsolete-has-description-linted.mf"] = ["pkglint001.5", "pkglint.action008"]
+broken_manifests["obsolete-has-description-linted.mf"] = \
+"""
+#
+# We deliver an obsolete package that has a pkg.description
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWaspell@0.5.11,5.11-0.130:20091218T222625Z
+set name=pkg.obsolete value=true variant.arch=i386
+set name=pkg.description value="This is a package description" pkg.linted.pkglint.manifest001.1=True
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=variant.arch value=i386
+"""
+
+expected_failures["obsolete-more-actions-linted.mf"] = ["pkglint.manifest001.2","pkglint.action008"]
+broken_manifests["obsolete-more-actions-linted.mf"] = \
+"""
+#
+# We deliver an obsolete package that has actions other than 'set'.
+# (bogus signature on this manifest, just for testing)
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWaspell@0.5.11,5.11-0.130:20091218T222625Z
+set name=pkg.obsolete value=true variant.arch=i386
+set name=variant.opensolaris.zone value=global value=nonglobal variant.arch=i386
+set name=variant.arch value=i386
+dir mode=0555 owner=root group=sys path=/usr/bin pkg.linted.pkglint.action005.1=True
+signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
+"""
+
 expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002.1",
     "pkglint.manifest002.3"]
 broken_manifests["renamed-more-actions.mf"] = \
@@ -745,6 +1063,49 @@ dir mode=0555 owner=root group=sys path=/usr/bin
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
+expected_failures["renamed-more-actions-linted.mf"] = ["pkglint.manifest002.3",
+    "pkglint.action008", "pkglint001.5"]
+broken_manifests["renamed-more-actions-linted.mf"] = \
+"""
+#
+# We've reported a package as having been renamed, yet try to deliver
+# actions other than 'set' and 'depend'.  The additional actions are marked
+# as linted.
+# (bogus signature on this manifest, just for testing)
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
+set name=org.opensolaris.consolidation value=sfw
+set name=pkg.renamed value=true
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=sparc value=i386
+depend fmri=shell/zsh@4.3.9-0.133 type=require
+depend fmri=consolidation/sfw/sfw-incorporation type=require
+dir mode=0555 owner=root group=sys path=/usr/bin pkg.linted.pkglint.manifest002.1=True
+signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
+"""
+
+expected_failures["renamed-more-actions-not-all-linted.mf"] = \
+    ["pkglint.manifest002.1", "pkglint.manifest002.3", "pkglint.action008"]
+broken_manifests["renamed-more-actions-not-all-linted.mf"] = \
+"""
+#
+# We've reported a package as having been renamed, yet try to deliver
+# actions other than 'set' and 'depend'.  One of these additional actions
+# is linted, but not all of them, so we still throw pkglint.manifest002.1
+# (bogus signature on this manifest, just for testing)
+#
+set name=pkg.fmri value=pkg://opensolaris.org/SUNWzsh@4.3.9,5.11-0.133:20100216T103302Z
+set name=org.opensolaris.consolidation value=sfw
+set name=pkg.renamed value=true
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=variant.arch value=sparc value=i386
+depend fmri=shell/zsh@4.3.9-0.133 type=require
+depend fmri=consolidation/sfw/sfw-incorporation type=require
+dir mode=0555 owner=root group=sys path=/usr/bin pkg.linted.pkglint.manifest002.1=True
+dir mode=0555 owner=root group=sys path=/usr/lib
+signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
+"""
+
 expected_failures["renamed.mf"] = ["pkglint.manifest002.3"]
 broken_manifests["renamed.mf"] = \
 """
@@ -762,7 +1123,7 @@ depend fmri=consolidation/sfw/sfw-incorporation type=require
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
-expected_failures["underscores.mf"] = ["pkglint.action001",
+expected_failures["underscores.mf"] = ["pkglint.action001.1",
     "pkglint.action001.2"]
 broken_manifests["underscores.mf"] = \
 """
@@ -858,6 +1219,41 @@ file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
 """
 
+expected_failures["whitelist_action_missing_dep.mf"] = []
+broken_manifests["whitelist_action_missing_dep.mf"] = \
+"""
+#
+#
+# We declare a pkg.lint.pkglint.action005.1 parameter to a depend action that
+# tells the check to ignore any missing dependencies, as part of its package
+# obsoletion test
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+depend type=require fmri=test/package pkg.lint.pkglint.action005.1.missing-deps=pkg:/test/package
+"""
+
+expected_failures["whitelist_mf_missing_dep.mf"] = []
+broken_manifests["whitelist_mf_missing_dep.mf"] = \
+"""
+#
+# We declare a pkg.lint.pkglint.action005.1 parameter that tells the check to
+# ignore any missing dependencies, as part of its package obsoletion test
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+set name=pkg.lint.pkglint.action005.1.missing-deps value=pkg:/test/package value=pkg:/other/package
+depend type=require fmri=test/package
+"""
+
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
         def __init__(self):
@@ -865,8 +1261,26 @@ class TestLogFormatter(log.LogFormatter):
                 self.ids = []
                 super(TestLogFormatter, self).__init__()
 
-        def format(self, msg):
+        def format(self, msg, ignore_linted=False):
                 if isinstance(msg, log.LintMessage):
+                        linted_flag = False
+                        try:
+                                linted_flag = linted(action=self.action,
+                                    manifest=self.manifest, lint_id=msg.msgid)
+                        except DuplicateLintedAttrException, err:
+                                self.messages.append("%s\t%s" %
+                                    ("pkglint001.6", "Logging error: %s" % err))
+                                self.ids.append("pkglint001.6")
+
+                        if linted_flag and not ignore_linted:
+                                linted_msg = (
+                                    "Linted message: %(id)s  %(msg)s") % \
+                                    {"id": msg.msgid, "msg": msg}
+                                self.messages.append("%s\t%s" %
+                                        ("pkglint001.5", linted_msg))
+                                self.ids.append("pkglint001.5")
+                                return
+
                         if msg.level >= self.level:
                                 self.messages.append("%s\t%s" %
                                     (msg.msgid, str(msg)))
@@ -885,6 +1299,7 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                 paths.sort()
 
                 for manifest in paths:
+                        self.debug("running lint checks on %s" % manifest)
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,
@@ -896,6 +1311,15 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
 
                         lint_engine.execute()
                         lint_engine.teardown()
+
+                        # look for pkglint001.3 in the output, regardless
+                        # of whether we marked that as linted, since it
+                        # indicates we caught an exception in one of the
+                        # Checker methods.
+                        for message in lint_logger.messages:
+                                self.assert_("pkglint001.3" not in message,
+                                    "Checker exception thrown for %s: %s" %
+                                    (basename, message))
 
                         expected = len(expected_failures[basename])
                         actual = len(lint_logger.messages)
@@ -914,9 +1338,10 @@ class TestLintEngine(pkg5unittest.Pkg5TestCase):
                                         self.assert_(reported[i] == known[i],
                                             "Differences in reported vs. "
                                             "expected lint ids for %s: "
-                                            "%s vs. %s" %
+                                            "%s vs. %s\n%s" %
                                             (basename, str(reported),
-                                            str(known)))
+                                            str(known),
+                                            "\n".join(lint_logger.messages)))
                         lint_logger.close()
 
         def test_info_classification_data(self):
@@ -1471,6 +1896,7 @@ dir group=sys mode=0755 owner=root path=etc
                 paths.sort()
 
                 for manifest in paths:
+                        self.debug("running lint checks on %s" % manifest)
                         basename = os.path.basename(manifest)
                         lint_logger = TestLogFormatter()
                         lint_engine = engine.LintEngine(lint_logger,

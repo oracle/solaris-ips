@@ -176,6 +176,8 @@ check: $(PDIR)/protomanifest $(PDIR)/pkgmanifest
 #
 # If new warnings/errors appear in the lint output, we return an error.
 #
+# To tell pkglint to bypass any potential missing dependencies during
+# the lint run, please edit external_deps.pkglintrc
 lint: repository-metadata
 	@sed -e "s#/usr/share/lib/pkg/opensolaris.org.sections#$(PKGROOT)&#" \
 		< $(PKGROOT)/usr/share/lib/pkg/pkglintrc > $(PDIR)/pkglintrc
@@ -193,7 +195,9 @@ lint: repository-metadata
 			-r $(PKGLINT_REF_REPO) -l file://$(PKGDEST)/repo; \
 	fi
 	-@if [ -z "$(PKGLINT_REF_REPO)" ]; then 			\
-		( $(PKGLINT) -c $(PDIR)/pkglint-cache 			\
+		cat external_deps.pkglintrc >> $(PDIR)/pkglintrc;	\
+		( $(PKGLINT) -c $(PDIR)/pkglint-cache			\
+			-f $(PDIR)/pkglintrc				\
 			-l file://$(PKGDEST)/repo > /dev/null ) 2>&1 |	\
 			sed -e 's/@[0-9TZ.:,-]*//g' |			\
 			env LC_ALL=C sort |				\

@@ -21,12 +21,14 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 import sys
 import os
+
+from pkg.lint.base import DuplicateLintedAttrException, linted
 
 # a set of lint messages that can be produced.
 DEBUG, INFO, WARNING, ERROR, CRITICAL = range(5)
@@ -97,6 +99,10 @@ class LogFormatter(object):
                 self.logger.addHandler(self._th)
                 self.emitted = False
 
+                # the action and manifest we expect messages from. See advise()
+                self.action = None
+                self.manifest = None
+
         # setters/getters for the tracker being used, adding that
         # to our private log handler
         def _get_tracker(self):
@@ -129,20 +135,25 @@ class LogFormatter(object):
         tracker = property(_get_tracker, _set_tracker, _del_tracker)
 
         # convenience methods to log messages
-        def debug(self, message, msgid=None):
-                self.format(LintMessage(message, level=DEBUG, msgid=msgid))
+        def debug(self, message, msgid=None, ignore_linted=False):
+                self.format(LintMessage(message, level=DEBUG, msgid=msgid),
+                    ignore_linted=ignore_linted)
 
-        def info(self, message, msgid=None):
-                self.format(LintMessage(message, level=INFO, msgid=msgid))
+        def info(self, message, msgid=None, ignore_linted=False):
+                self.format(LintMessage(message, level=INFO, msgid=msgid),
+                    ignore_linted=ignore_linted)
 
-        def warning(self, message, msgid=None):
-                self.format(LintMessage(message, level=WARNING, msgid=msgid))
+        def warning(self, message, msgid=None, ignore_linted=False):
+                self.format(LintMessage(message, level=WARNING, msgid=msgid),
+                    ignore_linted=ignore_linted)
 
-        def error(self, message, msgid=None):
-                self.format(LintMessage(message, level=ERROR, msgid=msgid))
+        def error(self, message, msgid=None, ignore_linted=False):
+                self.format(LintMessage(message, level=ERROR, msgid=msgid),
+                    ignore_linted=ignore_linted)
 
-        def critical(self, message, msgid=None):
-                self.format(LintMessage(message, level=CRITICAL, msgid=msgid))
+        def critical(self, message, msgid=None, ignore_linted=False):
+                self.format(LintMessage(message, level=CRITICAL, msgid=msgid),
+                    ignore_linted=ignore_linted)
 
         def open(self):
                 """Start a new log file"""
@@ -162,27 +173,57 @@ class LogFormatter(object):
                 messages at a level >= its log level."""
                 return self.emitted
 
+        def advise(self, action=None, manifest=None):
+                """Called to tell the logger to expect lint messages concerning
+                the given action and/or manifest."""
+                if action:
+                        self.action = action
+                if manifest:
+                        self.manifest = manifest
+
 
 class PlainLogFormatter(LogFormatter):
         """A basic log formatter, just prints the message."""
 
-        def format(self, msg):
-                if isinstance(msg, LintMessage):
-                        if msg.level >= self._level:
-                                if not msg.msgid:
-                                        msg.msgid = "unknown"
-                                # could perhaps format this better
-                                info_str = "%s %s" % (LEVELS[msg.level],
-                                    msg.msgid)
+        def format(self, msg, ignore_linted=False):
 
-                                self.logger.warning("%s%s" % (info_str.ljust(34),
-                                    msg.msg))
-
-                                # We only treat errors, and criticals
-                                # as being worthy of a flag
-                                # (pkglint returns non-zero if self.emitted)
-                                if msg.level > WARNING:
-                                        self.emitted = True
-                else:
+                if not isinstance(msg, LintMessage):
                         self.logger.warning(msg)
                         self.emitted = True
+                        return
+
+                if msg.level >= self._level:
+                        if not msg.msgid:
+                                msg.msgid = "unknown"
+
+                        # Format the message level and message identifier
+                        key = "%s %s" % (LEVELS[msg.level], msg.msgid)
+                        if not ignore_linted:
+                                linted_flag = False
+                                try:
+                                        linted_flag = linted(action=self.action,
+                                            manifest=self.manifest,
+                                            lint_id=msg.msgid)
+                                except DuplicateLintedAttrException, err:
+                                        lint_key = ("%s pkglint001.6" %
+                                            LEVELS[ERROR])
+                                        self.logger.warning("%s%s" %
+                                            (lint_key.ljust(34),
+                                            _("Logging error: %s") % err))
+
+                                if linted_flag:
+                                        key = ("%s pkglint001.5" % LEVELS[INFO])
+                                        linted_msg = _(
+                                            "Linted message: %(id)s  "
+                                            "%(msg)s") % \
+                                            {"id": msg.msgid, "msg": msg}
+                                        self.logger.warning("%s%s" %
+                                        (key.ljust(34), linted_msg))
+                                        return
+
+                        self.logger.warning("%s%s" % (key.ljust(34), msg.msg))
+
+                        # We only treat errors, and criticals as being worthy
+                        # of a flag (pkglint returns non-zero if self.emitted)
+                        if msg.level > WARNING:
+                                self.emitted = True

@@ -21,11 +21,10 @@
 #
     
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011 Oracle and/or its affiliates. All rights reserved.
 #
 
 import codecs
-import inspect
 import logging
 import sys
 import gettext
@@ -179,21 +178,6 @@ def list_checks(checkers, exclude, verbose=False):
                             method.im_class.__name__,
                             method.im_func.func_name)
 
-        def get_pkglint_id(method):
-                """Inspects a given checker method to find the 'pkglint_id'
-                keyword argument default and returns it."""
-
-                # the short name for this checker class, Checker.name
-                name = method.im_class.name
-
-                arg_spec = inspect.getargspec(method)
-                c = len(arg_spec.args) - 1
-                try:
-                        i = arg_spec.args.index("pkglint_id")
-                except ValueError:
-                        return "%s.?" % name
-                return "%s%s" % (name, arg_spec.defaults[c - i])
-
         def emit(name, value):
                 msg("%s %s" % (name.ljust(width), value))
 
@@ -207,21 +191,17 @@ def list_checks(checkers, exclude, verbose=False):
         exclude_items = {}
 
         for checker in checkers:
-                for m in checker.included_checks:
-                        lint_id = get_pkglint_id(m)
+                for m, lint_id in checker.included_checks:
                         include_items[lint_id] = get_method_desc(m, verbose)
 
         for checker in exclude:
-                for m in checker.excluded_checks:
-                        lint_id = get_pkglint_id(m)
+                for m, lint_id in checker.excluded_checks:
                         exclude_items[lint_id] = get_method_desc(m, verbose)
-                for m in checker.included_checks:
-                        lint_id = get_pkglint_id(m)
+                for m, lint_id in checker.included_checks:
                         exclude_items[lint_id] = get_method_desc(m, verbose)
 
         for checker in checkers:
-                for m in checker.excluded_checks:
-                        lint_id = get_pkglint_id(m)
+                for m, lint_id in checker.excluded_checks:
                         exclude_items[lint_id] = get_method_desc(m, verbose)
 
         if include_items or exclude_items:
