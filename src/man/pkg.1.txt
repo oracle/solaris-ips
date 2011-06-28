@@ -66,7 +66,7 @@ SYNOPSIS
          [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]
          [-p repo_uri] [--enable] [--disable] [--no-refresh]
          [--reset-uuid] [--non-sticky] [--sticky]
-         [--search-after=publisher] [--search-befor e=publisher]
+         [--search-after=publisher] [--search-before=publisher]
          [--search-first] 
          [--approve-ca-cert=path_to_CA]
          [--revoke-ca-cert=hash_of_CA_to_remove]
@@ -988,7 +988,7 @@ IMAGE PROPERTIES
           (string)  The pathname of the directory that contains the trust
           anchors for the image.  This path is relative to the image.
 
-     use-system-repo 
+     use-system-repo
           (boolean)  This property indicates whether the image should use the
           system-repository (see pkg.sysrepo(1M)) as a source for image and
           publisher configuration and as a proxy for communicating with the
