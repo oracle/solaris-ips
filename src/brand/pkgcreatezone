@@ -232,13 +232,15 @@ SC_ONLINE=$(svcprop -p restarter/state \
     svc:/milestone/unconfig:default 2> /dev/null)
 if (( $? == 0 )) && [[ $SC_ONLINE == "online" ]]; then
 	if [[ -n $sc_config ]]; then
-		/usr/bin/auto-install -Z ${zone.rpool_ds} -m $manifest $OPT_C
+		/usr/bin/auto-install -z "$ZONENAME" \
+		    -Z ${zone.rpool_ds} -m $manifest $OPT_C
 	else
-		/usr/bin/auto-install -Z ${zone.rpool_ds} -m $manifest \
+		/usr/bin/auto-install -z "$ZONENAME" \
+		    -Z ${zone.rpool_ds} -m $manifest \
 		    -c /usr/share/auto_install/sc_profiles/enable_sci.xml
 	fi
 else
-	/usr/bin/auto-install -Z ${zone.rpool_ds} -m $manifest
+	/usr/bin/auto-install -z "$ZONENAME" -Z ${zone.rpool_ds} -m $manifest
 fi
 if [[ $? -ne 0 ]]; then
 	fail_fatal "$f_autoinstall"
