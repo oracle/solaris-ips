@@ -100,12 +100,8 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                     setattr, uobj, "priority", "foo")
                 self.assertRaises(api_errors.BadRepositoryAttributeValue,
                     setattr, uobj, "ssl_cert", -1)
-                self.assertRaises(api_errors.NoSuchCertificate, setattr, uobj,
-                    "ssl_cert", nsfile)
                 self.assertRaises(api_errors.BadRepositoryAttributeValue,
                     setattr, uobj, "ssl_key", -1)
-                self.assertRaises(api_errors.NoSuchKey, setattr, uobj,
-                    "ssl_key", nsfile)
 
                 # Verify that changing the URI scheme will null properties that
                 # no longer apply.

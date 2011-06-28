@@ -174,6 +174,7 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                     self.acurl)
                 self.pkg_image_create(repourl=self.acurl, exit=1)
                 api_obj = self.image_create()
+
                 # Test that adding a HTTPS repo fails if the image does not
                 # contain the trust anchor to verify the server's identity.
                 self.pkg("set-publisher -k %(key)s -c %(cert)s -p %(url)s" % {
@@ -181,6 +182,7 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                     "cert": os.path.join(self.cs_dir, "cs1_ta6_cert.pem"),
                     "key": os.path.join(self.keys_dir, "cs1_ta6_key.pem"),
                 }, exit=1)
+
                 # Add the trust anchor needed to verify the server's identity to
                 # the image.
                 self.seed_ta_dir("ta7")
@@ -191,6 +193,27 @@ class TestHTTPS(pkg5unittest.SingleDepotTestCase):
                 })
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg"])
+
+                # Verify that if the image location changes, SSL operations
+                # are still possible.  (The paths to key and cert should be
+                # updated on load.)
+                opath = self.img_path()
+                npath = opath.replace("image0", "new.image")
+                portable.rename(opath, npath)
+                odebug = DebugValues["ssl_ca_file"]
+                DebugValues["ssl_ca_file"] = odebug.replace("image0",
+                    "new.image")
+                self.pkg("-R %s refresh --full test" % npath)
+
+                # Listing the test publisher causes its cert and key to be
+                # validated.
+                self.pkg("-R %s publisher test" % npath)
+                assert os.path.join("new.image", "var", "pkg", "ssl") in \
+                    self.output
+
+                # Restore image to original location.
+                portable.rename(npath, opath)
+                DebugValues["ssl_ca_file"] = odebug
 
         https_conf = """\
 # Configuration and logfile names: If the filenames you specify for many

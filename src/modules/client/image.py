@@ -587,11 +587,107 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             self.imgdir, self.transport,
                             self.cfg.get_policy("use-system-repo"))
 
+                self.__load_publisher_ssl()
+
+        def __store_publisher_ssl(self):
+                """Normalizes publisher SSL configuration data, storing any
+                certificate files as needed in the image's SSL directory.  This
+                logic is performed here in the image instead of ImageConfig as
+                it relies on special knowledge of the image structure."""
+
+                ssl_dir = os.path.join(self.imgdir, "ssl")
+
+                def store_ssl_file(src):
+                        try:
+                                if not src or not os.path.exists(src):
+                                        # If SSL file doesn't exist (for
+                                        # whatever reason), then don't update
+                                        # configuration.  (Let the failure
+                                        # happen later during an operation
+                                        # that requires the file.)
+                                        return
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+
+                        # Ensure ssl_dir exists; makedirs handles any errors.
+                        misc.makedirs(ssl_dir)
+
+                        try:
+                                # Destination name is based on digest of file.
+                                dest = os.path.join(ssl_dir,
+                                    misc.get_data_digest(src)[0])
+                                if src != dest:
+                                        portable.copyfile(src, dest)
+
+                                # Ensure file can be read by unprivileged users.
+                                os.chmod(dest, misc.PKG_FILE_MODE)
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        return dest
+
+                for pub in self.cfg.publishers.values():
+                        # self.cfg.publishers is used because gen_publishers
+                        # includes temporary publishers and this is only for
+                        # configured ones.
+                        repo = pub.repository
+                        if not repo:
+                                continue
+
+                        # Store and normalize ssl_cert and ssl_key.
+                        for u in repo.origins + repo.mirrors:
+                                for prop in ("ssl_cert", "ssl_key"):
+                                        pval = getattr(u, prop)
+                                        if pval:
+                                                pval = store_ssl_file(pval)
+                                        if not pval:
+                                                continue
+                                        # Store path as absolute to image root,
+                                        # it will be corrected on load to match
+                                        # actual image location if needed.
+                                        setattr(u, prop,
+                                            os.path.splitdrive(self.root)[0] +
+                                            os.path.sep +
+                                            misc.relpath(pval, start=self.root))
+
+        def __load_publisher_ssl(self):
+                """Should be called every time image configuration is loaded;
+                ensure ssl_cert and ssl_key properties of publisher repository
+                URI objects match current image location."""
+
+                ssl_dir = os.path.join(self.imgdir, "ssl")
+
+                for pub in self.cfg.publishers.values():
+                        # self.cfg.publishers is used because gen_publishers
+                        # includes temporary publishers and this is only for
+                        # configured ones.
+                        repo = pub.repository
+                        if not repo:
+                                continue
+
+                        for u in repo.origins + repo.mirrors:
+                                for prop in ("ssl_cert", "ssl_key"):
+                                        pval = getattr(u, prop)
+                                        if not pval:
+                                                continue
+                                        if not os.path.join(self.img_prefix,
+                                            "ssl") in os.path.dirname(pval):
+                                                continue
+                                        # If special image directory is part
+                                        # of path, then assume path should be
+                                        # rewritten to match current image
+                                        # location.
+                                        setattr(u, prop, os.path.join(ssl_dir,
+                                           os.path.basename(pval)))
+
         def save_config(self):
                 # First, create the image directories if they haven't been, so
                 # the configuration file can be written.
                 self.mkdirs()
+
+                self.__store_publisher_ssl()
                 self.cfg.write()
+                self.__load_publisher_ssl()
+
                 if self.is_liveroot() and \
                     smf.get_state(
                         "svc:/application/pkg/system-repository:default") in \
@@ -892,6 +988,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if changed:
                                 self.__rebuild_image_catalogs()
 
+                self.__load_publisher_ssl()
                 if purge:
                         # Configuration shouldn't be written again unless this
                         # is an image creation operation (hence the purge).
@@ -1627,20 +1724,32 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return p
                 return None
 
-        def check_cert_validity(self):
-                """Look through the publishers defined for the image.  Print
-                a message and exit with an error if one of the certificates
-                has expired.  If certificates are getting close to expiration,
-                print a warning instead."""
+        def check_cert_validity(self, pubs=EmptyI):
+                """Validate the certificates of the specified publishers.
 
-                for p in self.gen_publishers():
+                Raise an exception if any of the certificates has expired or
+                is close to expiring."""
+
+                if not pubs:
+                        pubs = self.gen_publishers()
+
+                for p in pubs:
                         r = p.repository
                         for uri in r.origins:
                                 if uri.ssl_cert:
                                         misc.validate_ssl_cert(
                                             uri.ssl_cert,
                                             prefix=p.prefix, uri=uri)
-                return True
+                                if uri.ssl_key:
+                                        try:
+                                                if not os.path.exists(
+                                                    uri.ssl_key):
+                                                        raise apx.NoSuchKey(
+                                                            uri.ssl_key,
+                                                            publisher=p,
+                                                            uri=uri)
+                                        except EnvironmentError, e:
+                                                raise apx._convert_error(e)
 
         def has_publisher(self, prefix=None, alias=None):
                 """Returns a boolean value indicating whether a publisher
@@ -1979,6 +2088,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 pub.meta_root = self._get_publisher_meta_root(
                     pub.prefix)
                 pub.transport = self.transport
+
+                # Before continuing, validate SSL information.
+                try:
+                        self.check_cert_validity()
+                except apx.ExpiringCertificate, e:
+                        logger.error(str(e))
+
                 self.cfg.publishers[pub.prefix] = pub
 
                 self.__update_publisher_catalogs(pub, progtrack=progtrack,
@@ -2082,7 +2198,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.cfg.variants.update(new_variants)
                 if new_facets is not None:
                         self.cfg.facets = new_facets
-                self.cfg.write()
+                self.save_config()
 
         def repair(self, *args, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""

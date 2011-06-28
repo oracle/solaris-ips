@@ -525,25 +525,13 @@ class ImageConfig(cfg.FileConfig):
                                 # Already gone.
                                 pass
 
-                        #
-                        # For zones, where the reachability of an absolute path
-                        # changes depending on whether you're in the zone or
-                        # not.  So we have a different policy: ssl_key and
-                        # ssl_cert are treated as zone root relative.
-                        #
+                        # Store SSL Cert and Key data.
                         repo = pub.repository
-                        ngz = self.variants.get("variant.opensolaris.zone",
-                            "global") == "nonglobal"
-
                         p = ""
                         for o in repo.origins:
                                 if o.ssl_key:
                                         p = str(o.ssl_key)
                                         break
-                        if ngz and self.__imgroot != os.sep and p != "None":
-                                # Trim the imageroot from the path.
-                                if p.startswith(self.__imgroot):
-                                        p = p[len(self.__imgroot):]
                         self.set_property(section, "ssl_key", p)
 
                         p = ""
@@ -551,11 +539,9 @@ class ImageConfig(cfg.FileConfig):
                                 if o.ssl_cert:
                                         p = str(o.ssl_cert)
                                         break
-                        if ngz and self.__imgroot != os.sep and p != "None":
-                                # Trim the imageroot from the path.
-                                if p.startswith(self.__imgroot):
-                                        p = p[len(self.__imgroot):]
                         self.set_property(section, "ssl_cert", p)
+
+                        # Store publisher UUID.
                         self.set_property(section, "uuid", pub.client_uuid)
 
                         # Write selected repository data.
@@ -725,38 +711,9 @@ class ImageConfig(cfg.FileConfig):
                         repo_data["refresh_seconds"] = \
                             str(REPO_REFRESH_SECONDS_DEFAULT)
 
-                #
-                # For zones, where the reachability of an absolute path
-                # changes depending on whether you're in the zone or not.  So
-                # we have a different policy: ssl_key and ssl_cert are treated
-                # as zone root relative.
-                #
                 prefix = sec_idx["prefix"]
-                ngz = self.variants["variant.opensolaris.zone"] == "nonglobal"
                 ssl_key = sec_idx["ssl_key"]
-                if ssl_key:
-                        if ngz:
-                                ssl_key = os.path.normpath(self.__imgroot +
-                                    os.sep + ssl_key)
-                        else:
-                                ssl_key = os.path.abspath(ssl_key)
-                        if not os.path.exists(ssl_key):
-                                logger.error(apx.NoSuchKey(ssl_key,
-                                    uri=list(origins)[0], publisher=prefix))
-                                ssl_key = None
-
                 ssl_cert = sec_idx["ssl_cert"]
-                if ssl_cert:
-                        if ngz:
-                                ssl_cert = os.path.normpath(self.__imgroot +
-                                    os.sep + ssl_cert)
-                        else:
-                                ssl_cert = os.path.abspath(ssl_cert)
-                        if not os.path.exists(ssl_cert):
-                                logger.error(apx.NoSuchCertificate(
-                                    ssl_cert, uri=list(origins)[0],
-                                    publisher=prefix))
-                                ssl_cert = None
 
                 r = publisher.Repository(**repo_data)
                 for o in origins:

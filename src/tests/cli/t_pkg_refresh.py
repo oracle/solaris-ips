@@ -35,9 +35,13 @@ import tempfile
 import unittest
 
 import pkg.catalog as catalog
+import pkg.misc
 
 
 class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
+
+        # Tests in this suite use the read only data directory.
+        need_ro_data = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -317,25 +321,33 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
                 self.image_create(self.durl1, prefix="test1")
 
-                key_fh, key_path = tempfile.mkstemp(dir=self.test_root)
-                cert_fh, cert_path = tempfile.mkstemp(dir=self.test_root)
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
                 self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
 
-                os.close(key_fh)
-                os.close(cert_fh)
 
-                os.chmod(cert_path, 0000)
-                # Verify that an invalid certificate results in a normal failure
-                # when attempting to refresh.
-                self.pkg("refresh test1", exit=1)
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+
+                # Make the cert/key unreadable by unprivileged users.
+                os.chmod(img_key_path, 0000)
+                os.chmod(img_cert_path, 0000)
 
                 # Verify that an inaccessible certificate results in a normal
                 # failure when attempting to refresh.
                 self.pkg("refresh test1", su_wrap=True, exit=1)
+
+                # Verify that an invalid certificate results in a normal failure
+                # when attempting to refresh.
+                open(img_key_path, "wb").close()
+                open(img_cert_path, "wb").close()
+                self.pkg("refresh test1", exit=1)
 
         def __get_cache_entries(self, dc):
                 """Returns any HTTP cache headers found."""

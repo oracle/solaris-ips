@@ -208,13 +208,9 @@ class RepositoryURI(object):
                         if not isinstance(filename, basestring):
                                 raise api_errors.BadRepositoryAttributeValue(
                                     "ssl_cert", value=filename)
-                        filename = os.path.abspath(filename)
-                        if not os.path.exists(filename):
-                                raise api_errors.NoSuchCertificate(filename,
-                                    uri=self.uri)
+                        filename = os.path.normpath(filename)
                 if filename == "":
                         filename = None
-                # XXX attempt certificate verification here?
                 self.__ssl_cert = filename
 
         def __set_ssl_key(self, filename):
@@ -225,13 +221,9 @@ class RepositoryURI(object):
                         if not isinstance(filename, basestring):
                                 raise api_errors.BadRepositoryAttributeValue(
                                     "ssl_key", value=filename)
-                        filename = os.path.abspath(filename)
-                        if not os.path.exists(filename):
-                                raise api_errors.NoSuchKey(filename,
-                                    uri=self.uri)
+                        filename = os.path.normpath(filename)
                 if filename == "":
                         filename = None
-                # XXX attempt key verification here?
                 self.__ssl_key = filename
 
         def __set_trailing_slash(self, value):

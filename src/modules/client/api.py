@@ -3870,6 +3870,12 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     (not search_after and not search_first) or \
                     (not search_before and not search_first)
 
+                # Before continuing, validate SSL information.
+                try:
+                        self._img.check_cert_validity(pubs=[pub])
+                except apx.ExpiringCertificate, e:
+                        logger.error(str(e))
+
                 def origins_changed(oldr, newr):
                         old_origins = set([
                             (o.uri, o.ssl_cert,

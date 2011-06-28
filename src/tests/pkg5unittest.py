@@ -408,6 +408,12 @@ if __name__ == "__main__":
                 if getattr(self, "need_ro_data", False):
                         shutil.copytree(os.path.join(test_src, "ro_data"),
                             self.ro_data_root)
+                        self.path_to_certs = os.path.join(self.ro_data_root,
+                            "signing_certs", "produced")
+                        self.keys_dir = os.path.join(self.path_to_certs, "keys")
+                        self.cs_dir = os.path.join(self.path_to_certs,
+                            "code_signing_certs")
+
                 #
                 # TMPDIR affects the behavior of mkdtemp and mkstemp.
                 # Setting this here should ensure that tests will make temp

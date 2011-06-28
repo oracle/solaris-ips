@@ -31,6 +31,7 @@ import pkg5unittest
 
 import os
 import pkg.client.image as image
+import pkg.misc
 import shutil
 import tempfile
 import unittest
@@ -130,8 +131,8 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 self.image_create(self.rurl)
 
-                key_fh, key_path = tempfile.mkstemp()
-                cert_fh, cert_path = tempfile.mkstemp()
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
                 self.pkg(
                     "set-publisher -O http://%s1 test1 -O http://%s2 test2" %
@@ -155,18 +156,20 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                     exit=2)
 
                 # Listing publishers should succeed even if key file is gone.
-                os.close(key_fh)
-                os.unlink(key_path)
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                os.unlink(img_key_path)
                 self.pkg("publisher test1")
 
                 # This should fail since key has been removed even though test2
                 # has an https origin.
                 self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
                     self.bogus_url)
-                self.pkg("set-publisher --no-refresh -k %s test2" % key_path,
-                    exit=1)
+                self.pkg("set-publisher --no-refresh -k %s test2" %
+                    img_key_path, exit=1)
 
                 # Reset for next test.
+                self.pkg("set-publisher --no-refresh -k '' test1")
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
@@ -178,23 +181,25 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
                     exit=2)
 
-                # Listing publishers should succeed even if cert file is gone.
-                os.close(cert_fh)
-                os.unlink(cert_path)
-                self.pkg("publisher test1")
+                # Listing publishers should be possible if cert file is gone.
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                os.unlink(img_cert_path)
+                self.pkg("publisher test1", exit=3)
 
                 # This should fail since cert has been removed even though test2
                 # has an https origin.
                 self.pkg("set-publisher --no-refresh -O https://%s2 test2" %
                     self.bogus_url)
-                self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
-                    exit=1)
+                self.pkg("set-publisher --no-refresh -c %s test2" %
+                    img_cert_path, exit=1)
 
                 # Reset for next test.
                 self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
                     self.bogus_url)
 
-                self.pkg("publisher test1")
+                # Expect partial failure since cert file is gone for test1.
+                self.pkg("publisher test1", exit=3)
                 self.pkg("publisher test3", exit=1)
                 self.pkg("publisher -H | grep URI", exit=1)
 
@@ -217,7 +222,6 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 key_fh, key_path = tempfile.mkstemp()
                 self.pkg("set-publisher --approve-ca-cert %s test1" % key_path,
                     exit=1, su_wrap=True)
-                os.close(key_fh)
                 os.unlink(key_path)
 
                 self.pkg("set-publisher --no-refresh --set-property "
@@ -284,25 +288,32 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
 
                 # Now change the first publisher to a https URL so that
                 # certificate failure cases can be tested.
-                key_fh, key_path = tempfile.mkstemp(dir=self.test_root)
-                cert_fh, cert_path = tempfile.mkstemp(dir=self.test_root)
+                key_path = os.path.join(self.keys_dir, "cs1_ch1_ta3_key.pem")
+                cert_path = os.path.join(self.cs_dir, "cs1_ch1_ta3_cert.pem")
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
                 self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
 
-                os.close(key_fh)
-                os.close(cert_fh)
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
 
                 # Make the cert/key unreadable by unprivileged users.
-                os.chmod(key_path, 0000)
-                os.chmod(cert_path, 0000)
+                os.chmod(img_key_path, 0000)
+                os.chmod(img_cert_path, 0000)
 
-                # Verify that an unreadable/invalid certificate results in a
+                # Verify that an unreadable certificate results in a
                 # partial failure when displaying publisher information.
-                self.pkg("publisher test1", exit=3)
                 self.pkg("publisher test1", su_wrap=True, exit=3)
+
+                # Corrupt key/cert and verify invalid cert/key results in a
+                # partial failure when displaying publisher information.
+                open(img_key_path, "wb").close()
+                open(img_cert_path, "wb").close()
+                self.pkg("publisher test1", exit=3)
 
         def test_publisher_tsv_format(self):
                 """Ensure tsv formatted output is correct."""
@@ -445,12 +456,6 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.image_create(self.durl1, prefix="test1")
                 self.pkg("set-publisher -O " + self.durl2 + " test2")
                 self.pkg("set-publisher -O " + self.durl3 + " test3")
-
-                self.path_to_certs = os.path.join(self.ro_data_root,
-                    "signing_certs", "produced")
-                self.keys_dir = os.path.join(self.path_to_certs, "keys")
-                self.cs_dir = os.path.join(self.path_to_certs,
-                    "code_signing_certs")
 
         def __test_mirror_origin(self, etype, add_opt, remove_opt):
                 durl1 = self.dcs[1].get_depot_url()
@@ -732,15 +737,20 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --no-refresh -k %s -c %s test1" %
                     (key_path, cert_path))
                 self.pkg("publisher test1")
-                self.assert_(key_path in self.output)
-                self.assert_(cert_path in self.output)
+
+                img_key_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(key_path)[0])
+                img_cert_path = os.path.join(self.img_path(), "var", "pkg",
+                    "ssl", pkg.misc.get_data_digest(cert_path)[0])
+                self.assert_(img_key_path in self.output)
+                self.assert_(img_cert_path in self.output)
 
                 # Verify that removing all SSL origins does not leave key
                 # and cert information intact.
                 self.pkg("set-publisher -G '*' -g %s test1" % durl1)
                 self.pkg("publisher test1")
-                self.assert_(key_path not in self.output)
-                self.assert_(cert_path not in self.output)
+                self.assert_(img_key_path not in self.output)
+                self.assert_(img_cert_path not in self.output)
 
                 # Verify that https mirrors can be mixed with other types of
                 # origins.
@@ -754,8 +764,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # and cert information intact.
                 self.pkg("set-publisher -M '*' -m %s test1" % durl1)
                 self.pkg("publisher test1")
-                self.assert_(key_path not in self.output)
-                self.assert_(cert_path not in self.output)
+                self.assert_(img_key_path not in self.output)
+                self.assert_(img_cert_path not in self.output)
 
                 # Test short options for mirrors.
                 self.__test_mirror_origin("mirror", "-m", "-M")
