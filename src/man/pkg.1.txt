@@ -66,7 +66,8 @@ SYNOPSIS
          [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]
          [-p repo_uri] [--enable] [--disable] [--no-refresh]
          [--reset-uuid] [--non-sticky] [--sticky]
-         [--search-after=publisher] [--search-before=publisher]
+         [--search-after=publisher] [--search-befor e=publisher]
+         [--search-first] 
          [--approve-ca-cert=path_to_CA]
          [--revoke-ca-cert=hash_of_CA_to_remove]
          [--unset-ca-cert=hash_of_CA_to_remove]
@@ -93,7 +94,7 @@ SYNOPSIS
          [--no-refresh] [--variant <variant_spec>=<instance> ...]
          [-g path_or_uri|--origin=path_or_uri ...]
          [-m uri|--mirror=uri ...] [--facet <facet_spec>=(True|False) ...]
-         (-p|--publisher) [<name>=]<repo_uri> dir
+         [(-p|--publisher) [<name>=]<repo_uri>] dir
 
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With
@@ -290,9 +291,9 @@ SUBCOMMANDS
             web/firefox/plugin/flash (extra)  10.0.32.18-0.111 i--
 
           The first column contains the name of the package.  If the publisher
-          from which it is installed (or available, if not installed) is not
-          the preferred publisher, then the publisher name is listed in
-          parentheses after the package name.  The second column contains the
+          from which it is installed (or available, if not installed) is not the
+          first in the publisher search order, then the publisher name is listed
+          in parentheses after the package name.  The second column contains the
           release and branch versions of the package (see pkg(5)).  The last
           column contains a set of flags that show the status of the package:
 
@@ -639,26 +640,19 @@ SUBCOMMANDS
 
      set-property propname propvalue
 
-          Update an existing image property or add a new image property;
-          except for preferred-publisher, which can only be changed using
-          set-publisher.
+          Update an existing image property or add a new image property.
 
      add-property-value propname propvalue
 
-          Add a value to an existing image property or add a new image property;
-          except for preferred-publisher, which can only be changed using
-          set-publisher.
+          Add a value to an existing image property or add a new image property.
 
      remove-property-value propname propvalue
 
-          Remove a value from an existing image property; except for
-          preferred-publisher, which can only be changed using set-publisher.
+          Remove a value from an existing image property.
 
      unset-property propname ...
 
-          Remove an existing image property or properties; except for
-          preferred-publisher, which can only be changed using
-          set-publisher.
+          Remove an existing image property or properties.
 
      publisher [-HPn] [publisher ...]
 
@@ -669,7 +663,8 @@ SUBCOMMANDS
 
           With -H, omit the headers from the listing.
 
-          With -P, display only the preferred publisher.
+          With -P, display only the first publisher in the publisher search
+          order.
 
           With -n, display only enabled publishers.
 
@@ -681,7 +676,7 @@ SUBCOMMANDS
        [-p repo_uri] [--enable] [--disable] [--no-refresh]
        [--reset-uuid] [--non-sticky] [--sticky]
        [--search-after=publisher] [--search-before=publisher]
-       [--approve-ca-cert path_to_CA]
+       [--search-first] [--approve-ca-cert path_to_CA]
        [--revoke-ca-cert hash_of_CA_to_remove]
        [--unset-ca-cert hash_of_CA_to_remove]
        [--set-property name_of_property=value]
@@ -695,13 +690,12 @@ SUBCOMMANDS
           new publishers are appended to the search order and are thus
           searched last.
 
-          With -P, set the specified publisher as the preferred
-          publisher, i.e.  first in the search order.  When installing
-          new packages, this publisher will be searched first.
-          Updates to already installed packages will come from the
-          same publisher that originally provided the package so long
-          as that publisher remains sticky.  When used with -p, only new
-          publishers added will be placed first in search order.
+          With -P or --search-first, set the specified publisher first in the
+          search order.  When installing new packages, this publisher will be
+          searched first.  Updates to already installed packages will come from
+          the same publisher that originally provided the package so long as
+          that publisher remains sticky.  When used with -p, only new publishers
+          added will be placed first in search order.
 
           With --non-sticky, specify that higher ranked publishers than
           this one may provide updates to packages originally installed
@@ -994,6 +988,12 @@ IMAGE PROPERTIES
           (string)  The pathname of the directory that contains the trust
           anchors for the image.  This path is relative to the image.
 
+     use-system-repo 
+          (boolean)  This property indicates whether the image should use the
+          system-repository (see pkg.sysrepo(1M)) as a source for image and
+          publisher configuration and as a proxy for communicating with the
+          publishers provided.
+
 PUBLISHER PROPERTIES
      The following properties are part of the image and may be set using
      the set-property option of the set-publisher subcommand.
@@ -1025,12 +1025,17 @@ EXAMPLES
           -m http://mirror.example.com:10000/ \
           /aux0/example_root
 
-     Example 3:  Install the latest version of the widget package in the
+     Example 3:  Create a new, full image with no publishers configured at
+     /aux0/example_root.
+
+     $ pkg image-create -F /aux0/example_root
+
+     Example 4:  Install the latest version of the widget package in the
      current image.
 
      $ pkg install application/widget
 
-     Example 4:  List the contents of the SUNWzfs package.  Display the
+     Example 5:  List the contents of the SUNWzfs package.  Display the
      action name, the mode of the file (if defined), the size (if defined),
      the path, and the target (if a link).  Limit the action to types dir,
      file, link, and hardlink, since specifying the action.name attribute,
@@ -1054,7 +1059,7 @@ EXAMPLES
      link              lib/libzfs.so                       libzfs.so.1
      ....
 
-     Example 5:  List the contents of SUNWfirefox and SUNWthunderbird,
+     Example 6:  List the contents of SUNWfirefox and SUNWthunderbird,
      limiting the display to just the package name and path attributes of
      actions whose "path" attribute ends in ".desktop" or ".png".
 
@@ -1072,7 +1077,7 @@ EXAMPLES
      SUNWfirefox     usr/share/pixmaps/firefox-icon.png
      SUNWthunderbird usr/share/pixmaps/thunderbird-icon.png
 
-     Example 6:  Search the package database for the token "bge".
+     Example 7:  Search the package database for the token "bge".
 
      $ pkg search bge
      INDEX       ACTION VALUE                   PACKAGE
@@ -1082,7 +1087,7 @@ EXAMPLES
      The token shows up in the package SUNWbge both as the basename for the
      file action representing /kernel/drv/bge and as a driver name.
 
-     Example 7: Search for installed packages which depend on SUNWipkg.
+     Example 8: Search for installed packages which depend on SUNWipkg.
 
      $ pkg search -l 'depend::SUNWipkg'
      INDEX       ACTION VALUE                   PACKAGE
@@ -1090,7 +1095,7 @@ EXAMPLES
      require     depend SUNWipkg@0.5.11-0.111   pkg:/slim_install@0.1-0.111
      require     depend SUNWipkg@0.5.11-0.111   pkg:/SUNWipkg-brand@0.5.11-0.111
 
-     Example 8: Search for all incorporate dependencies in installed packages.
+     Example 9: Search for all incorporate dependencies in installed packages.
 
      $ pkg search -l 'depend:incorporate:'
      INDEX       ACTION VALUE                   PACKAGE
@@ -1098,12 +1103,12 @@ EXAMPLES
      incorporate depend BRCMbnx@0.5.11-0.111    pkg:/entire@0.5.11-0.111
      ....
 
-     Example 9:  Add new publisher example.org, with a repository located at
+     Example 10:  Add new publisher example.org, with a repository located at
      http://www.example.org/repo:
 
      $ pkg set-publisher -g http://www.example.org/repo example.org
 
-     Example 10:  Add new publisher example.com, with a secure repository
+     Example 11:  Add new publisher example.com, with a secure repository
      located at https://secure.example.com/repo, and a key and cert stored
      in the directory /root/creds:
 
@@ -1111,88 +1116,88 @@ EXAMPLES
           -c /root/creds/example.cert -g https://secure.example.com/repo \
           example.com
 
-     Example 11:  Add new publisher with a repository located at
+     Example 12:  Add new publisher with a repository located at
      /export/repo using automatic configuration:
 
      $ pkg set-publisher -p file:/export/repo
 
-     Example 12:  Add new publisher example.org with a repository located
+     Example 13:  Add new publisher example.org with a repository located
      at /export/repo/example.com using manual configuration:
 
      $ pkg set-publisher -g file:/export/repo example.com
 
-     Example 13:  Configure an image to verify all signed packages.
+     Example 14:  Configure an image to verify all signed packages.
 
      $ pkg set-property signature-policy verify
 
-     Example 14:  Configure an image to require all packages to be signed and
+     Example 15:  Configure an image to require all packages to be signed and
      the string "opensolaris.org" has to be seen as a common name for one of
      the certificates in the chain of trust.
 
      $ pkg set-property signature-policy require-names opensolaris.org
 
-     Example 15:  Configure an image so that all packages installed from
+     Example 16:  Configure an image so that all packages installed from
      publisher foo must be signed.
 
      $ pkg set-publisher --set-property signature-policy=require-signatures
 
-     Example 16:  Add the string "foo" to the image's list of common names that
+     Example 17:  Add the string "foo" to the image's list of common names that
      must be seen in a signature's chain of trust to be considered valid.
 
      $ pkg add-property-value signature-require-names foo
 
-     Example 17:  Remove the string "foo" from publisher test's list of common
+     Example 18:  Remove the string "foo" from publisher test's list of common
      names that must be seen to validate a signature.
 
      $ pkg set-publisher --remove-property-value signature-require-names=foo \
          test
 
-     Example 18:  Add the certificate stored in /tmp/example_file.pem as a
+     Example 19:  Add the certificate stored in /tmp/example_file.pem as a
      trusted CA certificate for the publisher test.
 
      $ pkg set-publisher --approve-ca-cert /tmp/example_file.pem
 
-     Example 19:  Revoke the certificate with the hash a12345 for publisher
+     Example 20:  Revoke the certificate with the hash a12345 for publisher
      test, preventing it from validating any signatures for packages from test.
 
      $ pkg set-publisher --revoke-ca-cert a12345
 
-     Example 20:  Make pkg forget that the certificate a12345 was ever added or
+     Example 21:  Make pkg forget that the certificate a12345 was ever added or
      revoked by the user.
 
      $ pkg set-publisher --unset-ca-cert a12345
 
-     Example 21:  Downgrade the installed package foo@1.1 to an older
+     Example 22:  Downgrade the installed package foo@1.1 to an older
      version:
 
      $ pkg update foo@1.0
 
-     Example 22:  In the case of two conflicting packages, change which
+     Example 23:  In the case of two conflicting packages, change which
      package is installed.  Suppose package A depends on either package B
      or package C, and B and C are mutually exclusive.  If A and B are
      installed, we can go to using C without uninstalling A via:
 
      $ pkg install --reject B C
 
-     Example 23:  List all versions of all packages in a package archive:
+     Example 24:  List all versions of all packages in a package archive:
 
      $ pkg list -g /my/archive.p5p -f
 
-     Example 24:  List all versions of all packages in a repository:
+     Example 25:  List all versions of all packages in a repository:
 
      $ pkg list -g http://example.com:10000 -f
 
-     Example 25:  Display the package information for the latest version of
+     Example 26:  Display the package information for the latest version of
      a package in a package archive that may not be currently installed:
 
      $ pkg info -g /my/archive.p5p pkg_name
 
-     Example 26:  Display the contents of a package in a package archive
+     Example 27:  Display the contents of a package in a package archive
      that is not currently installed:
 
      $ pkg contents -g /my/archive.p5p pkg_name
 
-     Example 27:  Remove all of the origins and mirrors for a publisher
+     Example 28:  Remove all of the origins and mirrors for a publisher
      and add a new origin:
 
      $ pkg set-publisher -G '*' -M '*' -g http://example.com:10000 \
@@ -1290,7 +1295,8 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5), beadm(1M)
+     pkgsend(1), pkg.depotd(1M), pkg.sysrepo(1M), glob(3C), attributes(5),
+     pkg(5), beadm(1M)
 
 NOTES
      The image packaging system is an under-development feature.

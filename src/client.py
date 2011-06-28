@@ -229,7 +229,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--variant <variant_spec>=<instance> ...]\n"
             "            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]\n"
             "            [--facet <facet_spec>=(True|False) ...]\n"
-            "            (-p|--publisher) [<name>=]<repo_uri> dir")
+            "            [(-p|--publisher) [<name>=]<repo_uri>] dir")
         adv_usage["change-variant"] = _(
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
             "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
@@ -259,7 +259,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--reset-uuid] [--non-sticky] [--sticky]\n"
             "            [--search-after=publisher]\n"
             "            [--search-before=publisher]\n"
-            "            [--search-first=publisher]\n"
+            "            [--search-first]\n"
             "            [--approve-ca-cert=path_to_CA]\n"
             "            [--revoke-ca-cert=hash_of_CA_to_revoke]\n"
             "            [--unset-ca-cert=hash_of_CA_to_unset]\n"
