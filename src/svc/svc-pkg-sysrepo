@@ -41,7 +41,7 @@ APACHE_BIN=${APACHE_HOME}/bin/64
 # we also need to include the relevant contents of $APACHE_BIN/envvars -
 # setting $LD_LIBRARY_PATH as it does.
 #
-HTTPD=${APACHE_BIN}/httpd
+HTTPD=${APACHE_BIN}/httpd.worker
 LD_LIBRARY_PATH=${APACHE_HOME}/lib/64:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
