@@ -1,0 +1,11 @@
+package system/management/powerman
+consolidation "sfw"
+obsoleted 169
+version 2.3
+end package
+
+package SUNWpowerman
+consolidation "sfw"
+obsoleted 169
+version 2.3
+end package

@@ -1,0 +1,11 @@
+package text/dwdiff
+consolidation "sfw"
+obsoleted 169
+version 1.5.2
+end package
+
+package SUNWdwdiff
+consolidation "sfw"
+obsoleted 169
+version 1.5.2
+end package

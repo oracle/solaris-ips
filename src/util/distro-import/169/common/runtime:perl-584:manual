@@ -1,0 +1,15 @@
+package runtime/perl-584/manual
+consolidation "man"
+classification "Development/Perl"
+import SUNWperl584man
+drop usr/perl5/man
+add license Artistic license=SUNWperl584man.Artistic
+version 5.8.4
+end package
+
+package SUNWperl584man
+consolidation "man"
+renamed 133
+depend runtime/perl-584/manual
+version 5.8.4
+end package

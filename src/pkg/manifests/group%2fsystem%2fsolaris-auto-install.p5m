@@ -40,13 +40,12 @@ depend fmri=compress/zip type=group
 depend fmri=crypto/ca-certificates type=group
 depend fmri=data/iso-codes type=group
 depend fmri=database/sqlite-3 type=group
+depend fmri=developer/base-developer-utilities type=group
 depend fmri=developer/debug/mdb type=group
 depend fmri=developer/debug/mdb/module/module-fibre-channel type=group
 depend fmri=developer/dtrace type=group
 depend fmri=developer/dtrace/toolkit type=group
-depend fmri=developer/linker type=group
 depend fmri=developer/macro/cpp type=group
-depend fmri=developer/object-file type=group
 $(i386_ONLY)depend fmri=diagnostic/acpidump type=group
 depend fmri=diagnostic/cpu-counters type=group
 depend fmri=diagnostic/ddu/data type=group
@@ -192,6 +191,7 @@ depend fmri=library/expat type=group
 depend fmri=library/glib2 type=group
 depend fmri=library/libffi type=group
 depend fmri=library/libidn type=group
+depend fmri=library/libmilter type=group
 depend fmri=library/libtecla type=group
 depend fmri=library/libxml2 type=group
 depend fmri=library/libxslt type=group
@@ -330,8 +330,8 @@ depend fmri=system/library/storage/libmpapi type=group
 depend fmri=system/library/storage/libmpscsi_vhci type=group
 depend fmri=system/library/storage/scsi-plugins type=group
 depend fmri=system/library/sysidtool type=group
+depend fmri=system/linker type=group
 $(i386_ONLY)depend fmri=system/management/intel-amt type=group
-depend fmri=system/management/product-registry type=group
 depend fmri=system/management/snmp/net-snmp type=group
 depend fmri=system/management/sysidtool type=group
 depend fmri=system/network type=group

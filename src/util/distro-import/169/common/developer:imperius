@@ -1,0 +1,11 @@
+package developer/imperius
+consolidation "sfw"
+obsoleted 169
+version 1.0.0
+end package
+
+package SUNWImperius
+consolidation "sfw"
+obsoleted 169
+version 1.0.0
+end package

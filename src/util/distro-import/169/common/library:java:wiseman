@@ -1,0 +1,11 @@
+package library/java/wiseman
+consolidation "sfw"
+obsoleted 169
+version 1.0
+end package
+
+package SUNWwiseman
+consolidation "sfw"
+obsoleted 169
+version 1.0
+end package

@@ -1,0 +1,11 @@
+package library/fftw-2
+consolidation "sfw"
+obsoleted 169
+version 2.1.5
+end package
+
+package SUNWfftw2
+consolidation "sfw"
+obsoleted 169
+version 2.1.5
+end package

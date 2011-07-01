@@ -1,0 +1,11 @@
+package shell/pdsh
+consolidation "sfw"
+obsoleted 169
+version 2.18
+end package
+
+package SUNWpdsh
+consolidation "sfw"
+obsoleted 169
+version 2.18
+end package

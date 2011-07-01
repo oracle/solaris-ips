@@ -1,0 +1,11 @@
+package library/java/jaxb
+consolidation "sfw"
+obsoleted 169
+version 2.1.11
+end package
+
+package SUNWjaxb
+consolidation "sfw"
+obsoleted 169
+version 2.1.11
+end package

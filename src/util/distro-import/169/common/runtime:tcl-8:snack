@@ -1,0 +1,11 @@
+package runtime/tcl-8/snack
+consolidation "sfw"
+obsoleted 169
+version 2.2.10
+end package
+
+package SUNWsnack
+consolidation "sfw"
+obsoleted 169
+version 2.2.10
+end package

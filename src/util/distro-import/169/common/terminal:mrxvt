@@ -1,0 +1,11 @@
+package terminal/mrxvt
+consolidation "sfw"
+obsoleted 169
+version 0.5.4
+end package
+
+package SUNWmrxvt
+consolidation "sfw"
+obsoleted 169
+version 0.5.4
+end package

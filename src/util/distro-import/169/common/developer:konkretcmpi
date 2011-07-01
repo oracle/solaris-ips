@@ -1,0 +1,11 @@
+package developer/konkretcmpi
+consolidation "sfw"
+obsoleted 169
+version 0.8.7
+end package
+
+package SUNWkonkretcmpi
+consolidation "sfw"
+obsoleted 169
+version 0.8.7
+end package

@@ -37,7 +37,6 @@ depend fmri=compress/gzip type=group
 depend fmri=compress/unzip type=group
 depend fmri=compress/zip type=group
 depend fmri=developer/dtrace type=group
-depend fmri=developer/linker type=group
 depend fmri=diagnostic/snoop type=group
 depend fmri=diagnostic/spray type=group
 depend fmri=editor/vim/vim-core type=group
@@ -62,6 +61,7 @@ depend fmri=system/file-system/nfs type=group
 depend fmri=system/install type=group
 depend fmri=system/install/configuration type=group
 depend fmri=system/library/install type=group
+depend fmri=system/linker type=group
 depend fmri=system/management/sysidtool type=group
 depend fmri=system/network type=group
 depend fmri=system/network/nis type=group

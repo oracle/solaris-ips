@@ -1,0 +1,11 @@
+package library/java/javamail
+consolidation "sfw"
+obsoleted 169
+version 1.4.1
+end package
+
+package SUNWjavamail
+consolidation "sfw"
+obsoleted 169
+version 1.4.1
+end package

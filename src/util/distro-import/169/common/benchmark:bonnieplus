@@ -1,0 +1,11 @@
+package benchmark/bonnieplus
+consolidation "sfw"
+obsoleted 169
+version 1.3.3
+end package
+
+package SUNWbonnieplus
+consolidation "sfw"
+obsoleted 169
+version 1.3.3
+end package

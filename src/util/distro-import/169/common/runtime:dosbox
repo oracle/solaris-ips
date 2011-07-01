@@ -1,0 +1,11 @@
+package runtime/dosbox
+consolidation "sfw"
+obsoleted 169
+version 0.74
+end package
+
+package SUNWdosbox
+consolidation "sfw"
+obsoleted 169
+version 0.73
+end package

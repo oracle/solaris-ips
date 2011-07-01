@@ -49,8 +49,8 @@ depend fmri=compress/unzip type=group
 depend fmri=compress/zip type=group
 depend fmri=crypto/ca-certificates type=group
 depend fmri=crypto/gnupg type=group
-depend fmri=data/docbook type=group
 depend fmri=data/iso-codes type=group
+depend fmri=data/sgml-common type=group
 depend fmri=database/sqlite-3 type=group
 $(i386_ONLY)depend fmri=desktop/administration/gparted type=group
 depend fmri=desktop/administration/nwam-manager type=group
@@ -76,6 +76,7 @@ depend fmri=desktop/xdg/xdg-user-dirs-gtk type=group
 depend fmri=desktop/xdg/xdg-utils type=group
 depend fmri=desktop/xscreensaver type=group
 depend fmri=developer/assembler type=group
+depend fmri=developer/base-developer-utilities type=group
 depend fmri=developer/build/gnu-make type=group
 depend fmri=developer/build/make type=group
 depend fmri=developer/debug/mdb type=group
@@ -88,9 +89,7 @@ depend fmri=developer/gnome/gettext type=group
 depend fmri=developer/gnome/gnome-doc-utils type=group
 depend fmri=developer/java/jdk type=group
 depend fmri=developer/library/xprofile type=group
-depend fmri=developer/linker type=group
 depend fmri=developer/macro/cpp type=group
-depend fmri=developer/object-file type=group
 depend fmri=developer/ui-designer/glade type=group
 depend fmri=developer/versioning/sccs type=group
 $(i386_ONLY)depend fmri=diagnostic/acpidump type=group
@@ -374,6 +373,7 @@ depend fmri=library/libffi type=group
 depend fmri=library/libgtop type=group
 depend fmri=library/libical type=group
 depend fmri=library/libidn type=group
+depend fmri=library/libmilter type=group
 depend fmri=library/libnotify type=group
 depend fmri=library/liboil type=group
 depend fmri=library/libproxy type=group
@@ -437,7 +437,9 @@ depend fmri=library/raptor type=group
 depend fmri=library/readline type=group
 depend fmri=library/samba/libsmbclient type=group
 depend fmri=library/sdl type=group
+depend fmri=library/security/libassuan type=group
 depend fmri=library/security/libgpg-error type=group
+depend fmri=library/security/libksba type=group
 depend fmri=library/security/openssl type=group
 depend fmri=library/security/tcp-wrapper type=group
 depend fmri=library/security/trousers type=group
@@ -672,12 +674,12 @@ depend fmri=system/library/storage/scsi-plugins type=group
 depend fmri=system/library/sysidtool type=group
 depend fmri=system/library/usb/libusb type=group
 depend fmri=system/library/usb/libusbugen type=group
+depend fmri=system/linker type=group
 depend fmri=system/locale type=group
 depend fmri=system/locale/support type=group
 depend fmri=system/management/ilomconfig type=group
 $(i386_ONLY)depend fmri=system/management/intel-amt type=group
 depend fmri=system/management/ipmitool type=group
-depend fmri=system/management/product-registry type=group
 depend fmri=system/management/rad type=group
 depend fmri=system/management/rad/client/rad-java type=group
 depend fmri=system/management/rad/client/rad-python type=group
