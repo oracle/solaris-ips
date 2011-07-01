@@ -242,7 +242,7 @@ function set_active_be {
 #
 # Run system configuration inside a zone.
 #
-reconfigure_zone() {
+function reconfigure_zone {
 	typeset sc_config=$1
 	vlog "$v_reconfig"
 
@@ -255,17 +255,23 @@ reconfigure_zone() {
 	    svc:/milestone/unconfig:default 2> /dev/null)
 	if (( $? == 0 )) && [[ $SC_ONLINE == "online" ]]; then
 		if [[ -n $sc_config ]]; then
-			safe_copy $sc_config \
-			    $ZONEPATH/lu/system/volatile/$sc_config
+			sc_config_base=$(basename "$sc_config")
+			# Remove in case $sc_config_base is a directory
+			safe_dir "/system"
+			safe_dir "/system/volatile"
+			/bin/rm -rf \
+			    "$ZONEPATH/lu/system/volatile/$sc_config_base"
+			safe_copy_rec $sc_config \
+			    "$ZONEPATH/lu/system/volatile/$sc_config_base"
 			zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
 			    /usr/sbin/sysconfig configure -g system \
-			    -c /system/volatile/$sc_config;
+			    -c /system/volatile/$sc_config_base --destructive;
 			    export _UNCONFIG_ALT_ROOT= ;" \
 			    </dev/null >/dev/null 2>&1
 		else
 			zlogin -S $ZONENAME "export _UNCONFIG_ALT_ROOT=/a; \
-			    /usr/sbin/sysconfig unconfigure -g system; \
-			    export _UNCONFIG_ALT_ROOT= ;" \
+			    /usr/sbin/sysconfig configure -g system \
+			    --destructive; export _UNCONFIG_ALT_ROOT= ;" \
 			    </dev/null >/dev/null 2>&1
 		fi
 		ret=$?

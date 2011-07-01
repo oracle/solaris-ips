@@ -24,7 +24,7 @@
 
 . /usr/lib/brand/ipkg/common.ksh
 
-m_usage=$(gettext "clone {sourcezone} [-c profile | dir]\n\tThe -c option gives a profile or a directory of profiles to be applied to the system after clone.")
+m_usage=$(gettext "clone [-c profile | dir] {sourcezone}\n\tThe -c option gives a profile or a directory of profiles to be applied to the system after clone.")
 f_nosource=$(gettext "Error: unable to determine source zone dataset.")
 
 # Clean up on failure
@@ -41,11 +41,12 @@ trap_exit()
 # Source and destination zones
 unset sc_config
 typeset src dst	
-# Brand clone options are handled below
-while getopts "R:z:" opt; do
+# Other brand clone options are invalid for this brand.
+while getopts "R:z:c:" opt; do
 	case $opt in
 		R)	opt_R="$OPTARG" ;;
 		z)	opt_z="$OPTARG" ;;
+		c)	sc_config="$OPTARG" ;;
 		*)	fail_usage "";;
 	esac
 done
@@ -58,15 +59,6 @@ fi
 init_zone dst "$opt_z" "$opt_R"
 init_zone src "$1"
 shift
-
-let OPTIND=1
-# Other brand clone options are invalid for this brand.
-while getopts "c:" opt; do
-	case $opt in
-		c)	sc_config="$OPTARG" ;;
-		*)	fail_usage "";;
-	esac
-done
 
 get_current_gzbe
 get_active_be src || fatal "$e_no_active_be"
