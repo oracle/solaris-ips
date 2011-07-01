@@ -24,7 +24,7 @@
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
+MIN_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
                                  # the number of indexing elements is greater then this, 
                                  # otherwise it will bounce
 
@@ -36,7 +36,8 @@ class GuiProgressTracker(NullProgressTracker):
                 NullProgressTracker.__init__(self)
                 self.prev_pkg = None
                 self.act_phase_last = None
-                self.ind_started = None
+                self.ind_started = False
+                self.item_started = False
                 self.indent = indent
 
         def cat_output_start(self):
@@ -154,13 +155,32 @@ class GuiProgressTracker(NullProgressTracker):
                 self.update_progress(self.ind_cur_nitems, self.ind_goal_nitems)
 
         def __indexing_progress(self):
+                self.__generic_progress(self.ind_phase, self.ind_goal_nitems,
+                    self.ind_cur_nitems)
+
+        def __generic_progress(self, phase, goal_nitems, cur_nitems):
                 #It doesn't look nice if the progressive is just for few elements
-                if self.ind_goal_nitems > MIN_IND_ELEMENTS_BOUNCE:
-                        self.display_phase_info(self.ind_phase,
-                            self.ind_cur_nitems-1, self.ind_goal_nitems)
+                if goal_nitems > MIN_ELEMENTS_BOUNCE:
+                        self.display_phase_info(phase, cur_nitems-1, goal_nitems)
                 else:
                         if not self.is_progress_bouncing():
                                 self.start_bouncing_progress()
+
+        def item_output(self, force=False):
+                if self.item_started != self.item_phase:
+                        self.item_started = self.item_phase
+                        self.update_label_text(self.item_phase)
+                        self.update_details_text(
+                            "%s\n" % (self.item_phase), "level1")
+                self.__item_progress()
+
+        def __item_progress(self):
+                self.__generic_progress(self.item_phase, self.item_goal_nitems,
+                    self.item_cur_nitems)
+
+
+        def item_output_done(self):
+                self.update_progress(self.item_cur_nitems, self.item_goal_nitems)
 
         def update_progress(self, current_progress, total_progress):
                 raise NotImplementedError("abstract method update_progress() not "
