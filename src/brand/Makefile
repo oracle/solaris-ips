@@ -29,7 +29,6 @@ INSTALL = /usr/sbin/install
 
 ROOT = ../../proto/root_${MACH}
 ROOTETC = $(ROOT)/etc
-ROOTETCZONES = $(ROOT)/etc/zones
 ROOTETCBRAND = $(ROOT)/etc/brand/ipkg
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTBRAND = $(ROOTUSRLIB)/brand
@@ -41,7 +40,6 @@ ROOTDIRS = \
 	$(ROOT) \
 	$(ROOTETC) \
 	$(ROOTETCBRAND) \
-	$(ROOTETCZONES) \
 	$(ROOTUSRLIB) \
 	$(ROOTBRAND) \
 	$(ROOTBRANDPKG)
@@ -67,8 +65,7 @@ ROOTFILES = \
 	$(ROOTBRANDPKG)/pkgrm.lst \
 	$(ROOTBRANDPKG)/smf_disable.lst \
 	$(ROOTETCBRAND)/pkgrm.conf \
-	$(ROOTETCBRAND)/smf_disable.conf \
-	$(ROOTETCZONES)/SUNWipkg.xml \
+	$(ROOTETCBRAND)/smf_disable.conf
 
 BIN = \
 	support \
@@ -98,15 +95,12 @@ clobber: clean
 install: $(ROOTFILES) $(ROOTBINS)
 
 
-$(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTETCZONES) $(ROOTUSRLIB) \
+$(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTUSRLIB) \
 	$(ROOTBRAND) $(ROOTBRANDPKG):
 	mkdir -p $@
 
 $(ROOTETCBRAND)/%: $(ROOTETCBRAND) %
 	rm -f $@; $(INSTALL) -f $(ROOTETCBRAND) -m $(FILEMODE) $<
-
-$(ROOTETCZONES)/%: $(ROOTETCZONES) %
-	rm -f $@; $(INSTALL) -f $(ROOTETCZONES) -m $(FILEMODE) $<
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
 	rm -f $@; $(INSTALL) -f $(ROOTBRANDPKG) -m $(FILEMODE) $<
