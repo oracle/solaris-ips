@@ -285,7 +285,8 @@ class FileManager(object):
 
                                         # Parent directory created successsfully
                                         # so loop again to retry rename.
-                                elif e.errno == errno.ENOENT:
+                                elif e.errno == errno.ENOENT and \
+                                    not os.path.exists(src_path):
                                         if os.path.exists(dest_full_path):
                                                 # Item has already been moved
                                                 # into cache by another process;
@@ -298,7 +299,7 @@ class FileManager(object):
                                 elif e.errno == errno.EACCES or \
                                     e.errno == errno.EROFS:
                                         raise FMPermissionsException(e.filename)
-                                else:
+                                elif e.errno != errno.ENOENT:
                                         raise apx._convert_error(e)
                         else:
                                 # Success!
