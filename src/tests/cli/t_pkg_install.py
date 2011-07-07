@@ -747,6 +747,10 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                     open A@1.0,5.11-0
                     add depend type=require-any fmri=pkg:/B@1.0 fmri=pkg:/C@1.0
                     close """,
+                """
+                    open A@2.0,5.11-0
+                    add depend type=require-any fmri=pkg:/B@1.0 fmri=pkg:/C@1.0
+                    close """,
 
                 """
                     open B@1.0,5.11-0
@@ -874,13 +878,20 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall '*'")
 
                 # test that solver picks up on impossible cases
-                self.pkg("install --reject A A", exit=1)
                 self.pkg("install -v --reject B --reject C A", exit=1)
 
                 # test that publisher matching works
                 self.pkg("install bogus")
                 self.pkg("list bogus")
                 self.pkg("install --reject B --reject 'pkg://contrib/*' A")
+
+                # verify that matching accounts for reject.
+                self.pkg("uninstall '*'")
+                self.pkg("install -v --reject A A", exit=1)
+                self.pkg("install -v --reject 'idr*' --reject 'bogus*' "
+                    "--reject B '*'")
+                self.pkg("list 'idr*' 'bogus*' B", exit=1)
+                self.pkg("list A C incorp kernel no-idrs")
 
         def test_idr(self):
                 self.image_create(self.rurl)
@@ -919,9 +930,23 @@ class TestPkgInstallUpdateReject(pkg5unittest.SingleDepotTestCase):
 
         def test_update(self):
                 self.image_create(self.rurl)
-                self.pkg("install  kernel@1.0,5.11-0.1 A@1.0,5.11-0")
-                self.pkg("update --reject A")
+                # Test update reject without wildcards.
+                self.pkg("install  kernel@1.0,5.11-0.1.1.0 A@1.0,5.11-0")
+                self.pkg("update -v --reject A")
+                self.pkg("list A", exit=1)
                 self.pkg("verify")
+
+                # Reinstall kernel package, install A, and test update again using
+                # wildcards.
+                self.pkg("uninstall '*'")
+                self.pkg("install kernel@1.0,5.11-0.1.1.0")
+                self.pkg("list kernel@1.0,5.11-0.1.1.0")
+                self.pkg("install A@1.0,5.11-0")
+                self.pkg("update -v --reject A '*'")
+                self.pkg("list A", exit=1)
+                self.pkg("list kernel@1.0,5.11-0.1.1.1")
+                self.pkg("verify")
+
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 

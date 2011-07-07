@@ -390,19 +390,19 @@ class ImagePlan(object):
                 installed_dict = ImagePlan.__fmris2dict(
                     self.image.gen_installed_pkgs())
 
-                if pkgs_inst:
-                        inst_dict, references = self.__match_user_fmris(
-                            pkgs_inst, self.MATCH_ALL, pub_ranks=pub_ranks,
-                            installed_pkgs=installed_dict)
-                        self.__match_inst = references
-                else:
-                        inst_dict = {}
-
                 if reject_list:
                         reject_set = self.match_user_stems(reject_list,
                             self.MATCH_ALL)
                 else:
                         reject_set = set()
+
+                if pkgs_inst:
+                        inst_dict, references = self.__match_user_fmris(
+                            pkgs_inst, self.MATCH_ALL, pub_ranks=pub_ranks,
+                            installed_pkgs=installed_dict, reject_set=reject_set)
+                        self.__match_inst = references
+                else:
+                        inst_dict = {}
 
                 self.__new_excludes = self.image.list_excludes(new_variants,
                     new_facets)
@@ -562,17 +562,18 @@ class ImagePlan(object):
 
                 # If specific packages or patterns were provided, then
                 # determine the proposed set to pass to the solver.
-                if pkgs_update:
-                        update_dict, references = self.__match_user_fmris(
-                            pkgs_update, self.MATCH_INST_STEMS,
-                            pub_ranks=pub_ranks, installed_pkgs=installed_dict)
-                        self.__match_update = references
-
                 if reject_list:
                         reject_set = self.match_user_stems(reject_list,
                             self.MATCH_ALL)
                 else:
                         reject_set = set()
+
+                if pkgs_update:
+                        update_dict, references = self.__match_user_fmris(
+                            pkgs_update, self.MATCH_INST_STEMS,
+                            pub_ranks=pub_ranks, installed_pkgs=installed_dict,
+                            reject_set=reject_set)
+                        self.__match_update = references
 
                 # instantiate solver
                 self.__pkg_solver = pkg_solver.PkgSolver(
@@ -2529,7 +2530,8 @@ class ImagePlan(object):
                 return set(matchdict.keys())
 
         def __match_user_fmris(self, patterns, match_type,
-            pub_ranks=misc.EmptyDict, installed_pkgs=misc.EmptyDict):
+            pub_ranks=misc.EmptyDict, installed_pkgs=misc.EmptyDict,
+            reject_set=misc.EmptyI):
                 """Given a user-specified list of patterns, return a dictionary
                 of matching fmris:
 
@@ -2557,6 +2559,8 @@ class ImagePlan(object):
                         for stems matching installed packages.  In this case,
                         'installed_pkgs' must also be provided.
 
+                'reject_set' is a set() containing the stems of packages that
+                should be excluded from matches.
 
                 Note that patterns starting w/ pkg:/ require an exact match;
                 patterns containing '*' will using fnmatch rules; the default
@@ -2580,6 +2584,7 @@ class ImagePlan(object):
                 multimatch    = []
                 not_installed = []
                 multispec     = []
+                exclpats      = []
                 wrongpub      = []
                 wrongvar      = set()
 
@@ -2676,6 +2681,9 @@ class ImagePlan(object):
                 # dictionary of pkg names & fmris that match that pattern.
                 ret = dict(zip(patterns, [dict() for i in patterns]))
 
+                # Track patterns rejected due to user request (--reject).
+                rejected_pats = set()
+
                 # Track patterns rejected due to variants.
                 rejected_vars = set()
 
@@ -2720,6 +2728,10 @@ class ImagePlan(object):
                                                         # Matched stem is not
                                                         # in list of installed
                                                         # stems.
+                                                        continue
+                                                elif f.pkg_name in reject_set:
+                                                        # Pattern is excluded.
+                                                        rejected_pats.add(pat)
                                                         continue
 
                                                 states = metadata["metadata"]["states"]
@@ -2828,6 +2840,8 @@ class ImagePlan(object):
                                         wrongvar.add(p)
                                 elif p in rejected_pubs:
                                         wrongpub.append((p, rejected_pubs[p]))
+                                elif p in rejected_pats:
+                                        exclpats.append(p)
                                 else:
                                         nonmatch.append(p)
                         elif l > 1 and p not in wildcard_patterns:
@@ -2853,12 +2867,13 @@ class ImagePlan(object):
                         not_installed, nonmatch = nonmatch, not_installed
 
                 if illegals or nonmatch or multimatch or not_installed or \
-                    multispec or wrongpub or wrongvar:
+                    multispec or wrongpub or wrongvar or exclpats:
                         raise api_errors.PlanCreationException(
                             unmatched_fmris=nonmatch,
                             multiple_matches=multimatch, illegal=illegals,
                             missing_matches=not_installed, multispec=multispec,
-                            wrong_publishers=wrongpub, wrong_variants=wrongvar)
+                            wrong_publishers=wrongpub, wrong_variants=wrongvar,
+                            rejected_pats=exclpats)
 
                 # merge patterns together now that there are no conflicts
                 proposed_dict = {}

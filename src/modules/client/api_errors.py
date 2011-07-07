@@ -423,6 +423,7 @@ class PlanCreationException(ApiException):
             nofiles=EmptyI,
             obsolete=EmptyI,
             pkg_updates_required=EmptyI,
+            rejected_pats=EmptyI,
             solver_errors=EmptyI,
             unmatched_fmris=EmptyI,
             would_install=EmptyI,
@@ -445,6 +446,7 @@ class PlanCreationException(ApiException):
                 self.nofiles               = nofiles
                 self.obsolete              = obsolete
                 self.pkg_updates_required  = pkg_updates_required
+                self.rejected_pats         = rejected_pats
                 self.solver_errors         = solver_errors
                 self.unmatched_fmris       = unmatched_fmris
                 self.would_install         = would_install
@@ -456,10 +458,18 @@ class PlanCreationException(ApiException):
                 if self.unmatched_fmris:
                         s = _("""\
 The following pattern(s) did not match any allowable packages.  Try
-using a different matching pattern, or refreshing the image:
+using a different matching pattern, or refreshing publisher information:
 """)
                         res += [s]
                         res += ["\t%s" % p for p in self.unmatched_fmris]
+
+                if self.rejected_pats:
+                        s = _("""\
+The following pattern(s) only matched packages rejected by user request.  Try
+using a different matching pattern, or refreshing publisher information:
+""")
+                        res += [s]
+                        res += ["\t%s" % p for p in self.rejected_pats]
 
                 if self.wrong_variants:
                         s = _("""\
