@@ -1343,7 +1343,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def attach_linked_child(self, lin, li_path, li_props=None,
             accept=False, allow_relink=False, force=False, li_md_only=False,
             li_pkg_updates=True, noexecute=False,
-            refresh_catalogs=True, show_licenses=False, update_index=True):
+            refresh_catalogs=True, reject_list=misc.EmptyI,
+            show_licenses=False, update_index=True):
                 """Attach an image as a child to the current image (the
                 current image will become a parent image. This operation
                 results in attempting to sync the child image with the parent
@@ -1379,6 +1380,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 'refresh_catalogs' controls whether the catalogs will
                 automatically be refreshed.
 
+                'reject_list' is a list of patterns not to be permitted
+                in solution; installed packages matching these patterns
+                are removed.
+
                 'show_licenses' indicates whether we should display package
                 licenses for any packages being installed during the child
                 image sync.
@@ -1395,7 +1400,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     accept=accept, allow_relink=allow_relink, force=force,
                     li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
                     noexecute=noexecute, progtrack=self.__progresstracker,
-                    refresh_catalogs=refresh_catalogs,
+                    refresh_catalogs=refresh_catalogs, reject_list=reject_list,
                     show_licenses=show_licenses, update_index=update_index)
 
         def detach_linked_children(self, li_list, force=False, noexecute=False):

@@ -1619,7 +1619,7 @@ def opts_table_cb_md_only(op, api_inst, opts, opts_new):
         if not opts["li_md_only"]:
                 return
 
-        # li_md_only implies li_pkg_updates
+        # li_md_only implies no li_pkg_updates
         if "li_pkg_updates" in opts:
                 opts_new["li_pkg_updates"] = False
 
@@ -1638,6 +1638,8 @@ def opts_table_cb_md_only(op, api_inst, opts, opts_new):
                 opts_err_incompat(arg1, "--require-new-be", op)
         if "li_parent_sync" in opts and not opts["li_parent_sync"]:
                 opts_err_incompat(arg1, "--no-parent-sync", op)
+        if "reject_pats" in opts and opts["reject_pats"]:
+                opts_err_incompat(arg1, "--reject", op)
 
 def opts_cb_list(op, api_inst, opts, opts_new):
         if opts_new["origins"] and not opts_new["list_newest"]:
@@ -4577,7 +4579,8 @@ def attach_linked(op, api_inst, pargs,
             accept=accept, allow_relink=allow_relink, force=force,
             li_md_only=li_md_only, li_pkg_updates=li_pkg_updates,
             noexecute=noexecute, refresh_catalogs=refresh_catalogs,
-            show_licenses=show_licenses, update_index=update_index)
+            reject_list=reject_pats, show_licenses=show_licenses,
+            update_index=update_index)
 
         if err:
                 error(err, cmd=op)

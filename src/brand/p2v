@@ -295,6 +295,10 @@ warn_zones()
 {
 	zoneconfig=$ZONEROOT/etc/zones
 
+	# if there is no /etc/zones/index file there's nothing to check
+	[[ ! -a $zoneconfig/index ]] && return
+
+	# verify that /etc/zones/index is actually a file
 	if [[ -h $zoneconfig/index || ! -f $zoneconfig/index ]]; then
 		error "$e_badfile" "/etc/zones/index"
 		return
@@ -304,7 +308,7 @@ warn_zones()
 		if (substr($1, 0, 1) == "#" || $1 == "global")
 			continue
 
-		if ($2 == "installed")
+		if ($2 != "configured")
 			printf("%s ", $1)
 	}' $zoneconfig/index)
 
@@ -317,7 +321,7 @@ warn_zones()
 		if (substr($1, 0, 1) == "#" || $1 == "global")
 			continue
 
-		if ($2 == "installed")
+		if ($2 != "configured")
 			printf("%s ", $3)
 	}' $zoneconfig/index)
 
@@ -327,6 +331,15 @@ warn_zones()
 	do
 		log "    %s" "$i"
 	done
+
+	#
+	# create an empty zones index file (a new one will be created
+	# once the zone is booted) we don't use the safe_* functions
+	# here because we've already validated etc/zones within the
+	# zone.
+	#
+	rm -f $zoneconfig/index
+	touch $zoneconfig/index
 }
 
 #
@@ -482,7 +495,7 @@ pkg -R "$ZONEROOT" update-format || pkg_err_check "$e_update_format"
 
 # Change the pkging variant from global zone to non-global zone.
 log "$v_change_var"
-$PKG -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \
+$PKG -R $ZONEROOT change-variant -I variant.opensolaris.zone=nonglobal || \
     pkg_err_check "$e_change_var"
 # Set the property which tells the image to use the system publisher.
 pkg -R $ZONEROOT set-property use-system-repo true

@@ -30,7 +30,7 @@ Linked image module classes.
 The following classes for manipulating linked images are defined here:
 
         LinkedImage
-        LinkedImgaeChild
+        LinkedImageChild
 
 The following template classes which linked image plugins should inherit from
 are also defined here:
@@ -67,7 +67,6 @@ import pkg.version
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
-from pkg.misc import EmptyI
 
 logger = global_settings.logger
 
@@ -147,7 +146,7 @@ class LinkedImagePlugin(object):
                 # return value: None
                 raise NotImplementedError
 
-        def get_altroot(self):
+        def get_altroot(self, ignore_errors=False):
                 """If the linked image plugin is able to detect that we're
                 operating on an image in an alternate root then return the
                 path of the alternate root."""
@@ -155,7 +154,7 @@ class LinkedImagePlugin(object):
                 # return value: string or None
                 raise NotImplementedError
 
-        def get_child_list(self, nocache=False):
+        def get_child_list(self, nocache=False, ignore_errors=False):
                 """Return a list of the child images associated with the
                 current image."""
 
@@ -540,7 +539,7 @@ class LinkedImage(object):
                         props[PROP_PARENT_PATH] = \
                             add_altroot_path(p_path, altroot)
 
-        def __guess_altroot(self):
+        def __guess_altroot(self, ignore_errors=False):
                 """If we're initializing parent linked image properties for
                 the first time (or if those properties somehow got deleted)
                 then we need to know if the parent image that we're currently
@@ -552,7 +551,8 @@ class LinkedImage(object):
                 # ask each plugin if we're operating in an alternate root
                 p_altroots = []
                 for plugin, lip in self.__plugins.iteritems():
-                        p_altroot = lip.get_altroot()
+                        p_altroot = lip.get_altroot(
+                            ignore_errors=ignore_errors)
                         if p_altroot:
                                 p_altroots.append((plugin, p_altroot))
 
@@ -575,13 +575,14 @@ class LinkedImage(object):
                 # we have conflicting altroots, time to die
                 _rterr(li=self, multiple_altroots=p_altroots)
 
-        def __fabricate_parent_props(self):
+        def __fabricate_parent_props(self, ignore_errors=False):
                 """Fabricate the minimum set of properties required for a
                 parent image."""
 
                 props = dict()
                 props[PROP_PATH] = self.__img.root
-                props[PROP_ALTROOT] = self.__guess_altroot()
+                props[PROP_ALTROOT] = self.__guess_altroot(
+                    ignore_errors=ignore_errors)
                 return props
 
         def __load_ondisk_props(self, tmp=True):
@@ -634,14 +635,14 @@ class LinkedImage(object):
                 if tmp and path_exists(path):
                         return frozenset([
                             pkg.fmri.PkgFmri(str(s))
-                            for s in load_data(path, missing_val=EmptyI)
+                            for s in load_data(path, missing_val=misc.EmptyI)
                         ])
 
                 path = self.__path_ppkgs
                 if path_exists(path):
                         return frozenset([
                             pkg.fmri.PkgFmri(str(s))
-                            for s in load_data(path, missing_val=EmptyI)
+                            for s in load_data(path, missing_val=misc.EmptyI)
                         ])
 
                 return None
@@ -668,20 +669,38 @@ class LinkedImage(object):
                 """Load linked image properties and constraints from disk.
                 Update the linked image internal state with the loaded data."""
 
-                # load properties
+                #
+                # Normally, if we're a parent image we'll have linked image
+                # properties stored on disk.  So load those now.
+                #
+                # If no properties are loaded, we may still be a parent image
+                # that is just missing it's metadata.  (oops.)  We attempt to
+                # detect this situation by invoking __isparent(), which will
+                # ask each child if there are any children.  This is a best
+                # effort attempt, so when we do this we ignore any plugin
+                # runtime errors since we really want Image object
+                # initialization to succeed.  If we don't have any linked
+                # image metadata, and we're having runtime errors querying for
+                # children, then we'll allow initialization here, but any
+                # subsequent operation that tries to access children will fail
+                # and the caller will have to specify that they want to ignore
+                # all children to allow the operation to succeed.
+                #
                 props = self.__load_ondisk_props()
-                if not props and not self.isparent():
+                if not props and not self.__isparent(ignore_errors=True):
                         # we're not linked
                         return
 
                 if not props:
-                        # there are no properties on disk but we're a parent
-                        # image so we're missing properties.  oops.  rather
-                        # than die (which would prevent the user from being
-                        # able to fix the problem) fabricate up some props
-                        # with reasonably guessed values which the user can
-                        # subsequently change and/or fix.
-                        props = self.__fabricate_parent_props()
+                        #
+                        # Oops.  We're a parent image with no properties
+                        # stored on disk.  Rather than throwing an exception
+                        # try to fabricate up some props with reasonably
+                        # guessed values which the user can subsequently
+                        # change and/or fix.
+                        #
+                        props = self.__fabricate_parent_props(
+                            ignore_errors=True)
                 else:
                         self.__set_altroot(props)
 
@@ -975,10 +994,20 @@ class LinkedImage(object):
 
                 return PROP_NAME in self.__props
 
+        def __isparent(self, ignore_errors=False):
+                """Indicates whether the current image is a parent image.
+
+                'ignore_plugin_errors' ignore plugin runtime errors when
+                trying to determine if we're a parent image.
+                """
+
+                return len(self.__list_children(
+                    ignore_errors=ignore_errors)) > 0
+
         def isparent(self):
                 """Indicates whether the current image is a parent image."""
 
-                return len(self.__list_children()) > 0
+                return self.__isparent()
 
         def child_props(self, lin=None):
                 """Return a dictionary which represents the linked image
@@ -1052,7 +1081,7 @@ class LinkedImage(object):
                         self.__verify_child_name(lin, raise_except=True)
                 return lin
 
-        def __list_children(self, li_ignore=None):
+        def __list_children(self, li_ignore=None, ignore_errors=False):
                 """Returns a list of linked child images associated with the
                 current image.
 
@@ -1068,7 +1097,8 @@ class LinkedImage(object):
                 li_children = [
                     entry
                     for p in pkg.client.linkedimage.p_types
-                    for entry in self.__plugins[p].get_child_list()
+                    for entry in self.__plugins[p].get_child_list(
+                        ignore_errors=ignore_errors)
                 ]
 
                 # sort by linked image name
@@ -1493,11 +1523,15 @@ class LinkedImage(object):
         def attach_child(self, lin, path, props,
             accept=False, allow_relink=False, force=False, li_md_only=False,
             li_pkg_updates=True, noexecute=False, progtrack=None,
-            refresh_catalogs=True, show_licenses=False, update_index=True):
+            refresh_catalogs=True, reject_list=misc.EmptyI,
+            show_licenses=False, update_index=True):
                 """Attach an image as a child to the current image (the
                 current image will become a parent image. This operation
                 results in attempting to sync the child image with the parent
-                image."""
+                image.
+
+                For descriptions of parameters please see the descriptions in
+                api.py`gen_plan_*"""
 
                 # Too many arguments; pylint: disable-msg=R0913
                 # Too many return statements; pylint: disable-msg=R0911
@@ -1508,9 +1542,6 @@ class LinkedImage(object):
                     "type(props) == %s" % type(props)
                 if props == None:
                         props = dict()
-
-                if li_md_only:
-                        li_pkg_updates = False
 
                 lip = self.__plugins[lin.lin_type]
                 if not lip.support_attach and not force:
@@ -1580,11 +1611,12 @@ class LinkedImage(object):
                 except apx.LinkedImageException, e:
                         return (e.lix_exitrv, e)
 
-                rv, e = self.__sync_child(lin, lic,
+                rv, e = self.__sync_child(lic,
                     accept=accept, li_attach_sync=True, li_md_only=li_md_only,
                     li_pkg_updates=li_pkg_updates, noexecute=noexecute,
                     progtrack=progtrack, refresh_catalogs=refresh_catalogs,
-                    show_licenses=show_licenses, update_index=update_index)
+                    reject_list=reject_list, show_licenses=show_licenses,
+                    update_index=update_index)
 
                 assert isinstance(e, (type(None), apx.LinkedImageException))
 
@@ -1686,9 +1718,7 @@ class LinkedImage(object):
                                 lic = LinkedImageChild(self, lin)
 
                                 # perform the requested operation
-                                kwargs["lin"] = lin
-                                kwargs["lic"] = lic
-                                rvdict[lin] = op(**kwargs)
+                                rvdict[lin] = op(lic, **kwargs)
 
                                 # Unused variable; pylint: disable-msg=W0612
                                 rv, e = rvdict[lin]
@@ -1702,42 +1732,20 @@ class LinkedImage(object):
                 return rvdict
 
         @staticmethod
-        def __audit_child(lin, lic):
+        def __audit_child(lic):
                 """Recurse into a child image and audit it."""
-
-                # Unused argument 'lin'; pylint: disable-msg=W0613
                 return lic.child_audit()
 
         @staticmethod
-        def __sync_child(lin, lic, accept=False, li_attach_sync=False,
-            li_md_only=False, li_pkg_updates=True, noexecute=False,
-            progtrack=None, refresh_catalogs=True, show_licenses=False,
-            update_index=True):
+        def __sync_child(lic, **kwargs):
                 """Recurse into a child image and sync it."""
+                return lic.child_sync(**kwargs)
 
-                # Too many arguments; pylint: disable-msg=R0913
-                # Unused argument 'lin'; pylint: disable-msg=W0613
-
-                # no new constraints currently implies no pkg updates.
-                if li_md_only:
-                        li_pkg_updates = False
-
-                # now try to sync the image
-                return lic.child_sync(
-                    accept=accept,
-                    li_attach_sync=li_attach_sync,
-                    li_md_only=li_md_only,
-                    li_pkg_updates=li_pkg_updates,
-                    noexecute=noexecute,
-                    progtrack=progtrack,
-                    refresh_catalogs=refresh_catalogs,
-                    show_licenses=show_licenses,
-                    update_index=update_index)
-
-        def __detach_child(self, lin, lic, force=False, noexecute=False,
+        def __detach_child(self, lic, force=False, noexecute=False,
             progtrack=None):
                 """Recurse into a child image and detach it."""
 
+                lin = lic.child_name
                 lip = self.__plugins[lin.lin_type]
                 if not force and not lip.support_detach:
                         # we can't detach this type of image.
@@ -1831,7 +1839,7 @@ class LinkedImage(object):
                                 return True
                 return False
 
-        def extra_dep_actions(self, excludes=EmptyI,
+        def extra_dep_actions(self, excludes=misc.EmptyI,
             installed_catalog=False):
                 """Since we don't publish packages with parent dependencies
                 yet, but we want to be able to sync packages between zones,
@@ -2230,9 +2238,9 @@ class LinkedImageChild(object):
                 # Start the operation on the child.  let the child have direct
                 # access to stdout but capture stderr.
                 #
-                f = tempfile.TemporaryFile()
+                ferrout = tempfile.TemporaryFile()
                 try:
-                        p = pkg.pkgsubprocess.Popen(pkg_cmd, stderr=f)
+                        p = pkg.pkgsubprocess.Popen(pkg_cmd, stderr=ferrout)
                         p.wait()
                 except OSError, e:
                         # W0212 Access to a protected member
@@ -2243,13 +2251,13 @@ class LinkedImageChild(object):
                 self.__flush_output()
 
                 # get error output generated by the child
-                f.seek(0)
-                pkg_errout = "".join(f.readlines())
+                ferrout.seek(0)
+                errout = "".join(ferrout.readlines())
 
                 if progtrack:
                         progtrack.li_recurse_end(self.child_name)
 
-                return (p.returncode, pkg_errout)
+                return (p.returncode, errout)
 
         def child_detach(self, noexecute=False, progtrack=None):
                 """Detach a child image."""
@@ -2265,7 +2273,7 @@ class LinkedImageChild(object):
                 if noexecute:
                         pkg_args.append("-n")
 
-                rv, pkg_errout = self.__pkg_cmd(pkgdefs.PKG_OP_DETACH,
+                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_DETACH,
                     pkg_args)
 
                 # if the detach command ran, return its status.
@@ -2273,7 +2281,7 @@ class LinkedImageChild(object):
                         return (pkgdefs.EXIT_OK, None)
 
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
-                    cmd_failed=(pkgdefs.PKG_OP_DETACH, rv, pkg_errout))
+                    pkg_op_failed=(pkgdefs.PKG_OP_DETACH, rv, errout))
                 return (rv, e)
 
         def child_audit(self):
@@ -2286,7 +2294,7 @@ class LinkedImageChild(object):
                 # recurse into the child image
                 pkg_args = ["-q"]
 
-                rv, pkg_errout = self.__pkg_cmd(pkgdefs.PKG_OP_AUDIT_LINKED,
+                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_AUDIT_LINKED,
                     pkg_args)
 
                 # if the audit command ran, return its status.
@@ -2295,15 +2303,21 @@ class LinkedImageChild(object):
 
                 # something went unexpectedly wrong.
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
-                    cmd_failed=(pkgdefs.PKG_OP_AUDIT_LINKED, rv, pkg_errout))
+                    pkg_op_failed=(pkgdefs.PKG_OP_AUDIT_LINKED, rv, errout))
                 return (rv, e)
 
         def child_sync(self, accept=False, li_attach_sync=False,
             li_md_only=False, li_pkg_updates=True, progtrack=None,
-            noexecute=False, refresh_catalogs=True, show_licenses=False,
-            update_index=True):
+            noexecute=False, refresh_catalogs=True, reject_list=misc.EmptyI,
+            show_licenses=False, update_index=True):
                 """Try to bring a child image into sync with its
-                constraints."""
+                constraints.
+
+                'li_attach_sync' indicates if this sync is part of an attach
+                operation.
+
+                For descriptions of parameters please see the descriptions in
+                api.py`gen_plan_*"""
 
                 # Too many arguments; pylint: disable-msg=R0913
 
@@ -2349,8 +2363,10 @@ class LinkedImageChild(object):
                         pkg_args.append("--no-index")
                 if not li_pkg_updates:
                         pkg_args.append("--no-pkg-updates")
+                for pat in reject_list:
+                        pkg_args.extend(["--reject", str(pat)])
 
-                rv, pkg_errout = self.__pkg_cmd(pkgdefs.PKG_OP_SYNC,
+                rv, errout = self.__pkg_cmd(pkgdefs.PKG_OP_SYNC,
                     pkg_args, progtrack=progtrack)
 
                 # if the audit command ran, return its status.
@@ -2359,7 +2375,7 @@ class LinkedImageChild(object):
 
                 # something went unexpectedly wrong.
                 e = apx.LinkedImageException(lin=self.child_name, exitrv=rv,
-                    cmd_failed=(pkgdefs.PKG_OP_SYNC, rv, pkg_errout))
+                    pkg_op_failed=(pkgdefs.PKG_OP_SYNC, rv, errout))
                 return (rv, e)
 
         def child_init_root(self, old_altroot):
@@ -2474,7 +2490,7 @@ class LinkedImageChild(object):
                         # the child image told us it has no changes planned.
                         return pkgdefs.EXIT_NOP
 
-                rv, pkg_errout = self.__pkg_cmd(self.__r_op, self.__r_args,
+                rv, errout = self.__pkg_cmd(self.__r_op, self.__r_args,
                     stage=stage, progtrack=self.__r_progtrack)
 
                 if rv in [pkgdefs.EXIT_OK, pkgdefs.EXIT_NOP]:
@@ -2483,7 +2499,7 @@ class LinkedImageChild(object):
                 else:
                         e = apx.LinkedImageException(
                             lin=self.child_name, exitrv=rv,
-                            cmd_failed=(self.__r_op, rv, pkg_errout))
+                            pkg_op_failed=(self.__r_op, rv, errout))
                         self.child_reset_recurse()
                         raise e
 

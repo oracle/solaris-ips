@@ -300,14 +300,26 @@ LC_ALL=C $PKG refresh --full
 #
 PKG_IMAGE=$GZ_IMAGE
 
-log "$m_image_link" $GZ_IMAGE
-extra_flags=""
+pkg_args=""
 if [[ $allow_update == 0 ]]; then
-       extra_flags="--no-pkg-updates"
+	pkg_args="$pkg_args --no-pkg-updates"
 fi
 
+#
+# Look for the 'entire' incorporation.  We check for this because if the
+# user has removed it then we'll want to remove it from the zone during
+# attach.  The reason is that we're unlikely to be able to attach a
+# highly constrained zone (ie, one that has entire) to a loosely
+# constrainted global zone (ie, one that doesn't have entire installed).
+#
+entire_fmri=$(get_entire_incorp)
+if [[ $allow_update != 0 && -z $entire_fmri ]]; then
+	pkg_args="$pkg_args --reject pkg:///entire"
+fi
+
+log "$m_image_link" $GZ_IMAGE
 LC_ALL=C $PKG attach-linked $verbose -f --allow-relink --accept \
-    $extra_flags \
+    $pkg_args \
     -c zone:${zone.name} $ZONEROOT || pkg_err_check "$f_update"
 
 [[ -n $sc_config ]] && reconfigure_zone $sc_config

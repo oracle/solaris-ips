@@ -134,20 +134,39 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 self.__pname = pname
                 self.__linked = linked
                 self.__img = linked.image
-
-                # check if we're running in the gz
-                try:
-                        self.__in_gz = (_zonename() == ZONE_GLOBAL)
-                except OSError, e:
-                        # W0212 Access to a protected member
-                        # pylint: disable-msg=W0212
-                        raise apx._convert_error(e)
+                self.__in_gz_cached = None
 
                 # keep track of our freshly attach children
                 self.__children = dict()
 
                 # cache zoneadm output
                 self.__zoneadm_list_cache = None
+
+        def __in_gz(self, ignore_errors=False):
+                """Check if we're executing in the global zone.  Note that
+                this doesn't tell us anything about the image we're
+                manipulating, just the environment that we're running in."""
+
+                if self.__in_gz_cached != None:
+                        return self.__in_gz_cached
+
+                # check if we're running in the gz
+                try:
+                        self.__in_gz_cached = (_zonename() == ZONE_GLOBAL)
+                except OSError, e:
+                        # W0212 Access to a protected member
+                        # pylint: disable-msg=W0212
+                        if ignore_errors:
+                                # default to being in the global zone
+                                return True
+                        raise apx._convert_error(e)
+                except apx.LinkedImageException, e:
+                        if ignore_errors:
+                                # default to being in the global zone
+                                return True
+                        raise e
+
+                return self.__in_gz_cached
 
         def __zones_supported(self):
                 """Check to see if zones are supported in the current image.
@@ -157,6 +176,22 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 variant = "variant.opensolaris.zone"
                 value = self.__img.cfg.variants[variant]
                 if value != "global":
+                        return False
+
+                #
+                # sanity check the path to to /etc/zones.  below we check for
+                # the zones packages, and any image that has the zones
+                # packages installed should have a /etc/zones file (since
+                # those packages deliver this file) but it's possible that the
+                # image was corrupted and the user now wants to be able to run
+                # pkg commands to fix it.  if the path doesn't exist then we
+                # don't have any zones so just report that zones are
+                # unsupported (since zoneadm may fail to run anyway).
+                #
+                path = self.__img.root
+                if not os.path.isdir(os.path.join(path, "etc")):
+                        return False
+                if not os.path.isdir(os.path.join(path, "etc/zones")):
                         return False
 
                 # get a set of installed packages
@@ -175,7 +210,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
 
                 return False
 
-        def __list_zones_cached(self, nocache=False):
+        def __list_zones_cached(self, nocache=False, ignore_errors=False):
                 """List the zones associated with the current image.  Since
                 this involves forking and running zone commands, cache the
                 results."""
@@ -195,7 +230,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                         return self.__list_zones_cached()
 
                 # zones are only visible when running in the global zone
-                if not self.__in_gz:
+                if not self.__in_gz(ignore_errors=ignore_errors):
                         self.__zoneadm_list_cache = []
                         return self.__list_zones_cached()
 
@@ -205,7 +240,15 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 except OSError, e:
                         # W0212 Access to a protected member
                         # pylint: disable-msg=W0212
+                        if ignore_errors:
+                                # don't cache the result
+                                return []
                         raise apx._convert_error(e)
+                except apx.LinkedImageException, e:
+                        if ignore_errors:
+                                # don't cache the result
+                                return []
+                        raise e
 
                 # convert zone names into into LinkedImageName objects
                 zlist = []
@@ -221,10 +264,11 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 # nuke any cached children
                 self.__zoneadm_list_cache = None
 
-        def get_altroot(self):
+        def get_altroot(self, ignore_errors=False):
                 """See parent class for docstring."""
 
-                zlist = self.__list_zones_cached(nocache=True)
+                zlist = self.__list_zones_cached(nocache=True,
+                    ignore_errors=ignore_errors)
                 if not zlist:
                         return None
 
@@ -237,7 +281,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                         root = os.sep
                 return root
 
-        def get_child_list(self, nocache=False):
+        def get_child_list(self, nocache=False, ignore_errors=False):
                 """See parent class for docstring."""
 
                 inmemory = []
@@ -247,7 +291,8 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                         inmemory.append([lin, path])
 
                 ondisk = []
-                for (lin, path) in self.__list_zones_cached(nocache):
+                for (lin, path) in self.__list_zones_cached(nocache,
+                    ignore_errors=ignore_errors):
                         if lin in [i[0] for i in inmemory]:
                                 # we re-attached a zone in memory.
                                 continue
@@ -342,15 +387,20 @@ def _zonename():
         if not li.path_exists(cmd[0]):
                 return
 
-        f = tempfile.TemporaryFile()
-        p = pkg.pkgsubprocess.Popen(cmd, stdout=f)
+        fout = tempfile.TemporaryFile()
+        ferrout = tempfile.TemporaryFile()
+        p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
         if (p.returncode != 0):
-                raise apx.SubprocessError(rv=p.returncode, cmd=cmd)
+                cmd = " ".join(cmd)
+                ferrout.seek(0)
+                errout = "".join(ferrout.readlines())
+                raise apx.LinkedImageException(
+                    cmd_failed=(p.returncode, cmd, errout))
 
         # parse the command output
-        f.seek(0)
-        l = f.readlines()[0].rstrip()
+        fout.seek(0)
+        l = fout.readlines()[0].rstrip()
         return l
 
 def _list_zones(root):
@@ -372,15 +422,20 @@ def _list_zones(root):
         cmd.extend(["list", "-cp"])
 
         # execute zoneadm and save its output to a file
-        f = tempfile.TemporaryFile()
-        p = pkg.pkgsubprocess.Popen(cmd, stdout=f)
+        fout = tempfile.TemporaryFile()
+        ferrout = tempfile.TemporaryFile()
+        p = pkg.pkgsubprocess.Popen(cmd, stdout=fout, stderr=ferrout)
         p.wait()
         if (p.returncode != 0):
-                raise apx.SubprocessError(rv=p.returncode, cmd=cmd)
+                cmd = " ".join(cmd)
+                ferrout.seek(0)
+                errout = "".join(ferrout.readlines())
+                raise apx.LinkedImageException(
+                    cmd_failed=(p.returncode, cmd, errout))
 
         # parse the command output
-        f.seek(0)
-        for l in f.readlines():
+        fout.seek(0)
+        for l in fout.readlines():
                 l = l.rstrip()
 
                 # Unused variable; pylint: disable-msg=W0612

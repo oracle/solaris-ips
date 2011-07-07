@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import shutil
 import sys
 import traceback
 
@@ -129,7 +130,8 @@ class TestLinkedImageName(pkg5unittest.Pkg5TestCase):
                 DebugValues["zone_name"] = ["/bin/false"]
                 assertRaises(
                     (apx_verify, {
-                        "e_type": apx.SubprocessError}),
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "cmd_failed"}),
                         li.zone._zonename)
 
 
@@ -297,6 +299,14 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                     close\n"""
                 p_all.append(p_data)
 
+        # create a fake zones package
+        p_zones_name = "system/zones@0.5.11,5.11-0.169"
+        p_data = "open %s\n" % p_zones_name
+        p_data += """
+            add dir mode=0755 owner=root group=bin path=etc
+            close\n"""
+        p_all.append(p_data)
+
         def setUp(self):
                 self.i_count = 5
                 pkg5unittest.ManyDepotTestCase.setUp(self,
@@ -324,6 +334,7 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                         self.i_lin2index[lin] = i
                         self.set_image(i)
                         self.i_path.insert(i, self.img_path())
+                self.set_image(0)
 
         def _cat_update(self):
                 global p_update_index
@@ -352,11 +363,12 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                 ]))
 
         # utility functions for use by test cases
-        def _imgs_create(self, limit, **ic_opts):
-                variants = {
-                    "variant.foo": "bar",
-                    "variant.opensolaris.zone": "nonglobal",
-                }
+        def _imgs_create(self, limit, variants=None, **ic_opts):
+                if variants == None:
+                        variants = {
+                            "variant.foo": "bar",
+                            "variant.opensolaris.zone": "nonglobal",
+                        }
 
                 rv = []
 
@@ -399,7 +411,11 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                         rv = rvdict.get(c, EXIT_OK)
                         (c_rv, c_err) = self.api_objs[i].attach_linked_child(
                             lin=self.i_lin[c], li_path=self.i_path[c], **args)
-                        self.assertEqual(c_rv, rv)
+                        self.assertEqual(rv, c_rv, """
+Child attach returned unexpected error code.  Expected %d, got: %d.
+Error output:
+%s""" %
+                                   (rv, c_rv, str(c_err)))
                         self.api_objs[c].reset()
 
         def _children_op(self, i, cl, op, rv=None, rvdict=None, **args):
@@ -886,27 +902,27 @@ packages known:
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "cmd_failed"}),
+                        "e_member": "pkg_op_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_install(*args, **kwargs)),
                         [self.p_sync1_name[0]])
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "cmd_failed"}),
+                        "e_member": "pkg_op_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_update(*args, **kwargs)))
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "cmd_failed"}),
+                        "e_member": "pkg_op_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_change_varcets(*args, **kwargs)),
                         variants={"variant.foo": "baz"})
                 assertRaises(
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
-                        "e_member": "cmd_failed"}),
+                        "e_member": "pkg_op_failed"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_uninstall(*args, **kwargs)),
                         [self.p_sync1_name_gen])
@@ -1211,6 +1227,83 @@ packages known:
                     (apx_verify, {"e_type": RuntimeError}),
                     self._api_sync, api_objs[1],
                     reject_list=[self.p_sync1_name[1], self.p_foo2_name[1]])
+
+        def test_corrupt_zone_metadata(self):
+                """Verify that some corrupt zone metadata states are
+                handled reasonably."""
+
+                def __do_tests(li_count):
+                        # if /etc/zones doesn't exists we don't have zones
+                        # children and we don't run the zone commands.
+                        api_objs[0].reset()
+                        linked = api_objs[0].list_linked()
+                        assert len(linked) == li_count
+
+                        #
+                        # an empty /etc/zones directory will cause the zone
+                        # commands to fail which will cause linked image
+                        # operations to fail.
+                        #
+                        os.mkdir(os.path.join(self.img_path(), "etc/zones"),
+                            0755)
+                        api_objs[0].reset()
+                        assertRaises(
+                            (apx_verify, {
+                                "e_type": apx.LinkedImageException,
+                                "e_member": "cmd_failed"}),
+                            api_objs[0].list_linked)
+
+                        # ignoring all linked children should allow the
+                        # operation to succeed.
+                        linked = api_objs[0].list_linked(li_ignore=[])
+                        assert len(linked) == 0
+
+                        # reset the image
+                        os.rmdir(os.path.join(self.img_path(), "etc/zones"))
+
+                #
+                # create a global zone image and install a fake zones package
+                # within the image.  this makes the linked image zones plugin
+                # think it's dealing with an image that could have zone
+                # children so it will invoke the zone tools on the image to
+                # try and discover zones installed in the image.
+                #
+                api_objs = self._imgs_create(2)
+                self._api_change_varcets(api_objs[0],
+                    variants={"variant.opensolaris.zone": "global"})
+                self._api_install(api_objs[0], [self.p_zones_name])
+
+                # run tests
+                __do_tests(0)
+
+                # link a system image child to the image and run tests
+                self._children_attach(0, [1])
+                __do_tests(2)
+
+                # remove linked image metadata from the parent and run tests
+                shutil.rmtree(os.path.join(self.img_path(), "var/pkg/linked"))
+                __do_tests(2)
+
+        def test_attach_reject(self):
+                """Verify that we can reject packages during attach."""
+
+                api_objs = self._imgs_create(3)
+
+                # install a random package into the image
+                pkg = self.p_foo1_name_gen
+                self._api_install(api_objs[1], [pkg])
+                self._api_install(api_objs[2], [pkg])
+
+                # attach c2p
+                assert len(self._list_inst_packages(api_objs[1])) == 1
+                self._parent_attach(0, [1], reject_list=[pkg])
+                assert len(self._list_inst_packages(api_objs[1])) == 0
+
+                # attach p2c
+                assert len(self._list_inst_packages(api_objs[2])) == 1
+                self._children_attach(0, [2], reject_list=[pkg])
+                assert len(self._list_inst_packages(api_objs[2])) == 0
+
 
 if __name__ == "__main__":
         unittest.main()

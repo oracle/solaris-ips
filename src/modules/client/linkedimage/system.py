@@ -63,12 +63,12 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
                 # nothing to do
                 return
 
-        def get_altroot(self):
+        def get_altroot(self, ignore_errors=False):
                 """See parent class for docstring."""
                 # nothing to do
                 return None
 
-        def get_child_list(self, nocache=False):
+        def get_child_list(self, nocache=False, ignore_errors=False):
                 """See parent class for docstring."""
 
                 if not self.__img.cfg:

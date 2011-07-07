@@ -58,18 +58,6 @@ class SuidUnsupportedError(ApiException):
                 return _("""
 The pkg client api module can not be invoked from an setuid executable.""")
 
-class SubprocessError(ApiException):
-
-        def __init__(self, rv, cmd):
-                if type(cmd) == list:
-                        cmd = " ".join(cmd)
-                assert type(cmd) == str
-                self.err = _("The following subprocess returned an "
-                    "unexpected exit code of %(rv)d:\n%(cmd)s") % \
-                    {"rv": rv, "cmd": cmd}
-
-        def __str__(self):
-                return self.err
 
 class ImageLockedError(ApiException):
         """Used to indicate that the image is currently locked by another thread
@@ -2487,6 +2475,7 @@ class LinkedImageException(ApiException):
             parent_bad_notabs=None,
             parent_bad_path=None,
             parent_not_in_altroot=None,
+            pkg_op_failed=None,
             self_linked=None,
             self_not_child=None):
 
@@ -2515,6 +2504,7 @@ class LinkedImageException(ApiException):
                 self.parent_bad_notabs = parent_bad_notabs
                 self.parent_bad_path = parent_bad_path
                 self.parent_not_in_altroot = parent_not_in_altroot
+                self.pkg_op_failed = pkg_op_failed
                 self.self_linked = self_linked
                 self.self_not_child = self_not_child
 
@@ -2625,24 +2615,14 @@ class LinkedImageException(ApiException):
                             child_unknown
 
                 if cmd_failed:
-                        assert lin
-                        assert len(cmd_failed) == 3
-                        op = cmd_failed[0]
-                        exitrv = cmd_failed[1]
-                        errout = cmd_failed[2]
-
-                        err = _("""
-A '%(op)s' operation failed for child '%(lin)s' with an unexpected
-return value of %(exitrv)d and the following error message:
-%(errout)s
-
-"""
-                        ) % {
-                            "lin": lin,
-                            "op": op,
-                            "exitrv": exitrv,
-                            "errout": errout,
-                        }
+                        (rv, cmd, errout) = cmd_failed
+                        err = _("The following subprocess returned an "
+                            "unexpected exit code of %(rv)d:\n    %(cmd)s") % \
+                            {"rv": rv, "cmd": cmd}
+                        if not errout:
+                                return
+                        err += _("\nAnd generated the following error "
+                            "message:\n%(errout)s" % {"errout": errout})
 
                 if detach_child_notsup:
                         err = _("Linked image type does not support "
@@ -2692,6 +2672,26 @@ return value of %(exitrv)d and the following error message:
                                 "path": path,
                                 "altroot": altroot
                             }
+
+                if pkg_op_failed:
+                        assert lin
+                        assert len(pkg_op_failed) == 3
+                        op = pkg_op_failed[0]
+                        exitrv = pkg_op_failed[1]
+                        errout = pkg_op_failed[2]
+
+                        err = _("""
+A '%(op)s' operation failed for child '%(lin)s' with an unexpected
+return value of %(exitrv)d and the following error message:
+%(errout)s
+
+"""
+                        ) % {
+                            "lin": lin,
+                            "op": op,
+                            "exitrv": exitrv,
+                            "errout": errout,
+                        }
 
                 if self_linked:
                         err = _("Current image already a linked child: %s") % \
