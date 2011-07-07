@@ -239,11 +239,13 @@ class ImagePlan(object):
 
         @property
         def services(self):
-                """Returns a list of strings describing affected services"""
-                return [
-                    "%s: %s" % (fmri, smf)
-                    for fmri, smf in self.__actuators.get_services_list()
-                ]
+                """Returns a list of string tuples describing affected services
+                (action, SMF FMRI)."""
+                return sorted(
+                    ((str(action), str(smf_fmri))
+                    for action, smf_fmri in self.__actuators.get_services_list()),
+                    key=operator.itemgetter(0, 1)
+                )
 
         @property
         def varcets(self):
@@ -1523,23 +1525,59 @@ class ImagePlan(object):
                 self.merge_actions()
 
                 for p in self.pkg_plans:
-                        cbytes, bytes = p.get_bytes_added()
-                        self.__cbytes_added += cbytes
-                        self.__bytes_added += bytes
+                        cpbytes, pbytes = p.get_bytes_added()
+                        if p.destination_fmri:
+                                mpath = self.image.get_manifest_path(
+                                    p.destination_fmri)
+                                try:
+                                        # Manifest data is essentially stored
+                                        # three times (original, cache, catalog).
+                                        # For now, include this in cbytes_added
+                                        # since that's closest to where the
+                                        # download cache is stored.
+                                        self.__cbytes_added += \
+                                            os.stat(mpath).st_size * 3
+                                except EnvironmentError, e:
+                                        raise apx._convert_error(e)
+                        self.__cbytes_added += cpbytes
+                        self.__bytes_added += pbytes
+
+                # Include state directory in cbytes_added for now since it's
+                # closest to where the download cache is stored.  (Twice the
+                # amount is used because image state update involves using
+                # a complete copy of existing state.)
+                self.__cbytes_added += \
+                    misc.get_dir_size(self.image._statedir) * 2
+
+                # Our slop factor is 25%; overestimating is safer than under-
+                # estimating.  This attempts to approximate how much overhead
+                # the filesystem will impose on the operation.  Empirical
+                # testing suggests that overhead can vary wildly depending on
+                # average file size, fragmentation, zfs metadata overhead, etc.
+                # For an install of a package such as solaris-small-server into
+                # an image, a 12% difference between actual size and installed
+                # size was found, so this seems safe enough.  (And helps account
+                # for any bootarchives, fs overhead, etc.)
+                self.__cbytes_added *= 1.25
+                self.__bytes_added *= 1.25
+
+                # XXX For now, include cbytes_added in bytes_added total; in the
+                # future, this should only happen if they share the same
+                # filesystem.
+                self.__bytes_added += self.__cbytes_added
 
                 self.__update_avail_space()
 
         def __update_avail_space(self):
-                """Update amount of available space on FS"""                
+                """Update amount of available space on FS"""
                 self.__cbytes_avail = misc.spaceavail(
                     self.image.write_cache_path)
-                        
+
                 self.__bytes_avail = misc.spaceavail(self.image.root)
                 # if we don't have a full image yet
                 if self.__cbytes_avail < 0:
                         self.__cbytes_avail = self.__bytes_avail
 
- 
         def evaluate_pkg_plans(self):
                 """Internal helper function that does the work of converting
                 fmri changes into pkg plans."""
@@ -2036,17 +2074,17 @@ class ImagePlan(object):
                 # check if we're going to have enough room
                 # stat fs again just in case someone else is using space...
                 self.__update_avail_space()
-                if self.__cbytes_added > self.__cbytes_avail * 1.2: 
+                if self.__cbytes_added > self.__cbytes_avail: 
                         raise api_errors.ImageInsufficentSpace(
                             self.__cbytes_added,
-                            self.__cbytes_avail * 1.2,
+                            self.__cbytes_avail,
                             _("Download cache"))
-                if self.__bytes_added > self.__bytes_avail * 1.2:
+                if self.__bytes_added > self.__bytes_avail:
                         raise api_errors.ImageInsufficentSpace(
                             self.__bytes_added,
-                            self.__bytes_avail * 1.2,
+                            self.__bytes_avail,
                             _("Root filesystem"))
-                
+
                 # Remove history about manifest/catalog transactions.  This
                 # helps the stats engine by only considering the performance of
                 # bulk downloads.
@@ -2115,10 +2153,10 @@ class ImagePlan(object):
 
                 # check for available space
                 self.__update_avail_space()
-                if self.__bytes_added > self.__bytes_avail * 1.2:
+                if self.__bytes_added > self.__bytes_avail:
                         raise api_errors.ImageInsufficentSpace(
                             self.__bytes_added,
-                            self.__bytes_avail * 1.2,
+                            self.__bytes_avail,
                             _("Root filesystem"))
 
                 #

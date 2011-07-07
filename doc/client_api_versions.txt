@@ -1,3 +1,14 @@
+Version 62:
+Incompatible with clients using versions 0-61.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * the 'fmri' property is now a PkgFmri object instead of a
+          string.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * get_services() now returns a list of tuples of strings,
+          see pkg.client.api for details.
+
 Version 61:
 Compatible with clients using version 60.
     pkg.client.api.PlanDescription has changed as follows:

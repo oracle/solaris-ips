@@ -289,7 +289,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def write_cache_path(self):
                 """Returns a path to fs that holds write cache - used to
                 compute whether we have sufficent space for downloads"""
-                return self.__user_cache_dir or os.path.join(self.root, IMG_PUB_DIR)
+                return self.__user_cache_dir or \
+                    os.path.join(self.imgdir, IMG_PUB_DIR)
 
         @staticmethod
         def alloc(*args, **kwargs):

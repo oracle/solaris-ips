@@ -4308,8 +4308,7 @@ class PackageManager:
                         info = self.api_o.info(pkg_stems, True, frozenset(
                                     [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
                         for info_s in info.get(0):
-                                pkg_stem = fmri.PkgFmri(info_s.fmri).get_pkg_stem(
-                                    include_scheme = True)
+                                pkg_stem = info_s.fmri.get_pkg_stem()
                                 if api.PackageInfo.INSTALLED in info_s.states:
                                         pkg_stem_states[pkg_stem] = \
                                                 api.PackageInfo.INSTALLED

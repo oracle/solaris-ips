@@ -249,7 +249,7 @@ class CatalogInterface(_Interface):
                             publisher=pub, version=release,
                             build_release=build_release, branch=branch,
                             packaging_date=packaging_date, size=size,
-                            pfmri=str(f), licenses=licenses, links=links,
+                            pfmri=f, licenses=licenses, links=links,
                             hardlinks=hardlinks, files=files, dirs=dirs,
                             dependencies=dependencies, description=description))
                 return {

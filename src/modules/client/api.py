@@ -72,7 +72,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 61
+CURRENT_API_VERSION = 62
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -282,7 +282,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION, 60])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -3189,7 +3189,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     states=states, publisher=pub, version=release,
                                     build_release=build_release, branch=branch,
                                     packaging_date=packaging_date, size=size,
-                                    pfmri=str(pfmri), licenses=licenses,
+                                    pfmri=pfmri, licenses=licenses,
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
                                     description=description))
@@ -4306,7 +4306,8 @@ class PlanDescription(object):
                 and 'dest_pi' is the new version of the package it is
                 being upgraded to."""
 
-                for pp in self.__plan.pkg_plans:
+                for pp in sorted(self.__plan.pkg_plans,
+                    key=operator.attrgetter("origin_fmri", "destination_fmri")):
                         yield (PackageInfo.build_from_fmri(pp.origin_fmri),
                             PackageInfo.build_from_fmri(pp.destination_fmri))
 
@@ -4416,24 +4417,24 @@ class PlanDescription(object):
 
         @property
         def bytes_added(self):
-                """Returns approximate number of bytes added"""
+                """Estimated number of bytes added"""
                 return self.__plan.bytes_added
 
         @property
         def cbytes_added(self):
-                """Returns approximate number of download cache bytes added"""
+                """Estimated number of download cache bytes added"""
                 return self.__plan.cbytes_added
 
         @property
         def bytes_avail(self):
-                """Returns approximate number of bytes available in image /"""
+                """Estimated number of bytes available in image /"""
                 return self.__plan.bytes_avail
 
         @property
         def cbytes_avail(self):
-                """Returns approximate number of space in download cache"""
+                """Estimated number of bytes available in download cache"""
                 return self.__plan.cbytes_avail
-         
+
 
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
     cancel_state_callable=None, facets=misc.EmptyDict, force=False,

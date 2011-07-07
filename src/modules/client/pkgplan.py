@@ -360,12 +360,13 @@ class PkgPlan(object):
                 because they're usually pinned by snapshots"""
                 def sum_dest_size(a, b):
                         if b[1]:
-                                return (a[0] + int(b[1].attrs.get("pkg.csize",0)),
-                                    a[1] + int(b[1].attrs.get("pkg.size",0)))
-                        else:
-                                return (a[0], a[1])
+                                return (a[0] + int(b[1].attrs.get("pkg.csize" ,0)),
+                                    a[1] + int(b[1].attrs.get("pkg.size", 0)))
+                        return (a[0], a[1])
 
-                return reduce(sum_dest_size, itertools.chain(*self.actions), (0,0))
+                return reduce(sum_dest_size, itertools.chain(*self.actions),
+                    (0, 0))
+
         def get_xfername(self):
                 if self.destination_fmri:
                         return self.destination_fmri.get_name()

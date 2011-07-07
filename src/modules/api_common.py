@@ -170,7 +170,7 @@ class PackageInfo(object):
                     version=version.release,
                     build_release=version.build_release, branch=version.branch,
                     packaging_date=version.get_timestamp().strftime("%c"),
-                    pfmri=str(f))
+                    pfmri=f)
 
 
 def _get_pkg_cat_data(cat, info_needed, actions=None,

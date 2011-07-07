@@ -44,6 +44,7 @@
 
 try:
         import calendar
+        import collections
         import datetime
         import errno
         import fnmatch
@@ -88,7 +89,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 61
+CLIENT_API_VERSION = 62
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -888,95 +889,145 @@ def __display_plan(api_inst, verbose):
         plan = api_inst.describe()
 
         a, r, i, c = [], [], [], []
-
         for src, dest in plan.get_changes():
                 if dest is None:
                         r.append((src, dest))
                 elif src is None:
                         i.append((src, dest))
-                elif str(src) != str(dest):
+                elif src != dest:
                         c.append((src, dest))
                 else:
                         a.append((src, dest))
-        v = plan.get_varcets()
 
         def bool_str(val):
                 if val:
                         return _("Yes")
                 return _("No")
 
+        status = []
+        varcets = plan.get_varcets()
         if "basic" in disp:
-                def cond_show(s, v):
+                def cond_show(s1, s2, v):
                         if v:
-                                logger.info(s % v)
+                                status.append((s1, s2 % v))
 
-                cond_show(_("                Packages to remove: %6d"), len(r))
-                cond_show(_("               Packages to install: %6d"), len(i))
-                cond_show(_("                Packages to update: %6d"), len(c))
-                cond_show(_("         Variants/facets to change: %6d"), len(v))
+                cond_show(_("Packages to remove:"), "%d", len(r))
+                cond_show(_("Packages to install:"), "%d", len(i))
+                cond_show(_("Packages to update:"), "%d", len(c))
+                cond_show(_("Variants/Facets to change:"), "%d", len(varcets))
 
-                bytes = plan.bytes_added
-                if bytes:
-                        logger.info(_("Additional filesystem space needed: %6s"),
-                            misc.bytes_to_str(bytes))
-                        logger.info(_("        Filesystem space available: %6s"),
-                            misc.bytes_to_str(plan.bytes_avail))
+                if verbose:
+                        # Only show space information in verbose mode.
+                        abytes = plan.bytes_added
+                        if abytes:
+                                status.append((_("Estimated space available:"),
+                                    misc.bytes_to_str(plan.bytes_avail)))
+                                status.append((
+                                    _("Estimated space to be consumed:"),
+                                    misc.bytes_to_str(plan.bytes_added)))
 
-                if len(v):
-                        s = "                Packages to change: %6d"
+                if len(varcets):
+                        cond_show(_("Packages to change:"), "%d", len(a))
                 else:
-                        s = "                   Packages to fix: %6d"
-                cond_show(s, len(a))
+                        cond_show(_("Packages to fix:"), "%d", len(a))
 
-                logger.info(_("           Create boot environment: %6s") %
-                    bool_str(plan.new_be))
+                status.append((_("Create boot environment:"),
+                    bool_str(plan.new_be)))
 
                 if plan.new_be and (verbose or not plan.activate_be):
                         # Only show activation status if verbose or if new BE
                         # will not be activated.
-                        logger.info(_("         Activate boot environment: %6s") %
-                            bool_str(plan.activate_be))
+                        status.append((_("Activate boot environment:"),
+                            bool_str(plan.activate_be)))
 
                 if not plan.new_be:
-                        cond_show(_("               Services to restart: %6d"),
+                        cond_show(_("Services to change:"), "%d",
                             len(plan.get_services()))
 
         if "boot-archive" in disp:
-                logger.info(_("              Rebuild boot archive: %6s") %
-                    bool_str(plan.update_boot_archive))
+                status.append((_("Rebuild boot archive:"),
+                    bool_str(plan.update_boot_archive)))
 
-        if "variants/facets" in disp and v:
+        # Right-justify all status strings based on length of longest string.
+        rjust_status = max(len(s[0]) for s in status)
+        rjust_value = max(len(s[1]) for s in status)
+        for s in status:
+                logger.info("%s %s" % (s[0].rjust(rjust_status),
+                    s[1].rjust(rjust_value)))
+
+        if status:
+                # Ensure there is a blank line between status information and
+                # remainder.
+                logger.info("")
+
+        if "variants/facets" in disp and varcets:
                 logger.info(_("Changed variants/facets:"))
-                for x in v:
+                for x in varcets:
                         logger.info("  %s" % x)
 
         if "solver-errors" in disp:
-                logger.info(_("Solver dependency errors:"))
+                first = True
                 for l in plan.get_solver_errors():
+                        if first:
+                                logger.info(_("Solver dependency errors:"))
+                                first = False
                         logger.info(l)
 
         if "fmris" in disp:
-                if len(c) + len(r) + len(i) > 0:
-                        logger.info(_("Changed fmris:"))
-                        for src, dest in r + i + c:
-                                logger.info("  %s -> %s", src, dest)
+                changed = collections.defaultdict(list)
+                for src, dest in itertools.chain(r, i, c):
+                        if src and dest:
+                                if src.publisher != dest.publisher:
+                                        pparent = "%s -> %s" % (src.publisher,
+                                            dest.publisher)
+                                else:
+                                        pparent = dest.publisher
+                                pname = dest.pkg_stem
+                                pver = "%s -> %s" % (src.fmri.version,
+                                    dest.fmri.version)
+                        elif dest:
+                                pparent = dest.publisher
+                                pname = dest.pkg_stem
+                                pver = "None -> %s" % dest.fmri.version
+                        else:
+                                pparent = src.publisher
+                                pname = src.pkg_stem
+                                pver = "%s -> None" % src.fmri.version
+
+                        changed[pparent].append((pname, pver))
+
+                if changed:
+                        logger.info(_("Changed packages:"))
+                        last_parent = None
+                        for pparent, pname, pver in (
+                            (pparent, pname, pver)
+                            for pparent in sorted(changed)
+                            for pname, pver in changed[pparent]
+                        ):
+                                if pparent != last_parent:
+                                        logger.info(pparent)
+
+                                logger.info("  %s" % pname)
+                                logger.info("    %s" % pver)
+                                last_parent = pparent
+
                 if len(a):
                         logger.info(_("Affected fmris:"))
                         for src, dest in a:
                                 logger.info("  %s", src)
 
-        if "services" in disp:
-                if not plan.new_be:
-                        logger.info(_("Services:"))
-                        l = plan.get_services()
-                        if l:
-                                for a in l:
-                                        logger.info("  %s" % a)
-                        else:
-                                logger.info(_("  None"))
+        if "services" in disp and not plan.new_be:
+                last_action = None
+                for action, smf_fmri in plan.get_services():
+                        if last_action is None:
+                                logger.info("Services:")
+                        if action != last_action:
+                                logger.info("  %s:" % action)
+                        logger.info("    %s" % smf_fmri)
+                        last_action = action
 
         if "actions" in disp:
-                logger.info("Actions")
+                logger.info("Actions:")
                 for a in plan.get_actions():
                         logger.info("  %s" % a)
 

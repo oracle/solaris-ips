@@ -1073,7 +1073,13 @@ def spaceavail(path):
         except OSError:
                 return -1
 
-
-
-
-
+def get_dir_size(path):
+        """Return the size (in bytes) of a directory and all of its contents."""
+        try:
+                return sum(
+                    os.path.getsize(os.path.join(d, fname))
+                    for d, dnames, fnames in os.walk(path)
+                    for fname in fnames
+                )
+        except EnvironmentError, e:
+                raise apx._convert_error(e)
