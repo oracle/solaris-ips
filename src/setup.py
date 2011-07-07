@@ -99,7 +99,6 @@ man1m_dir = 'usr/share/man/cat1m'
 man5_dir = 'usr/share/man/cat5'
 resource_dir = 'usr/share/lib/pkg'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
-zones_dir = 'etc/zones'
 etcbrand_dir = 'etc/brand/ipkg'
 brand_dir = 'usr/lib/brand/ipkg'
 execattrd_dir = 'etc/security/exec_attr.d'
@@ -241,9 +240,6 @@ for entry in os.walk("web"):
             if f != "Makefile"
             ]))
 
-zones_files = [
-        'brand/SUNWipkg.xml',
-        ]
 brand_files = [
         'brand/pkgcreatezone',
         'brand/attach',
@@ -793,7 +789,6 @@ data_files += [
 if osname == 'sunos':
         # Solaris-specific extensions are added here
         data_files += [
-                (zones_dir, zones_files),
                 (brand_dir, brand_files),
                 (etcbrand_dir, etcbrand_files),
                 (smf_app_dir, smf_app_files),
