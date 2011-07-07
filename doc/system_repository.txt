@@ -60,4 +60,36 @@ The information for the syspub/0 response comes from the global zone's image's
 configuration.  The pkg/sysrepo service is responsible transforming the image
 configuration into an Apache configuration file and causing the system depot to
 reread its configuration.  The global zone pkg client restarts the pkg/sysrepo
-servvice whenever the image's publisher configuration changes.
+service whenever the image's publisher configuration changes.
+
+The Apache configuration file, written by sysrepo.py using the Mako template
+sysrepo_httpd.conf.mako does two things:
+
+ * enables an Apache proxy accepting only requests to the configured
+   publisher http URIs (and utilizes a file-based proxy cache) only listening
+   on the loopback interface by default.
+
+ * adds a series of mod_rewrite RewriteRule and Alias directives to allow
+   the Apache instance to gain access to configured file:// publishers.
+
+The Apache urls are accessible from the system repository configured at
+'<sysrepo>' for a given publisher '<publisher>' are below.
+
+We serve static responses to the following URLs, the content being either
+a known versions file, or the p5s file mentioned above:
+
+  http://<sysrepo>/versions/0/
+  http://<sysrepo>/syspub/0
+
+For access to file:// repositories, we use rewrite rules and Alias directives to
+access the file repository contents.  In order to allow repositories with
+different paths, yet prevent exposing those paths to system repository clients,
+we use an SHA-1 hash of the path, and include that in the URL (below, this hash
+is represented by "HASH")  The URLs we accept for file:// repositories are:
+
+  http://<sysrepo>/<publisher>/HASH/file/1/<file hash>
+  http://<sysrepo>/<publisher>/HASH/manifest/0/<package name@version>
+  http://<sysrepo>/<publisher>/HASH/publisher/0
+  http://<sysrepo>/<publisher>/HASH/versions/0
+
+The system publisher also responds to 'OPTIONS * HTTP/1.0' requests.

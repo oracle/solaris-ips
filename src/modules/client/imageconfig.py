@@ -926,6 +926,7 @@ class BlendedConfig(object):
                                     props["publisher-search-order"])
                 else:
                         self.sys_cfg = NullSystemPublisher()
+
                 self.__publishers, self.added_pubs, self.removed_pubs = \
                     self.__merge_publishers(self.img_cfg, self.sys_cfg,
                         pkg_counts, old_sysconfig, self.__proxy_url,
@@ -1009,6 +1010,8 @@ class BlendedConfig(object):
                                 repo = p.repository
                                 for o in repo.origins:
                                         res[p.prefix].repository.add_origin(o)
+                                for m in repo.mirrors:
+                                        res[p.prefix].repository.add_mirror(m)
                         else:
                                 res[p.prefix] = p
 
@@ -1028,34 +1031,39 @@ class BlendedConfig(object):
                 then write it."""
 
                 for p in self.__publishers.values():
-                        repo = p.repository
-                        user_origins = [o for o in repo.origins if not o.system]
-                        sys_origins = [o for o in repo.origins if o.system]
-                        # If there aren't any origins configured from the system
-                        # repository, then make sure the publisher is configured
-                        # in the image.
-                        if not sys_origins:
+
+                        if not p.sys_pub:
                                 self.img_cfg.publishers[p.prefix] = p
                                 continue
 
-                        user_pub = self.img_cfg.publishers.get(p.prefix, None)
-                        # If there aren't any user origins and the publisher has
-                        # not been configured manually, then remove the
-                        # publisher from the image.
-                        if not user_origins and \
-                            (not user_pub or not user_pub.has_configuration()):
-                                if user_pub:
-                                        del self.img_cfg.publishers[p.prefix]
+                        # If we had previous user-configuration for this
+                        # publisher, only store non-system publisher changes
+                        repo = p.repository
+                        sticky = p.sticky
+                        user_origins = [o for o in repo.origins if not o.system]
+                        user_mirrors = [o for o in repo.mirrors if not o.system]
+                        old_origins = []
+                        old_mirrors = []
+
+                        # look for any previously set configuration
+                        if p.prefix in self.img_cfg.publishers:
+                                old_pub = self.img_cfg.publishers[p.prefix]
+                                old_origins = old_pub.repository.origins
+                                old_mirrors = old_pub.repository.mirrors
+                                sticky = old_pub.sticky
+
+                        # no user changes, so nothing new to write
+                        if set(user_origins) == set(old_origins) and \
+                            set(user_mirrors) == set(old_mirrors):
                                 continue
 
-                        # If there isn't a publisher in the image configuration,
-                        # then create one and give it the right set of origins.
-                        if not user_pub:
-                                user_pub = publisher.Publisher(prefix=p.prefix)
-                                self.img_cfg.publishers[p.prefix] = user_pub
-                        if not user_pub.repository:
-                                user_pub.repository = publisher.Repository()
+                        # store a publisher with this configuration
+                        user_pub = publisher.Publisher(prefix=p.prefix,
+                            sticky=sticky)
+                        user_pub.repository = publisher.Repository()
                         user_pub.repository.origins = user_origins
+                        user_pub.repository.mirrors = user_mirrors
+                        self.img_cfg.publishers[p.prefix] = user_pub
 
                 # Write out the image configuration.
                 self.img_cfg.write()
@@ -1153,7 +1161,7 @@ class BlendedConfig(object):
             after):
                 """Change the publisher search order by moving the publisher
                 'being_moved' relative to the publisher 'staying put.'  The
-                boolean 'after' determins whether 'being_moved' is placed before
+                boolean 'after' determines whether 'being_moved' is placed before
                 or after 'staying_put'."""
 
                 if being_moved == staying_put:

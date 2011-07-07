@@ -32,6 +32,7 @@ import os
 import os.path
 import unittest
 import urllib2
+import shutil
 
 class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
         """Some basic tests checking that we can deal with all of our arguments
@@ -174,6 +175,15 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                         self.assert_(invalid_tmp in err, "error message "
                             "did not contain %s: %s" % (invalid_tmp, err))
 
+        def test_10_invalid_http_timeout(self):
+                """We return an error given an invalid http_timeout"""
+
+                for invalid_time in ["cats", "0", "-1"]:
+                        ret, output, err = self.sysrepo("-T %s" %invalid_time,
+                            out=True, stderr=True, exit=1)
+                        self.assert_("http_timeout" in err, "error message "
+                             "did not contain http_timeout: %s" % err)
+
 class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
 
         persistent_setup = True
@@ -205,7 +215,6 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 for dc_num in self.dcs:
                         durl = self.dcs[dc_num].get_depot_url()
                         self.pkgsend_bulk(durl, self.sample_pkg)
-                self.image_create(prefix="test1", repourl=self.durl1)
 
         def killalldepots(self):
                 try:
@@ -249,6 +258,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
         def test_3_cache_dir(self):
                 """Our cache_dir value is used"""
 
+                self.image_create(prefix="test1", repourl=self.durl1)
+
                 cache_dir = os.path.join(self.test_root, "t_sysrepo_cache")
                 port = self.next_free_port
                 self.sysrepo("-R %s -c %s -p %s" % (self.get_img_path(),
@@ -287,6 +298,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
         def test_4_logs_dir(self):
                 """Our logs_dir value is used"""
 
+                self.image_create(prefix="test1", repourl=self.durl1)
+
                 logs_dir = os.path.join(self.test_root, "t_sysrepo_logs")
                 port = self.next_free_port
                 self.sysrepo("-l %s -p %s" % (logs_dir, port))
@@ -304,6 +317,7 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
 
         def test_5_port_host(self):
                 """Our port value is used"""
+                self.image_create(prefix="test1", repourl=self.durl1)
 
                 port = self.next_free_port
                 self.sysrepo("-p %s -h localhost" % port)
@@ -322,6 +336,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
         def test_7_response_overlaps(self):
                 """We can proxy publishers that are == or substrings of our
                 known responses"""
+
+                self.image_create(prefix="test1", repourl=self.durl1)
 
                 overlap_dcs = []
                 # identify the interesting repos, those that we've configured
@@ -365,6 +381,8 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 # The standard system publisher client code does not use the
                 # "publisher/0" response, so we need this test to exercise that.
 
+                self.image_create(prefix="test1", repourl=self.durl1)
+
                 # create a version of this url with a symlink, to ensure we
                 # can follow links in urls
                 urlresult = urllib2.urlparse.urlparse(self.rurl1)
@@ -404,6 +422,22 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                         self.image_create(repourl="file://%s" % path)
                         self.sysrepo("-R %s" % self.img_path(), exit=1)
 
+        def test_10_missing_file_repo(self):
+                """Ensure we print the right error message in the face of
+                a missing repository."""
+                repo_path = os.path.join(self.test_root, "test_10_missing_repo")
+                self.pkgrepo("create %s" % repo_path)
+                self.pkgrecv(server_url=self.durl1, command="-d %s sample" %
+                    repo_path)
+                self.pkgrepo("-s %s set publisher/prefix=foo" % repo_path)
+                self.pkgrepo("-s %s rebuild" % repo_path)
+                self.image_create(repourl="file://%s" % repo_path)
+                shutil.rmtree(repo_path)
+                ret, output, err = self.sysrepo("-R %s" % self.img_path(),
+                    out=True, stderr=True, exit=1)
+                # restore our image before going any further
+                self.assert_("does not exist" in err, "unable to find expected "
+                    "error message in stderr: %s" % err)
 
 if __name__ == "__main__":
         unittest.main()

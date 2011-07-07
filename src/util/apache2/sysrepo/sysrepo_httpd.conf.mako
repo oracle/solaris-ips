@@ -447,6 +447,9 @@ SSLProxyProtocol all
 # any non-file-based repositories get our local versions and syspub responses
 RewriteRule ^.*/versions/0/?$ - [L]
 RewriteRule ^.*/syspub/0/?$ - [L]
+# allow for 'OPTIONS * HTTP/1.0' requests
+RewriteCond %{REQUEST_METHOD} OPTIONS [NC]
+RewriteRule \* - [L] 
 # catch all, denying everything
 RewriteRule ^.*$ - [R=404]
 
@@ -460,8 +463,8 @@ RewriteRule ^.*$ - [R=404]
                 <%doc>
                 # we create an alias for the file repository under ${pub}
                 </%doc>
-                % if uri.startswith("file://"):
-                        <% repo_path = uri.replace("file://", "") %>
+                % if uri.startswith("file:"):
+                        <% repo_path = uri.replace("file:", "") %>
 # a file repo alias to serve ${uri} content.
 <Directory "${repo_path}">
     AllowOverride None
@@ -472,3 +475,4 @@ Alias /${pub}/${hash} ${repo_path}
                 % endif
         % endfor uri
 % endfor pub
+

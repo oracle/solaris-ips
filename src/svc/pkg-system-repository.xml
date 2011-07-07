@@ -115,7 +115,6 @@
                                 value='/var/cache/pkg/sysrepo' />
                         <!-- Our maximum cache size, expressed in MB -->
                         <propval name='cache_max' type='count' value='1024' />
-
                         <propval name='value_authorization' type='astring'
                                 value='solaris.smf.value.pkg-sysrepo' />
                 </property_group>

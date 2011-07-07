@@ -81,7 +81,7 @@ run_sysrepo() {
                -r ${SYSREPO_RUNTIME_DIR} \
                -s ${SYSREPO_CACHE_MAX} \
                -t ${SYSREPO_TEMPLATE_DIR}
-        check_failure $? "pkg.sysrepo failed to create Apache configuration"
+        check_failure $? "pkg.sysrepo: failed to create Apache configuration"
 }
 
 run_htcacheclean() {
