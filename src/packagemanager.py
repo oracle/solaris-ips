@@ -345,6 +345,11 @@ class PackageManager:
                 self.w_paste_menuitem = self.builder.get_object("edit_paste")
                 self.w_delete_menuitem = self.builder.get_object("edit_delete")
                 self.w_selectall_menuitem = self.builder.get_object("edit_select_all")
+                help_stock_item = gtk.stock_lookup("gtk-help")
+                if help_stock_item:
+                        help_menu_item =  self.builder.get_object("help")
+                        help_menu_item.set_label(help_stock_item[1])
+
                 self.w_selectupdates_menuitem = \
                     self.builder.get_object("edit_select_updates")
                 self.w_deselect_menuitem = self.builder.get_object("edit_deselect")
