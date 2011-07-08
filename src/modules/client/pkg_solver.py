@@ -63,15 +63,13 @@ class DependencyException(Exception):
 class PkgSolver(object):
 
         def __init__(self, cat, installed_dict, pub_ranks, variants, avoids,
-            parent_pkgs, extra_deps, progtrack):
+            parent_pkgs, progtrack):
                 """Create a PkgSolver instance; catalog should contain all
                 known pkgs, installed fmris should be a dict of fmris indexed
                 by name that define pkgs current installed in the image.
                 Pub_ranks dict contains (rank, stickiness, enabled) for each
                 publisher.  variants are the current image variants; avoids is
-                the set of pkg stems being avoided in the image; extra_deps is
-                a dictionary, indexed by fmris, of extra dependency actions
-                that should be added to packages."""
+                the set of pkg stems being avoided in the image."""
 
                 # check if we're allowed to use the solver
                 if DebugValues["no_solver"]:
@@ -144,9 +142,6 @@ class PkgSolver(object):
                             (f.pkg_name, f)
                             for f in self.__parent_pkgs
                         ])
-
-                assert isinstance(extra_deps, dict)
-                self.__extra_deps = extra_deps
 
         def __str__(self):
 
@@ -1048,7 +1043,7 @@ class PkgSolver(object):
                 """Return list of all dependency actions for this fmri"""
 
                 try:
-                        return self.__extra_deps.get(fmri, []) + [
+                        return [
                             a
                             for a in self.__catalog.get_entry_actions(fmri,
                             [catalog.Catalog.DEPENDENCY], excludes=excludes)

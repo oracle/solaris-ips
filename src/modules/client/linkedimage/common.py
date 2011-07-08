@@ -1264,7 +1264,6 @@ class LinkedImage(object):
                 assert self.ischild()
 
                 cat = self.__img.get_catalog(self.__img.IMG_CATALOG_INSTALLED)
-                extra_deps = self.extra_dep_actions(installed_catalog=True)
                 excludes = [ self.__img.cfg.variants.allow_action ]
 
                 sync_fmris = []
@@ -1276,14 +1275,6 @@ class LinkedImage(object):
                             for a in cat.get_entry_actions(fmri,
                                 [pkg.catalog.Catalog.DEPENDENCY],
                                 excludes=excludes)
-                            if a.name == "depend" and \
-                                a.attrs["type"] == "parent"
-                        ]
-
-                        # get extra parent dependencies
-                        parent_deps += [
-                            a
-                            for a in extra_deps.get(fmri, [])
                             if a.name == "depend" and \
                                 a.attrs["type"] == "parent"
                         ]

@@ -256,49 +256,6 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                     close\n"""
                 p_all.append(p_data)
 
-        # these packages will be synced indirectly by virtue of being
-        # incorporated by an osnet incorporation
-        p_osnet_sync1_name_gen = "osnet_sync1"
-        p_osnet_sync1_name = dict()
-        for i, v in zip(range(len(vers)), vers):
-                p_osnet_sync1_name[i] = p_osnet_sync1_name_gen + v
-                p_data = "open %s\n" % p_osnet_sync1_name[i]
-                p_data += """
-                    add set name=variant.foo value=bar value=baz
-                    add file tmp/bar mode=0555 owner=root group=bin path=osnet_sync1_bar variant.foo=bar
-                    add file tmp/baz mode=0555 owner=root group=bin path=osnet_sync1_baz variant.foo=baz
-                    close\n"""
-                p_all.append(p_data)
-
-        # these packages don't get synced indirectly by virtue of being
-        # incorporated by an osnet incorporation because they are group
-        # packages.
-        p_osnet_group1_name_gen = "group/osnet_group1"
-        p_osnet_group1_name = dict()
-        for i, v in zip(range(len(vers)), vers):
-                p_osnet_group1_name[i] = p_osnet_group1_name_gen + v
-                p_data = "open %s\n" % p_osnet_group1_name[i]
-                p_data += """
-                    add set name=variant.foo value=bar value=baz
-                    add file tmp/bar mode=0555 owner=root group=bin path=osnet_group1_bar variant.foo=bar
-                    add file tmp/baz mode=0555 owner=root group=bin path=osnet_group1_baz variant.foo=baz
-                    close\n"""
-                p_all.append(p_data)
-
-        # osnet incorporation is magical
-        p_osnet_name_gen = "consolidation/osnet/osnet-incorporation"
-        p_osnet_name = dict()
-        for i, v in zip(range(len(vers)), vers):
-                p_osnet_name[i] = p_osnet_name_gen + v
-                p_data = "open %s\n" % p_osnet_name[i]
-                p_data += "add depend fmri=%s type=incorporate\n" % \
-                    p_osnet_sync1_name[i]
-                p_data += "add depend fmri=%s type=incorporate\n" % \
-                    p_osnet_group1_name[i]
-                p_data += """
-                    close\n"""
-                p_all.append(p_data)
-
         # create a fake zones package
         p_zones_name = "system/zones@0.5.11,5.11-0.169"
         p_data = "open %s\n" % p_zones_name
@@ -1002,73 +959,6 @@ packages known:
                 # no pub check during detach
                 for c in [1, 2, 3, 4]:
                         self._api_detach(api_objs[c])
-
-        def test_osnet_magic(self):
-                """Verify that osnet is magical and automatically
-                causes packages that it incorporates to be synced, except
-                for group packages."""
-
-                api_objs = self._imgs_create(2)
-                self._parent_attach(0, [1])
-
-                # can't install osnet because it's synced
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1], [self.p_osnet_name[4]])
-
-                # install osnet into the parent
-                self._api_install(api_objs[0], [self.p_osnet_name[3]])
-
-                # can't newer or older osnet
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1], [self.p_osnet_name[4]])
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1], [self.p_osnet_name[2]])
-
-                # can install synced osnet
-                self._api_install(api_objs[1], [self.p_osnet_name[3]])
-                self._api_uninstall(api_objs[1], [self.p_osnet_name[3]])
-                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
-
-                # can't install osnet_sync1 because it's synced
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1],
-                    [self.p_osnet_sync1_name[4]])
-
-                # install osnet_sync1 into the parent
-                self._api_install(api_objs[0], [self.p_osnet_sync1_name[3]])
-
-                # can't newer or older osnet_sync1
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1],
-                    [self.p_osnet_sync1_name[4]])
-                assertRaises(
-                    (apx_verify, {"e_type": apx.PlanCreationException}),
-                    self._api_install, api_objs[1],
-                    [self.p_osnet_sync1_name[2]])
-
-                # can install synced osnet_sync1
-                self._api_install(api_objs[1], [self.p_osnet_sync1_name[3]])
-                self._api_uninstall(api_objs[1], [self.p_osnet_sync1_name[3]])
-                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
-
-                # ok to install osnet_group1 because it's a group package
-                self._api_install(api_objs[1], [self.p_osnet_group1_name[3]])
-                self._api_uninstall(api_objs[1], [self.p_osnet_group1_name[3]])
-                self.assertEqual(0, len(self._list_inst_packages(api_objs[1])))
-
-                # install osnet_group1 into the parent
-                self._api_install(api_objs[0], [self.p_osnet_group1_name[3]])
-
-                # ok to install newer, older, or synced osnet_group1 because
-                # it's a group package
-                self._api_install(api_objs[1], [self.p_osnet_group1_name[4]])
-                self._api_install(api_objs[1], [self.p_osnet_group1_name[3]])
-                self._api_install(api_objs[1], [self.p_osnet_group1_name[2]])
 
         def test_update_recursion(self):
                 """Verify that update is recursive, but update with arguments

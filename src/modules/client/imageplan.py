@@ -422,7 +422,6 @@ class ImagePlan(object):
                     variants,
                     self.image.avoid_set_get(),
                     self.image.linked.parent_fmris(),
-                    self.image.linked.extra_dep_actions(self.__new_excludes),
                     self.__progtrack)
 
                 # Solve... will raise exceptions if no solution is found
@@ -534,7 +533,6 @@ class ImagePlan(object):
                     self.image.get_variants(),
                     self.image.avoid_set_get(),
                     self.image.linked.parent_fmris(),
-                    self.image.linked.extra_dep_actions(self.__new_excludes),
                     self.__progtrack)
 
                 new_vector, self.__new_avoid_obs = \
@@ -585,7 +583,6 @@ class ImagePlan(object):
                     self.image.get_variants(),
                     self.image.avoid_set_get(),
                     self.image.linked.parent_fmris(),
-                    self.image.linked.extra_dep_actions(self.__new_excludes),
                     self.__progtrack)
 
                 if pkgs_update:
