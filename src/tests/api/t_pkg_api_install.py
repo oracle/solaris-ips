@@ -952,6 +952,57 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                                     self.__do_install, api_obj,
                                     [pfmri.pkg_name])
 
+        def test_freeze_basics_1(self):
+                """Test that installing a package which has been frozen at a
+                particular version works, that installing a version which
+                doesn't match fails, that upgrading doesn't move the package
+                forward, and that unfreezing a package lets it move once more.
+                """
+
+                plist = self.pkgsend_bulk(self.rurl, [self.foo10, self.foo11,
+                    self.foo12])
+                api_obj = self.image_create(self.rurl)
+
+                api_obj.freeze_pkgs(["foo@1.1"])
+                api_obj.reset()
+                self.assertRaises(api_errors.PlanCreationException,
+                    self._api_install, api_obj, ["foo@1.0"])
+                self.assertRaises(api_errors.PlanCreationException,
+                    self._api_install, api_obj, ["foo@1.2"])
+                self._api_install(api_obj, ["foo"])
+
+                # Test that update won't move foo to 1.2 until it's unfrozen.
+                self.pkg("update", exit=4)
+                self.pkg("update foo@1.2", exit=1)
+                api_obj.freeze_pkgs(["foo"], unfreeze=True)
+                self.pkg("update -n")
+                self._api_update(api_obj, ["foo@1.2"])
+
+                # Check that freezing an installed package at a different
+                # version fails.
+                self.assertRaises(api_errors.FreezePkgsException,
+                    api_obj.freeze_pkgs, ["foo@1.1"])
+                api_obj.reset()
+
+                # Check that freeze survives uninstalls.
+                self._api_uninstall(api_obj, ["foo"])
+                api_obj.freeze_pkgs(["foo@1.1"])
+                api_obj.reset()
+                self._api_install(api_obj, ["foo"])
+                self.pkg("list foo@1.2", exit=1)
+                self.pkg("list foo@1.1")
+                self._api_uninstall(api_obj, ["foo"])
+                self._api_install(api_obj, ["foo"])
+                self.pkg("list foo@1.2", exit=1)
+                self.pkg("list foo@1.1")
+
+                # Check that freeze only freezes what it should.
+                api_obj.freeze_pkgs(["foo@1"])
+                api_obj.reset()
+                self._api_update(api_obj, [])
+                self.pkg("list foo@1.1", exit=1)
+                self.pkg("list foo@1.2")
+
 
 class TestActionExecutionErrors(pkg5unittest.SingleDepotTestCase):
         """This set of tests is intended to verify that the client API will

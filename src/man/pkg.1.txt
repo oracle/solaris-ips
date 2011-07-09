@@ -52,6 +52,9 @@ SYNOPSIS
      /usr/bin/pkg avoid [pkg_fmri_pattern ... ]
      /usr/bin/pkg unavoid [pkg_fmri_pattern ... ]
 
+     /usr/bin/pkg freeze [-n] [-c reason] [pkg_fmri_pattern] ...
+     /usr/bin/pkg unfreeze [-n] [pkg_name_pattern] ...
+
      /usr/bin/pkg property [-H] [propname ...]
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg add-property-value propname propvalue
@@ -628,6 +631,42 @@ SUBCOMMANDS
           install the package.
 
           Without any arguments, display the list of avoided packages.
+
+     freeze [-n] [-c reason] [pkg_fmri_pattern] ...
+          Freeze the specified packages to the versions specified.  If no
+          version is given, the package must be installed and is frozen at the
+          version at which it's installed.  If a package is frozen, then when it
+          is installed or updated, it must end up at a version which matches the
+          version at which it was frozen.  For example, if a package was frozen
+          at 1.2, then it could be updated to 1.2.1, 1.2.9, 1.2.0.0.1, and so
+          on. It could not end up at 1.3, or 1.1.  While publishers presented in
+          the fmri patterns will be used to find matching packages, the
+          publisher information will not be recorded as part of the freeze. A
+          package is frozen with respect to its version only, not its publisher.
+          Freezing a package that's already frozen replaces the version it was
+          frozen at with the newly specified version.
+
+          If no packages are provided, the currently frozen package names,
+          versions, when the package was frozne, and any associated reasons, are
+          shown.
+
+          Freezing a package will not prevent its removal, nor cause a warning
+          to be displayed on removal.
+
+          With -c, record the reason provided with the packages that are frozen.
+          The reason is shown if a freeze prevents an install or update from
+          succeeding.
+
+          With -n, perform a trial run of the operation, displaying the list of
+          packages that would be affected by the freeze without freezing any
+          packages.
+
+     unfreeze [-n] [pkg_name_pattern] ...
+          Remove the constraints that freezing imposes from the specified
+          packges; any versions provided will be ignored.
+
+          With -n, perform a trial run of the freeze, displaying the list of
+          packages that will be unfrozen without unfreezing any packages.
 
      property [-H] [propname ...]
 

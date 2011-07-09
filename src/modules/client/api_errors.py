@@ -2736,3 +2736,82 @@ return value of %(exitrv)d and the following error message:
                 for e in self.lix_bundle:
                         bundle_str.append(str(e))
                 return "\n".join(bundle_str)
+
+
+class FreezePkgsException(ApiException):
+        """Used if an argument to pkg freeze isn't valid."""
+
+        def __init__(self, multiversions=None, unmatched_wildcards=None,
+            version_mismatch=None, versionless_uninstalled=None):
+                ApiException.__init__(self)
+                self.multiversions = multiversions
+                self.unmatched_wildcards = unmatched_wildcards
+                self.version_mismatch = version_mismatch
+                self.versionless_uninstalled = versionless_uninstalled
+
+        def __str__(self):
+                res = []
+                if self.multiversions:
+                        s = _("""\
+The following packages were frozen at two different versions by
+the patterns provided.  The package stem and the versions it was frozen at are
+provided:""")
+                        res += [s]
+                        res += ["\t%s\t%s" % (stem, " ".join([
+                            str(v) for v in versions]))
+                            for stem, versions in sorted(self.multiversions)]
+
+                if self.unmatched_wildcards:
+                        s = _("""\
+The following patterns contained wildcards but matched no
+installed packages.""")
+                        res += [s]
+                        res += ["\t%s" % pat for pat in sorted(
+                            self.unmatched_wildcards)]
+
+                if self.version_mismatch:
+                        s = _("""\
+The following patterns attempted to freeze the listed packages
+at a version different from the version at which the packages are installed.""")
+                        res += [s]
+                        for pat in sorted(self.version_mismatch):
+                                res += ["\t%s" % pat]
+                                if len(self.version_mismatch[pat]) > 1:
+                                        res += [
+                                            "\t\t%s" % stem
+                                            for stem
+                                            in self.version_mismatch[pat]
+                                        ]
+
+                if self.versionless_uninstalled:
+                        s = _("""\
+The following patterns don't match installed packages and
+contain no version information.  Uninstalled packages can only be frozen by
+providing a version at which to freeze them.""")
+                        res += [s]
+                        res += ["\t%s" % p for p in sorted(
+                            self.versionless_uninstalled)]
+                return "\n".join(res)
+
+class InvalidFreezeFile(ApiException):
+        """Used to indicate the freeze state file could not be loaded."""
+
+        def __str__(self):
+                return _("The freeze state file '%s' is invalid.") % self.data
+
+class UnknownFreezeFileVersion(ApiException):
+        """Used when the version on the freeze state file isn't the version
+        that's expected."""
+
+        def __init__(self, found_ver, expected_ver, location):
+                self.found = found_ver
+                self.expected = expected_ver
+                self.loc = location
+
+        def __str__(self):
+                return _("The freeze state file '%(loc)s' was expected to have "
+                    "a version of %(exp)s, but its version was %(found)s") % {
+                    "exp": self.expected,
+                    "found": self.found,
+                    "loc": self.loc,
+                }

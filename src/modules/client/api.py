@@ -612,6 +612,34 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 dependencies on this) """
                 return [a for a in self._img.get_avoid_dict().iteritems()]
 
+        def freeze_pkgs(self, fmri_strings, dry_run=False, comment=None,
+            unfreeze=False):
+                """Freeze/Unfreeze one or more packages."""
+
+                # Comment is only a valid parameter if a freeze is happening.
+                assert not comment or not unfreeze
+
+                self._acquire_activity_lock()
+                try:
+                        if unfreeze:
+                                return self._img.unfreeze_pkgs(fmri_strings,
+                                    progtrack=self.__progresstracker,
+                                    check_cancel=self.__check_cancel,
+                                    dry_run=dry_run)
+                        else:
+                                return self._img.freeze_pkgs(fmri_strings,
+                                    progtrack=self.__progresstracker,
+                                    check_cancel=self.__check_cancel,
+                                    dry_run=dry_run, comment=comment)
+                finally:
+                        self._activity_lock.release()
+
+        def get_frozen_list(self):
+                """Return list of tuples of (pkg fmri, reason package was
+                frozen, timestamp when package was frozen)."""
+
+                return self._img.get_frozen_list()
+
         def __plan_common_exception(self, log_op_end_all=False):
                 """Deal with exceptions that can occur while planning an
                 operation.  Any exceptions generated here are passed

@@ -184,6 +184,9 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "avoid",
             "unavoid",
             "",
+            "freeze",
+            "unfreeze",
+            "",
             "property",
             "set-property",
             "add-property-value",
@@ -245,6 +248,8 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
         adv_usage["facet"] = ("[-H] [<facet_spec>]")
         adv_usage["avoid"] = _("[pkg_fmri_pattern] ...")
         adv_usage["unavoid"] = _("[pkg_fmri_pattern] ...")
+        adv_usage["freeze"] = _("[-n] [-c reason] [pkg_fmri_pattern] ...")
+        adv_usage["unfreeze"] = _("[-n] [pkg_name_pattern] ...")
         adv_usage["set-property"] = _("propname propvalue")
         adv_usage["add-property-value"] = _("propname propvalue")
         adv_usage["remove-property-value"] = _("propname propvalue")
@@ -551,7 +556,7 @@ def list_inventory(op, api_inst, pargs,
                             ", ".join(e.notfound), cmd=op)
                 elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
                         error(_("no packages matching '%s' allowed by "
-                            "installed incorporations or image variants that "
+                            "installed incorporations, or image variants that "
                             "are known or installed") % \
                             ", ".join(e.notfound), cmd=op)
                         logger.error("Use -af to allow all versions.")
@@ -2218,6 +2223,109 @@ def __display_avoids(api_inst):
 
         return EXIT_OK
 
+def freeze(api_inst, args):
+        """Place the specified packages on the frozen list"""
+
+        opts, pargs = getopt.getopt(args, "Hc:n")
+        comment = None
+        display_headers = True
+        dry_run = False
+        for opt, arg in opts:
+                if opt == "-H":
+                        display_headers = False
+                elif opt == "-c":
+                        comment = arg
+                elif opt == "-n":
+                        dry_run = True
+
+        if comment and not pargs:
+                usage(usage_error=_("At least one package to freeze must be "
+                    "given when -c is used."), cmd="freeze")
+        if not display_headers and pargs:
+                usage(usage_error=_("-H may only be specified when listing the "
+                    "currently frozen packages."))
+        if not pargs:
+                return __display_cur_frozen(api_inst, display_headers)
+
+        try:
+                pfmris = api_inst.freeze_pkgs(pargs, dry_run=dry_run,
+                    comment=comment)
+                for pfmri in pfmris:
+                        vertext = pfmri.version.get_short_version()
+                        ts = pfmri.version.get_timestamp()
+                        if ts:
+                                vertext += ":" + pfmri.version.timestr
+                        logger.info(_("%(name)s was frozen at %(ver)s") %
+                            {"name": pfmri.pkg_name, "ver": vertext})
+                return EXIT_OK
+        except api_errors.FreezePkgsException, e:
+                error("\n%s" % e, cmd="freeze")
+                return EXIT_OOPS
+        except:
+                return __api_plan_exception("freeze", False, 0, api_inst)
+
+def unfreeze(api_inst, args):
+        """Remove the specified packages from the frozen list"""
+
+        opts, pargs = getopt.getopt(args, "Hn")
+        display_headers = True
+        dry_run = False
+        for opt, arg in opts:
+                if opt == "-H":
+                        display_headers = False
+                elif opt == "-n":
+                        dry_run = True
+
+        if not pargs:
+                return __display_cur_frozen(api_inst, display_headers)
+
+        try:
+                pkgs = api_inst.freeze_pkgs(pargs, unfreeze=True,
+                    dry_run=dry_run)
+                if not pkgs:
+                        return EXIT_NOP
+                for s in pkgs:
+                        logger.info(_("%s was unfrozen.") % s)
+                return EXIT_OK
+        except:
+                return __api_plan_exception("unfreeze", False, 0, api_inst)
+
+def __display_cur_frozen(api_inst, display_headers):
+        """Display the current frozen list"""
+
+        try:
+                lst = sorted(api_inst.get_frozen_list())
+        except api_errors.ApiException, e:
+                error(e)
+                return EXIT_OOPS
+        if len(lst) == 0:
+                return EXIT_OK
+
+        fmt = "%(name)-18s %(ver)-27s %(time)-24s %(comment)s"
+        if display_headers:
+                logger.info(fmt % {
+                    "name": _("NAME"),
+                    "ver": _("VERSION"),
+                    "time": _("DATE"),
+                    "comment": _("COMMENT")
+                })
+        
+        for pfmri, comment, timestamp in lst:
+                vertext = pfmri.version.get_short_version()
+                ts = pfmri.version.get_timestamp()
+                if ts:
+                        vertext += ":" + pfmri.version.timestr
+                if not comment:
+                        comment = "None"
+                logger.info(fmt % {
+                    "name": pfmri.pkg_name,
+                    "comment": comment,
+                    "time": time.strftime("%d %b %Y %H:%M:%S %Z",
+                                time.localtime(timestamp)),
+                    "ver": vertext
+                })
+        return EXIT_OK
+
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
         the INDEX, ACTION, and VALUE columns.
@@ -2601,22 +2709,27 @@ def info(api_inst, args):
                         continue
 
                 state = ""
-                if api.PackageInfo.OBSOLETE in pi.states:
-                        state = _("Obsolete")
-                elif api.PackageInfo.RENAMED in pi.states:
-                        state = _("Renamed")
-
-                if state:
-                        fmt = "%%s (%s)" % state
-                else:
-                        fmt = "%s"
-
                 if api.PackageInfo.INSTALLED in pi.states:
-                        state = fmt % _("Installed")
+                        state = _("Installed")
                 elif api.PackageInfo.UNSUPPORTED in pi.states:
-                        state = fmt % _("Unsupported")
+                        state = _("Unsupported")
                 else:
-                        state = fmt % _("Not installed")
+                        state = _("Not installed")
+
+                lparen = False
+                if api.PackageInfo.OBSOLETE in pi.states:
+                        state += " (%s" % _("Obsolete")
+                        lparen = True
+                elif api.PackageInfo.RENAMED in pi.states:
+                        state += " (%s" % _("Renamed")
+                        lparen = True
+                if api.PackageInfo.FROZEN in pi.states:
+                        if lparen:
+                                state += ", %s)" % _("Frozen")
+                        else:
+                                state += " (%s)" % _("Frozen")
+                elif lparen:
+                        state += ")"
 
                 name_str = _("          Name:")
                 msg(name_str, pi.pkg_stem)
@@ -5338,6 +5451,7 @@ def main_func():
             "detach-linked"         : (detach_linked, opts_detach_linked),
             "facet"                 : (facet_list, None),
             "fix"                   : (fix_image, None),
+            "freeze"                : (freeze, None),
             "help"                  : (None, None),
             "history"               : (history_list, None),
             "image-create"          : (None, None),
@@ -5359,9 +5473,10 @@ def main_func():
             "set-property"          : (property_set, None),
             "set-property-linked"   : (set_property_linked,
                                           opts_set_property_linked, -1),
-            "unavoid"               : (unavoid, None),
             "set-publisher"         : (publisher_set, None),
             "sync-linked"           : (sync_linked, opts_sync_linked),
+            "unavoid"               : (unavoid, None),
+            "unfreeze"              : (unfreeze, None),
             "uninstall"             : (uninstall, opts_uninstall, -1),
             "unset-authority"       : (publisher_unset, None),
             "unset-property"        : (property_unset, None),

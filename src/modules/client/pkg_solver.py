@@ -363,9 +363,18 @@ class PkgSolver(object):
                 self.__progtrack.evaluate_progress()
 
                 # now trim any pkgs we cannot update due to freezes
-                for f in existing_freezes:
-                        reason = (N_("This version is excluded by freeze {0}"), (f,))
-                        self.__trim(self.__comb_auto_fmris(f)[1], reason)
+                for f, r, t in existing_freezes:
+                        if r:
+                                reason = (N_("This version is excluded by a "
+                                    "freeze on {0} at version {1}.  The "
+                                    "reason for the freeze is: {2}"),
+                                    (f.pkg_name, f.version, r))
+                        else:
+                                reason = (N_("This version is excluded by a "
+                                    "freeze on {0} at version {1}."),
+                                    (f.pkg_name, f.version))
+                        self.__trim(self.__comb_auto_fmris(f, dotrim=False)[1],
+                            reason)
 
                 self.__progtrack.evaluate_progress()
 
@@ -648,6 +657,22 @@ class PkgSolver(object):
                 # trim fmris we cannot install because they're older
                 for f in self.__installed_fmris:
                         self.__trim_older(f)
+
+                # now trim any pkgs we cannot update due to freezes
+                for f, r, t in existing_freezes:
+                        if r:
+                                reason = (N_("This version is excluded by a "
+                                    "freeze on {0} at version {1}.  The "
+                                    "reason for the freeze is: {2}"),
+                                    (f.pkg_name, f.version, r))
+                        else:
+                                reason = (N_("This version is excluded by a "
+                                    "freeze on {0} at version {1}."),
+                                    (f.pkg_name, f.version))
+                        self.__trim(self.__comb_auto_fmris(f, dotrim=False)[1],
+                            reason)
+
+                self.__progtrack.evaluate_progress()
 
                 self.__timeit("phase 1")
 

@@ -112,7 +112,6 @@ class PackageInfo(object):
         # Possible package states; these constants should match the values used
         # by the Image class.  Constants with negative values are not currently
         # available.
-        FROZEN = -1
         INCORPORATED = -2
         EXCLUDES = -3
         KNOWN = image.Image.PKG_STATE_KNOWN
@@ -121,6 +120,7 @@ class PackageInfo(object):
         OBSOLETE = image.Image.PKG_STATE_OBSOLETE
         RENAMED = image.Image.PKG_STATE_RENAMED
         UNSUPPORTED = image.Image.PKG_STATE_UNSUPPORTED
+        FROZEN = image.Image.PKG_STATE_FROZEN
 
         __NUM_PROPS = 12
         IDENTITY, SUMMARY, CATEGORIES, STATE, SIZE, LICENSES, LINKS, \

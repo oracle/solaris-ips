@@ -26,6 +26,7 @@
 
 import M2Crypto as m2
 import atexit
+import calendar
 import copy
 import datetime
 import errno
@@ -151,6 +152,9 @@ class Image(object):
         # is not available for packaging operations.
         PKG_STATE_UNSUPPORTED = 10      # Package contains invalid or
                                         # unsupported metadata.
+
+        # This state indicates that this package is frozen.
+        PKG_STATE_FROZEN = 11
 
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
@@ -2900,6 +2904,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     self.IMG_CATALOG_INSTALLED), sign=False)
 
                 excludes = self.list_excludes()
+
+                frozen_pkgs = dict([
+                    (p[0].pkg_name, p[0]) for p in self.get_frozen_list()
+                ])
                 for pfx, cat, name, spart in sparts:
                         # 'spart' is the source part.
                         if spart is None:
@@ -2960,6 +2968,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 nver, snver = newest.get(stem, (None, None))
                                 if snver is not None and ver != snver:
                                         states.append(self.PKG_STATE_UPGRADABLE)
+
+                                # Check if the package is frozen.
+                                if stem in frozen_pkgs:
+                                        f_ver = frozen_pkgs[stem].version
+                                        if f_ver == ver or \
+                                            pkg.version.Version(ver,
+                                            self.attrs["Build-Release"]
+                                            ).is_successor(f_ver,
+                                            constraint=
+                                            pkg.version.CONSTRAINT_AUTO):
+                                                states.append(
+                                                    self.PKG_STATE_FROZEN)
 
                                 # Determine if package is obsolete or has been
                                 # renamed and mark with appropriate state.
@@ -3779,6 +3799,90 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 ret[group].append(fmri.pkg_name)
                 return ret
 
+        def freeze_pkgs(self, pat_list, progtrack, check_cancel, dry_run,
+            comment):
+                """Freeze the specified packages... use pattern matching on
+                names.
+
+                The 'pat_list' parameter contains the list of patterns of
+                packages to freeze.
+
+                The 'progtrack' parameter contains the progress tracker for this
+                operation.
+
+                The 'check_cancel' parameter contains a function to call to
+                check if the operation has been canceled.
+
+                The 'dry_run' parameter controls whether packages are actually
+                frozen.
+
+                The 'comment' parameter contains the comment, if any, which will
+                be associated with the packages that are frozen.
+                """
+
+                def __make_publisherless_fmri(pat):
+                        p = pkg.fmri.MatchingPkgFmri(pat, "5.11")
+                        p.publisher = None
+                        return p
+
+                def __calc_frozen():
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
+                            noexecute=False)
+                        stems_and_pats = ip.freeze_pkgs_match(pat_list)
+                        return dict([(s, __make_publisherless_fmri(p))
+                            for s, p in stems_and_pats.iteritems()])
+                if dry_run:
+                        return __calc_frozen().values()
+                with self.locked_op("freeze"):
+                        stems_and_pats = __calc_frozen()
+                        # Get existing dictionary of frozen packages.
+                        d = self.__freeze_dict_load()
+                        # Update the dictionary with the new freezes and
+                        # comment.
+                        timestamp = calendar.timegm(time.gmtime())
+                        d.update([(s, (str(p), comment, timestamp))
+                            for s, p in stems_and_pats.iteritems()])
+                        self._freeze_dict_save(d)
+                        return stems_and_pats.values()
+
+        def unfreeze_pkgs(self, pat_list, progtrack, check_cancel, dry_run):
+                """Unfreeze the specified packages... use pattern matching on
+                names; ignore versions.
+
+                The 'pat_list' parameter contains the list of patterns of
+                packages to freeze.
+
+                The 'progtrack' parameter contains the progress tracker for this
+                operation.
+
+                The 'check_cancel' parameter contains a function to call to
+                check if the operation has been canceled.
+
+                The 'dry_run' parameter controls whether packages are actually
+                frozen."""
+
+                def __calc_unfrozen():
+                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
+                            noexecute=False)
+                        # Get existing dictionary of frozen packages.
+                        d = self.__freeze_dict_load()
+                        # Match the user's patterns against the frozen packages
+                        # and return the stems which matched, and the dictionary
+                        # of the currently frozen packages.
+                        return set(ip.match_user_stems(pat_list, ip.MATCH_ALL,
+                            raise_unmatched=False,
+                            universe=[(None, k) for k in d.keys()])), d
+
+                if dry_run:
+                        return __calc_unfrozen()[0]
+                with self.locked_op("freeze"):
+                        unfrozen_set, d = __calc_unfrozen()
+                        # Remove the specified packages from the frozen set.
+                        for n in unfrozen_set:
+                                d.pop(n, None)
+                        self._freeze_dict_save(d)
+                        return unfrozen_set
+
         def __call_imageplan_evaluate(self, ip):
                 # A plan can be requested without actually performing an
                 # operation on the image.
@@ -4078,3 +4182,56 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return
 
                 self.__avoid_set_altered = False
+
+        # frozen dict implementation uses simplejson to store a dictionary of
+        # pkg_stems that are frozen, the versions at which they're frozen, and
+        # the reason, if given, why the package was frozen.
+        #
+        # format is (version, dict((pkg stem, (fmri, comment, timestamp))))
+
+        __FROZEN_DICT_VERSION = 1
+
+        def get_frozen_list(self):
+                """Return a list of tuples containing the fmri that was frozen,
+                and the reason it was frozen."""
+
+                return [
+                    (pkg.fmri.MatchingPkgFmri(v[0], build_release="5.11"),
+                        v[1], v[2])
+                    for v in self.__freeze_dict_load().values()
+                ]
+
+        def __freeze_dict_load(self):
+                """Load the dictionary containing the current state of frozen
+                packages."""
+
+                state_file = os.path.join(self._statedir, "frozen_dict")
+                if os.path.isfile(state_file):
+                        try:
+                                version, d = json.load(file(state_file))
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        except ValueError, e:
+                                raise apx.InvalidFreezeFile(state_file)
+                        if version != self.__FROZEN_DICT_VERSION:
+                                raise apx.UnknownFreezeFileVersion(
+                                    version, self.__FROZEN_DICT_VERSION,
+                                    state_file)
+                        return d
+                return {}
+
+        def _freeze_dict_save(self, new_dict):
+                """Save the dictionary of frozen packages."""
+
+                # Save the dictionary to disk.
+                state_file = os.path.join(self._statedir, "frozen_dict")
+                tmp_file   = os.path.join(self._statedir, "frozen_dict.new")
+
+                try:
+                        with open(tmp_file, "w") as tf:
+                                json.dump(
+                                    (self.__FROZEN_DICT_VERSION, new_dict), tf)
+                        portable.rename(tmp_file, state_file)
+                except EnvironmentError, e:
+                        raise apx._convert_error(e)
+                self.__rebuild_image_catalogs()

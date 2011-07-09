@@ -426,7 +426,8 @@ class ImagePlan(object):
 
                 # Solve... will raise exceptions if no solution is found
                 new_vector, self.__new_avoid_obs = \
-                    self.__pkg_solver.solve_install([], inst_dict,
+                    self.__pkg_solver.solve_install(
+                        self.image.get_frozen_list(), inst_dict,
                         new_variants=new_variants, new_facets=new_facets,
                         excludes=self.__new_excludes, reject_set=reject_set,
                         relax_all=li_sync_op)
@@ -490,7 +491,7 @@ class ImagePlan(object):
                 # check if the sync will try to uninstall packages.
                 uninstall = False
                 reject_set = self.match_user_stems(reject_list,
-                    self.MATCH_INST_VERSIONS, not_inst_ok=True)
+                    self.MATCH_INST_VERSIONS, raise_not_installed=False)
                 if reject_set:
                         # at least one reject pattern matched an installed
                         # package
@@ -536,8 +537,9 @@ class ImagePlan(object):
                     self.__progtrack)
 
                 new_vector, self.__new_avoid_obs = \
-                    self.__pkg_solver.solve_uninstall([],  proposed_removals,
-                    self.__new_excludes)
+                    self.__pkg_solver.solve_uninstall(
+                        self.image.get_frozen_list(), proposed_removals,
+                        self.__new_excludes)
 
                 self.__fmri_changes = [
                     (a, b)
@@ -587,7 +589,8 @@ class ImagePlan(object):
 
                 if pkgs_update:
                         new_vector, self.__new_avoid_obs = \
-                            self.__pkg_solver.solve_install([],
+                            self.__pkg_solver.solve_install(
+                                self.image.get_frozen_list(),
                                 update_dict, excludes=self.__new_excludes,
                                 reject_set=reject_set,
                                 trim_proposed_installed=False)
@@ -595,7 +598,8 @@ class ImagePlan(object):
                         # Updating all installed packages requires a different
                         # solution path.
                         new_vector, self.__new_avoid_obs = \
-                            self.__pkg_solver.solve_update_all([],
+                            self.__pkg_solver.solve_update_all(
+                                self.image.get_frozen_list(),
                                 excludes=self.__new_excludes,
                                 reject_set=reject_set)
 
@@ -2405,7 +2409,8 @@ class ImagePlan(object):
                 except StopIteration:
                         return True
 
-        def match_user_stems(self, patterns, match_type, not_inst_ok=False):
+        def match_user_stems(self, patterns, match_type, raise_unmatched=True,
+            raise_not_installed=True, return_matchdict=False, universe=None):
                 """Given a user specified list of patterns, return a set
                 of matching package stems.  Any versions specified are
                 ignored.
@@ -2421,7 +2426,7 @@ class ImagePlan(object):
                         stems.
 
                     MATCH_UNINSTALLED
-                        Matching is peformed using uninstalled packages;
+                        Matching is performed using uninstalled packages;
                         it is an error for a pattern to match an installed
                         package.
 
@@ -2434,8 +2439,20 @@ class ImagePlan(object):
                 Routine raises PlanCreationException if errors occur: it is
                 illegal to specify multiple different patterns that match the
                 same pkg name.  Only patterns that contain wildcards are allowed
-                to match multiple packages.  Patterns that don't match any
-                packages are not allowed unless 'not_inst_ok' is true.
+                to match multiple packages.
+
+                'raise_unmatched' determines whether an exception will be
+                raised if any patterns didn't match any packages.
+
+                'raise_not_installed' determines whether an exception will be
+                raised if any pattern matches a package that's not installed.
+
+                'return_matchdict' determines whether the dictionary containing
+                which patterns matched which stems or the list of stems is
+                returned.
+
+                'universe' contains a list of tuples of publishers and package
+                names against which the patterns should be matched.
                 """
                 # avoid checking everywhere
                 if not patterns:
@@ -2457,7 +2474,6 @@ class ImagePlan(object):
 
                 # ignore dups
                 patterns = list(set(patterns))
-                # print patterns, match_type, pub_ranks
 
                 # figure out which kind of matching rules to employ
                 seen = set()
@@ -2506,15 +2522,20 @@ class ImagePlan(object):
                 # set of pkg names that match that pattern.
                 ret = dict(zip(patterns, [set() for i in patterns]))
 
-                if match_type != self.MATCH_INST_VERSIONS:
-                        cat = self.image.get_catalog(
-                            self.image.IMG_CATALOG_KNOWN)
+                if universe is not None:
+                        assert match_type == self.MATCH_ALL
+                        pkg_names = universe
                 else:
-                        cat = self.image.get_catalog(
-                            self.image.IMG_CATALOG_INSTALLED)
+                        if match_type != self.MATCH_INST_VERSIONS:
+                                cat = self.image.get_catalog(
+                                    self.image.IMG_CATALOG_KNOWN)
+                        else:
+                                cat = self.image.get_catalog(
+                                    self.image.IMG_CATALOG_INSTALLED)
+                        pkg_names = cat.pkg_names()
 
                 # construct matches for each pattern
-                for pkg_pub, name in cat.pkg_names():
+                for pkg_pub, name in pkg_names:
                         for pat, matcher, fmri, pub in \
                             zip(patterns, matchers, fmris, pubs):
                                 if pub and pkg_pub != pub:
@@ -2551,9 +2572,9 @@ class ImagePlan(object):
                             self.image.IMG_CATALOG_INSTALLED).names()
                             if name in matchdict
                         ]
-                if illegals or nonmatch or multimatch or \
-                    (not_installed and not not_inst_ok) or \
-                    multispec or already_installed:
+                if illegals or (raise_unmatched and nonmatch) or multimatch \
+                    or (not_installed and raise_not_installed) or multispec \
+                    or already_installed:
                         raise api_errors.PlanCreationException(
                             already_installed=already_installed,
                             illegal=illegals,
@@ -2562,11 +2583,13 @@ class ImagePlan(object):
                             multispec=multispec,
                             unmatched_fmris=nonmatch)
 
+                if return_matchdict:
+                        return matchdict
                 return set(matchdict.keys())
 
         def __match_user_fmris(self, patterns, match_type,
             pub_ranks=misc.EmptyDict, installed_pkgs=misc.EmptyDict,
-            reject_set=misc.EmptyI):
+            raise_not_installed=True, reject_set=misc.EmptyI):
                 """Given a user-specified list of patterns, return a dictionary
                 of matching fmris:
 
@@ -2594,8 +2617,6 @@ class ImagePlan(object):
                         for stems matching installed packages.  In this case,
                         'installed_pkgs' must also be provided.
 
-                'reject_set' is a set() containing the stems of packages that
-                should be excluded from matches.
 
                 Note that patterns starting w/ pkg:/ require an exact match;
                 patterns containing '*' will using fnmatch rules; the default
@@ -2611,6 +2632,12 @@ class ImagePlan(object):
                 FMRI lists are trimmed by publisher, either by pattern
                 specification, installed version or publisher ranking (in that
                 order) when match_type is not MATCH_INST_VERSIONS.
+
+                'raise_not_installed' determines whether an exception will be
+                raised if any pattern matches a package that's not installed.
+
+                'reject_set' is a set() containing the stems of packages that
+                should be excluded from matches.
                 """
 
                 # problems we check for
@@ -2901,8 +2928,11 @@ class ImagePlan(object):
                 if match_type != self.MATCH_ALL:
                         not_installed, nonmatch = nonmatch, not_installed
 
-                if illegals or nonmatch or multimatch or not_installed or \
-                    multispec or wrongpub or wrongvar or exclpats:
+                if illegals or nonmatch or multimatch or \
+                    (not_installed and raise_not_installed) or multispec or \
+                    wrongpub or wrongvar or exclpats:
+                        if not raise_not_installed:
+                                not_installed = []
                         raise api_errors.PlanCreationException(
                             unmatched_fmris=nonmatch,
                             multiple_matches=multimatch, illegal=illegals,
@@ -3103,3 +3133,99 @@ class ImagePlan(object):
                                 pp.setstate(item)
                                 pkg_plans.append(pp)
                         return pkg_plans
+
+        def freeze_pkgs_match(self, pats):
+                """Find the packages which match the given patterns and thus
+                should be frozen."""
+
+                pats = set(pats)
+                freezes = set()
+                pub_ranks = self.image.get_publisher_ranks()
+                installed_version_mismatches = {}
+                versionless_uninstalled = set()
+                multiversions = []
+
+                # Find the installed packages that match the provided patterns.
+                inst_dict, references = self.__match_user_fmris(pats,
+                    self.MATCH_INST_VERSIONS, pub_ranks=pub_ranks,
+                    raise_not_installed=False)
+
+                # Find the installed package stems that match the provided
+                # patterns.
+                installed_stems_dict = self.match_user_stems(pats,
+                    self.MATCH_INST_VERSIONS, raise_unmatched=False,
+                    raise_not_installed=False, return_matchdict=True)
+
+                stems_of_fmri_matches = set(inst_dict.keys())
+                stems_of_stems_matches = set(installed_stems_dict.keys())
+
+                assert stems_of_fmri_matches.issubset(stems_of_stems_matches)
+
+                # For each package stem which matched a pattern only when
+                # versions were ignored ...
+                for stem in stems_of_stems_matches - stems_of_fmri_matches:
+                        # If more than one pattern matched this stem, then
+                        # match_user_stems should've raised an exception.
+                        assert len(installed_stems_dict[stem]) == 1
+                        bad_pat = installed_stems_dict[stem][0]
+                        installed_version_mismatches.setdefault(
+                            bad_pat, []).append(stem)
+                        # If this pattern is bad, then we don't care about it
+                        # anymore.
+                        pats.discard(bad_pat)
+
+                # For each fmri, pattern where the pattern matched the fmri
+                # including the version ...
+                for full_fmri, pat in references.iteritems():
+                        parts = pat.split("@", 1)
+                        # If the pattern doesn't include a version, then add the
+                        # version the package is installed at to the list of
+                        # things to freeze.  If it does include a version, then
+                        # just freeze using the version from the pattern, and
+                        # the name from the matching fmri.
+                        if len(parts) < 2 or parts[1] == "":
+                                freezes.add(full_fmri.get_fmri(anarchy=True,
+                                    include_scheme=False))
+                        else:
+                                freezes.add(full_fmri.pkg_name + "@" + parts[1])
+                        # We're done with this pattern now.
+                        pats.discard(pat)
+
+                # Any wildcarded patterns remaining matched no installed
+                # packages and so are invalid arguments to freeze.
+                unmatched_wildcards = set([
+                    pat for pat in pats if "*" in pat or "?" in pat
+                ])
+                pats -= unmatched_wildcards
+
+                # Now check the remaining pats to ensure they have a version
+                # component.  If they don't, then they can't be used to freeze
+                # uninstalled packages.
+                for pat in pats:
+                        parts = pat.split("@", 1)
+                        if len(parts) < 2 or parts[1] == "":
+                                versionless_uninstalled.add(pat)
+                pats -= versionless_uninstalled
+                freezes |= pats
+
+                stems = {}
+                for p in freezes:
+                        stems.setdefault(pkg.fmri.PkgFmri(p,
+                            build_release="5.11").get_pkg_stem(anarchy=True,
+                            include_scheme=False), set()).add(p)
+                # Check whether one stem has been frozen at non-identical
+                # versions.
+                for k, v in stems.iteritems():
+                        if len(v) > 1:
+                                multiversions.append((k, v))
+                        else:
+                                stems[k] = v.pop()
+                        
+                if versionless_uninstalled or unmatched_wildcards or \
+                    installed_version_mismatches or multiversions:
+                        raise api_errors.FreezePkgsException(
+                            multiversions=multiversions,
+                            unmatched_wildcards=unmatched_wildcards,
+                            version_mismatch=installed_version_mismatches,
+                            versionless_uninstalled=versionless_uninstalled)
+                return stems
