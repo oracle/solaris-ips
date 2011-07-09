@@ -60,6 +60,7 @@ import tempfile
 import uuid
 
 from pkg import misc, portable
+import pkg.version
 import pkg.client.api_errors as api_errors
 
 
@@ -715,6 +716,36 @@ class PropUUID(Property):
                         # Not a valid UUID.
                         raise InvalidPropertyValueError(prop=self.name,
                             value=value)
+
+
+class PropVersion(Property):
+        """Class representing a property with a non-negative integer dotsequence
+        value."""
+
+        def __init__(self, name, default="0", value_map=misc.EmptyDict):
+                Property.__init__(self, name, default=default,
+                    value_map=value_map)
+
+        def __str__(self):
+                return self.value.get_short_version()
+
+        @Property.value.setter
+        def value(self, value):
+                if isinstance(value, basestring):
+                        value = self._value_map.get(value, value)
+                if value is None or value == "":
+                        value = "0"
+
+                if isinstance(value, pkg.version.Version):
+                        nvalue = value
+                else:
+                        try:
+                                nvalue = pkg.version.Version(value, "5.11")
+                        except Exception:
+                                raise InvalidPropertyValueError(prop=self.name,
+                                    value=value)
+
+                self._value = nvalue
 
 
 class PropertySection(object):

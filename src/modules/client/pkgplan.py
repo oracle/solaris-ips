@@ -24,9 +24,7 @@
 # Copyright (c) 2007, 2011, Oracle and/or its affiliates.  All rights reserved.
 #
 
-import errno
 import itertools
-import os
 import cPickle as pickle
 
 from pkg.client import global_settings
@@ -70,7 +68,7 @@ class PkgPlan(object):
                 self.__executed = False
                 self.__license_status = {}
                 self.__progtrack = progtrack
-                self.__repair_actions = []
+                self.__repair_actions = {}
                 self.__xferfiles = -1
                 self.__xfersize = -1
                 self._autofix_pkgs = []
@@ -112,7 +110,7 @@ class PkgPlan(object):
         @staticmethod
         def __unpickle_actions(pickled_actions):
                 """Return a list of unpickled actions."""
-                action_list=[]
+                action_list = []
                 for pair in pickled_actions:
                         newpair = [None, None]
                         if pair[0]:
@@ -148,7 +146,7 @@ class PkgPlan(object):
                     self.__unpickle_actions(state["remove"]))
                 for src, dest in itertools.chain(self.gen_update_actions(),
                     self.gen_install_actions()):
-                       if dest.name == "license":
+                        if dest.name == "license":
                                 self.__add_license(src, dest)
 
         def getstate(self):
@@ -171,20 +169,22 @@ class PkgPlan(object):
                 self.destination_fmri = df
                 self.__destination_mfst = dm
 
-        def propose_repair(self, fmri, mfst, actions, autofix=False):
+        def propose_repair(self, fmri, mfst, install, remove, autofix=False):
                 self.propose(fmri, mfst, fmri, mfst)
                 # self.origin_fmri = None
                 # I'd like a cleaner solution than this; we need to actually
-                # construct a list of actions as things currently are rather than
-                # just re-applying the current set of actions.
+                # construct a list of actions as things currently are rather
+                # than just re-applying the current set of actions.
                 #
                 # Create a list of (src, dst) pairs for the actions to send to
-                # execute_repair.  src is none in this case since we aren't
-                # upgrading, just repairing.
-                lst = [(None, x) for x in actions]
+                # execute_repair.
 
-                # Only install actions, no update or remove
-                self.__repair_actions = lst
+                self.__repair_actions = {
+                    # src is none for repairs.
+                    "install": [(None, x) for x in install],
+                    # dest is none for removals.
+                    "remove": [(x, None) for x in remove],
+                }
 
                 if autofix:
                         self._autofix_pkgs.append(fmri)
@@ -279,16 +279,21 @@ class PkgPlan(object):
                 # No longer needed.
                 self.__destination_mfst = None
 
-                # Add any repair actions to the update list
-                self.actions.changed.extend(self.__repair_actions)
+                # Add any install repair actions to the update list
+                self.actions.changed.extend(self.__repair_actions.get("install",
+                    EmptyI))
+                self.actions.removed.extend(self.__repair_actions.get("remove",
+                    EmptyI))
+
+                # No longer needed.
+                self.__repair_actions = None
 
                 for src, dest in itertools.chain(self.gen_update_actions(),
                     self.gen_install_actions()):
                         if dest.name == "license":
                                 self.__add_license(src, dest)
-                                if not src or self.__repair_actions:
-                                        # Never assume acceptance for
-                                        # fix/repair scenario.
+                                if not src:
+                                        # Initial installs require acceptance.
                                         continue
                                 src_ma = src.attrs.get("must-accept", False)
                                 dest_ma = dest.attrs.get("must-accept", False)

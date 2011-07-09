@@ -57,6 +57,7 @@ class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin/example_dir
             add dir mode=0755 owner=root group=bin path=/usr/lib/python2.6/vendor-packages/OpenSSL
             add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
+            add link path=/bin/exlink target=/bin/example_path mediator=example mediator-version=7.0 mediator-implementation=unladen-swallow
             add set name=com.sun.service.incorporated_changes value="6556919 6627937"
             add set name=com.sun.service.random_test value=42 value=79
             add set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937
@@ -162,7 +163,7 @@ close
 
         res_8492_1 = set([('pkg:/b1@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
         res_8492_2 = set([('pkg:/b2@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
-        
+
         remote_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
             'set name=pkg.fmri value=pkg://test/example_pkg@1.0,5.11-0:')
 
@@ -171,7 +172,7 @@ close
         ])
 
         res_remote_path = set([
-            ("pkg:/example_pkg@1.0-0", "basename","file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12")
+            ("pkg:/example_pkg@1.0-0", "basename","file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12"),
         ])
 
         res_remote_path_of_example_path = set([
@@ -200,6 +201,24 @@ close
             ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937')
         ])
 
+        res_remote_mediator = set([
+            ("pkg:/example_pkg@1.0-0", "mediator", "link mediator=example mediator-implementation=unladen-swallow mediator-version=7.0 path=bin/exlink target=/bin/example_path")
+        ])
+
+        res_remote_mediator_version = set([
+            ("pkg:/example_pkg@1.0-0", "mediator-version", "link mediator=example mediator-implementation=unladen-swallow mediator-version=7.0 path=bin/exlink target=/bin/example_path")
+        ])
+
+        res_remote_mediator_impl = set([
+            ("pkg:/example_pkg@1.0-0", "mediator-implementation", "link mediator=example mediator-implementation=unladen-swallow mediator-version=7.0 path=bin/exlink target=/bin/example_path")
+        ])
+
+        res_remote_mediator_and_ver = res_remote_mediator.union(
+            res_remote_mediator_version)
+
+        res_remote_mediator_and_ver_impl = res_remote_mediator.union(
+            res_remote_mediator_version).union(res_remote_mediator_impl)
+
         res_remote_random_test = set([
             ("pkg:/example_pkg@1.0-0", "42", "set name=com.sun.service.random_test value=42 value=79")
         ])
@@ -214,14 +233,16 @@ close
 
         res_remote_wildcard = res_remote_path.union(set([
             remote_fmri_string,
-            ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir')
+            ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
+            ("pkg:/example_pkg@1.0-0", "mediator", "link mediator=example mediator-implementation=unladen-swallow mediator-version=7.0 path=bin/exlink target=/bin/example_path")
         ]))
 
         res_remote_glob = set([
             remote_fmri_string,
             ('pkg:/example_pkg@1.0-0', 'path', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
             ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
-            ('pkg:/example_pkg@1.0-0', 'path', 'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12')
+            ('pkg:/example_pkg@1.0-0', 'path', 'file a686473102ba73bd7920fc0ab1d97e00a24ed704 chash=f88920ce1f61db185d127ccb32dc8cf401ae7a83 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=30 pkg.size=12'),
+            ("pkg:/example_pkg@1.0-0", "mediator", "link mediator=example mediator-implementation=unladen-swallow mediator-version=7.0 path=bin/exlink target=/bin/example_path")
         ]) | res_remote_path
 
         res_remote_foo = set([
@@ -250,6 +271,13 @@ close
         res_local_random_test = copy.copy(res_remote_random_test)
 
         res_local_keywords = copy.copy(res_remote_keywords)
+
+        res_local_mediator = copy.copy(res_remote_mediator)
+        res_local_mediator_version = copy.copy(res_remote_mediator_version)
+        res_local_mediator_impl = copy.copy(res_remote_mediator_impl)
+        res_local_mediator_and_ver = copy.copy(res_remote_mediator_and_ver)
+        res_local_mediator_and_ver_impl = copy.copy(
+            res_remote_mediator_and_ver_impl)
 
         res_local_wildcard = copy.copy(res_remote_wildcard)
         res_local_wildcard.add(local_fmri_string)
@@ -499,7 +527,7 @@ close
                                     str(correct_answer - proposed_answer))
                                 self.debug("Extra  : " +
                                     str(proposed_answer - correct_answer))
-                        self.assertEqual(correct_answer, proposed_answer)
+                        self.assertEqualDiff(correct_answer, proposed_answer)
 
         def _get_repo_index_dir(self):
                 depotpath = self.dc.get_repodir()
@@ -658,6 +686,20 @@ close
                     self.res_remote_path_extra)
                 self._search_op(api_obj, True, "example*",
                     self.res_remote_wildcard)
+                self._search_op(api_obj, True, "example",
+                    self.res_remote_mediator)
+                self._search_op(api_obj, True, "7.0",
+                    self.res_remote_mediator_version)
+                self._search_op(api_obj, True, "unladen-swallow",
+                    self.res_remote_mediator_impl)
+                self._search_op(api_obj, True, "::mediator-implementation:unladen*",
+                    self.res_remote_mediator_impl)
+                self._search_op(api_obj, True, ":link:mediator:example",
+                    self.res_remote_mediator)
+                self._search_op(api_obj, True, ":link:mediator:example OR :link:mediator-version:7.0",
+                    self.res_remote_mediator_and_ver)
+                self._search_op(api_obj, True, ":link:mediator:example OR :link:mediator-version:7.0 OR :link:mediator-implementation:unladen-swallow",
+                    self.res_remote_mediator_and_ver_impl)
                 self._search_op(api_obj, True, "/bin", self.res_remote_bin)
                 self._search_op(api_obj, True, "4851433",
                     self.res_remote_bug_id)
@@ -761,7 +803,7 @@ close
                 # correctly.  This is a test for bug 17645.
                 self._search_op(api_obj, True, "dir::/bin/example_dir",
                     self.res_dir)
-                
+
         def _run_remote_tests(self, api_obj):
                 self._search_op(api_obj, True, "example_pkg",
                     self.res_remote_pkg)
@@ -841,6 +883,20 @@ close
                     self.res_remote_path_extra)
                 self._search_op(api_obj, False, "example*",
                     self.res_local_wildcard)
+                self._search_op(api_obj, True, "example",
+                    self.res_local_mediator)
+                self._search_op(api_obj, True, "7.0",
+                    self.res_local_mediator_version)
+                self._search_op(api_obj, True, "unladen-swallow",
+                    self.res_local_mediator_impl)
+                self._search_op(api_obj, True, "::mediator-implementation:unladen*",
+                    self.res_local_mediator_impl)
+                self._search_op(api_obj, True, ":link:mediator:example",
+                    self.res_local_mediator)
+                self._search_op(api_obj, True, ":link:mediator:example OR :link:mediator-version:7.0",
+                    self.res_local_mediator_and_ver)
+                self._search_op(api_obj, True, ":link:mediator:example OR :link:mediator-version:7.0 OR :link:mediator-implementation:unladen-swallow",
+                    self.res_local_mediator_and_ver_impl)
                 self._search_op(api_obj, False, "/bin", self.res_local_bin)
                 self._search_op(api_obj, False, "4851433",
                     self.res_local_bug_id)
@@ -1028,6 +1084,23 @@ close
                     self.res_remote_path_extra)
                 self._search_op_slow(api_obj, False, "example*",
                     self.res_local_wildcard)
+                self._search_op_slow(api_obj, True, "example",
+                    self.res_local_mediator)
+                self._search_op_slow(api_obj, True, "7.0",
+                    self.res_local_mediator_version)
+                self._search_op_slow(api_obj, True, "unladen-swallow",
+                    self.res_local_mediator_impl)
+                self._search_op_slow(api_obj, True,
+                    "::mediator-implementation:unladen*",
+                    self.res_local_mediator_impl)
+                self._search_op_slow(api_obj, True, ":link:mediator:example",
+                    self.res_local_mediator)
+                self._search_op_slow(api_obj, True,
+                    ":link:mediator:example OR :link:mediator-version:7.0",
+                    self.res_local_mediator_and_ver)
+                self._search_op_slow(api_obj, True,
+                    ":link:mediator:example OR :link:mediator-version:7.0 OR :link:mediator-implementation:unladen-swallow",
+                    self.res_local_mediator_and_ver_impl)
                 self._search_op_slow(api_obj, False, "/bin", self.res_local_bin)
                 self._search_op_slow(api_obj, False, "4851433",
                     self.res_local_bug_id)

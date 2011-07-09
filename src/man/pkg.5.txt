@@ -208,11 +208,75 @@ DESCRIPTION
      The 'link' action represents a symbolic link.  It has two standard
      attributes:
 
-     path    The filesystem path where the symlink is installed.  This is a
-             link action's key attribute.
+     path
+          The filesystem path where the symlink is installed.  This is a
+          link action's key attribute.
 
-     target  The target of the symlink; the filesystem object to which the
-             link resolves.
+     target
+          The target of the symlink; the filesystem object to which the
+          link resolves.
+
+     mediator
+          Specifies the entry in the mediation namespace shared by all
+          pathnames participating in a given mediation group (e.g. 'python').
+          Link mediation may be performed based on 'mediator-version' and/or
+          'mediator-implementation'.  All mediated links for a given pathname
+          must specify the same mediator.  However, not all mediator versions
+          and implementations need to provide a link at a given path.  If a
+          mediation doesn't provide a link, then the link is removed when that
+          mediation is selected.  A mediator, in combination with a specific
+          version and/or implementation represents a 'mediation' that can be
+          selected for use by the packaging system.
+
+     mediator-version
+          Specifies the version (expressed as a dot-separated sequence
+          of non-negative integers) of the interface described by the
+          'mediator' attribute.  This attribute is required if 'mediator'
+          is specified and 'mediator-implementation' is not.  A local
+          system administrator may set the version to use explicitly.  The
+          value specified should generally match the version of the package
+          delivering the link (e.g. runtime/python-26 should use mediator-
+          version=2.6), although this is not required.
+
+     mediator-implementation
+          Specifies the implementation of the mediator for use in addition to
+          or instead of the 'mediator-version'.  Implementation strings are
+          not considered to be ordered and one will be arbitrary selected by
+          pkg(5) if not explicitly specified by a system administrator.
+
+          The value can be a string of arbitrary length composed of alpha-
+          numeric characters and spaces.  If the implementation itself can
+          be or is versioned, then the version should be specified at the
+          end of the string, after a '@' (expressed as a dot-separated
+          sequence of non-negative integers).  If multiple versions of an
+          implementation exist, the default behvaiour is to select the
+          implementation with the greatest version.
+
+          If only one instance of an implementation-mediation link at a
+          particular path is installed on a system, then that one will be
+          chosen automatically.  If future links at the path are installed,
+          the link will not be switched unless a vendor, site, or local
+          override applies, or if one of the links is version-mediated.
+
+     mediator-priority
+          When resolving conflicts in mediated links, pkg(5) will normally
+          choose the link with the greatest value of 'mediator-version' or
+          based on 'mediator-implementation' if that is not possible.  This
+          attribute is used to specify an override for the normal conflict
+          resolution process.
+
+          If this attribute is not specified, the default mediator selection
+          logic will be applied.
+
+          If the value is 'vendor', the link will be preferred over those
+          that do not have a 'mediator-priority' specified.
+
+          If the value is 'site', the link will be preferred over those that
+          have a value of 'vendor' or that do not have a 'mediator-priority'
+          specified.
+
+          A local system administrator may override the selection logic
+          described above.
 
   Hardlink actions
      The 'hardlink' action represents a hard link.  It has the same

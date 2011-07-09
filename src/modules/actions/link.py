@@ -31,10 +31,12 @@ packaging object."""
 
 import errno
 import os
+import re
 import stat
 
 import generic
 import pkg.actions
+import pkg.mediator as med
 from pkg import misc
 
 class LinkAction(generic.Action):
@@ -111,8 +113,87 @@ class LinkAction(generic.Action):
                 """Generates the indices needed by the search dictionary.  See
                 generic.py for a more detailed explanation."""
 
-                return [
+                rval = [
                     (self.name, "basename", os.path.basename(self.attrs["path"]),
                     None),
-                    (self.name, "path", os.path.sep + self.attrs["path"], None)
+                    (self.name, "path", os.path.sep + self.attrs["path"], None),
                 ]
+                if "mediator" in self.attrs:
+                        rval.extend(
+                            (self.name, k, v, None)
+                            for k, v in self.attrs.iteritems()
+                            if k.startswith("mediator")
+                        )
+                return rval
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action."""
+
+                if "mediator" not in self.attrs and \
+                    "mediator-version" not in self.attrs and \
+                    "mediator-implementation" not in self.attrs and \
+                    "mediator-priority" not in self.attrs:
+                        return
+
+                mediator = self.attrs.get("mediator")
+                med_version = self.attrs.get("mediator-version")
+                med_implementation = self.attrs.get("mediator-implementation")
+                med_priority = self.attrs.get("mediator-priority")
+
+                errors = []
+                if not mediator and (med_version or med_implementation or
+                    med_priority):
+                        errors.append(("mediator", _("a mediator must be "
+                            "provided when mediator-version, "
+                            "mediator-implementation, or mediator-priority "
+                            "is specified")))
+                if isinstance(mediator, list):
+                        errors.append(("mediator", _("only one mediator may be "
+                            "specified")))
+                else:
+                        valid, error = med.valid_mediator(mediator)
+                        if not valid:
+                                errors.append(("mediator", error))
+
+                if not (med_version or med_implementation):
+                        errors.append(("mediator", _("a mediator-version or "
+                            "mediator-implementation must be provided if a "
+                            "mediator is specified")))
+
+                if isinstance(med_version, list):
+                        errors.append(("mediator-version", _("only one "
+                            "mediator-version may be specified")))
+                elif "mediator-version" in self.attrs:
+                        valid, error = med.valid_mediator_version(med_version)
+                        if not valid:
+                                errors.append(("mediator-version", error))
+
+                if isinstance(med_implementation, list):
+                        errors.append(("mediator-implementation", _("only one "
+                            "mediator-implementation may be specified")))
+                elif "mediator-implementation" in self.attrs:
+                        valid, error = med.valid_mediator_implementation(
+                            med_implementation)
+                        if not valid:
+                                errors.append(("mediator-implementation",
+                                    error))
+
+                if isinstance(med_priority, list):
+                        errors.append(("mediator-priority", _("only one "
+                            "mediator-priority may be specified")))
+                elif "mediator-priority" in self.attrs:
+                        valid, error = med.valid_mediator_priority(med_priority)
+                        if not valid:
+                                errors.append(("mediator-priority", error))
+
+                if errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)

@@ -27,6 +27,7 @@
 import M2Crypto as m2
 import atexit
 import calendar
+import collections
 import copy
 import datetime
 import errno
@@ -61,6 +62,7 @@ import pkg.config                       as cfg
 import pkg.fmri
 import pkg.lockfile                     as lockfile
 import pkg.manifest                     as manifest
+import pkg.mediator                     as med
 import pkg.misc                         as misc
 import pkg.nrlock
 import pkg.pkgsubprocess                as subprocess
@@ -2178,8 +2180,42 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         except apx.InvalidResourceLocation, e:
                                 yield [], [e], [], []
 
+                def mediation_allowed(act):
+                        """Helper function to determine if the mediation
+                        delivered by a link is allowed.  If it is, then
+                        the link should be verified.  (Yes, this does mean
+                        that the non-existence of links is not verified.)
+                        """
+
+                        mediator = act.attrs.get("mediator")
+                        if not mediator or mediator not in self.cfg.mediators:
+                                # Link isn't mediated or mediation is unknown.
+                                return True
+
+                        cfg_med_version = self.cfg.mediators[mediator].get(
+                            "version")
+                        cfg_med_impl = self.cfg.mediators[mediator].get(
+                            "implementation")
+
+                        med_version = act.attrs.get("mediator-version")
+                        if med_version:
+                                # 5.11 doesn't matter here and is never exposed
+                                # to users.
+                                med_version = pkg.version.Version(
+                                    med_version, "5.11")
+                        med_impl = act.attrs.get("mediator-implementation")
+
+                        return med_version == cfg_med_version and \
+                            med.mediator_impl_matches(med_impl, cfg_med_impl)
+
                 for act in manf.gen_actions(
                     self.list_excludes()):
+                        if (act.name == "link" or act.name == "hardlink") and \
+                            not mediation_allowed(act):
+                                # Link doesn't match configured mediation, so
+                                # shouldn't be verified.
+                                continue
+
                         errors, warnings, info = act.verify(self, pfmri=fmri,
                             **kwargs)
                         progresstracker.verify_add_progress(fmri)
@@ -2196,13 +2232,15 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if errors or warnings or info:
                                 yield act, errors, warnings, info
 
-        def image_config_update(self, new_variants, new_facets):
+        def image_config_update(self, new_variants, new_facets, new_mediators):
                 """update variants in image config"""
 
                 if new_variants is not None:
                         self.cfg.variants.update(new_variants)
                 if new_facets is not None:
                         self.cfg.facets = new_facets
+                if new_mediators is not None:
+                        self.cfg.mediators = new_mediators
                 self.save_config()
 
         def repair(self, *args, **kwargs):
@@ -2245,7 +2283,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
                         m = self.get_manifest(fmri)
                         pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
-                        pp.propose_repair(fmri, m, actions)
+                        pp.propose_repair(fmri, m, actions, [])
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
 
@@ -3365,7 +3403,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         if (act.unique_attrs and
                                             key not in act.unique_attrs and
                                             not (act.name == "file" and
-                                                key == "overlay")) or \
+                                                key == "overlay") and
+                                            not ((act.name == "link" or
+                                                  act.name == "hardlink") and
+                                                 key.startswith("mediator"))) or \
                                             key.startswith("variant.") or \
                                             key.startswith("facet."):
                                                 del act.attrs[key]
@@ -3909,8 +3950,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             ip.get_plan(full=False)
 
         def __make_plan_common(self, _op, _progtrack, _check_cancel,
-            _ip_mode, _noexecute, _ip_noop=False,
-            **kwargs):
+            _ip_mode, _noexecute, _ip_noop=False, **kwargs):
                 """Private helper function to perform base plan creation and
                 cleanup.
                 """
@@ -3943,6 +3983,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         ip.plan_install(**kwargs)
                                 elif _op == pkgdefs.API_OP_REVERT:
                                         ip.plan_revert(**kwargs)
+                                elif _op == pkgdefs.API_OP_SET_MEDIATOR:
+                                        ip.plan_set_mediators(**kwargs)
                                 elif _op == pkgdefs.API_OP_UNINSTALL:
                                         ip.plan_uninstall(**kwargs)
                                 elif _op == pkgdefs.API_OP_UPDATE:
@@ -3993,6 +4035,65 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__make_plan_common(op, progtrack, check_cancel, ip_mode,
                     noexecute, new_variants=variants, new_facets=facets,
                     reject_list=reject_list)
+
+        def make_set_mediators_plan(self, op, progtrack, check_cancel, ip_mode,
+            noexecute, mediators):
+                """Take a dictionary of mediators and attempt to assemble an
+                appropriate image plan to set or revert them based on the
+                provided version and implementation values.  This is a helper
+                routine for some common operations in the client.
+                """
+
+                # Compute dict of changing mediators.
+                new_mediators = copy.deepcopy(mediators)
+                old_mediators = self.cfg.mediators
+                invalid_mediations = collections.defaultdict(dict)
+                for m in new_mediators.keys():
+                        new_values = new_mediators[m]
+                        if not new_values:
+                                if m not in old_mediators:
+                                        # Nothing to revert.
+                                        del new_mediators[m]
+                                        continue
+
+                                # Revert mediator to defaults.
+                                new_mediators[m] = {}
+                                continue
+
+                        # Validate mediator, provided version, implementation,
+                        # and source.
+                        valid, error = med.valid_mediator(m)
+                        if not valid:
+                                invalid_mediations[m]["mediator"] = (m, error)
+
+                        med_version = new_values.get("version")
+                        if med_version:
+                                valid, error = med.valid_mediator_version(
+                                    med_version)
+                                if valid:
+                                        # 5.11 doesn't matter here and is never
+                                        # exposed to users.
+                                         new_mediators[m]["version"] = \
+                                            pkg.version.Version(
+                                            med_version, "5.11")
+                                else:
+                                        invalid_mediations[m]["version"] = \
+                                            (med_version, error)
+
+                        med_impl = new_values.get("implementation")
+                        if med_impl:
+                                valid, error = med.valid_mediator_implementation(
+                                    med_impl, allow_empty_version=True)
+                                if not valid:
+                                        invalid_mediations[m]["version"] = \
+                                            (med_impl, error)
+
+                if invalid_mediations:
+                        raise apx.PlanCreationException(
+                            invalid_mediations=invalid_mediations)
+
+                self.__make_plan_common(op, progtrack, check_cancel,
+                    ip_mode, noexecute, new_mediators=new_mediators)
 
         def make_sync_plan(self, op, progtrack, check_cancel, ip_mode,
             noexecute, li_pkg_updates=True, reject_list=misc.EmptyI):

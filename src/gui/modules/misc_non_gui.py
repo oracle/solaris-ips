@@ -41,7 +41,7 @@ from pkg.client import global_settings
 
 # The current version of the Client API the PM, UM and
 # WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 62
+CLIENT_API_VERSION = 63
 LOG_DIR = "/var/tmp"
 LOG_ERROR_EXT = "_error.log"
 LOG_INFO_EXT = "_info.log"

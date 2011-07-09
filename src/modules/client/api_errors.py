@@ -412,6 +412,7 @@ class PlanCreationException(ApiException):
             badarch=EmptyI,
             illegal=EmptyI,
             installed=EmptyI,
+            invalid_mediations=EmptyI,
             linked_pub_error=EmptyI,
             missing_dependency=EmptyI,
             missing_matches=EmptyI,
@@ -435,6 +436,7 @@ class PlanCreationException(ApiException):
                 self.badarch               = badarch
                 self.illegal               = illegal
                 self.installed             = installed
+                self.invalid_mediations    = invalid_mediations
                 self.linked_pub_error      = linked_pub_error
                 self.missing_dependency    = missing_dependency
                 self.missing_matches       = missing_matches
@@ -516,6 +518,13 @@ for the current image's architecture, zone type, and/or other variant:""")
                             "installed: ")
                         res += [s]
                         res += ["\t%s" % p for p in self.installed]
+
+                if self.invalid_mediations:
+                        s = _("The following mediations are not syntactically "
+                            "valid:")
+                        for m, entries in self.invalid_mediations.iteritems():
+                                for value, error in entries.values():
+                                        res.append(error)
 
                 if self.multispec:
                         s = _("The following different patterns specify the "
@@ -713,8 +722,10 @@ class InconsistentActionAttributeError(ConflictingActionError):
                         ua = dict(
                             (k, v)
                             for k, v in action.attrs.iteritems()
-                            if k in action.unique_attrs and
-                                not (k == "preserve" and "overlay" in action.attrs)
+                            if ((k in action.unique_attrs and
+                                not (k == "preserve" and "overlay" in action.attrs)) or
+                                ((action.name == "link" or action.name == "hardlink") and
+                                k.startswith("mediator")))
                         )
                         action.attrs = ua
                         return action

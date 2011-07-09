@@ -39,6 +39,13 @@ SYNOPSIS
          [--deny-new-be | --require-new-be] (--tagged tag-name ... |
          path-to-file ...)
 
+     /usr/bin/pkg mediator [-aH] [-F format] [<mediator> ...]
+     /usr/bin/pkg set-mediator [-nv] [-I <implementation>] [-V <version>]
+         [--no-be-activate] [--deny-new-be | --require-new-be]
+	 [--be-name name] <mediator> ...
+     /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
+         [--deny-new-be | --require-new-be] [--be-name name] <mediator> ...
+
      /usr/bin/pkg variant [-H] [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [-g path_or_uri ...] [--accept]
          [--licenses] [--no-be-activate] [--deny-new-be | --require-new-be]
@@ -189,9 +196,10 @@ SUBCOMMANDS
           With -q, hide progress messages during the requested operation.
 
           With -v, issue verbose progress messages during the requested
-          operation and display detailed planning information.  This
-          option may be specified multiple times to increase the amount
-          of planning information displayed.
+          operation and display detailed planning information (such as
+          changing facets, mediators, and variants).  This option may be
+          specified multiple times to increase the amount of planning
+          information displayed.
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or
@@ -574,10 +582,55 @@ SUBCOMMANDS
           For all other options, refer to the install command above for
           usage and their effects.
 
+     mediator [-aH] [-F format] [<mediator> ...]
+
+          Display the current selected version and/or implementation of all
+          mediators, or with arguments, only the mediators specified.
+
+          With -a, list the mediations that can be set for currently installed
+          packages.
+
+          With -F, specify an alternative output format.  Currently,
+          only 'tsv' (Tab Separated Values) is valid.
+
+          With -H, omit the headers from the listing.
+
+     set-mediator [-nv] [-I <implementation>] [-V <version>] [--no-be-activate]
+          [--deny-new-be | --require-new-be] [--be-name name] <mediator> ...
+
+          Set the version and/or implementation for the specified mediator(s) in
+          the current image.
+
+          With -I, set the implementation of the mediated interface to use.  By
+          default, if no version is specified, all implementation versions are
+          allowed.  To specify an implementation with no version, append '@'.
+
+          With -V, set the version of the mediated interface to use.
+
+          If the specified mediator version and/or implementation is not
+          currently available, any links using the specified mediator(s) will
+          be removed.
+
+          For all other options, refer to the install command above for
+          usage and their effects.
+
+     unset-mediator [-nvIV] [--no-be-activate] [--deny-new-be | --require-new-be]
+          [--be-name name] <mediator> ...
+
+          Revert the version and/or implementation of the specified mediator(s)
+          to the system default.
+
+          With -I, revert only the implementation of the mediated interface.
+
+          With -V, revert only the version of the mediated interface.
+
+          For all other options, refer to the install command above for
+          usage and their effects.
+
      variant [-H] [<variant_spec> ...]
 
           Display the current values of all variants, or with arguments,
-          only the variants specified
+          only the variants specified.
 
           With -H, omit the headers from the listing.
 

@@ -89,7 +89,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 62
+CLIENT_API_VERSION = 63
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -175,6 +175,10 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "fix",
             "revert",
             "",
+            "mediator",
+            "set-mediator",
+            "unset-mediator",
+            "",
             "variant",
             "change-variant",
             "",
@@ -243,6 +247,15 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "[-nvq] [-g path_or_uri ...] [--accept] [--licenses]\n"
             "            [--no-be-activate] [--deny-new-be | --require-new-be]\n"
             "            [--be-name name] <facet_spec>=[True|False|None] ...")
+
+        adv_usage["mediator"] = _("[-aH] [-F format] [<mediator> ...]")
+        adv_usage["set-mediator"] = _(
+            "[-nv] [-I <implementation>] [-V <version>] [--no-be-activate]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <mediator> ...")
+        adv_usage["unset-mediator"] = _("[-nvIV] [--no-be-activate]\n"
+            "            [--deny-new-be | --require-new-be] [--be-name name]\n"
+            "            <mediator> ...")
 
         adv_usage["variant"] = _("[-H] [<variant_spec>]")
         adv_usage["facet"] = ("[-H] [<facet_spec>]")
@@ -879,8 +892,8 @@ def __display_plan(api_inst, verbose):
         if isinstance(verbose, int):
                 disp = ["basic"]
                 if verbose > 0:
-                        disp.extend(["fmris", "services", "variants/facets",
-                            "boot-archive"])
+                        disp.extend(["fmris", "mediators", "services",
+                            "variants/facets", "boot-archive"])
                 if verbose > 1:
                         disp.append("actions")
                 if verbose > 2:
@@ -911,6 +924,7 @@ def __display_plan(api_inst, verbose):
 
         status = []
         varcets = plan.get_varcets()
+        mediators = plan.get_mediators()
         if "basic" in disp:
                 def cond_show(s1, s2, v):
                         if v:
@@ -919,6 +933,7 @@ def __display_plan(api_inst, verbose):
                 cond_show(_("Packages to remove:"), "%d", len(r))
                 cond_show(_("Packages to install:"), "%d", len(i))
                 cond_show(_("Packages to update:"), "%d", len(c))
+                cond_show(_("Mediators to change:"), "%d", len(mediators))
                 cond_show(_("Variants/Facets to change:"), "%d", len(varcets))
 
                 if verbose:
@@ -931,7 +946,7 @@ def __display_plan(api_inst, verbose):
                                     _("Estimated space to be consumed:"),
                                     misc.bytes_to_str(plan.bytes_added)))
 
-                if len(varcets):
+                if varcets or mediators:
                         cond_show(_("Packages to change:"), "%d", len(a))
                 else:
                         cond_show(_("Packages to fix:"), "%d", len(a))
@@ -964,6 +979,11 @@ def __display_plan(api_inst, verbose):
                 # Ensure there is a blank line between status information and
                 # remainder.
                 logger.info("")
+
+        if "mediators" in disp and mediators:
+                logger.info(_("Changed mediators:"))
+                for x in mediators:
+                        logger.info("  %s" % x)
 
         if "variants/facets" in disp and varcets:
                 logger.info(_("Changed variants/facets:"))
@@ -1348,6 +1368,9 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 error("\n" + txt, cmd=op)
                 if verbose:
                         logger.error("\n".join(e.verbose_info))
+                if e.invalid_mediations:
+                        # Bad user input for mediation.
+                        return EXIT_BADOPT
                 return EXIT_OOPS
 
         if e_type in (api_errors.CertificateError,
@@ -1863,6 +1886,31 @@ opts_attach_linked = \
     ("p", "",               "attach_parent",        False),
 ]
 
+opts_list_mediator = \
+    opts_table_no_headers + \
+    [
+    ("a", "",                "list_available",      False),
+    ("F", "output-format",   "output_format",       None)
+]
+
+opts_set_mediator = \
+    opts_table_beopts + \
+    opts_table_no_index + \
+    opts_table_nqv + \
+    [
+    ("I", "implementation",  "med_implementation",   None),
+    ("V", "version",         "med_version",          None)
+]
+
+opts_unset_mediator = \
+    opts_table_beopts + \
+    opts_table_no_index + \
+    opts_table_nqv + \
+    [
+    ("I", "",               "med_implementation",   False),
+    ("V", "",               "med_version",          False)
+]
+
 # "set-property-linked" cmd inherits all "install" cmd options
 opts_set_property_linked = \
     opts_install + \
@@ -2180,6 +2228,237 @@ def revert(api_inst, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
+        ret_code = __api_prepare(op, api_inst, accept=False)
+        if ret_code != EXIT_OK:
+                return ret_code
+
+        ret_code = __api_execute_plan(op, api_inst)
+
+        return ret_code
+
+def list_mediators(op, api_inst, pargs, omit_headers, output_format,
+    list_available):
+        """Display configured or available mediator version(s) and
+        implementation(s)."""
+
+        subcommand = "mediator"
+        if output_format is None:
+                output_format = "default"
+
+        # mediator information is returned as a dictionary of dictionaries
+        # of version and implementation indexed by mediator name.
+        mediations = collections.defaultdict(list)
+        if list_available:
+                gen_mediators = api_inst.gen_available_mediators()
+        else:
+                # Configured mediator information
+                gen_mediators = (
+                    (mediator, mediation)
+                    for mediator, mediation in api_inst.mediators.iteritems()
+                )
+
+        # Set minimum widths for mediator and version columns by using the
+        # length of the column headers and values to be displayed.
+        mediators = set()
+        max_mname_len = len(_("MEDIATOR"))
+        max_vsrc_len = len(_("VER. SRC."))
+        max_version_len = len(_("VERSION"))
+        max_isrc_len = len(_("IMPL. SRC."))
+        for mname, values in gen_mediators:
+                max_mname_len = max(max_mname_len, len(mname))
+                med_version = values.get("version", "")
+                max_version_len = max(max_version_len, len(med_version))
+                mediators.add(mname)
+                mediations[mname].append(values)
+
+        requested_mediators = set(pargs)
+        if requested_mediators:
+                found = mediators & requested_mediators
+                notfound = requested_mediators - found
+        else:
+                found = mediators
+                notfound = set()
+
+        def gen_listing():
+                for mediator, mediation in (
+                    (mname, mentry)
+                    for mname in sorted(found)
+                    for mentry in mediations[mname]
+                ):
+                        med_impl = mediation.get("implementation")
+                        med_impl_ver = mediation.get("implementation-version")
+                        if output_format == "default" and med_impl and \
+                            med_impl_ver:
+                                med_impl += "(@%s)" % med_impl_ver
+                        yield {
+                            "mediator": mediator,
+                            "version": mediation.get("version"),
+                            "version-source": mediation.get("version-source"),
+                            "implementation": med_impl,
+                            "implementation-source": mediation.get(
+                                "implementation-source"),
+                            "implementation-version": med_impl_ver,
+                        }
+
+        #    MEDIATOR VER. SRC.  VERSION IMPL. SRC. IMPLEMENTATION IMPL. VER.
+        #    <med_1>  <src_1>    <ver_1> <src_1>    <impl_1_value> <impl_1_ver>
+        #    <med_2>  <src_2>    <ver_2> <src_2>    <impl_2_value> <impl_2_ver>
+        #    ...
+        field_data = {
+            "mediator" : [("default", "tsv"), _("MEDIATOR"), ""],
+            "version" : [("default", "tsv"), _("VERSION"), ""],
+            "version-source": [("default", "tsv"), _("VER. SRC."), ""],
+            "implementation" : [("default", "tsv"), _("IMPLEMENTATION"), ""],
+            "implementation-source": [("default", "tsv"), _("IMPL. SRC."), ""],
+            "implementation-version" : [("tsv",), _("IMPL. VER."), ""],
+        }
+        desired_field_order = ((_("MEDIATOR"), _("VER. SRC."), _("VERSION"),
+            _("IMPL. SRC."), _("IMPLEMENTATION"), _("IMPL. VER.")))
+
+        # Default output formatting.
+        def_fmt = "%-" + str(max_mname_len) + "s %-" + str(max_vsrc_len) + \
+            "s %-" + str(max_version_len) + "s %-" + str(max_isrc_len) + "s %s"
+
+        if found or (not requested_mediators and output_format == "default"):
+                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                    field_data, gen_listing(), output_format, def_fmt,
+                    omit_headers, escape_output=False))
+
+        if found and notfound:
+                return EXIT_PARTIAL
+        if requested_mediators and not found:
+                if output_format == "default":
+                        # Don't pollute other output formats.
+                        error(_("no matching mediators found"),
+                            cmd=subcommand)
+                return EXIT_OOPS
+        return EXIT_OK
+
+def set_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
+    med_version, new_be, noexecute, quiet, update_index, verbose):
+        """Set the version and/or implementation for the specified mediator(s)."""
+
+        op = "set-mediator"
+        if not pargs:
+                usage(_("at least one mediator must be specified"),
+                    cmd=op)
+        if not (med_version or med_implementation):
+                usage(_("a mediator version and/or implementation must be "
+                    "specified using -V and -I"), cmd=op)
+
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
+
+        api_inst.progresstracker = get_tracker(quiet, verbose)
+
+        # Now set version and/or implementation for all matching mediators.
+        # The user may specify 'None' as a special value to explicitly
+        # request mediations that do not have the related component.
+        mediators = collections.defaultdict(dict)
+        for m in pargs:
+                if med_version == "":
+                        # Request reset of version.
+                        mediators[m]["version"] = None
+                elif med_version == "None":
+                        # Explicit selection of no version.
+                        mediators[m]["version"] = ""
+                elif med_version:
+                        mediators[m]["version"] = med_version
+
+                if med_implementation == "":
+                        # Request reset of implementation.
+                        mediators[m]["implementation"] = None
+                elif med_implementation == "None":
+                        # Explicit selection of no implementation.
+                        mediators[m]["implementation"] = ""
+                elif med_implementation:
+                        mediators[m]["implementation"] = med_implementation
+
+        stuff_to_do = None
+        try:
+                for pd in api_inst.gen_plan_set_mediators(mediators,
+                    noexecute=noexecute, be_name=be_name, new_be=new_be,
+                    be_activate=be_activate):
+                        continue
+                stuff_to_do = not api_inst.planned_nothingtodo()
+        except:
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
+
+        if not stuff_to_do:
+                if verbose:
+                        __display_plan(api_inst, verbose)
+                msg(_("No changes required."))
+                return EXIT_NOP
+
+        if not quiet:
+                __display_plan(api_inst, verbose)
+
+        if noexecute:
+                return EXIT_OK
+
+        ret_code = __api_prepare(op, api_inst, accept=False)
+        if ret_code != EXIT_OK:
+                return ret_code
+
+        ret_code = __api_execute_plan(op, api_inst)
+
+        return ret_code
+
+def unset_mediator(op, api_inst, pargs, be_activate, be_name, med_implementation,
+    med_version, new_be, noexecute, quiet, update_index, verbose):
+        """Unset the version and/or implementation for the specified mediator(s)."""
+
+        op = "unset-mediator"
+        if not pargs:
+                usage(_("at least one mediator must be specified"),
+                    cmd=op)
+        if verbose > 2:
+                DebugValues.set_value("plan", "True")
+
+        api_inst.progresstracker = get_tracker(quiet, verbose)
+
+        # Build dictionary of mediators to unset based on input.
+        mediators = collections.defaultdict(dict)
+        if not (med_version or med_implementation):
+                # Unset both if nothing specific requested.
+                med_version = True
+                med_implementation = True
+
+        # Now unset version and/or implementation for all matching mediators.
+        for m in pargs:
+                if med_version:
+                        mediators[m]["version"] = None
+                if med_implementation:
+                        mediators[m]["implementation"] = None
+
+        stuff_to_do = None
+        try:
+                for pd in api_inst.gen_plan_set_mediators(mediators,
+                    noexecute=noexecute, be_name=be_name, new_be=new_be,
+                    be_activate=be_activate):
+                        continue
+                stuff_to_do = not api_inst.planned_nothingtodo()
+        except:
+                ret_code = __api_plan_exception(op, api_inst, noexecute,
+                    verbose)
+                if ret_code != EXIT_OK:
+                        return ret_code
+
+        if not stuff_to_do:
+                if verbose:
+                        __display_plan(api_inst, verbose)
+                msg(_("No changes required."))
+                return EXIT_NOP
+
+        if not quiet:
+                __display_plan(api_inst, verbose)
+
+        if noexecute:
+                return EXIT_OK
+
         ret_code = __api_prepare(op, api_inst, accept=False)
         if ret_code != EXIT_OK:
                 return ret_code
@@ -5459,6 +5738,7 @@ def main_func():
             "install"               : (install, opts_install, -1),
             "list"                  : (list_inventory, opts_list_inventory, -1),
             "list-linked"           : (list_linked, opts_list_linked),
+            "mediator"              : (list_mediators, opts_list_mediator, -1),
             "property"              : (property_list, None),
             "property-linked"       : (list_property_linked,
                                           opts_list_property_linked, -1),
@@ -5470,6 +5750,7 @@ def main_func():
             "revert"                : (revert, None),
             "search"                : (search, None),
             "set-authority"         : (publisher_set, None),
+            "set-mediator"          : (set_mediator, opts_set_mediator, -1),
             "set-property"          : (property_set, None),
             "set-property-linked"   : (set_property_linked,
                                           opts_set_property_linked, -1),
@@ -5481,6 +5762,7 @@ def main_func():
             "unset-authority"       : (publisher_unset, None),
             "unset-property"        : (property_unset, None),
             "update-format"         : (update_format, None),
+            "unset-mediator"        : (unset_mediator, opts_unset_mediator, -1),
             "unset-publisher"       : (publisher_unset, None),
             "update"                : (update, opts_update, -1),
             "update-format"         : (update_format, None),

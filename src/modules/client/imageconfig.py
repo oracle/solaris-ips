@@ -91,7 +91,7 @@ class ImageConfig(cfg.FileConfig):
         URLs, publishers, properties, etc. that allow an Image to operate."""
 
         # This dictionary defines the set of default properties and property
-        # groups for a repository configuration indexed by version.
+        # groups for an image configuration indexed by version.
         __defs = {
             2: [
                 cfg.PropertySection("filter", properties=[]),
@@ -172,6 +172,19 @@ class ImageConfig(cfg.FileConfig):
                 cfg.PropertySection("facet", properties=[
                     cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),
                 ]),
+                cfg.PropertySection("mediators", properties=[
+                    cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.implementation$"),
+                    cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.implementation-version$",
+                        prop_type=cfg.PropVersion),
+                    cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.implementation-source$",
+                        prop_type=cfg.PropDefined, allowed=["site", "vendor",
+                        "local", "system"], default="local"),
+                    cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.version$",
+                        prop_type=cfg.PropVersion),
+                    cfg.PropertyTemplate("^[A-Za-z0-9\-]+\.version-source$",
+                        prop_type=cfg.PropDefined, allowed=["site", "vendor",
+                        "local", "system"], default="local"),
+                ]),
                 cfg.PropertySection("variant", properties=[]),
 
                 cfg.PropertySectionTemplate("^authority_.*", properties=[
@@ -233,6 +246,7 @@ class ImageConfig(cfg.FileConfig):
                 self.__publishers = {}
                 self.__validate = False
                 self.facets = facet.Facets()
+                self.mediators = {}
                 self.variants = variant.Variants()
                 self.linked_children = {}
                 cfg.FileConfig.__init__(self, cfgpathname,
@@ -421,6 +435,11 @@ class ImageConfig(cfg.FileConfig):
                 pso.extend(sorted(new_pubs))
                 self.set_property("property", "publisher-search-order", pso)
 
+                # Load mediator data.
+                for entry, value in idx.get("mediators", {}).iteritems():
+                        mname, mtype = entry.rsplit(".", 1)
+                        self.mediators.setdefault(mname, {})[mtype] = value
+
                 # Now re-enable validation and validate the properties.
                 self.__validate = True
                 self.__validate_properties()
@@ -474,9 +493,9 @@ class ImageConfig(cfg.FileConfig):
         def write(self, ignore_unprivileged=False):
                 """Write the image configuration."""
 
-                # The variant and facet sections must be removed so that the
-                # private variant and facet objects can have their information
-                # transferred to the configuration object verbatim.
+                # The variant, facet, and mediator sections must be removed so
+                # the private copies can be transferred to the configuration
+                # object.
                 try:
                         self.remove_section("variant")
                 except cfg.UnknownSectionError:
@@ -490,6 +509,17 @@ class ImageConfig(cfg.FileConfig):
                         pass
                 for f in self.facets:
                         self.set_property("facet", f, self.facets[f])
+
+                try:
+                        self.remove_section("mediators")
+                except cfg.UnknownSectionError:
+                        pass
+                for mname, mvalues in self.mediators.iteritems():
+                        for mtype, mvalue in mvalues.iteritems():
+                                # name.implementation[-(source|version)]
+                                # name.version[-source]
+                                pname = mname + "." + mtype
+                                self.set_property("mediators", pname, mvalue)
 
                 # remove all linked image child configuration
                 idx = self.get_index()
@@ -749,14 +779,14 @@ class ImageConfig(cfg.FileConfig):
                 try:
                         polval = self.get_property("property", SIGNATURE_POLICY)
                 except cfg.PropertyConfigError:
-                        # If it hasn't been set yet, there's nothing to 
+                        # If it hasn't been set yet, there's nothing to
                         # validate.
                         return
 
                 if polval == "require-names":
                         signames = self.get_property("property",
                             "signature-required-names")
-                        if not signames: 
+                        if not signames:
                                 raise apx.InvalidPropertyValue(_(
                                     "At least one name must be provided for "
                                     "the signature-required-names policy."))
@@ -805,7 +835,7 @@ class NullSystemPublisher(object):
 class BlendedConfig(object):
         """Class which handles combining the system repository configuration
         with the image configuration."""
-        
+
         def __init__(self, img_cfg, pkg_counts, imgdir, transport,
             use_system_pub):
                 """The 'img_cfg' parameter is the ImageConfig object for the
@@ -967,7 +997,7 @@ class BlendedConfig(object):
 
                 added_pubs = set()
                 removed_pubs = set()
-                        
+
                 for prefix, cnt, ver_cnt in pkg_counts:
                         if cnt > 0:
                                 pubs_with_installed_pkgs.add(prefix)
@@ -1128,6 +1158,14 @@ class BlendedConfig(object):
         def variants(self):
                 return self.img_cfg.variants
 
+        def __get_mediators(self):
+                return self.img_cfg.mediators
+
+        def __set_mediators(self, mediators):
+                self.img_cfg.mediators = mediators
+
+        mediators = property(__get_mediators, __set_mediators)
+
         def __get_facets(self):
                 return self.img_cfg.facets
 
@@ -1177,7 +1215,7 @@ class BlendedConfig(object):
                             "be moved relative to it.") % staying_put)
                 self.img_cfg.change_publisher_search_order(being_moved,
                     staying_put, after)
-                
+
         def reset(self, overrides=misc.EmptyDict):
                 """Discards current configuration state and returns the
                 configuration object to its initial state.

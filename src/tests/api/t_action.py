@@ -393,15 +393,85 @@ Incorrect attribute list.
                 fact = "file 12345 name=foo path=/tmp/foo mode=XXX"
                 dact = "dir path=/tmp mode=XXX"
 
+                def assert_invalid_attrs(astr):
+                        bad_act = action.fromstr(astr)
+                        try:
+                                bad_act.validate()
+                        except Exception, e:
+                                self.debug(str(e))
+
+                        self.assertRaises(
+                            action.InvalidActionAttributesError,
+                            bad_act.validate)
+
                 # Invalid attribute for file and directory actions.
                 for act in (fact, dact):
                         for bad_mode in ("", 'mode=""', "mode=???", 
                             "mode=44755", "mode=44", "mode=999", "mode=0898"):
                                 nact = act.replace("mode=XXX", bad_mode)
-                                bad_act = action.fromstr(nact)
-                                self.assertRaises(
-                                    action.InvalidActionAttributesError,
-                                    bad_act.validate)
+                                assert_invalid_attrs(nact)
+
+                for aname in ("link", "hardlink"):
+                        # Action with mediator without mediator properties is
+                        # invalid.
+                        nact = "%s path=usr/bin/vi target=../sunos/bin/edit " \
+                            "mediator=vi" % aname
+                        assert_invalid_attrs(nact)
+
+                        # Action with multiple mediator values is invalid.
+                        nact = "%s path=usr/bin/vi target=../sunos/bin/edit " \
+                            "mediator=vi mediator=vim " \
+                            "mediator-implementatio=svr4" % aname
+                        assert_invalid_attrs(nact)
+
+                        # Action with mediator properties without mediator
+                        # is invalid.
+                        props = {
+                            "mediator-version": "1.0",
+                            "mediator-implementation": "svr4",
+                            "mediator-priority": "site",
+                        }
+                        for prop, val in props.iteritems():
+                                nact = "%s path=usr/bin/vi " \
+                                    "target=../sunos/bin/edit %s=%s" % (aname,
+                                    prop, val)
+                                assert_invalid_attrs(nact)
+
+                        # Action with multiple values for any property is
+                        # invalid.
+                        for prop, val in props.iteritems():
+                                nact = "%s path=usr/bin/vi " \
+                                    "target=../sunos/bin/edit mediator=vi " \
+                                    "%s=%s %s=%s " % (aname, prop, val, prop,
+                                    val)
+                                if prop == "mediator-priority":
+                                        # mediator-priority alone isn't
+                                        # valid, so test multiple value
+                                        # invalid, add something.
+                                        nact += " mediator-version=1.0"
+                                assert_invalid_attrs(nact)
+
+                        # Verify invalid mediator names are rejected.
+                        for value in ("not/valid", "not valid", "not.valid"):
+                                nact = "%s path=usr/bin/vi target=vim " \
+                                    "mediator=\"%s\" mediator-implementation=vim" \
+                                    % (aname, value)
+                                assert_invalid_attrs(nact)
+
+                        # Verify invalid mediator-versions are rejected.
+                        for value in ("1.a", "abc", ".1"):
+                                nact = "%s path=usr/bin/vi target=vim " \
+                                    "mediator=vim mediator-version=%s" \
+                                    % (aname, value)
+                                assert_invalid_attrs(nact)
+
+                        # Verify invalid mediator-implementations ar rejected.
+                        for value in ("1.a", "@", "@1", "vim@.1",
+                            "vim@abc"):
+                                nact = "%s path=usr/bin/vi target=vim " \
+                                    "mediator=vim mediator-implementation=%s" \
+                                    % (aname, value)
+                                assert_invalid_attrs(nact)
 
 
 if __name__ == "__main__":

@@ -239,103 +239,6 @@ def subcmd_remove(conf, args):
         return EXIT_OK
 
 
-def print_col_listing(desired_field_order, field_data, field_values, out_format,
-    def_fmt, omit_headers):
-        """Print a columnar listing defined by provided values."""
-
-        # Custom sort function for preserving field ordering
-        def sort_fields(one, two):
-                return desired_field_order.index(get_header(one)) - \
-                    desired_field_order.index(get_header(two))
-
-        # Functions for manipulating field_data records
-        def filter_default(record):
-                return "default" in record[0]
-
-        def filter_tsv(record):
-                return "tsv" in record[0]
-
-        def get_header(record):
-                return record[1]
-
-        def get_value(record):
-                return record[2]
-
-        def quote_value(val):
-                if out_format == "tsv":
-                        # Expand tabs if tsv output requested.
-                        val = val.replace("\t", " " * 8)
-                nval = val
-                # Escape bourne shell metacharacters.
-                for c in ("\\", " ", "\t", "\n", "'", "`", ";", "&", "(", ")",
-                    "|", "^", "<", ">"):
-                        nval = nval.replace(c, "\\" + c)
-                return nval
-
-        def set_value(entry):
-                val = entry[1]
-                multi_value = False
-                if isinstance(val, (list, set)):
-                        multi_value = True
-                elif val == "":
-                        entry[0][2] = '""'
-                        return
-                elif val is None:
-                        entry[0][2] = ''
-                        return
-                else:
-                        val = [val]
-
-                nval = []
-                for v in val:
-                        if v == "":
-                                # Indicate empty string value using "".
-                                nval.append('""')
-                        elif v is None:
-                                # Indicate no value using empty string.
-                                nval.append('')
-                        else:
-                                # Otherwise, escape the value to be displayed.
-                                nval.append(quote_value(str(v)))
-
-                val = " ".join(nval)
-                nval = None
-                if multi_value:
-                        val = "(%s)" % val
-                entry[0][2] = val
-
-        if out_format == "default":
-                # Create a formatting string for the default output
-                # format.
-                fmt = def_fmt
-                filter_func = filter_default
-        elif out_format == "tsv":
-                # Create a formatting string for the tsv output
-                # format.
-                num_fields = len(field_data.keys())
-                fmt = "\t".join('%s' for x in xrange(num_fields))
-                filter_func = filter_tsv
-
-        # Extract the list of headers from the field_data dictionary.  Ensure
-        # they are extracted in the desired order by using the custom sort
-        # function.
-        hdrs = map(get_header, sorted(filter(filter_func, field_data.values()),
-            sort_fields))
-
-        # Output a header if desired.
-        if not omit_headers:
-                msg(fmt % tuple(hdrs))
-
-        for entry in field_values:
-                map(set_value, (
-                    (field_data[f], v)
-                    for f, v in entry.iteritems()
-                ))
-                values = map(get_value, sorted(filter(filter_func,
-                    field_data.values()), sort_fields))
-                msg(fmt % tuple(values))
-
-
 def get_repo(conf, read_only=True, subcommand=None):
         """Return the repository object for current program configuration."""
 
@@ -577,8 +480,10 @@ def _get_repo(conf, subcommand, xport, xpub, omit_headers, out_format, pargs):
             "s %s"
 
         if found or (not req_props and out_format == "default"):
-                print_col_listing(desired_field_order, field_data,
-                    gen_listing(), out_format, def_fmt, omit_headers)
+                # print without trailing newline.
+                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                    field_data, gen_listing(), out_format, def_fmt,
+                    omit_headers))
 
         if found and notfound:
                 return EXIT_PARTIAL
@@ -721,8 +626,10 @@ def _get_pub(conf, subcommand, xport, xpub, omit_headers, out_format, pubs,
             "s %-" + str(max_pname_len) + "s %s"
 
         if found or (not req_props and out_format == "default"):
-                print_col_listing(desired_field_order, field_data,
-                    gen_listing(), out_format, def_fmt, omit_headers)
+                # print without trailing newline.
+                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                    field_data, gen_listing(), out_format, def_fmt,
+                    omit_headers))
 
         if found and notfound:
                 rval = EXIT_PARTIAL
@@ -822,8 +729,10 @@ def subcmd_info(conf, args):
         def_fmt = "%-" + pub_len + "s %-8s %-16s %s"
 
         if found or (not pubs and out_format == "default"):
-                print_col_listing(desired_field_order, field_data,
-                    gen_listing(), out_format, def_fmt, omit_headers)
+                # print without trailing newline.
+                sys.stdout.write(misc.get_col_listing(desired_field_order,
+                    field_data, gen_listing(), out_format, def_fmt,
+                    omit_headers))
 
         if found and notfound:
                 return EXIT_PARTIAL

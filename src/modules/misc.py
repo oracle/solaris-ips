@@ -30,10 +30,10 @@ import errno
 import getopt
 import hashlib
 import locale
-import operator
 import os
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable
+import pkg.version as version
 import platform
 import re
 import shutil
@@ -1013,7 +1013,8 @@ def opts_parse(op, api_inst, args, table, pargs_limit, usage_cb):
                 # check for duplicate options
                 if k in opts_seen and (type(v) != list and type(v) != int):
                         if opt == opts_seen[k]:
-                                opts_err_repeated(opt, op)
+                                usage_cb(_("option '%s' repeated") % opt,
+                                    cmd=op)
                         usage_cb(_("'%s' and '%s' have the same meaning") %
                             (opts_seen[k], opt), cmd=op)
                 opts_seen[k] = opt
@@ -1083,3 +1084,142 @@ def get_dir_size(path):
                 )
         except EnvironmentError, e:
                 raise apx._convert_error(e)
+
+def get_col_listing(desired_field_order, field_data, field_values, out_format,
+    def_fmt, omit_headers, escape_output=True):
+        """Returns a string containing a columnar listing defined by provided
+        values.
+
+        'desired_field_order' is the list of the fields to show in the order
+        they should be output left to right.
+
+        'field_data' is a dictionary of lists of the form:
+          {
+            field_name1: {
+              [(output formats), field header, initial field value]
+            },
+            field_nameN: {
+              [(output formats), field header, initial field value]
+            }
+          }
+
+        'field_values' is a generator or list of dictionaries of the form:
+          {
+            field_name1: field_value,
+            field_nameN: field_value
+          }
+
+        'out_format' is the format to use for output.  Currently 'default' and
+        'tsv' are supported.  The first is intended for human-readable output,
+        the latter for parseable output.
+
+        'def_fmt' is the default Python formatting string to use for output.  It
+        must match the fields defined in 'field_data'.
+
+        'omit_headers' is a boolean specifying whether headers should be
+        included in the listing.
+
+        'escape_output' is an optional boolean indicating whether shell
+        metacharacters or embedded control sequences should be escaped
+        before display.
+        """
+
+        # Custom sort function for preserving field ordering
+        def sort_fields(one, two):
+                return desired_field_order.index(get_header(one)) - \
+                    desired_field_order.index(get_header(two))
+
+        # Functions for manipulating field_data records
+        def filter_default(record):
+                return "default" in record[0]
+
+        def filter_tsv(record):
+                return "tsv" in record[0]
+
+        def get_header(record):
+                return record[1]
+
+        def get_value(record):
+                return record[2]
+
+        def quote_value(val):
+                if out_format == "tsv":
+                        # Expand tabs if tsv output requested.
+                        val = val.replace("\t", " " * 8)
+                nval = val
+                # Escape bourne shell metacharacters.
+                for c in ("\\", " ", "\t", "\n", "'", "`", ";", "&", "(", ")",
+                    "|", "^", "<", ">"):
+                        nval = nval.replace(c, "\\" + c)
+                return nval
+
+        def set_value(entry):
+                val = entry[1]
+                multi_value = False
+                if isinstance(val, (list, set)):
+                        multi_value = True
+                elif val == "":
+                        entry[0][2] = '""'
+                        return
+                elif val is None:
+                        entry[0][2] = ''
+                        return
+                else:
+                        val = [val]
+
+                nval = []
+                for v in val:
+                        if v == "":
+                                # Indicate empty string value using "".
+                                nval.append('""')
+                        elif v is None:
+                                # Indicate no value using empty string.
+                                nval.append('')
+                        elif escape_output:
+                                # Otherwise, escape the value to be displayed.
+                                nval.append(quote_value(str(v)))
+                        else:
+                                # Caller requested value not be escaped.
+                                nval.append(str(v))
+
+                val = " ".join(nval)
+                nval = None
+                if multi_value:
+                        val = "(%s)" % val
+                entry[0][2] = val
+
+        if out_format == "default":
+                # Create a formatting string for the default output
+                # format.
+                fmt = def_fmt
+                filter_func = filter_default
+        elif out_format == "tsv":
+                # Create a formatting string for the tsv output
+                # format.
+                num_fields = len(field_data.keys())
+                fmt = "\t".join('%s' for x in xrange(num_fields))
+                filter_func = filter_tsv
+
+        # Extract the list of headers from the field_data dictionary.  Ensure
+        # they are extracted in the desired order by using the custom sort
+        # function.
+        hdrs = map(get_header, sorted(filter(filter_func, field_data.values()),
+            sort_fields))
+
+        # Output a header if desired.
+        output = ""
+        if not omit_headers:
+                output += fmt % tuple(hdrs)
+                output += "\n"
+
+        for entry in field_values:
+                map(set_value, (
+                    (field_data[f], v)
+                    for f, v in entry.iteritems()
+                ))
+                values = map(get_value, sorted(filter(filter_func,
+                    field_data.values()), sort_fields))
+                output += fmt % tuple(values)
+                output += "\n"
+
+        return output

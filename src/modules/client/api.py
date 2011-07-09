@@ -57,6 +57,7 @@ import pkg.client.indexer as indexer
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
+import pkg.mediator as med
 import pkg.misc as misc
 import pkg.nrlock
 import pkg.p5i as p5i
@@ -72,7 +73,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 62
+CURRENT_API_VERSION = 63
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -189,13 +190,12 @@ class _LockedCancelable(object):
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
         There is a specific order of methods which must be used to install
-        or uninstall packages, or update an image. First, gen_plan_install,
-        gen_plan_uninstall, gen_plan_update or gen_plan_change_varcets must be
-        called.  After that method completes successfully, describe may be
-        called, and prepare must be called. Finally, execute_plan may be
-        called to implement the previous created plan. The other methods
+        or uninstall packages, or update an image.  First, a gen_plan_* method
+        must be called.  After that method completes successfully, describe may
+        be called, and prepare must be called.  Finally, execute_plan may be
+        called to implement the previous created plan.  The other methods
         do not have an ordering imposed upon them, and may be used as
-        needed. Cancel may only be invoked while a cancelable method is
+        needed.  Cancel may only be invoked while a cancelable method is
         running."""
 
         # Constants used to reference specific values that info can return.
@@ -215,6 +215,7 @@ class ImageInterface(object):
 
         # Private constants used for tracking which type of plan was made.
         __INSTALL     = "install"
+        __MEDIATORS   = "mediators"
         __REVERT      = "revert"
         __SYNC        = "sync"
         __UNINSTALL   = "uninstall"
@@ -222,6 +223,7 @@ class ImageInterface(object):
         __VARCET      = "varcet"
         __plan_values = frozenset([
             __INSTALL,
+            __MEDIATORS,
             __REVERT,
             __SYNC,
             __UNINSTALL,
@@ -231,6 +233,7 @@ class ImageInterface(object):
 
         __api_op_2_plan = {
             API_OP_ATTACH:         __SYNC,
+            API_OP_SET_MEDIATOR:   __MEDIATORS,
             API_OP_CHANGE_FACET:   __VARCET,
             API_OP_CHANGE_VARIANT: __VARCET,
             API_OP_DETACH:         __UNINSTALL,
@@ -282,7 +285,7 @@ class ImageInterface(object):
                 other platforms, a value of False will allow any image location.
                 """
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([62, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -449,6 +452,52 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
             "progress.")
 
         @property
+        def mediators(self):
+                """A dictionary of the mediators and their configured version
+                and implementation of the form:
+
+                   {
+                       mediator-name: {
+                           "version": mediator-version-string,
+                           "version-source": (site|vendor|system|local),
+                           "implementation": mediator-implementation-string,
+                           "implementation-source": (site|vendor|system|local),
+                       }
+                   }
+
+                  'version' is an optional string that specifies the version
+                   (expressed as a dot-separated sequence of non-negative
+                   integers) of the mediator for use.
+
+                   'version-source' is a string describing the source of the
+                   selected version configuration.  It indicates how the
+                   version component of the mediation was selected.
+
+                   'implementation' is an optional string that specifies the
+                   implementation of the mediator for use in addition to or
+                   instead of 'version'.
+
+                   'implementation-source' is a string describing the source of
+                   the selected implementation configuration.  It indicates how
+                   the implementation component of the mediation was selected.
+                 """
+
+                ret = {}
+                for m, mvalues in self._img.cfg.mediators.iteritems():
+                        ret[m] = copy.copy(mvalues)
+                        if "version" in ret[m]:
+                                # Don't expose internal Version object to
+                                # external consumers.
+                                ret[m]["version"] = \
+                                    ret[m]["version"].get_short_version()
+                        if "implementation-version" in ret[m]:
+                                # Don't expose internal Version object to
+                                # external consumers.
+                                ret[m]["implementation-version"] = \
+                                    ret[m]["implementation-version"].get_short_version()
+                return ret
+
+        @property
         def root(self):
                 """The absolute pathname of the filesystem root of the image.
                 This property is read-only."""
@@ -606,6 +655,75 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 finally:
                         self._activity_lock.release()
                 return True
+
+        def gen_available_mediators(self):
+                """A generator function that yields tuples of the form (mediator,
+                mediations), where mediator is the name of the provided mediation
+                and mediations is a list of dictionaries of possible mediations
+                to set, provided by installed packages, of the form:
+
+                   {
+                       mediator-name: {
+                           "version": mediator-version-string,
+                           "version-source": (site|vendor|system|local),
+                           "implementation": mediator-implementation-string,
+                           "implementation-source": (site|vendor|system|local),
+                       }
+                   }
+
+                  'version' is an optional string that specifies the version
+                   (expressed as a dot-separated sequence of non-negative
+                   integers) of the mediator for use.
+
+                   'version-source' is a string describing how the version
+                   component of the mediation will be evaluated during
+                   mediation. (The priority.)
+
+                   'implementation' is an optional string that specifies the
+                   implementation of the mediator for use in addition to or
+                   instead of 'version'.
+
+                   'implementation-source' is a string describing how the
+                   implementation component of the mediation will be evaluated
+                   during mediation.  (The priority.)
+
+                The list of possible mediations returned for each mediator is
+                ordered by source in the sequence 'site', 'vendor', 'system',
+                and then by version and implementation.  It does not include
+                mediations that exist only in the image configuration.
+                """
+
+                ret = collections.defaultdict(set)
+                excludes = self._img.list_excludes()
+                for f in self._img.gen_installed_pkgs():
+                        mfst = self._img.get_manifest(f)
+                        for m, mediations in mfst.gen_mediators(
+                            excludes=excludes):
+                                ret[m].update(mediations)
+
+                for mediator in sorted(ret):
+                        for med_priority, med_ver, med_impl in sorted(
+                            ret[mediator], cmp=med.cmp_mediations):
+                                val = {}
+                                if med_ver:
+                                        # Don't expose internal Version object
+                                        # to callers.
+                                        val["version"] = \
+                                            med_ver.get_short_version()
+                                if med_impl:
+                                        val["implementation"] = med_impl
+
+                                ret_priority = med_priority
+                                if not ret_priority:
+                                        # For consistency with the configured
+                                        # case, list source as this.
+                                        ret_priority = "system"
+                                # Always set both to be consistent
+                                # with @mediators.
+                                val["version-source"] = ret_priority
+                                val["implementation-source"] = \
+                                    ret_priority
+                                yield mediator, val
 
         def get_avoid_list(self):
                 """Return list of tuples of (pkg stem, pkgs w/ group
@@ -873,6 +991,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 self._img.make_install_plan(**kwargs)
                         elif _op == API_OP_REVERT:
                                 self._img.make_revert_plan(**kwargs)
+                        elif _op == API_OP_SET_MEDIATOR:
+                                self._img.make_set_mediators_plan(**kwargs)
                         elif _op == API_OP_UNINSTALL:
                                 self._img.make_uninstall_plan(**kwargs)
                         elif _op == API_OP_UPDATE:
@@ -1285,6 +1405,52 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     _new_be=new_be, _noexecute=noexecute,
                     _refresh_catalogs=False, _update_index=update_index,
                     pkgs_to_uninstall=pkgs_to_uninstall)
+
+        def gen_plan_set_mediators(self, mediators, be_activate=True,
+            be_name=None, li_ignore=None, li_parent_sync=True, new_be=None,
+            noexecute=False, update_index=True):
+                """This is a generator function that returns PlanDescription
+                objects.
+
+                Creates a plan to change the version and implementation values
+                for mediators as specified in the provided dictionary.  Once an
+                operation has been planned, it may be executed by first calling
+                prepare(), and then execute_plan().  After execution of a plan,
+                or to abandon a plan, reset() should be called.
+
+                Callers should pass all arguments by name assignment and not by
+                positional order.
+
+                'mediators' is a dict of dicts of the mediators to set version
+                and implementation for.  If the dict for a given mediator-name
+                is empty, it will be intepreted as a request to revert the
+                specified mediator to the default, "optimal" mediation.  It
+                should be of the form:
+
+                   {
+                       mediator-name: {
+                           "implementation": mediator-implementation-string,
+                           "version": mediator-version-string
+                       }
+                   }
+
+                   'implementation' is an optional string that specifies the
+                   implementation of the mediator for use in addition to or
+                   instead of 'version'.
+
+                   'version' is an optional string that specifies the version
+                   (expressed as a dot-separated sequence of non-negative
+                   integers) of the mediator for use.
+
+                For all other parameters, refer to the 'gen_plan_install'
+                function for an explanation of their usage and effects."""
+
+                assert mediators
+                return self.__plan_op(API_OP_SET_MEDIATOR, _accept=True,
+                    _be_activate=be_activate, _be_name=be_name,
+                    _li_ignore=li_ignore, _li_parent_sync=li_parent_sync,
+                    mediators=mediators, _new_be=new_be, _noexecute=noexecute,
+                    _refresh_catalogs=False, _update_index=update_index)
 
         def plan_change_varcets(self, variants=None, facets=None,
             noexecute=False, be_name=None, new_be=None, repos=None,
@@ -4314,6 +4480,10 @@ class PlanDescription(object):
         def get_services(self):
                 """Returns a list of services affected in this plan."""
                 return self.__plan.services
+
+        def get_mediators(self):
+                """Returns a dict of mediator changes in this plan"""
+                return self.__plan.mediators
 
         def get_varcets(self):
                 """Returns a list of variant/facet changes in this plan"""

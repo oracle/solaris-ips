@@ -1,3 +1,27 @@
+Version 63:
+Compatible with clients using version 62.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * added new 'mediators' property has been added
+          to get a dictionary of the configured mediation
+          information.
+
+        * added gen_available_mediators() to get the list of
+          available mediations for installed packages.
+
+        * added gen_plan_set_mediators() for planning an
+          operation to set link mediation.
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * added get_mediators() method to get a list of
+          strings describing the mediation changes for a plan.
+
+    pkg.client.api_errors has changed as follows:
+        * added an invalid_mediations property to PlanCreationException
+          that contains a dictionary of any mediations found to be
+          invalid for the plan with a key set for each aspect that was
+          faulty.
+
 Version 62:
 Incompatible with clients using versions 0-61.
 
