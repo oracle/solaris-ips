@@ -95,7 +95,7 @@
 			</loctext>
 		</common_name>
 		<documentation>
-			<manpage title='zoneproxyd' section='1M'
+			<manpage title='pkg.sysrepo' section='1M'
 			     manpath='/usr/share/man' />
 		</documentation>
 	</template>

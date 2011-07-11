@@ -88,7 +88,7 @@
 			</loctext>
 		</common_name>
 		<documentation>
-			<manpage title='zoneproxy-client' section='1M'
+			<manpage title='pkg.sysrepo' section='1M'
 			     manpath='/usr/share/man' />
 		</documentation>
 	</template>

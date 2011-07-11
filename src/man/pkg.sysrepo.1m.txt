@@ -26,8 +26,9 @@ DESCRIPTION
      to allow non-global zones to access the repositories config-
      ured   in   the   global    zone.     The    SMF    services
      svc:/application/pkg/zones-proxyd                        and
-     svc:/application/pkg/zones-proxy-client are also involved in
-     providing this support.
+     svc:/application/pkg/zones-proxy-client are responsible  for
+     providing  the  transport  between  non-global zones and the
+     global zone.  This transport is only used by pkg(5).
 
      Note that only http, https and v4 file repositories are sup-
      ported: p5p-based file repositories or older file-repository
@@ -54,7 +55,7 @@ OPTIONS
                           'config/cache_dir' SMF property.
 
 
-SunOS 5.11          Last change: 16 May 2011                    1
+SunOS 5.11          Last change: 8 Jul 2011                     1
 
 
 System Administration Commands                    pkg.sysrepo(1M)
@@ -98,7 +99,7 @@ ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
      butes:
 
-SunOS 5.11          Last change: 22 Apr 2011                    2
+SunOS 5.11          Last change: 8 Jul 2011                     2
 
 
 System Administration Commands                    pkg.sysrepo(1M)
@@ -130,7 +131,7 @@ NOTES
 
 
 
-SunOS 5.11          Last change: 22 Apr 2011                    3
+SunOS 5.11          Last change: 8 Jul 2011                     3
 
 
 
