@@ -1800,14 +1800,14 @@ dir group=sys mode=0755 owner=root path=etc
 
                 for item in paths:
                         self.pkgsend(depot_url=self.ref_uri,
-                            command="publish --fmri-in-manifest %s" % item)
+                            command="publish %s" % item)
                 self.pkgsend(depot_url=self.ref_uri,
                             command="refresh-index")
 
                 paths = self.make_misc_files(self.lint_mf)
                 for item in paths:
                         self.pkgsend(depot_url=self.lint_uri,
-                            command="publish --fmri-in-manifest %s" % item)
+                            command="publish %s" % item)
                 self.pkgsend(depot_url=self.lint_uri,
                             command="refresh-index")
                 # we should sign the repositories for additional coverage

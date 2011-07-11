@@ -44,6 +44,24 @@ class InvalidBundleException(Exception):
                 # have a chance of being stringified correctly.
                 return str(self)
 
+
+class Bundle(object):
+        """Base bundle class."""
+
+        def get_action(self, path):
+                """Return the first action that matches the provided path or
+                None."""
+                for apath, data in self._walk_bundle():
+                        if not apath:
+                                continue
+                        npath = apath.lstrip(os.path.sep)
+                        if path == npath:
+                                if type(data) == tuple:
+                                        # Construct action on demand.
+                                        return self.action(*data)
+                                # Action was returned.
+                                return data
+
 def make_bundle(filename, targetpaths=()):
         """Determines what kind of bundle is at the given filename, and returns
         the appropriate bundle object.
@@ -59,6 +77,7 @@ def make_bundle(filename, targetpaths=()):
                         return bundle_create(filename, targetpaths=targetpaths)
 
         raise TypeError("Unknown bundle type for '%s'" % filename)
+
 
 if __name__ == "__main__":
         try:

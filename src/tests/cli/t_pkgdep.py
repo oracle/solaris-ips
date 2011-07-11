@@ -227,7 +227,7 @@ depend fmri=__TBD pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=ba
 """
 
         two_v_deps_bar = """
-set name=fmri value=pkg:/s-v-bar
+set name=pkg.fmri value=pkg:/s-v-bar
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=bar
@@ -235,14 +235,14 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/file2
 """
 
         two_v_deps_baz_one = """
-set name=fmri value=pkg:/s-v-baz-one
+set name=pkg.fmri value=pkg:/s-v-baz-one
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz variant.num=one
 """
 
         two_v_deps_baz_two = """
-set name=fmri value=pkg:/s-v-baz-two
+set name=pkg.fmri value=pkg:/s-v-baz-two
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz variant.num=two
@@ -302,7 +302,7 @@ depend fmri=__TBD pkg.debug.depend.file=var/log/f6 pkg.debug.depend.reason=b5 pk
 """
 
         dup_prov = """
-set name=fmri value=pkg:/dup-prov
+set name=pkg.fmri value=pkg:/dup-prov
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/f1
@@ -310,7 +310,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/f2
 """
 
         subset_prov = """
-set name=fmri value=pkg:/subset-prov
+set name=pkg.fmri value=pkg:/subset-prov
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/f5
@@ -318,7 +318,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/f6
 """
 
         sep_vars = """
-set name=fmri value=pkg:/sep_vars
+set name=pkg.fmri value=pkg:/sep_vars
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/f3 variant.foo=bar
@@ -433,22 +433,22 @@ Environment:
         PKG_IMAGE"""
 
         collision_manf = """\
-set name=fmri value=pkg:/collision_manf
+set name=pkg.fmri value=pkg:/collision_manf
 depend fmri=__TBD pkg.debug.depend.file=no_such_named_file pkg.debug.depend.path=platform/foo/baz pkg.debug.depend.path=platform/bar/baz pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require\
 """
 
         sat_bar_libc = """\
-set name=fmri value=pkg:/sat_bar_libc
+set name=pkg.fmri value=pkg:/sat_bar_libc
 file NOHASH path=platform/bar/baz/no_such_named_file
 """
 
         sat_bar_libc2 = """\
-set name=fmri value=pkg:/sat_bar_libc2
+set name=pkg.fmri value=pkg:/sat_bar_libc2
 file NOHASH path=platform/bar/baz/no_such_named_file
 """
 
         sat_foo_libc = """\
-set name=fmri value=pkg:/sat_foo_libc
+set name=pkg.fmri value=pkg:/sat_foo_libc
 file NOHASH path=platform/foo/baz/no_such_named_file
 """
 
@@ -538,12 +538,12 @@ depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.6/v-p/pkg/misc.py pkg.de
 """
 
         misc_manf = """\
-set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
+set name=pkg.fmri value=pkg:/footest@0.5.11,5.11-0.117
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.6/v-p/pkg/misc.py
 """
 
         unsatisfied_manf = """\
-set name=fmri value=pkg:/unsatisfied_manf
+set name=pkg.fmri value=pkg:/unsatisfied_manf
 set name=variant.foo value=bar
 depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require
 """
@@ -558,13 +558,13 @@ variant.foo:bar
 """
 
         partially_satisfied_manf = """\
-set name=fmri value=pkg:/partially_satisfied_manf
+set name=pkg.fmri value=pkg:/partially_satisfied_manf
 set name=variant.foo value=bar value=baz
 depend fmri=__TBD pkg.debug.depend.file=unsatisfied pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require
 """
 
         satisfying_manf = """\
-set name=fmri value=pkg:/satisfying_manf
+set name=pkg.fmri value=pkg:/satisfying_manf
 set name=variant.foo value=baz
 file NOHASH path=usr/bin/unsatisfied owner=root group=staff mode=0555
 """
@@ -938,7 +938,7 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
 
         def pkgsend_with_fmri(self, pth):
                 plist = self.pkgsend(self.rurl1,
-                    "publish -d %s --fmri-in-manifest %s" %
+                    "publish -d %s %s" %
                     (self.test_proto_dir, pth))
 
         def check_res(self, expected, seen):
@@ -1637,6 +1637,27 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 fh.close()
                 self.check_res(self.dup_variant_deps_resolved, res)
 
+                pfmris = {
+                    m1_path: "pkg:/dup-v-deps@0.1-0.2",
+                    m2_path: "pkg:/s-v-bar@0.1-0.2",
+                    m3_path: "pkg:/s-v-baz-one@0.1-0.2",
+                    m4_path: "pkg:/s-v-baz-two@0.1-0.2",
+                    m5_path: "pkg:/dup-prov@0.1-0.2",
+                    m6_path: "pkg:/sep_vars@0.1-0.2",
+                    m7_path: "pkg:/subset-prov@0.1-0.2 ",
+                    m8_path: "pkg:/hand-dep@0.1-0.2",
+                }
+
+                # Add FMRI to each manifest for use with publish.
+                for mpath, pfmri in pfmris.items():
+                        lines = open(mpath + ".res", "rb").readlines()
+                        with open(mpath + ".res", "wb") as mf:
+                                mf.write("set name=pkg.fmri value=%s\n" % pfmri)
+                                for l in lines:
+                                        if "pkg.fmri" in l:
+                                                continue
+                                        mf.write(l)
+
                 # Check that the results can be installed correctly.
                 self.make_proto_text_file("var/log/file2")
                 self.make_proto_text_file("var/log/authlog")
@@ -1650,21 +1671,21 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                     "platform/i86pc/kernel/dacf/amd64/consconfig_dacf")
                 self.make_proto_text_file(
                     "platform/i86pc/kernel/dacf/consconfig_dacf")
-                self.pkgsend(self.rurl, "publish -d %s dup-v-deps@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m1_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s s-v-bar@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m2_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s s-v-baz-one@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m3_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s s-v-baz-two@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m4_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s dup-prov@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m5_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s sep_vars@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m6_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s subset-prov@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m7_path + ".res"))
-                self.pkgsend(self.rurl, "publish -d %s hand-dep@0.1-0.2 %s" %
+                self.pkgsend(self.rurl, "publish -d %s %s" %
                     (self.test_proto_dir, m8_path + ".res"))
                 foo_vars = ["bar", "baz"]
                 num_vars = ["one", "two"]

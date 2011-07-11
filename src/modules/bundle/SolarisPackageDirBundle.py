@@ -25,18 +25,22 @@
 #
 
 import os
+import pkg.bundle
 import pkg.misc as misc
+
 from pkg.sysvpkg import SolarisPackage
 from pkg.cpiofile import CpioFile
 from pkg.actions import *
 from pkg.actions.attribute import AttributeAction
 from pkg.actions.legacy import LegacyAction
 
-class SolarisPackageDirBundle(object):
+
+class SolarisPackageDirBundle(pkg.bundle.Bundle):
 
         hollow_attr = "pkg.send.convert.sunw-pkg-hollow"
 
         def __init__(self, filename, data=True, targetpaths=()):
+                filename = os.path.normpath(filename)
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
                 self.filename = filename
@@ -55,7 +59,7 @@ class SolarisPackageDirBundle(object):
                 # attributes for items that don't map to pkg(5) equivalents
                 self.pkginfo_actions = self.get_pkginfo_actions(self.pkg.pkginfo)
 
-        def __iter__(self):
+        def _walk_bundle(self):
                 faspac = []
                 if "faspac" in self.pkg.pkginfo:
                         faspac = self.pkg.pkginfo["faspac"]
@@ -68,13 +72,13 @@ class SolarisPackageDirBundle(object):
                         self.class_action_names.add(p.klass)
 
                 for act in self.pkginfo_actions:
-                        yield act
+                        yield act.attrs.get("path"), act
 
                 if not self.data:
                         for p in self.pkg.manifest:
                                 act = self.action(p, None)
                                 if act:
-                                        yield act
+                                        yield act.attrs.get("path"), act
                         return
 
                 def j(path):
@@ -95,15 +99,15 @@ class SolarisPackageDirBundle(object):
                                 act = self.action(pkgmap[j(ci.name)],
                                     ci.extractfile())
                                 if act:
-                                        yield act
+                                        yield act.attrs.get("path"), act
 
                 # Remove BASEDIR from a relocatable path.  The extra work is
                 # because if BASEDIR is not empty (non-"/"), then we probably
                 # need to strip an extra slash from the beginning of the path,
                 # but if BASEDIR is "" ("/" in the pkginfo file), then we don't
                 # need to do anything extra.
-                def r(path, type):
-                        if type == "i":
+                def r(path, ptype):
+                        if ptype == "i":
                                 return path
                         if path[0] == "/":
                                 return path[1:]
@@ -123,28 +127,36 @@ class SolarisPackageDirBundle(object):
                                 continue
 
                         # These are the only valid file types in SysV packages
-                        if p.type in "fevbcdxpls":
-                                if p.pathname[0] == "/":
+                        if p.type in "ifevbcdxpls":
+                                if p.type == "i":
+                                        d = "install"
+                                elif p.pathname[0] == "/":
                                         d = "root"
                                 else:
                                         d = "reloc"
                                 act = self.action(p, os.path.join(self.filename,
                                     d, r(p.pathname, p.type)))
                                 if act:
-                                        yield act
-                        elif p.type == "i":
-                                a = self.action(p, os.path.join(self.filename,
-                                    "install", r(p.pathname, p.type)))
-                                if a:
-                                        yield a
+                                        if act.name == "license":
+                                                # This relies on the fact that
+                                                # license actions have their
+                                                # hash set to the package path.
+                                                yield act.hash, act
+                                        else:
+                                                yield os.path.join(d, act.attrs.get(
+                                                    "path", "")), act
+
+        def __iter__(self):
+                for entry in self._walk_bundle():
+                        yield entry[-1]
 
         def action(self, mapline, data):
                 preserve_dict = {
-                            "renameold": "renameold",
-                            "renamenew": "renamenew",
-                            "preserve": "true",
-                            "svmpreserve": "true"
-                        }
+                    "renameold": "renameold",
+                    "renamenew": "renamenew",
+                    "preserve": "true",
+                    "svmpreserve": "true"
+                }
 
                 act = None
 
@@ -158,7 +170,7 @@ class SolarisPackageDirBundle(object):
                 if mapline.type in "fev":
                         act = file.FileAction(data, mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,
-                            path=mapline.pathname, 
+                            path=mapline.pathname,
                             timestamp=misc.time_to_timestamp(int(mapline.modtime)))
 
                         # Add a preserve attribute if klass is known to be used
@@ -185,9 +197,15 @@ class SolarisPackageDirBundle(object):
                         act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
                 elif mapline.type == "i" and mapline.pathname == "copyright":
+                        # XXX path is set there because the importer relies on
+                        # it; when the importer dies, this can too.
                         act = license.LicenseAction(data,
                             license="%s.copyright" % self.pkgname,
                             path=mapline.pathname)
+                        if act.hash == "NOHASH" and \
+                            isinstance(data, basestring) and \
+                            data.startswith(self.filename):
+                                act.hash = data[len(self.filename) + 1:]
                 elif mapline.type == "i":
                         if mapline.pathname not in ["depend", "pkginfo"]:
                                 # check to see if we've seen this script

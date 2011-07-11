@@ -47,6 +47,7 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
         """XXX Need a class comment."""
 
         def __init__(self, filename, targetpaths=()):
+                filename = os.path.normpath(filename)
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
                 self.filename = filename
@@ -74,15 +75,42 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
 
                 for p in self.pkg.manifest:
                         if p.type in "fevdsl":
-                                if p.pathname.startswith("/"):
-                                        dir = "root"
+                                if p.pathname[0] == "/":
+                                        d = "root"
                                 else:
-                                        dir = "reloc/"
-                                self.pkgmap[dir + p.pathname] = p
+                                        d = "reloc/"
+                                self.pkgmap[d + p.pathname] = p
                                 self.class_actions_dir[p.pathname] = p.klass
                                 self.class_action_names.add(p.klass)
                         elif p.type == "i":
                                 self.pkgmap["install/" + p.pathname] = p
+
+        def _walk_bundle(self):
+                for act in self.pkginfo_actions:
+                        yield act.attrs.get("path"), act
+
+                for p in self.pkg.datastream:
+                        yield p.name, (self.pkgmap, p, p.name)
+
+                # for some reason, some packages may have directories specified
+                # in the pkgmap that don't exist in the archive.  They need to
+                # be found and iterated as well.
+                #
+                # Some of the blastwave packages also have directories in the
+                # archive that don't exist in the package metadata.  I don't see
+                # a whole lot of point in faking those up.
+                for p in self.pkg.manifest:
+                        if p.type not in "lsd":
+                                continue
+
+                        if p.pathname[0] == "/":
+                                d = "root"
+                        else:
+                                d = "reloc/"
+                        path = d + p.pathname
+                        if (p.type == "d" and path not in self.pkg.datastream) or \
+                            p.type in "ls":
+                                yield path, (self.pkgmap, None, path)
 
         def __iter__(self):
                 """Iterate through the datastream.
@@ -97,37 +125,14 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                    file type in the archive is the same as the file type in the
                    package map.
                 """
-                for act in self.pkginfo_actions:
-                                yield act
+                for path, data in self._walk_bundle():
+                        if type(data) != tuple:
+                                yield data
+                                continue
 
-                for p in self.pkg.datastream:
-                        act = self.action(self.pkgmap, p, p.name)
+                        act = self.action(*data)
                         if act:
                                 yield act
-
-                # for some reason, some packages may have directories specified
-                # in the pkgmap that don't exist in the archive.  They need to
-                # be found and iterated as well.
-                #
-                # Some of the blastwave packages also have directories in the
-                # archive that don't exist in the package metadata.  I don't see
-                # a whole lot of point in faking those up.
-                for p in self.pkg.manifest:
-                        if p.pathname.startswith("/"):
-                                dir = "root"
-                        else:
-                                dir = "reloc/"
-                        if p.type == "d" and \
-                            dir + p.pathname not in self.pkg.datastream:
-                                act = self.action(self.pkgmap, None,
-                                    dir + p.pathname)
-                                if act:
-                                        yield act
-                        if p.type in "ls":
-                                act = self.action(self.pkgmap, None,
-                                    dir + p.pathname)
-                                if act:
-                                        yield act
 
         def action(self, pkgmap, ci, path):
                 try:
@@ -160,10 +165,13 @@ class SolarisPackageDatastreamBundle(SolarisPackageDirBundle):
                 elif mapline.type == "l":
                         act = hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
-		elif mapline.type == "i" and mapline.pathname == "copyright":
-			act = license.LicenseAction(data=ci.extractfile(),
-			    license="%s.copyright" % self.pkgname,
-			    path=mapline.pathname)
+                elif mapline.type == "i" and mapline.pathname == "copyright":
+                        # XXX path is set there because the importer relies on
+                        # it; when the importer dies, this can too.
+                        act = license.LicenseAction(data=ci.extractfile(),
+                            license="%s.copyright" % self.pkgname,
+                            path=mapline.pathname)
+                        act.hash = "install/copyright"
                 elif mapline.type == "i":
                         if mapline.pathname not in ["depend", "pkginfo"]:
                                 # check to see if we've seen this script

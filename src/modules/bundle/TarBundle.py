@@ -27,24 +27,31 @@
 import os
 import stat
 import tarfile
+import pkg.bundle
 import pkg.misc as misc
 from pkg.actions import *
 
-class TarBundle(object):
+class TarBundle(pkg.bundle.Bundle):
 
-        def __init__(self, filename, targetpaths=()):
-                self.tf = tarfile.open(filename)
+        def __init__(self, filename, targetpaths=None):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
+                filename = os.path.normpath(filename)
+                self.tf = tarfile.open(filename)
+                self.filename = filename
                 self.pkgname = os.path.basename(filename)
                 self.pkg = None
 
         def __del__(self):
                 self.tf.close()
 
-        def __iter__(self):
+        def _walk_bundle(self):
                 for f in self.tf:
-                        yield self.action(self.tf, f)
+                        yield tarinfo.name, (self.tf, f)
+
+        def __iter__(self):
+                for path, data in self._walk_bundle():
+                        yield self.action(*data)
 
         def action(self, tarfile, tarinfo):
                 if tarinfo.isreg():

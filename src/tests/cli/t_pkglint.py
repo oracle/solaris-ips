@@ -445,7 +445,7 @@ dir group=sys mode=0755 owner=root path=etc
 
                 for item in paths:
                         self.pkgsend(depot_url=self.ref_uri,
-                            command="publish --fmri-in-manifest %s" % item)
+                            command="publish %s" % item)
                 self.pkgsend(depot_url=self.ref_uri,
                             command="refresh-index")
 

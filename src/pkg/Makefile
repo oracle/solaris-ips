@@ -202,12 +202,14 @@ lint: repository-metadata
 			sed -e 's/@[0-9TZ.:,-]*//g' |			\
 			env LC_ALL=C sort |				\
 			diff pkglint_whitelist.txt -			\
+			| grep -v pkglint.manifest007			\
+			| grep -v pkglint.action008			\
 			> $(PDIR)/pkglint-out-diff.txt; 		\
 									\
 		egrep "^< WARNING |^< ERROR |^< CRITICAL " 		\
 			$(PDIR)/pkglint-out-diff.txt 			\
 			> $(PDIR)/pkglint-out-fixes.txt; 		\
- 		egrep -v "^< WARNING |^< ERROR |^< CRITICAL "		\
+		egrep -v "^< WARNING |^< ERROR |^< CRITICAL "		\
 			$(PDIR)/pkglint-out-diff.txt 			\
 			| sed -e '/^[0-9,]*[ad][0-9,]*$$/d' 		\
 			> $(PDIR)/pkglint-out-breakage.txt; 		\

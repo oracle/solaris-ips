@@ -108,3 +108,6 @@ depend type=require fmri=archiver/gnu-tar
 depend type=require fmri=gnome/config/gconf
 depend type=require fmri=text/gnu-grep
 depend type=require fmri=web/wget
+
+# XXX needed due to bug 18673
+set name=pkg.linted.pkglint.manifest003.1 value=true

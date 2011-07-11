@@ -7,35 +7,20 @@ NAME
 SYNOPSIS
      /usr/bin/pkgsend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgsend open [-en] pkg_fmri
-     /usr/bin/pkgsend add action arguments
-     /usr/bin/pkgsend include [-d basedir] ... [-T pattern] [manifest] ...
-     /usr/bin/pkgsend publish [-d basedir] ... [-T pattern]
-          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
-     /usr/bin/pkgsend close [-A | --no-catalog]
+     /usr/bin/pkgsend generate [-T pattern] [--target file] source ...
 
-     /usr/bin/pkgsend generate [-T pattern] [--target file] bundlefile ...
-     /usr/bin/pkgsend import [-T pattern] [--target file] bundlefile ...
+     /usr/bin/pkgsend publish [-d source ...] [-s repo_uri_or_path] [-T pattern]
+       [--no-catalog] [manifest ...]
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
-     versions to an image packaging repository.  Each publication is
-     structured as a transaction; multiple invocations of pkgsend
-     through a transaction allow the addition of resources and the
-     transaction submission.  To create or manage repositories, see
-     pkgrepo(1).  To create package archives from packages in an
-     existing repository, see pkgrecv(1).
+     versions to an image packaging repository using package manifests.
+     To create or manage repositories, see pkgrepo(1).  To create package
+     archives from packages in an existing repository, see pkgrecv(1).
+     For more information about package manifests see pkg(5).
 
 OPTIONS
      The following options are supported:
-
-     -s repo_uri    A URI representing the location of the target
-                    repository.  Both HTTP and filesystem-based
-                    publication are supported.  Paths to repositories
-                    may be specified relative or absolute.
-
-                    See the NOTES section below for more information
-                    about restrictions or suggestions for publication.
 
      --help or -?
           Displays a usage message.
@@ -43,249 +28,130 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     open [-en] pkg_fmri
-          Begin a transaction on the package and version specified by
-          pkg_fmri.
+     generate [-T pattern] [--target file] source ...
 
-          By default, or if the -e option is given, a successfully
-          opened transaction's ID will be published in a form suitable
-          for use with eval(1), to set the PKG_TRANS_ID environment
-          variable.  This form can be convenient for delivering a
-          package transaction from a shell script, for example.  If the
-          -n option is given, the transaction ID is displayed as a
-          string; this may be more useful in situations where shell
-          scripting is not an available option.
-
-     add action arguments
-          Add a resource associated with an action to the current
-          transaction.  Requires transaction context.  See ACTIONS
-          below.
-
-     import [-T pattern] [--target file] bundlefile ...
-          Add each given bundlefile into the current transaction.
-          Supported bundle types are:
+          Read each given source (such as an SVR4 package, directory, tarfile,
+          etc.) and emit the manifest describing the sources to stdout.  The
+          emitted  manifest can be annotated, have dependencies added or analyzed
+          using pkgdepend(1), and its correctness can be verified using pkglint(1),
+          etc. before being passed to the publish subcommand.  Supported sources are:
 
             - filesystem format SVR4 packages
             - datastream format SVR4 packages
             - tar files
             - directories
 
-          If the basename of files in the bundle match the pattern(s)
-          specified with -T, the timestamp of the file is added to the
-          action for that file.  The pattern uses shell matching rules:
+          If the basename of files in the source match the pattern(s) specified
+          with -T, the timestamp of the file is added to the action for that file.
+          The pattern uses shell matching rules:
 
                *      matches everything
                ?      matches any single character
                [seq]  matches any character in seq
                [!seq] matches any character not in seq
 
-          When the bundle is a directory, there is no clear way to
+          When the specified source is a directory, there is no clear way to
           distinguish a file action from a hardlink action when there are
           multiple pathnames for a single inode.  Normally, the first one
           found in the filesystem walk is treated as a file and the rest as
-          hardlinks.  This may be arbitrary, depending on the
-          implementation of the filesystem.  To specify which pathnames
-          should be treated as files, pass each pathname as an argument to
-          the --target option.  This option has no effect on other bundle
-          types, as they are capable of expressing which pathnames are
-          files and which are hardlinks.
+          hardlinks.  This may be arbitrary, depending on the implementation
+          of the filesystem.  To specify which pathnames should be treated as
+          files, pass each pathname as an argument to the --target option.
+          This option has no effect on other types of sources, as they are
+          capable of expressing which pathnames are files and which are
+          hardlinks.
 
-          When SVR4 packages are given as the bundlefile, pkgsend(1) will check
-          that no files with class action scripts are present and no preinstall,
-          postinstall, preremove or postremove scripts are present.  An
-          exception is made for any SMF manifests installed with the "manifest"
-          class.
+          When SVR4 packages are provided as a source, pkgsend(1) will check that
+          no files with class action scripts are present and no preinstall,
+          postinstall, preremove or postremove scripts are present.  An exception
+          is made for any SMF manifests installed with the "manifest" class.
+          BASEDIR will be removed from all relocatable paths.
 
           Any SVR4 package parameters not listed in pkginfo(4) are automatically
           converted to "set" actions, with the name "pkg.send.convert.<name>"
-          where <name> is the lower case name of the SVR4 package parameter.
-          An exception is made for the SVR4 parameter "SUNW_PKG_HOLLOW", which,
-          if set to "true" will result in all generated actions getting a
+          where <name> is the lower case name of the SVR4 package parameter.  An
+          exception is made for the SVR4 parameter "SUNW_PKG_HOLLOW", which, if
+          set to "true" will result in all generated actions getting a
           "pkg.send.convert.sunw-pkg-hollow=true" attribute, allowing future
-          pkgmogrify(1) transforms to be performed on these actions if
-          necessary.
+          pkgmogrify(1) transforms to be performed on these actions if necessary.
 
           The SVR4 "DESC" parameter is converted to a pkg.description value.
           The SVR4 "NAME" parameter is converted to a pkg.summary value.
 
-     include [-d basedir] ... [-T pattern] [manifest] ...
-          Add resources associated with the multiple actions present in
-          each manifest file to the current transaction.  If no files
-          are specified, the standard input is read.  Each line in the
-          file should be the string representation of an action.  In
-          particular, the "add" token as described above should not be
-          present, nor should there be open and close tokens representing
-          transaction boundaries.  For those actions with datastreams, the
-          path to the file containing the data should be the second word on
-          the line; for file actions if this is set to "NOHASH" the value of
-          the "path" attribute is used instead.
+     publish [-b bundle ...] [-d basedir ...] [-s repo_uri_or_path] [-T pattern]
+       [--no-catalog] [manifest ...]
 
-          If the user specifies the -d option, basedir is prepended to
-          the search path when locating files in the manifest.  Multiple
-          -d options have their directories searched in the order they
-          appear on the command line.
+          Publishes a package using the specified package manifest(s) to the
+          target package repository, retrieving files for the package from
+          the provided source(s).  If multiple manifests are specified, they
+          will be joined in the order provided.  If a manifest is not specified,
+          the manifest will be read from stdin.
 
-          The -T option works as in the import command.
+          With -b, add the specified bundle to the list of sources to search
+          when looking for files in the manifest.  Bundles are sources such as
+          tar files and SVR4 packages.  If this option is specified multiple
+          times, sources are searched in the order they appear on the command
+          line.  If both -b and -d are specified, -d sources are searched first.
+          For a description of supported bundles and how they are used, refer to
+          the generate subcommand above.
 
-     close [-A | --no-catalog]
-          Close current transaction.  By default, new packages will be
-          added to the package publisher's catalog, but will not be indexed
-          for search.  To add new packages to the search database use the
-          the refresh subcommand of pkgrepo(1).
+          With -d, add the specified directory to the list of sources to search
+          when looking for files in the manifest.  If this option is specified
+          multiple times, sources are searched in the order they appear on the
+          command line.  For a description of supported sources and how they
+          are used, refer to the generate subcommand above.
 
-          With -A, abandon the current transaction.
+          With -s, publish the package to the repository located at the given URI
+          or filesystem path.  See the NOTES section below for more information
+          about restrictions and suggestions for publication.  See also
+          ENVIRONMENT VARIABLES.
 
-          With --no-catalog, do not add the package to the publisher's
-          catalog.  This option is recommended whenever multiple packages
-          are being published at a time as updates to publisher catalogs
-          must be performed serially.  Once publication is complete, the
-          refresh subcommand of pkgrepo(1) can be used to add the new
-          packages to the respective publisher catalogs.
+          With --no-catalog, do not add the package to the publisher's catalog.
+          This option is recommended whenever multiple packages are being
+          published at a time as updates to publisher catalogs must be performed
+          serially.  Once publication is complete, the refresh subcommand of
+          pkgrepo(1) can be used to add the new packages to the respective
+          publisher catalogs.
 
-     publish [-d basedir] ... [-T pattern] [--fmri-in-manifest | fmri]
-          [--no-catalog] [manifest] ...
-
-          Combines open, include and close in a single operation.
-
-          Refer to the include subcommand above for a description of
-          the -d and -T options.
-
-          With --fmri-in-manifest, use the fmri specified in the package
-          manifest with a set action name of "pkg.fmri".  Otherwise the
-          fmri must be specified on the command line.
-
-          Refer to the close subcommand above for a description of the
-          --no-catalog option.
-
-     generate [-T pattern] [--target file] bundlefile ...
-          Read each given bundlefile (such as an SVR4 package, directory,
-          tarfile, etc) and emit the manifest describing the bundlefile to
-          the stdout.  The -T and --target options work as in the import
-          command.  The repo argument or PKG_TRANS_ID is not used with this
-          subcommand.  Once obtained, the manifest can be annotated, have
-          dependencies analyzed, added, etc before being passed to the
-          publish or import subcommands.
-
-          See the note under "import" for details on how SVR4 packages are
-          handled.
+          For all other options, refer to the generate subcommand above for usage
+          and their effects.
 
 ENVIRONMENT VARIABLES
-     The following environment variables are supported:
-
-     PKG_TRANS_ID               Identifier to use for this transaction.
-                                If undefined (and no alternative means
-                                of specifying a transaction is given),
-                                subcommands requiring transaction
-                                context will fail.
-
-ACTIONS
-     Each resource within a package must be associated with an action.
-     See pkg(5) for a complete list of actions.
-
-     If an action has an associated payload, the path to the payload
-     must be the first argument after the action name.  (At present, the
-     file and license actions have payloads.)  All other attributes are
-     specified as a list of name-value pairs, and may be given in any
-     order.  An action must always have a key attribute; however, some
-     actions may require additional attributes to work correctly.
-     Arbitrary attributes, beyond those defined for a given action, may
-     be included in the action.  Such attributes are expected to follow
-     defined conventions such that they carry appropriate meaning or
-     avoid collision with attributes from other action providers;
-     specific attributes that cause additional operations, known as
-     "actuators", are documented in pkg(5).
-
-     depend type=<depend_type> fmri=<pkg_fmri> [ property_list ]
-          Make this package version dependent on the give package FMRI.
-          Valid depend_types are require and optional.
-
-     dir mode=<mode> owner=<userid> group=<groupid> path=<path> \
-       [ property_list ]
-          Deliver a directory with the listed attributes into the
-          transaction.
-
-     driver name=<name> perms=<perms> class=<class> alias=<alias> \
-       [ property_list ]
-          Deliver driver configuration with the listed attributes into
-          the transaction.  Multiple alias entries may be given to
-          record multiple device aliases.
-
-     file src_path mode=<mode> owner=<userid> group=<groupid> \
-        path=<path> [ property_list ]
-          Deliver a file with the listed attributes into the
-          transaction.
-
-     group groupname=<groupname> gid=<gid> [ property_list ]
-          Deliver a group definition as defined in group(4).  If the
-          group ID, or gid, is omitted, the first free group under 100
-          will be assigned at installation time.  See pkg(5) for
-          additional details, and relation to the user action below.
-
-     hardlink path=<path> target=<target> [ property_list ]
-          Deliver a link with given path, pointing to the given
-          target.
-
-     legacy category=<category> desc=<description> hotline=<hotline> \
-       name=<name> pkg=<legacy_pkg> vendor=<vendor> version=<version> \
-       [ property_list ]
-          Deliver sufficient metadata, as given by the various fields,
-          to represent a System V package with name given by legacy_pkg.
-
-     license src_path license=<license_name> \
-       [ property_list ]
-          Deliver, into the image packaging metadata, the license file
-          at src_path, labeled by the given license value.
-
-     link path=<path> target=<target> [ property_list ]
-          Deliver a symbolic link with given path, pointing to the given
-          target.
-
-     set name=<name> value=<value> [ property_list ]
-          Deliver a "package property" defined by the given name and
-          value.
-
-     user username=<username> password=<password> uid=<uid> \
-       group=<group> gcos-field=<gcos> home-dir=<homedir> \
-       login-shell=<login-shell> group-list=<group> \
-       [ group-list=<group> ... ] ftpuser={true|false} \
-       lastchng=<lastchange> min=<mindays> max=<maxdays> \
-       warn=<warndays> inactive=<inactivedays> expire=<expiredate> \
-       flag=<flag> [ property_list ]
-          Deliver a user account, as defined in passwd(4), shadow(4),
-          group(4), and ftpusers(4).  If the user ID, or uid, is
-          omitted, then the first free user ID under 100 will be
-          assigned at installation time.  The primary group, specified
-          by group, must exist prior to the action's execution; this
-          condition can be ensured by having a group action deliver the
-          group definition in the same package as the user action, or by
-          having a depend action that expresses a requirement on a
-          package possessing a group action.  The group-list property
-          delivers one group to the group(4) entry for the specified
-          user.  Multiple groups are delivered by multiple assignments
-          to group-list.  See pkg(5) for additional details.
+     PKG_REPO
+          The path or URI of the destination repository.
 
 EXAMPLES
-     Example 1:  Create a trivial package.
+     Example 1:  Create a package using pkgsend generate and publish it.
 
-     $ eval `pkgsend open example@1.0-1`
-     $ pkgsend add file example mode=0555 owner=root group=bin \
-         path=/usr/bin/example
-     $ pkgsend close
+       $ pkgsend generate /path/to/proto > /path/to/manifests/foo.p5m
 
-     Example 2:  Publish a package using filesystem-based publication
-         and a pre-existing manifest:
+     Add the package FMRI for the example.com publisher to the beginning of
+     foo.p5m:
+       set name=pkg.fmri value=pkg://example.com/foo@1.0
 
-     $ pkgsend -s /tmp/example_repo -d /tmp/pkg_files publish \
-         --fmri-in-manifest /tmp/pkg_manifest
+     The resulting manifest should look like this:
+       set name=pkg.fmri value=pkg://example.com/foo@1.0
+       dir group=sys mode=0755 owner=root path=usr
+       dir group=bin mode=0755 owner=root path=usr/bin
+       file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo
 
-     Example 3:  Create a package that delivers two groups and a user.
+       $ pkgsend publish -s http://example.com:10000 -d /path/to/proto \
+           /path/to/manifests/foo.p5m
 
-     $ eval `pkgsend open groups-and-user@1.0-1`
-     $ pkgsend add group groupname=maingrp
-     $ pkgsend add group groupname=auxgrp
-     $ pkgsend add user ftpuser=false gcos-field="Example User" \
-          group=maingrp group-list=auxgrp password=NP username=exuser
-     $ pkgsend close
+     Example 2:  Create and publish a trivial package.
+
+     Create a manifest for publisher example.com containing the following lines:
+       set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+       file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo
+
+     Publish the package:
+       $ pkgsend publish -s http://example.com:10000 -d /exdir
+
+     Example 3:  Publish a package using filesystem-based publication
+         and a pre-existing manifest.
+
+       $ pkgsend publish -s /tmp/example_repo -d /tmp/pkg_files \
+           /tmp/pkg_manifest
 
 EXIT STATUS
      The following exit values are returned:
@@ -305,8 +171,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     eval(1), pkgrepo(1), pkg.depotd(1M), ftpusers(4), group(4),
-     passwd(4), shadow(4), attributes(5), pkg(5)
+     pkgdepend(1), pkgrepo(1), pkg.depotd(1M), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
@@ -316,7 +181,7 @@ NOTES
 
      http://hub.opensolaris.org/bin/view/Project+pkg/
 
-     Other package bundle formats can be created.  Other forms of package
+     Other package source formats can be created.  Other forms of package
      publication, via the underlying Python API or via the web API, are
      also possible.
 

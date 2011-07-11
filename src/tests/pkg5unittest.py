@@ -682,7 +682,7 @@ if __name__ == "__main__":
                         outpaths.append(path)
                 return outpaths
 
-        def make_manifest(self, content, manifest_dir="manifests"):
+        def make_manifest(self, content, manifest_dir="manifests", pfmri=None):
                 # Trim to ensure nice looking output.
                 content = content.strip()
 
@@ -692,8 +692,11 @@ if __name__ == "__main__":
 
                 if not os.path.exists(manifest_dir):
                         os.makedirs(manifest_dir)
-                t_fd, t_path = tempfile.mkstemp(prefix="mfst.", dir=manifest_dir)
+                t_fd, t_path = tempfile.mkstemp(prefix="mfst.",
+                    dir=manifest_dir)
                 t_fh = os.fdopen(t_fd, "w")
+                if pfmri:
+                        t_fh.write("set name=pkg.fmri value=%s\n" % pfmri)
                 t_fh.write(content)
                 t_fh.close()
                 self.debugfilecreate(content, t_path)
@@ -1655,8 +1658,11 @@ class CliTestCase(Pkg5TestCase):
                     " ".join(args))
                 return self.cmdline_run(cmdline, comment=comment, exit=exit)
 
-        def pkgsend(self, depot_url="", command="", exit=0, comment=""):
+        def pkgsend(self, depot_url="", command="", exit=0, comment="",
+            allow_timestamp=False):
                 args = []
+                if allow_timestamp:
+                        args.append("-D allow-timestamp")
                 if depot_url:
                         args.append("-s " + depot_url)
 
@@ -1752,14 +1758,20 @@ class CliTestCase(Pkg5TestCase):
                                                 os.write(fd, "%s\n" % l)
                                         os.close(fd)
                                         try:
-                                                cmd = "publish %s -d %s %s " \
-                                                    "%s" % (extra_opts,
-                                                    self.test_root,
-                                                    current_fmri, f_path)
+                                                cmd = "publish %s -d %s %s" % (
+                                                    extra_opts, self.test_root,
+                                                    f_path)
                                                 current_fmri = None
                                                 accumulate = []
+                                                # Various tests rely on the
+                                                # ability to specify version
+                                                # down to timestamp for ease
+                                                # of testing or because they're
+                                                # actually testing timestamp
+                                                # package behaviour.
                                                 retcode, published = \
-                                                    self.pkgsend(depot_url, cmd)
+                                                    self.pkgsend(depot_url, cmd,
+                                                    allow_timestamp=True)
                                                 if retcode == 0 and published:
                                                         plist.append(published)
                                         except:
@@ -1768,6 +1780,12 @@ class CliTestCase(Pkg5TestCase):
                                         os.remove(f_path)
                                 if line.startswith("open"):
                                         current_fmri = line[5:].strip()
+                                        if commands.find("pkg.fmri") == -1:
+                                                # If no explicit pkg.fmri set
+                                                # action was found, add one.
+                                                accumulate.append("set "
+                                                    "name=pkg.fmri value=%s" %
+                                                    current_fmri)
 
                         if exit == 0 and refresh_index:
                                 self.pkgrepo("-s %s refresh --no-catalog" %

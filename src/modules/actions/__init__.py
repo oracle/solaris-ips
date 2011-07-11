@@ -247,7 +247,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
 
         if atype in ("file", "license"):
                 data = args.pop(0)
-        
+
         attrs = {}
 
         try:
@@ -301,7 +301,8 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         if ahash:
                 action.hash = ahash
 
-        local_path, used_basedir = set_action_data(data, action, basedirs)
+        local_path, used_basedir = set_action_data(data, action,
+            basedirs=basedirs)
         return action, local_path
 
 def internalizestr(string, basedirs=None, load_data=True):
@@ -321,7 +322,7 @@ def internalizestr(string, basedirs=None, load_data=True):
         string = string.strip()
         args = string.split()
         atype = args.pop(0)
-        
+
         if atype not in types:
                 raise UnknownActionError(("%s %s" % (atype,
                     " ".join(args))).strip(), atype)
@@ -331,21 +332,29 @@ def internalizestr(string, basedirs=None, load_data=True):
         if atype not in ("file", "license") or not load_data:
                 return action, None, None
 
-        local_path, used_basedir = set_action_data(args[0], action, basedirs)
+        local_path, used_basedir = set_action_data(args[0], action,
+            basedirs=basedirs)
         return action, local_path, used_basedir
 
-def set_action_data(payload, action, basedirs):
+def set_action_data(payload, action, basedirs=None, bundles=None):
         """Sets the data field of an action using the information in the
-        payload and returns the actual path used to set the data and the basedir
-        used to find the path to the data.
+        payload and returns the actual path used to set the data and the
+        source used to find the data (this may be a path or a bundle
+        object).
 
         The "payload" parameter is the representation of the data to assign to
         the action's data field. It can either be NOHASH or a path to the file.
 
         The "action" parameter is the action to modify.
 
-        The "basedirs" parameter contains the directories to examine to find
-        the payload in."""
+        The "basedirs" parameter contains the directories to examine to find the
+        payload in.
+
+        The "bundles" parameter contains a list of bundle objects to find the
+        payload in.
+
+        "basedirs" and/or "bundles" must be specified.
+        """
 
         if not payload:
                 return None, None
@@ -355,17 +364,50 @@ def set_action_data(payload, action, basedirs):
         else:
                 filepath = payload
 
-        used_basedir = None
-        if basedirs:
-                path = filepath.lstrip(os.path.sep)
-                # look for file in specified dirs
-                for d in basedirs:
-                        data = os.path.join(d, path)
-                        if os.path.isfile(data):
-                                used_basedir = d
-                                break
-        else:
-                data = filepath
+        if not basedirs:
+                basedirs = []
+        if not bundles:
+                bundles = []
 
+        # Attempt to find directory or bundle containing source of file data.
+        data = None
+        used_src = None
+        path = filepath.lstrip(os.path.sep)
+        for bd in basedirs:
+                # look for file in specified dir
+                npath = os.path.join(bd, path)
+                if os.path.isfile(npath):
+                        used_src = bd
+                        data = npath
+                        break
+        else:
+                for bundle in bundles:
+                        act = bundle.get_action(path)
+                        if act:
+                                data = act.data
+                                used_src = bundle
+                                action.attrs["pkg.size"] = \
+                                    act.attrs["pkg.size"]
+                                break
+
+                if not data and basedirs:
+                        raise ActionDataError(_("Action payload '%(name)s' "
+                            "was not found in any of the provided locations:"
+                            "\n%(basedirs)s") % { "name": filepath,
+                            "basedirs": "\n".join(basedirs) }, path=filepath)
+                elif not data and bundles:
+                        raise ActionDataError(_("Action payload '%(name)s' was "
+                            "not found in any of the provided sources:"
+                            "\n%(sources)s") % { "name": filepath,
+                            "sources": "\n".join(b.filename for b in bundles) },
+                            path=filepath)
+                elif not data:
+                        # Only if no explicit sources were provided should a
+                        # fallback to filepath be performed.
+                        data = filepath
+
+        # This relies on data having a value set by the code above so that an
+        # ActionDataError will be raised if the file doesn't exist or is not
+        # accessible.
         action.set_data(data)
-        return data, used_basedir
+        return data, used_src

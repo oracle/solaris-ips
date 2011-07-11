@@ -39,12 +39,15 @@ pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
     pkg:/package/svr4
     pkg:/runtime/python-26
     pkg:/SUNWcs
+    pkg:/shell/ksh
+    pkg:/system/core-os
     pkg:/system/extended-system-utilities
     pkg:/system/font/xorg/xorg-core
     pkg:/system/library
     pkg:/system/library/dbus
     pkg:/system/library/math
     pkg:/system/linker
+    pkg:/system/network
     pkg:/system/zones
     pkg:/system/zones/internal
     pkg:/text/gnu-grep

@@ -33,7 +33,7 @@ import pkg.actions.file
 import pkg.actions.link
 import pkg.actions.hardlink
 
-class DirectoryBundle(object):
+class DirectoryBundle(pkg.bundle.Bundle):
         """The DirectoryBundle class assists in the conversion of a directory
         tree to a pkg(5) package by traversing the tree and emitting actions for
         all files, directories, and links found therein.
@@ -49,24 +49,33 @@ class DirectoryBundle(object):
         def __init__(self, path, targetpaths=()):
                 # XXX This could be more intelligent.  Or get user input.  Or
                 # extend API to take FMRI.
-                self.rootdir = os.path.normpath(path)
+                path = os.path.normpath(path)
+                self.filename = path
+                self.rootdir = path
                 self.pkgname = os.path.basename(self.rootdir)
-                self.inodes = {}
+                self.inodes = None
                 self.targetpaths = targetpaths
                 self.pkg = None
 
-        def __iter__(self):
+        def _walk_bundle(self):
                 # Pre-populate self.inodes with the paths of known targets
-                for p in self.targetpaths:
-                        fp = os.path.join(self.rootdir, p)
-                        pstat = os.lstat(fp)
-                        self.inodes[pstat.st_ino] = fp
+                if self.inodes is None:
+                        self.inodes = {}
+                        for p in self.targetpaths:
+                                fp = os.path.join(self.rootdir, p)
+                                pstat = os.lstat(fp)
+                                self.inodes[pstat.st_ino] = fp
 
                 for root, dirs, files in os.walk(self.rootdir):
                         for obj in dirs + files:
-                                act = self.action(os.path.join(root, obj))
-                                if act:
-                                        yield act
+                                path = os.path.join(root, obj)
+                                yield path, (path,)
+
+        def __iter__(self):
+                for path, data in self._walk_bundle():
+                        act = self.action(*data)
+                        if act:
+                                yield act
 
         def action(self, path):
                 rootdir = self.rootdir
