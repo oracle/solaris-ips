@@ -216,6 +216,11 @@ Incorrect attribute list.
                 a = action.fromstr(r'set name=pkg.description value="Sphinx is a tool that makes it easy to create intelligent \"and beautiful documentation f\"or Python projects (or \"other documents consisting of\" multiple reStructuredText so\"urces), written by Georg Bran\"dl. It was originally created\" to translate the new Python \"documentation, but has now be\"en cleaned up in the hope tha\"t it will be useful to many o\"ther projects. Sphinx uses re\"StructuredText as its markup \"language, and many of its str\"engths come from the power an\"d straightforwardness of reSt\"ructuredText and its parsing \"and translating suite, the Do\"cutils. Although it is still \"under constant development, t\"he following features are alr\"eady present, work fine and c\"an be seen \"in action\" \"in the Python docs: * Output \"formats: HTML (including Wind\"ows HTML Help) and LaTeX, for\" printable PDF versions * Ext\"ensive cross-references: sema\"ntic markup and automatic lin\"ks for functions, classes, gl\"ossary terms and similar piec\"es of information * Hierarchi\"cal structure: easy definitio\"n of a document tree, with au\"tomatic links to siblings, pa\"rents and children * Automati\"c indices: general index as w\"ell as a module index * Code \"handling: automatic highlight\"ing using the Pygments highli\"ghter * Various extensions ar\"e available, e.g. for automat\"ic testing of snippets and in\"clusion of appropriately formatted docstrings."')
                 self.assert_(a.attrs["value"].count('"') == 45)
 
+                # Make sure that the hash member of the action object properly
+                # contains the value of the "hash" named attribute.
+                a = action.fromstr("file hash=abc123 path=usr/bin/foo mode=0755 owner=root group=bin")
+                self.assert_(a.hash == "abc123")
+
         def test_action_license(self):
                 """Test license action attributes."""
 
@@ -258,6 +263,24 @@ Incorrect attribute list.
                                 self.debug("a1 " + str(a))
                                 self.debug("a2 " + str(a2))
                                 self.assert_(not a.different(a2))
+
+                # The one place that invariant doesn't hold is when you specify
+                # the payload hash as the named attribute "hash", in which case
+                # the resulting re-stringification emits the payload hash as a
+                # positional attribute again ...
+                s = "file hash=abc123 path=usr/bin/foo mode=0755 owner=root group=bin"
+                self.debug(s)
+                a = action.fromstr(s)
+                s2 = str(a)
+                self.assert_(s2.startswith("file abc123 "))
+                self.assert_("hash=abc123" not in s2)
+                a2 = action.fromstr(s2)
+                self.assert_(not a.different(a2))
+
+                # ... unless of course the hash can't be represented that way.
+                a = action.fromstr("file hash=abc=123 path=usr/bin/foo mode=0755 owner=root group=bin")
+                self.assert_("hash=abc=123" in str(a))
+                self.assert_(not str(a).startswith("file abc=123"))
 
         def test_action_sig_str(self):
                 sig_act = action.fromstr(
@@ -385,6 +408,11 @@ Incorrect attribute list.
                 # Missing required attribute 'algorithm'.
                 self.assertRaises(action.InvalidActionError, action.fromstr,
                     "signature 12345 pkg.cert=bar")
+
+                # The payload hash can't be specified as both a named and a
+                # positional attribute if they're not identical.
+                self.assertInvalid("file xyz789 hash=abc123 path=usr/bin/foo mode=0755 owner=root group=bin")
+                action.fromstr("file abc123 hash=abc123 path=usr/bin/foo mode=0755 owner=root group=bin")
 
         def test_validate(self):
                 """Verify that action validate() works as expected; currently

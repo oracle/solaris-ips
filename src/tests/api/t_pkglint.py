@@ -1124,7 +1124,7 @@ signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f6311248
 """
 
 expected_failures["underscores.mf"] = ["pkglint.action001.1",
-    "pkglint.action001.2"]
+    "pkglint.action001.3", "pkglint.action001.2"]
 broken_manifests["underscores.mf"] = \
 """
 #

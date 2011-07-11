@@ -590,10 +590,29 @@ class PkgActionChecker(base.ActionChecker):
 
                 name = action.attrs["name"]
 
-                if "_" not in name or name in ["info.maintainer_url",
-                    "info.upstream_url", "info.source_url",
-                    "info.repository_url", "info.repository_changeset",
-                    "info.defect_tracker.url", "opensolaris.arc_url"]:
+                if "_" not in name:
+                        return
+
+                obs_map = {
+                    "info.maintainer_url": "info.maintainer-url",
+                    "info.upstream_url": "info.upstream-url",
+                    "info.source_url": "info.source-url",
+                    "info.repository_url": "info.repository-url",
+                    "info.repository_changeset": "info.repository-changeset",
+                    "info.defect_tracker.url": "info.defect-tracker.url",
+                    "opensolaris.arc_url": "org.opensolaris.caseid"
+                }
+
+                # These names are deprecated, and so we warn, but we're a tiny
+                # bit nicer about it.
+                if name in obs_map:
+                        engine.warning(_("underscore in obsolete 'set' action "
+                            "name %(name)s should be %(new)s in %(fmri)s") % {
+                                "name": name,
+                                "new": obs_map[name],
+                                "fmri": manifest.fmri
+                            },
+                            msgid="%s%s.3" % (self.name, pkglint_id))
                         return
 
                 engine.warning(_("underscore in 'set' action name %(name)s in "

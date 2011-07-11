@@ -30,6 +30,8 @@
 static PyObject *MalformedActionError;
 static PyObject *InvalidActionError;
 
+static char *notident = "hash attribute not identical to positional hash";
+
 static int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
 {
@@ -91,6 +93,7 @@ _fromstr(PyObject *self, PyObject *args)
 {
 	char *s = NULL;
 	char *str = NULL;
+	char *hashstr = NULL;
 	char *keystr = NULL;
 	int *slashmap = NULL;
 	int strl;
@@ -124,7 +127,8 @@ _fromstr(PyObject *self, PyObject *args)
 	Py_XDECREF(type);\
 	Py_XDECREF(attr);\
 	Py_XDECREF(attrs);\
-	Py_XDECREF(hash);
+	Py_XDECREF(hash);\
+	free(hashstr);
 
 	/*
 	 * The action string is currently assumed to be a stream of bytes that
@@ -177,6 +181,7 @@ _fromstr(PyObject *self, PyObject *args)
 						CLEANUP_REFS;
 						return (NULL);
 					}
+					hashstr = strndup(keystr, keysize);
 					state = WS;
 				}
 			} else if (str[i] == '=') {
@@ -314,10 +319,21 @@ _fromstr(PyObject *self, PyObject *args)
 					}
 				}
 
-				PyString_InternInPlace(&attr);
-				if (add_to_attrs(attrs, key, attr) == -1) {
-					CLEANUP_REFS;
-					return (NULL);
+				if (!strncmp(keystr, "hash=", 5)) {
+					char *as = PyString_AsString(attr);
+					if (hashstr && strcmp(as, hashstr)) {
+						invalid(notident);
+						CLEANUP_REFS;
+						return (NULL);
+					}
+					hash = attr;
+					attr = NULL;
+				} else {
+					PyString_InternInPlace(&attr);
+					if (add_to_attrs(attrs, key, attr) == -1) {
+						CLEANUP_REFS;
+						return (NULL);
+					}
 				}
 			}
 		} else if (state == UQVAL) {
@@ -325,10 +341,21 @@ _fromstr(PyObject *self, PyObject *args)
 				state = WS;
 				Py_XDECREF(attr);
 				attr = PyString_FromStringAndSize(&str[vs], i - vs);
-				PyString_InternInPlace(&attr);
-				if (add_to_attrs(attrs, key, attr) == -1) {
-					CLEANUP_REFS;
-					return (NULL);
+				if (!strncmp(keystr, "hash=", 5)) {
+					char *as = PyString_AsString(attr);
+					if (hashstr && strcmp(as, hashstr)) {
+						invalid(notident);
+						CLEANUP_REFS;
+						return (NULL);
+					}
+					hash = attr;
+					attr = NULL;
+				} else {
+					PyString_InternInPlace(&attr);
+					if (add_to_attrs(attrs, key, attr) == -1) {
+						CLEANUP_REFS;
+						return (NULL);
+					}
 				}
 			}
 		} else if (state == WS) {
@@ -361,10 +388,21 @@ _fromstr(PyObject *self, PyObject *args)
 	if (state == UQVAL) {
 		Py_XDECREF(attr);
 		attr = PyString_FromStringAndSize(&str[vs], i - vs);
-		PyString_InternInPlace(&attr);
-		if (add_to_attrs(attrs, key, attr) == -1) {
-			CLEANUP_REFS;
-			return (NULL);
+		if (!strncmp(keystr, "hash=", 5)) {
+			char *as = PyString_AsString(attr);
+			if (hashstr && strcmp(as, hashstr)) {
+				invalid(notident);
+				CLEANUP_REFS;
+				return (NULL);
+			}
+			hash = attr;
+			attr = NULL;
+		} else {
+			PyString_InternInPlace(&attr);
+			if (add_to_attrs(attrs, key, attr) == -1) {
+				CLEANUP_REFS;
+				return (NULL);
+			}
 		}
 	}
 

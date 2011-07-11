@@ -93,16 +93,16 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 # add a ,REV= string to any version attributes that don't have a REV=
 <transform legacy -> edit version (^(?!.*?,REV=).*) \\1,REV=$(REV)>
 
-# only set the info.repository_* values for packages we're responsible for
-<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository_changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository_url ssh://hg.opensolaris.org/hg/pkg/gate>
-<transform pkg pkg.fmri=pkg:/system/zones.*-> default info.repository_changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/system/zones.* -> default info.repository_url ssh://hg.opensolaris.org/hg/pkg/gate>
-<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository_changeset $(CHANGESET)>
-<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository_url ssh://hg.opensolaris.org/hg/pkg/gate>
+# only set the info.repository-* values for packages we're responsible for
+<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/package/.* -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
+<transform pkg pkg.fmri=pkg:/system/zones.*-> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/system/zones.* -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
+<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-changeset $(CHANGESET)>
+<transform pkg pkg.fmri=pkg:/developer/opensolaris/pkg5 -> default info.repository-url ssh://hg.opensolaris.org/hg/pkg/gate>
 # now emit those values
-<transform pkg info.repository_changeset=(.*) -> emit set name=info.repository_changeset value=%<1>>
-<transform pkg info.repository_url=(.*) -> emit set name=info.repository_url value=%<1>>
+<transform pkg info.repository-changeset=(.*) -> emit set name=info.repository-changeset value=%<1>>
+<transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
 
 # vim: ft=pkg5manifest
 

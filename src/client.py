@@ -3154,7 +3154,7 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False,
                                 a = action.attrs[action.key_attr]
                         elif attr == "action.raw":
                                 a = action
-                        elif attr == "action.hash":
+                        elif attr in ("hash", "action.hash"):
                                 a = getattr(action, "hash", "")
                         elif attr == "pkg.name":
                                 a = pfmri.get_name()

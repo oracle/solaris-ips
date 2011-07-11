@@ -305,7 +305,10 @@ class Action(object):
 
                 out = self.name
                 if hasattr(self, "hash") and self.hash is not None:
-                        out += " " + self.hash
+                        if "=" not in self.hash:
+                                out += " " + self.hash
+                        else:
+                                self.attrs["hash"] = self.hash
 
                 def q(s):
                         if " " in s or "'" in s or "\"" in s or s == "":
@@ -335,6 +338,11 @@ class Action(object):
                                         out += " " + k + "=\"" + v.replace("\"", "\\\"") + "\""
                         else:
                                 out += " " + k + "=" + v
+
+                # If we have a hash attribute, it's because we added it above;
+                # get rid of it now.
+                self.attrs.pop("hash", None)
+
                 return out
 
         def __repr__(self):

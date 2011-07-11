@@ -86,6 +86,27 @@ DESCRIPTION
      packaging system, others may be useful only to the system
      administrator or the end-user.
 
+     Actions have a simple text representation:
+
+         <action name> <attribute1>=<value1> <attribute2>=<value2> ...
+
+     Names of attributes cannot have whitespace, quotes, or equals signs
+     ("=") in them -- all characters after the first equals sign belong to
+     the value.  Values may have all of those, though spaces must be
+     enclosed in single or double quotes.  Single quotes need not be
+     escaped inside of a double-quoted string, and vice versa, though a
+     quote may be prefixed with a backslash ("\") so as not to terminate
+     the quoted string.  Backslashes may be escaped with backslashes.
+
+     Attributes may be named more than once with multiple values; these are
+     treated as unordered lists.
+
+     Attributes with many attributes may create long lines in a manifest
+     file.  Such lines can be wrapped by terminating each incomplete line
+     with a backslash.  Note that this continuation character must occur
+     between attribute/value pairs; neither attributes nor their values nor
+     the combination may be split.
+
      The attributes listed below are not an exhaustive set; indeed, the
      attributes which may be attached to an action are arbitrary, and
      indeed, the standard sets are easily augmented to incorporate future
@@ -109,6 +130,15 @@ DESCRIPTION
      owner  The name of the user which owns the file.
 
      group  The name of the group which owns the file.
+
+     The payload is a "positional" attribute, in that it is not named.  It
+     is the first word after the action name.  In a published manifest, it
+     is the SHA-1 hash of the file contents.  If present in a manifest that
+     has yet to be published, it represents the path at which the payload
+     may be found (see pkgsend(1)).  The "hash" attribute may be used
+     instead of the positional attribute, should the value include an
+     equals sign.  Both may be used in the same action; however, the hashes
+     must be identical.
 
      Other attributes include:
 
