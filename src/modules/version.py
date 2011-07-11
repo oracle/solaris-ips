@@ -348,6 +348,18 @@ class Version(object):
                 else:
                         self.timestr = None
 
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return str(obj)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+                return Version(state, None)
+
         def compatible_with_build(self, target):
                 """target is a DotSequence for the target system."""
                 if self.build_release < target:

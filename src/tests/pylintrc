@@ -19,7 +19,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 # This file is used to control pylint when checking python source
@@ -49,7 +49,20 @@ disable-checker=similarities
 
 # Disable the message(s) with the given id(s).
 # C0103 Invalid name "%s" Used when the const/var/class name doesn't match regex
-disable-msg=C0103
+# C0302 Too many lines in module
+# R0901 Too many ancestors (%s/%s)
+# R0902 Too many instance attributes
+# R0904 Too many public methods
+# R0911 Too many return statements
+# R0912 Too many branches
+# R0913 Too many arguments
+# R0914 Too many local variables
+# R0915 Too many statements
+# R0923 Interface not implemented
+# W0141 Used builtin function '%s'
+# W0142 Used * or ** magic
+# W0614 Unused import %s from wildcard import
+disable-msg=C0103,C0302,R0901,R0902,R0904,R0911,R0912,R0913,R0914,R0915,R0923,W0141,W0142,W0614
 
 [REPORTS]
 # set the output format. Available formats are text, parseable, colorized, msvs
@@ -87,7 +100,7 @@ comment=no
 # * dangerous default values as arguments
 # * redefinition of function / method / class
 # * uses of the global statement
-# 
+#
 [BASIC]
 
 # Required attributes for module, separated by a comma
@@ -136,7 +149,7 @@ bad-functions=map,filter,apply,input
 
 
 # try to find bugs in the code using type inference
-# 
+#
 [TYPECHECK]
 
 # Tells wether missing members accessed in mixin class should be ignored. A
@@ -157,11 +170,11 @@ acquired-members=REQUEST,acl_users,aq_parent
 # * undefined variables
 # * redefinition of variable from builtins or from an outer scope
 # * use of variable before assigment
-# 
+#
 [VARIABLES]
 
 # Tells wether we should check for unused import in __init__ files.
-init-import=no
+init-import=yes
 
 # A regular expression matching names used for dummy variables (i.e. not used).
 dummy-variables-rgx=_|dummy
@@ -181,7 +194,7 @@ additional-builtins=_
 # * attributes not defined in the __init__ method
 # * supported interfaces implementation
 # * unreachable code
-# 
+#
 [CLASSES]
 
 # List of interface methods to ignore, separated by a comma. This is used for
@@ -195,7 +208,7 @@ defining-attr-methods=__init__,__new__,setUp
 # checks for sign of poor/misdesign:
 # * number of methods, attributes, local variables...
 # * size, complexity of functions, methods
-# 
+#
 [DESIGN]
 
 # Maximum number of arguments for function / method
@@ -231,7 +244,7 @@ max-public-methods=20
 # * relative / wildcard imports
 # * cyclic imports
 # * uses of deprecated modules
-# 
+#
 [IMPORTS]
 
 # Deprecated modules which should not be used, separated by a comma
@@ -255,7 +268,7 @@ int-import-graph=
 # * strict indentation
 # * line length
 # * use of <> instead of !=
-# 
+#
 [FORMAT]
 
 # Maximum number of characters on a single line.
@@ -272,7 +285,7 @@ indent-string='        '
 # checks for:
 # * warning notes in the code like FIXME, XXX
 # * PEP 263: source code with non ascii character but no encoding declaration
-# 
+#
 [MISCELLANEOUS]
 
 # List of note tags to take in consideration, separated by a comma.
@@ -282,7 +295,7 @@ notes=FIXME,XXX,TODO
 # checks for similarities and duplicated code. This computation may be
 # memory / CPU intensive, so you should disable it if you experiments some
 # problems.
-# 
+#
 [SIMILARITIES]
 
 # Minimum lines number of a similarity.

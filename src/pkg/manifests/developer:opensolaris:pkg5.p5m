@@ -36,6 +36,7 @@ depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
 depend type=require fmri=pkg:/developer/python/pylint
 depend type=require fmri=pkg:/developer/versioning/mercurial
 depend type=require fmri=pkg:/library/python-2/coverage-26
+depend type=require fmri=pkg:/library/python-2/jsonrpclib-26
 depend type=require fmri=pkg:/library/python-2/locale-services
 depend type=require fmri=pkg:/library/python-2/pygobject-26
 depend type=require fmri=pkg:/library/python-2/pygtk2-26

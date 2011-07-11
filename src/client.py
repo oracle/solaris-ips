@@ -55,11 +55,13 @@ try:
         import locale
         import logging
         import os
+        import re
         import socket
         import sys
         import textwrap
         import time
         import traceback
+        import tempfile
 
         import pkg
         import pkg.actions as actions
@@ -71,6 +73,7 @@ try:
         import pkg.client.publisher as publisher
         import pkg.fmri as fmri
         import pkg.misc as misc
+        import pkg.pipeutils as pipeutils
         import pkg.version as version
 
         from pkg.client import global_settings
@@ -87,7 +90,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 71
+CLIENT_API_VERSION = 72
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -95,6 +98,7 @@ JUST_LEFT = -1
 JUST_RIGHT = 1
 
 logger = global_settings.logger
+pkg_timer = pkg.misc.Timer("pkg client")
 
 valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 
@@ -147,18 +151,18 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "version"]
 
         basic_usage["install"] = _(
-            "[-nvq] [-g path_or_uri ...] [--accept]\n"
+            "[-nvq] [-C n] [-g path_or_uri ...] [--accept]\n"
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            [--reject pkg_fmri_pattern ... ] pkg_fmri_pattern ...")
         basic_usage["uninstall"] = _(
-            "[-nvq] [--no-be-activate] [--no-index]\n"
+            "[-nvq] [-C n] [--no-be-activate] [--no-index]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            pkg_fmri_pattern ...")
         basic_usage["update"] = _(
-            "[-fnvq] [-g path_or_uri ...] [--accept]\n"
+            "[-fnvq] [-C n] [-g path_or_uri ...] [--accept]\n"
             "            [--licenses] [--no-be-activate] [--no-index] [--no-refresh]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
@@ -237,14 +241,14 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "            [--facet <facet_spec>=(True|False) ...]\n"
             "            [(-p|--publisher) [<name>=]<repo_uri>] dir")
         adv_usage["change-variant"] = _(
-            "[-nvq] [-g path_or_uri ...]\n"
+            "[-nvq] [-C n] [-g path_or_uri ...]\n"
             "            [--accept] [--licenses] [--no-be-activate]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
             "            <variant_spec>=<instance> ...")
 
         adv_usage["change-facet"] = _(
-            "[-nvq] [-g path_or_uri ...]\n"
+            "[-nvq] [-C n] [-g path_or_uri ...]\n"
             "            [--accept] [--licenses] [--no-be-activate]\n"
             "            [--no-backup-be | --require-backup-be] [--backup-be-name name]\n"
             "            [--deny-new-be | --require-new-be] [--be-name name]\n"
@@ -302,7 +306,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
 
         priv_usage["list-linked"] = _("-H")
         priv_usage["attach-linked"] = _(
-            "[-fnvq] [--accept] [--licenses] [--no-index]\n"
+            "[-fnvq] [-C n] [--accept] [--licenses] [--no-index]\n"
             "            [--no-refresh] [--no-pkg-updates] [--linked-md-only]\n"
             "            [--allow-relink]\n"
             "            [--prop-linked <propname>=<propvalue> ...]\n"
@@ -311,8 +315,9 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT, full=False):
             "[-fnvq] [-a|-l <li-name>] [--linked-md-only]")
         priv_usage["property-linked"] = _("[-H] [-l <li-name>] [propname ...]")
         priv_usage["audit-linked"] = _("[-a|-l <li-name>]")
+        priv_usage["pubcheck-linked"] = ""
         priv_usage["sync-linked"] = _(
-            "[-nvq] [--accept] [--licenses] [--no-index]\n"
+            "[-nvq] [-C n] [--accept] [--licenses] [--no-index]\n"
             "            [--no-refresh] [--no-parent-sync] [--no-pkg-updates]\n"
             "            [--linked-md-only] [-a|-l <name>]")
         priv_usage["set-property-linked"] = _(
@@ -601,17 +606,20 @@ def list_inventory(op, api_inst, pargs,
 def get_tracker(parsable_version=None, quiet=False, verbose=0):
         if quiet:
                 progresstracker = progress.QuietProgressTracker(
-                    parsable_version=parsable_version)
+                    parsable_version=parsable_version,
+                    progfd=global_settings.client_output_progfd)
         else:
                 try:
                         progresstracker = \
                             progress.FancyUNIXProgressTracker(
                                 parsable_version=parsable_version, quiet=quiet,
-                                verbose=verbose)
+                                verbose=verbose,
+                                progfd=global_settings.client_output_progfd)
                 except progress.ProgressTrackerException:
                         progresstracker = progress.CommandLineProgressTracker(
                             parsable_version=parsable_version, quiet=quiet,
-                            verbose=verbose)
+                            verbose=verbose,
+                            progfd=global_settings.client_output_progfd)
         return progresstracker
 
 def fix_image(api_inst, args):
@@ -910,8 +918,7 @@ def __display_plan(api_inst, verbose):
 
         plan = api_inst.describe()
 
-        if api_inst.is_liveroot and not api_inst.is_zone and \
-            not plan.is_active_root_be:
+        if not api_inst.is_active_liveroot_be:
                 # Warn the user since this isn't likely what they wanted.
                 if plan.new_be:
                         logger.warning(_("""\
@@ -983,7 +990,7 @@ made will not be reflected on the next boot.
 
                 if not plan.new_be:
                         cond_show(_("Services to change:"), "%d",
-                            len(plan.get_services()))
+                            len(plan.services))
 
         if "boot-archive" in disp:
                 status.append((_("Rebuild boot archive:"),
@@ -1064,7 +1071,7 @@ made will not be reflected on the next boot.
 
         if "services" in disp and not plan.new_be:
                 last_action = None
-                for action, smf_fmri in plan.get_services():
+                for action, smf_fmri in plan.services:
                         if last_action is None:
                                 logger.info("Services:")
                         if action != last_action:
@@ -1121,7 +1128,7 @@ def __display_parsable_plan(api_inst, parsable_version,
                                 removed_fmris.append(str(rem))
                         else:
                                 added_fmris.append(str(add))
-                variants_changed, facets_changed = plan.get_parsable_varcets()
+                variants_changed, facets_changed = plan.varcets
                 backup_be_created = plan.backup_be
                 new_be_created = plan.new_be
                 backup_be_name = plan.backup_be_name
@@ -1130,8 +1137,8 @@ def __display_parsable_plan(api_inst, parsable_version,
                 be_activated = plan.activate_be
                 space_available = plan.bytes_avail
                 space_required = plan.bytes_added
-                services_affected = plan.get_services()
-                mediators_changed = plan.get_parsable_mediators()
+                services_affected = plan.services
+                mediators_changed = plan.mediators
                 for dfmri, src_li, dest_li, acc, disp in \
                     plan.get_licenses():
                         src_tup = None
@@ -1235,13 +1242,11 @@ def display_plan(api_inst, child_image_plans, noexecute, op, parsable_version,
                 __display_parsable_plan(api_inst, parsable_version,
                     child_image_plans)
 
-def __api_prepare(operation, api_inst, accept=False):
+def __api_prepare_plan(operation, api_inst):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
         try:
-                if accept:
-                        accept_plan_licenses(api_inst)
                 api_inst.prepare()
         except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
                 # Prepend a newline because otherwise the exception will
@@ -1349,7 +1354,7 @@ def __api_execute_plan(operation, api_inst):
                         exc_type, exc_value, exc_tb = sys.exc_info()
 
                 try:
-                        salvaged = api_inst.describe().get_salvaged()
+                        salvaged = api_inst.describe().salvaged
                         if salvaged:
                                 logger.error("")
                                 logger.error(_("The following unexpected or "
@@ -1371,7 +1376,7 @@ def __api_execute_plan(operation, api_inst):
 
         return rval
 
-def __api_alloc(imgdir, exact_match, pkg_image_used, quiet, runid=-1):
+def __api_alloc(imgdir, exact_match, pkg_image_used, quiet):
         progresstracker = get_tracker(quiet=quiet)
 
         def qv(val):
@@ -1384,7 +1389,7 @@ def __api_alloc(imgdir, exact_match, pkg_image_used, quiet, runid=-1):
         try:
                 return api.ImageInterface(imgdir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME,
-                    exact_match=exact_match, runid=runid)
+                    exact_match=exact_match)
         except api_errors.ImageNotFoundException, e:
                 if e.user_specified:
                         if pkg_image_used:
@@ -1499,30 +1504,20 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         raise
         # NOTREACHED
 
-def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
+def __api_plan(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
     _origins=None, _parsable_version=None, _quiet=False,
     _review_release_notes=False, _show_licenses=False, _stage=API_STAGE_DEFAULT,
     _verbose=0, **kwargs):
-        """Do something that involves the api.
-
-        Arguments prefixed with '_' are primarily used within this
-        function.  All other arguments must be specified via keyword
-        assignment and will be passed directly on to the api
-        interfaces being invoked."""
-
-        # massage arguments
-        if type(_li_ignore) == list:
-                # parse any linked image names specified on the command line
-                _li_ignore = _api_inst.parse_linked_name_list(_li_ignore)
 
         # All the api interface functions that we inovke have some
         # common arguments.  Set those up now.
         if _op != PKG_OP_REVERT:
-                kwargs["accept"] = _accept
                 kwargs["li_ignore"] = _li_ignore
         kwargs["noexecute"] = _noexecute
-        if _origins != None:
+        if _origins:
                 kwargs["repos"] = _origins
+        if _stage != API_STAGE_DEFAULT:
+                kwargs["pubcheck"] = False
 
         # display plan debugging information
         if _verbose > 2:
@@ -1548,61 +1543,183 @@ def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
         elif _op == PKG_OP_UPDATE:
                 api_plan_func = _api_inst.gen_plan_update
         else:
-                raise RuntimeError("__api_op() invalid op: %s" % _op)
+                raise RuntimeError("__api_plan() invalid op: %s" % _op)
 
-        first_plan = True
-        plan_displayed = False
+        planned_self = False
         child_plans = []
         try:
                 for pd in api_plan_func(**kwargs):
-                        if not first_plan:
-                                #
+                        if planned_self:
                                 # we don't display anything for child images
                                 # since they currently do their own display
-                                # work unless parsable output is requested.
-                                #
+                                # work (unless parsable output is requested).
                                 child_plans.append(pd)
                                 continue
 
                         # the first plan description is always for ourself.
-                        first_plan = False
+                        planned_self = True
+                        pkg_timer.record("planning", logger=logger)
+
+                        # if we're in parsable mode don't display anything
+                        # until after we finish planning for all children
                         if _parsable_version is None:
                                 display_plan(_api_inst, [], _noexecute,
                                     _op, _parsable_version, _quiet,
                                     _show_licenses, _stage, _verbose)
-                                plan_displayed = True
+
+                        # if requested accept licenses for child images.  we
+                        # have to do this before recursing into children.
+                        if _accept:
+                                accept_plan_licenses(_api_inst)
         except:
                 rv = __api_plan_exception(_op, _noexecute, _verbose, _api_inst)
                 if rv != EXIT_OK:
+                        pkg_timer.record("planning", logger=logger)
                         return rv
 
-        if not plan_displayed:
+        if not planned_self:
+                # if we got an exception we didn't do planning for children
+                pkg_timer.record("planning", logger=logger)
+
+        elif _api_inst.isparent(_li_ignore):
+                # if we didn't get an exception and we're a parent image then
+                # we should have done planning for child images.
+                pkg_timer.record("planning children", logger=logger)
+
+        # if we didn't display our own plan (due to an exception), or if we're
+        # in parsable mode, then display our plan now.
+        if not planned_self or _parsable_version is not None:
                 try:
-                        display_plan(_api_inst, child_plans, _noexecute, _op,
-                            _parsable_version, _quiet, _show_licenses, _stage,
-                            _verbose)
+                        display_plan(_api_inst, child_plans, _noexecute,
+                            _op, _parsable_version, _quiet, _show_licenses,
+                            _stage, _verbose)
                 except api_errors.ApiException, e:
                         error(e, cmd=_op)
                         return EXIT_OOPS
 
-        stuff_to_do = not _api_inst.planned_nothingtodo()
-        if not stuff_to_do:
-                return EXIT_NOP
+        # if we didn't accept licenses (due to an exception) then do that now.
+        if not planned_self and _accept:
+                accept_plan_licenses(_api_inst)
 
-        if _noexecute or _stage in [API_STAGE_PUBCHECK, API_STAGE_PLAN]:
-                return EXIT_OK
+        return EXIT_OK
+
+def __api_plan_file(api_inst):
+        """Return the path to the PlanDescription save file."""
+
+        plandir = api_inst.img_plandir
+        return os.path.join(plandir, "plandesc")
+
+def __api_plan_save(api_inst):
+        """Save an image plan to a file."""
+
+        # get a pointer to the plan
+        plan = api_inst.describe()
+
+        # save the PlanDescription to a file
+        path = __api_plan_file(api_inst)
+        oflags = os.O_CREAT | os.O_TRUNC | os.O_WRONLY
+        try:
+                fd = os.open(path, oflags, 0644)
+                with os.fdopen(fd, "wb") as fobj:
+                        plan._save(fobj)
+
+                # cleanup any old style imageplan save files
+                for f in os.listdir(api_inst.img_plandir):
+                        path = os.path.join(api_inst.img_plandir, f)
+                        if re.search("^actions\.[0-9]+\.json$", f):
+                                os.unlink(path)
+                        if re.search("^pkgs\.[0-9]+\.json$", f):
+                                os.unlink(path)
+        except OSError, e:
+                raise api_errors._convert_error(e)
+
+        pkg_timer.record("saving plan", logger=logger)
+
+def __api_plan_load(api_inst, stage, origins):
+        """Loan an image plan from a file."""
+
+        # load an existing plan
+        path = __api_plan_file(api_inst)
+        plan = api.PlanDescription()
+        try:
+                with open(path) as fobj:
+                        plan._load(fobj)
+        except OSError, e:
+                raise api_errors._convert_error(e)
+
+        pkg_timer.record("loading plan", logger=logger)
+
+        api_inst.reset()
+        api_inst.set_alt_repos(origins)
+        api_inst.load_plan(plan, prepared=(stage == API_STAGE_EXECUTE))
+        pkg_timer.record("re-initializing plan", logger=logger)
+
+        if stage == API_STAGE_EXECUTE:
+                __api_plan_delete(api_inst)
+
+def __api_plan_delete(api_inst):
+        """Delete an image plan file."""
+
+        path = __api_plan_file(api_inst)
+        try:
+                os.unlink(path)
+        except OSError, e:
+                raise api_errors._convert_error(e)
+
+def __api_op(_op, _api_inst, _accept=False, _li_ignore=None, _noexecute=False,
+    _origins=None, _parsable_version=None, _quiet=False,
+    _review_release_notes=False, _show_licenses=False,
+    _stage=API_STAGE_DEFAULT, _verbose=0, **kwargs):
+        """Do something that involves the api.
+
+        Arguments prefixed with '_' are primarily used within this
+        function.  All other arguments must be specified via keyword
+        assignment and will be passed directly on to the api
+        interfaces being invoked."""
+
+        if _stage in [API_STAGE_DEFAULT, API_STAGE_PLAN]:
+                # create a new plan
+                rv = __api_plan(_op=_op, _api_inst=_api_inst,
+                    _accept=_accept, _li_ignore=_li_ignore,
+                    _noexecute=_noexecute, _origins=_origins,
+                    _parsable_version=_parsable_version, _quiet=_quiet,
+                    _review_release_notes=_review_release_notes,
+                    _show_licenses=_show_licenses, _stage=_stage,
+                    _verbose=_verbose, **kwargs)
+
+                if rv != EXIT_OK:
+                        return rv
+                if not _noexecute and _stage == API_STAGE_PLAN:
+                        # We always save the plan, even if it is a noop.  We
+                        # do this because we want to be able to verify that we
+                        # can load and execute a noop plan.  (This mimics
+                        # normal api behavior which doesn't prevent an api
+                        # consumer from creating a noop plan and then
+                        # preparing and executing it.)
+                        __api_plan_save(_api_inst)
+                if _api_inst.planned_nothingtodo():
+                        return EXIT_NOP
+                if _noexecute or _stage == API_STAGE_PLAN:
+                        return EXIT_OK
+        else:
+                assert _stage in [API_STAGE_PREPARE, API_STAGE_EXECUTE]
+                __api_plan_load(_api_inst, _stage, _origins)
 
         # Exceptions which happen here are printed in the above level,
         # with or without some extra decoration done here.
-        ret_code = __api_prepare(_op, _api_inst, accept=_accept)
-        if ret_code != EXIT_OK:
-                return ret_code
+        if _stage in [API_STAGE_DEFAULT, API_STAGE_PREPARE]:
+                ret_code = __api_prepare_plan(_op, _api_inst)
+                pkg_timer.record("preparing", logger=logger)
 
-        if _stage == API_STAGE_PREPARE:
-                return EXIT_OK
+                if ret_code != EXIT_OK:
+                        return ret_code
+                if _stage == API_STAGE_PREPARE:
+                        return EXIT_OK
 
         ret_code = __api_execute_plan(_op, _api_inst)
-        if _review_release_notes and ret_code == 0 and \
+        pkg_timer.record("executing", logger=logger)
+
+        if _review_release_notes and ret_code == EXIT_OK and \
             _stage == API_STAGE_DEFAULT and _api_inst.solaris_image():
                 msg("\n" + "-" * 75)
                 msg(_("NOTE: Please review release notes posted at:\n" ))
@@ -1707,7 +1824,7 @@ def opts_table_cb_li_ignore(op, api_inst, opts, opts_new):
                 # add to ignore list
                 li_ignore.append(li_name)
 
-        opts_new["li_ignore"] = li_ignore
+        opts_new["li_ignore"] = api_inst.parse_linked_name_list(li_ignore)
 
 def opts_table_cb_li_no_psync(op, api_inst, opts, opts_new):
         # if a target child linked image was specified, the no-parent-sync
@@ -1762,7 +1879,8 @@ def opts_table_cb_li_target(op, api_inst, opts, opts_new):
                 # add to ignore list
                 li_target_list.append(li_name)
 
-        opts_new["li_target_list"] = li_target_list
+        opts_new["li_target_list"] = \
+            api_inst.parse_linked_name_list(li_target_list)
 
 def opts_table_cb_li_target1(op, api_inst, opts, opts_new):
         # figure out which option the user specified
@@ -1883,6 +2001,63 @@ def opts_cb_list(op, api_inst, opts, opts_new):
         if opts_new["summary"] and opts_new["verbose"]:
                 opts_err_incompat("-s", "-v", op)
 
+def opts_cb_int(k, op, api_inst, opts, opts_new, minimum=None):
+        if k not in opts:
+                usage(_("missing required parameter: %s" % k), cmd=op)
+                return
+
+        # get the original argument value
+        v = opts[k]
+
+        # make sure it is an integer
+        try:
+                v = int(v)
+        except (ValueError, TypeError):
+                # not a valid integer
+                err = _("invalid '%s' value: %s") % (k, v)
+                usage(err, cmd=op)
+
+        # check the minimum bounds
+        if minimum is not None and v < minimum:
+                err = _("'%s' must be >= %d") % (k, minimum)
+                usage(err, cmd=op)
+
+        # update the new options array to make the value an integer
+        opts_new[k] = v
+
+def opts_cb_fd(k, op, api_inst, opts, opts_new):
+        opts_cb_int(k, op, api_inst, opts, opts_new, minimum=0)
+
+        err = _("invalid '%s' value: %s") % (k, opts_new[k])
+        try:
+                os.fstat(opts_new[k])
+        except OSError:
+                # not a valid file descriptor
+                usage(err, cmd=op)
+
+def opts_cb_remote(op, api_inst, opts, opts_new):
+        opts_cb_fd("ctlfd", op, api_inst, opts, opts_new)
+        opts_cb_fd("progfd", op, api_inst, opts, opts_new)
+
+        # move progfd from opts_new into a global
+        global_settings.client_output_progfd = opts_new["progfd"]
+        del opts_new["progfd"]
+
+def opts_table_cb_concurrency(op, api_inst, opts, opts_new):
+        if opts["concurrency"] is None:
+                # remove concurrency from parameters dict
+                del opts_new["concurrency"]
+                return
+
+        # make sure we have an integer
+        opts_cb_int("concurrency", op, api_inst, opts, opts_new)
+
+        # update global concurrency setting
+        global_settings.client_concurrency = opts_new["concurrency"]
+
+        # remove concurrency from parameters dict
+        del opts_new["concurrency"]
+
 #
 # options common to multiple pkg(1) subcommands.  The format for specifying
 # options is a list which can contain:
@@ -1908,6 +2083,11 @@ opts_table_beopts = [
     ("",  "no-be-activate",    "be_activate",        True),
     ("",  "require-backup-be", "require_backup_be",  False),
     ("",  "require-new-be",    "require_new_be",     False),
+]
+
+opts_table_concurrency = [
+    opts_table_cb_concurrency,
+    ("C", "concurrency=",      "concurrency",        None),
 ]
 
 opts_table_force = [
@@ -2009,6 +2189,7 @@ opts_table_stage = [
 #
 opts_install = \
     opts_table_beopts + \
+    opts_table_concurrency + \
     opts_table_li_ignore + \
     opts_table_li_no_psync + \
     opts_table_licenses + \
@@ -2095,6 +2276,7 @@ opts_sync_linked = \
 
 opts_uninstall = \
     opts_table_beopts + \
+    opts_table_concurrency + \
     opts_table_li_ignore + \
     opts_table_no_index + \
     opts_table_nqv + \
@@ -2138,6 +2320,84 @@ opts_list_inventory = \
     ("s", "",               "summary",               False),
     ("u", "",               "list_upgradable",       False),
 ]
+
+opts_remote = [
+    opts_cb_remote,
+    ("",  "ctlfd",           "ctlfd",                None),
+    ("",  "progfd",          "progfd",               None),
+]
+
+
+class RemoteDispatch(object):
+        """RPC Server Class which invoked by the PipedRPCServer when a RPC
+        request is recieved."""
+
+        def __dispatch(self, op, pwargs):
+
+                pkg_timer.record("rpc dispatch wait", logger=logger)
+
+                # if we were called with no arguments then pwargs will be []
+                if pwargs == []:
+                        pwargs = {}
+
+                op_supported = [
+                    PKG_OP_AUDIT_LINKED,
+                    PKG_OP_DETACH,
+                    PKG_OP_PUBCHECK,
+                    PKG_OP_SYNC,
+                    PKG_OP_UPDATE,
+                ]
+                if op not in op_supported:
+                        raise Exception(
+                            'method "%s" is not supported' % op)
+
+                # if a stage was specified, get it.
+                stage = pwargs.get("stage", API_STAGE_DEFAULT)
+                assert stage in api_stage_values
+
+                # if we're starting a new operation, reset the api.  we do
+                # this just in case our parent updated our linked image
+                # metadata.
+                if stage in [API_STAGE_DEFAULT, API_STAGE_PLAN]:
+                        _api_inst.reset()
+
+                op_func = cmds[op][0]
+                rv = op_func(op, _api_inst, pargs, **pwargs)
+
+                if DebugValues["timings"]:
+                        msg(str(pkg_timer))
+                pkg_timer.reset()
+
+                return rv
+
+        def _dispatch(self, op, pwargs):
+                """Primary RPC dispatch function.
+
+                This function must be kept super simple because if we take an
+                exception here then no output will be generated and this
+                package remote process will silently exit with a non-zero
+                return value (and the lack of an exception message makes this
+                failure very difficult to debug).  Hence we wrap the real
+                remote dispatch routine with a call to handle_errors(), which
+                will catch and display any exceptions encountered."""
+
+                # flush output before and after every operation.
+                misc.flush_output()
+                misc.truncate_file(sys.stdout)
+                misc.truncate_file(sys.stderr)
+                rv = handle_errors(self.__dispatch, True, op, pwargs)
+                misc.flush_output()
+                return rv
+
+def remote(op, api_inst, pargs, ctlfd):
+        """Execute commands from a remote pipe"""
+
+        rpc_server = pipeutils.PipedRPCServer(ctlfd)
+        rpc_server.register_introspection_functions()
+        rpc_server.register_instance(RemoteDispatch())
+
+        pkg_timer.record("rpc startup", logger=logger)
+        rpc_server.serve_forever()
 
 def change_variant(op, api_inst, pargs,
     accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
@@ -2299,10 +2559,10 @@ def uninstall(op, api_inst, pargs,
             be_name=be_name, new_be=new_be, _parsable_version=parsable_version,
             pkgs_to_uninstall=pargs, update_index=update_index)
 
-def update(op, api_inst, pargs,
-    accept, backup_be, backup_be_name, be_activate, be_name, force, li_ignore,
-    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, stage, update_index, verbose):
+def update(op, api_inst, pargs, accept, backup_be, backup_be_name, be_activate,
+    be_name, force, li_ignore, li_parent_sync, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
         """Attempt to take all installed packages specified to latest
         version."""
 
@@ -2316,8 +2576,6 @@ def update(op, api_inst, pargs,
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
                 return EXIT_OOPS
-
-        api_inst.set_stage(stage)
 
         if res:
                 # If there are specific installed packages to update,
@@ -2543,7 +2801,7 @@ def set_mediator(op, api_inst, pargs,
         if noexecute:
                 return EXIT_OK
 
-        ret_code = __api_prepare(op, api_inst, accept=False)
+        ret_code = __api_prepare_plan(op, api_inst)
         if ret_code != EXIT_OK:
                 return ret_code
 
@@ -2621,7 +2879,7 @@ def unset_mediator(op, api_inst, pargs,
         if noexecute:
                 return EXIT_OK
 
-        ret_code = __api_prepare(op, api_inst, accept=False)
+        ret_code = __api_prepare_plan(op, api_inst)
         if ret_code != EXIT_OK:
                 return ret_code
 
@@ -2750,7 +3008,7 @@ def __display_cur_frozen(api_inst, display_headers):
                     "time": _("DATE"),
                     "comment": _("COMMENT")
                 })
-        
+
         for pfmri, comment, timestamp in lst:
                 vertext = pfmri.version.get_short_version()
                 ts = pfmri.version.get_timestamp()
@@ -4953,9 +5211,6 @@ def list_linked(op, api_inst, pargs,
 
         api_inst.progresstracker = get_tracker(quiet=omit_headers)
 
-        if li_ignore and type(li_ignore) == list:
-                li_ignore = api_inst.parse_linked_name_list(li_ignore)
-
         li_list = api_inst.list_linked(li_ignore)
         if len(li_list) == 0:
                 return EXIT_OK
@@ -4973,6 +5228,20 @@ def list_linked(op, api_inst, pargs,
                 msg(fmt % tuple(li_header))
         for row in li_list:
                 msg(fmt % tuple(row))
+        return EXIT_OK
+
+def pubcheck_linked(op, api_inst, pargs):
+        """If we're a child image, verify that the parent image
+        publisher configuration is a subset of our publisher configuration.
+        If we have any children, recurse into them and perform a publisher
+        check."""
+
+        try:
+                api_inst.linked_publisher_check()
+        except api_errors.ImageLockedError, e:
+                error(e)
+                return EXIT_LOCKED
+
         return EXIT_OK
 
 def __parse_linked_props(args, op):
@@ -5066,15 +5335,17 @@ def set_property_linked(op, api_inst, pargs,
         return EXIT_OK
 
 def audit_linked(op, api_inst, pargs,
-    li_parent_sync, li_target_all, li_target_list, omit_headers, quiet):
+    li_parent_sync,
+    li_target_all,
+    li_target_list,
+    omit_headers,
+    quiet):
         """pkg audit-linked [-a|-l <li-name>]
 
         Audit one or more child images to see if they are in sync
         with their parent image."""
 
         api_inst.progresstracker = get_tracker(quiet=omit_headers)
-
-        li_target_list = api_inst.parse_linked_name_list(li_target_list)
 
         # audit the requested child image(s)
         if not li_target_all and not li_target_list:
@@ -5105,12 +5376,11 @@ def audit_linked(op, api_inst, pargs,
                 error(err, cmd=op)
         return rv
 
-def sync_linked(op, api_inst, pargs,
-    accept, backup_be, backup_be_name, be_activate, be_name, li_ignore,
-    li_parent_sync, new_be, noexecute, origins, parsable_version, quiet,
-    refresh_catalogs, reject_pats, show_licenses, update_index, verbose,
-    li_md_only, li_pkg_updates, li_target_all, li_target_list, stage):
-
+def sync_linked(op, api_inst, pargs, accept, backup_be, backup_be_name,
+    be_activate, be_name, li_ignore, li_md_only, li_parent_sync,
+    li_pkg_updates, li_target_all, li_target_list, new_be, noexecute, origins,
+    parsable_version, quiet, refresh_catalogs, reject_pats, show_licenses,
+    stage, update_index, verbose):
         """pkg audit-linked [-a|-l <li-name>]
             [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
             [--no-parent-sync] [--no-pkg-updates]
@@ -5124,10 +5394,6 @@ def sync_linked(op, api_inst, pargs,
         xrval, xres = get_fmri_args(api_inst, reject_pats, cmd=op)
         if not xrval:
                 return EXIT_OOPS
-
-        api_inst.set_stage(stage)
-
-        li_target_list = api_inst.parse_linked_name_list(li_target_list)
 
         if not li_target_all and not li_target_list:
                 # sync the current image
@@ -5244,8 +5510,6 @@ def detach_linked(op, api_inst, pargs, force, li_target_all, li_target_list,
         Detach one or more child linked images."""
 
         api_inst.progresstracker = get_tracker(quiet=quiet, verbose=verbose)
-
-        li_target_list = api_inst.parse_linked_name_list(li_target_list)
 
         if not li_target_all and not li_target_list:
                 # detach the current image
@@ -5571,7 +5835,7 @@ def history_list(api_inst, args):
                         error(str(e), cmd="history")
                         sys.exit(EXIT_OOPS)
 
-        for he in gen_entries(): 
+        for he in gen_entries():
                 # populate a dictionary containing our output
                 output = {}
                 for col in history_cols:
@@ -5782,8 +6046,86 @@ def print_version(pargs):
 
 # To allow exception handler access to the image.
 _api_inst = None
+pargs = None
 img = None
 orig_cwd = None
+
+#
+# cmds dictionary is used to dispatch subcommands.  The format of this
+# dictionary is:
+#
+#       "subcommand-name" : (
+#               subcommand-cb,
+#               subcommand-opts-table,
+#               arguments-allowed
+#       )
+#
+#       subcommand-cb: the callback function invoked for this subcommand
+#       subcommand-opts-table: an arguments options table that is passed to
+#               the common options processing function misc.opts_parse().
+#               if None then misc.opts_parse() is not invoked.
+#
+#       arguments-allowed (optional): the number of additional arguments
+#               allowed to this function, which is also passed to
+#               misc.opts_parse()
+#
+# placeholders in this lookup table for image-create, help and version
+# which don't have dedicated methods
+#
+cmds = {
+    "add-property-value"    : (property_add_value, None),
+    "attach-linked"         : (attach_linked, opts_attach_linked, 2),
+    "avoid"                 : (avoid, None),
+    "audit-linked"          : (audit_linked, opts_audit_linked),
+    "authority"             : (publisher_list, None),
+    "change-facet"          : (change_facet, opts_install, -1),
+    "change-variant"        : (change_variant, opts_install, -1),
+    "contents"              : (list_contents, None),
+    "detach-linked"         : (detach_linked, opts_detach_linked),
+    "facet"                 : (facet_list, None),
+    "fix"                   : (fix_image, None),
+    "freeze"                : (freeze, None),
+    "help"                  : (None, None),
+    "history"               : (history_list, None),
+    "image-create"          : (None, None),
+    "info"                  : (info, None),
+    "install"               : (install, opts_install, -1),
+    "list"                  : (list_inventory, opts_list_inventory, -1),
+    "list-linked"           : (list_linked, opts_list_linked),
+    "mediator"              : (list_mediators, opts_list_mediator, -1),
+    "property"              : (property_list, None),
+    "property-linked"       : (list_property_linked,
+                                  opts_list_property_linked, -1),
+    "pubcheck-linked"       : (pubcheck_linked, []),
+    "publisher"             : (publisher_list, None),
+    "purge-history"         : (history_purge, None),
+    "rebuild-index"         : (rebuild_index, None),
+    "refresh"               : (publisher_refresh, None),
+    "remote"                : (remote, opts_remote, 0),
+    "remove-property-value" : (property_remove_value, None),
+    "revert"                : (revert, opts_revert, -1),
+    "search"                : (search, None),
+    "set-authority"         : (publisher_set, None),
+    "set-mediator"          : (set_mediator, opts_set_mediator, -1),
+    "set-property"          : (property_set, None),
+    "set-property-linked"   : (set_property_linked,
+                                  opts_set_property_linked, -1),
+    "set-publisher"         : (publisher_set, None),
+    "sync-linked"           : (sync_linked, opts_sync_linked),
+    "unavoid"               : (unavoid, None),
+    "unfreeze"              : (unfreeze, None),
+    "uninstall"             : (uninstall, opts_uninstall, -1),
+    "unset-authority"       : (publisher_unset, None),
+    "unset-property"        : (property_unset, None),
+    "update-format"         : (update_format, None),
+    "unset-mediator"        : (unset_mediator, opts_unset_mediator, -1),
+    "unset-publisher"       : (publisher_unset, None),
+    "update"                : (update, opts_update, -1),
+    "update-format"         : (update_format, None),
+    "variant"               : (variant_list, None),
+    "verify"                : (verify_image, None),
+    "version"               : (None, None),
+}
 
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
@@ -5791,6 +6133,7 @@ def main_func():
         global _api_inst
         global img
         global orig_cwd
+        global pargs
 
         try:
                 orig_cwd = os.getcwd()
@@ -5808,7 +6151,7 @@ def main_func():
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
 
-        runid = os.getpid()
+        runid = None
         show_usage = False
         for opt, arg in opts:
                 if opt == "-D" or opt == "--debug":
@@ -5829,61 +6172,6 @@ def main_func():
                         runid = arg
                 elif opt in ("--help", "-?"):
                         show_usage = True
-
-        # placeholders in this lookup table for image-create, help and version
-        # which don't have dedicated methods
-        cmds = {
-            "add-property-value"    : (property_add_value, None),
-            "attach-linked"         : (attach_linked, opts_attach_linked, 2),
-            "avoid"                 : (avoid, None),
-            "audit-linked"          : (audit_linked, opts_audit_linked),
-            "authority"             : (publisher_list, None),
-            "change-facet"          : (change_facet, opts_install, -1),
-            "change-variant"        : (change_variant, opts_install, -1),
-            "contents"              : (list_contents, None),
-            "detach-linked"         : (detach_linked, opts_detach_linked),
-            "facet"                 : (facet_list, None),
-            "fix"                   : (fix_image, None),
-            "freeze"                : (freeze, None),
-            "help"                  : (None, None),
-            "history"               : (history_list, None),
-            "image-create"          : (None, None),
-            "info"                  : (info, None),
-            "install"               : (install, opts_install, -1),
-            "list"                  : (list_inventory, opts_list_inventory, -1),
-            "list-linked"           : (list_linked, opts_list_linked),
-            "mediator"              : (list_mediators, opts_list_mediator, -1),
-            "property"              : (property_list, None),
-            "property-linked"       : (list_property_linked,
-                                          opts_list_property_linked, -1),
-            "publisher"             : (publisher_list, None),
-            "purge-history"         : (history_purge, None),
-            "rebuild-index"         : (rebuild_index, None),
-            "refresh"               : (publisher_refresh, None),
-            "remove-property-value" : (property_remove_value, None),
-            "revert"                : (revert, opts_revert, -1),
-            "search"                : (search, None),
-            "set-authority"         : (publisher_set, None),
-            "set-mediator"          : (set_mediator, opts_set_mediator, -1),
-            "set-property"          : (property_set, None),
-            "set-property-linked"   : (set_property_linked,
-                                          opts_set_property_linked, -1),
-            "set-publisher"         : (publisher_set, None),
-            "sync-linked"           : (sync_linked, opts_sync_linked),
-            "unavoid"               : (unavoid, None),
-            "unfreeze"              : (unfreeze, None),
-            "uninstall"             : (uninstall, opts_uninstall, -1),
-            "unset-authority"       : (publisher_unset, None),
-            "unset-property"        : (property_unset, None),
-            "update-format"         : (update_format, None),
-            "unset-mediator"        : (unset_mediator, opts_unset_mediator, -1),
-            "unset-publisher"       : (publisher_unset, None),
-            "update"                : (update, opts_update, -1),
-            "update-format"         : (update_format, None),
-            "variant"               : (variant_list, None),
-            "verify"                : (verify_image, None),
-            "version"               : (None, None),
-        }
 
         subcommand = None
         if pargs:
@@ -5913,11 +6201,12 @@ def main_func():
                 usage(retcode=0, full=True)
         if not subcommand:
                 usage(_("no subcommand specified"))
-        if runid:
+        if runid is not None:
                 try:
                         runid = int(runid)
                 except:
                         usage(_("runid must be an integer"))
+                global_settings.client_runid = runid
 
         for opt in ["--help", "-?"]:
                 if opt in pargs:
@@ -5940,6 +6229,7 @@ def main_func():
                         usage(_("-R not allowed for %s subcommand") %
                               subcommand, cmd=subcommand)
                 try:
+                        pkg_timer.record("client startup", logger=logger)
                         ret = func(pargs)
                 except getopt.GetoptError, e:
                         usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
@@ -5962,8 +6252,7 @@ def main_func():
                 return EXIT_OOPS
 
         # Get ImageInterface and image object.
-        api_inst = __api_alloc(mydir, provided_image_dir, pkg_image_used, False,
-            runid=runid)
+        api_inst = __api_alloc(mydir, provided_image_dir, pkg_image_used, False)
         if api_inst is None:
                 return EXIT_OOPS
         _api_inst = api_inst
@@ -5981,6 +6270,7 @@ def main_func():
 
                 opts, pargs = misc.opts_parse(subcommand, api_inst, pargs,
                     opts_cmd, pargs_limit, usage)
+                pkg_timer.record("client startup", logger=logger)
                 return func(op=subcommand, api_inst=api_inst,
                     pargs=pargs, **opts)
 
@@ -6136,6 +6426,10 @@ if __name__ == "__main__":
         warnings.simplefilter('error')
 
         __retval = handle_errors(main_func)
+        if DebugValues["timings"]:
+                def __display_timings():
+                        msg(str(pkg_timer))
+                handle_errors(__display_timings)
         try:
                 logging.shutdown()
         except IOError:

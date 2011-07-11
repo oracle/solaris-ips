@@ -26,17 +26,19 @@
 
 import copy
 import itertools
-
-from pkg.client import global_settings
-logger = global_settings.logger
+import os
 
 import pkg.actions
 import pkg.actions.directory as directory
 import pkg.client.api_errors as apx
+import pkg.fmri
 import pkg.manifest as manifest
+import pkg.misc
+
+from pkg.client import global_settings
 from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 
-import os.path
+logger = global_settings.logger
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -48,8 +50,8 @@ class PkgPlan(object):
 
         __slots__ = [
             "__destination_mfst",
-            "__executed",
-            "__license_status",
+            "_executed",
+            "_license_status",
             "__origin_mfst",
             "__repair_actions",
             "__xferfiles",
@@ -63,6 +65,52 @@ class PkgPlan(object):
             "pkg_summary",
         ]
 
+        #
+        # we don't serialize __xferfiles or __xfersize since those should be
+        # recalculated after after a plan is loaded (since the contents of the
+        # download cache may have changed).
+        #
+        # we don't serialize __origin_mfst, __destination_mfst, or
+        # __repair_actions since we only support serializing pkgplans which
+        # have had their actions evaluated and merged, and when action
+        # evaluation is complete these fields are cleared.
+        #
+        # we don't serialize our image object pointer.  that has to be reset
+        # after this object is reloaded.
+        #
+        __state__noserialize = frozenset([
+                "__destination_mfst",
+                "__origin_mfst",
+                "__repair_actions",
+                "__xferfiles",
+                "__xfersize",
+                "image",
+        ])
+
+        # make sure all __state__noserialize values are valid
+        assert (__state__noserialize - set(__slots__)) == set()
+
+        # figure out which state we are saving.
+        __state__serialize = set(__slots__) - __state__noserialize
+
+        # describe our state and the types of all objects
+        __state__desc = {
+            "_autofix_pkgs": [ pkg.fmri.PkgFmri ],
+            "_license_status": {
+                str: {
+                    "src": pkg.actions.generic.NSG,
+                    "dest": pkg.actions.generic.NSG,
+                },
+            },
+            "actions": pkg.manifest.ManifestDifference,
+            "destination_fmri": pkg.fmri.PkgFmri,
+            "origin_fmri": pkg.fmri.PkgFmri,
+        }
+
+        __state__commonize = frozenset([
+            pkg.fmri.PkgFmri,
+        ])
+
         def __init__(self, image=None):
                 self.destination_fmri = None
                 self.__destination_mfst = manifest.NullFactoredManifest
@@ -74,12 +122,68 @@ class PkgPlan(object):
                 self.image = image
                 self.pkg_summary = None
 
-                self.__executed = False
-                self.__license_status = {}
+                self._executed = False
+                self._license_status = {}
                 self.__repair_actions = {}
                 self.__xferfiles = -1
                 self.__xfersize = -1
                 self._autofix_pkgs = []
+                self._hash = None
+
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+
+                # validate unserialized state
+                # (see comments above __state__noserialize)
+                assert obj.__origin_mfst == manifest.NullFactoredManifest
+                assert obj.__destination_mfst == manifest.NullFactoredManifest
+                assert obj.__repair_actions == {}
+
+                # we use __slots__, so create a state dictionary
+                state = {}
+                for k in obj.__state__serialize:
+                        state[k] = getattr(obj, k)
+
+                return pkg.misc.json_encode(PkgPlan.__name__, state,
+                    PkgPlan.__state__desc,
+                    commonize=PkgPlan.__state__commonize, je_state=je_state)
+
+        @staticmethod
+        def setstate(obj, state, jd_state=None):
+                """Update the state of this object using previously serialized
+                state obtained via getstate()."""
+
+                # get the name of the object we're dealing with
+                name = type(obj).__name__
+
+                # decode serialized state into python objects
+                state = pkg.misc.json_decode(name, state,
+                    PkgPlan.__state__desc,
+                    commonize=PkgPlan.__state__commonize,
+                    jd_state=jd_state)
+
+                # we use __slots__, so directly update attributes
+                for k in state:
+                        setattr(obj, k, state[k])
+
+                # update unserialized state
+                # (see comments above __state__noserialize)
+                obj.__origin_mfst = manifest.NullFactoredManifest
+                obj.__destination_mfst = manifest.NullFactoredManifest
+                obj.__repair_actions = {}
+                obj.__xferfiles = -1
+                obj.__xfersize = -1
+                obj.image = None
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+                rv = PkgPlan()
+                PkgPlan.setstate(rv, state, jd_state)
+                return rv
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -95,76 +199,12 @@ class PkgPlan(object):
 
                 'dest' must be the destination action for a license."""
 
-                self.__license_status[dest.attrs["license"]] = {
+                self._license_status[dest.attrs["license"]] = {
                     "src": src,
                     "dest": dest,
                     "accepted": False,
                     "displayed": False,
                 }
-
-        def setstate(self, state):
-                """Update the state of this object using the contents of
-                the supplied dictionary."""
-
-                import pkg.fmri
-
-                # convert fmri strings into objects
-                for i in ["src", "dst"]:
-                        if state[i] is not None:
-                                state[i] = pkg.fmri.PkgFmri(state[i])
-
-                # convert lists into tuples/sets
-                # convert action object list into string list
-                for i in ["added", "changed", "removed"]:
-                        for j in range(len(state[i])):
-                                src, dst = state[i][j]
-                                if src is not None:
-                                        src = pkg.actions.fromstr(src)
-                                if dst is not None:
-                                        dst = pkg.actions.fromstr(dst)
-                                state[i][j] = (src, dst)
-
-                self.origin_fmri = state["src"]
-                self.destination_fmri = state["dst"]
-                self.pkg_summary = state["summary"]
-                self.actions = manifest.ManifestDifference(
-                    state["added"], state["changed"], state["removed"])
-
-                # update the license actions associated with this package
-                for src, dest in itertools.chain(self.gen_update_actions(),
-                    self.gen_install_actions()):
-                        if dest.name == "license":
-                                self.__add_license(src, dest)
-
-        def getstate(self):
-                """Returns a dictionary containing the state of this object
-                so that it can be easily stored using JSON."""
-
-                state = {}
-                state["src"] = self.origin_fmri
-                state["dst"] = self.destination_fmri
-                state["summary"] = self.pkg_summary
-                state["added"] = copy.copy(self.actions.added)
-                state["changed"] = copy.copy(self.actions.changed)
-                state["removed"] = copy.copy(self.actions.removed)
-
-                # convert fmri objects into strings
-                for i in ["src", "dst"]:
-                        if isinstance(state[i], pkg.fmri.PkgFmri):
-                                state[i] = str(state[i])
-
-                # convert tuples/sets into lists
-                # convert actions objects into strings
-                for i in ["added", "changed", "removed"]:
-                        for j in range(len(state[i])):
-                                src, dst = state[i][j]
-                                if src is not None:
-                                        src = str(src)
-                                if dst is not None:
-                                        dst = str(dst)
-                                state[i][j] = [src, dst]
-
-                return state
 
         def propose(self, of, om, df, dm):
                 """Propose origin and dest fmri, manifest"""
@@ -284,7 +324,7 @@ class PkgPlan(object):
 
                         for a in absent_dirs:
                                 self.actions.removed.append(
-                                    [directory.DirectoryAction(path=a), None])
+                                    (directory.DirectoryAction(path=a), None))
 
                 # Stash information needed by legacy actions.
                 self.pkg_summary = \
@@ -298,7 +338,7 @@ class PkgPlan(object):
                     EmptyI))
 
                 # No longer needed.
-                self.__repair_actions = None
+                self.__repair_actions = {}
 
                 for src, dest in itertools.chain(self.gen_update_actions(),
                     self.gen_install_actions()):
@@ -325,7 +365,7 @@ class PkgPlan(object):
                 entry).  Where 'entry' is a dict containing the license status
                 information."""
 
-                for lic, entry in self.__license_status.iteritems():
+                for lic, entry in self._license_status.iteritems():
                         yield lic, entry
 
         def set_license_status(self, plicense, accepted=None, displayed=None):
@@ -346,7 +386,7 @@ class PkgPlan(object):
                         False   sets displayed status to False
                         True    sets displayed status to True"""
 
-                entry = self.__license_status[plicense]
+                entry = self._license_status[plicense]
                 if accepted is not None:
                         entry["accepted"] = accepted
                 if displayed is not None:
@@ -436,6 +476,16 @@ class PkgPlan(object):
                 mfile.wait_files()
                 progtrack.download_end_pkg()
 
+        def cacheload(self):
+                """Load previously downloaded data for actions that need it."""
+
+                fmri = self.destination_fmri
+                for src, dest in itertools.chain(*self.actions):
+                        if not dest or not dest.needsdata(src, self):
+                                continue
+                        dest.data = self.image.transport.action_cached(fmri,
+                            dest)
+
         def gen_install_actions(self):
                 for src, dest in self.actions.added:
                         yield src, dest
@@ -450,7 +500,7 @@ class PkgPlan(object):
 
         def execute_install(self, src, dest):
                 """ perform action for installation of package"""
-                self.__executed = True
+                self._executed = True
                 try:
                         dest.install(self, src)
                 except (pkg.actions.ActionError, EnvironmentError):
@@ -466,7 +516,7 @@ class PkgPlan(object):
 
         def execute_update(self, src, dest):
                 """ handle action updates"""
-                self.__executed = True
+                self._executed = True
                 try:
                         dest.install(self, src)
                 except (pkg.actions.ActionError, EnvironmentError):
@@ -482,7 +532,7 @@ class PkgPlan(object):
 
         def execute_removal(self, src, dest):
                 """ handle action removals"""
-                self.__executed = True
+                self._executed = True
                 try:
                         src.remove(self)
                 except (pkg.actions.ActionError, EnvironmentError):
@@ -515,11 +565,11 @@ class PkgPlan(object):
                 plan execution.  Salvaged items are tracked in the imageplan.
                 """
 
-                assert self.__executed
+                assert self._executed
                 spath = self.image.salvage(path)
                 # get just the file path that was salvaged 
                 fpath = path[len(self.image.get_root()) + 1:]
-                self.image.imageplan.salvaged.append((fpath, spath))
+                self.image.imageplan.pd._salvaged.append((fpath, spath))
 
         def salvage_from(self, local_path, full_destination):
                 """move unpackaged contents to specified destination"""
@@ -527,9 +577,9 @@ class PkgPlan(object):
                 if local_path.startswith(os.path.sep):
                         local_path = local_path[1:]
 
-                for fpath, spath in self.image.imageplan.salvaged[:]:
+                for fpath, spath in self.image.imageplan.pd._salvaged[:]:
                         if fpath.startswith(local_path):
-                                self.image.imageplan.salvaged.remove((fpath, spath))
+                                self.image.imageplan.pd._salvaged.remove((fpath, spath))
                                 break
                 else:
                         return
@@ -541,11 +591,11 @@ class PkgPlan(object):
                 return self.__destination_mfst
 
         def clear_dest_manifest(self):
-                self.__destination_mfst = None
+                self.__destination_mfst = manifest.NullFactoredManifest
 
         @property
         def origin_manifest(self):
                 return self.__origin_mfst
 
         def clear_origin_manifest(self):
-                self.__origin_mfst = None
+                self.__origin_mfst = manifest.NullFactoredManifest

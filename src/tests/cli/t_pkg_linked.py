@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -1542,6 +1542,14 @@ class TestPkgLinked3(TestPkgLinked):
 
                 self._pkg([1], "verify")
                 self._pkg([2, 3, 4], "verify", rv=EXIT_OOPS)
+
+        def test_staged_noop(self):
+                self._imgs_create(1)
+
+                # test staged execution with an noop/empty plan
+                self._pkg([0], "update --stage=plan", rv=EXIT_NOP)
+                self._pkg([0], "update --stage=prepare")
+                self._pkg([0], "update --stage=execute")
 
 if __name__ == "__main__":
         unittest.main()

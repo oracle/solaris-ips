@@ -33,11 +33,11 @@ import re
 import types
 
 class Facets(dict):
-        # store information on facets; subclass dict 
+        # store information on facets; subclass dict
         # and maintain ordered list of keys sorted
         # by length.
 
-        # subclass __getitem_ so that queries w/ 
+        # subclass __getitem_ so that queries w/
         # actual facets find match
 
         def __init__(self, init=EmptyI):
@@ -47,21 +47,33 @@ class Facets(dict):
                 for i in init:
                         self[i] = init[i]
 
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return dict(obj)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Update the state of this object using previously serialized
+                state obtained via getstate()."""
+                return Facets(init=state)
+
         def __repr__(self):
                 s =  "<"
                 s += ", ".join(["%s:%s" % (k, dict.__getitem__(self, k)) for k in self.__keylist])
                 s += ">"
 
                 return s
-                
-        def __setitem__(self, item, value):                
+
+        def __setitem__(self, item, value):
                 if not item.startswith("facet."):
                         raise KeyError, 'key must start with "facet".'
 
                 if not (value == True or value == False):
                         raise ValueError, "value must be boolean"
 
-                if item not in self: 
+                if item not in self:
                         self.__keylist.append(item)
                         self.__keylist.sort(cmp=lambda x, y: len(y) - len(x))
                 dict.__setitem__(self, item, value)
@@ -104,7 +116,7 @@ class Facets(dict):
                 default = kwargs.get("default", None)
                 if args:
                         default = args[0]
-                return dict.pop(self, item, default) 
+                return dict.pop(self, item, default)
 
         def popitem(self):
                 popped = dict.popitem(self)

@@ -356,7 +356,7 @@ class LinkedImageZonePlugin(li.LinkedImagePlugin):
                 """See parent class for docstring."""
 
                 # nothing to do
-                return (pkgdefs.EXIT_OK, None)
+                return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
 
 
 class LinkedImageZoneChildPlugin(li.LinkedImageChildPlugin):

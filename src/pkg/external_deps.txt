@@ -13,6 +13,7 @@
     pkg:/gnome/theme/hicolor-icon-theme
     pkg:/library/python-2/cherrypy-26
     pkg:/library/python-2/coverage-26
+    pkg:/library/python-2/jsonrpclib-26
     pkg:/library/python-2/locale-services
     pkg:/library/python-2/m2crypto-26
     pkg:/library/python-2/mako-26

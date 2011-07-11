@@ -21,11 +21,13 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.smf as smf
 import os
+
+import pkg.misc
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
@@ -97,12 +99,66 @@ class Actuator(GenericActuator):
             "disable_fmri"      # disable this service prior to removal
         ])
 
+        __state__desc = {
+                "install": {
+                    "disable_fmri": set(),
+                    "reboot-needed": set(),
+                    "refresh_fmri": set(),
+                    "restart_fmri": set(),
+                    "suspend_fmri": set(),
+                },
+                "removal": {
+                    "disable_fmri": set(),
+                    "reboot-needed": set(),
+                    "refresh_fmri": set(),
+                    "restart_fmri": set(),
+                    "suspend_fmri": set(),
+                },
+                "update": {
+                    "disable_fmri": set(),
+                    "reboot-needed": set(),
+                    "refresh_fmri": set(),
+                    "restart_fmri": set(),
+                    "suspend_fmri": set(),
+                },
+        }
+
         def __init__(self):
                 GenericActuator.__init__(self)
                 self.suspend_fmris = None
                 self.tmp_suspend_fmris = None
                 self.do_nothing = True
                 self.cmd_path = ""
+
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return pkg.misc.json_encode(Actuator.__name__, obj.__dict__,
+                    Actuator.__state__desc, je_state=je_state)
+
+        @staticmethod
+        def setstate(obj, state, jd_state=None):
+                """Update the state of this object using previously serialized
+                state obtained via getstate()."""
+
+                # get the name of the object we're dealing with
+                name = type(obj).__name__
+
+                # decode serialized state into python objects
+                state = pkg.misc.json_decode(name, state,
+                    Actuator.__state__desc, jd_state=jd_state)
+
+                # bulk update
+                obj.__dict__.update(state)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+                rv = Actuator()
+                Actuator.setstate(rv, state, jd_state)
+                return rv
 
         def __bool__(self):
                 return self.install or self.removal or self.update

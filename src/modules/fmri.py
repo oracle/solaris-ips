@@ -164,6 +164,18 @@ class PkgFmri(object):
 
                 self._hash = None
 
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return str(obj)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+                return PkgFmri(state)
+
         def copy(self):
                 return PkgFmri(str(self))
 

@@ -57,6 +57,29 @@ class GlobalSettings(object):
                 self.__info_log_handler = None
                 self.__error_log_handler = None
                 self.__verbose = False
+
+                # runid, used by the pkg.1 client and the linked image
+                # subsystem when when generating temporary files.
+                self.client_runid = os.getpid()
+
+                # file descriptor used by ProgressTracker classes when running
+                # "pkg remote" to indicate progress back to the parent/client
+                # process.
+                self.client_output_progfd = None
+
+                # concurrency value used for linked image recursion
+                self.client_concurrency_default = 1
+                self.client_concurrency = self.client_concurrency_default
+                try:
+                        self.client_concurrency = int(os.environ.get(
+                            "PKG_CONCURRENCY",
+                            self.client_concurrency_default))
+                        # remove PKG_CONCURRENCY from the environment so child
+                        # processes don't inherit it.
+                        os.environ.pop("PKG_CONCURRENCY", None)
+                except ValueError:
+                        pass
+
                 self.client_name = None
                 self.client_args = sys.argv[:]
                 # Default maximum number of redirects received before

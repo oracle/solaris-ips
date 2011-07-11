@@ -20,20 +20,22 @@
 # CDDL HEADER END
 #
 
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import unittest
+import ctypes
 import os
+import shutil
 import stat
 import sys
 import tempfile
-import shutil
+import unittest
 
 import pkg.misc as misc
 import pkg.actions as action
@@ -84,6 +86,34 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(misc.valid_pub_url("!@#$%^&*(*)"))
                 self.assertTrue(misc.valid_pub_url(
                     "http://pkg.opensolaris.org/dev"))
+
+        def test_out_of_memory(self):
+                """Verify that misc.out_of_memory doesn't raise an exception
+                and displays the amount of memory that was in use."""
+
+                self.assertRegexp(misc.out_of_memory(),
+                    "virtual memory was in use")
+
+        def test_psinfo(self):
+                """Verify that psinfo gets us some reasonable data."""
+
+                psinfo = misc.ProcFS.psinfo()
+
+                # verify pids
+                self.assertEqual(psinfo.pr_pid, os.getpid())
+                self.assertEqual(psinfo.pr_ppid, os.getppid())
+
+                # verify user/group ids
+                self.assertEqual(psinfo.pr_uid, os.getuid())
+                self.assertEqual(psinfo.pr_euid, os.geteuid())
+                self.assertEqual(psinfo.pr_gid, os.getgid())
+                self.assertEqual(psinfo.pr_egid, os.getegid())
+
+                # verify zoneid (it's near the end of the structure so if it
+                # is right then we likely got most the stuff inbetween decoded
+                # correctly).
+                libc = ctypes.CDLL('libc.so')
+                self.assertEqual(psinfo.pr_zoneid, libc.getzoneid())
 
 if __name__ == "__main__":
         unittest.main()

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -34,12 +34,9 @@ modules are supported below.
 
 # standard python classes
 import inspect
-import os
 
 # import linked image common code
-# W0401 Wildcard import
-# W0403 Relative import
-from common import * # pylint: disable-msg=W0401,W0403
+from pkg.client.linkedimage.common import * # pylint: disable-msg=W0401
 
 # names of linked image plugins
 p_types = [ "zone", "system" ]

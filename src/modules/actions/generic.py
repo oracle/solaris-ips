@@ -118,6 +118,18 @@ class NSG(type):
 
                 return type.__new__(mcs, name, bases, dict)
 
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return str(obj)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+                return pkg.actions.fromstr(state)
+
 
 class Action(object):
         """Class representing a generic packaging object.
@@ -707,10 +719,10 @@ class Action(object):
                                 self.validate(fmri=fmri)
 
                         # Otherwise, the user is unknown; attempt to report why.
-                        ip = pkgplan.image.imageplan
-                        if owner in ip.removed_users:
+                        pd = pkgplan.image.imageplan.pd
+                        if owner in pd.removed_users:
                                 # What package owned the user that was removed?
-                                src_fmri = ip.removed_users[owner]
+                                src_fmri = pd.removed_users[owner]
 
                                 raise pkg.actions.InvalidActionAttributesError(
                                     self, [("owner", _("'%(path)s' cannot be "
@@ -719,7 +731,7 @@ class Action(object):
                                     "path": path, "owner": owner,
                                     "src_fmri": src_fmri })],
                                     fmri=fmri)
-                        elif owner in ip.added_users:
+                        elif owner in pd.added_users:
                                 # This indicates an error on the part of the
                                 # caller; the user should have been added
                                 # before attempting to install the file.
@@ -750,10 +762,10 @@ class Action(object):
 
                         # Otherwise, the group is unknown; attempt to report
                         # why.
-                        ip = pkgplan.image.imageplan
-                        if group in ip.removed_groups:
+                        pd = pkgplan.image.imageplan.pd
+                        if group in pd.removed_groups:
                                 # What package owned the group that was removed?
-                                src_fmri = ip.removed_groups[group]
+                                src_fmri = pd.removed_groups[group]
 
                                 raise pkg.actions.InvalidActionAttributesError(
                                     self, [("group", _("'%(path)s' cannot be "
@@ -762,7 +774,7 @@ class Action(object):
                                     "path": path, "group": group,
                                     "src_fmri": src_fmri })],
                                     fmri=pkgplan.destination_fmri)
-                        elif group in ip.added_groups:
+                        elif group in pd.added_groups:
                                 # This indicates an error on the part of the
                                 # caller; the group should have been added
                                 # before attempting to install the file.

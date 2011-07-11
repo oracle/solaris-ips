@@ -156,7 +156,6 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
             "tmp/baz",
             "tmp/dricon2_da",
             "tmp/dricon_n2m",
-            "license.txt",
         ]
 
         p_files2 = {
@@ -171,6 +170,9 @@ root:9EIfTNBp9elws:13817::::::
 root::0:
 sys::3:root
 adm::4:root
+""",
+            "tmp/license.txt": """
+This is a license.
 """,
         }
 
@@ -321,7 +323,7 @@ adm::4:root
 
                     add group groupname=muppets
                     add user username=Kermit group=adm home-dir=/export/home/Kermit
-                    add license license="Foo" path=license.txt must-display=True must-accept=True
+                    add license license="Foo" path=tmp/license.txt must-display=True must-accept=True
                     close\n"""
                 p_all.append(p_data)
 
@@ -913,9 +915,9 @@ packages known:
                                 lin=self.i_lin[0], li_path=self.i_path[0],
                                 noexecute=True)
 
-                # create images, attach children (p2c), and update publishers
+                # create images, attach one child (p2c), and update publishers
                 api_objs = self._imgs_create(5)
-                self._children_attach(0, [1, 2, 3, 4])
+                self._children_attach(0, [2])
                 configure_pubs1(self)
 
                 # test recursive parent operations
@@ -943,6 +945,40 @@ packages known:
                     (apx_verify, {
                         "e_type": apx.LinkedImageException,
                         "e_member": "pkg_op_failed"}),
+                    lambda *args, **kwargs: list(
+                        api_objs[0].gen_plan_uninstall(*args, **kwargs)),
+                        [self.p_sync1_name_gen])
+
+                # create images, attach children (p2c), and update publishers
+                api_objs = self._imgs_create(5)
+                self._children_attach(0, [1, 2, 3, 4])
+                configure_pubs1(self)
+
+                # test recursive parent operations
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "lix_bundle"}),
+                    lambda *args, **kwargs: list(
+                        api_objs[0].gen_plan_install(*args, **kwargs)),
+                        [self.p_sync1_name[0]])
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "lix_bundle"}),
+                    lambda *args, **kwargs: list(
+                        api_objs[0].gen_plan_update(*args, **kwargs)))
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "lix_bundle"}),
+                    lambda *args, **kwargs: list(
+                        api_objs[0].gen_plan_change_varcets(*args, **kwargs)),
+                        variants={"variant.foo": "baz"})
+                assertRaises(
+                    (apx_verify, {
+                        "e_type": apx.LinkedImageException,
+                        "e_member": "lix_bundle"}),
                     lambda *args, **kwargs: list(
                         api_objs[0].gen_plan_uninstall(*args, **kwargs)),
                         [self.p_sync1_name_gen])

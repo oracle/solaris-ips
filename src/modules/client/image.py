@@ -55,6 +55,7 @@ import pkg.client.imageplan             as imageplan
 import pkg.client.linkedimage           as li
 import pkg.client.pkgdefs               as pkgdefs
 import pkg.client.pkgplan               as pkgplan
+import pkg.client.plandesc              as plandesc
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
 import pkg.client.sigpolicy             as sigpolicy
@@ -117,7 +118,7 @@ class Image(object):
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
             augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
-            props=misc.EmptyDict, cmdpath=None, runid=-1):
+            props=misc.EmptyDict, cmdpath=None):
 
                 if should_exist:
                         assert(imgtype is None)
@@ -130,10 +131,6 @@ class Image(object):
                 self.__alt_pubs = None
                 self.__alt_known_cat = None
                 self.__alt_pkg_sources_loaded = False
-
-                if (runid < 0):
-                        runid = os.getpid()
-                self.runid = runid
 
                 # Determine identity of client executable if appropriate.
                 if cmdpath == None:
@@ -1638,15 +1635,21 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
         def get_root(self):
                 return self.root
 
-        def get_last_modified(self):
-                """Returns a UTC datetime object representing the time the
-                image's state last changed or None if unknown."""
+        def get_last_modified(self, string=False):
+                """Return the UTC time of the image's last state change or
+                None if unknown.  By default the time is returned via datetime
+                object.  If 'string' is true and a time is available, then the
+                time is returned as a string (instead of as a datetime
+                object)."""
 
                 # Always get last_modified time from known catalog.  It's
                 # retrieved from the catalog itself since that is accurate
                 # down to the micrsecond (as opposed to the filesystem which
                 # has an OS-specific resolution).
-                return self.__get_catalog(self.IMG_CATALOG_KNOWN).last_modified
+                rv = self.__get_catalog(self.IMG_CATALOG_KNOWN).last_modified
+                if rv is None or not string:
+                        return rv
+                return rv.strftime("%Y-%m-%dT%H:%M:%S.%f")
 
         def gen_publishers(self, inc_disabled=False):
                 if not self.cfg:
@@ -2284,8 +2287,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if self.version < self.CURRENT_VERSION:
                         raise apx.ImageFormatUpdateNeeded(self.root)
 
-                ilm = self.get_last_modified()
-
                 # Allow garbage collection of previous plan.
                 self.imageplan = None
 
@@ -2308,26 +2309,27 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
 
-                ip = imageplan.ImagePlan(self, progtrack, lambda: False)
-                ip._image_lm = ilm
-                ip._planned_op = ip.PLANNED_FIX
-                self.imageplan = ip
-
-                ip.update_index = False
-                ip.state = imageplan.EVALUATED_PKGS
-                progtrack.evaluate_start()
-
                 # Always start with most current (on-disk) state information.
                 self.__init_catalogs()
 
-                ip.pkg_plans = pps
+                ip = imageplan.ImagePlan(self, pkgdefs.API_OP_REPAIR,
+                    progtrack, lambda: False)
+
+                ip.pd._image_lm = self.get_last_modified(string=True)
+                self.imageplan = ip
+
+                ip.update_index = False
+                ip.pd.state = plandesc.EVALUATED_PKGS
+                progtrack.evaluate_start()
+
+                ip.pd.pkg_plans = pps
 
                 ip.evaluate()
                 if ip.reboot_needed() and self.is_liveroot():
                         raise apx.RebootNeededOnLiveImageException()
 
                 logger.info("\n")
-                for pp in ip.pkg_plans:
+                for pp in ip.pd.pkg_plans:
                         for lic, entry in pp.get_licenses():
                                 dest = entry["dest"]
                                 lic = dest.attrs["license"]
@@ -3920,21 +3922,19 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 names; ignore versions."""
 
                 with self.locked_op("avoid"):
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
-                            noexecute=False)
-
+                        ip = imageplan.ImagePlan
                         self._avoid_set_save(self.avoid_set_get() |
-                            set(ip.match_user_stems(pat_list, ip.MATCH_UNINSTALLED)))
+                            set(ip.match_user_stems(self, pat_list,
+                            ip.MATCH_UNINSTALLED)))
 
         def unavoid_pkgs(self, pat_list, progtrack, check_cancel):
                 """Unavoid the specified packages... use pattern matching on
                 names; ignore versions."""
 
                 with self.locked_op("unavoid"):
-
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
-                            noexecute=False)
-                        unavoid_set = set(ip.match_user_stems(pat_list, ip.MATCH_ALL))
+                        ip = imageplan.ImagePlan
+                        unavoid_set = set(ip.match_user_stems(self, pat_list,
+                            ip.MATCH_ALL))
                         current_set = self.avoid_set_get()
                         not_avoided = unavoid_set - current_set
                         if not_avoided:
@@ -3987,9 +3987,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return p
 
                 def __calc_frozen():
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
-                            noexecute=False)
-                        stems_and_pats = ip.freeze_pkgs_match(pat_list)
+                        stems_and_pats = imageplan.ImagePlan.freeze_pkgs_match(
+                            self, pat_list)
                         return dict([(s, __make_publisherless_fmri(p))
                             for s, p in stems_and_pats.iteritems()])
                 if dry_run:
@@ -4023,15 +4022,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 frozen."""
 
                 def __calc_unfrozen():
-                        ip = imageplan.ImagePlan(self, progtrack, check_cancel,
-                            noexecute=False)
                         # Get existing dictionary of frozen packages.
                         d = self.__freeze_dict_load()
                         # Match the user's patterns against the frozen packages
                         # and return the stems which matched, and the dictionary
                         # of the currently frozen packages.
-                        return set(ip.match_user_stems(pat_list, ip.MATCH_ALL,
-                            raise_unmatched=False,
+                        ip = imageplan.ImagePlan
+                        return set(ip.match_user_stems(self, pat_list,
+                            ip.MATCH_ALL, raise_unmatched=False,
                             universe=[(None, k) for k in d.keys()])), d
 
                 if dry_run:
@@ -4070,7 +4068,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             ip.get_plan(full=False)
 
         def __make_plan_common(self, _op, _progtrack, _check_cancel,
-            _ip_mode, _noexecute, _ip_noop=False, **kwargs):
+            _noexecute, _ip_noop=False, **kwargs):
                 """Private helper function to perform base plan creation and
                 cleanup.
                 """
@@ -4078,8 +4076,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Allow garbage collection of previous plan.
                 self.imageplan = None
 
-                ip = imageplan.ImagePlan(self, _progtrack, _check_cancel,
-                    noexecute=_noexecute, mode=_ip_mode)
+                ip = imageplan.ImagePlan(self, _op, _progtrack, _check_cancel,
+                    noexecute=_noexecute)
 
                 _progtrack.evaluate_start()
 
@@ -4089,7 +4087,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 try:
                         try:
                                 if _ip_noop:
-                                        ip.plan_noop()
+                                        ip.plan_noop(**kwargs)
                                 elif _op in [
                                     pkgdefs.API_OP_ATTACH,
                                     pkgdefs.API_OP_DETACH,
@@ -4128,7 +4126,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 finally:
                         self.__cleanup_alt_pkg_certs()
 
-        def make_install_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_install_plan(self, op, progtrack, check_cancel,
             noexecute, pkgs_inst=None, reject_list=misc.EmptyI):
                 """Take a list of packages, specified in pkgs_inst, and attempt
                 to assemble an appropriate image plan.  This is a helper
@@ -4136,11 +4134,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, pkgs_inst=pkgs_inst,
+                    noexecute, pkgs_inst=pkgs_inst,
                     reject_list=reject_list)
 
         def make_change_varcets_plan(self, op, progtrack, check_cancel,
-            ip_mode, noexecute, facets=None, reject_list=misc.EmptyI,
+            noexecute, facets=None, reject_list=misc.EmptyI,
             variants=None):
                 """Take a list of variants and/or facets and attempt to
                 assemble an image plan which changes them.  This is a helper
@@ -4152,11 +4150,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         cur = set(self.cfg.variants.iteritems())
                         variants = dict(new - cur)
 
-                self.__make_plan_common(op, progtrack, check_cancel, ip_mode,
+                self.__make_plan_common(op, progtrack, check_cancel,
                     noexecute, new_variants=variants, new_facets=facets,
                     reject_list=reject_list)
 
-        def make_set_mediators_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_set_mediators_plan(self, op, progtrack, check_cancel,
             noexecute, mediators):
                 """Take a dictionary of mediators and attempt to assemble an
                 appropriate image plan to set or revert them based on the
@@ -4213,26 +4211,26 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                             invalid_mediations=invalid_mediations)
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, new_mediators=new_mediators)
+                    noexecute, new_mediators=new_mediators)
 
-        def make_sync_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_sync_plan(self, op, progtrack, check_cancel,
             noexecute, li_pkg_updates=True, reject_list=misc.EmptyI):
                 """Attempt to create an appropriate image plan to bring an
                 image in sync with it's linked image constraints.  This is a
                 helper routine for some common operations in the client."""
 
-                self.__make_plan_common(op, progtrack, check_cancel, ip_mode,
+                self.__make_plan_common(op, progtrack, check_cancel,
                     noexecute, reject_list=reject_list,
                     li_pkg_updates=li_pkg_updates)
 
-        def make_uninstall_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_uninstall_plan(self, op, progtrack, check_cancel,
             noexecute, pkgs_to_uninstall):
                 """Create uninstall plan to remove the specified packages."""
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, pkgs_to_uninstall=pkgs_to_uninstall)
+                    noexecute, pkgs_to_uninstall=pkgs_to_uninstall)
 
-        def make_update_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_update_plan(self, op, progtrack, check_cancel,
             noexecute, pkgs_update=None, reject_list=misc.EmptyI):
                 """Create a plan to update all packages or the specific ones as
                 far as possible.  This is a helper routine for some common
@@ -4240,25 +4238,25 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 """
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, pkgs_update=pkgs_update,
+                    noexecute, pkgs_update=pkgs_update,
                     reject_list=reject_list)
 
-        def make_revert_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_revert_plan(self, op, progtrack, check_cancel,
             noexecute, args, tagged):
                 """Revert the specified files, or all files tagged as specified
                 in args to their manifest definitions.
                 """
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, args=args, tagged=tagged)
+                    noexecute, args=args, tagged=tagged)
 
-        def make_noop_plan(self, op, progtrack, check_cancel, ip_mode,
+        def make_noop_plan(self, op, progtrack, check_cancel,
             noexecute):
                 """Create an image plan that doesn't update the image in any
                 way."""
 
                 self.__make_plan_common(op, progtrack, check_cancel,
-                    ip_mode, noexecute, _ip_noop=True)
+                    noexecute, _ip_noop=True)
 
         def ipkg_is_up_to_date(self, check_cancel, noexecute,
             refresh_allowed=True, progtrack=None):
@@ -4370,8 +4368,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # XXX call to progress tracker that the package is being
                 # refreshed
                 img.make_install_plan(pkgdefs.API_OP_INSTALL, progtrack,
-                    check_cancel, pkgdefs.API_STAGE_DEFAULT, noexecute,
-                    pkgs_inst=["pkg:/package/pkg"])
+                    check_cancel, noexecute, pkgs_inst=["pkg:/package/pkg"])
 
                 return img.imageplan.nothingtodo()
 

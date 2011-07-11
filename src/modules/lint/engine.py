@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pkg.client.api
@@ -39,7 +39,7 @@ import shutil
 import sys
 
 PKG_CLIENT_NAME = "pkglint"
-CLIENT_API_VERSION = 71
+CLIENT_API_VERSION = 72
 pkg.client.global_settings.client_name = PKG_CLIENT_NAME
 
 class LintEngineException(Exception):

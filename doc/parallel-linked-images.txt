@@ -1,0 +1,205 @@
+.. This document is formatted using reStructuredText, which is a Markup
+   Syntax and Parser Component of Docutils for Python.  An html version
+   of this document can be generated using the following command:
+     rst2html.py doc/parallel-linked-images.txt >doc/parallel-linked-images.html
+
+======================
+Parallel Linked Images
+======================
+
+:Author: Edward Pilatowicz
+:Version: 0.1
+
+
+Problems
+========
+
+Currently linked image recursion is done serially and in stages.  For
+example, when we perform an "pkg update" on an image then for each child
+image we will execute multiple pkg.1 cli operations.  The multiple pkg.1
+invocations on a single child image correspond with the following
+sequential stages of pkg.1 execution:
+
+1) publisher check: sanity check child publisher configuration against
+   parent publisher configuration.
+2) planning: plan fmri and action changes.
+3) preparation: download content needed to execute planned changes.
+4) execution: execute planned changes.
+
+So to update an image with children, we invoke pkg.1 four times for each
+child image.  This architecture is inefficient for multiple reasons:
+
+- we don't do any operations on child images in parallel
+
+- when executing multiple pkg.1 invocations to perform a single
+  operation on a child image, we are constantly throwing out and
+  re-initializing lots of pkg.1 state.
+
+To make matters worse, when as we execute stages 3 and 4 on a child
+image the pkg client also re-executes previous stages.  For example,
+when we start stage 4 (execution) we re-execute stages 2 and 3.  So for
+each child we update we end up invoking stage 2 three times, and stage 3
+twice.  This leads to bugs like 18393 (where it seems that we download
+packages twice).  It also means that we have caching code buried within
+the packaging system that attempts to cache internal state to disk in an
+effort to speed up subsequent re-runs of previous stages.
+
+
+Solutions
+=========
+
+
+Eliminate duplicate work
+------------------------
+
+We want to eliminate a lot of the duplicate work done when executing
+packaging operations on children in stages.  To do this we will update
+the pkg client api to allow callers to:
+
+- Save an image plan to disk.
+- Load an image plan from disk.
+- Execute a loaded plan from disk without first "preparing" it.  (This
+  assumes that the caller has already "prepared" the plan in a previous
+  invocation.)
+
+In addition to eliminating duplicated work during staged execution, this
+will also allow us to stop caching intermediate state internally within
+the package system.  Instead client.py will be enhanced to cache the
+image plan and it will be the only component that knows about "staging".
+
+To allow us to save and restore plans, all image plan data will be saved
+within a PlanDescription object, and we will support serializing this
+object into a json format.  The json format for saved image plans is an
+internal, unstable, and unversioned private interface.  We will not
+support saving an image plan to disk and then executing it later with a
+different version of the packaging system on a different host.  Also,
+even though we will be adding data into the PlanDescription object we
+will also not be exposing any new information about an image plan to via
+the PlanDescription object to api consumers.
+
+An added advantage of allowing api consumers to save an image plan to
+disk is that it should help with our plans to have the api.gen_plan_*()
+functions to be able to return PlanDescription object for child images.
+A file descriptor (or path) associated with a saved image plan would be
+one way for child images to pass image plans back to their parent (which
+could then load them and yield them as results to api.gen_plan_*()).
+
+
+Update children in parallel
+---------------------------
+
+We want to enhance the package client so that it can update child images
+in parallel.
+
+Due to potential resource constraints (cpu, memory, and disk io) we
+cannot entirely remove the ability to operate on child images serially.
+Instead, we plan to allow for a concurrency setting that specifies how
+many child images we are willing to update in parallel.  By default when
+operating on child images we will use a concurrency setting of 1, this
+maintains the current behavior of the packaging system.  If a user wants
+to specify a higher concurrency setting, they can use the "-C N" option
+to subcommands that recurse (like "install", "update", etc) or they can
+set the environment variable "PKG_CONCURRENCY=N".  (In both cases N is
+an integer which specifies the desired concurrency level.)
+
+Currently, pkg.1 worker subprocesses are invoked via the pkg.1 cli
+interfaces.  When switching to parallel execution this will be changed
+to use a json encoded rpc execution model.  This richer interface is
+needed to allow worker processes to pause and resume execution between
+stages so that we can do multi-staged operations in a single process.
+
+Unfortunately, the current implementation does not yet retain child
+processes across different stages of execution.  Instead, whenever we
+start a new stage of execution, we spawn one process for each child
+images, then we make a remote procedure call into N images at once
+(where N is our concurrency level).  When an RPC returns, that child
+process exits and we start a call for the next available child.
+
+Ultimately, we'd like to move to model where we have a pool of N worker
+processes, and those processes can operate on different images as
+necessary.  These processes would be persistent across all stages of
+execution, and ideally, when moving from one stage to another these
+processes could cache in memory the state for at least N child images so
+that the processes could simply resume execution where they last left
+off.
+
+The client side of this rpc interface will live in a new module called
+PkgRemote.  The linked image subsystem will use the PkgRemote module to
+initiate operations on child images.  One PkgRemote instance will be
+allocated for each child that we are operating on.  Currently, this
+PkgRemote module will only support the sync and update operations used
+within linked images, but in the future it could easily be expanded to
+support other remote pkg.1 operations so that we can support recursive
+linked image operations (see 7140357).  When PkgRemote invokes an
+operation on a child image it will fork off a new pkg.1 worker process
+as follows:
+
+	pkg -R /path/to/linked/image remote --ctlfd=5
+
+this new pkg.1 worker process will function as an rpc server which the
+client will make requests to.
+
+Rpc communication between the client and server will be done via json
+encoded rpc.  These requests will be sent between the client and server
+via a pipe.  The communication pipe is created by the client, and its
+file descriptor is passed to the server via fork/exec.  The server is
+told about the pipe file descriptor via the --ctlfd parameter.  To avoid
+issues with blocking IO, all communication via this pipe will be done by
+passing file descriptors.  For example, if the client wants to send a
+rpc request to the server, it will write that rpc request into a
+temporary file and then send the fd associated with the temporary file
+over the pipe.  Any reply from the server will be similarly serialized
+and then sent via a file descriptor over the pipe.  This should ensure
+that no matter the size of the request or the response, we will not
+block when sending or receiving requests via the pipe.  (Currently, the
+limit of fds that can be queued in a pipe is around 700.  Given that our
+rpc model includes matched requests and responses, it seems unlikely
+that we'd ever hit this limit.)
+
+In the pkg.1 worker server process, we will have a simple json rpc
+server that lives within client.py.  This server will listen for
+requests from the client and invoke client.py subcommand interfaces
+(like update()).  The client.py subcommand interfaces were chosen to be
+the target for remote interfaces for rpc calls for the following
+reasons:
+
+- Least amount of encoding / decoding.  Since these interfaces are
+  invoked just after parsing user arguments, they mostly involve simple
+  arguments (strings, integers, etc) which have a direct json encoding.
+  Additionally, the return values from these calls are simple return
+  code integers, not objects, which means the results are also easy to
+  encode.  This means that we don't need lots of extra serialization /
+  de-serialization logic (for things like api exceptions, etc).
+
+- Output and exception handling.  The client.py interfaces already
+  handle exceptions and output for the client.  This means that we don't
+  have to create new output classes and build our own output and
+  exception management handling code, instead we leverage the existing
+  code.
+
+- Future recursion support.  Currently when recursing into child images
+  we only execute "sync" and "update" operations.  Eventually we want to
+  support pkg.1 subcommand recursion into linked images (see 7140357)
+  for many more operations.  If we do this, the client.py interfaces
+  provide a nice boundary since there will be an almost 1:1 mapping
+  between parent and child subcommand operations.
+
+
+Child process output and progress management
+--------------------------------------------
+
+Currently, since child execution happens serially, all child images have
+direct access to standard out and display their progress directly there.
+Once we start updating child images in parallel this will no longer be
+possible.  Instead, all output from children will be logged to temporary
+files and displayed by the parent when a child completes a given stage
+of execution.
+
+Additionally, since child images will no longer have access to standard
+out, we will need a new mechanism to indicate progress while operating
+on child images.  To do this we will have a progress pipe between each
+parent and child image.  The child image will write one byte to this
+pipe whenever one of the ProgressTracker`*_progress() interfaces are
+invoked.  The parent process can read from this pipe to detect progress
+within children and update its user visible progress tracker
+accordingly.

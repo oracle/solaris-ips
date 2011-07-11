@@ -2550,7 +2550,8 @@ class LinkedImageException(ApiException):
             parent_not_in_altroot=None,
             pkg_op_failed=None,
             self_linked=None,
-            self_not_child=None):
+            self_not_child=None,
+            unparsable_output=None):
 
                 self.attach_bad_prop = attach_bad_prop
                 self.attach_bad_prop_value = attach_bad_prop_value
@@ -2580,6 +2581,7 @@ class LinkedImageException(ApiException):
                 self.pkg_op_failed = pkg_op_failed
                 self.self_linked = self_linked
                 self.self_not_child = self_not_child
+                self.unparsable_output = unparsable_output
 
                 # first deal with an error bundle
                 if bundle:
@@ -2748,23 +2750,37 @@ class LinkedImageException(ApiException):
 
                 if pkg_op_failed:
                         assert lin
-                        assert len(pkg_op_failed) == 3
-                        op = pkg_op_failed[0]
-                        exitrv = pkg_op_failed[1]
-                        errout = pkg_op_failed[2]
+                        (op, exitrv, errout, e) = pkg_op_failed
 
-                        err = _("""
+                        if e is None:
+                                err = _("""
 A '%(op)s' operation failed for child '%(lin)s' with an unexpected
-return value of %(exitrv)d and the following error message:
+return value of %(exitrv)d and generated the following output:
 %(errout)s
 
 """
-                        ) % {
-                            "lin": lin,
-                            "op": op,
-                            "exitrv": exitrv,
-                            "errout": errout,
-                        }
+                                ) % {
+                                    "lin": lin,
+                                    "op": op,
+                                    "exitrv": exitrv,
+                                    "errout": errout,
+                                }
+                        else:
+                                err = _("""
+A '%(op)s' operation failed for child '%(lin)s' with an unexpected
+exception:
+%(e)s
+
+The child generated the following output:
+%(errout)s
+
+"""
+                                ) % {
+                                    "lin": lin,
+                                    "op": op,
+                                    "errout": errout,
+                                    "e": e,
+                                }
 
                 if self_linked:
                         err = _("Current image already a linked child: %s") % \
@@ -2775,6 +2791,24 @@ return value of %(exitrv)d and the following error message:
                                 exitrv = pkgdefs.EXIT_NOPARENT
                         err = _("Current image is not a linked child: %s") % \
                             self_not_child
+
+                if unparsable_output:
+                        (op, errout, e) = unparsable_output
+                        err = _("""
+A '%(op)s' operation for child '%(lin)s' generated non-json output.
+The json parser failed with the following error:
+%(e)s
+
+The child generated the following output:
+%(errout)s
+
+"""
+                                ) % {
+                                    "lin": lin,
+                                    "op": op,
+                                    "e": e,
+                                    "errout": errout,
+                                }
 
                 # set default error return value
                 if exitrv == None:
@@ -2878,15 +2912,3 @@ class UnknownFreezeFileVersion(ApiException):
                     "found": self.found,
                     "loc": self.loc,
                 }
-
-class UnparsableJSON(ApiException):
-        """Used when JSON has been asked to parse an unparsable string."""
-
-        def __init__(self, s, e):
-                self.unparsable = s
-                self.json_exception = e
-
-        def __str__(self):
-                return _("Because of this error:\n%(err)s\nJSON could not "
-                    "parse the following data:\n%(data)s") % \
-                    {"err": str(self.json_exception), "data": self.unparsable}

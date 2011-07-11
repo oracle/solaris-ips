@@ -42,7 +42,44 @@ import pkg.version as version
 from pkg.misc import EmptyDict, EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
 
-ManifestDifference = namedtuple("ManifestDifference", "added changed removed")
+class ManifestDifference(
+    namedtuple("ManifestDifference", "added changed removed")):
+
+        __slots__ = []
+
+        __state__desc = tuple([
+            [ ( actions.generic.NSG, actions.generic.NSG ) ],
+            [ ( actions.generic.NSG, actions.generic.NSG ) ],
+            [ ( actions.generic.NSG, actions.generic.NSG ) ],
+        ])
+
+        __state__commonize = frozenset([
+            actions.generic.NSG,
+        ])
+
+        @staticmethod
+        def getstate(obj, je_state=None):
+                """Returns the serialized state of this object in a format
+                that that can be easily stored using JSON, pickle, etc."""
+                return misc.json_encode(ManifestDifference.__name__,
+                    tuple(obj),
+                    ManifestDifference.__state__desc,
+                    commonize=ManifestDifference.__state__commonize,
+                    je_state=je_state)
+
+        @staticmethod
+        def fromstate(state, jd_state=None):
+                """Allocate a new object using previously serialized state
+                obtained via getstate()."""
+
+                # decode serialized state into python objects
+                state = misc.json_decode(ManifestDifference.__name__,
+                    state,
+                    ManifestDifference.__state__desc,
+                    commonize=ManifestDifference.__state__commonize,
+                    jd_state=jd_state)
+
+                return ManifestDifference(*state)
 
 class Manifest(object):
         """A Manifest is the representation of the actions composing a specific

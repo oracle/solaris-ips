@@ -24,7 +24,7 @@
 # Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
-import json
+import simplejson as json
 import multiprocessing
 import os
 import sys

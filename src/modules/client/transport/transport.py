@@ -2306,7 +2306,7 @@ class Transport(object):
 
                 return mfile
 
-        def _action_cached(self, action, pub, in_hash=None):
+        def _action_cached(self, action, pub, in_hash=None, verify=True):
                 """If a file with the name action.hash is cached,
                 and if it has the same content hash as action.chash,
                 then return the path to the file.  If the file can't
@@ -2321,16 +2321,40 @@ class Transport(object):
                         hashval = in_hash
                 for cache in self.cfg.get_caches(pub=pub, readonly=True):
                         cache_path = cache.lookup(hashval)
+                        if not cache_path:
+                                continue
                         try:
-                                if cache_path:
+                                if verify:
                                         self._verify_content(action, cache_path)
-                                        return cache_path
+                                return cache_path
                         except tx.InvalidContentException:
                                 # If the content in the cache doesn't match the
                                 # hash of the action, verify will have already
                                 # purged the item from the cache.
                                 pass
                 return None
+
+        @staticmethod
+        def _make_opener(cache_path):
+                def opener():
+                        f = open(cache_path, "rb")
+                        return f
+                return opener
+
+        def action_cached(self, fmri, action):
+                try:
+                        pub = self.cfg.get_publisher(fmri.publisher)
+                except apx.UnknownPublisher:
+                        # Allow publishers that don't exist in configuration
+                        # to be used so that if data exists in the cache for
+                        # them, the operation will still succeed.  This only
+                        # needs to be done here as multi_file_ni is only used
+                        # for publication tools.
+                        pub = publisher.Publisher(fmri.publisher)
+
+                # cache content has already been verified
+                return self._make_opener(self._action_cached(action, pub,
+                    verify=False))
 
         @staticmethod
         def _verify_content(action, filepath):
@@ -2889,7 +2913,6 @@ class MultiFile(MultiXfr):
                 cpath = self._transport._action_cached(action,
                     self.get_publisher())
                 if cpath:
-                        action.data = self._make_opener(cpath)
                         if self._progtrack:
                                 filesz = int(misc.get_pkg_otw_size(action))
                                 file_cnt = 1
@@ -2916,23 +2939,15 @@ class MultiFile(MultiXfr):
 
                 self._hash.setdefault(hashval, []).append(item)
 
-        @staticmethod
-        def _make_opener(cache_path):
-                def opener():
-                        f = open(cache_path, "rb")
-                        return f
-                return opener
-
         def file_done(self, hashval, current_path):
                 """Tell MFile that the transfer completed successfully."""
 
-                self._make_openers(hashval, current_path)
+                self._update_dlstats(hashval, current_path)
                 self.del_hash(hashval)
 
-        def _make_openers(self, hashval, cache_path):
+        def _update_dlstats(self, hashval, cache_path):
                 """Find each action associated with the hash value hashval.
-                Create an opener that points to the cache file for the
-                action's data method."""
+                Update the download statistics for this file."""
 
                 totalsz = 0
                 nfiles = 0
@@ -2942,7 +2957,6 @@ class MultiFile(MultiXfr):
                         nfiles += 1
                         bn = os.path.basename(cache_path)
                         if action.name != "signature" or action.hash == bn:
-                                action.data = self._make_opener(cache_path)
                                 totalsz += misc.get_pkg_otw_size(action)
                         else:
                                 totalsz += action.get_chain_csize(bn)

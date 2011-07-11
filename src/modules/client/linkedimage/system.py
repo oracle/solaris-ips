@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -134,7 +134,7 @@ class LinkedImageSystemPlugin(li.LinkedImagePlugin):
 
                 self.__img.cfg.write()
 
-                return (pkgdefs.EXIT_OK, None)
+                return li.LI_RVTuple(pkgdefs.EXIT_OK, None, None)
 
 
 class LinkedImageSystemChildPlugin(li.LinkedImageChildPlugin):

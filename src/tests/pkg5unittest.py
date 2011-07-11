@@ -39,7 +39,6 @@ import errno
 import gettext
 import hashlib
 import httplib
-import json
 import logging
 import multiprocessing
 import os
@@ -122,7 +121,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 71
+CLIENT_API_VERSION = 72
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -271,6 +270,34 @@ if __name__ == "__main__":
                 self.next_free_port = port
 
         base_port = property(lambda self: self.__base_port, __set_base_port)
+
+        def assertRegexp(self, text, regexp):
+                """Test that a regexp search matches text."""
+
+                if re.search(regexp, text):
+                        return
+                raise self.failureException, \
+                    "\"%s\" does not match \"%s\"" % (regexp, text)
+
+        def assertRaisesRegexp(self, excClass, regexp,
+            callableObj, *args, **kwargs):
+                """Perform the same logic as assertRaises, but then verify
+                that the stringified version of the exception contains the
+                regexp pattern.
+
+                Introduced in in python 2.7"""
+
+                try:
+                        callableObj(*args, **kwargs)
+
+                except excClass, e:
+                        if re.search(regexp, str(e)):
+                                return
+                        raise self.failureException, \
+                            "\"%s\" does not match \"%s\"" % (regexp, str(e))
+
+                raise self.failureException, \
+                    "%s not raised" % excClass
 
         def assertRaisesStringify(self, excClass, callableObj, *args, **kwargs):
                 """Perform the same logic as assertRaises, but then verify that
@@ -2215,6 +2242,7 @@ class CliTestCase(Pkg5TestCase):
                 if debug_smf and "smf_cmds_dir" not in command:
                         command = "--debug smf_cmds_dir=%s %s" % \
                             (DebugValues["smf_cmds_dir"], command)
+                command = "-D plandesc_validate=1 %s" % command
                 if use_img_root and "-R" not in command and \
                     "image-create" not in command and "version" not in command:
                         command = "-R %s %s" % (self.get_img_path(), command)
@@ -2782,19 +2810,26 @@ class CliTestCase(Pkg5TestCase):
             **kwargs):
                 self.debug("install %s" % " ".join(pkg_list))
 
-                if accept_licenses:
-                        kwargs["accept"] = True
-
+                plan = None
                 for pd in api_obj.gen_plan_install(pkg_list,
                     noexecute=noexecute, **kwargs):
-                        continue
+
+                        if plan is not None:
+                                continue
+                        plan = api_obj.describe()
+
+                        # update licesnse status
+                        for pfmri, src, dest, accepted, displayed in \
+                            plan.get_licenses():
+                                api_obj.set_plan_license_status(pfmri,
+                                    dest.license,
+                                    displayed=show_licenses,
+                                    accepted=accept_licenses)
 
                 if noexecute:
                         return
 
-                self._api_finish(api_obj, catch_wsie=catch_wsie,
-                    show_licenses=show_licenses,
-                    accept_licenses=accept_licenses)
+                self._api_finish(api_obj, catch_wsie=catch_wsie)
 
         def _api_uninstall(self, api_obj, pkg_list, catch_wsie=True, **kwargs):
                 self.debug("uninstall %s" % " ".join(pkg_list))
@@ -2818,18 +2853,7 @@ class CliTestCase(Pkg5TestCase):
                         continue
                 self._api_finish(api_obj, catch_wsie=catch_wsie)
 
-        def _api_finish(self, api_obj, catch_wsie=True,
-            show_licenses=False, accept_licenses=False):
-
-                plan = api_obj.describe()
-                if plan:
-                        # update licenses displayed and/or accepted state
-                        for pfmri, src, dest, accepted, displayed in \
-                            plan.get_licenses():
-                                api_obj.set_plan_license_status(pfmri,
-                                    dest.license,
-                                    displayed=show_licenses,
-                                    accepted=accept_licenses)
+        def _api_finish(self, api_obj, catch_wsie=True):
 
                 api_obj.prepare()
                 try:
@@ -3217,8 +3241,10 @@ def env_sanitize(pkg_cmdpath, dv_keep=None):
         # run from within the test suite.
         os.environ["PKG_NO_RUNPY_CMDPATH"] = "1"
 
-        # always print out recursive linked image commands
-        os.environ["PKG_DISP_LINKED_CMDS"] = "1"
+        # verify PlanDescription serialization and that the PlanDescription
+        # isn't modified while we're preparing to for execution.
+        DebugValues["plandesc_validate"] = 1
+        os.environ["PKG_PLANDESC_VALIDATE"] = "1"
 
         # Pretend that we're being run from the fakeroot image.
         assert pkg_cmdpath != "TOXIC"

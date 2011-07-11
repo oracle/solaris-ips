@@ -20,7 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+#
+# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -877,6 +879,27 @@ test2
                     self.foo_arc)
                 assert os.path.exists(vpath)
                 self.assertEqual(os.stat(vpath).st_size, 21)
+
+        def test_05_staged_execution(self):
+                """Verify that staged execution works with temporary
+                origins."""
+
+                # Create an image and verify no packages are known.
+                self.image_create(self.empty_rurl, prefix=None)
+                self.pkg("list -a", exit=1)
+
+                # Install an older version of a known package.
+                self.pkg("install -g %s quux@0.1" % self.all_arc)
+                self.pkg("list incorp@1.0 quux@0.1")
+
+                # Verify that packages can be updated using temporary origins.
+                self.pkg("update --stage=plan -g %s -g %s" %
+                    (self.incorp_arc, self.quux_arc))
+                self.pkg("update --stage=prepare -g %s -g %s" %
+                    (self.incorp_arc, self.quux_arc))
+                self.pkg("update --stage=execute -g %s -g %s" %
+                    (self.incorp_arc, self.quux_arc))
+                self.pkg("list incorp@2.0 quux@1.0")
 
 
 if __name__ == "__main__":

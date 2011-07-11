@@ -22,27 +22,39 @@
 
 # Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 
+"""
+Misc utility functions used by the packaging system.
+"""
+
 import OpenSSL.crypto as osc
 import cStringIO
 import calendar
+import collections
 import datetime
 import errno
 import getopt
 import hashlib
+import itertools
 import locale
 import os
 import platform
 import re
+import resource
 import shutil
 import simplejson as json
 import socket
-from stat import *
 import struct
 import sys
+import threading
 import time
+import traceback
 import urllib
 import urlparse
 import zlib
+
+from stat import S_IFMT, S_IMODE, S_IRGRP, S_IROTH, S_IRUSR, S_IRWXU, \
+    S_ISBLK, S_ISCHR, S_ISDIR, S_ISFIFO, S_ISLNK, S_ISREG, S_ISSOCK, \
+    S_IWUSR, S_IXGRP, S_IXOTH
 
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable
@@ -60,8 +72,10 @@ MIN_WARN_DAYS = datetime.timedelta(days=30)
 SIGNATURE_POLICY = "signature-policy"
 
 # Bug URI Constants (deprecated)
+# Line too long; pylint: disable-msg=C0301
 BUG_URI_CLI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=cli"
 BUG_URI_GUI = "https://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg&component=gui"
+# pylint: enable-msg=C0301
 
 # Traceback message.
 def get_traceback_message():
@@ -84,12 +98,12 @@ def get_release_notes_url():
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
-        # XXX optimize?
+        # XXX optimize?; pylint: disable-msg=W0511
         return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(t))
 
 def timestamp_to_time(ts):
         """convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
-        # XXX optimize?
+        # XXX optimize?; pylint: disable-msg=W0511
         return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
 
 def timestamp_to_datetime(ts):
@@ -201,6 +215,8 @@ def expanddirs(dirs):
         return out
 
 def url_affix_trailing_slash(u):
+        """if 'u' donesn't have a trailing '/', append one."""
+
         if u[-1] != '/':
                 u = u + '/'
 
@@ -211,6 +227,7 @@ _client_version = "pkg/%s (%s %s; %s %s; %%s; %%s)" % \
     portable.util.get_os_release(), platform.version())
 
 def user_agent_str(img, client_name):
+        """Return a string that can use to identify the client."""
 
         if not img or img.type is None:
                 imgtype = IMG_NONE
@@ -259,8 +276,7 @@ def valid_pub_url(url):
                 return False
 
         if o[0] == "file":
-                scheme, netloc, path, params, query, fragment = \
-                    urlparse.urlparse(url, "file", allow_fragments=0)
+                path = urlparse.urlparse(url, "file", allow_fragments=0)[2]
                 path = urllib.url2pathname(path)
                 if not os.path.abspath(path):
                         return False
@@ -268,7 +284,7 @@ def valid_pub_url(url):
                 return True
 
         # Next verify that the network location is valid
-        host, port = urllib.splitport(o[1])
+        host = urllib.splitport(o[1])[0]
 
         if not host or _invalid_host_chars.match(host):
                 return False
@@ -281,11 +297,10 @@ def valid_pub_url(url):
 def gunzip_from_stream(gz, outfile):
         """Decompress a gzipped input stream into an output stream.
 
-        The argument 'gz' is an input stream of a gzipped file (XXX make it do
-        either a gzipped file or raw zlib compressed data), and 'outfile' is is
-        an output stream.  gunzip_from_stream() decompresses data from 'gz' and
-        writes it to 'outfile', and returns the hexadecimal SHA-1 sum of that
-        data.
+        The argument 'gz' is an input stream of a gzipped file and 'outfile'
+        is is an output stream.  gunzip_from_stream() decompresses data from
+        'gz' and writes it to 'outfile', and returns the hexadecimal SHA-1 sum
+        of that data.
         """
 
         FHCRC = 2
@@ -347,6 +362,7 @@ class PipeError(Exception):
         """ Pipe exception. """
 
         def __init__(self, args=None):
+                Exception.__init__(self)
                 self._args = args
 
 def msg(*text):
@@ -398,9 +414,9 @@ def N_(message):
         their use is delayed by the program."""
         return message
 
-def bytes_to_str(bytes, format=None):
+def bytes_to_str(n, fmt=None):
         """Returns a human-formatted string representing the number of bytes
-        in the largest unit possible.  If provided, 'format' should be a string
+        in the largest unit possible.  If provided, 'fmt' should be a string
         which can be formatted with a dictionary containing a float 'num' and
         string 'unit'."""
 
@@ -415,23 +431,24 @@ def bytes_to_str(bytes, format=None):
         ]
 
         for uom, limit in units:
-                if uom != _("EB") and bytes >= limit:
+                if uom != _("EB") and n >= limit:
                         # Try the next largest unit of measure unless this is
                         # the largest or if the byte size is within the current
                         # unit of measure's range.
                         continue
                 else:
-                        if not format:
-                                format = "%(num).2f %(unit)s"
-                        return format % {
-                            "num": round(bytes / float(limit / 2**10), 2),
+                        if not fmt:
+                                fmt = "%(num).2f %(unit)s"
+                        return fmt % {
+                            "num": round(n / float(limit / 2**10), 2),
                             "unit": uom
                         }
 
 def get_rel_path(request, uri, pub=None):
-        # Calculate the depth of the current request path relative to our base
-        # uri. path_info always ends with a '/' -- so ignore it when
-        # calculating depth.
+        """Calculate the depth of the current request path relative to our
+        base uri. path_info always ends with a '/' -- so ignore it when
+        calculating depth."""
+
         rpath = request.path_info
         if pub:
                 rpath = rpath.replace("/%s/" % pub, "/")
@@ -552,28 +569,195 @@ def compute_compressed_attrs(fname, file_path, data, size, compress_dir,
         cfile.close()
         return csize, chash
 
+class ProcFS(object):
+        """This class is used as an interface to procfs."""
+
+        _ctype_formats = {
+            # This dictionary maps basic c types into python format characters
+            # that can be used with struct.unpack().  The format of this
+            # dictionary is:
+            #    <ctype>: (<repeat count>, <format char>)
+
+            # basic c types (repeat count should always be 1)
+            # char[] is used to encode character arrays
+            "char":        (1,  "c"),
+            "char[]":      (1,  "s"),
+            "int":         (1,  "i"),
+            "long":        (1,  "l"),
+            "uintptr_t":   (1,  "I"),
+            "ushort_t":    (1,  "H"),
+
+            # other simple types (repeat count should always be 1)
+            "ctid_t":      (1,  "i"), # ctid_t -> id_t -> int
+            "dev_t":       (1,  "L"), # dev_t -> ulong_t
+            "gid_t":       (1,  "I"), # gid_t -> uid_t -> uint_t
+            "pid_t":       (1,  "i"), # pid_t -> int
+            "poolid_t":    (1,  "i"), # poolid_t -> id_t -> int
+            "projid_t":    (1,  "i"), # projid_t -> id_t -> int
+            "size_t":      (1,  "L"), # size_t -> ulong_t
+            "taskid_t":    (1,  "i"), # taskid_t -> id_t -> int
+            "time_t":      (1,  "l"), # time_t -> long
+            "uid_t":       (1,  "I"), # uid_t -> uint_t
+            "zoneid_t":    (1,  "i"), # zoneid_t -> id_t -> int
+            "id_t":        (1,  "i"), # id_t -> int
+
+            # structures must be represented as character arrays
+            "timestruc_t": (8,  "s"), # sizeof (timestruc_t) = 8
+        }
+
+        _timestruct_desc = [
+            # this list describes a timestruc_t structure
+            # the entry format is (<ctype>, <repeat count>, <name>)
+            ("time_t", 1, "tv_sec"),
+            ("long",   1, "tv_nsec"),
+        ]
+
+        _psinfo_desc = [
+            # this list describes a psinfo_t structure
+            # the entry format is: (<ctype>, <repeat count>, <name>)
+            ("int",         1,  "pr_flag"),
+            ("int",         1,  "pr_nlwp"),
+            ("pid_t",       1,  "pr_pid"),
+            ("pid_t",       1,  "pr_ppid"),
+            ("pid_t",       1,  "pr_pgid"),
+            ("pid_t",       1,  "pr_sid"),
+            ("uid_t",       1,  "pr_uid"),
+            ("uid_t",       1,  "pr_euid"),
+            ("gid_t",       1,  "pr_gid"),
+            ("gid_t",       1,  "pr_egid"),
+            ("uintptr_t",   1,  "pr_addr"),
+            ("size_t",      1,  "pr_size"),
+            ("size_t",      1,  "pr_rssize"),
+            ("size_t",      1,  "pr_pad1"),
+            ("dev_t",       1,  "pr_ttydev"),
+            ("ushort_t",    1,  "pr_pctcpu"),
+            ("ushort_t",    1,  "pr_pctmem"),
+            ("timestruc_t", 1,  "pr_start"),
+            ("timestruc_t", 1,  "pr_time"),
+            ("timestruc_t", 1,  "pr_ctime"),
+            ("char[]",      16, "pr_fname"),
+            ("char[]",      80, "pr_psargs"),
+            ("int",         1,  "pr_wstat"),
+            ("int",         1,  "pr_argc"),
+            ("uintptr_t",   1,  "pr_argv"),
+            ("uintptr_t",   1,  "pr_envp"),
+            ("char",        1,  "pr_dmodel"),
+            ("char[]",      3,  "pr_pad2"),
+            ("taskid_t",    1,  "pr_taskid"),
+            ("projid_t",    1,  "pr_projid"),
+            ("int",         1,  "pr_nzomb"),
+            ("poolid_t",    1,  "pr_poolid"),
+            ("zoneid_t",    1,  "pr_zoneid"),
+            ("id_t",        1,  "pr_contract"),
+            ("int",         1,  "pr_filler"),
+        ]
+
+        _struct_descriptions = {
+            # this list contains all the known structure description lists
+            # the entry format is: <structure name>: \
+            #    [ <description>, <format string>, <namedtuple> ]
+            #
+            # Note that <format string> and <namedtuple> should be assigned
+            # None in this table, and then they will get pre-populated
+            # automatically when this class is instantiated
+            #
+            "psinfo_t":    [_psinfo_desc, None, None],
+            "timestruc_t": [_timestruct_desc, None, None],
+        }
+
+        # fill in <format string> and <namedtuple> in _struct_descriptions
+        for struct_name, v in _struct_descriptions.iteritems():
+                desc = v[0]
+
+                # update _struct_descriptions with a format string
+                v[1] = ""
+                for ctype, count1, name in desc:
+                        count2, fmt_char = _ctype_formats[ctype]
+                        v[1] = v[1] + str(count1 * count2) + fmt_char
+
+                # update _struct_descriptions with a named tuple
+                v[2] = collections.namedtuple(struct_name,
+                    [ i[2] for i in desc ])
+
+        @staticmethod
+        def _struct_unpack(data, name):
+                """Unpack 'data' using struct.unpack().  'name' is the name of
+                the data we're unpacking and is used to lookup a description
+                of the data (which in turn is used to build a format string to
+                decode the data)."""
+
+                # lookup the description of the data to unpack
+                desc, fmt, nt = ProcFS._struct_descriptions[name]
+
+                # unpack the data into a list
+                rv = list(struct.unpack(fmt, data))
+
+                # check for any nested data that needs unpacking
+                for index, v in enumerate(desc):
+                        ctype = v[0]
+                        if ctype not in ProcFS._struct_descriptions:
+                                continue
+                        rv[index] = ProcFS._struct_unpack(rv[index], ctype)
+
+                # return the data in a named tuple
+                return nt(*rv)
+
+        @staticmethod
+        def psinfo():
+                """Read the psinfo file and return its contents."""
+
+                # This works only on Solaris, in 32-bit mode.  It may not work
+                # on older or newer versions than 5.11.  Ideally, we would use
+                # libproc, or check sbrk(0), but this is expedient.  In most
+                # cases (there's a small chance the file will decode, but
+                # incorrectly), failure will raise an exception, and we'll
+                # fail safe.
+                psinfo_size = 232
+                try:
+                        psinfo_data = file("/proc/self/psinfo").read(
+                            psinfo_size)
+                # Catch "Exception"; pylint: disable-msg=W0703
+                except Exception:
+                        return None
+
+                # make sure we got the expected amount of data, otherwise
+                # unpacking it will fail.
+                if len(psinfo_data) != psinfo_size:
+                        return None
+
+                return ProcFS._struct_unpack(psinfo_data, "psinfo_t")
+
+
 def __getvmusage():
         """Return the amount of virtual memory in bytes currently in use."""
 
-        # This works only on Solaris, in 32-bit mode.  It may not work on older
-        # or newer versions than 5.11.  Ideally, we would use libproc, or check
-        # sbrk(0), but this is expedient.  In most cases (there's a small chance
-        # the file will decode, but incorrectly), failure will raise an
-        # exception, and we'll fail safe.
-        try:
-                # Read just the psinfo_t, not the tacked-on lwpsinfo_t
-                psinfo_arr = file("/proc/self/psinfo").read(232)
-                psinfo = struct.unpack("6i5I4LHH6L16s80siiIIc3x7i", psinfo_arr)
-                vsz = psinfo[11] * 1024
-        except Exception:
-                vsz = None
+        psinfo = ProcFS.psinfo()
+        if psinfo is None:
+                return None
+        return psinfo.pr_size * 1024
 
-        return vsz
+def _prstart():
+        """Return the process start time expressed as a floating point number
+        in seconds since the epoch, in UTC."""
+        psinfo = ProcFS.psinfo()
+        if psinfo is None:
+                return 0.0
+        return psinfo.pr_start.tv_sec + (float(psinfo.pr_start.tv_nsec) / 1e9)
 
 def out_of_memory():
         """Return an out of memory message, for use in a MemoryError handler."""
 
-        vsz = bytes_to_str(__getvmusage(), format="%(num).0f%(unit)s")
+        # figure out how much memory we're using (note that we could run out
+        # of memory while doing this, so check for that.
+        vsz = None
+        try:
+                vmusage = __getvmusage()
+                if vmusage is not None:
+                        vsz = bytes_to_str(vmusage, fmt="%(num).0f%(unit)s")
+        except (MemoryError, EnvironmentError), __e:
+                if isinstance(__e, EnvironmentError) and \
+                    __e.errno != errno.ENOMEM:
+                        raise
 
         if vsz is not None:
                 error = """\
@@ -592,10 +776,14 @@ operation again."""
         return _(error) % locals()
 
 
-# ImmutableDict and EmptyI for argument defaults
+# EmptyI for argument defaults
 EmptyI = tuple()
 
+# ImmutableDict for argument defaults
 class ImmutableDict(dict):
+        # Missing docstring; pylint: disable-msg=C0111
+        # Unused argument; pylint: disable-msg=W0613
+
         def __init__(self, default=EmptyI):
                 dict.__init__(self, default)
 
@@ -623,12 +811,15 @@ class ImmutableDict(dict):
         def clear(self):
                 self.__oops()
 
-        def __oops(self):
+        @staticmethod
+        def __oops():
                 raise TypeError, "Item assignment to ImmutableDict"
 
 # A way to have a dictionary be a property
 
 class DictProperty(object):
+        # Missing docstring; pylint: disable-msg=C0111
+
         class __InternalProxy(object):
                 def __init__(self, obj, fget, fset, fdel, iteritems, keys,
                     values, iterator, fgetdefault, fsetdefault, update, pop):
@@ -719,6 +910,8 @@ class DictProperty(object):
                 self.__pop = pop
 
         def __get__(self, obj, objtype=None):
+                # Unused argument; pylint: disable-msg=W0613
+
                 if obj is None:
                         return self
                 return self.__InternalProxy(obj, self.__fget, self.__fset,
@@ -801,7 +994,7 @@ def binary_to_hex(s):
         """
 
         res = ""
-        for i, p in enumerate(s):
+        for p in s:
                 p = ord(p)
                 a = char_list[p % 16]
                 p = p/16
@@ -900,11 +1093,13 @@ class DummyLock(object):
         lock object present.  The object has a held value, that is used
         for _is_owned.  This is informational and doesn't actually
         provide mutual exclusion in any way whatsoever."""
+        # Missing docstring; pylint: disable-msg=C0111
 
         def __init__(self):
                 self.held = False
 
         def acquire(self, blocking=1):
+                # Unused argument; pylint: disable-msg=W0613
                 self.held = True
                 return True
 
@@ -924,16 +1119,16 @@ class Singleton(type):
         """Set __metaclass__ to Singleton to create a singleton.
         See http://en.wikipedia.org/wiki/Singleton_pattern """
 
-        def __init__(self, name, bases, dictionary):
-                super(Singleton, self).__init__(name, bases, dictionary)
-                self.instance = None
+        def __init__(mcs, name, bases, dictionary):
+                super(Singleton, mcs).__init__(name, bases, dictionary)
+                mcs.instance = None
 
-        def __call__(self, *args, **kw):
-                if self.instance is None:
-                        self.instance = super(Singleton, self).__call__(*args,
+        def __call__(mcs, *args, **kw):
+                if mcs.instance is None:
+                        mcs.instance = super(Singleton, mcs).__call__(*args,
                             **kw)
 
-                return self.instance
+                return mcs.instance
 
 
 EmptyDict = ImmutableDict()
@@ -1151,6 +1346,32 @@ def api_cmdpath():
 
         return cmdpath
 
+def api_pkgcmd():
+        """When running a pkg(1) command from within a packaging module, try
+        to use the same pkg(1) path as our current invocation.  If we're
+        running pkg(1) from some other command (like the gui updater) then
+        assume that pkg(1) is in the default path."""
+
+        pkg_bin = "pkg"
+        cmdpath = api_cmdpath()
+        if cmdpath and os.path.basename(cmdpath) == "pkg":
+                try:
+                        # check if the currently running pkg command
+                        # exists and is accessible.
+                        os.stat(cmdpath)
+                        pkg_bin = cmdpath
+                except OSError:
+                        pass
+
+        pkg_cmd = [pkg_bin]
+
+        # propagate debug options
+        for k, v in DebugValues.iteritems():
+                pkg_cmd.append("-D")
+                pkg_cmd.append("%s=%s" % (k, v))
+
+        return pkg_cmd
+
 def liveroot():
         """Return path to the current live root image, i.e. the image
         that we are running from."""
@@ -1180,6 +1401,7 @@ def get_dir_size(path):
                     for fname in fnames
                 )
         except EnvironmentError, e:
+                # Access to protected member; pylint: disable-msg=W0212
                 raise api_errors._convert_error(e)
 
 def get_listing(desired_field_order, field_data, field_values, out_format,
@@ -1223,6 +1445,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
         metacharacters or embedded control sequences should be escaped
         before display.  (If applicable to the specified output format.)
         """
+        # Missing docstring; pylint: disable-msg=C0111
 
         # Custom sort function for preserving field ordering
         def sort_fields(one, two):
@@ -1316,7 +1539,7 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                         if isinstance(v, (list, tuple, set, frozenset)):
                                 return [fmt_val(e) for e in v]
                         if isinstance(v, dict):
-                                for k, e in v.items():
+                                for k, e in v.iteritems():
                                         v[k] = fmt_val(e)
                                 return v
                         return str(v)
@@ -1359,3 +1582,769 @@ def get_listing(desired_field_order, field_data, field_values, out_format,
                 output += "\n"
 
         return output
+
+def truncate_file(f, size=0):
+        """Truncate the specified file."""
+        try:
+                f.truncate(size)
+        except IOError:
+                pass
+        except OSError, e:
+                # Access to protected member; pylint: disable-msg=W0212
+                raise api_errors._convert_error(e)
+
+def flush_output():
+        """flush stdout and stderr"""
+
+        try:
+                sys.stdout.flush()
+        except IOError:
+                pass
+        except OSError, e:
+                # Access to protected member; pylint: disable-msg=W0212
+                raise api_errors._convert_error(e)
+
+        try:
+                sys.stderr.flush()
+        except IOError:
+                pass
+        except OSError, e:
+                # Access to protected member; pylint: disable-msg=W0212
+                raise api_errors._convert_error(e)
+
+# valid json types
+json_types_immediates = (bool, float, int, long, str, type(None), unicode)
+json_types_collections = (dict, list)
+json_types = tuple(json_types_immediates + json_types_collections)
+json_debug = False
+
+def json_encode(name, data, desc, commonize=None, je_state=None):
+        """A generic json encoder.
+
+        'name' a descriptive name of the data we're encoding.  If encoding a
+        class, this would normally be the class name.  'name' is used when
+        displaying errors to identify the data that caused the errors.
+
+        'data' data to encode.
+
+        'desc' a description of the data to encode.
+
+        'commonize' a list of objects that should be cached by reference.
+        this is used when encoding objects which may contain multiple
+        references to a single object.  In this case, each reference will be
+        replaced with a unique id, and the object that was pointed to will
+        only be encoded once.  This ensures that upon decoding we can restore
+        the original object and all references to it."""
+
+        # debugging
+        if je_state is None and json_debug:
+                print >> sys.stderr, "json_encode name: ", name
+                print >> sys.stderr, "json_encode data: ", data
+
+        # we don't encode None
+        if data is None:
+                return None
+
+        # initialize parameters to default
+        if commonize is None:
+                commonize = frozenset()
+
+        if je_state is None:
+                # this is the first invocation of this function, so "data"
+                # points to the top-level object that we want to encode.  this
+                # means that if we're commonizing any objects we should
+                # finalize the object cache when we're done encoding this
+                # object.
+                finish = True
+
+                # initialize recursion state
+                obj_id = [0]
+                obj_cache = {}
+                je_state = [obj_id, obj_cache, commonize]
+        else:
+                # we're being invoked recursively, do not finalize the object
+                # cache (since that will be done by a previous invocation of
+                # this function).
+                finish = False
+
+                # get recursion state
+                obj_id, obj_cache, commonize_old = je_state
+
+                # check if we're changing the set of objects to commonize
+                if not commonize:
+                        commonize = commonize_old
+                else:
+                        # update the set of objects to commonize
+                        # make a copy so we don't update our callers state
+                        commonize = frozenset(commonize_old | commonize)
+                        je_state = [obj_id, obj_cache, commonize]
+
+        # verify state
+        assert type(name) == str
+        assert type(obj_cache) == dict
+        assert type(obj_id) == list and len(obj_id) == 1 and obj_id[0] >= 0
+        assert type(commonize) == frozenset
+        assert type(je_state) == list and len(je_state) == 3
+
+        def je_return(name, data, finish, je_state):
+                """if necessary, finalize the object cache and merge it into
+                the state data.
+
+                while encoding, the object cache is a dictionary which
+                contains tuples consisting of an assigned unique object id
+                (obj_id) and an encoded object.  these tuples are hashed by
+                the python object id of the original un-encoded python object.
+                so the hash contains:
+
+                       { id(<obj>): ( <obj_id>, <obj_state> ) }
+
+                when we finish the object cache we update it so that it
+                contains just encoded objects hashed by their assigned object
+                id (obj_id).  so the hash contains:
+
+                       { str(<obj_id>): <obj_state> }
+
+                then we merge the state data and object cache into a single
+                dictionary and return that.
+                """
+                # Unused argument; pylint: disable-msg=W0613
+
+                if not finish:
+                        return data
+
+                # json.dump converts integer dictionary keys into strings, so
+                # we'll convert the object id keys (which are integers) into
+                # strings (that way we're encoder/decoder independent).
+                obj_cache = je_state[1]
+                obj_cache2 = {}
+                for obj_id, obj_state in obj_cache.itervalues():
+                        obj_cache2[str(obj_id)] = obj_state
+
+                data = { "json_state": data, "json_objects": obj_cache2 }
+
+                if DebugValues["plandesc_validate"]:
+                        json_validate(name, data)
+
+                # debugging
+                if json_debug:
+                        print >> sys.stderr, "json_encode finished name: ", name
+                        print >> sys.stderr, "json_encode finished data: ", data
+
+                return data
+
+        # check if the description is a type object
+        if isinstance(desc, type):
+                desc_type = desc
+        else:
+                # get the expected data type from the description
+                desc_type = type(desc)
+
+        # get the data type
+        data_type = getattr(data, "__metaclass__", type(data))
+
+        # sanity check that the data type matches the description
+        assert desc_type == data_type, \
+            "unexpected %s for %s, expected: %s, value: %s" % \
+                (data_type, name, desc_type, data)
+
+        # we don't need to do anything for basic types
+        if desc_type in json_types_immediates:
+                return je_return(name, data, finish, je_state)
+
+        # encode elements nested in a dictionary like object
+        # return elements in a dictionary
+        if desc_type in (dict, collections.defaultdict):
+                # we always return a new dictionary
+                rv = {}
+
+                # check if we're not encoding nested elements
+                if len(desc) == 0:
+                        rv.update(data)
+                        return je_return(name, rv, finish, je_state)
+
+                # lookup the first descriptor to see if we have
+                # generic type description.
+                desc_k, desc_v = desc.items()[0]
+
+                # if the key in the first type pair is a type then we
+                # have a generic type description that applies to all
+                # keys and values in the dictionary.
+                # check if the description is a type object
+                if isinstance(desc_k, type):
+                        # there can only be one generic type desc
+                        assert len(desc) == 1
+
+                        # encode all key / value pairs
+                        for k, v in data.iteritems():
+                                # encode the key
+                                name2 = "%s[%s].key()" % (name, desc_k)
+                                k2 = json_encode(name2, k, desc_k,
+                                    je_state=je_state)
+
+                                # encode the value
+                                name2 = "%s[%s].value()" % (name, desc_k)
+                                v2 = json_encode(name2, v, desc_v,
+                                    je_state=je_state)
+
+                                # save the result
+                                rv[k2] = v2
+                        return je_return(name, rv, finish, je_state)
+
+                # we have element specific value type descriptions.
+                # encode the specific values.
+                rv.update(data)
+                for desc_k, desc_v in desc.iteritems():
+                        # check for the specific key
+                        if desc_k not in rv:
+                                continue
+
+                        # encode the value
+                        name2 = "%s[%s].value()" % (name, desc_k)
+                        rv[desc_k] = json_encode(name2, rv[desc_k], desc_v,
+                            je_state=je_state)
+                return je_return(name, rv, finish, je_state)
+
+        # encode elements nested in a list like object
+        # return elements in a list
+        if desc_type in (tuple, list, set, frozenset):
+
+                # we always return a new list
+                rv = []
+
+                # check for an empty list since we use izip_longest
+                if len(data) == 0:
+                        return je_return(name, rv, finish, je_state)
+
+                # check if we're not encoding nested elements
+                if len(desc) == 0:
+                        rv.extend(data)
+                        return je_return(name, rv, finish, je_state)
+
+                # don't accidentally generate data via izip_longest
+                assert len(data) >= len(desc), \
+                    "%d >= %d" % (len(data), len(desc))
+
+                i = 0
+                for data2, desc2 in itertools.izip_longest(data, desc,
+                    fillvalue=list(desc)[0]):
+                        name2 = "%s[%i]" % (name, i)
+                        i += 1
+                        rv.append(json_encode(name2, data2, desc2,
+                            je_state=je_state))
+                return je_return(name, rv, finish, je_state)
+
+        # if we're commonizing this object and it's already been encoded then
+        # just return its encoded object id.
+        if desc_type in commonize and id(data) in obj_cache:
+                rv = obj_cache[id(data)][0]
+                return je_return(name, rv, finish, je_state)
+
+        # find an encoder for this class, which should be:
+        #     <class>.getstate(obj, je_state)
+        encoder = getattr(desc_type, "getstate", None)
+        assert encoder is not None, "no json encoder for: %s" % desc_type
+
+        # encode the data
+        rv = encoder(data, je_state)
+        assert rv is not None, "json encoder returned none for: %s" % desc_type
+
+        # if we're commonizing this object, then assign it an object id and
+        # save that object id and the encoded object into the object cache
+        # (which is indexed by the python id for the object).
+        if desc_type in commonize:
+                obj_cache[id(data)] = (obj_id[0], rv)
+                rv = obj_id[0]
+                obj_id[0] += 1
+
+        # return the encoded element
+        return je_return(name, rv, finish, je_state)
+
+def json_decode(name, data, desc, commonize=None, jd_state=None):
+        """A generic json decoder.
+
+        'name' a descriptive name of the data.  (used to identify unexpected
+        data errors.)
+
+        'desc' a programmatic description of data types.
+
+        'data' data to decode."""
+
+        # debugging
+        if jd_state is None and json_debug:
+                print >> sys.stderr, "json_decode name: ", name
+                print >> sys.stderr, "json_decode data: ", data
+
+        # we don't decode None
+        if data is None:
+                return (data)
+
+        # initialize parameters to default
+        if commonize is None:
+                commonize = frozenset()
+
+        if jd_state is None:
+                # this is the first invocation of this function, so when we
+                # return we're done decoding data.
+                finish = True
+
+                # first time here, initialize recursion state
+                if not commonize:
+                        # no common state
+                        obj_cache = {}
+                else:
+                        # load commonized state
+                        obj_cache = data["json_objects"]
+                        data = data["json_state"]
+                jd_state = [obj_cache, commonize]
+        else:
+                # we're being invoked recursively.
+                finish = False
+
+                obj_cache, commonize_old = jd_state
+
+                # check if the first object using commonization
+                if not commonize_old and commonize:
+                        obj_cache = data["json_objects"]
+                        data = data["json_state"]
+
+                # merge in any new commonize requests
+                je_state_changed = False
+
+                # check if we're updating the set of objects to commonize
+                if not commonize:
+                        commonize = commonize_old
+                else:
+                        # update the set of objects to commonize
+                        # make a copy so we don't update our callers state.
+                        commonize = frozenset(commonize_old | commonize)
+                        je_state_changed = True
+
+                if je_state_changed:
+                        jd_state = [obj_cache, commonize]
+
+        # verify state
+        assert type(name) == str, "type(name) == %s" % type(name)
+        assert type(obj_cache) == dict
+        assert type(commonize) == frozenset
+        assert type(jd_state) == list and len(jd_state) == 2
+
+        def jd_return(name, data, desc, finish, jd_state):
+                """Check if we're done decoding data."""
+                # Unused argument; pylint: disable-msg=W0613
+
+                # check if the description is a type object
+                if isinstance(desc, type):
+                        desc_type = desc
+                else:
+                        # get the expected data type from the description
+                        desc_type = type(desc)
+
+                # get the data type
+                data_type = getattr(data, "__metaclass__", type(data))
+
+                # sanity check that the data type matches the description
+                assert desc_type == data_type, \
+                    "unexpected %s for %s, expected: %s, value: %s" % \
+                        (data_type, name, desc_type, rv)
+
+                if not finish:
+                        return data
+
+                # debugging
+                if json_debug:
+                        print >> sys.stderr, "json_decode finished name: ", name
+                        print >> sys.stderr, "json_decode finished data: ", data
+                return data
+
+        # check if the description is a type object
+        if isinstance(desc, type):
+                desc_type = desc
+        else:
+                # get the expected data type from the description
+                desc_type = type(desc)
+
+        # we don't need to do anything for basic types
+        if desc_type in json_types_immediates:
+                return jd_return(name, data, desc, finish, jd_state)
+
+        # decode elements nested in a dictionary
+        # return elements in the specified dictionary like object
+        if isinstance(desc, dict):
+
+                # allocate the return object.  we don't just use
+                # type(desc) because that won't work for things like
+                # collections.defaultdict types.
+                rv = desc.copy()
+                rv.clear()
+
+                # check if we're not decoding nested elements
+                if len(desc) == 0:
+                        rv.update(data)
+                        return jd_return(name, rv, desc, finish, jd_state)
+
+                # lookup the first descriptor to see if we have
+                # generic type description.
+                desc_k, desc_v = desc.items()[0]
+
+                # if the key in the descriptor is a type then we have
+                # a generic type description that applies to all keys
+                # and values in the dictionary.
+                # check if the description is a type object
+                if isinstance(desc_k, type):
+                        # there can only be one generic type desc
+                        assert len(desc) == 1
+
+                        # decode all key / value pairs
+                        for k, v in data.iteritems():
+                                # decode the key
+                                name2 = "%s[%s].key()" % (name, desc_k)
+                                k2 = json_decode(name2, k, desc_k,
+                                    jd_state=jd_state)
+
+                                # decode the value
+                                name2 = "%s[%s].value()" % (name, desc_k)
+                                v2 = json_decode(name2, v, desc_v,
+                                    jd_state=jd_state)
+
+                                # save the result
+                                rv[k2] = v2
+                        return jd_return(name, rv, desc, finish, jd_state)
+
+                # we have element specific value type descriptions.
+                # copy all data and then decode the specific values
+                rv.update(data)
+                for desc_k, desc_v in desc.iteritems():
+                        # check for the specific key
+                        if desc_k not in rv:
+                                continue
+
+                        # decode the value
+                        name2 = "%s[%s].value()" % (name, desc_k)
+                        rv[desc_k] = json_decode(name2, rv[desc_k],
+                            desc_v, jd_state=jd_state)
+                return jd_return(name, rv, desc, finish, jd_state)
+
+        # decode elements nested in a list
+        # return elements in the specified list like object
+        if isinstance(desc, (tuple, list, set, frozenset)):
+                # get the return type
+                rvtype = type(desc)
+
+                # check for an empty list since we use izip_longest
+                if len(data) == 0:
+                        rv = rvtype([])
+                        return jd_return(name, rv, desc, finish, jd_state)
+
+                # check if we're not encoding nested elements
+                if len(desc) == 0:
+                        rv = rvtype(data)
+                        return jd_return(name, rv, desc, finish, jd_state)
+
+                # don't accidentally generate data via izip_longest
+                assert len(data) >= len(desc), \
+                    "%d >= %d" % (len(data), len(desc))
+
+                rv = []
+                i = 0
+                for data2, desc2 in itertools.izip_longest(data, desc,
+                    fillvalue=list(desc)[0]):
+                        name2 = "%s[%i]" % (name, i)
+                        i += 1
+                        rv.append(json_decode(name2, data2, desc2,
+                            jd_state=jd_state))
+                rv = rvtype(rv)
+                return jd_return(name, rv, desc, finish, jd_state)
+
+        # find a decoder for this data, which should be:
+        #     <class>.fromstate(state, jd_state)
+        decoder = getattr(desc_type, "fromstate", None)
+        assert decoder is not None, "no json decoder for: %s" % desc_type
+
+        # if this object was commonized then get a reference to it from the
+        # object cache.
+        if desc_type in commonize:
+                assert type(data) == int
+                # json.dump converts integer dictionary keys into strings, so
+                # obj_cache was indexed by integer strings.
+                data = str(data)
+                rv = obj_cache[data]
+
+                # get the data type
+                data_type = getattr(rv, "__metaclass__", type(rv))
+
+                if data_type != desc_type:
+                        # this commonized object hasn't been decoded yet
+                        # decode it and update the cache with the decoded obj
+                        rv = decoder(rv, jd_state)
+                        obj_cache[data] = rv
+        else:
+                # decode the data
+                rv = decoder(data, jd_state)
+
+        return jd_return(name, rv, desc, finish, jd_state)
+
+def json_validate(name, data):
+        """Validate that a named piece of data can be represented in json and
+        that the data can be passed directly to json.dump().  If the data
+        can't be represented as json we'll trigger an assert.
+
+        'name' is the name of the data to validate
+
+        'data' is the data to validate
+
+        'recurse' is an optional integer that controls recursion.  if it's a
+        negative number (the default) we recursively check any nested lists or
+        dictionaries.  if it's a positive integer than we only recurse to
+        the specified depth."""
+
+        assert isinstance(data, json_types), \
+            "invalid json type \"%s\" for \"%s\", value: %s" % \
+            (type(data), name, str(data))
+
+        if type(data) == dict:
+                for k in data:
+                        # json.dump converts integer dictionary keys into
+                        # strings, which is a bit unexpected.  so make sure we
+                        # don't have any of those.
+                        assert type(k) != int, \
+                            "integer dictionary keys detected for: %s" % name
+
+                        # validate the key and the value
+                        new_name = "%s[%s].key()" % (name, k)
+                        json_validate(new_name, k)
+                        new_name = "%s[%s].value()" % (name, k)
+                        json_validate(new_name, data[k])
+
+        if type(data) == list:
+                for i in range(len(data)):
+                        new_name = "%s[%i]" % (name, i)
+                        json_validate(new_name, data[i])
+
+def json_diff(name, d0, d1):
+        """Compare two json encoded objects to make sure they are
+        identical, assert() if they are not."""
+
+        assert type(d0) == type(d1), ("Json data types differ for \"%s\":\n"
+                "type 1: %s\ntype 2: %s\n") % (name, type(d0), type(d1))
+
+        if type(d0) == dict:
+                assert set(d0) == set(d1), (
+                   "Json dictionary keys differ for \"%s\":\n"
+                   "dict 1 missing: %s\n"
+                   "dict 2 missing: %s\n") % (name,
+                   set(d1) - set(d0), set(d0) - set(d1))
+
+                for k in d0:
+                        new_name = "%s[%s]" % (name, k)
+                        json_diff(new_name, d0[k], d1[k])
+
+        if type(d0) == list:
+                assert len(d0) == len(d1), (
+                   "Json list lengths differ for \"%s\":\n"
+                   "list 1 length: %s\n"
+                   "list 2 length: %s\n") % (name,
+                   len(d0), len(d1))
+
+                for i in range(len(d0)):
+                        new_name = "%s[%i]" % (name, i)
+                        json_diff(new_name, d0[i], d1[i])
+
+class Timer(object):
+        """A class which can be used for measuring process times (user,
+        system, and wait)."""
+
+        __precision = 3
+        __log_fmt = "utime: %7.3f; stime: %7.3f; wtime: %7.3f"
+
+        def __init__(self, module):
+                self.__module = module
+                self.__timings = []
+
+                # we initialize our time values to account for all time used
+                # since the start of the process.  (user and system time are
+                # obtained relative to process start time, but wall time is an
+                # absolute time value so here we initialize out initial wall
+                # time value to the time our process was started.)
+                self.__utime = self.__stime = 0
+                self.__wtime = _prstart()
+
+        def __zero1(self, delta):
+                """Return True if a number is zero (up to a certain level of
+                precision.)"""
+                return int(delta * (10 ** self.__precision)) == 0
+
+        def __zero(self, udelta, sdelta, wdelta):
+                """Return True if all the passed in values are zero."""
+                return self.__zero1(udelta) and \
+                    self.__zero1(sdelta) and \
+                    self.__zero1(wdelta)
+
+        def __str__(self):
+                s = "\nTimings for %s: [\n" % self.__module
+                utotal = stotal = wtotal = 0
+                phases = [i[0] for i in self.__timings] + ["total"]
+                phase_width = max([len(i) for i in phases]) + 1
+                fmt = "  %%-%ss %s;\n" % (phase_width, Timer.__log_fmt)
+                for phase, udelta, sdelta, wdelta in self.__timings:
+                        if self.__zero(udelta, sdelta, wdelta):
+                                continue
+                        utotal += udelta
+                        stotal += sdelta
+                        wtotal += wdelta
+                        s += fmt % (phase + ":", udelta, sdelta, wdelta)
+                s += fmt % ("total:", utotal, stotal, wtotal)
+                s += "]\n"
+                return s
+
+        def reset(self):
+                """Update saved times to current process values."""
+                self.__utime, self.__stime, self.__wtime = self.__get_time()
+
+        @staticmethod
+        def __get_time():
+                """Get current user, system, and wait times for this
+                process."""
+
+                rusage = resource.getrusage(resource.RUSAGE_SELF)
+                utime = rusage[0]
+                stime = rusage[1]
+                wtime = time.time()
+                return (utime, stime, wtime)
+
+        def record(self, phase, logger=None):
+                """Record the difference between the previously saved process
+                time values and the current values.  Then update the saved
+                values to match the current values"""
+
+                utime, stime, wtime = self.__get_time()
+
+                udelta = utime - self.__utime
+                sdelta = stime - self.__stime
+                wdelta = wtime - self.__wtime
+
+                self.__timings.append((phase, udelta, sdelta, wdelta))
+                self.__utime, self.__stime, self.__wtime = utime, stime, wtime
+
+                rv = "%s: %s: " % (self.__module, phase)
+                rv += Timer.__log_fmt % (udelta, sdelta, wdelta)
+                if logger:
+                        logger.debug(rv)
+                return rv
+
+
+class AsyncCallException(Exception):
+        """Exception class for AsyncCall() errors.
+
+        Any exceptions caught by the async call thread get bundled into this
+        Exception because otherwise we'll lose the stack trace associated with
+        the original exception."""
+
+        def __init__(self, e=None):
+                Exception.__init__(self)
+                self.e = e
+                self.tb = None
+
+        def __str__(self):
+                if self.tb:
+                        return str(self.tb) + str(self.e)
+                return str(self.e)
+
+
+class AsyncCall(object):
+        """Class which can be used to call a function asynchronously.
+        The call is performed via a dedicated thread."""
+
+        def __init__(self):
+                self.rv = None
+                self.e = None
+
+                # keep track of what's been done
+                self.started = False
+
+                # internal state
+                self.__thread = None
+
+                # pre-allocate an exception that we'll used in case everything
+                # goes horribly wrong.
+                self.__e = AsyncCallException(
+                    Exception("AsyncCall Internal Error"))
+
+        def __thread_cb(self, dummy, cb, *args, **kwargs):
+                """Dedicated call thread.
+
+                'dummy' is a dummy parameter that is not used.  this is done
+                because the threading module (which invokes this function)
+                inspects the first argument of "args" to check if it's
+                iterable, and that may cause bizarre failures if cb is a
+                dynamically bound class (like xmlrpclib._Method).
+
+                We need to be careful here and catch all exceptions.  Since
+                we're executing in our own thread, any exceptions we don't
+                catch get dumped to the console."""
+                # Catch "Exception"; pylint: disable-msg=W0703
+
+                try:
+                        if DebugValues["async_thread_error"]:
+                                raise Exception("async_thread_error")
+
+                        rv = e = None
+                        try:
+                                rv = cb(*args, **kwargs)
+                        except Exception, e:
+                                self.e = self.__e
+                                self.e.e = e
+                                self.e.tb = traceback.format_exc()
+                                return
+
+                        self.rv = rv
+
+                except Exception, e:
+                        # if we raise an exception here, we're hosed
+                        self.rv = None
+                        self.e = self.__e
+                        self.e.e = e
+                        try:
+                                if DebugValues["async_thread_error"]:
+                                        raise Exception("async_thread_error")
+                                self.e.tb = traceback.format_exc()
+                        except Exception:
+                                pass
+
+        def start(self, cb, *args, **kwargs):
+                """Start a call to an rpc server."""
+
+                assert not self.started
+                self.started = True
+                # prepare the arguments for the thread
+                if args:
+                        args = (0, cb) + args
+                else:
+                        args = (0, cb)
+
+                # initialize and return the thread
+                self.__thread = threading.Thread(target=self.__thread_cb,
+                    args=args, kwargs=kwargs)
+                self.__thread.daemon = True
+                self.__thread.start()
+
+        def join(self):
+                """Wait for an rpc call to finish."""
+                assert self.started
+                self.__thread.join()
+
+        def is_done(self):
+                """Check if an rpc call is done."""
+                assert self.started
+                return not self.__thread.is_alive()
+
+        def result(self):
+                """Finish a call to an rpc server."""
+                assert self.started
+                # wait for the async call thread to exit
+                self.join()
+                assert self.is_done()
+                if self.e:
+                        # if the calling thread hit an exception, re-raise it
+                        # Raising NoneType; pylint: disable-msg=E0702
+                        raise self.e
+                return self.rv

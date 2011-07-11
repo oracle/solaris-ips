@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -41,7 +41,7 @@ from pkg.client import global_settings
 
 # The current version of the Client API the PM, UM and
 # WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 71
+CLIENT_API_VERSION = 72
 LOG_DIR = "/var/tmp"
 LOG_ERROR_EXT = "_error.log"
 LOG_INFO_EXT = "_info.log"

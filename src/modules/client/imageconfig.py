@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2012, Oracle and/or its affiliates.  All rights reserved.
+# Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 import errno
@@ -385,8 +385,8 @@ class ImageConfig(cfg.FileConfig):
                 self.variants.update(idx.get("variant", {}))
                 # facets are encoded so they can contain '/' characters.
                 for k, v in idx.get("facet", {}).iteritems():
-                        self.facets[urllib.unquote(k)] = v
-
+                        # convert facet name from unicode to a string
+                        self.facets[str(urllib.unquote(k))] = v
 
                 # Ensure architecture and zone variants are defined.
                 if "variant.arch" not in self.variants:
@@ -452,6 +452,9 @@ class ImageConfig(cfg.FileConfig):
                 # Load mediator data.
                 for entry, value in idx.get("mediators", {}).iteritems():
                         mname, mtype = entry.rsplit(".", 1)
+                        # convert mediator name+type from unicode to a string
+                        mname = str(mname)
+                        mtype = str(mtype)
                         self.mediators.setdefault(mname, {})[mtype] = value
 
                 # Now re-enable validation and validate the properties.

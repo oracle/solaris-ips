@@ -75,6 +75,9 @@ class LicenseAction(generic.Action):
                 owner = 0
                 group = 0
 
+                # ensure "path" is initialized.  it may not be if we've loaded
+                # a plan that was previously prepared.
+                self.preinstall(pkgplan, orig)
                 path = self.attrs["path"]
 
                 stream = self.data()

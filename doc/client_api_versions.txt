@@ -1,3 +1,28 @@
+Version 72:
+Incompatible with clients using versions 0-71.
+
+    pkg.client.api.ImageInterface has changed as follows:
+
+        * New functions added: img_plandir(), is_active_liveroot_be(),
+            isparent(), linked_publisher_check(), load_plan(), set_alt_repos()
+        * Functions removed: set_stage()
+        * Removed "runid" parameter from: __init__()
+        * Removed "accept" parameter from: gen_plan_*()
+        * Removed "show_licenses" parameter from: gen_plan_*()
+        * Added "pubcheck" parameter to:
+            gen_plan_sync(), gen_plan_update()
+
+    pkg.client.api.PlanDescription has changed as follows:
+        * Removed __init__() parameters: img, backup_be, backup_be_name,
+            new_be, be_activate, be_name
+        * Added __init__() parameters: op
+        * Removed methods: get_parsable_mediators(), get_parsable_varcets(),
+            get_salvaged(), get_services()
+        * Removed properties: is_active_root_be
+        * Added methods: getstate(), setstate(), fromstate()
+        * Added properties: executed, services, mediators, varcets,
+            plan_desc, salvaged, plan_type, update_index
+
 Version 71:
 Compatible with clients using versions 66-70.
 

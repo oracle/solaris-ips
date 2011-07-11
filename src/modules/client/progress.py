@@ -25,8 +25,9 @@
 #
 
 import errno
-import sys
+import itertools
 import os
+import sys
 import time
 
 from pkg.client import global_settings
@@ -57,11 +58,13 @@ class ProgressTracker(object):
             External consumers should base their subclasses on the
             NullProgressTracker class. """
 
-        def __init__(self, parsable_version=None, quiet=False, verbose=0):
+        def __init__(self, parsable_version=None, quiet=False, verbose=0,
+            progfd=None):
 
                 self.parsable_version = parsable_version
                 self.quiet = quiet
                 self.verbose = verbose
+                self.progfd = progfd
 
                 self.reset()
 
@@ -127,6 +130,27 @@ class ProgressTracker(object):
 
                 self.last_printed = 0 # when did we last emit status?
 
+        def _progfd_progress(self):
+                """In a child image, invoking this will tell the parent that
+                progress is being made.  This function should generally be
+                invoked when:
+                    - we reach the the end of an operation which doesn't give
+                      detailed progress updates (ex: catalog cache updates)
+                    - when we're updaging progress on an operation (ex: during
+                      a catalog refresh when we finish refreshing a
+                      publisher.)
+                """
+
+                if self.progfd is None:
+                        return
+                try:
+                        # write a byte out the progress pipe
+                        os.write(self.progfd, ".")
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
         def catalog_start(self, catalog):
                 self.cat_cur_catalog = catalog
                 self.cat_output_start()
@@ -139,12 +163,14 @@ class ProgressTracker(object):
 
         def cache_catalogs_done(self):
                 self.cache_cats_output_done()
+                self._progfd_progress()
 
         def load_catalog_cache_start(self):
                 self.load_cat_cache_output_start()
 
         def load_catalog_cache_done(self):
                 self.load_cat_cache_output_done()
+                self._progfd_progress()
 
         def refresh_start(self, pub_cnt):
                 self.refresh_pub_cnt = pub_cnt
@@ -155,6 +181,7 @@ class ProgressTracker(object):
                 self.refresh_cur_pub = pub
                 self.refresh_cur_pub_cnt += 1
                 self.refresh_output_progress()
+                self._progfd_progress()
 
         def refresh_done(self):
                 self.refresh_output_done()
@@ -167,6 +194,7 @@ class ProgressTracker(object):
                 if fmri:
                         self.eval_cur_fmri = fmri
                 self.eval_output_progress()
+                self._progfd_progress()
 
         def evaluate_done(self, install_npkgs=-1, \
             update_npkgs=-1, remove_npkgs=-1):
@@ -246,6 +274,7 @@ class ProgressTracker(object):
                 elif self.republish_started:
                         if self.dl_goal_nbytes != 0:
                                 self.republish_output()
+                self._progfd_progress()
 
         def download_done(self):
                 """ Call when all downloading is finished """
@@ -288,6 +317,7 @@ class ProgressTracker(object):
                 self.act_cur_nactions += 1
                 if self.act_goal_nactions > 0:
                         self.act_output()
+                self._progfd_progress()
 
         def actions_done(self):
                 if self.act_goal_nactions > 0:
@@ -303,6 +333,7 @@ class ProgressTracker(object):
                 self.ind_cur_nitems += 1
                 if self.ind_goal_nitems > 0:
                         self.ind_output()
+                self._progfd_progress()
 
         def index_done(self):
                 if self.ind_goal_nitems > 0:
@@ -321,6 +352,7 @@ class ProgressTracker(object):
                 self.item_cur_nitems += 1
                 if self.item_goal_nitems > 0:
                         self.item_output()
+                self._progfd_progress()
 
         def item_done(self):
                 if self.item_goal_nitems > 0:
@@ -426,6 +458,7 @@ class ProgressTracker(object):
                 return
 
         def refresh_output_progress(self):
+                self._progfd_progress()
                 return
 
         def refresh_output_done(self):
@@ -443,17 +476,30 @@ class ProgressTracker(object):
                 raise NotImplementedError("eval_output_done() not implemented "
                     "in superclass")
 
-        def li_recurse_start(self, lin):
-                """Called when we recurse into a child linked image."""
+        def li_recurse_start(self):
+                """Called when we're preparing to recurse into linked images."""
+                raise NotImplementedError("li_recurse_start()"
+                    " not implemented in superclass")
 
-                raise NotImplementedError("li_recurse_start() not implemented "
-                    "in superclass")
+        def li_recurse_end(self):
+                """Called when we're finished recursing into linked images."""
+                raise NotImplementedError("li_recurse_end()"
+                    " not implemented in superclass")
 
-        def li_recurse_end(self, lin):
-                """Called when we return from a child linked image."""
+        def li_recurse(self, lic_running, done, pending):
+                """Called when recursing into new linked images."""
+                raise NotImplementedError("li_recurse()"
+                    " not implemented in superclass")
 
-                raise NotImplementedError("li_recurse_end() not implemented "
-                    "in superclass")
+        def li_recurse_output(self, lin, stdout, stderr):
+                """Called when displaying output from linked images."""
+                raise NotImplementedError("li_recurse_output()"
+                    " not implemented in superclass")
+
+        def li_recurse_progress(self, lin):
+                """Called during recursion when a child makes progress."""
+                raise NotImplementedError("li_recurse_progress()"
+                    " not implemented in superclass")
 
         def ver_output(self):
                 raise NotImplementedError("ver_output() not implemented in "
@@ -542,9 +588,10 @@ class QuietProgressTracker(ProgressTracker):
         """ This progress tracker outputs nothing, but is semantically
             intended to be "quiet"  See also NullProgressTracker below. """
 
-        def __init__(self, parsable_version=None):
+        def __init__(self, parsable_version=None, progfd=None):
                 ProgressTracker.__init__(self,
-                    parsable_version=parsable_version, quiet=True)
+                    parsable_version=parsable_version, quiet=True,
+                    progfd=progfd)
 
         def cat_output_start(self):
                 return
@@ -573,10 +620,19 @@ class QuietProgressTracker(ProgressTracker):
         def eval_output_done(self):
                 return
 
-        def li_recurse_start(self, lin):
+        def li_recurse_start(self):
                 return
 
-        def li_recurse_end(self, lin):
+        def li_recurse_end(self):
+                return
+
+        def li_recurse(self, lic_running, done, pending):
+                return
+
+        def li_recurse_output(self, lin, stdout, stderr):
+                return
+
+        def li_recurse_progress(self, lin):
                 return
 
         def ver_output(self):
@@ -652,10 +708,11 @@ class CommandLineProgressTracker(ProgressTracker):
             and so is appropriate for sending through a pipe.  This code
             is intended to be platform neutral. """
 
-        def __init__(self, parsable_version=None, quiet=False, verbose=0):
+        def __init__(self, parsable_version=None, quiet=False, verbose=0,
+            progfd=None):
                 ProgressTracker.__init__(self,
                     parsable_version=parsable_version, quiet=quiet,
-                    verbose=verbose)
+                    verbose=verbose, progfd=progfd)
                 self.last_printed_pkg = None
                 self.msg_prefix = ""
 
@@ -691,29 +748,56 @@ class CommandLineProgressTracker(ProgressTracker):
         def eval_output_done(self):
                 return
 
-        def li_recurse_start(self, lin):
-                msg = _("Recursing into linked image: %s") % lin
-                msg = "%s%s" % (self.msg_prefix, msg)
-
+        def __msg(self, msg, prefix=True, newline=True):
+                if prefix:
+                        msg = "%s%s" % (self.msg_prefix, msg)
                 try:
-                        print "%s\n" % msg
+                        print "%s" % msg,
+                        if newline:
+                                print
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
 
-        def li_recurse_end(self, lin):
-                msg = _("Returning from linked image: %s") % lin
-                msg = "%s%s" % (self.msg_prefix, msg)
+        def li_recurse_start(self):
+                msg = _("Preparing to process linked images.")
+                self.__msg(msg)
 
-                try:
-                        print "%s\n" % msg
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+        def li_recurse_end(self):
+                msg = _("Finished processing linked images.")
+                self.__msg(msg)
+
+        def li_recurse(self, lic_running, done, pending):
+                assert len(lic_running) > 0
+
+                total = len(lic_running) + pending + done
+                running = " ".join([str(lic.child_name) for lic in lic_running])
+                msg = _("Linked Images: %d/%d done; %d working: %s") % \
+                    (done, total, len(lic_running), running)
+                self.__msg(msg)
+
+        def li_recurse_output(self, lin, stdout, stderr):
+                # nothing to display
+                if not stdout and not stderr:
+                        return
+
+                # don't display anything
+                if self.parsable_version is not None:
+                        return
+
+                msg = _("\nStart output from linked image: %s") % lin
+                self.__msg(msg)
+                if stdout:
+                        self.__msg(stdout, prefix=False, newline=False)
+                if stderr:
+                        self.__msg(stderr, prefix=False)
+                msg = _("End output from linked image: %s") % lin
+                self.__msg(msg)
+
+        def li_recurse_progress(self, lin):
+                return
 
         def ver_output(self):
                 return
@@ -834,10 +918,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
         #
         TERM_DELAY = 0.10
 
-        def __init__(self, parsable_version=None, quiet=False, verbose=0):
+        def __init__(self, parsable_version=None, quiet=False, verbose=0,
+            progfd=None):
                 ProgressTracker.__init__(self,
                     parsable_version=parsable_version, quiet=quiet,
-                    verbose=verbose)
+                    verbose=verbose, progfd=progfd)
 
                 self.act_started = False
                 self.ind_started = False
@@ -982,32 +1067,98 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.__generic_done()
                 self.last_print_time = 0
 
-        def li_recurse_start(self, lin):
-                self.__generic_done()
+        def __msg(self, msg, prefix=True, newline=True):
+                if prefix:
+                        msg = "%s%s" % (self.msg_prefix, msg)
 
-                msg = _("Recursing into linked image: %s") % lin
-                msg = "%s%s" % (self.msg_prefix, msg)
+                suffix = ""
+                if self.needs_cr and len(msg) < self.curstrlen:
+                        # wipe out any extra old text
+                        suffix = " " * self.curstrlen - len(msg)
+                        msg = "%s%s" % (msg, suffix)
 
                 try:
-                        print "%s" % msg, self.cr
                         self.curstrlen = len(msg)
+                        if self.needs_cr:
+                                print self.cr,
+                        print msg,
+                        self.needs_cr = True
+                        if newline:
+                                print
+                                self.needs_cr = False
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
 
-        def li_recurse_end(self, lin):
-                msg = _("Returning from linked image: %s") % lin
+        def li_recurse_start(self):
+                msg = _("Preparing to process linked images.")
+                self.__msg(msg)
+
+        def li_recurse_end(self):
+                msg = _("Finished processing linked images.")
+                self.__msg(msg)
+
+        def __li_recurse_progress(self):
+                # display child progress output message and spinners
+                spinners = "".join([
+                        self.spinner_chars[i]
+                        for i in self.__lin_spinners
+                ])
+                msg = _("Child progress %s") % spinners
+                self.__msg(msg, newline=False)
+
+        def li_recurse(self, lic_running, done, pending):
+                assert len(lic_running) > 0
+
+                # initialize spinners for each child
+                self.__lin_list = sorted([
+                    lic.child_name for lic in lic_running
+                ])
+                self.__lin_spinners = list(
+                    itertools.repeat(0, len(self.__lin_list)))
+
+                total = len(lic_running) + pending + done
+                running = [str(lin) for lin in self.__lin_list]
+                msg = _(
+                    "Linked Images: %d/%d done; %d working: %s") % \
+                    (done, total, len(running), " ".join(running))
                 msg = "%s%s" % (self.msg_prefix, msg)
+                self.__msg(msg)
 
-                try:
-                        print "%s" % msg, self.cr
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                # display child progress message
+                self.__li_recurse_progress()
+
+        def li_recurse_output(self, lin, stdout, stderr):
+                # nothing to display
+                if not stdout and not stderr:
+                        return
+
+                # don't display anything
+                if self.parsable_version is not None:
+                        return
+
+                msg = _("\nStart output from linked image: %s") % lin
+                self.__msg(msg)
+                if stdout:
+                        self.__msg(stdout, prefix=False, newline=False)
+                        self.needs_cr = False
+                if stderr:
+                        self.__msg(stderr, prefix=False)
+                msg = _("End output from linked image: %s") % lin
+                self.__msg(msg)
+
+        def li_recurse_progress(self, lin):
+                # find the index of the child that made progress
+                i = self.__lin_list.index(lin)
+
+                # update that child's spinner
+                self.__lin_spinners[i] = \
+                    (self.__lin_spinners[i] + 1) % len(self.spinner_chars)
+
+                # display child progress message
+                self.__li_recurse_progress()
 
         def ver_output(self):
                 try:

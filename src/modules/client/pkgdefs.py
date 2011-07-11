@@ -52,6 +52,7 @@ PKG_OP_INSTALL         = "install"
 PKG_OP_LIST            = "list"
 PKG_OP_LIST_LINKED     = "list-linked"
 PKG_OP_PROP_LINKED     = "property-linked"
+PKG_OP_PUBCHECK        = "pubcheck-linked"
 PKG_OP_REVERT          = "revert"
 PKG_OP_SET_MEDIATOR    = "set-mediator"
 PKG_OP_SET_PROP_LINKED = "set-property-linked"
@@ -68,6 +69,7 @@ pkg_op_values          = frozenset([
     PKG_OP_LIST,
     PKG_OP_LIST_LINKED,
     PKG_OP_PROP_LINKED,
+    PKG_OP_PUBCHECK,
     PKG_OP_REVERT,
     PKG_OP_SET_MEDIATOR,
     PKG_OP_SET_PROP_LINKED,
@@ -81,6 +83,7 @@ API_OP_CHANGE_FACET   = "change-facet"
 API_OP_CHANGE_VARIANT = "change-variant"
 API_OP_DETACH         = "detach-linked"
 API_OP_INSTALL        = "install"
+API_OP_REPAIR         = "repair"
 API_OP_REVERT         = "revert"
 API_OP_SET_MEDIATOR   = "set-mediator"
 API_OP_SYNC           = "sync-linked"
@@ -92,6 +95,7 @@ api_op_values         = frozenset([
     API_OP_CHANGE_VARIANT,
     API_OP_DETACH,
     API_OP_INSTALL,
+    API_OP_REPAIR,
     API_OP_REVERT,
     API_OP_SET_MEDIATOR,
     API_OP_SYNC,
@@ -100,12 +104,10 @@ api_op_values         = frozenset([
 ])
 
 API_STAGE_DEFAULT  = "default"
-API_STAGE_PUBCHECK = "pubcheck"
 API_STAGE_PLAN     = "plan"
 API_STAGE_PREPARE  = "prepare"
 API_STAGE_EXECUTE  = "execute"
 api_stage_values  = frozenset([
-    API_STAGE_PUBCHECK,
     API_STAGE_DEFAULT,
     API_STAGE_PLAN,
     API_STAGE_PREPARE,
