@@ -369,7 +369,10 @@ class History(object):
                         # Mark the operation as having started and record
                         # other, relevant information.
                         op.start_time = misc.time_to_timestamp(None)
-                        op.username = portable.get_username()
+                        try:
+                                op.username = portable.get_username()
+                        except KeyError:
+                                op.username = "unknown"
                         op.userid = portable.get_userid()
 
                         ca = None
