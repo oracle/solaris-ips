@@ -234,7 +234,9 @@ class PkgPlan(object):
                                 try:
                                         sig_pol.process_signatures(sigs,
                                             self.__destination_mfst.gen_actions(),
-                                            dest_pub, self.image.trust_anchors)
+                                            dest_pub, self.image.trust_anchors,
+                                            self.image.cfg.get_policy(
+                                                "check-certificate-revocation"))
                                         self.__destination_mfst.exclude_content(
                                             new_excludes)
                                 except apx.SigningException, e:

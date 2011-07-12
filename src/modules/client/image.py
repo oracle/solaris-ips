@@ -2173,7 +2173,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # the actions from the manifest, not just the
                                 # ones for this image's variants.
                                 sig_pol.process_signatures(sigs,
-                                    manf.gen_actions(), pub, self.trust_anchors)
+                                    manf.gen_actions(), pub, self.trust_anchors,
+                                    self.cfg.get_policy(
+                                        "check-certificate-revocation"))
                         except apx.SigningException, e:
                                 e.pfmri = fmri
                                 yield e.sig, [e], [], []

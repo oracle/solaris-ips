@@ -263,7 +263,8 @@ class SignatureAction(generic.Action):
                                 return None, h
                 return None, None
 
-        def verify_sig(self, acts, pub, trust_anchors, required_names=None):
+        def verify_sig(self, acts, pub, trust_anchors, use_crls,
+            required_names=None):
                 """Try to verify this signature.  It can return True or
                 None.  None means we didn't know how to verify this signature.
                 If we do know how to verify the signature but it doesn't verify,
@@ -323,7 +324,7 @@ class SignatureAction(generic.Action):
                         from pkg.client.publisher import CODE_SIGNING_USE
                         # Verify the certificate whose key created this
                         # signature action.
-                        pub.verify_chain(cert, trust_anchors, 0,
+                        pub.verify_chain(cert, trust_anchors, 0, use_crls,
                             required_names=required_names,
                             usages=CODE_SIGNING_USE)
                 except apx.SigningException, e:

@@ -43,7 +43,8 @@ class Policy(object):
                 # for the factory below.
                 object.__init__(self)
 
-        def process_signatures(self, sigs, acts, pub, trust_anchors):
+        def process_signatures(self, sigs, acts, pub, trust_anchors,
+            use_crls):
                 """Check that the signatures ("sigs") verify against the actions
                 ("acts") using the publisher ("pub") as the repository for
                 certificates and "trust_anchors" as the dictionary of trust
@@ -88,7 +89,8 @@ class Ignore(Policy):
         strictness = 1
         name = "ignore"
 
-        def process_signatures(self, sigs, acts, pub, trust_anchors):
+        def process_signatures(self, sigs, acts, pub, trust_anchors,
+            use_crls):
                 """Since this policy ignores signatures, only download the
                 certificates that might be needed so that they're present if
                 the policy changes later."""
@@ -106,13 +108,14 @@ class Verify(Policy):
         strictness = 2
         name = "verify"
 
-        def process_signatures(self, sigs, acts, pub, trust_anchors):
+        def process_signatures(self, sigs, acts, pub, trust_anchors,
+            use_crls):
                 """Check that all signatures present are valid signatures."""
 
                 # Ensure that acts can be iterated over repeatedly.
                 acts = list(acts)
                 for s in sigs:
-                        s.verify_sig(acts, pub, trust_anchors)
+                        s.verify_sig(acts, pub, trust_anchors, use_crls)
 
 Policy._policies[Verify.name] = Verify
 
@@ -123,7 +126,8 @@ class RequireSigs(Policy):
         strictness = 3
         name = "require-signatures"
 
-        def process_signatures(self, sigs, acts, pub, trust_anchors):
+        def process_signatures(self, sigs, acts, pub, trust_anchors,
+            use_crls):
                 """Check that all signatures present are valid signatures and
                 at least one signature action which has been signed with a
                 private key is present."""
@@ -133,7 +137,8 @@ class RequireSigs(Policy):
                 verified = False
                 for s in sigs:
                         verified |= \
-                            bool(s.verify_sig(acts, pub, trust_anchors)) and \
+                            bool(s.verify_sig(acts, pub, trust_anchors,
+                                use_crls)) and \
                             s.is_signed()
                 if not verified:
                         raise apx.RequiredSignaturePolicyException(pub)
@@ -156,13 +161,14 @@ class RequireNames(Policy):
                         req_names = [req_names]
                 self.required_names = frozenset(req_names)
 
-        def process_signatures(self, sigs, acts, pub, trust_anchors):
+        def process_signatures(self, sigs, acts, pub, trust_anchors,
+            use_crls):
                 acts = list(acts)
                 missing_names = set(self.required_names)
                 verified = False
                 for s in sigs:
-                        verified |= bool(s.verify_sig(
-                            acts, pub, trust_anchors, missing_names)) and \
+                        verified |= bool(s.verify_sig(acts, pub, trust_anchors,
+                            use_crls, missing_names)) and \
                             s.is_signed()
                 if missing_names:
                         raise apx.MissingRequiredNamesException(pub,

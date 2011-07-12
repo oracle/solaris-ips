@@ -1003,7 +1003,7 @@ IMAGE PROPERTIES
      viewable with the property subcommand.
 
      ca-path
-          (string) A pathname that points to a directory where CA certs are
+          (string)  A pathname that points to a directory where CA certs are
           kept for SSL operations.  The format of this directory is specific
           to the underlying SSL implementation.  If the administrator
           would like to use an alternate location for trusted CA
@@ -1014,8 +1014,17 @@ IMAGE PROPERTIES
 
           Default value: /etc/openssl/certs
 
+     check-certificate-revocation
+
+          (string) If this is set to True, the package client will attempt to
+          contact any CRL distribution points in the certificates used for
+          signature verification to determine whether the certificate has been
+          revoked since being issued.
+
+          Default value: False
+
      flush-content-cache-on-success
-          (boolean) If this is set to True, the package client will remove
+          (boolean)  If this is set to True, the package client will remove
           the files in its content-cache when install or update operations
           complete.  For update operations, the content is removed only
           from the source BE.  When a packaging operation next occurs in
@@ -1046,12 +1055,15 @@ IMAGE PROPERTIES
           Default value: True
 
      signature-policy
-          (string)  Determine what checks will be performed on manifests
-          when installing a package into this image.  The final policy
-          applied to a package depends on the combination of image policy
-          and publisher policy.  The combination will be at least as strict
-          as the stricter of the two policies taken individually.  The
-          following are the valid values for this property.
+          (string)  Determine what checks will be performed on manifests when
+          installing a package into this image.  The final policy applied to a
+          package depends on the combination of image policy and publisher
+          policy.  The combination will be at least as strict as the stricter of
+          the two policies taken individually.  The following are the valid
+          values for this property.  By default, the package client does not
+          check to see if certificates have been revoked.  To enable these
+          checks, which will likely involve contacting external websites, set
+          the 'check-certificate-revocation' image property to "true".
 
           ignore
                Ignore signatures for all manifests.

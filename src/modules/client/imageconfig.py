@@ -55,8 +55,10 @@ FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 MIRROR_DISCOVERY = "mirror-discovery"
 SEND_UUID = "send-uuid"
 USE_SYSTEM_REPO = "use-system-repo"
+CHECK_CERTIFICATE_REVOCATION = "check-certificate-revocation"
 
 default_policies = {
+    CHECK_CERTIFICATE_REVOCATION: False,
     FLUSH_CONTENT_CACHE: False,
     MIRROR_DISCOVERY: False,
     SEND_UUID: True,
@@ -168,6 +170,9 @@ class ImageConfig(cfg.FileConfig):
                     cfg.Property("trust-anchor-directory",
                         default=DEF_TOKEN),
                     cfg.PropList("signature-required-names"),
+                    cfg.Property(CHECK_CERTIFICATE_REVOCATION,
+                        default=default_policies[
+                            CHECK_CERTIFICATE_REVOCATION])
                 ]),
                 cfg.PropertySection("facet", properties=[
                     cfg.PropertyTemplate("^facet\..*", prop_type=cfg.PropBool),

@@ -2314,7 +2314,8 @@ pkg unset-publisher %s
                                 if crl.verify(c.get_pubkey()):
                                         try:
                                                 self.verify_chain(c, ca_dict, 0,
-                                                    usages=CRL_SIGNING_USE,)
+                                                    True,
+                                                    usages=CRL_SIGNING_USE)
                                         except api_errors.SigningException:
                                                 pass
                                         else:
@@ -2387,8 +2388,8 @@ pkg unset-publisher %s
                                 raise api_errors.UnsupportedCriticalExtension(
                                     cert, ext)
 
-        def verify_chain(self, cert, ca_dict, cur_pathlen, required_names=None,
-            usages=None):
+        def verify_chain(self, cert, ca_dict, cur_pathlen, use_crls,
+            required_names=None, usages=None):
                 """Validates the certificate against the given trust anchors.
 
                 The 'cert' parameter is the certificate to validate.
@@ -2398,6 +2399,9 @@ pkg unset-publisher %s
 
                 The 'cur_pathlen' parameter is an integer indicating how many
                 certificates have been found between cert and the leaf cert.
+
+                The 'use_crls' parameter is a boolean indicating whether
+                certificates should be checked to see if they've been revoked.
 
                 The 'required_names' parameter is a set of strings that must
                 be seen as a CN in the chain of trust for the certificate."""
@@ -2443,7 +2447,8 @@ pkg unset-publisher %s
                 self.__check_extensions(cert, usages, cur_pathlen)
 
                 # Check whether this certificate has been revoked.
-                self.__check_revocation(cert, ca_dict)
+                if use_crls:
+                        self.__check_revocation(cert, ca_dict)
 
                 while continue_loop:
                         # If this certificate's CN is in the set of required

@@ -1528,6 +1528,12 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
+                # Check that when the check-certificate-revocation is False, its
+                # default value, that the install succeedes.
+                self._api_install(api_obj, ["example_pkg"])
+                self._api_uninstall(api_obj, ["example_pkg"])
+                self.pkg("set-property check-certificate-revocation true")
+                api_obj.reset()
                 self.assertRaises(apx.RevokedCertificate, self._api_install,
                     api_obj, ["example_pkg"])
                 # Test that cli handles RevokedCertificate exception.
@@ -1561,6 +1567,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta5")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1595,6 +1602,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1621,6 +1629,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -1660,6 +1669,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta1")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1700,6 +1710,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self.pkgsign(self.durl1, sign_args)
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta1")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy verify")
                 api_obj = self.get_img_api_obj()
@@ -1728,6 +1739,7 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg_image_create(self.durl1)
                 self.seed_ta_dir("ta4")
+                self.pkg("set-property check-certificate-revocation true")
 
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
@@ -2657,6 +2669,7 @@ class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
 
                 self.pkg_image_create(self.rurl1)
                 self.seed_ta_dir("ta4")
+                self.pkg("set-property check-certificate-revocation true")
                 self.pkg("set-property signature-policy require-signatures")
                 api_obj = self.get_img_api_obj()
                 self._api_install(api_obj, ["example_pkg", "foo"])
