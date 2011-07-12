@@ -44,7 +44,7 @@ class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
         test_manf_1 = """\
 hardlink path=baz target=var/log/authlog
-file NOHASH group=bin mode=0755 owner=root \
+file group=bin mode=0755 owner=root \
 path=usr/lib/python2.6/v\
 endor-packages/pkg/client/indexer.py
 file NOHA\
@@ -59,7 +59,7 @@ file NOHASH group=bin mode=0755 owner=root path=etc/pam.conf
 
         test_elf_warning_manf = """\
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
-file NOHASH group=bin mode=0755 owner=root path=etc/libc.so.1
+file group=bin mode=0755 owner=root path=etc/libc.so.1
 """
 
         test_64bit_manf = """\

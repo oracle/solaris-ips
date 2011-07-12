@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -319,20 +319,12 @@ def internalizestr(string, basedirs=None, load_data=True):
         Raises MalformedActionError if the attribute strings are malformed.
         """
 
-        string = string.strip()
-        args = string.split()
-        atype = args.pop(0)
-
-        if atype not in types:
-                raise UnknownActionError(("%s %s" % (atype,
-                    " ".join(args))).strip(), atype)
-
         action = fromstr(string)
 
-        if atype not in ("file", "license") or not load_data:
+        if action.name not in ("file", "license") or not load_data:
                 return action, None, None
 
-        local_path, used_basedir = set_action_data(args[0], action,
+        local_path, used_basedir = set_action_data(action.hash, action,
             basedirs=basedirs)
         return action, local_path, used_basedir
 
