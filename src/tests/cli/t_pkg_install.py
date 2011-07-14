@@ -3327,6 +3327,12 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        incorp_18653 = """
+            open incorp-18653@1,5.11-0
+            add depend type=incorporate fmri=pkg:/pkg7@1.0
+            close
+        """
+
         pkg70 = """
             open pkg7@1.0,5.11-0
             add depend type=conditional predicate=pkg:/pkg2@1.1 fmri=pkg:/pkg6@1.1
@@ -3635,8 +3641,8 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, (self.pkg10, self.pkg20,
                     self.pkg11, self.pkg21, self.pkg30, self.pkg40, self.pkg50,
                     self.pkg505, self.pkg51, self.pkg60, self.pkg61,
-                    self.pkg70, self.pkg80, self.pkg81, self.pkg90,
-                    self.pkg91, self.bug_7394_incorp,
+                    self.incorp_18653, self.pkg70, self.pkg80, self.pkg81,
+                    self.pkg90, self.pkg91, self.bug_7394_incorp,
                     self.pkg100, self.pkg101, self.pkg102,
                     self.pkg110, self.pkg111,
                     self.pkg121, self.pkg122, self.pkg123, self.pkg132,
@@ -3803,6 +3809,26 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install pkg7@1.0")  # install pkg
                 self.pkg("list pkg6@1.1 pkg2@1.1 pkg7@1.0") # all here again
                 self.pkg("verify")
+                # Test bug 18653
+                # sun-solaris  <=> pkg7
+                # perl-510 <=> pkg2@1.1
+                # sun-solaris-510 <=> pkg6
+                # os-net <=> incorp-18653
+                self.pkg("install incorp-18653")
+                # Uninstall should fail because pkg7 conditional dependency
+                # requires pkg6.
+                self.pkg("uninstall pkg6", exit=1)
+                # Uninstalling both the predicate and the target of the
+                # conditional dependency should work.
+                self.pkg("uninstall pkg2 pkg6")
+                self.pkg("install pkg2@1.1")
+                # Check that reject also works.
+                self.pkg("update --reject pkg2 --reject pkg6")
+                # Uninstall should succeed because nothing requires pkg2 even
+                # though it's involved in a conditional relationship.
+                self.pkg("install pkg2@1.1")
+                self.pkg("uninstall pkg2@1.1")
+                self.pkg("list pkg7@1.0")
 
         def test_require_any_dependencies(self):
                 """Get require-any dependencies working"""

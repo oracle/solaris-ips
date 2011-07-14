@@ -799,8 +799,9 @@ class PkgSolver(object):
                 # solver must be used.
                 assert self.__state == SOLVER_INIT
 
-                # generate list of installed pkgs w/ possible renames removed to forestall
-                # failing removal due to presence of unneeded renamed pkg
+                # generate list of installed pkgs w/ possible renames removed to
+                # forestall failing removal due to presence of unneeded renamed
+                # pkg
 
                 orig_installed_set = self.__installed_fmris
                 renamed_set = orig_installed_set - \
@@ -810,9 +811,11 @@ class PkgSolver(object):
 
                 # check for dependents
                 for pfmri in proposed_removals:
-                        dependents = self.__get_dependents(pfmri, excludes) - proposed_removals
+                        dependents = self.__get_dependents(pfmri, excludes) - \
+                            proposed_removals
                         if dependents:
-                                raise api_errors.NonLeafPackageException(pfmri, dependents)
+                                raise api_errors.NonLeafPackageException(pfmri,
+                                    dependents)
 
                 reject_set = set(f.pkg_name for f in proposed_removals)
                 # Run it through the solver; w/ more complex dependencies we're
@@ -1064,7 +1067,8 @@ class PkgSolver(object):
                         self.__fmri_loadstate(fmri, excludes)
                 return self.__fmri_state[fmri][1]
 
-        def __get_dependency_actions(self, fmri, excludes=EmptyI, trim_invalid=True):
+        def __get_dependency_actions(self, fmri, excludes=EmptyI,
+            trim_invalid=True):
                 """Return list of all dependency actions for this fmri"""
 
                 try:
@@ -1077,10 +1081,12 @@ class PkgSolver(object):
 
                 except api_errors.InvalidPackageErrors:
                         if trim_invalid:
-                                # Trim package entries that have unparseable action data
-                                # so that they can be filtered out later.
+                                # Trim package entries that have unparseable
+                                # action data so that they can be filtered out
+                                # later.
                                 self.__fmri_state[fmri] = ("false", "false")
-                                self.__trim(fmri, N_("Package contains invalid or unsupported actions"))
+                                self.__trim(fmri, N_("Package contains invalid "
+                                    "or unsupported actions"))
                                 return []
                         else:
                                 raise
@@ -1098,9 +1104,11 @@ class PkgSolver(object):
                         self.__trim(fmri, N_("Package contains invalid or unsupported actions"))
                 return self.__variant_dict[fmri]
 
-        def __generate_dependency_closure(self, fmri_set, excludes=EmptyI, dotrim=True):
-                """return set of all fmris the set of specified fmris could depend on;
-                while trimming those packages that cannot be installed"""
+        def __generate_dependency_closure(self, fmri_set, excludes=EmptyI,
+            dotrim=True):
+                """return set of all fmris the set of specified fmris could
+                depend on; while trimming those packages that cannot be
+                installed"""
 
                 needs_processing = fmri_set
                 already_processed = set()
@@ -1295,6 +1303,8 @@ class PkgSolver(object):
                             dependency_action.attrs["predicate"], "5.11")
                         conditional, nonmatching = self.__comb_newer_fmris(
                             cond_fmri, dotrim, obsolete_ok=obsolete_ok)
+                        if not conditional:
+                                required = False
                         matching, nonmatching = \
                             self.__comb_newer_fmris(fmri, dotrim,
                             obsolete_ok=obsolete_ok)
