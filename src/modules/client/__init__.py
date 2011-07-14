@@ -20,8 +20,9 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#
+# Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+#
 
 import copy
 import logging
@@ -37,6 +38,15 @@ class _LogFilter(logging.Filter):
 
         def filter(self, record):
                 return record.levelno <= self.max_level
+
+
+class _StreamHandler(logging.StreamHandler):
+        """Simple subclass to ignore exceptions raised during logging output."""
+
+        def handleError(self, record):
+                # Ignore exceptions raised during output to stdout/stderr.
+                return
+
 
 class GlobalSettings(object):
         """ This class defines settings which are global
@@ -162,7 +172,7 @@ class GlobalSettings(object):
 
                 # By default, log all informational messages, but not warnings
                 # and above to stdout.
-                info_h = logging.StreamHandler(sys.stdout)
+                info_h = _StreamHandler(sys.stdout)
 
                 # Minimum logging level for informational messages.
                 if self.verbose:
@@ -179,7 +189,7 @@ class GlobalSettings(object):
                 logger.addHandler(info_h)
 
                 # By default, log all warnings and above to stderr.
-                error_h = logging.StreamHandler(sys.stderr)
+                error_h = _StreamHandler(sys.stderr)
                 error_h.setFormatter(log_fmt)
                 error_h.setLevel(logging.WARNING)
                 logger.addHandler(error_h)
