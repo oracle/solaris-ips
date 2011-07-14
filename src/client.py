@@ -707,7 +707,6 @@ def fix_image(api_inst, args):
                     api_errors.SigningException,
                     api_errors.InvalidResourceLocation,
                     api_errors.ConflictingActionErrors), e:
-                        logger.error("\n")
                         logger.error(str(e))
                 except api_errors.ImageFormatUpdateNeeded, e:
                         format_update_error(e)
@@ -715,9 +714,6 @@ def fix_image(api_inst, args):
                             result=history.RESULT_FAILED_CONFIGURATION)
                         return EXIT_OOPS
                 except api_errors.PlanLicenseErrors, e:
-                        # Prepend a newline because otherwise the exception will
-                        # be printed on the same line as the spinner.
-                        logger.error("\n")
                         error(_("The following packages require their "
                             "licenses to be accepted before they can be "
                             "repaired: "))
@@ -742,7 +738,6 @@ def fix_image(api_inst, args):
                         api_inst.log_operation_end(error=e)
                         raise
 
-                progresstracker.verify_done()
                 if not success:
                         api_inst.log_operation_end(
                             result=history.RESULT_FAILED_UNKNOWN)
@@ -813,14 +808,13 @@ def verify_image(api_inst, args):
                                 # Nothing more to do.
                                 continue
 
-                        # Could this be moved into the progresstracker?
                         if display_headers:
                                 display_headers = False
-                                msg(_("Verifying: %(pkg_name)-50s "
-                                    "%(result)7s") % { "pkg_name": _("PACKAGE"),
+                                msg(_("%(pkg_name)-70s %(result)7s") % {
+                                    "pkg_name": _("PACKAGE"),
                                     "result": _("STATUS") })
 
-                        msg(_("%(pkg_name)-50s %(result)7s") % {
+                        msg(_("%(pkg_name)-70s %(result)7s") % {
                             "pkg_name": pfmri.get_pkg_stem(),
                             "result": result })
 
@@ -846,9 +840,6 @@ def verify_image(api_inst, args):
                 format_update_error(e)
                 return EXIT_OOPS
 
-        if processed:
-                progresstracker.verify_done()
-
         if notfound:
                 if processed:
                         # Ensure a blank line is inserted after verify output.
@@ -859,9 +850,9 @@ def verify_image(api_inst, args):
 
                 if processed:
                         if any_errors:
-                                msg2 = "See above for\nverification failures."
+                                msg2 = _("See above for\nverification failures.")
                         else:
-                                msg2 = "No packages failed\nverification."
+                                msg2 = _("No packages failed\nverification.")
                         logger.error(_("\nAll other patterns matched "
                             "installed packages.  %s" % msg2))
                 any_errors = True

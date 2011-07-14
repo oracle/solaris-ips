@@ -989,7 +989,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         self.last_print_time = time.time()
                         self.spinner = (self.spinner + 1) % \
                             len(self.spinner_chars)
-                        s = "%-50s..... %c%c" % \
+                        s = "%-70s..... %c%c" % \
                             (self.ver_cur_fmri.get_pkg_stem(),
                              self.spinner_chars[self.spinner],
                              self.spinner_chars[self.spinner])

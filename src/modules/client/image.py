@@ -2210,29 +2210,32 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         return med_version == cfg_med_version and \
                             med.mediator_impl_matches(med_impl, cfg_med_impl)
 
-                for act in manf.gen_actions(
-                    self.list_excludes()):
-                        if (act.name == "link" or act.name == "hardlink") and \
-                            not mediation_allowed(act):
-                                # Link doesn't match configured mediation, so
-                                # shouldn't be verified.
-                                continue
+                try:
+                        for act in manf.gen_actions(
+                            self.list_excludes()):
+                                if (act.name == "link" or act.name == "hardlink") and \
+                                    not mediation_allowed(act):
+                                        # Link doesn't match configured
+                                        # mediation, so shouldn't be verified.
+                                        continue
 
-                        errors, warnings, info = act.verify(self, pfmri=fmri,
-                            **kwargs)
-                        progresstracker.verify_add_progress(fmri)
-                        actname = act.distinguished_name()
-                        if errors:
-                                progresstracker.verify_yield_error(actname,
-                                    errors)
-                        if warnings:
-                                progresstracker.verify_yield_warning(actname,
-                                    warnings)
-                        if info:
-                                progresstracker.verify_yield_info(actname,
-                                    info)
-                        if errors or warnings or info:
-                                yield act, errors, warnings, info
+                                errors, warnings, info = act.verify(self,
+                                    pfmri=fmri, **kwargs)
+                                progresstracker.verify_add_progress(fmri)
+                                actname = act.distinguished_name()
+                                if errors:
+                                        progresstracker.verify_yield_error(
+                                            actname, errors)
+                                if warnings:
+                                        progresstracker.verify_yield_warning(
+                                            actname, warnings)
+                                if info:
+                                        progresstracker.verify_yield_info(
+                                            actname, info)
+                                if errors or warnings or info:
+                                        yield act, errors, warnings, info
+                finally:
+                        progresstracker.verify_done()
 
         def image_config_update(self, new_variants, new_facets, new_mediators):
                 """update variants in image config"""
@@ -2245,20 +2248,25 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.cfg.mediators = new_mediators
                 self.save_config()
 
-        def repair(self, *args, **kwargs):
+        def repair(self, repair, progtrack, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""
 
                 # prune off any new_history_op keyword argument, used for
                 # locked_op(), but not for __repair()
                 need_history_op = kwargs.pop("new_history_op", True)
 
-                with self.locked_op("fix", new_history_op=need_history_op):
-                        try:
-                                return self.__repair(*args, **kwargs)
-                        except apx.ActionExecutionError, e:
-                                raise
-                        except pkg.actions.ActionError, e:
-                                raise apx.InvalidPackageErrors([e])
+                try:
+                        with self.locked_op("fix",
+                            new_history_op=need_history_op):
+                                try:
+                                        return self.__repair(repair, progtrack,
+                                            **kwargs)
+                                except apx.ActionExecutionError, e:
+                                        raise
+                                except pkg.actions.ActionError, e:
+                                        raise apx.InvalidPackageErrors([e])
+                finally:
+                        progtrack.verify_done()
 
         def __repair(self, repairs, progtrack, accept=False,
             show_licenses=False):
