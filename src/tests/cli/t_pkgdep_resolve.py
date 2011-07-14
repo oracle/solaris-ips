@@ -1284,6 +1284,64 @@ The package %s contains depend actions with values in their fmri attributes whic
                             isinstance(e,
                             dependencies.UnresolvedDependencyError))
 
+        def test_bug_17756(self):
+                """Test that when a package has manually specified dependencies
+                which have a variant that's not set on the package or generates
+                file dependencies with a variant that's not set on the package,
+                pkgdepend resolve handles the error and displays it
+                correctly."""
+
+                def __check_generated(e):
+                        self.assertEqual("test17756", e.pkg.pkg_name)
+                        self.assertEqual(["usr/bin/foo", "usr/bin/ls"],
+                            sorted(e.rvs.keys()))
+                        d = e.rvs["usr/bin/foo"]
+                        self.assertEqual(set(), d.type_diffs)
+                        self.assertEqual(set([("variant.num", "two")]),
+                            d.value_diffs)
+                        d = e.rvs["usr/bin/ls"]
+                        self.assertEqual(set(["variant.foo"]), d.type_diffs)
+                        self.assertEqual(set(
+                            [("variant.num", "two"), ("variant.num", "three")]),
+                            d.value_diffs)
+                        str(e)
+
+                def __check_manual(e):
+                        self.assertEqual("test17756", e.pkg.pkg_name)
+                        self.assertEqual(["pkg1", "pkg2"], sorted(e.rvs.keys()))
+                        d = e.rvs["pkg1"]
+                        self.assertEqual(set(), d.type_diffs)
+                        self.assertEqual(set([("variant.num", "four")]),
+                            d.value_diffs)
+                        d = e.rvs["pkg2"]
+                        self.assertEqual(set(["variant.foo"]), d.type_diffs)
+                        self.assertEqual(set(), d.value_diffs)
+                        str(e)
+
+                dep_manf = """\
+set name=pkg.fmri value=test17756@1,5.11
+set name=variant.num value=one
+depend fmri=__TBD pkg.debug.depend.file=libsec.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/ls pkg.debug.depend.type=elf type=require variant.foo=bar
+depend fmri=__TBD pkg.debug.depend.file=libcmdutils.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/foo pkg.debug.depend.type=elf type=require variant.num=two
+depend fmri=__TBD pkg.debug.depend.file=libcurses.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/ls pkg.debug.depend.type=elf type=require variant.num=two
+depend fmri=__TBD pkg.debug.depend.file=libnvpair.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/ls pkg.debug.depend.type=elf type=require variant.num=three variant.foo=bar
+depend fmri=__TBD pkg.debug.depend.file=libc.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/ls pkg.debug.depend.type=elf type=require variant.foo=baz
+depend fmri=pkg1 type=require variant.num=four
+depend fmri=pkg2 type=require variant.foo=bar
+"""
+                manf_path = self.make_manifest(dep_manf)
+                pkg_deps, errs = dependencies.resolve_deps([manf_path],
+                    self.api_obj, use_system=False)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[manf_path]), 0)
+                self.assertEqual(len(errs), 2)
+                if errs[0].manual:
+                        __check_manual(errs[0])
+                        __check_generated(errs[1])
+                else:
+                        __check_manual(errs[1])
+                        __check_generated(errs[0])
+
         def test_bug_18019(self):
                 """Test that a package with manually annotated group,
                 incorporate, or other types of dependencies doesn't end up with

@@ -230,6 +230,53 @@ class BadPackageFmri(DependencyError):
                     "FMRI:\n\t%(exc)s") % { "path": self.path, "exc": self.exc }
 
 
+class ExtraVariantedDependency(DependencyError):
+        """This exception is used when one or more dependency actions have a
+        variant set on them which is not in the package's set of variants."""
+
+        def __init__(self, pkg, reason_variants, manual_dep):
+                self.pkg = pkg
+                assert len(reason_variants) > 0
+                self.rvs = reason_variants
+                self.manual = manual_dep
+
+        def __str__(self):
+                s = ""
+                for r, diff in sorted(self.rvs.iteritems()):
+                        for kind in diff.type_diffs:
+                                s += _("\t%(r)-15s Variant '%(kind)s' is not "
+                                    "declared.\n") % \
+                                    {"r":r, "kind":kind}
+                        for k, v in diff.value_diffs:
+                                s += _("\t%(r)-15s Variant '%(kind)s' is not "
+                                    "declared to have value '%(val)s'.\n") % \
+                                    {"r":r, "val":v, "kind":k}
+                if not self.manual:
+                        return _("The package '%(pkg)s' contains actions with "
+                            "the\npaths seen below which have variants set on "
+                            "them which are not set on the\npackage.  These "
+                            "variants must be set on the package or removed "
+                            "from the actions.\n\n%(rvs)s") % {
+                            "pkg": self.pkg,
+                            "rvs": s
+                        }
+                else:
+                        return _("The package '%(pkg)s' contains manually "
+                            "specified dependencies\nwhich have variants set "
+                            "on them which are not set on the package.  "
+                            "These\nvariants must be set on the package or "
+                            "removed from the actions.\n\n%(rvs)s") % {
+                            "pkg": self.pkg,
+                            "rvs": s
+                        }
+
+
+class __NotSubset(DependencyError):
+        def __init__(self, diff):
+                self.diff = variants.VCTDifference(tuple(diff.type_diffs),
+                    tuple(diff.value_diffs))
+
+
 def list_implicit_deps(file_path, proto_dirs, dyn_tok_conv, run_paths,
     remove_internal_deps=True, convert=True, ignore_bypass=False):
         """Given the manifest provided in file_path, use the known dependency
@@ -967,7 +1014,7 @@ def find_package_using_delivered_files(files_dict, links, file_dep, dep_vars,
         return [(a, v) for a, v in res if a not in multiple_path_pkgs] + \
             link_deps, dep_vars, errs
 
-def find_package(files, links, file_dep, pkg_vars, use_system):
+def find_package(files, links, file_dep, orig_dep_vars, pkg_vars, use_system):
         """Find the packages which resolve the dependency. It returns a list of
         dependency actions with the fmri tag resolved.
 
@@ -983,9 +1030,11 @@ def find_package(files, links, file_dep, pkg_vars, use_system):
 
         'file_dep' is the dependency being resolved.
 
+        'orig_dep_vars' is the original set of variants under which the
+        dependency must be satisfied.
+
         'pkg_vars' is the variants against which the package was published."""
 
-        file_dep, orig_dep_vars = split_off_variants(file_dep, pkg_vars)
         # If the file dependency has already satisfied all its variants, then
         # this function should never have been called.
         assert(orig_dep_vars.is_empty() or not orig_dep_vars.is_satisfied())
@@ -1183,6 +1232,8 @@ def split_off_variants(dep, pkg_vars, satisfied=False):
         tags into a VariantSet."""
 
         dep_vars = dep.get_variant_template()
+        if not dep_vars.issubset(pkg_vars):
+                raise __NotSubset(dep_vars.difference(pkg_vars))
         dep_vars.merge_unknown(pkg_vars)
         # Since all variant information is being kept in the above VariantSets,
         # remove the variant information from the action.  This prevents
@@ -1329,19 +1380,50 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 if mfst is None:
                         pkg_deps[mp] = None
                         continue
+                ds = []
+                bad_ds = {}
+                for d in mfst.gen_actions_by_type("depend"):
+                        if not is_file_dependency(d):
+                                continue
+                        try:
+                                r = split_off_variants(d, pkg_vars)
+                                ds.append(r)
+                        except __NotSubset, e:
+                                diff = bad_ds.setdefault(d.attrs[reason_prefix],
+                                    variants.VCTDifference(set(), set()))
+                                diff.type_diffs.update(e.diff.type_diffs)
+                                diff.value_diffs.update(e.diff.value_diffs)
+                if bad_ds:
+                        errs.append(ExtraVariantedDependency(name_to_use,
+                            bad_ds, False))
+
                 pkg_res = [
-                    (d, find_package(files, links, d, pkg_vars,
+                    (d, find_package(files, links, d, d_vars, pkg_vars,
                         use_system))
-                    for d in mfst.gen_actions_by_type("depend")
-                    if is_file_dependency(d)
+                    for d, d_vars in ds
                 ]
+
                 # Seed the final results with those dependencies defined
                 # manually.
-                deps = [
-                    split_off_variants(d, pkg_vars, satisfied=True)
-                    for d in mfst.gen_actions_by_type("depend")
-                    if not is_file_dependency(d)
-                ]
+                deps = []
+                bad_deps = {}
+                for d in mfst.gen_actions_by_type("depend"):
+                        if is_file_dependency(d):
+                                continue
+                        try:
+                                r = split_off_variants(d, pkg_vars,
+                                    satisfied=True)
+                                deps.append(r)
+                        except __NotSubset, e:
+                                diff = bad_deps.setdefault(
+                                    d.attrs.get("fmri", None),
+                                    variants.VCTDifference(set(), set()))
+                                diff.type_diffs.update(e.diff.type_diffs)
+                                diff.value_diffs.update(e.diff.value_diffs)
+                if bad_deps:
+                        errs.append(ExtraVariantedDependency(name_to_use,
+                            bad_deps, True))
+
                 for file_dep, (res, dep_vars, pkg_errs) in pkg_res:
                         for e in pkg_errs:
                                 if hasattr(e, "pkg_name"):
