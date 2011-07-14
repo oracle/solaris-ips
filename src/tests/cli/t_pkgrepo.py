@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 import testutils
@@ -866,6 +866,7 @@ test\t3\tonline\t%sZ
                 # will rebuild the catalogs for all publishers.
                 self.pkgrepo("rebuild -s %s" % repo_uri)
                 self.wait_repo(repo_path)
+                self.dc.stop()
 
                 # Now compare creation timestamps of each publisher's
                 # catalog to verify all catalogs were rebuilt.
@@ -874,9 +875,34 @@ test\t3\tonline\t%sZ
                 self.assertNotEqual(cat.created, test_cts)
                 cat = repo.get_catalog(pub="test2")
                 self.assertNotEqual(cat.created, test2_cts)
+                shutil.rmtree(repo_path)
 
-                self.dc.stop()
+                # Now create a repository, publish a package, and deposit a
+                # junk file in the manifest directory.
+                self.assert_(not os.path.exists(repo_path))
+                self.create_repo(repo_path)
+                pfmri = self.pkgsend_bulk(repo_path, """
+                    open pkg://test/foo@1.0
+                    close
+                    """)[0]
+                repo = self.get_repo(repo_path, read_only=True)
+                mdir = os.path.dirname(repo.manifest(pfmri))
+                jpath = os.path.join(mdir, "junk")
+                with open(jpath, "wb") as f:
+                        f.write("random junk")
+                self.assertTrue(os.path.exists(jpath))
 
+                # Verify rebuild succeeds.
+                self.pkgrepo("rebuild -s %s" % repo_path)
+
+                # Verify junk file is still there.
+                self.assertTrue(os.path.exists(jpath))
+
+                # Verify expected package is still known.
+                repo = self.get_repo(repo_path, read_only=True)
+                self.assertEqualDiff([pfmri],
+                    [str(f) for f in repo.get_catalog("test").fmris()])
+ 
         def __test_refresh(self, repo_path, repo_uri):
                 """Private function to verify refresh subcommand behaviour."""
 

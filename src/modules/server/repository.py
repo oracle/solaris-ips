@@ -654,19 +654,24 @@ class _RepoStore(object):
                                 if pkgpath[0] == self.manifest_root:
                                         continue
 
-                                for e in os.listdir(pkgpath[0]):
-                                        f = self.__fmri_from_path(pkgpath[0], e)
+                                for fname in os.listdir(pkgpath[0]):
                                         try:
+                                                f = self.__fmri_from_path(
+                                                    pkgpath[0], fname)
                                                 add_package(f)
                                         except (apx.InvalidPackageErrors,
-                                            actions.ActionError), e:
+                                            actions.ActionError,
+                                            fmri.FmriError,
+                                            pkg.version.VersionError), e:
                                                 # Don't add packages with
                                                 # corrupt manifests to the
                                                 # catalog.
+                                                name = os.path.join(pkgpath[0],
+                                                    fname)
                                                 self.__log(_("Skipping "
-                                                    "%(fmri)s; invalid "
+                                                    "%(name)s; invalid "
                                                     "manifest: %(error)s") % {
-                                                    "fmri": f, "error": e })
+                                                    "name": name, "error": e })
                                         except apx.DuplicateCatalogEntry, e:
                                                 # Raise dups if not in
                                                 # incremental mode.
