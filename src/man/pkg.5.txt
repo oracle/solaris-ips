@@ -315,7 +315,7 @@ DESCRIPTION
   Driver actions
      The 'driver' action represents a device driver.  It does not reference
      a payload: the driver files themselves must be installed as file
-     actions.  The following attributes are recognized (see add_drv(1m) for
+     actions.  The following attributes are recognized (see add_drv(1M) for
      more information):
 
      name         The name of the driver.  This is usually, but not always,
@@ -659,8 +659,39 @@ DESCRIPTION
   Client-Server Operation
      TBD
 
-  Publishers and Mirroring
-     TBD
+  Publishers and Repositories
+     As detailed above, a publisher is simply a name that package clients
+     use to identify the provider of packages.  Publishers can distribute their
+     packages using package repositories and/or package archives.  There are two
+     types of repositories currently supported by the package system: 'origin'
+     and 'mirror'.
+
+     An 'origin' is a package repository that contains all of the metadata (such
+     as catalogs, manifests, search indexes, etc.) and content (files) for one
+     or more packages.  If multiple origins are configured for a given publisher
+     in an image, the package client API will attempt to choose the "best"
+     origin to retrieve package data from.  This is the most common type of
+     repository, and is implicitly created whenever pkgsend or pkgrecv is used
+     on a package repository.
+
+     A 'mirror' is a package repository that contains only package content
+     (files).  If one or more mirrors are configured for a given publisher in an
+     image, the client API will prefer the mirrors for package content retrieval
+     and attempt to choose the "best" one to retrieve package content from.  If
+     the mirror is unreachable, does not have the required content, or is
+     slower, the client API will fallback to retrieving the content from any
+     configured origin repositories.  Mirrors are intended for content sharing
+     among a trusted set of clients using pkg.depotd(1M)'s dynamic mirror
+     functionality, or when there is a need to authenticate access to package
+     metadata, but the package content is more efficiently distributed without
+     authentication.  For example, a client may be configured with an https
+     origin that requires an SSL key / certificate pair to access, and with an
+     http mirror that provides the package content.  In this way, only
+     authorized clients may install or update the packages, while the overhead
+     of authentication for package content retrieval is avoided.  A mirror may
+     be created by removing all subdirectories of a repository except those
+     named 'file' and their parents.  An origin repository can be also be
+     provisioned as a mirror by using pkg.depotd(1M)'s mirror mode.
 
   Images and Substrates
      TBD
