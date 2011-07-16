@@ -1303,8 +1303,13 @@ class PkgSolver(object):
                             dependency_action.attrs["predicate"], "5.11")
                         conditional, nonmatching = self.__comb_newer_fmris(
                             cond_fmri, dotrim, obsolete_ok=obsolete_ok)
-                        if not conditional:
-                                required = False
+                        # Required is only really helpful for solver error
+                        # messaging.  At this point in time, there isn't enough
+                        # information to determine whether the dependency will
+                        # be required or not, so setting this to True leads to
+                        # false positives for error conditions.  As such, this
+                        # should always be False for now.
+                        required = False
                         matching, nonmatching = \
                             self.__comb_newer_fmris(fmri, dotrim,
                             obsolete_ok=obsolete_ok)
