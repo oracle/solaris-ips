@@ -872,6 +872,10 @@ class Publisher(object):
                         self.repository = repository
                 self.sys_pub = sys_pub
 
+                # A dictionary to story the mapping for subject -> certificate
+                # for those certificates we couldn't store on disk.
+                self.__issuers = {}
+
                 # Must be done last.
                 self.__catalog = catalog
 
@@ -1969,6 +1973,7 @@ pkg unset-publisher %s
                 The 'cert' parameter is a string of the certificate to add.
                 """
 
+                cert = self.__string_to_cert(cert)
                 hsh = self.__add_cert(cert)
                 # If the user had previously revoked this certificate, remove
                 # the certificate from that list.
@@ -2008,24 +2013,35 @@ pkg unset-publisher %s
         def __hash_cert(c):
                 return hashlib.sha1(c.as_pem()).hexdigest()
 
-        def __add_cert(self, s):
-                """Add the pem representation of the certificate stored as a
-                string in 's' to the certificates this publisher knows about."""
+        @staticmethod
+        def __string_to_cert(s, pkg_hash=None):
+                """Convert a string to a X509 cert."""
+
+                try:
+                        return m2.X509.load_cert_string(s)
+                except m2.X509.X509Error, e:
+                        if pkg_hash is not None:
+                                raise api_errors.BadFileFormat(_("The file "
+                                    "with hash %s was expected to be a PEM "
+                                    "certificate but it could not be read.") %
+                                    pkg_hash)
+                        raise api_errors.BadFileFormat(_("The following string "
+                            "was expected to be a PEM certificate, but it "
+                            "could not be parsed as such:\n%s" % s))
+
+        def __add_cert(self, cert):
+                """Add the pem representation of the certificate 'cert' to the
+                certificates this publisher knows about."""
 
                 self.create_meta_root()
-                try:
-                        cert = m2.X509.load_cert_string(s)
-                except m2.X509.X509Error, e:
-                        raise api_errors.BadFileFormat(_("The file with hash "
-                            "%s was expected to be a PEM certificate but it "
-                            "could not be read.") % pkg_hash)
                 pkg_hash = self.__hash_cert(cert)
                 pkg_hash_pth = os.path.join(self.cert_root, pkg_hash)
+                file_problem = False
                 try:
                         with open(pkg_hash_pth, "wb") as fh:
                                 fh.write(cert.as_pem())
                 except EnvironmentError, e:
-                        raise api_errors._convert_error(e)
+                        file_problem = True
 
                 # Note that while we store certs by their subject hashes,
                 # M2Crypto's subject hashes differ from what openssl reports
@@ -2038,11 +2054,16 @@ pkg unset-publisher %s
                             "%s.%s" % (subj_hsh, c))
                         if os.path.exists(fn):
                                 c += 1
-                        else:
+                                continue
+                        if not file_problem:
                                 try:
                                         portable.link(pkg_hash_pth, fn)
+                                        made_link = True
                                 except EnvironmentError, e:
-                                        raise api_errors._convert_error(e)
+                                        pass
+                        if not made_link:
+                                self.__issuers.setdefault(subj_hsh, []).append(
+                                    c)
                                 made_link = True
                 return pkg_hash
 
@@ -2063,14 +2084,22 @@ pkg unset-publisher %s
 
                 assert not (verify_hash and only_retrieve)
                 pth = os.path.join(self.cert_root, pkg_hash)
-                if not os.path.exists(pth):
-                        self.__add_cert(self.transport.get_content(self,
-                            pkg_hash))
+                pth_exists = os.path.exists(pth)
+                if pth_exists and only_retrieve:
+                        return None
+                if pth_exists:
+                        with open(pth, "rb") as fh:
+                                s = fh.read()
+                else:
+                        s = self.transport.get_content(self, pkg_hash)
+                c = self.__string_to_cert(s, pkg_hash)
+                if not pth_exists:
+                        try:
+                                self.__add_cert(c)
+                        except api_errors.PermissionsException:
+                                pass
                 if only_retrieve:
                         return None
-                with open(pth, "rb") as fh:
-                        s = fh.read()
-                        c = m2.X509.load_cert_string(s)
 
                 if verify_hash:
                         h = misc.get_data_digest(cStringIO.StringIO(s),
@@ -2099,6 +2128,7 @@ pkg unset-publisher %s
                             [errno.ENOENT])
                         if t:
                                 raise t
+                res.extend(self.__issuers.get(name_hsh, []))
                 return res
 
         def get_ca_certs(self):

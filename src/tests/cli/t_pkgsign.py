@@ -2495,6 +2495,35 @@ class TestPkgSign(pkg5unittest.SingleDepotTestCase):
                 self._api_uninstall(api_obj, ["example_pkg"])
                 self._api_install(api_obj, ["pkg://pub2/example_pkg"])
 
+        def test_18620(self):
+                """Test that verifying a signed package doesn't require
+                privs."""
+
+                chain_cert_path = os.path.join(self.chain_certs_dir,
+                    "ch1_ta3_cert.pem")
+                ta_cert_path = os.path.join(self.raw_trust_anchor_dir,
+                    "ta3_cert.pem")
+                plist = self.pkgsend_bulk(self.rurl1, self.example_pkg10)
+                sign_args = "-k %(key)s -c %(cert)s -i %(ch1)s %(name)s" % {
+                        "name": plist[0],
+                        "key": os.path.join(self.keys_dir,
+                            "cs1_ch1_ta3_key.pem"),
+                        "cert": os.path.join(self.cs_dir,
+                            "cs1_ch1_ta3_cert.pem"),
+                        "ch1": chain_cert_path
+                }
+
+                # Specify location as filesystem path.
+                self.pkgsign(self.dc.get_repodir(), sign_args)
+
+                self.pkg_image_create(self.rurl1)
+                self.seed_ta_dir("ta3")
+                self.pkg("set-property signature-policy ignore")
+                api_obj = self.get_img_api_obj()
+                self._api_install(api_obj, ["example_pkg"])
+                self.pkg("set-property signature-policy verify")
+                self.pkg("verify", su_wrap=True)
+
 
 class TestPkgSignMultiDepot(pkg5unittest.ManyDepotTestCase):
         # Tests in this suite use the read only data directory.
