@@ -71,7 +71,6 @@ depend fmri=pkg:/gnome/theme/tango-icon-theme type=group
 depend fmri=pkg:/gnome/trusted/trusted-stripe type=group
 depend fmri=pkg:/gnome/trusted/xagent type=group
 depend fmri=pkg:/gnome/zenity type=group
-depend fmri=pkg:/group/system/solaris-small-server type=require
 depend fmri=pkg:/image/gnome-backgrounds type=group
 depend fmri=pkg:/image/viewer/eog type=group
 depend fmri=pkg:/image/viewer/gthumb type=group

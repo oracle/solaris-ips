@@ -30,8 +30,6 @@ set name=pkg.summary value="Oracle Solaris Desktop"
 set name=info.classification \
     value="org.opensolaris.category.2008:Meta Packages/Group Packages"
 set name=variant.arch value=$(ARCH)
-depend fmri=SUNWcs type=group
-depend fmri=SUNWcsd type=group
 depend fmri=archiver/gnu-tar type=group
 depend fmri=audio/audio-utilities type=group
 depend fmri=benchmark/x11perf type=group
@@ -80,7 +78,6 @@ depend fmri=developer/base-developer-utilities type=group
 depend fmri=developer/build/gnu-make type=group
 depend fmri=developer/build/make type=group
 depend fmri=developer/debug/mdb type=group
-depend fmri=developer/debug/mdb/module/module-fibre-channel type=group
 depend fmri=developer/documentation-tool/openjade type=group
 depend fmri=developer/documentation-tool/opensp type=group
 depend fmri=developer/dtrace type=group
@@ -133,7 +130,6 @@ $(i386_ONLY)depend fmri=driver/graphics/nvidia type=group
 depend fmri=driver/graphics/usbvc type=group
 $(i386_ONLY)depend fmri=driver/i86pc/fipe type=group
 $(i386_ONLY)depend fmri=driver/i86pc/ioat type=group
-$(i386_ONLY)depend fmri=driver/i86pc/platform type=group
 $(i386_ONLY)depend fmri=driver/management/bmc type=group
 depend fmri=driver/network/afe type=group
 $(i386_ONLY)depend fmri=driver/network/amd8111s type=group
@@ -150,11 +146,14 @@ depend fmri=driver/network/ce type=group
 depend fmri=driver/network/chxge type=group
 depend fmri=driver/network/cxge type=group
 depend fmri=driver/network/dmfe type=group
+$(i386_ONLY)depend fmri=driver/network/dnet type=group
 depend fmri=driver/network/e1000g type=group
 $(i386_ONLY)depend fmri=driver/network/elxl type=group
 depend fmri=driver/network/emlxs type=group
 $(sparc_ONLY)depend fmri=driver/network/eri type=group
 depend fmri=driver/network/fcip type=group
+depend fmri=driver/network/fcoe type=group
+depend fmri=driver/network/fcoei type=group
 depend fmri=driver/network/fcp type=group
 depend fmri=driver/network/fcsm type=group
 depend fmri=driver/network/fp type=group
@@ -163,6 +162,7 @@ depend fmri=driver/network/hme type=group
 depend fmri=driver/network/hxge type=group
 depend fmri=driver/network/ib type=group
 depend fmri=driver/network/igb type=group
+$(i386_ONLY)depend fmri=driver/network/iprb type=group
 $(i386_ONLY)depend fmri=driver/network/ipw type=group
 $(i386_ONLY)depend fmri=driver/network/iwh type=group
 $(i386_ONLY)depend fmri=driver/network/iwi type=group
@@ -179,8 +179,8 @@ $(sparc_ONLY)depend fmri=driver/network/niumx type=group
 $(i386_ONLY)depend fmri=driver/network/ntxn type=group
 depend fmri=driver/network/nxge type=group
 depend fmri=driver/network/pcan type=group
+$(i386_ONLY)depend fmri=driver/network/pcn type=group
 depend fmri=driver/network/pcwl type=group
-$(i386_ONLY)depend fmri=driver/network/platform type=group
 $(sparc_ONLY)depend fmri=driver/network/qfe type=group
 depend fmri=driver/network/qlc type=group
 depend fmri=driver/network/qlcnic type=group
@@ -204,8 +204,11 @@ $(i386_ONLY)depend fmri=driver/network/wpi type=group
 depend fmri=driver/network/xge type=group
 depend fmri=driver/network/yge type=group
 $(i386_ONLY)depend fmri=driver/network/zyd type=group
+depend fmri=driver/parallel/ecpp type=group
 depend fmri=driver/pcmcia type=group
+$(i386_ONLY)depend fmri=driver/serial/asy type=group
 depend fmri=driver/serial/pcser type=group
+$(sparc_ONLY)depend fmri=driver/serial/se type=group
 depend fmri=driver/serial/usbftdi type=group
 depend fmri=driver/serial/usbsacm type=group
 depend fmri=driver/serial/usbser type=group
@@ -213,7 +216,6 @@ depend fmri=driver/serial/usbser_edge type=group
 depend fmri=driver/serial/usbsksp type=group
 depend fmri=driver/serial/usbsksp/usbs49_fw type=group
 depend fmri=driver/serial/usbsprl type=group
-$(sparc_ONLY)depend fmri=driver/sparc/platform type=group
 depend fmri=driver/storage/aac type=group
 $(i386_ONLY)depend fmri=driver/storage/adpu320 type=group
 $(i386_ONLY)depend fmri=driver/storage/ahci type=group
@@ -221,13 +223,15 @@ $(i386_ONLY)depend fmri=driver/storage/arcmsr type=group
 $(i386_ONLY)depend fmri=driver/storage/ata type=group
 $(i386_ONLY)depend fmri=driver/storage/bcm_sata type=group
 depend fmri=driver/storage/blkdev type=group
+$(i386_ONLY)depend fmri=driver/storage/cmdk type=group
 $(i386_ONLY)depend fmri=driver/storage/cpqary3 type=group
-$(i386_ONLY)depend fmri=driver/storage/glm type=group
+depend fmri=driver/storage/glm type=group
 $(sparc_ONLY)depend fmri=driver/storage/ifp type=group
 $(i386_ONLY)depend fmri=driver/storage/imraid_sas type=group
 $(sparc_ONLY)depend fmri=driver/storage/isp type=group
 $(i386_ONLY)depend fmri=driver/storage/marvell88sx type=group
 $(i386_ONLY)depend fmri=driver/storage/mega_sas type=group
+depend fmri=driver/storage/mpt type=group
 depend fmri=driver/storage/mpt_sas type=group
 depend fmri=driver/storage/mr_sas type=group
 $(i386_ONLY)depend fmri=driver/storage/nv_sata type=group
@@ -441,7 +445,6 @@ depend fmri=library/security/libassuan type=group
 depend fmri=library/security/libgpg-error type=group
 depend fmri=library/security/libksba type=group
 depend fmri=library/security/openssl type=group
-depend fmri=library/security/tcp-wrapper type=group
 depend fmri=library/security/trousers type=group
 depend fmri=library/slang type=group
 depend fmri=library/speech/espeak type=group
@@ -512,8 +515,10 @@ depend fmri=runtime/tcl-8 type=group
 depend fmri=runtime/tk-8 type=group
 depend fmri=security/bart type=group
 depend fmri=security/sudo type=group
+depend fmri=security/tcp-wrapper type=group
 depend fmri=service/diagnostic/spray type=group
 depend fmri=service/fault-management type=group
+depend fmri=service/fault-management/fm-snmp-mib type=group
 depend fmri=service/file-system/nfs type=group
 depend fmri=service/file-system/smb type=group
 depend fmri=service/gnome/desktop-cache type=group
@@ -546,6 +551,7 @@ depend fmri=service/storage/removable-media type=group
 depend fmri=service/storage/rmt type=group
 depend fmri=shell/bash type=group
 depend fmri=shell/expect type=group
+depend fmri=shell/ksh type=group
 depend fmri=shell/pipe-viewer type=group
 depend fmri=shell/tcsh type=group
 depend fmri=shell/which type=group
@@ -557,23 +563,30 @@ depend fmri=storage/svm type=group
 depend fmri=system/accounting/legacy type=group
 depend fmri=system/boot/grub type=group
 depend fmri=system/boot/wanboot type=group
+depend fmri=system/core-os type=group
 depend fmri=system/data/hardware-registry type=group
 depend fmri=system/data/keyboard/keytables type=group
 depend fmri=system/data/terminfo type=group
+depend fmri=system/data/terminfo/terminfo-core type=group
 depend fmri=system/data/timezone type=group
+depend fmri=system/device-administration type=group
+depend fmri=system/device-allocation type=group
 depend fmri=system/display-manager/desktop-startup type=group
 depend fmri=system/display-manager/gdm type=group
 $(sparc_ONLY)depend fmri=system/domain-configuration/sparc-enterprise \
     type=group
 $(sparc_ONLY)depend \
     fmri=system/domain-service-processor-protocol/sparc-enterprise type=group
+depend fmri=system/dynamic-reconfiguration type=group
 $(sparc_ONLY)depend fmri=system/embedded-fcode-interpreter type=group
-depend fmri=system/extended-system-utilities type=group
 depend fmri=system/file-system/autofs type=group
+depend fmri=system/file-system/hsfs type=group
 depend fmri=system/file-system/nfs type=group
 $(i386_ONLY)depend fmri=system/file-system/ntfsprogs type=group
+depend fmri=system/file-system/pcfs type=group
 depend fmri=system/file-system/smb type=group
 depend fmri=system/file-system/udfs type=group
+depend fmri=system/file-system/ufs type=group
 depend fmri=system/file-system/zfs type=group
 depend fmri=system/flash/fwflash type=group
 $(sparc_ONLY)depend fmri=system/floating-point-scrubber type=group
@@ -612,7 +625,6 @@ depend fmri=system/install/auto-install/auto-install-common type=group
 depend fmri=system/install/configuration type=group
 depend fmri=system/install/locale type=group
 depend fmri=system/install/tests type=group
-depend fmri=system/ipc type=group
 depend fmri=system/kernel type=group
 depend fmri=system/kernel/cpu-counters type=group
 $(sparc_ONLY)depend fmri=system/kernel/cpu/sun4v type=group
@@ -636,10 +648,12 @@ depend fmri=system/kernel/security/gss type=group
 depend fmri=system/kernel/suspend-resume type=group
 depend fmri=system/kernel/ultra-wideband type=group
 depend fmri=system/keyboard/kbd_mode type=group
+depend fmri=system/keyboard/keyboard-utilities type=group
 $(sparc_ONLY)depend fmri=system/ldoms type=group
 depend fmri=system/library type=group
 depend fmri=system/library/c++-runtime type=group
 depend fmri=system/library/dbus type=group
+depend fmri=system/library/dbus/dbus-x11 type=group
 depend fmri=system/library/flex-runtime type=group
 depend fmri=system/library/fontconfig type=group
 depend fmri=system/library/freetype-2 type=group
@@ -682,6 +696,7 @@ $(i386_ONLY)depend fmri=system/management/intel-amt type=group
 depend fmri=system/management/ipmitool type=group
 depend fmri=system/management/rad type=group
 depend fmri=system/management/rad/client/rad-java type=group
+depend fmri=system/management/rad/client/rad-java/locale type=group
 depend fmri=system/management/rad/client/rad-python type=group
 depend fmri=system/management/rad/module/rad-smf type=group
 depend fmri=system/management/service-tag type=group
@@ -689,12 +704,18 @@ depend fmri=system/management/snmp/net-snmp type=group
 depend fmri=system/management/snmp/net-snmp/documentation type=group
 depend fmri=system/management/sysidtool type=group
 depend fmri=system/management/visual-panels-core type=group
+depend fmri=system/management/visual-panels-core/locale type=group
 depend fmri=system/management/visual-panels/panel-coreadm type=group
+depend fmri=system/management/visual-panels/panel-coreadm/locale type=group
 depend fmri=system/management/visual-panels/panel-firewall type=group
+depend fmri=system/management/visual-panels/panel-firewall/locale type=group
 depend fmri=system/management/visual-panels/panel-sharemgr type=group
 depend fmri=system/management/visual-panels/panel-smf type=group
+depend fmri=system/management/visual-panels/panel-smf/locale type=group
 depend fmri=system/management/visual-panels/panel-sysmon type=group
+depend fmri=system/management/visual-panels/panel-sysmon/locale type=group
 depend fmri=system/management/visual-panels/panel-time type=group
+depend fmri=system/management/visual-panels/panel-time/locale type=group
 depend fmri=system/manual type=group
 depend fmri=system/manual/locale/ca type=group
 depend fmri=system/manual/locale/ja type=group
@@ -712,6 +733,9 @@ depend fmri=system/scheduler/fss type=group
 depend fmri=system/storage/fibre-channel/port-utility type=group
 depend fmri=system/storage/luxadm type=group
 $(i386_ONLY)depend fmri=system/storage/parted type=group
+depend fmri=system/storage/raid-utilities type=group
+depend fmri=system/system-events type=group
+depend fmri=system/virtual-console type=group
 depend fmri=system/xopen/xcu4 type=group
 depend fmri=system/zones type=group
 depend fmri=system/zones/brand/ipkg type=group
@@ -732,6 +756,7 @@ depend fmri=text/groff type=group
 depend fmri=text/groff/groff-core type=group
 depend fmri=text/less type=group
 depend fmri=text/locale type=group
+depend fmri=text/spelling-utilities type=group
 depend fmri=text/texinfo type=group
 depend fmri=web/browser/firefox type=group
 depend fmri=web/browser/firefox/locale/de_de type=group
