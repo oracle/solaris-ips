@@ -2622,7 +2622,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                         # Next, preserve the old installed state dir, rename the
                         # new one into place, and then remove the old one.
-                        orig_state_root, ignored = self.salvage(self._statedir)
+                        orig_state_root = self.salvage(self._statedir, full_path=True)
                         portable.rename(tmp_state_root, self._statedir)
                         shutil.rmtree(orig_state_root, True)
                 except EnvironmentError, e:
@@ -3140,7 +3140,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 # Next, preserve the old installed state dir, rename the
                 # new one into place, and then remove the old one.
-                orig_state_root, ignored = self.salvage(self._statedir)
+                orig_state_root = self.salvage(self._statedir, full_path=True)
                 portable.rename(tmp_state_root, self._statedir)
                 shutil.rmtree(orig_state_root, True)
 
@@ -3649,11 +3649,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                         continue
                                 shutil.rmtree(path, True)
 
-        def salvage(self, path):
+        def salvage(self, path, full_path=False):
                 """Called when unexpected file or directory is found during
-                package operations; returns a tuple of the path of the salvage
-                directory where the item was stored and the new path of the
-                salvaged item.  path is rooted in /...."""
+                package operations; returns the path of the salvage
+                directory where the item was stored. Can be called with
+                either image-relative or absolute (current) path to file/dir
+                to be salvaged.  If full_path is False (the default), remove
+                the current mountpoint of the image from the returned
+                directory path"""
 
                 # This ensures that if the path is already rooted in the image,
                 # that it will be stored in lost+found (due to os.path.join
@@ -3678,8 +3681,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         misc.makedirs(parent)
 
                 orig = os.path.normpath(os.path.join(self.root, path))
+
                 shutil.move(orig, sdir)
-                return sdir, os.path.join(sdir, sdir)
+                # remove current mountpoint from sdir
+                if not full_path:
+                        sdir.replace(self.root, "", 1)
+                return sdir
+
+        def recover(self, local_spath, full_dest_path):
+                """Called when recovering directory contents to implement
+                "salvage-from" directive... full_dest_path must exist."""
+                source_path = os.path.normpath(os.path.join(self.root, local_spath))
+                for file_name in os.listdir(source_path):
+                        shutil.move(os.path.join(source_path, file_name),
+                            os.path.join(full_dest_path, file_name))
 
         def temporary_dir(self):
                 """Create a temp directory under the image directory for various

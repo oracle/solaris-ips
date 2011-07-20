@@ -1521,6 +1521,20 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        salvage = """
+            open salvage@1.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/mail mode=755 owner=root group=root
+            add dir path=var/log mode=755 owner=root group=root
+            close
+            open salvage@2.0
+            add dir path=var mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared/mail salvage-from=var/mail mode=755 owner=root group=root
+            add dir path=var/.migrate-to-shared/log salvage-from=var/log mode=755 owner=root group=root
+            close
+        """
+
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -2309,6 +2323,19 @@ adm
                 self.pkg("update")
                 self.file_contains("testme.legacy", "preserve1")
                 self.file_contains("newme", "preserve2")
+
+        def test_directory_salvage(self):
+                """Make sure directory salvage works as expected"""
+                self.pkgsend_bulk(self.rurl, self.salvage)
+                self.image_create(self.rurl)
+                self.pkg("install salvage@1.0")
+                self.file_append("var/mail/foo", "foo's mail")
+                self.file_append("var/mail/bar", "bar's mail")
+                self.file_append("var/mail/baz", "baz's mail")
+                self.pkg("update salvage")
+                self.file_exists("var/.migrate-to-shared/mail/foo")
+                self.file_exists("var/.migrate-to-shared/mail/bar")
+                self.file_exists("var/.migrate-to-shared/mail/baz")
 
         def dest_file_valid(self, plist, pkg, src, dest):
                 """Used to verify that the dest item's mode, attrs, timestamp,

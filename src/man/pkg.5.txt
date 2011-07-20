@@ -227,12 +227,20 @@ DESCRIPTION
      has the same four standard attributes as the file action, and 'path'
      is the key attribute.
 
-     If a package operation triggers a directory removal, the client can
-     take two possible actions.  It will either preserve the directory,
-     or will move its contents into $IMAGE_META/lost+found.  See FILES
-     for more information about $IMAGE_META.  Directory removal
-     typically occurs during an uninstall operation, but it may also
-     occur during an update from one version to another.
+     Directories are reference counted in IPS.  When the last package
+     that either explicitly or implicitly references a directory no
+     longer does so, that directory is removed.  If there are
+     unpackaged file system objects under that directory, those items
+     will be moved into $IMAGE_META/lost+found.  See FILES for more
+     information about $IMAGE_META.
+
+     If it is desirable to move unpackaged contents into a new directory,
+     this attribute will be useful:
+
+     salvage-from:
+          This names a directory of salvaged items.  A directory with
+	  such an attribute will inherit on creation the salvaged directory
+	  contents if they exist.
 
   Link Actions
      The 'link' action represents a symbolic link.  It has two standard

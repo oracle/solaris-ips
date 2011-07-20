@@ -1224,7 +1224,7 @@ def __api_execute_plan(operation, api_inst):
                                     "editable files and directories were\n"
                                     "salvaged while executing the requested "
                                     "package operation; they\nhave been moved "
-                                    "to the displayed location:\n"))
+                                    "to the displayed location in the image:\n"))
                                 for opath, spath in salvaged:
                                         logger.error("  %s -> %s" % (opath,
                                             spath))

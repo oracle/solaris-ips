@@ -36,6 +36,7 @@ import pkg.client.api_errors as apx
 import pkg.manifest as manifest
 from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 
+import os.path
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -506,5 +507,22 @@ class PkgPlan(object):
                 """
 
                 assert self.__executed
-                ignored, spath = self.image.salvage(path)
-                self.image.imageplan.salvaged.append((path, spath))
+                spath = self.image.salvage(path)
+                # get just the file path that was salvaged 
+                fpath = path[len(self.image.get_root()) + 1:]
+                self.image.imageplan.salvaged.append((fpath, spath))
+
+        def salvage_from(self, local_path, full_destination):
+                """move unpackaged contents to specified destination"""
+                # remove leading / if present
+                if local_path.startswith(os.path.sep):
+                        local_path = local_path[1:]
+
+                for fpath, spath in self.image.imageplan.salvaged[:]:
+                        if fpath.startswith(local_path):
+                                self.image.imageplan.salvaged.remove((fpath, spath))
+                                break
+                else:
+                        return
+
+                self.image.recover(spath, full_destination)
