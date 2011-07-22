@@ -89,7 +89,8 @@ depend fmri=pkg:/system/font/xorg/iso8859-1 type=group
 depend fmri=pkg:/system/font/xorg/iso8859-15 type=group
 depend fmri=pkg:/system/font/xorg/xorg-core type=group
 depend fmri=pkg:/system/library/dbus type=group
-depend fmri=pkg:/system/locale/en_us type=group
+depend fmri=pkg:/system/locale type=group
+depend fmri=pkg:/system/locale/support type=group
 depend fmri=pkg:/system/trusted type=group
 depend fmri=pkg:/terminal/gnome-terminal type=group
 depend fmri=pkg:/x11/trusted/libxtsol type=group
