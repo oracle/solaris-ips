@@ -21,39 +21,39 @@
 # Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 set name=pkg.fmri value=pkg:/package/pkg/system-repository@$(PKGVERS)
+set name=pkg.summary value="IPS System Repository"
 set name=pkg.description \
     value="A service that provides a publisher proxy to pkg(5) clients."
-set name=pkg.summary value="IPS System Repository"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
-dir path=etc
-dir path=etc/pkg
-dir path=etc/pkg/sysrepo
-dir path=lib
-dir path=lib/svc
-dir path=lib/svc/manifest
-dir path=lib/svc/manifest/application
-dir path=lib/svc/manifest/application/pkg
-dir path=usr
-dir path=usr/share/man/cat1m
-file path=usr/share/man/cat1m/pkg.sysrepo.1m
-dir path=var
-dir path=var/cache
-dir path=var/cache/pkg owner=pkg5srv
-dir path=var/cache/pkg/sysrepo owner=pkg5srv
-dir path=var/log
-dir path=var/log/pkg
-dir path=var/log/pkg/sysrepo
-file path=lib/svc/manifest/application/pkg/pkg-system-repository.xml
-file path=lib/svc/method/svc-pkg-sysrepo
-file path=usr/lib/pkg.sysrepo mode=0755
+dir  path=etc
+dir  path=etc/pkg
+dir  path=etc/pkg/sysrepo
 file path=etc/pkg/sysrepo/sysrepo_httpd.conf.mako
 file path=etc/pkg/sysrepo/sysrepo_publisher_response.mako
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+dir  path=lib/svc/manifest/application/pkg
+file path=lib/svc/manifest/application/pkg/pkg-system-repository.xml
+file path=lib/svc/method/svc-pkg-sysrepo
+dir  path=usr
+file path=usr/lib/pkg.sysrepo mode=0755
+dir  path=usr/share/man/cat1m
+file path=usr/share/man/cat1m/pkg.sysrepo.1m
+dir  path=var
+dir  path=var/cache
+dir  path=var/cache/pkg owner=pkg5srv
+dir  path=var/cache/pkg/sysrepo owner=pkg5srv
+dir  path=var/log
+dir  path=var/log/pkg
+dir  path=var/log/pkg/sysrepo
 # we deliver 0-byte log file stubs
 file path=var/log/pkg/sysrepo/access_log preserve=renamenew
 file path=var/log/pkg/sysrepo/error_log preserve=renamenew
 license cr_Oracle license=cr_Oracle
 # The manual dependency on apache results from our calling apachectl from
 # our method script, and can't be detected by pkgdepend.
-depend fmri=web/server/apache-22 type=require
+depend type=require fmri=web/server/apache-22

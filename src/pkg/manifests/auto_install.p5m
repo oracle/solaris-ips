@@ -24,6 +24,6 @@
 #
 
 set name=pkg.fmri value=pkg:/auto_install@0.1,5.11-0.166
-set name=nopublish.after value=166 
+set name=nopublish.after value=166
 set name=variant.arch value=$(ARCH)
-depend fmri=group/system/solaris-auto-install type=require
+depend type=require fmri=group/system/solaris-auto-install

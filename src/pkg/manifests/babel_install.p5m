@@ -26,4 +26,4 @@
 set name=pkg.fmri value=pkg:/babel_install@0.1,5.11-0.166
 set name=nopublish.after value=166
 set name=variant.arch value=$(ARCH)
-depend fmri=slim_install type=require
+depend type=require fmri=slim_install

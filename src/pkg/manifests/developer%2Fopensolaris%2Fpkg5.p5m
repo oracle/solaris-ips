@@ -22,29 +22,29 @@
 #
 
 set name=pkg.fmri value=pkg:/developer/opensolaris/pkg5@$(PKGVERS)
+set name=pkg.summary value="Dependencies required to build the pkg(5) project"
 set name=pkg.description \
     value="This package should be installed on systems used for development of the pkg(5) project"
-set name=pkg.summary value="Dependencies required to build the pkg(5) project"
 set name=info.classification \
     value="org.opensolaris.category.2008:Development/Distribution Tools"
-depend fmri=pkg:/developer/assembler type=require
-depend fmri=pkg:/developer/base-developer-utilities type=require
-depend fmri=pkg:/developer/build/make type=require
-depend fmri=pkg:/developer/build/onbld type=require
-depend fmri=pkg:/developer/gnome/gettext type=require
-depend fmri=pkg:/developer/gnome/gnome-doc-utils type=require
-depend fmri=pkg:/developer/python/pylint type=require
-depend fmri=pkg:/developer/versioning/mercurial type=require
-depend fmri=pkg:/library/python-2/coverage type=require
-depend fmri=pkg:/library/python-2/locale-services type=require
-depend fmri=pkg:/library/python-2/pygobject-26 type=require
-depend fmri=pkg:/library/python-2/pygtk2-26 type=require
-depend fmri=pkg:/library/python-2/python-gnome-26 type=require
-depend fmri=pkg:/library/python-2/python-gnome-extras-26 type=require
-depend fmri=pkg:/library/python-2/python-notify-26 type=require
-depend fmri=pkg:/package/svr4 type=require
-depend fmri=pkg:/runtime/python-26 type=require
-depend fmri=pkg:/system/linker type=require
-depend fmri=pkg:/system/zones/internal type=require
-depend fmri=pkg:/text/tidy type=require
-depend fmri=pkg:/web/server/apache-22 type=require
+depend type=require fmri=pkg:/developer/assembler
+depend type=require fmri=pkg:/developer/base-developer-utilities
+depend type=require fmri=pkg:/developer/build/make
+depend type=require fmri=pkg:/developer/build/onbld
+depend type=require fmri=pkg:/developer/gnome/gettext
+depend type=require fmri=pkg:/developer/gnome/gnome-doc-utils
+depend type=require fmri=pkg:/developer/python/pylint
+depend type=require fmri=pkg:/developer/versioning/mercurial
+depend type=require fmri=pkg:/library/python-2/coverage
+depend type=require fmri=pkg:/library/python-2/locale-services
+depend type=require fmri=pkg:/library/python-2/pygobject-26
+depend type=require fmri=pkg:/library/python-2/pygtk2-26
+depend type=require fmri=pkg:/library/python-2/python-gnome-26
+depend type=require fmri=pkg:/library/python-2/python-gnome-extras-26
+depend type=require fmri=pkg:/library/python-2/python-notify-26
+depend type=require fmri=pkg:/package/svr4
+depend type=require fmri=pkg:/runtime/python-26
+depend type=require fmri=pkg:/system/linker
+depend type=require fmri=pkg:/system/zones/internal
+depend type=require fmri=pkg:/text/tidy
+depend type=require fmri=pkg:/web/server/apache-22

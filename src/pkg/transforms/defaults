@@ -55,9 +55,6 @@
 # propagated
 <transform set name=nopublish.after -> drop>
 
-set name=org.opensolaris.consolidation value=ips
-set name=variant.opensolaris.zone value=global value=nonglobal
-
 # Don't bother specifying each .py file.  Allow individual actions to
 # override this by setting pkg.tmp.autopyc to false.
 <transform file path=.*\.py$ -> default pkg.tmp.autopyc true>
@@ -103,6 +100,7 @@ set name=variant.opensolaris.zone value=global value=nonglobal
 # now emit those values
 <transform pkg info.repository-changeset=(.*) -> emit set name=info.repository-changeset value=%<1>>
 <transform pkg info.repository-url=(.*) -> emit set name=info.repository-url value=%<1>>
+set name=org.opensolaris.consolidation value=ips
+set name=variant.opensolaris.zone value=global value=nonglobal
 
 # vim: ft=pkg5manifest
-

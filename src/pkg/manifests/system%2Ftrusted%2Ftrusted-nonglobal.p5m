@@ -21,7 +21,7 @@
 # Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
-set name=pkg.fmri value=pkg:/system/trusted/trusted-nonglobal@0.5.11,5.11-0.166 
-set name=pkg.renamed value=true 
-set name=nopublish.after value=166 
-depend fmri=pkg:/group/feature/trusted-desktop type=require
+set name=pkg.fmri value=pkg:/system/trusted/trusted-nonglobal@0.5.11,5.11-0.166
+set name=pkg.renamed value=true
+set name=nopublish.after value=166
+depend type=require fmri=pkg:/group/feature/trusted-desktop

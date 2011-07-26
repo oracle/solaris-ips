@@ -21,32 +21,31 @@
 # Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
 #
 set name=pkg.fmri value=pkg:/package/pkg/zones-proxy@$(PKGVERS)
+set name=pkg.summary value="System Repository Zone support"
 set name=pkg.description \
     value="A service that provides zones proxy support for the pkg(5) system repository"
-set name=pkg.summary value="System Repository Zone support"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
-dir path=lib
-dir path=lib/svc
-dir path=lib/svc/manifest
-dir path=lib/svc/manifest/application
-dir path=lib/svc/manifest/application/pkg
-dir path=usr
-dir path=usr/include
-dir path=usr/lib
-dir path=usr/lib/zones
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+dir  path=lib/svc/manifest/application/pkg
 file path=lib/svc/manifest/application/pkg/zoneproxy-client.xml \
     variant.opensolaris.zone=nonglobal
 file path=lib/svc/manifest/application/pkg/zoneproxyd.xml \
     variant.opensolaris.zone=global
+dir  path=usr
+dir  path=usr/include
 file path=usr/include/zoneproxy_impl.h
-file path=usr/lib/zones/zoneproxy-adm mode=0555 \
-    variant.opensolaris.zone=global
+dir  path=usr/lib
+dir  path=usr/lib/zones
+file path=usr/lib/zones/zoneproxy-adm mode=0555 variant.opensolaris.zone=global
 file path=usr/lib/zones/zoneproxy-client mode=0555 \
     variant.opensolaris.zone=nonglobal
 file path=usr/lib/zones/zoneproxyd mode=0555 variant.opensolaris.zone=global
 license cr_Oracle license=cr_Oracle
 # cross zone dependency on private door interfaces
-depend fmri=feature/package/dependency/self type=parent \
+depend type=parent fmri=feature/package/dependency/self \
     variant.opensolaris.zone=nonglobal

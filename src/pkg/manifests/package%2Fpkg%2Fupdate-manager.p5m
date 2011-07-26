@@ -23,91 +23,91 @@
 
 set name=pkg.fmri value=pkg:/package/pkg/update-manager@$(PKGVERS)
 set name=pkg.summary value="Update Manager for Image Packaging System"
-set name=pkg.description value="The Update Manager is a simplified graphical interface to the Image Packaging System which simply updates all packages installed on your system.  There is also a desktop widget which notifies you when updates are available."
-set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description \
+    value="The Update Manager is a simplified graphical interface to the Image Packaging System which simply updates all packages installed on your system.  There is also a desktop widget which notifies you when updates are available."
+
+# XXX needed due to bug 18673
+set name=pkg.linted.pkglint.manifest003.1 value=true
+set name=info.classification \
+    value=org.opensolaris.category.2008:System/Packaging
 set name=variant.arch value=$(ARCH)
-
-dir path=etc
-dir path=etc/gconf
-dir path=etc/gconf/schemas
+dir  path=etc
+dir  path=etc/gconf
+dir  path=etc/gconf/schemas
 file path=etc/gconf/schemas/updatemanager-preferences.schemas
-dir path=etc/xdg
-dir path=etc/xdg/autostart
+dir  path=etc/xdg
+dir  path=etc/xdg/autostart
 file path=etc/xdg/autostart/updatemanagernotifier.desktop
-dir path=lib
-dir path=lib/svc
-dir path=lib/svc/manifest
-dir path=lib/svc/manifest/application
-dir path=lib/svc/manifest/application/pkg
+dir  path=lib
+dir  path=lib/svc
+dir  path=lib/svc/manifest
+dir  path=lib/svc/manifest/application
+dir  path=lib/svc/manifest/application/pkg
 file path=lib/svc/manifest/application/pkg/pkg-update.xml
-dir path=lib/svc/method
+dir  path=lib/svc/method
 file path=lib/svc/method/pkg-update
-dir path=usr
-dir path=usr/bin
+dir  path=usr
+dir  path=usr/bin
 file path=usr/bin/pm-updatemanager
-dir path=usr/lib
-dir path=usr/lib/update-manager
-file path=usr/lib/update-manager/update-refresh.sh mode=0755
+dir  path=usr/lib
 file path=usr/lib/pm-checkforupdates mode=0755
+dir  path=usr/lib/update-manager
+file path=usr/lib/update-manager/update-refresh.sh mode=0755
 file path=usr/lib/updatemanagernotifier mode=0755
-dir path=usr/share
-dir path=usr/share/applications
+dir  path=usr/share
+dir  path=usr/share/applications
 file path=usr/share/applications/updatemanager.desktop
-dir path=usr/share/icons
-dir path=usr/share/icons/HighContrast
-dir path=usr/share/icons/HighContrast/48x48
-dir path=usr/share/icons/HighContrast/48x48/apps
+dir  path=usr/share/icons
+dir  path=usr/share/icons/HighContrast
+dir  path=usr/share/icons/HighContrast/48x48
+dir  path=usr/share/icons/HighContrast/48x48/apps
 file path=usr/share/icons/HighContrast/48x48/apps/updatemanager.png
-dir path=usr/share/icons/HighContrastInverse
-dir path=usr/share/icons/HighContrastInverse/48x48
-dir path=usr/share/icons/HighContrastInverse/48x48/apps
+dir  path=usr/share/icons/HighContrastInverse
+dir  path=usr/share/icons/HighContrastInverse/48x48
+dir  path=usr/share/icons/HighContrastInverse/48x48/apps
 file path=usr/share/icons/HighContrastInverse/48x48/apps/updatemanager.png
-dir path=usr/share/icons/hicolor
-dir path=usr/share/icons/hicolor/48x48
-dir path=usr/share/icons/hicolor/48x48/apps
+dir  path=usr/share/icons/hicolor
+dir  path=usr/share/icons/hicolor/48x48
+dir  path=usr/share/icons/hicolor/48x48/apps
 file path=usr/share/icons/hicolor/48x48/apps/updatemanager.png
-dir path=usr/share/man
-dir path=usr/share/man/cat1
+dir  path=usr/share/man
+dir  path=usr/share/man/cat1
 file path=usr/share/man/cat1/pm-updatemanager.1
-dir path=usr/share/update-manager
-dir path=usr/share/update-manager/icons
-dir path=usr/share/update-manager/icons/HighContrast
-dir path=usr/share/update-manager/icons/HighContrast/24x24
-dir path=usr/share/update-manager/icons/HighContrast/24x24/actions
+dir  path=usr/share/update-manager
+dir  path=usr/share/update-manager/icons
+dir  path=usr/share/update-manager/icons/HighContrast
+dir  path=usr/share/update-manager/icons/HighContrast/24x24
+dir  path=usr/share/update-manager/icons/HighContrast/24x24/actions
 file path=usr/share/update-manager/icons/HighContrast/24x24/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/HighContrast/36x36
-dir path=usr/share/update-manager/icons/HighContrast/36x36/actions
+dir  path=usr/share/update-manager/icons/HighContrast/36x36
+dir  path=usr/share/update-manager/icons/HighContrast/36x36/actions
 file path=usr/share/update-manager/icons/HighContrast/36x36/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/HighContrast/48x48
-dir path=usr/share/update-manager/icons/HighContrast/48x48/actions
+dir  path=usr/share/update-manager/icons/HighContrast/48x48
+dir  path=usr/share/update-manager/icons/HighContrast/48x48/actions
 file path=usr/share/update-manager/icons/HighContrast/48x48/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/HighContrastInverse
-dir path=usr/share/update-manager/icons/HighContrastInverse/24x24
-dir path=usr/share/update-manager/icons/HighContrastInverse/24x24/actions
+dir  path=usr/share/update-manager/icons/HighContrastInverse
+dir  path=usr/share/update-manager/icons/HighContrastInverse/24x24
+dir  path=usr/share/update-manager/icons/HighContrastInverse/24x24/actions
 file path=usr/share/update-manager/icons/HighContrastInverse/24x24/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/HighContrastInverse/36x36
-dir path=usr/share/update-manager/icons/HighContrastInverse/36x36/actions
+dir  path=usr/share/update-manager/icons/HighContrastInverse/36x36
+dir  path=usr/share/update-manager/icons/HighContrastInverse/36x36/actions
 file path=usr/share/update-manager/icons/HighContrastInverse/36x36/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/HighContrastInverse/48x48
-dir path=usr/share/update-manager/icons/HighContrastInverse/48x48/actions
+dir  path=usr/share/update-manager/icons/HighContrastInverse/48x48
+dir  path=usr/share/update-manager/icons/HighContrastInverse/48x48/actions
 file path=usr/share/update-manager/icons/HighContrastInverse/48x48/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/hicolor
-dir path=usr/share/update-manager/icons/hicolor/24x24
-dir path=usr/share/update-manager/icons/hicolor/24x24/actions
+dir  path=usr/share/update-manager/icons/hicolor
+dir  path=usr/share/update-manager/icons/hicolor/24x24
+dir  path=usr/share/update-manager/icons/hicolor/24x24/actions
 file path=usr/share/update-manager/icons/hicolor/24x24/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/hicolor/36x36
-dir path=usr/share/update-manager/icons/hicolor/36x36/actions
+dir  path=usr/share/update-manager/icons/hicolor/36x36
+dir  path=usr/share/update-manager/icons/hicolor/36x36/actions
 file path=usr/share/update-manager/icons/hicolor/36x36/actions/updatemanager.png
-dir path=usr/share/update-manager/icons/hicolor/48x48
-dir path=usr/share/update-manager/icons/hicolor/48x48/actions
+dir  path=usr/share/update-manager/icons/hicolor/48x48
+dir  path=usr/share/update-manager/icons/hicolor/48x48/actions
 file path=usr/share/update-manager/icons/hicolor/48x48/actions/updatemanager.png
-license cr_Oracle license=cr_Oracle
 legacy pkg=SUNWipkg-um version=0.1.1
-
+license cr_Oracle license=cr_Oracle
 depend type=require fmri=archiver/gnu-tar
 depend type=require fmri=gnome/config/gconf
 depend type=require fmri=text/gnu-grep
 depend type=require fmri=web/wget
-
-# XXX needed due to bug 18673
-set name=pkg.linted.pkglint.manifest003.1 value=true

@@ -30,6 +30,7 @@ import pkg5unittest
 
 import errno
 import os
+import pkg.portable as portable
 import shutil
 import stat
 import sys
@@ -943,12 +944,277 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
 #End Comment
 """
 
+        needs_formatting = """\
+# This comment was the first line in the file.
+# The depend actions here should have their type attribute first, followed by
+# fmri, other attributes, facets, and then variants.  In addition, they should
+# be sorted by type and then fmri.
+depend fmri=zoo fmri=apple fmri=barge type=require-any
+depend fmri=baz type=require
+depend fmri=zorch@2.0 type=optional
+depend type=require fmri=bar
+# This action should be line wrapped after each pkg.debug attribute.
+depend fmri=__TBD pkg.debug.depend.file=libGL.so.1 pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=usr/bin/xdriinfo pkg.debug.depend.type=elf type=require
+
+# legacy and license actions should appear after group actions, which should
+# appear before depend actions.
+license a8c4507c0abeaa04fa24adda980a2558890c0249 chash=4636ad2345de0ab201674162c134796f8f1ecb72 license=cr_Oracle pkg.csize=88 pkg.size=71
+legacy arch=i386 category=system desc="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server." hotline="Please contact your local service provider" name="Image Packaging System" pkg=SUNWipkg variant.arch=i386 vendor="Sun Microsystems, Inc." version=0.0.0,REV=2011.04.08.15.41.42
+
+# This transform is the first; wrapping should be maintained although leading
+# spaces should be trimmed.
+<transform pkg variant.mumble=set-default -> \\
+        emit set name=variant.mumble \\
+        value=$(ARCH)>
+# These filesystem action attributes should be re-ordered as path, owner, group,
+# mode, other attributes, facet, variant.  In addition, the actions should be
+# sorted by path.
+link path=etc facet.devel=true target=opt/oldetc
+file mode=0755 path=etc/example variant.arch=i386 \\
+    group=root facet.devel=true owner=root
+
+# This action has exactly 80 characters, so shouldn't be wrapped.
+dir mode=0755 path=etc variant.arch=i386 group=root facet.devel=false owner=root
+# This action has one attribute past 80 characters, so only variant should be
+# wrapped after the attributes are reordered.
+dir mode=0755 path=opt/etc variant.arch=i386 group=root facet.devel=false owner=root
+hardlink path=etc/example facet.devel=true target=opt/etc/example
+# This action has only one attribute past 80 characters, so should be unwrapped.
+file \\
+    path=usr/share/software/example/of/really/long/path/that/really/should/be/shorter
+
+# This transform is the second; wrapping should be maintained.
+<transform pkg variant.arch=set-default -> \\
+    emit set name=variant.arch value=$(ZARCH)>
+
+# This action should be line wrapped after each alias attribute.
+driver name=intel_nb5000 alias=pci8086,25c0 alias=pci8086,25d0 alias=pci8086,25d4 alias=pci8086,25d8 alias=pci8086,3600 alias=pci8086,4000 alias=pci8086,4001 alias=pci8086,4003 alias=pci8086,65c0
+
+# This driver action's aliases should be sorted by their alias prefix first, and
+# then numerically for each component that can be parsed as hexadecimal, not
+# alphabetically or asciibetically.
+driver alias=usb1044,800a alias=usb13b1,20 alias=usb148f,2573 alias=usb15a9,4 alias=usb7d1,3c03 alias=usb7d1,3c04 alias=usbb05,1723 clone_perms="rum 0666 root sys" name=rum perms="* 0666 root sys" variant.arch=i386
+
+# This driver's attributes should appear in the order: name, perms, clone_perms,
+# privs, policy, devlink, alias.
+driver name=driver alias="bobcat" clone_perms="driver 0666 root sys" devlink=type=ddi_pseudo;name=sv\\t\\D perms="driver 0666 root sys" policy="write_priv_set=net_rawaccess" privs=sys_config
+
+# This was comment was for set name=foo; its attributes should be reordered and
+# wrapped.
+set name=foo value=bar variant.arch=i386 variant.arch=sparc variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
+
+# This transform is the third; it should remain unwrapped.
+<transform pkg variant.arch=set-default -> emit set name=variant.arch value=$(ARCH)>
+
+# This comment was for pkg.fmri; it should be the first set action and the comment should
+# not be unwrapped even though its first line is > 80 characters.
+set name=pkg.fmri value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
+
+# This comment was the last line of the manifest."""
+
+        v1_fmt = """\
+# This comment was the first line in the file.
+# The depend actions here should have their type attribute first, followed by
+# fmri, other attributes, facets, and then variants.  In addition, they should
+# be sorted by type and then fmri.
+
+# This transform is the first; wrapping should be maintained although leading
+# spaces should be trimmed.
+<transform pkg variant.mumble=set-default -> emit set name=variant.mumble value=$(ARCH)>
+
+# This transform is the second; wrapping should be maintained.
+<transform pkg variant.arch=set-default -> emit set name=variant.arch value=$(ZARCH)>
+
+# This transform is the third; it should remain unwrapped.
+<transform pkg variant.arch=set-default -> emit set name=variant.arch value=$(ARCH)>
+
+# This comment was for pkg.fmri; it should be the first set action and the comment should
+# not be unwrapped even though its first line is > 80 characters.
+set name=pkg.fmri \\
+    value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
+
+# This was comment was for set name=foo; its attributes should be reordered and
+# wrapped.
+set name=foo value=bar variant.arch=i386 variant.arch=sparc \\
+    variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
+
+# This action has exactly 80 characters, so shouldn't be wrapped.
+dir path=etc group=root mode=0755 owner=root facet.devel=false \\
+    variant.arch=i386
+# This action has one attribute past 80 characters, so only variant should be
+# wrapped after the attributes are reordered.
+dir path=opt/etc group=root mode=0755 owner=root facet.devel=false \\
+    variant.arch=i386
+
+# This driver's attributes should appear in the order: name, perms, clone_perms,
+# privs, policy, devlink, alias.
+driver name=driver alias=bobcat clone_perms="driver 0666 root sys" \\
+    devlink=type=ddi_pseudo;name=sv\\t\\D perms="driver 0666 root sys" \\
+    policy=write_priv_set=net_rawaccess privs=sys_config
+
+# This action should be line wrapped after each alias attribute.
+driver name=intel_nb5000 \\
+    alias=pci8086,25c0 \\
+    alias=pci8086,25d0 \\
+    alias=pci8086,25d4 \\
+    alias=pci8086,25d8 \\
+    alias=pci8086,3600 \\
+    alias=pci8086,4000 \\
+    alias=pci8086,4001 \\
+    alias=pci8086,4003 \\
+    alias=pci8086,65c0
+
+# This driver action's aliases should be sorted by their alias prefix first, and
+# then numerically for each component that can be parsed as hexadecimal, not
+# alphabetically or asciibetically.
+driver name=rum clone_perms="rum 0666 root sys" perms="* 0666 root sys" \\
+    alias=usb1044,800a \\
+    alias=usb13b1,20 \\
+    alias=usb148f,2573 \\
+    alias=usb15a9,4 \\
+    alias=usb7d1,3c03 \\
+    alias=usb7d1,3c04 \\
+    alias=usbb05,1723 variant.arch=i386
+file path=etc/example group=root mode=0755 owner=root facet.devel=true \\
+    variant.arch=i386
+# This action has only one attribute past 80 characters, so should be unwrapped.
+file \\
+    path=usr/share/software/example/of/really/long/path/that/really/should/be/shorter
+hardlink path=etc/example target=opt/etc/example facet.devel=true
+legacy pkg=SUNWipkg arch=i386 category=system \\
+    desc="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server." \\
+    hotline="Please contact your local service provider" \\
+    name="Image Packaging System" vendor="Sun Microsystems, Inc." \\
+    version=0.0.0,REV=2011.04.08.15.41.42 variant.arch=i386
+
+# legacy and license actions should appear after group actions, which should
+# appear before depend actions.
+license a8c4507c0abeaa04fa24adda980a2558890c0249 license=cr_Oracle \\
+    chash=4636ad2345de0ab201674162c134796f8f1ecb72 pkg.csize=88 pkg.size=71
+# These filesystem action attributes should be re-ordered as path, owner, group,
+# mode, other attributes, facet, variant.  In addition, the actions should be
+# sorted by path.
+link path=etc target=opt/oldetc facet.devel=true
+depend type=require-any fmri=apple fmri=barge fmri=zoo
+# This action should be line wrapped after each pkg.debug attribute.
+depend fmri=__TBD pkg.debug.depend.file=libGL.so.1 \\
+    pkg.debug.depend.reason=usr/bin/xdriinfo pkg.debug.depend.type=elf \\
+    type=require pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib
+depend fmri=bar type=require
+depend fmri=baz type=require
+depend fmri=zorch@2.0 type=optional
+
+# This comment was the last line of the manifest.
+"""
+
+        v2_fmt = """\
+# This comment was the first line in the file.
+# The depend actions here should have their type attribute first, followed by
+# fmri, other attributes, facets, and then variants.  In addition, they should
+# be sorted by type and then fmri.
+
+# This transform is the first; wrapping should be maintained although leading
+# spaces should be trimmed.
+<transform pkg variant.mumble=set-default -> \\
+    emit set name=variant.mumble \\
+    value=$(ARCH)>
+
+# This transform is the second; wrapping should be maintained.
+<transform pkg variant.arch=set-default -> \\
+    emit set name=variant.arch value=$(ZARCH)>
+
+# This transform is the third; it should remain unwrapped.
+<transform pkg variant.arch=set-default -> emit set name=variant.arch value=$(ARCH)>
+
+# This comment was for pkg.fmri; it should be the first set action and the comment should
+# not be unwrapped even though its first line is > 80 characters.
+set name=pkg.fmri \\
+    value=pkg://solaris/package/pkg@0.5.11,5.11-0.163:20110410T074945Z
+
+# This was comment was for set name=foo; its attributes should be reordered and
+# wrapped.
+set name=foo value=bar variant.arch=i386 variant.arch=sparc \\
+    variant.opensolaris.zone=global variant.opensolaris.zone=nonglobal
+
+# This action has exactly 80 characters, so shouldn't be wrapped.
+dir  path=etc owner=root group=root mode=0755 facet.devel=false variant.arch=i386
+# These filesystem action attributes should be re-ordered as path, owner, group,
+# mode, other attributes, facet, variant.  In addition, the actions should be
+# sorted by path.
+link path=etc target=opt/oldetc facet.devel=true
+file path=etc/example owner=root group=root mode=0755 facet.devel=true \\
+    variant.arch=i386
+hardlink path=etc/example target=opt/etc/example facet.devel=true
+# This action has one attribute past 80 characters, so only variant should be
+# wrapped after the attributes are reordered.
+dir  path=opt/etc owner=root group=root mode=0755 facet.devel=false \\
+    variant.arch=i386
+# This action has only one attribute past 80 characters, so should be unwrapped.
+file path=usr/share/software/example/of/really/long/path/that/really/should/be/shorter
+
+# This driver's attributes should appear in the order: name, perms, clone_perms,
+# privs, policy, devlink, alias.
+driver name=driver perms="driver 0666 root sys" \\
+    clone_perms="driver 0666 root sys" privs=sys_config \\
+    policy=write_priv_set=net_rawaccess devlink=type=ddi_pseudo;name=sv\\t\\D \\
+    alias=bobcat
+
+# This action should be line wrapped after each alias attribute.
+driver name=intel_nb5000 \\
+    alias=pci8086,25c0 \\
+    alias=pci8086,25d0 \\
+    alias=pci8086,25d4 \\
+    alias=pci8086,25d8 \\
+    alias=pci8086,3600 \\
+    alias=pci8086,4000 \\
+    alias=pci8086,4001 \\
+    alias=pci8086,4003 \\
+    alias=pci8086,65c0
+
+# This driver action's aliases should be sorted by their alias prefix first, and
+# then numerically for each component that can be parsed as hexadecimal, not
+# alphabetically or asciibetically.
+driver name=rum perms="* 0666 root sys" clone_perms="rum 0666 root sys" \\
+    alias=usb7d1,3c03 \\
+    alias=usb7d1,3c04 \\
+    alias=usbb05,1723 \\
+    alias=usb1044,800a \\
+    alias=usb13b1,20 \\
+    alias=usb148f,2573 \\
+    alias=usb15a9,4 variant.arch=i386
+legacy pkg=SUNWipkg arch=i386 category=system \\
+    desc="The Image Packaging System (IPS), or pkg(5), is the software delivery system used on OpenSolaris systems.  This package contains the core command-line components and depot server." \\
+    hotline="Please contact your local service provider" \\
+    name="Image Packaging System" vendor="Sun Microsystems, Inc." \\
+    version=0.0.0,REV=2011.04.08.15.41.42 variant.arch=i386
+
+# legacy and license actions should appear after group actions, which should
+# appear before depend actions.
+license a8c4507c0abeaa04fa24adda980a2558890c0249 license=cr_Oracle \\
+    chash=4636ad2345de0ab201674162c134796f8f1ecb72 pkg.csize=88 pkg.size=71
+depend type=optional fmri=zorch@2.0
+# This action should be line wrapped after each pkg.debug attribute.
+depend type=require fmri=__TBD pkg.debug.depend.file=libGL.so.1 \\
+    pkg.debug.depend.reason=usr/bin/xdriinfo pkg.debug.depend.type=elf \\
+    pkg.debug.depend.path=lib \\
+    pkg.debug.depend.path=usr/lib
+depend type=require fmri=bar
+depend type=require fmri=baz
+depend type=require-any fmri=apple fmri=barge fmri=zoo
+
+# This comment was the last line of the manifest.
+"""
+
         def setUp(self):
                 pkg5unittest.CliTestCase.setUp(self)
 
-                f = file(os.path.join(self.test_root, "source_file"), "wb")
-                f.write(self.pkgcontents)
-                f.close()
+                with file(os.path.join(self.test_root, "source_file"),
+                    "wb") as f:
+                        f.write(self.pkgcontents)
+
+                with file(os.path.join(self.test_root, "needs_fmt_file"),
+                    "wb") as f:
+                        f.write(self.needs_formatting)
 
         def pkgfmt(self, args, exit=0, su_wrap=False):
                 cmd="%s/usr/bin/pkgfmt %s" % (pkg5unittest.g_proto_area, args)
@@ -958,29 +1224,40 @@ $(USE_INTERNAL_CRYPTO)depend fmri=driver/crypto/dprov type=require
                 """Verify that pkgfmt -c format checking works as expected."""
 
                 man = os.path.join(self.test_root, "man.p5m")
-                with open(man, "wb") as badf:
-                        badf.write("""
-dir path=etc mode=755 owner=root group=root
-set name=pkg.summary \
-    value="Package Summary"
-file path=etc/foo owner=root group=root mode=0644
-set name=pkg.description value="Package Description"
-""")
+                original = os.path.join(self.test_root, "needs_fmt_file")
+                portable.copyfile(original, man)
 
                 # Copy man to man2 before executing tests.
                 man2 = os.path.join(self.test_root, "man2.p5m")
                 pkg.portable.copyfile(man, man2)
 
                 # Verify pkgfmt exits 1 when checking format for manifest that
-                # needs formatting.
+                # needs formatting (both from a file and from stdin).
                 self.pkgfmt("-c %s" % man, exit=1)
+                # Ensure "error:" is in output (for the benefit of ON nightly).
+                self.assert_("pkgfmt: error:" in self.errout)
+                self.pkgfmt("-c < %s" % man, exit=1)
 
                 # Verify pkgfmt exits 1 when checking format for multiple
                 # manifests that need formatting.
                 self.pkgfmt("-c %s %s" % (man, man2), exit=1)
 
-                # Format the second manifest.
-                self.pkgfmt(man)
+                # Verify formatted manifest is identical to expected.
+                for pfmt, mfmt in (("v1", self.v1_fmt), ("v2", self.v2_fmt)):
+                        portable.copyfile(original, man)
+                        self.pkgfmt("-f %s %s" % (pfmt, man))
+                        with open(man, "rb") as f:
+                                actual = f.read()
+                                self.assertEqualDiff(mfmt, actual)
+
+                        # Test using environment variable.
+                        portable.copyfile(original, man)
+                        os.environ["PKGFMT_OUTPUT"] = pfmt
+                        self.pkgfmt(man)
+                        with open(man, "rb") as f:
+                                actual = f.read()
+                                self.assertEqualDiff(mfmt, actual)
+                os.environ["PKGFMT_OUTPUT"] = ""
 
                 # Verify pkgfmt exits 1 when any of the manifests named need
                 # formatting.  (Ordering matters here, the good one must be
@@ -995,6 +1272,21 @@ set name=pkg.description value="Package Description"
 
                 # Verify pkgfmt exits 0 when none of the manifests named need
                 # formatting.
+                self.pkgfmt("-c %s %s" % (man, man2))
+
+                # Verify pkgfmt -c accepts a manifest in v1 or v2 format, and
+                # that the output for each version matches expected.
+                for contents in (self.v1_fmt, self.v2_fmt):
+                        with open(man, "wb") as f:
+                                f.write(contents)
+                        self.pkgfmt("-c %s" % man)
+
+                # Verify pkgfmt -c accepts both a v1 and v2 format manifest
+                # at the same time.
+                with open(man, "wb") as f:
+                        f.write(self.v1_fmt)
+                with open(man2, "wb") as f:
+                        f.write(self.v2_fmt)
                 self.pkgfmt("-c %s %s" % (man, man2))
 
         def test_1_difference(self):
