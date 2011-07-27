@@ -459,3 +459,23 @@ class SignatureAction(generic.Action):
                 generic.Action.__setstate__(self, pstate)
                 for name in state:
                         setattr(self, name, state[name])
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action.
+                """
+
+                # 'value' can only be required at publication time since signing
+                # relies on the ability to construct actions without one despite
+                # the fact that it is the key attribute.
+                generic.Action._validate(self, fmri=fmri,
+                    numeric_attrs=("pkg.csize", "pkg.size"),
+                    required_attrs=("value",), single_attrs=("algorithm",
+                    "chash", "value"))

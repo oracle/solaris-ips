@@ -51,11 +51,8 @@ nopub_actions = [ "unknown" ]
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
-        if cmd:
-                text = "%s: %s" % (cmd, text)
-        else:
-                # If we get passed something like an Exception, we can convert
-                # it down to a string.
+        if not isinstance(text, basestring):
+                # Assume it's an object that can be stringified.
                 text = str(text)
 
         # If the message starts with whitespace, assume that it should come
@@ -63,9 +60,15 @@ def error(text, cmd=None):
         text_nows = text.lstrip()
         ws = text[:len(text) - len(text_nows)]
 
+        if cmd:
+                text_nows = "%s: %s" % (cmd, text_nows)
+                pkg_cmd = "pkgsend "
+        else:
+                pkg_cmd = "pkgsend: "
+
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg(ws + "pkgsend: " + text_nows)
+        emsg(ws + pkg_cmd + text_nows)
 
 def usage(usage_error=None, cmd=None, retcode=2):
         """Emit a usage message and optionally prefix it with a more specific
@@ -312,6 +315,10 @@ def trans_publish(repo_uri, fargs):
                 elif opt == "--no-catalog":
                         add_to_catalog = False
 
+        if not repo_uri:
+                usage(_("A destination package repository must be provided "
+                    "using -s."), cmd="publish")
+ 
         if not pargs:
                 filelist = [("<stdin>", sys.stdin)]
         else:
@@ -804,10 +811,10 @@ if __name__ == "__main__":
         except (pkg.actions.ActionError, trans.TransactionError,
             EnvironmentError, RuntimeError, pkg.fmri.FmriError,
             apx.ApiException), _e:
-                if isinstance(_e, IOError) and _e.errno != errno.EPIPE:
+                if not (isinstance(_e, IOError) and _e.errno == errno.EPIPE):
                         # Only print message if failure wasn't due to
                         # broken pipe (EPIPE) error.
-                         print >> sys.stderr, "pkgsend: %s" % _e
+                        print >> sys.stderr, "pkgsend: %s" % _e
                 __ret = 1
         except SystemExit, _e:
                 raise _e

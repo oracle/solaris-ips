@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -45,8 +44,12 @@ if __name__ == "__main__":
         print "action creation"
         n = 20000
         for i in (1, 2, 3):
-                t = timeit.Timer(str1, setup1).timeit(n)
-                print "%20f  %8d actions/sec" % (t, n / t)
+                try:
+                        t = timeit.Timer(str1, setup1).timeit(n)
+                        print "%20f  %8d actions/sec" % (t, n / t)
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
 
         setup2 = """import pkg.actions as actions
 a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.1")
@@ -59,8 +62,13 @@ a2 = actions.fromstr("dir group=bin mode=0755 owner=root path=usr/lib/libzonecfg
         print "action comparison"
         for i in (1, 2, 3):
 
-                t = timeit.Timer(str2, setup2).timeit(n)
-                print "%20f  %8d action comparisons/sec" % (t, n / t)
+                try:
+                        t = timeit.Timer(str2, setup2).timeit(n)
+                        print "%20f  %8d action comparisons/sec" % (t, n / t)
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
+
 
         print "minimalist comparison"
 
@@ -84,8 +92,13 @@ b = bb()
         str3 = "cmp(a, b)"
         for i in (1, 2, 3):
 
-                t = timeit.Timer(str3, setup3).timeit(n)
-                print "%20f  %8d comparisons/sec" % (t, n / t)
+                try:
+                        t = timeit.Timer(str3, setup3).timeit(n)
+                        print "%20f  %8d comparisons/sec" % (t, n / t)
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
+
 
         setup4 = """import pkg.actions as actions
 a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libzonecfg.so.1")
@@ -97,8 +110,12 @@ a1 = actions.fromstr("file 1234 group=bin mode=0755 owner=root path=usr/lib/libz
         print "action to string conversion"
         for i in (1, 2, 3):
 
-                t = timeit.Timer(str4, setup4).timeit(n)
-                print "%20f  %8d actions to string/sec" % (t, n / t)
+                try:
+                        t = timeit.Timer(str4, setup4).timeit(n)
+                        print "%20f  %8d actions to string/sec" % (t, n / t)
+                except KeyboardInterrupt:
+                        import sys
+                        sys.exit(0)
 
         # I took an existing manifest and randomized the lines.
         setup5 = """
@@ -174,17 +191,21 @@ mf = manifest.Manifest()
 mf.set_content(m)
 """
 
-        print "manifest contents loading"
-        for i in (1, 2, 3):
+        try:
+                print "manifest contents loading"
+                for i in (1, 2, 3):
 
-                t = timeit.Timer(str5, setup5).timeit(n)
-                print "%20f %8d manifest contents loads/sec (%d actions/sec)" % \
-                    (t, n / t, (n * 60) / t)
+                        t = timeit.Timer(str5, setup5).timeit(n)
+                        print "%20f %8d manifest contents loads/sec (%d actions/sec)" % \
+                            (t, n / t, (n * 60) / t)
 
-        n = 1000000
-        str6 = "id(a1)"
-        print "id() speed"
-        for i in (1, 2, 3):
+                n = 1000000
+                str6 = "id(a1)"
+                print "id() speed"
+                for i in (1, 2, 3):
 
-                t = timeit.Timer(str6, setup4).timeit(n)
-                print "%20f %8d calls to id(action) /sec" % (t, n / t)
+                        t = timeit.Timer(str6, setup4).timeit(n)
+                        print "%20f %8d calls to id(action) /sec" % (t, n / t)
+        except KeyboardInterrupt:
+                import sys
+                sys.exit(0)

@@ -584,7 +584,7 @@ DESCRIPTION
                  of "true" indicates that the user is permitted to
                  login via FTP.  See ftpusers(4).
 
-     lastchng    The number of days between January 1, 1970,  and
+     lastchg     The number of days between January 1, 1970,  and
                  the  date  that  the password was last modified.
                  Default value is empty.  See shadow(4).
 

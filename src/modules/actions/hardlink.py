@@ -35,9 +35,7 @@ import os
 import stat
 
 from pkg import misc
-import pkg.actions
 from pkg.client.api_errors import ActionExecutionError
-
 
 class HardLinkAction(link.LinkAction):
         """Class representing a hardlink-type packaging object."""

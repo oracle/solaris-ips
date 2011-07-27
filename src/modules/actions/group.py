@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -174,3 +174,17 @@ class GroupAction(generic.Action):
 
                 return [("group", "name", self.attrs["groupname"], None)]
 
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action.
+                """
+
+                generic.Action._validate(self, fmri=fmri,
+                    numeric_attrs=("gid",), single_attrs=("gid",))

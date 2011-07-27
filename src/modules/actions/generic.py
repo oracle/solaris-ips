@@ -43,6 +43,25 @@ import pkg.portable as portable
 import pkg.variant as variant
 import stat
 
+# Used to define sort order between action types.
+_ORDER_DICT_LIST = [
+    "set",
+    "depend",
+    "group",
+    "user",
+    "dir",
+    "file",
+    "hardlink",
+    "link",
+    "driver",
+    "unknown",
+    "legacy",
+    "signature"
+]
+
+# EmptyI for argument defaults; no import to avoid pkg.misc dependency.
+EmptyI = tuple()
+
 class NSG(type):
         """This metaclass automatically assigns a subclass of Action a
         namespace_group member if it hasn't already been specified.  This is a
@@ -78,6 +97,7 @@ class NSG(type):
 
                 return type.__new__(mcs, name, bases, dict)
 
+
 class Action(object):
         """Class representing a generic packaging object.
 
@@ -97,8 +117,6 @@ class Action(object):
         # key_attr would be the driver name.  When 'key_attr' is None, it means
         # that all attributes of the action are distinguishing.
         key_attr = None
-        # 'key_attr_opt' indicates if the 'key_attr' attribute is optional.
-        key_attr_opt = False
         # 'globally_identical' is True if all actions representing a single
         # object on a system must be identical.
         globally_identical = False
@@ -135,23 +153,10 @@ class Action(object):
         __metaclass__ = NSG
 
         def loadorderdict(self):
-                ol = [
-                        "set",
-                        "depend",
-                        "group",
-                        "user",
-                        "dir",
-                        "file",
-                        "hardlink",
-                        "link",
-                        "driver",
-                        "unknown",
-                        "legacy",
-                        "signature"
-                        ]
                 self.orderdict.update(dict((
-                    (pkg.actions.types[t], i) for i, t in enumerate(ol)
-                    )))
+                    (pkg.actions.types[t], i)
+                    for i, t in enumerate(_ORDER_DICT_LIST)
+                )))
                 self.__class__.unknown = \
                     self.orderdict[pkg.actions.types["unknown"]]
 
@@ -193,7 +198,14 @@ class Action(object):
 
                 if not self.orderdict:
                         self.loadorderdict()
-                self.ord = self.orderdict.get(type(self), self.unknown)
+
+
+                # A try/except is used here instead of get() as it is
+                # consistently 2% faster.
+                try:
+                        self.ord = self.orderdict[type(self)]
+                except KeyError:
+                        self.ord = self.unknown
 
                 self.attrs = attrs
 
@@ -204,19 +216,44 @@ class Action(object):
                 else:
                         self.set_data(data)
 
-                if not self._strip_path or "path" not in self.attrs:
+                if not self.key_attr:
+                        # Nothing more to do.
                         return
 
+                # Test if method only string object will have is defined to
+                # determine if key attribute has been specified multiple times.
                 try:
-                        self.attrs["path"] = self.attrs["path"].lstrip("/")
+                        self.attrs[self.key_attr].decode
+                except KeyError:
+                        if self.name == "set" or self.name == "signature":
+                                # Special case for set and signature actions
+                                # since they allow two forms of syntax.
+                                return
+                        raise pkg.actions.InvalidActionError(str(self),
+                           _("no value specified for key attribute '%s'") %
+                           self.key_attr)
                 except AttributeError:
-                        raise pkg.actions.InvalidActionError(
-                            str(self), _("path attribute specified multiple "
-                                "times"))
+                       if self.name != "depend" or \
+                           self.attrs.get("type") != "require-any":
+                                # Assume list since fromstr() will only ever
+                                # provide a string or list and decode method
+                                # wasn't found.  This is much faster than
+                                # checking isinstance or 'type() ==' in
+                                # a hot path.
+                                raise pkg.actions.InvalidActionError(str(self),
+                                   _("%s attribute may only be specified "
+                                   "once") % self.key_attr)
 
-                if not self.attrs["path"]:
-                        raise pkg.actions.InvalidActionError(
-                            str(self), _("Empty path attribute"))
+                if self._strip_path:
+                        # Strip leading slash from path if requested.
+                        try:
+                                self.attrs["path"] = \
+                                    self.attrs["path"].lstrip("/")
+                        except KeyError:
+                                return
+                        if not self.attrs["path"]:
+                                raise pkg.actions.InvalidActionError(
+                                    str(self), _("Empty path attribute"))
 
         def set_data(self, data):
                 """This function sets the data field of the action.
@@ -521,8 +558,6 @@ class Action(object):
 
                 if self.key_attr is None:
                         return str(self)
-                if self.key_attr_opt and self.key_attr not in self.attrs:
-                        return str(self)
                 return "%s: %s" % \
                     (self.name, self.attrs.get(self.key_attr, "???"))
 
@@ -574,7 +609,7 @@ class Action(object):
                                     locals()
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e,
-                                    fmri=kw.get("fmri", None))
+                                    fmri=kw.get("fmri"))
                 else:
                         # XXX Because the filelist codepath may create
                         # directories with incorrect permissions (see
@@ -613,7 +648,7 @@ class Action(object):
                                     locals()
                                 raise apx.ActionExecutionError(self,
                                     details=err_txt, error=e,
-                                    fmri=kw.get("fmri", None))
+                                    fmri=kw.get("fmri"))
 
                         os.chmod(p, fs.st_mode)
                         try:
@@ -670,14 +705,16 @@ class Action(object):
                 correctly installed in the given image."""
                 return [], [], []
 
-        def validate_fsobj_common(self, fmri=None):
-                """Common validation logic for filesystem objects."""
+        def _validate_fsobj_common(self):
+                """Private, common validation logic for filesystem objects that
+                returns a list of tuples of the form (attr_name, error_message).
+                """
 
                 errors = []
 
                 bad_mode = False
-                raw_mode = self.attrs.get("mode", None)
-                if not raw_mode:
+                raw_mode = self.attrs.get("mode")
+                if not raw_mode or isinstance(raw_mode, list):
                         bad_mode = True
                 else:
                         mlen = len(raw_mode)
@@ -707,22 +744,27 @@ class Action(object):
                                 errors.append(("mode", _("mode is required; "
                                     "value must be of the form '644', "
                                     "'0644', or '04755'.")))
+                        elif isinstance(raw_mode, list):
+                                errors.append("mode", _("mode may only be "
+                                    "specified once"))
                         else:
                                 errors.append(("mode", _("'%s' is not a valid "
                                     "mode; value must be of the form '644', "
                                     "'0644', or '04755'.") % raw_mode))
 
-                owner = self.attrs.get("owner", "").rstrip()
-                if not owner:
-                        errors.append(("owner", _("owner is required")))
+                try:
+                        owner = self.attrs.get("owner", "").rstrip()
+                except AttributeError:
+                        errors.append(("owner", _("owner may only be specified "
+                            "once")))
 
-                group = self.attrs.get("group", "").rstrip()
-                if not group:
-                        errors.append(("group", _("group is required")))
+                try:
+                        group = self.attrs.get("group", "").rstrip()
+                except AttributeError:
+                        errors.append(("group", _("group may only be specified "
+                            "once")))
 
-                if errors:
-                        raise pkg.actions.InvalidActionAttributesError(self,
-                            errors, fmri=fmri)
+                return errors
 
         def get_fsobj_uid_gid(self, pkgplan, fmri):
                 """Returns a tuple of the form (owner, group) containing the uid
@@ -1047,8 +1089,55 @@ class Action(object):
                 error handling to provide additional diagonostics.
 
                 'fmri' is an optional package FMRI (object or string) indicating
-                what package contained this action."""
-                pass
+                what package contained this action.
+                """
+
+                self._validate(fmri=fmri)
+
+        def _validate(self, fmri=None, numeric_attrs=EmptyI,
+             raise_errors=True, required_attrs=EmptyI, single_attrs=EmptyI):
+                """Common validation logic for all action types.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action.
+
+                'numeric_attrs' is a list of attributes that must have an
+                integer value.
+
+                'raise_errors' is a boolean indicating whether errors should be
+                raised as an exception or returned as a list of tuples of the
+                form (attr_name, error_message).
+
+                'single_attrs' is a list of attributes that should only be
+                specified once.
+                """
+
+                errors = []
+                for attr in self.attrs:
+                        if ((attr.startswith("facet.") or
+                            attr.startswith("variant.") or
+                            attr == "reboot-needed" or attr in single_attrs) and
+                            isinstance(self.attrs[attr], list)):
+                                errors.append((attr, _("%s may only be "
+                                    "specified once") % attr))
+                        elif attr in numeric_attrs:
+                                try:
+                                        int(self.attrs[attr])
+                                except (TypeError, ValueError):
+                                        errors.append((attr, _("%s must be an "
+                                            "integer") % attr))
+
+                for attr in required_attrs:
+                        val = self.attrs.get(attr)
+                        if not val or \
+                            (isinstance(val, basestring) and not val.strip()):
+                                errors.append((attr, _("%s is required") %
+                                    attr))
+
+                if raise_errors and errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)
+                return errors
 
         def fsobj_checkpath(self, pkgplan, final_path):
                 """Verifies that the specified path doesn't contain one or more
@@ -1090,6 +1179,6 @@ class Action(object):
                 err_txt = _("Cannot install '%(final_path)s'; parent directory "
                     "%(parent_dir)s is a link to %(parent_target)s.  To "
                     "continue, move the directory to its original location and "
-                    "try again.") % locals() 
+                    "try again.") % locals()
                 raise apx.ActionExecutionError(self, details=err_txt,
                     fmri=fmri)

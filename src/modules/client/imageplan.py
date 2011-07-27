@@ -2979,6 +2979,14 @@ class ImagePlan(object):
                                 elif e.errno == errno.EROFS:
                                         raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
+                                elif e.errno == errno.ELOOP:
+                                        act = pkg.actions.unknown.UnknownAction()
+                                        raise api_errors.ActionExecutionError(
+                                            act, _("A link targeting itself or "
+                                            "part of a link loop was found at "
+                                            "'%s'; a file or directory was "
+                                            "expected.  Please remove the link "
+                                            "and try again.") % e.filename)
                                 raise
                 except pkg.actions.ActionError:
                         exc_type, exc_value, exc_tb = sys.exc_info()

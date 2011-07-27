@@ -1514,6 +1514,12 @@ class CliTestCase(Pkg5TestCase):
                 # for backward compatibilty
                 return self.img_path()
 
+        def get_img_file_path(self, relpath):
+                """Given a path relative to root, return the absolute path of
+                the item in the image."""
+
+                return os.path.join(self.img_path(), relpath)
+
         def get_img_api_obj(self, cmd_path=None, ii=None):
                 progresstracker = pkg.client.progress.NullProgressTracker()
                 if not cmd_path:

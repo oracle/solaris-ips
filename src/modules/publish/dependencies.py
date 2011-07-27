@@ -358,7 +358,7 @@ def resolve_internal_deps(deps, mfst, proto_dirs, pkg_vars):
         # name itself to generate its dependencies.  Also, the name is entirely
         # a private construction which should not escape to the user.
         add_fmri_path_mapping(files.delivered, links,
-            fmri.PkgFmri("INTERNAL@0-0", build_release="0"), mfst)
+            fmri.PkgFmri("INTERNAL@0-0", "0"), mfst)
         for a in mfst.gen_actions_by_type("file"):
                 pvars = a.get_variant_template()
                 if not pvars:
@@ -681,7 +681,7 @@ def choose_name(fp, mfst):
         name = mfst.get("pkg.fmri", mfst.get("fmri", None))
         if name is not None:
                 try:
-                        pfmri = fmri.PkgFmri(name)
+                        pfmri = fmri.PkgFmri(name, "5.11")
                 except fmri.IllegalFmri:
                         pfmri = None
                 return name, pfmri
@@ -1157,8 +1157,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                         try:
                                 # XXX version requires build string; 5.11 is not
                                 # sane.
-                                cur_fmris.append(
-                                    fmri.PkgFmri(f, build_release="5.11"))
+                                cur_fmris.append(fmri.PkgFmri(f, "5.11"))
                         except fmri.IllegalFmri:
                                 bad_fmris.add(f)
                 skip = False
@@ -1194,8 +1193,7 @@ def combine(deps, pkg_vars, pkg_fmri, pkg_name):
                 for comp_dep, comp_vars in res:
                         if comp_dep.attrs["type"] != "require":
                                 continue
-                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"],
-                            build_release="5.11")
+                        comp_fmri = fmri.PkgFmri(comp_dep.attrs["fmri"], "5.11")
                         successor = False
                         # Check to see whether the package required by the
                         # require dependency is a successor to any of the
@@ -1338,7 +1336,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
                 pkg_list = list(api_inst.get_pkg_list(
                     api.ImageInterface.LIST_INSTALLED))
                 for (pub, stem, ver), summ, cats, states in pkg_list:
-                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
+                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
                         if pfmri.pkg_name in resolving_pkgs:
                                 continue
                         mfst = api_inst.get_manifest(pfmri, all_variants=True)
@@ -1358,7 +1356,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         # the system.
         if use_system:
                 for (pub, stem, ver), summ, cats, states in pkg_list:
-                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver))
+                        pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
                         if pfmri.pkg_name in resolving_pkgs:
                                 continue
                         mfst = api_inst.get_manifest(pfmri, all_variants=True)

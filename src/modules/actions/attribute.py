@@ -48,9 +48,13 @@ class AttributeAction(generic.Action):
                 # For convenience, we allow people to express attributes as
                 # "<name>=<value>", rather than "name=<name> value=<value>", but
                 # we always convert to the latter.
-                if len(attrs) == 1:
-                        self.attrs["name"], self.attrs["value"] = \
-                            self.attrs.popitem()
+                try:
+                        if len(attrs) == 1:
+                                self.attrs["name"], self.attrs["value"] = \
+                                    self.attrs.popitem()
+                except KeyError:
+                        # Let error check below deal with this.
+                        pass
 
                 if "name" not in self.attrs or "value" not in self.attrs:
                         raise pkg.actions.InvalidActionError(str(self),
@@ -158,3 +162,27 @@ class AttributeAction(generic.Action):
                                 cats = val
                         rval.append((scheme, cats))
                 return rval
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action.
+                """
+
+                name = self.attrs["name"]
+                if name in ("pkg.summary", "pkg.obsolete", "pkg.renamed",
+                    "pkg.description"):
+                        # If set action is for any of the above, only a single
+                        # value is permitted.
+                        generic.Action._validate(self, fmri=fmri,
+                            single_attrs=("value",))
+                else:
+                        # In all other cases, multiple values are assumed to be
+                        # permissible.
+                        generic.Action._validate(self, fmri=fmri)

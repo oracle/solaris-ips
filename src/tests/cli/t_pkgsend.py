@@ -112,6 +112,8 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
 
                 # A destination repository must be specified.
                 self.pkgsend("", "close", exit=2)
+                self.pkgsend("", "publish", exit=2)
+                self.assert_("pkgsend publish:" in self.errout)
 
         def test_1_pkgsend_abandon(self):
                 """Verify that an abandoned tranasaction is not published."""

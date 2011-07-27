@@ -84,7 +84,7 @@ class TestActions(pkg5unittest.Pkg5TestCase):
             "driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega",
             "signature 12345 algorithm=foo",
         ]
-        
+
         def assertAttributeValue(self, action, attr, value):
                 attrs = action.attrs[attr]
 
@@ -384,6 +384,9 @@ Incorrect attribute list.
                 # Missing key attribute 'fmri'.
                 self.assertInvalid("depend type=require")
 
+                # Mutiple fmri values only allowed for require-any deps.
+                self.assertInvalid("depend type=require fmri=foo fmri=bar")
+
                 # 'path' attribute specified multiple times
                 self.assertInvalid("file 1234 path=foo path=foo mode=777 owner=root group=root")
                 self.assertInvalid("link path=foo path=foo target=link")
@@ -427,18 +430,71 @@ Incorrect attribute list.
                                 bad_act.validate()
                         except Exception, e:
                                 self.debug(str(e))
+                        else:
+                                self.debug("expected failure validating: %s" %
+                                    astr)
 
                         self.assertRaises(
                             action.InvalidActionAttributesError,
                             bad_act.validate)
 
-                # Invalid attribute for file and directory actions.
+                # Verify predicate and target attributes of FMRIs must be valid.
+                for nact in (
+                    # FMRI value is invalid.
+                    "depend type=require-any fmri=foo fmri=bar fmri=invalid@abc",
+                    # Predicate is missing for conditional dependency.
+                    "depend type=conditional fmri=foo",
+                    # Predicate value is invalid.
+                    "depend type=conditional predicate=-invalid fmri=foo",
+                    # Predicate isn't valid for dependency type.
+                    "depend type=require predicate=1invalid fmri=foo",
+                    # root-image attribute is only valid for origin dependencies.
+                    "depend type=require fmri=foo root-image=true",
+                    # Multiple values for predicate are not allowed.
+                    "depend type=conditional predicate=foo predicate=bar fmri=baz"):
+                        assert_invalid_attrs(nact)
+
+                # Verify multiple values for file attributes are rejected.
+                for attr in ("pkg.size", "pkg.csize", "chash", "preserve",
+                    "overlay", "elfhash", "original_name", "facet.doc",
+                    "variant.count", "owner", "group"):
+                        nact = "file path=/usr/bin/foo owner=root group=root " \
+                            "mode=0555 %(attr)s=1 %(attr)s=2 %(attr)s=3" % {
+                            "attr": attr }
+                        assert_invalid_attrs(nact)
+
+                # Verify invalid values are not allowed for mode attribute on
+                # file and dir actions. 
                 for act in (fact, dact):
                         for bad_mode in ("", 'mode=""', "mode=???", 
                             "mode=44755", "mode=44", "mode=999", "mode=0898"):
                                 nact = act.replace("mode=XXX", bad_mode)
                                 assert_invalid_attrs(nact)
 
+                # Verify multiple values aren't allowed for legacy action
+                # attributes.
+                for attr in ("category", "desc", "hotline", "name", "vendor",
+                    "version"):
+                        nact = "legacy pkg=SUNWcs %(attr)s=1 %(attr)s=2" % {
+                            "attr": attr }
+                        assert_invalid_attrs(nact)
+
+                # Verify multiple values aren't allowed for gid of group.
+                nact = "group groupname=staff gid=100 gid=101"
+                assert_invalid_attrs(nact)
+
+                # Verify only numeric value is allowed for gid of group.
+                nact = "group groupname=staff gid=abc"
+                assert_invalid_attrs(nact)
+
+                # Verify multiple values are not allowed for must-accept and
+                # must-display attributes of license actions.
+                for attr in ("must-accept", "must-display"):
+                        nact = "license license=copyright %(attr)s=true " \
+                            "%(attr)s=false" % { "attr": attr }
+                        assert_invalid_attrs(nact)
+
+                # Ensure link and hardlink attributes are validated properly.
                 for aname in ("link", "hardlink"):
                         # Action with mediator without mediator properties is
                         # invalid.
@@ -493,13 +549,50 @@ Incorrect attribute list.
                                     % (aname, value)
                                 assert_invalid_attrs(nact)
 
-                        # Verify invalid mediator-implementations ar rejected.
+                        # Verify invalid mediator-implementations are rejected.
                         for value in ("1.a", "@", "@1", "vim@.1",
                             "vim@abc"):
                                 nact = "%s path=usr/bin/vi target=vim " \
                                     "mediator=vim mediator-implementation=%s" \
                                     % (aname, value)
                                 assert_invalid_attrs(nact)
+
+                        # Verify multiple targets are not allowed.
+                        nact = "%s path=/usr/bin/foo target=bar target=baz" % \
+                            aname
+                        assert_invalid_attrs(nact)
+
+                # Verify multiple values are not allowed for set actions such as
+                # pkg.description, pkg.obsolete, pkg.renamed, and pkg.summary.
+                for attr in ("pkg.description", "pkg.obsolete", "pkg.renamed",
+                    "pkg.summary"):
+                        nact = "set name=%s value=true value=false" % attr
+                        assert_invalid_attrs(nact)
+
+                # Verify signature action attribute 'value' is required during
+                # publication.
+                nact = "signature 12345 algorithm=foo"
+                assert_invalid_attrs(nact)
+
+                # Verify multiple values aren't allowed for user attributes.
+                for attr in ("password", "group", "gcos-field", "home-dir",
+                    "login-shell", "ftpuser"):
+                        nact = "user username=user %(attr)s=ab %(attr)s=cd " % \
+                            { "attr": attr }
+                        assert_invalid_attrs(nact)
+
+                for attr in ("uid", "lastchg", "min","max", "warn", "inactive",
+                    "expire", "flag"):
+                        nact = "user username=user %(attr)s=1 %(attr)s=2" % {
+                            "attr": attr }
+                        assert_invalid_attrs(nact)
+
+                # Verify only numeric values are allowed for user attributes
+                # expecting a number.
+                for attr in ("uid", "lastchg", "min","max", "warn", "inactive",
+                    "expire", "flag"):
+                        nact = "user username=user %s=abc" % attr
+                        assert_invalid_attrs(nact)
 
 
 if __name__ == "__main__":

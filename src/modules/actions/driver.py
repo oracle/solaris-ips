@@ -650,8 +650,7 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 else:
                                         raise
 
-                act = cls()
-                act.attrs["name"] = name
+                act = cls(name=name)
 
                 # Grab aliases
                 try:

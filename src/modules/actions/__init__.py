@@ -154,7 +154,7 @@ class InvalidActionError(ActionError):
 
 
 class InvalidActionAttributesError(ActionError):
-        """Used to indicate that one more action attributes were invalid."""
+        """Used to indicate that one or more action attributes were invalid."""
 
         def __init__(self, act, errors, fmri=None):
                 """'act' is an Action (object or string).
@@ -207,14 +207,6 @@ def fromstr(string, data=None):
                 raise UnknownActionError(string, atype)
 
         action = types[atype](data=data, **attr_dict)
-
-        if not action.key_attr_opt:
-                ka = action.key_attr
-                if ka is not None and (ka not in action.attrs or
-                    action.attrs[ka] is None):
-                        raise InvalidActionError(string,
-                            _("required attribute '%s' was not provided.") % ka)
-
         if ahash:
                 action.hash = ahash
 
@@ -290,14 +282,6 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
                         "%s action cannot have a 'data' attribute" % atype)
 
         action = types[atype](data=None, **attrs)
-
-        ka = action.key_attr
-        if ka is not None and (ka not in action.attrs or
-            action.attrs[ka] is None):
-                raise InvalidActionError(("%s %s" % (atype,
-                    " ".join(args))).strip(), _("required attribute, "
-                    "'%s', was not provided.") % ka)
-
         if ahash:
                 action.hash = ahash
 

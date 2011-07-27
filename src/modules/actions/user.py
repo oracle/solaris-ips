@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a user packaging object
@@ -51,7 +51,7 @@ class UserAction(generic.Action):
 
         # if these values are different on disk than in action
         # prefer on-disk version
-        use_existing_attrs = [ "passwd", "lastchng", "min",
+        use_existing_attrs = [ "password", "lastchg", "min",
                                "max", "expire", "flag", 
                                "warn", "inactive"]
 
@@ -287,3 +287,22 @@ class UserAction(generic.Action):
                 generic.py for a more detailed explanation."""
 
                 return [("user", "name", self.attrs["username"], None)]
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action.
+                """
+
+                generic.Action._validate(self, fmri=fmri,
+                    numeric_attrs=("uid", "lastchg", "min", "max", "warn",
+                    "inactive","expire", "flag"), single_attrs=("password",
+                    "uid", "group", "gcos-field", "home-dir", "login-shell",
+                    "ftpuser", "lastchg", "min", "max", "warn", "inactive",
+                    "expire", "flag"))

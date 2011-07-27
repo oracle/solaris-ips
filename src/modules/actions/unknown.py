@@ -21,8 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 """module describing a unknown packaging object
@@ -40,7 +39,3 @@ class UnknownAction(generic.Action):
         __slots__ = []
 
         name = "unknown"
-
-        def __init__(self, data=None, **attrs):
-                generic.Action.__init__(self, data, **attrs)
-

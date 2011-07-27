@@ -5827,10 +5827,20 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
             add dir path=dir mode=755 owner=root group=bin
             close """
 
+        dir11 = """
+            open dir@1.1,5.11-0
+            add dir path=dir mode=750 owner=root group=bin
+            close """
+
         # Purposefully omits depend on dir@1.0.
         filesub10 = """
             open filesub@1.0,5.11-0
             add file tmp/file path=dir/file mode=755 owner=root group=bin
+            close """
+
+        filesub11 = """
+            open filesub@1.1,5.11-0
+            add file tmp/file path=dir/file mode=444 owner=root group=bin
             close """
 
         # Dependency providing file intentionally omitted.
@@ -5855,8 +5865,8 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
 
-                plist = self.pkgsend_bulk(self.rurl, (self.dir10,
-                    self.filesub10, self.hardlink10))
+                plist = self.pkgsend_bulk(self.rurl, (self.dir10, self.dir11,
+                    self.filesub10, self.filesub11, self.hardlink10))
 
                 self.plist = {}
                 for p in plist:
@@ -5901,7 +5911,7 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 new_src = os.path.join(os.path.dirname(src), "export", "dir")
                 shutil.move(src, os.path.dirname(new_src))
                 os.symlink(new_src, src)
-                self.pkg("install filesub", exit=1)
+                self.pkg("install filesub@1.0", exit=1)
 
         def test_02_hardlink(self):
                 """Verify that hardlink install fails as expected when
@@ -5983,6 +5993,53 @@ class TestActionErrors(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh --full")
                 self.pkg("install foo@1.0 unsupported@1.0")
                 self.pkg("uninstall foo unsupported")
+
+        def test_04_loop(self):
+                """Verify that if a directory or file is replaced with a link
+                that targets itself (resulting in ELOOP) pkg fails gracefully.
+                """
+
+                # Create an image and install a package delivering a file.
+                self.image_create(self.rurl)
+                self.pkg("install dir@1.0 filesub@1.0")
+
+                # Now replace the file with a link that points to itself.
+                def create_link_loop(fpath):
+                        if os.path.isfile(fpath):
+                                portable.remove(fpath)
+                        else:
+                                shutil.rmtree(fpath)
+                        cwd = os.getcwd()
+                        os.chdir(os.path.dirname(fpath))
+                        os.symlink(os.path.basename(fpath),
+                            os.path.basename(fpath))
+                        os.chdir(cwd)
+
+                fpath = self.get_img_file_path("dir/file")
+                create_link_loop(fpath)
+
+                # Verify that pkg verify gracefully fails if traversing a
+                # link targeting itself.
+                self.pkg("verify", exit=1)
+
+                # Verify that pkg succeeds if attempting to update a
+                # package containing a file replaced with a link loop.
+                self.pkg("update filesub")
+                self.pkg("verify")
+
+                # Now remove the package delivering the file and replace the
+                # directory with a link loop.
+                self.pkg("uninstall filesub")
+                fpath = self.get_img_file_path("dir")
+                create_link_loop(fpath)
+
+                # Verify that pkg verify gracefully fails if traversing a
+                # link targeting itself.
+                self.pkg("verify", exit=1)
+
+                # Verify that pkg gracefully fails if attempting to update
+                # a package containing a directory replace with a link loop.
+                self.pkg("update", exit=1)
 
 
 class TestConflictingActions(pkg5unittest.SingleDepotTestCase):

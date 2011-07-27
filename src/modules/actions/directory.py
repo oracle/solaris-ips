@@ -259,4 +259,9 @@ class DirectoryAction(generic.Action):
                 'fmri' is an optional package FMRI (object or string) indicating
                 what package contained this action."""
 
-                return self.validate_fsobj_common(fmri=fmri)
+                errors = generic.Action._validate(self, fmri=fmri,
+                    raise_errors=False, required_attrs=("owner", "group"))
+                errors.extend(self._validate_fsobj_common())
+                if errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)

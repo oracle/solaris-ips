@@ -32,6 +32,7 @@ relationship between the package containing the action and another package.
 """
 
 import generic
+import pkg.actions
 import pkg.fmri
 import pkg.version
 
@@ -100,126 +101,10 @@ class DependencyAction(generic.Action):
                         raise pkg.actions.InvalidActionError(
                             str(self), _("Missing type attribute"))
 
-                if "fmri" not in self.attrs:
-                        raise pkg.actions.InvalidActionError(
-                            str(self), _("Missing fmri attribute"))
-
-                if len(self.attrlist("fmri")) > 1 and \
-                    self.attrs["type"] != "require-any":
-                        raise pkg.actions.InvalidActionError(str(self),
-                            _("Multiple fmris specified for %s dependency type") %
-                            self.attrs["type"])
-
                 if self.attrs["type"] not in known_types:
                         raise pkg.actions.InvalidActionError(str(self),
                             _("Unknown type (%s) in depend action") %
                             self.attrs["type"])
-
-                if "type" == "conditional" and \
-                    "predicate" not in self.attrs:
-                        raise pkg.actions.InvalidActionError(str(self),
-                            _("No predicate specified for conditional dependency"))
-                try:
-                        if "fmri" in self.attrs:
-                                self.clean_fmri()
-                except ValueError:
-                        print "Warning: failed to clean FMRI: %s" % \
-                            self.attrs["fmri"]
-
-        def clean_fmri(self):
-                """ Clean up an invalid depend fmri into one which
-                we can recognize.
-
-                Example: 2.01.01.38-0.96  -> 2.1.1.38-0.96
-                This also corrects self.attrs["fmri"] as external code
-                knows about that, too."""
-
-                # This hack corrects a problem in pre-2008.11 packaging
-                # metadata: some depend actions were specified with invalid
-                # fmris of the form 2.38.01.01.3 (the padding zero is considered
-                # invalid).  When we get an invalid FMRI, we use regular
-                # expressions to perform a replacement operation which
-                # cleans up these problems.  It is hoped that someday this
-                # function may be removed completely once applicable releases
-                # are EOL'd.
-                #
-                # n.b. that this parser is not perfect: it will fix only
-                # the 'release' and 'branch' part of depend fmris-- these
-                # are the only places we've seen rules violations.
-                #
-                # Lots of things could go wrong here-- the caller should
-                # catch ValueError.
-                #
-                fmri_string = self.attrs["fmri"]
-                if not isinstance(fmri_string, basestring):
-                        return
-                #
-                # First, try to eliminate fmris that don't need cleaning since
-                # this process is relatively expensive (when considering tens
-                # of thousands of executions).  This currently leaves us with
-                # about 5-8% false positives, but is still a huge win overall.
-                # This won't account for cases like 'foo@00.1.2', but there
-                # are currently no known cases of that and the publication
-                # tools don't allow that syntax (currently) anyway.
-                #
-                if fmri_string.find(".0") == -1:
-                        # Nothing to do.
-                        return
-
-                #
-                # Next, locate the @ and the "," or "-" or ":" which
-                # is to the right of said @.
-                #
-                verbegin = fmri_string.find("@")
-                if verbegin == -1:
-                        return
-                verend = fmri_string.find(",", verbegin)
-                if verend == -1:
-                        verend = fmri_string.find("-", verbegin)
-                if verend == -1:
-                        verend = fmri_string.find(":", verbegin)
-                if verend == -1:
-                        verend = len(fmri_string)
-
-                # skip over the @ sign
-                verbegin += 1
-                verdots = fmri_string[verbegin:verend]
-                dots = verdots.split(".")
-
-                # Do the correction
-                cleanvers = ".".join([str(int(s)) for s in dots])
-
-                #
-                # Next, find the branch if it exists, the first '-'
-                # following the version.
-                #
-                branchbegin = fmri_string.find("-", verend)
-                if branchbegin != -1:
-                        branchend = fmri_string.find(":", branchbegin)
-                        if branchend == -1:
-                                branchend = len(fmri_string)
-
-                        # skip over the -
-                        branchbegin += 1
-                        branchdots = fmri_string[branchbegin:branchend]
-                        dots = branchdots.split(".")
-
-                        # Do the correction
-                        cleanbranch = ".".join([str(int(x)) for x in dots])
-
-                if branchbegin == -1:
-                        cleanfmri = fmri_string[:verbegin] + cleanvers + \
-                            fmri_string[verend:]
-                else:
-                        cleanfmri = fmri_string[:verbegin] + cleanvers + \
-                            fmri_string[verend:branchbegin] + cleanbranch + \
-                            fmri_string[branchend:]
-
-                # XXX enable if you need to debug
-                #if cleanfmri != fmri_string:
-                #       print "corrected invalid fmri: %s -> %s" % \
-                #           (fmri_string, cleanfmri)
-                self.attrs["fmri"] = cleanfmri
 
         def __check_parent_installed(self, image, fmri):
 
@@ -373,15 +258,18 @@ class DependencyAction(generic.Action):
                             (image.avoid_set_get() | image.obsolete_set_get()):
                                 required = True
                 elif ctype == "require-any":
-                        for ifmri, pfmri in zip(installed_versions, pfmris):
-                                e = self.__check_installed(image, ifmri, pfmri, None, True, ctype)
-                                if ifmri and not e: # this one is present and happy
+                        for ifmri, rpfmri in zip(installed_versions, pfmris):
+                                e = self.__check_installed(image, ifmri, rpfmri,
+                                    None, True, ctype)
+                                if ifmri and not e:
+                                        # this one is present and happy
                                         return [], [], []
                                 else:
                                         errors.extend(e)
 
                         if not errors: # none was installed
-                                errors.append(_("Required dependency on one of %s not met") %
+                                errors.append(_("Required dependency on one of "
+                                    "%s not met") %
                                     ", ".join((str(p) for p in pfmris)))
                         return errors, warnings, info
 
@@ -434,3 +322,51 @@ class DependencyAction(generic.Action):
                                 stem = p.split("@")[0]
                                 inds.append(("depend", ctype, stem, None))
                 return inds
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action."""
+
+                required_attrs = ["type"]
+                dtype = self.attrs.get("type")
+                if dtype == "conditional":
+                        required_attrs.append("predicate")
+
+                errors = generic.Action._validate(self, fmri=fmri,
+                    raise_errors=False, required_attrs=required_attrs,
+                    single_attrs=("predicate", "root-image"))
+
+                if "predicate" in self.attrs and dtype != "conditional":
+                        errors.append(("predicate", _("a predicate may only be "
+                            "specified for conditional dependencies")))
+                if "root-image" in self.attrs and dtype != "origin":
+                        errors.append(("root-image", _("the root-image "
+                            "attribute is only valid for origin dependencies")))
+
+                # Logic here intentionally treats 'predicate' and 'fmri' as
+                # having multiple values for simplicity.
+                for attr in ("predicate", "fmri"):
+                        for f in self.attrlist(attr):
+                                try:
+                                        pkg.fmri.PkgFmri(f, "5.11")
+                                except (pkg.version.VersionError,
+                                    pkg.fmri.FmriError), e:
+                                        if attr == "fmri" and f == "__TBD":
+                                                # pkgdepend uses this special
+                                                # value.
+                                                continue
+                                        errors.append((attr, _("invalid "
+                                            "%(attr)s value '%(value)s': "
+                                            "%(error)s") % { "attr": attr,
+                                            "value": f, "error": str(e) }))
+
+                if errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)

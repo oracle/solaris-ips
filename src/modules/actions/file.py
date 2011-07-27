@@ -34,13 +34,13 @@ import errno
 import tempfile
 import stat
 import generic
+
+import pkg.actions
+import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
-import pkg.client.api_errors as api_errors
-import pkg.actions
 
 from pkg.client.api_errors import ActionExecutionError
-from pkg.client.debugvalues import DebugValues
 
 try:
         import pkg.elf as elf
@@ -606,4 +606,12 @@ class FileAction(generic.Action):
                 'fmri' is an optional package FMRI (object or string) indicating
                 what package contained this action."""
 
-                return self.validate_fsobj_common(fmri=fmri)
+                errors = generic.Action._validate(self, fmri=fmri,
+                    numeric_attrs=("pkg.csize", "pkg.size"), raise_errors=False,
+                    required_attrs=("owner", "group"), single_attrs=("chash",
+                    "preserve", "overlay", "elfarch", "elfbits", "elfhash",
+                    "original_name"))
+                errors.extend(self._validate_fsobj_common())
+                if errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)
