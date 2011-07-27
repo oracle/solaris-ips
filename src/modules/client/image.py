@@ -1728,7 +1728,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for p in self.gen_publishers():
                         return p
                 for p in self.get_installed_pubs():
-                        return p
+                        return publisher.Publisher(p)
                 return None
 
         def check_cert_validity(self, pubs=EmptyI):
@@ -2740,22 +2740,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 for ver, fmris in cat.fmris_by_version(pfmri.pkg_name):
                         return fmris[0]
                 return None
-
-        def has_version_installed(self, fmri):
-                """Check that the version given in the FMRI or a successor is
-                installed in the current image."""
-
-                v = self.get_version_installed(fmri)
-
-                if v and not fmri.publisher:
-                        fmri.set_publisher(v.get_publisher_str())
-                elif not fmri.publisher:
-                        fmri.set_publisher(self.get_highest_ranked_publisher(),
-                            True)
-
-                if v and v.is_successor(fmri):
-                        return True
-                return False
 
         def get_pkg_repo(self, pfmri):
                 """Returns the repository object containing the origins that

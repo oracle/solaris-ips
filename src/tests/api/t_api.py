@@ -524,7 +524,7 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 self.assertTrue(api_obj.has_publisher("bobcat"))
 
                 # Verify preferred publisher prefix is returned correctly.
-                self.assertEqual(api_obj.get_highest_ranked_publisher(),
+                self.assertEqual(api_obj.get_highest_ranked_publisher().prefix,
                     "bobcat")
 
                 # Verify that get_publisher returned the correct publisher
@@ -755,6 +755,14 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
 
                 self.assertRaises(api_errors.InvalidP5IFile, api_obj.parse_p5i,
                     location=lcpath)
+
+                # Now install a package and remove all publishers and verify a
+                # publisher obj is returned by get_highest_ranked_publisher().
+                self._api_install(api_obj, ["foo"])
+                api_obj.remove_publisher("bobcat")
+                api_obj.remove_publisher("p5icat")
+                self.assert_(api_obj.get_highest_ranked_publisher().prefix,
+                    "bobcat")
 
         def test_deprecated(self):
                 """Test deprecated api interfaces."""
