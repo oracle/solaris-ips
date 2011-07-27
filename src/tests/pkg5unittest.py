@@ -1916,7 +1916,8 @@ class CliTestCase(Pkg5TestCase):
                                         copy_manifests(src_root, dest_root)
 
         def get_img_manifest_cache_dir(self, pfmri, ii=None):
-                """Returns the path to the manifest for the given fmri."""
+                """Returns the path to the manifest cache directory for the
+                given fmri."""
 
                 img = self.get_img_api_obj(ii=ii).img
 

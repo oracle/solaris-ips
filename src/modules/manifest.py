@@ -1018,7 +1018,10 @@ class FactoredManifest(Manifest):
                                         if e.errno != errno.ENOENT:
                                                 raise
                 except EnvironmentError, e:
-                        raise apx._convert_error(e)
+                        if e.errno != errno.ENOENT:
+                                # Only raise error if failure wasn't due to
+                                # cache directory not existing.
+                                raise apx._convert_error(e)
 
         def __load_cached_data(self, name):
                 """Private helper function for loading arbitrary cached manifest
