@@ -131,6 +131,22 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
                 for i in range(8):
                         self.assert_file_is_there("%d" % i, negate=(i != 0))
 
+        def test_removing_facets(self):
+                self.image_create()
+                # Test that setting an unset, non-existent facet to None works.
+                self.pkg("change-facet foo=None")
+
+                # Test that setting a non-existent facet to True then removing
+                # it works.
+                self.pkg("change-facet foo=True")
+                self.pkg("facet -H")
+                self.assertEqual("facet.foo True\n", self.output)
+                self.pkg("change-facet foo=None")
+                self.pkg("facet -H")
+                self.assertEqual("", self.output)
+
+                self.pkg("change-facet foo=None")
+
 
 if __name__ == "__main__":
         unittest.main()

@@ -1487,7 +1487,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 For all other parameters, refer to the 'gen_plan_install'
                 function for an explanation of their usage and effects."""
 
-                if not variants and not facets:
+                # An empty facets dictionary is allowed because that's how to
+                # unset all set facets.
+                if not variants and facets is None:
                         raise ValueError, "Nothing to do"
 
                 if variants:

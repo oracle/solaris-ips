@@ -2048,8 +2048,8 @@ def change_facet(op, api_inst, pargs,
 
                 v = allowed_values[value.upper()]
 
-                if v is None and name in facets:
-                        del facets[name]
+                if v is None:
+                        facets.pop(name, None)
                 else:
                         facets[name] = v
 

@@ -461,12 +461,13 @@ class ImagePlan(object):
                 install the specified pkgs, sync the specified image, and/or
                 change facets/variants within the current image."""
 
-                if not (new_variants or new_facets or pkgs_inst or li_sync_op):
+                if not (new_variants or pkgs_inst or li_sync_op or
+                    new_facets is not None):
                         # nothing to do
                         self.__fmri_changes = []
                         return
 
-                if new_variants or new_facets:
+                if new_variants or (new_facets is not None):
                         self.__varcets_change = True
                         self.__new_variants = new_variants
                         self.__new_facets   = new_facets
@@ -2679,13 +2680,17 @@ class ImagePlan(object):
 
         def nothingtodo(self):
                 """Test whether this image plan contains any work to do """
+
                 if self.state == EVALUATED_PKGS:
-                        return not (self.__fmri_changes or self.__new_variants or
-                            self.__new_facets or self.__mediators_change or
+                        return not (self.__fmri_changes or
+                            self.__new_variants or
+                            (self.__new_facets is not None) or
+                            self.__mediators_change or
                             self.pkg_plans)
                 elif self.state >= EVALUATED_OK:
                         return not (self.pkg_plans or self.__new_variants or
-                            self.__new_facets or self.__mediators_change)
+                            (self.__new_facets is not None) or
+                            self.__mediators_change)
 
         def preexecute(self):
                 """Invoke the evaluated image plan

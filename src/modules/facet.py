@@ -78,8 +78,17 @@ class Facets(dict):
                 dict.__delitem__(self, item)
                 self.__keylist.remove(item)
 
-        def pop(self, item, default=None):
-                self.__keylist.remove(item)
+        def pop(self, item, *args, **kwargs):
+                assert len(args) == 0 or (len(args) == 1 and
+                    "default" not in kwargs)
+                try:
+                        self.__keylist.remove(item)
+                except ValueError:
+                        if not args and "default" not in kwargs:
+                                raise
+                default = kwargs.get("default", None)
+                if args:
+                        default = args[0]
                 return dict.pop(self, item, default) 
 
         def popitem(self):
