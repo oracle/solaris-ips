@@ -7,6 +7,7 @@ NAME
 
 SYNOPSIS
      pkg.sysrepo -p <port> [ -c cache_dir] [-s cache_size]
+           [ -w http_proxy ] [ -W https_proxy ]
 
 DESCRIPTION
      pkg.sysrepo(1M) is used to generate the configuration  files
@@ -55,7 +56,7 @@ OPTIONS
                           'config/cache_dir' SMF property.
 
 
-SunOS 5.11          Last change: 8 Jul 2011                     1
+SunOS 5.11          Last change: 20 Jul 2011                    1
 
 
 System Administration Commands                    pkg.sysrepo(1M)
@@ -74,6 +75,28 @@ System Administration Commands                    pkg.sysrepo(1M)
                           size of  the  system  repository.  This
                           setting  should be configured using the
                           'config/cache_max' SMF property.
+
+
+     -w http_proxy        A     string      of      the      form
+                          scheme://hostname[:port]  which defines
+                          a web proxy that the system  repository
+                          should use to access http-based package
+                          repositories. This  setting  should  be
+                          configured           using          the
+                          'config/http_proxy' SMF property.
+
+
+
+     -W https_proxy       A     string      of      the      form
+                          scheme://hostname[:port]  which defines
+                          a web proxy that the system  repository
+                          should  use to access https-based pack-
+                          age repositories. This  setting  should
+                          be       configured      using      the
+                          'config/https_proxy' SMF property.
+
+
+
 
 
 
@@ -99,7 +122,7 @@ ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
      butes:
 
-SunOS 5.11          Last change: 8 Jul 2011                     2
+SunOS 5.11          Last change: 20 Jul 2011                    2
 
 
 System Administration Commands                    pkg.sysrepo(1M)
@@ -131,7 +154,7 @@ NOTES
 
 
 
-SunOS 5.11          Last change: 8 Jul 2011                     3
+SunOS 5.11          Last change: 20 Jul 2011                    3
 
 
 

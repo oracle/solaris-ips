@@ -159,7 +159,7 @@ def usage(usage_error=None, cmd=None, retcode=EXIT_BADOPT):
 Usage:
         pkg.sysrepo -p <port> [-R image_root] [ -c cache_dir] [-h hostname]
                 [-l logs_dir] [-r runtime_dir] [-s cache_size] [-t template_dir]
-                [-T http_timeout]
+                [-T http_timeout] [-w http_proxy] [-W https_proxy]
      """))
         sys.exit(retcode)
 
@@ -287,7 +287,7 @@ def _get_publisher_info(api_inst, http_timeout):
         return uri_pub_map, no_uri_pubs
 
 def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
-    cache_size, uri_pub_map):
+    cache_size, uri_pub_map, http_proxy, https_proxy):
         """Writes the apache configuration for the system repository."""
 
         try:
@@ -328,6 +328,24 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                         raise SysrepoException(_("invalid cache size: %s") %
                             cache_size)
 
+                # check our proxy arguments - we can use a proxy to handle
+                # incoming http or https requests, but that proxy must use http.
+                for key, val in [("http_proxy", http_proxy),
+                    ("https_proxy", https_proxy)]:
+                        if not val:
+                                continue
+                        try:
+                                result = urllib2.urlparse.urlparse(val)
+                                if result.scheme != "http":
+                                        raise Exception(
+                                            _("scheme must be http"))
+                                if not result.netloc:
+                                        raise Exception("missing netloc")
+                        except Exception, e:
+                                raise SysrepoException(
+                                    _("invalid %(key)s: %(val)s: %(err)s") %
+                                    {"key": key, "val": val, "err": str(e)})
+
                 httpd_conf_template_path = os.path.join(template_dir,
                     SYSREPO_HTTP_TEMPLATE)
                 httpd_conf_template = Template(
@@ -342,7 +360,9 @@ def _write_httpd_conf(runtime_dir, log_dir, template_dir, host, port, cache_dir,
                     host=host,
                     port=port,
                     cache_dir=cache_dir,
-                    cache_size=int(cache_size) * 1024)
+                    cache_size=int(cache_size) * 1024,
+                    http_proxy=http_proxy,
+                    https_proxy=https_proxy)
                 httpd_conf_path = os.path.join(runtime_dir,
                     SYSREPO_HTTP_FILENAME)
                 httpd_conf_file = file(httpd_conf_path, "w")
@@ -490,7 +510,7 @@ def cleanup_conf(runtime_dir=None):
 
 def refresh_conf(image_root="/", port=None, runtime_dir=None,
     log_dir=None, template_dir=None, host="127.0.0.1", cache_dir=None,
-    cache_size=1024, http_timeout=3):
+    cache_size=1024, http_timeout=3, http_proxy=None, https_proxy=None):
         """Creates a new configuration for the system repository.
         That is, it copies /var/pkg/pkg5.image file the htdocs
         directory and creates an apache .conf file.
@@ -525,7 +545,8 @@ def refresh_conf(image_root="/", port=None, runtime_dir=None,
                             _("unable to create htdocs dir: %s") % err)
 
                 _write_httpd_conf(runtime_dir, log_dir, template_dir, host,
-                    port, cache_dir, cache_size, uri_pub_map)
+                    port, cache_dir, cache_size, uri_pub_map, http_proxy,
+                    https_proxy)
                 _write_crypto_conf(runtime_dir, uri_pub_map)
                 _write_publisher_response(uri_pub_map, htdocs_path,
                     template_dir)
@@ -565,10 +586,12 @@ def main_func():
         runtime_dir = "%s/var/run/pkg/sysrepo" % image_root
         log_dir = "%s/var/log/pkg/sysrepo" % image_root
         http_timeout = 4
+        http_proxy = None
+        https_proxy = None
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "c:h:l:p:r:R:s:t:T:?",
-                    ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:],
+                    "c:h:l:p:r:R:s:t:T:w:W:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-c":
                                 cache_dir = arg
@@ -588,6 +611,10 @@ def main_func():
                                 template_dir = arg
                         elif opt == "-T":
                                 http_timeout = arg
+                        elif opt == "-w":
+                                http_proxy = arg
+                        elif opt == "-W":
+                                https_proxy = arg
                         else:
                                 usage()
 
@@ -600,7 +627,8 @@ def main_func():
         ret = refresh_conf(image_root=image_root, log_dir=log_dir,
             host=host, port=port, runtime_dir=runtime_dir,
             template_dir=template_dir, cache_dir=cache_dir,
-            cache_size=cache_size, http_timeout=http_timeout)
+            cache_size=cache_size, http_timeout=http_timeout,
+            http_proxy=http_proxy, https_proxy=https_proxy)
         return ret
 
 #

@@ -114,9 +114,16 @@
                         <propval name='cache_dir' type='astring'
                                 value='/var/cache/pkg/sysrepo' />
                         <!-- Our maximum cache size, expressed in MB -->
-                        <propval name='cache_max' type='count' value='1024' />
+                        <propval name='cache_max' type='count' value='2048' />
                         <propval name='value_authorization' type='astring'
                                 value='solaris.smf.value.pkg-sysrepo' />
+
+			<!-- If the system-repository itself should use web
+			proxies to gain access to pkg(5) repositories,
+                        specify those here in, the form http://<host>:[port] -->
+			<propval name='http_proxy' type='astring' value='' />
+			<propval name='https_proxy' type='astring' value='' />
+
                 </property_group>
 
 		<property_group name='general' type='framework'>

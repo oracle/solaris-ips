@@ -184,6 +184,20 @@ class TestBasicSysrepoCli(pkg5unittest.CliTestCase):
                         self.assert_("http_timeout" in err, "error message "
                              "did not contain http_timeout: %s" % err)
 
+        def test_11_invalid_proxies(self):
+                """We return an error given invalid proxies"""
+
+                for invalid_proxy in ["http://", "https://foo.bar", "-1"]:
+                        ret, output, err = self.sysrepo("-w %s" % invalid_proxy,
+                            out=True, stderr=True, exit=1)
+                        self.assert_("http_proxy" in err, "error message "
+                             "did not contain http_proxy: %s" % err)
+                        ret, output, err = self.sysrepo("-W %s" % invalid_proxy,
+                            out=True, stderr=True, exit=1)
+                        self.assert_("https_proxy" in err, "error message "
+                             "did not contain https_proxy: %s" % err)
+
+
 class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
 
         persistent_setup = True
@@ -438,6 +452,21 @@ class TestDetailedSysrepoCli(pkg5unittest.ManyDepotTestCase):
                 # restore our image before going any further
                 self.assert_("does not exist" in err, "unable to find expected "
                     "error message in stderr: %s" % err)
+
+        def test_11_proxy_args(self):
+                """Ensure we write configuration to tell Apache to use a remote
+                proxy when proxying requests when using -w or -W"""
+                self.image_create(prefix="test1", repourl=self.durl1)
+
+                for arg, directives in [
+                    ("-w http://foo", ["ProxyRemote http http://foo"]),
+                    ("-W http://foo", ["ProxyRemote https http://foo"]),
+                    ("-w http://foo -W http://foo",
+                    ["ProxyRemote http http://foo",
+                    "ProxyRemote https http://foo"])]:
+                            self.sysrepo(arg)
+                            for d in directives:
+                                    self.file_contains(self.default_sc_conf, d)
 
 if __name__ == "__main__":
         unittest.main()

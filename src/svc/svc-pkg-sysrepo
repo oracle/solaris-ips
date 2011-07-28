@@ -72,6 +72,13 @@ check_failure() {
 }
 
 run_sysrepo() {
+	if [ "$http_proxy" ]; then
+		SYSREPO_HTTP_PROXY="-w ${http_proxy}"
+	fi
+	if [ "$https_proxy" ]; then
+		SYSREPO_HTTPS_PROXY="-W ${https_proxy}"
+	fi
+
         /usr/lib/pkg.sysrepo \
                -R / \
                -c ${SYSREPO_CACHE_DIR} \
@@ -80,7 +87,9 @@ run_sysrepo() {
                -p ${SYSREPO_PORT} \
                -r ${SYSREPO_RUNTIME_DIR} \
                -s ${SYSREPO_CACHE_MAX} \
-               -t ${SYSREPO_TEMPLATE_DIR}
+               -t ${SYSREPO_TEMPLATE_DIR} \
+	       ${SYSREPO_HTTP_PROXY} \
+	       ${SYSREPO_HTTPS_PROXY}
         check_failure $? "pkg.sysrepo: failed to create Apache configuration"
 }
 
@@ -90,13 +99,14 @@ run_htcacheclean() {
 	kill_htcacheclean
 	if [ "${SYSREPO_CACHE_DIR}" != "None" ] && \
 	    [ "${SYSREPO_CACHE_DIR}" != "memory" ]; then
-               # Start a cache cleaning daemon, scanning every 120 minutes,
+               # Start a cache cleaning daemon, scanning every 2 weeks,
                # being intelligent about only running if the cache has changed,
                # limiting the cache to ${SYSREPO_CACHE_MAX} megabytes, being
                # nice about scheduling and removing empty directories if
                # necessary.
+	       interval=$((60 * 24 * 14))
                /usr/bin/su pkg5srv -c "/usr/apache2/2.2/bin/htcacheclean \
-                       -d120 -i -l ${SYSREPO_CACHE_MAX}M -n \
+                       -d${interval} -i -l ${SYSREPO_CACHE_MAX}M -n \
                        -p ${SYSREPO_CACHE_DIR} \
                        -P ${SYSREPO_CACHE_DIR}/../sysrepo_htcacheclean.pid \
                        -t"
@@ -146,6 +156,16 @@ fi
 getprop config/cache_max
 if [ "${PROPVAL}" != "" ] ; then
         SYSREPO_CACHE_MAX=${PROPVAL}
+fi
+
+getprop config/http_proxy
+if [ "${PROPVAL}" != "" ] ; then
+	http_proxy=${PROPVAL}
+fi
+
+getprop config/https_proxy
+if [ "${PROPVAL}" != "" ] ; then
+	https_proxy=${PROPVAL}
 fi
 
 case "$1" in

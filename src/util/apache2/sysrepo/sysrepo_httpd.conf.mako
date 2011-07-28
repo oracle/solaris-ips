@@ -44,75 +44,17 @@ Listen ${host}:${port}
 # are actually available _before_ they are used.
 #
 
-LoadModule authn_file_module libexec/64/mod_authn_file.so
-LoadModule authn_dbm_module libexec/64/mod_authn_dbm.so
-LoadModule authn_anon_module libexec/64/mod_authn_anon.so
-LoadModule authn_dbd_module libexec/64/mod_authn_dbd.so
-LoadModule authn_default_module libexec/64/mod_authn_default.so
 LoadModule authz_host_module libexec/64/mod_authz_host.so
-LoadModule authz_groupfile_module libexec/64/mod_authz_groupfile.so
-LoadModule authz_user_module libexec/64/mod_authz_user.so
-LoadModule authz_dbm_module libexec/64/mod_authz_dbm.so
-LoadModule authz_owner_module libexec/64/mod_authz_owner.so
-LoadModule authnz_ldap_module libexec/64/mod_authnz_ldap.so
-LoadModule authz_default_module libexec/64/mod_authz_default.so
-LoadModule auth_basic_module libexec/64/mod_auth_basic.so
-LoadModule auth_digest_module libexec/64/mod_auth_digest.so
-LoadModule file_cache_module libexec/64/mod_file_cache.so
 LoadModule cache_module libexec/64/mod_cache.so
 LoadModule disk_cache_module libexec/64/mod_disk_cache.so
 LoadModule mem_cache_module libexec/64/mod_mem_cache.so
-LoadModule dbd_module libexec/64/mod_dbd.so
-LoadModule dumpio_module libexec/64/mod_dumpio.so
-LoadModule reqtimeout_module libexec/64/mod_reqtimeout.so
-LoadModule ext_filter_module libexec/64/mod_ext_filter.so
-LoadModule include_module libexec/64/mod_include.so
-LoadModule filter_module libexec/64/mod_filter.so
-LoadModule substitute_module libexec/64/mod_substitute.so
-LoadModule deflate_module libexec/64/mod_deflate.so
-LoadModule ldap_module libexec/64/mod_ldap.so
 LoadModule log_config_module libexec/64/mod_log_config.so
-LoadModule log_forensic_module libexec/64/mod_log_forensic.so
-LoadModule logio_module libexec/64/mod_logio.so
-LoadModule env_module libexec/64/mod_env.so
-LoadModule mime_magic_module libexec/64/mod_mime_magic.so
-LoadModule cern_meta_module libexec/64/mod_cern_meta.so
-LoadModule expires_module libexec/64/mod_expires.so
-LoadModule headers_module libexec/64/mod_headers.so
-LoadModule ident_module libexec/64/mod_ident.so
-LoadModule usertrack_module libexec/64/mod_usertrack.so
-LoadModule unique_id_module libexec/64/mod_unique_id.so
-LoadModule setenvif_module libexec/64/mod_setenvif.so
-LoadModule version_module libexec/64/mod_version.so
 LoadModule proxy_module libexec/64/mod_proxy.so
 LoadModule proxy_connect_module libexec/64/mod_proxy_connect.so
-LoadModule proxy_ftp_module libexec/64/mod_proxy_ftp.so
 LoadModule proxy_http_module libexec/64/mod_proxy_http.so
-LoadModule proxy_scgi_module libexec/64/mod_proxy_scgi.so
-LoadModule proxy_ajp_module libexec/64/mod_proxy_ajp.so
-LoadModule proxy_balancer_module libexec/64/mod_proxy_balancer.so
 LoadModule ssl_module libexec/64/mod_ssl.so
 LoadModule mime_module libexec/64/mod_mime.so
-LoadModule dav_module libexec/64/mod_dav.so
-LoadModule status_module libexec/64/mod_status.so
-LoadModule autoindex_module libexec/64/mod_autoindex.so
-LoadModule asis_module libexec/64/mod_asis.so
-LoadModule info_module libexec/64/mod_info.so
-LoadModule suexec_module libexec/64/mod_suexec.so
-<IfModule prefork.c>
-LoadModule cgi_module libexec/64/mod_cgi.so
-</IfModule>
-<IfModule worker.c>
-LoadModule cgid_module libexec/64/mod_cgid.so
-</IfModule>
-LoadModule dav_fs_module libexec/64/mod_dav_fs.so
-LoadModule vhost_alias_module libexec/64/mod_vhost_alias.so
-LoadModule negotiation_module libexec/64/mod_negotiation.so
 LoadModule dir_module libexec/64/mod_dir.so
-LoadModule imagemap_module libexec/64/mod_imagemap.so
-LoadModule actions_module libexec/64/mod_actions.so
-LoadModule speling_module libexec/64/mod_speling.so
-LoadModule userdir_module libexec/64/mod_userdir.so
 LoadModule alias_module libexec/64/mod_alias.so
 LoadModule rewrite_module libexec/64/mod_rewrite.so
 
@@ -301,8 +243,18 @@ SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
 
-LogLevel Info
 RewriteEngine on
+
+<%doc> #
+       # Specify http and https proxies if we need them
+       # values are urls of the form http://<hostname>:[port]
+</%doc>
+% if http_proxy != None:
+ProxyRemote http ${http_proxy}
+% endif
+% if https_proxy != None:
+ProxyRemote https ${https_proxy}
+% endif
 
 <%doc> #
        # We only perform caching if cache_dir is set.  It need to be set to
@@ -316,8 +268,11 @@ RewriteEngine on
 <IfModule mod_disk_cache.c>
 CacheRoot ${cache_dir}
 CacheEnable disk /
-CacheDirLevels 5
-CacheDirLength 3
+# The levels and length of the cache directories can
+# be small here, as ZFS is good at dealing with directories
+# containing many files.
+CacheDirLevels 1
+CacheDirLength 2
 # A 44mb seems like a reasonable size for the largest
 # file we will choose to cache.
 CacheMaxFileSize 45690876
@@ -330,6 +285,8 @@ MCacheMaxObjectCount 200000
 MCacheMinObjectSize 1
 MCacheMaxObjectSize 45690876
 % endif
+CacheDisable /versions/0
+CacheDisable /syspub/0
 </IfModule>
 % endif
 
@@ -453,24 +410,23 @@ RewriteRule \* - [L]
 # catch all, denying everything
 RewriteRule ^.*$ - [R=404]
 
-
-#
-# The following Aliases allow file-based repositories to function
-# correctly, in conjunction with the rewrites above
-#
 % for uri in reversed(sorted(uri_pub_map.keys())):
         % for pub, cert_path, key_path, hash in uri_pub_map[uri]:
                 <%doc>
-                # we create an alias for the file repository under ${pub}
+                # Create an alias for the file repository under ${pub}
                 </%doc>
                 % if uri.startswith("file:"):
                         <% repo_path = uri.replace("file:", "") %>
-# a file repo alias to serve ${uri} content.
+# a file repository alias to serve ${uri} content.
 <Directory "${repo_path}">
     AllowOverride None
     Order allow,deny
     Allow from 127.0.0.1
 </Directory>
+                                % if cache_dir != None:
+CacheDisable /${pub}/${hash}/publisher/0
+CacheDisable /${pub}/${hash}/versions/0
+                                % endif
 Alias /${pub}/${hash} ${repo_path}
                 % endif
         % endfor uri
