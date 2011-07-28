@@ -561,7 +561,7 @@ set name=variant.arch value=i386 value=sparc
 """
 
 expected_failures["invalid_fmri.mf"] = ["pkglint.action006",
-    "pkglint.action006"]
+    "pkglint.action006", "pkglint.action009", "pkglint.action009"]
 broken_manifests["invalid_fmri.mf"] = \
 """
 #
@@ -578,7 +578,8 @@ depend fmri=foo/bar fmri="" type=require-any
 """
 
 expected_failures["invalid_linted.mf"] = ["pkglint.action006",
-    "pkglint.action006", "pkglint001.6", "pkglint001.6", "pkglint.manifest007"]
+    "pkglint.action006", "pkglint001.6", "pkglint001.6", "pkglint.manifest007",
+    "pkglint.action009", "pkglint.action009"]
 broken_manifests["invalid_linted.mf"] = \
 """
 #
