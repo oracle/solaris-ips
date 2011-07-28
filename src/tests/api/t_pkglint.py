@@ -59,7 +59,9 @@ expected_failures = {}
 
 expected_failures["unusual_perms.mf"] = ["pkglint.action002.2",
     "pkglint.action002.1", "pkglint.action002.4", "pkglint.action002.4",
-    "pkglint.action002.3"]
+    # 5 errors corresponding to the broken group checks above
+    "pkglint.action002.3", "pkglint.action009", "pkglint.action009",
+    "pkglint.action009", "pkglint.action009"]
 broken_manifests["unusual_perms.mf"] = \
 """
 #
@@ -81,8 +83,8 @@ file 1d5eac1aab628317f9c088d21e4afda9c754bb76 chash=43dbb3e0bc142f399b61d171f926
 dir path=usr mode=991
 dir path=usr/foo mode=457
 dir path=usr/foo/other mode=222
-file NOHASH path=usr/foo/file mode=0112
-file NOHASH path=usr/foo/bar mode=01
+file NOHASH path=usr/foo/file mode=0112 owner=root group=staff
+file NOHASH path=usr/foo/bar mode=01 owner=root group=staff
 """
 
 # The errors for this check are pretty unpleasant
@@ -1043,6 +1045,368 @@ dir mode=0555 owner=root group=sys path=/usr/bin pkg.linted.pkglint.action005.1=
 signature algorithm=sha256 value=75b662e14a4ea8f0fa0507d40133b0347a36bc1f63112487f4738073edf4455d version=0
 """
 
+expected_failures["overlay-valid-many-overlays-valid-mismatch.mf"] = []
+broken_manifests["overlay-valid-many-overlays-valid-mismatch.mf"] = \
+"""
+#
+# This manifest declares multiple overlay=true action, each under a different
+# variant, and multiple overlay=allow actions, one of our variants declares a
+# different mode, which here, should be ok.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0755 overlay=allow owner=timf path=foo preserve=true variant.arch=sparc
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=other
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=new
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=baz
+file NOHASH group=staff mode=0755 overlay=true owner=timf path=foo variant.arch=sparc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
+"""
+
+expected_failures["overlay-valid-many-overlays.mf"] = []
+broken_manifests["overlay-valid-many-overlays.mf"] = \
+"""
+#
+# This manifest declares multiple overlay=true action, each under a different
+# variant, and multiple overlay=allow actions.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=other
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=new
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=baz
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=sparc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=sparc
+"""
+
+expected_failures["overlay-valid-no-allow-overlay-variant.mf"] = []
+broken_manifests["overlay-valid-no-allow-overlay-variant.mf"] = \
+"""
+#
+# We have an overlay attribute, but no overlay=allow attribute on the 2nd
+# action, but since we use use variants, the first action never needs to overlay
+# another action.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386 variant.bar=other
+
+"""
+
+expected_failures["overlay-valid-simple-no-overlay.mf"] = []
+broken_manifests["overlay-valid-simple-no-overlay.mf"] = \
+"""
+#
+# A valid manifest which declares two overlay=allow actions across different
+# variants.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0655 overlay=allow owner=timf path=foo preserve=true variant.arch=sparc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
+"""
+
+expected_failures["overlay-valid-simple-overlay-true.mf"] = []
+broken_manifests["overlay-valid-simple-overlay-true.mf"] = \
+"""
+#
+# A valid manifest which just declares an overlay=true action
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386
+"""
+
+expected_failures["overlay-valid-simple-overlay.mf"] = []
+broken_manifests["overlay-valid-simple-overlay.mf"] = \
+"""
+#
+# A basic valid manifest that uses overlays
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo
+file NOHASH group=staff mode=0644 overlay=allow preserve=true owner=timf path=foo
+"""
+
+expected_failures["overlay-valid-triple-allowed.mf"] = []
+broken_manifests["overlay-valid-triple-allowed.mf"] = \
+"""
+#
+# A valid manifest which has a single overlay=true action, and multiple
+# overlay=allow actions, each in a different variant.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=other
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=new
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=baz
+
+"""
+
+expected_failures["overlay-valid-triple-true.mf"] = []
+broken_manifests["overlay-valid-triple-true.mf"] = \
+"""
+#
+# This manifest declares multiple overlay=true attributes, each under a
+# different variant.
+#
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=other
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=new
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386 variant.bar=baz
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
+"""
+
+expected_failures["overlay-valid-mismatch-attrs.mf"] = []
+broken_manifests["overlay-valid-mismatch-attrs.mf"] = \
+"""
+#
+# We declare overlays, but have mismatching attributes between them
+# blah=foo differs, but shouldn't matter.
+#
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=variant.timf value=foo value=bar
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0755 overlay=true owner=timf path=foo variant.arch=ppc variant.timf=foo blah=foo
+file NOHASH group=staff mode=0755 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc variant.timf=foo
+"""
+
+# more overlay checks
+expected_failures["overlay-invalid-broken-attrs.mf"] = ["pkglint.dupaction009.6"]
+broken_manifests["overlay-invalid-broken-attrs.mf"] = \
+"""
+#
+# We declare overlays, but have mismatching attributes between them
+#
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=variant.timf value=foo value=bar
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0755 overlay=true owner=timf path=foo variant.arch=ppc variant.timf=foo blah=foo
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc variant.timf=foo
+"""
+
+expected_failures["overlay-invalid-duplicate-allows.mf"] = \
+    ["pkglint.dupaction009.3"]
+broken_manifests["overlay-invalid-duplicate-allows.mf"] = \
+"""
+#
+# Duplicate overlay=allow actions, with no overlay=true action.
+#
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=variant.timf value=foo value=bar
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc
+"""
+
+expected_failures["overlay-invalid-duplicate-overlays.mf"] = \
+    ["pkglint.dupaction009.2"]
+broken_manifests["overlay-invalid-duplicate-overlays.mf"] = \
+"""
+# We have duplicate overlay actions
+
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=variant.timf value=foo value=bar
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc
+"""
+
+expected_failures["overlay-invalid-duplicate-pairs.mf"] = \
+    ["pkglint.dupaction009.4", "pkglint.dupaction009.2"]
+broken_manifests["overlay-invalid-duplicate-pairs.mf"] = \
+"""
+# ensure that depite complimentary pairs of overlay actions,
+# we still catch the duplicate one
+
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=variant.timf value=foo value=bar
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=ppc
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=rename variant.arch=ppc
+"""
+
+expected_failures["overlay-invalid-no-allow-overlay.mf"] = \
+    ["pkglint.dupaction001.2", "pkglint.dupaction009.7",
+    "pkglint.dupaction009.5"]
+broken_manifests["overlay-invalid-no-allow-overlay.mf"] = \
+"""
+# we have an overlay attribute, but no overlay=allow attribute
+# on the 2nd action
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386
+file NOHASH group=staff mode=0644 owner=timf path=foo preserve=true variant.arch=i386
+"""
+
+expected_failures["overlay-invalid-no-overlay-allow.mf"] = \
+    ["pkglint.dupaction001.1", "pkglint.dupaction009.7",
+    "pkglint.dupaction009.5"]
+broken_manifests["overlay-invalid-no-overlay-allow.mf"] = \
+"""
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo
+file NOHASH group=staff mode=0644 owner=timf path=foo preserve=rename
+"""
+
+expected_failures["overlay-invalid-no-overlay-preserve.mf"] = \
+    ["pkglint.dupaction009.1", "pkglint.dupaction009.5"]
+broken_manifests["overlay-invalid-no-overlay-preserve.mf"] = \
+"""
+# we don't delcare a 'preserve' attribute on our overlay=allow action
+#
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc value=ppc
+set name=org.opensolaris.consolidation value=pkg
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo
+"""
+
+expected_failures["overlay-invalid-no-overlay-true.mf"] = \
+    ["pkglint.dupaction001.1", "pkglint.dupaction009.7"]
+broken_manifests["overlay-invalid-no-overlay-true.mf"] = \
+"""
+# we're missing an overlay=true action, resulting in a duplicate
+set name=pkg.fmri value=bar
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=org.opensolaris.consolidation value=ips
+set name=variant.arch value=i386
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true
+file NOHASH group=staff mode=0644 owner=timf path=foo preserve=rename
+"""
+
+expected_failures["overlay-invalid-triple-broken-variants.mf"] = \
+    ["pkglint.dupaction009.4"]
+broken_manifests["overlay-invalid-triple-broken-variants.mf"] = \
+"""
+# this package declares overlay actions, but we have duplicate
+# overlay='allow' attributes for variant.foo=foo1
+
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386
+set name=variant.bar value=other value=new value=baz
+set name=variant.foo value=foo1 value=foo2
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=other
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=new variant.foo=foo1
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.bar=new variant.foo=foo2
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386 variant.bar=new variant.foo=foo1
+"""
+
+expected_failures["overlay-invalid-triple-broken.mf"] = \
+    ["pkglint.dupaction009.4"]
+broken_manifests["overlay-invalid-triple-broken.mf"] = \
+"""
+# this manifest has multiple overlay=allow variants, but the last is
+# duplicated across variant.bar variants
+set name=pkg.fmri value=foo
+set name=pkg.summary value="Image Packaging System"
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+set name=pkg.description value="overlay checks"
+set name=variant.arch value=i386 value=sparc
+set name=variant.bar value=other value=new value=baz
+set name=org.opensolaris.consolidation value=pkg
+
+file NOHASH group=staff mode=0644 overlay=true owner=timf path=foo variant.arch=i386
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386 variant.bar=other
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386 variant.bar=new
+file NOHASH group=staff mode=0644 overlay=allow owner=timf path=foo preserve=true variant.arch=i386
+"""
+
 expected_failures["renamed-more-actions.mf"] = ["pkglint.manifest002.1",
     "pkglint.manifest002.3"]
 broken_manifests["renamed-more-actions.mf"] = \
@@ -1217,6 +1581,22 @@ dir group=bin mode=0755 alt=foo owner=root path=usr/lib/X11/fs
 file nohash group=bin mode=0755 owner=root path=usr/sbin/fsadmin pkg.csize=1234 pkg.size=1234
 file nohash group=sys mode=0444 owner=root path=var/svc/manifest/application/x11/xfs.xml pkg.csize=1649 pkg.size=3534 restart_fmri=svc:/system/manifest-import:default
 file nohash elfarch=i386 elfbits=32 elfhash=2d5abc9b99e65c52c1afde443e9c5da7a6fcdb1e group=bin mode=0755 owner=root path=usr/bin/xfs pkg.csize=68397 pkg.size=177700 variant.arch=i386
+"""
+
+expected_failures["action_validation.mf" ] = ["pkglint.action009"]
+broken_manifests["action_validation.mf" ] = \
+"""
+#
+# We deliver an intentionally broken file action
+#
+set name=pkg.fmri value=pkg://opensolaris.org/pkglint/test@1.0,1.0
+set name=org.opensolaris.consolidation value=osnet
+set name=variant.opensolaris.zone value=global value=nonglobal
+set name=pkg.description value="A pkglint test"
+set name=pkg.summary value="Yet another test"
+set name=variant.arch value=i386 value=sparc
+set name=info.classification value=org.opensolaris.category.2008:System/Packaging
+file nohash path=/dev/null
 """
 
 expected_failures["whitelist_action_missing_dep.mf"] = []

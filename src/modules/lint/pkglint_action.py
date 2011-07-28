@@ -27,8 +27,11 @@
 from pkg.lint.engine import lint_fmri_successor
 
 import collections
+import copy
 import pkg.fmri
 import pkg.lint.base as base
+from pkg.actions import ActionError
+from pkg.actions.file import FileAction
 import stat
 import string
 
@@ -85,6 +88,7 @@ class PkgDupActionChecker(base.ActionChecker):
                 self.processed_gids = {}
 
                 self.processed_refcount_paths = {}
+                self.processed_overlays = {}
 
                 # mark which paths we've done duplicate-type checking on
                 self.seen_dup_types = {}
@@ -298,17 +302,16 @@ class PkgDupActionChecker(base.ActionChecker):
                                 continue
                         fmris.add(pfmri)
                         for key in a.differences(target):
-                                # target, used in link actions often differs
-                                # between variants of those actions.
+                                # we allow certain attribute values to differ.
                                 if key.startswith("variant") or \
                                     key.startswith("facet") or \
                                     key.startswith("target") or \
                                     key.startswith("pkg.linted"):
                                         continue
-                                conflicting_vars, variants = \
+                                conflicting_vars, conflicting_actions = \
                                     self.conflicting_variants([a, target],
                                         manifest.get_all_variants())
-                                if not conflicting_vars:
+                                if not conflicting_actions:
                                         continue
                                 differences.add(key)
                 suspects = []
@@ -346,7 +349,8 @@ class PkgDupActionChecker(base.ActionChecker):
             "Duplicated reference counted actions should have the same attrs.")
 
         def dup_attr_check(self, action_names, attr_name, ref_dic,
-            processed_dic, action, engine, pkg_vars, msgid=""):
+            processed_dic, action, engine, pkg_vars, msgid="",
+            only_overlays=False):
                 """This method does generic duplicate action checking where
                 we know the type of action and name of an action attributes
                 across actions/manifests that should not be duplicated.
@@ -366,7 +370,10 @@ class PkgDupActionChecker(base.ActionChecker):
 
                 'engine' The LintEngine calling this method
 
-                'id' The pkglint_id to use when logging messages."""
+                'msgid' The pkglint_id to use when logging messages.
+
+                'only_overlays' Only report about misuse of the 'overlay'
+                attribute for file actions."""
 
                 if attr_name not in action.attrs:
                         return
@@ -388,9 +395,25 @@ class PkgDupActionChecker(base.ActionChecker):
                         actions.add(a)
                         fmris.add(pfmri)
 
-                has_conflict, conflict_vars = self.conflicting_variants(actions,
-                    pkg_vars)
-                if has_conflict:
+                conflict_vars, conflict_actions = \
+                    self.conflicting_variants(actions, pkg_vars)
+
+                # prune out any valid overlay file action-pairs.
+                if attr_name == "path" and action.name == "file":
+                        conflict_actions, errors = _prune_overlays(
+                            self, conflict_actions, ref_dic, pkg_vars)
+                        if only_overlays:
+                                for error, sub_id in errors:
+                                        engine.error(error, msgid="%s%s.%s" %
+                                            (self.name, msgid, sub_id))
+                                processed_dic[name] = True
+                                return
+
+                        if conflict_actions:
+                                 conflict_vars, conflict_actions = \
+                                        self.conflicting_variants(actions,
+                                            pkg_vars)
+                if conflict_actions:
                         plist = [f.get_fmri() for f in sorted(fmris)]
 
                         if not conflict_vars:
@@ -447,10 +470,10 @@ class PkgDupActionChecker(base.ActionChecker):
                         types.add(a.name)
                         fmris.add(pfmri)
                 if len(types) > 1:
-                        has_conflict, conflict_vars = \
+                        conflict_vars, conflict_actions = \
                             self.conflicting_variants(actions,
                                 manifest.get_all_variants())
-                        if has_conflict:
+                        if conflict_actions:
                                 plist = [f.get_fmri() for f in sorted(fmris)]
                                 plist.sort()
                                 engine.error(
@@ -464,6 +487,23 @@ class PkgDupActionChecker(base.ActionChecker):
 
         duplicate_path_types.pkglint_desc = _(
             "Paths should be delivered by one action type only.")
+
+        def overlays(self, action, manifest, engine, pkglint_id="009"):
+                """Checks that any duplicate file actions which specify overlay
+                attributes do so according to the rules.
+
+                Much of the implementation here is done by _prune_overlays(..),
+                called by dup_attr_check."""
+
+                if action.name != "file":
+                        return
+
+                self.dup_attr_check(["file"], "path", self.ref_paths,
+                    self.processed_overlays, action, engine,
+                    manifest.get_all_variants(), msgid=pkglint_id,
+                    only_overlays=True)
+
+        overlays.pkglint_desc = _("Overlaying actions should be valid.")
 
         def _merge_dict(self, src, target, ignore_pubs=True):
                 """Merges the given src dictionary into the target
@@ -511,6 +551,187 @@ class PkgDupActionChecker(base.ActionChecker):
                                 for action in targ_dic[pfmri]:
                                         l.append((pfmri, action))
                         target[p] = l
+
+def _prune_overlays(self, actions, ref_dic, pkg_vars):
+        """Given a list of file actions that all deliver to the same path,
+        return that list minus any actions that are attempting to use overlays.
+        Also  return a list of tuples containing any overlay-related errors
+        encountered, in the the format [ (<error msg>, <id>), ... ]
+        """
+
+        if not actions:
+                return [], []
+
+        path = actions[0].attrs["path"]
+        # action_fmris is a list of (fmri, action) tuples
+        action_fmris = ref_dic[path]
+        # When printing errors, we emit all FMRIs that are taking part in the
+        # duplication of this path.
+        fmris = sorted(set([str(fmri) for fmri, action in action_fmris]))
+
+        def _remove_attrs(action):
+                """returns a string representation of the given action with
+                all non-variant attributes other than path and overlay removed.
+                Used for comparison of overlay actions.
+                """
+                action_copy = copy.deepcopy(action)
+                for key in action_copy.attrs.keys():
+                        if key in ["path", "overlay"]:
+                                continue
+                        elif key.startswith("variant"):
+                                continue
+                        else:
+                                del action_copy.attrs[key]
+                return str(action_copy)
+
+        def _get_fmri(action, action_fmris):
+                """return the fmri for a given action."""
+                for fmri, ac in action_fmris:
+                        if action == ac:
+                                return fmri
+
+        # buckets for actions according to their overlay attribute value
+        # any actions that do not specify overlay attributes, or use them
+        # incorrectly get put into ret_actions, and returned for our
+        # generic duplicate-attribute code to deal with.
+        allow_overlay = []
+        overlay = []
+        ret_actions = []
+
+        errors = set()
+
+        # sort our list of actions into the corresponding bucket
+        for action in actions:
+                overlay_attr = action.attrs.get("overlay", None)
+                if overlay_attr and overlay_attr == "allow":
+                        if not action.attrs.get("preserve", None):
+                                errors.add(
+                                    (_("path %(path)s missing 'preserve' "
+                                    "attribute for 'overlay=allow' action "
+                                    "in %(fmri)s") % {"path": path,
+                                    "fmri": _get_fmri(action, action_fmris)},
+                                    "1"))
+                        else:
+                                allow_overlay.append(action)
+
+                elif overlay_attr and overlay_attr == "true":
+                        overlay.append(action)
+                else:
+                        ret_actions.append(action)
+
+        if not (overlay or allow_overlay):
+                return actions, []
+
+        def _render_variants(conflict_vars):
+                """pretty print a group of variants"""
+                vars = set()
+                for group in conflict_vars:
+                        for key, val in group:
+                                vars.add("%s=%s" % (key, val))
+                return ", ".join(list(vars))
+
+        def _unique_attrs(action):
+                """return a dictionary containing only attrs that must be
+                unique across overlay actions."""
+                attrs = {}
+                for key in FileAction.unique_attrs:
+                        if key == "preserve":
+                                continue
+                        attrs[key] = action.attrs.get(key, None)
+                return attrs
+
+        # Ensure none of the groups of overlay actions have
+        # conflicting variants within them.
+        conflict_vars, conflict_overlays = self.conflicting_variants(overlay,
+            pkg_vars)
+        if conflict_vars:
+                errors.add(
+                    (_("path %(path)s has duplicate 'overlay=true' actions for "
+                    "the following variants across across %(fmris)s: %(var)s") %
+                    {"path": path, "fmris": ", ".join(list(fmris)),
+                    "var": _render_variants(conflict_vars)}, "2"))
+
+        # verify that if we're only delivering overlay=allow actions, none of
+        # them conflict with each other (we check corresponding overlay=true
+        # actions, if any, later)
+        if not overlay:
+                conflict_vars, conflict_overlays = self.conflicting_variants(
+                allow_overlay, pkg_vars)
+                if conflict_vars:
+                        errors.add(
+                            (_("path %(path)s has duplicate 'overlay=allow' "
+                            "actions for the following variants across across "
+                            "%(fmris)s: %(var)s") %
+                            {"path": path, "fmris": ", ".join(list(fmris)),
+                            "var": _render_variants(conflict_vars)}, "3"))
+
+        # Check for valid, complimentary sets of overlay and allow_overlay
+        # actions.
+        seen_mismatch = False
+        for a1 in overlay:
+                # Our assertions on how to detect clashing overlay +
+                # allow_overlay actions:
+                #
+                # 1. each overlay action must have at least one conflict from
+                #    the set of allow_overlay actions.
+                #
+                # 2. from that set of conflicts, when we remove the overlay
+                #    action itself, there must be no conflicts within that set
+                #    of overlay=allow actions.
+                #
+                # 3. all attributes required to be the same between
+                #    complimentary sets of allow_overlay and overlay actions
+                #    are the same.
+
+                conflict_vars, conflict_actions = self.conflicting_variants(
+                    [a1] + allow_overlay, pkg_vars)
+
+                if conflict_actions:
+                        conflict_actions.remove(a1)
+                        conflict_vars_sub, conflict_actions_allow = \
+                            self.conflicting_variants(conflict_actions,
+                            pkg_vars)
+
+                        if conflict_actions_allow:
+                                errors.add(
+                                    (_("path %(path)s uses overlay='true' "
+                                    "actions but has duplicate 'overlay=allow' "
+                                    "actions for the following variants across "
+                                    "%(fmris)s: %(vars)s") %
+                                    {"path": path,
+                                    "fmris": ", ".join(list(fmris)),
+                                    "vars": _render_variants(
+                                    conflict_vars_sub)}, "4"))
+                        else:
+                                # check that none of the attributes required to
+                                # be the same between overlay and allow actions
+                                # differ.
+                                a1_attrs = _unique_attrs(a1)
+                                for a2 in conflict_actions:
+                                        if a1_attrs != _unique_attrs(a2):
+                                                seen_mismatch = True
+                else:
+                        errors.add(
+                            (_("path %(path)s uses 'overlay=true' actions"
+                            " but has no corresponding 'overlay=allow' actions "
+                            "across %(fmris)s") %
+                            {"path": path, "fmris": ", ".join(list(fmris))},
+                            "5"))
+
+        if seen_mismatch:
+                errors.add(
+                    (_("path %(path)s has mismatching attributes for "
+                    "'overlay=true' and 'overlay=allow' action-pairs across "
+                    "%(fmris)s") % {"path": path,
+                    "fmris": ", ".join(list(fmris))}, "6"))
+
+        if (overlay or allow_overlay) and ret_actions:
+                errors.add(
+                    (_("path %(path)s has both overlay and non-overlay actions "
+                    "across %(fmris)s") %
+                    {"path": path, "fmris": ", ".join(list(fmris))}, "7"))
+
+        return ret_actions, errors
 
 
 class PkgActionChecker(base.ActionChecker):
@@ -961,3 +1182,24 @@ class PkgActionChecker(base.ActionChecker):
                              ignore_linted=True)
 
         linted.pkglint_desc = _("Show actions with pkg.linted attributes.")
+
+        def validate(self, action, manifest, engine, pkglint_id="009"):
+                """Validate all actions."""
+                if not engine.do_pub_checks:
+                        return
+                try:
+                        action.validate()
+                except ActionError, err:
+                        # we want the details all on one line to
+                        # stay consistent with the rest of the pkglint
+                        # error messaging
+                        details = "; ".join([val.lstrip()
+                            for val in str(err).split("\n")])
+                        engine.error(
+                            _("Publication error with action in %(pkg)s: "
+                            "%(details)s") %
+                            {"pkg": manifest.fmri, "details": details},
+                            msgid="%s%s" % (self.name, pkglint_id))
+
+        validate.pkglint_desc = _("Publication checks for actions.")
+

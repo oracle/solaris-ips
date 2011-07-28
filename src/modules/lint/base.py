@@ -126,14 +126,15 @@ class Checker(object):
 
         def conflicting_variants(self, actions, pkg_vars):
                 """Given a set of actions, determine that none of the actions
-                have matching variant values for any variant."""
+                have matching variant values for any variant.
 
-                conflicts = False
+                We return a list of variants that conflict, and a list of the
+                actions involved.
+                """
+
                 conflict_vars = set()
-                action_list = []
-
-                for action in actions:
-                        action_list.append(action)
+                conflict_actions = set()
+                action_list = list(actions)
 
                 # compare every action in the list with every other,
                 # determining what actions have conflicting variants
@@ -144,7 +145,8 @@ class Checker(object):
                         # if we don't declare any variants on a given
                         # action, then it's automatically a conflict
                         if len(var) == 0:
-                                conflicts = True
+                                conflict_actions.add(action)
+
                         vc = variant.VariantCombinations(var, True)
                         for j in range(i + 1, len(action_list)):
                                 cmp_action = action_list[j]
@@ -154,11 +156,12 @@ class Checker(object):
                                         intersection = vc.intersection(cmp_var)
                                         intersection.simplify(pkg_vars,
                                             assert_on_different_domains=False)
-                                        conflicts = True
+                                        conflict_actions.add(action)
+                                        conflict_actions.add(cmp_action)
                                         for k in intersection.sat_set:
                                                 if len(k) != 0:
                                                         conflict_vars.add(k)
-                return conflicts, conflict_vars
+                return conflict_vars, list(conflict_actions)
 
 
 class ActionChecker(Checker):

@@ -258,7 +258,7 @@ class PkgManifestChecker(base.ManifestChecker):
 
                 if len(unknown_variants) > 0:
                         vlist = sorted((v for v in unknown_variants))
-                        engine.error(_("variant(s) %(vars)s not in list"
+                        engine.error(_("variant(s) %(vars)s not in list "
                             "of known values for variants in %(pkg)s") %
                             {"vars": " ".join(vlist),
                             "pkg": manifest.fmri}, msgid=unknown_lint_id)
@@ -343,10 +343,10 @@ class PkgManifestChecker(base.ManifestChecker):
                 for key in seen_deps:
                         actions = seen_deps[key]
                         if len(actions) > 1:
-                                has_conflict, conflict_vars = \
+                                conflict_vars, conflict_actions = \
                                     self.conflicting_variants(actions,
                                         manifest.get_all_variants())
-                                if has_conflict:
+                                if conflict_actions:
                                         duplicates.append(key)
 
                 if duplicates:
@@ -378,10 +378,10 @@ class PkgManifestChecker(base.ManifestChecker):
                 for key in seen_sets:
                         actions = seen_sets[key]
                         if len(actions) > 1:
-                                has_conflict, conflict_vars = \
+                                conflict_vars, conflict_actions = \
                                     self.conflicting_variants(actions,
                                         manifest.get_all_variants())
-                                if has_conflict:
+                                if conflict_actions:
                                         duplicates.append(key)
 
                 if duplicates:
