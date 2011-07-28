@@ -1618,6 +1618,10 @@ class CliTestCase(Pkg5TestCase):
                 return self.cmdline_run(cmdline, comment=comment, exit=exit,
                     su_wrap=su_wrap)
 
+        def pkgfmt(self, args, exit=0, su_wrap=False):
+                cmd="%s/usr/bin/pkgfmt %s" % (g_proto_area, args)
+                self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap)
+
         def pkglint(self, args, exit=0, comment="", testrc=True):
                 if testrc:
                         rcpath = "%s/pkglintrc" % self.test_root

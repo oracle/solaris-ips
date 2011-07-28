@@ -1216,10 +1216,6 @@ depend type=require-any fmri=apple fmri=barge fmri=zoo
                     "wb") as f:
                         f.write(self.needs_formatting)
 
-        def pkgfmt(self, args, exit=0, su_wrap=False):
-                cmd="%s/usr/bin/pkgfmt %s" % (pkg5unittest.g_proto_area, args)
-                self.cmdline_run(cmd, exit=exit, su_wrap=su_wrap)
-
         def test_0_checkfmt(self):
                 """Verify that pkgfmt -c format checking works as expected."""
 

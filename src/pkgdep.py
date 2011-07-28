@@ -37,6 +37,7 @@ import pkg.actions as actions
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
+import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
@@ -353,7 +354,7 @@ pkgdepend -R / %(args)s
                 emsg(e)
         return ret_code
 
-def resolve_echo_line(l):
+def __resolve_echo_line(l):
         """Given a line from a manifest, determines whether that line should
         be repeated in the output file if echo manifest has been set."""
 
@@ -365,6 +366,34 @@ def resolve_echo_line(l):
                 return True
         else:
                 return not act.name == "depend"
+
+def __echo_manifest(pth, out_func, strip_newline=False):
+        try:
+                with open(pth, "rb") as fh:
+                        text = ""
+                        act = ""
+                        for l in fh:
+                                text += l
+                                act += l.rstrip()
+                                if act.endswith("\\"):
+                                        act = act.rstrip("\\")
+                                        continue
+                                if __resolve_echo_line(act):
+                                        if strip_newline:
+                                                text = text.rstrip()
+                                        elif text[-1] != "\n":
+                                                text += "\n"
+                                        out_func(text)
+                                text = ""
+                                act = ""
+                        if text != "" and __resolve_echo_line(act):
+                                if text[-1] != "\n":
+                                        text += "\n"
+                                out_func(text)
+        except EnvironmentError:
+                ret_code = 1
+                emsg(_("Could not open %s to echo manifest") %
+                    manifest_path)
 
 def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
         """Write the resolved package dependencies to stdout.
@@ -386,16 +415,7 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
                 first = False
                 msg("# %s" % p)
                 if echo_manifest:
-                        try:
-                                fh = open(p, "rb")
-                                for l in fh:
-                                        if resolve_echo_line(l):
-                                                msg(l.rstrip())
-                                fh.close()
-                        except EnvironmentError:
-                                emsg(_("Could not open %s to echo manifest") %
-                                    p)
-                                ret_code = 1
+                        __echo_manifest(p, msg, strip_newline=True)
                 for d in pkg_deps[p]:
                         msg(d)
         return ret_code
@@ -423,18 +443,7 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
                     out_file)
                 return ret_code
         if echo_manifest:
-                try:
-                        fh = open(manifest_path, "rb")
-                except EnvironmentError:
-                        ret_code = 1
-                        emsg(_("Could not open %s to echo manifest") %
-                            manifest_path)
-                for l in fh:
-                        if resolve_echo_line(l):
-                                if l[-1] != "\n":
-                                        l += "\n"
-                                out_fh.write(l)
-                fh.close()
+                __echo_manifest(manifest_path, out_fh.write)
         for d in deps:
                 out_fh.write("%s\n" % d)
         out_fh.close()

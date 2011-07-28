@@ -268,20 +268,23 @@ depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.dep
 
         two_v_deps_output = """\
 # %(m1_path)s
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=three value=two
 depend fmri=pkg:/s-v-bar type=require
 depend fmri=pkg:/s-v-baz-one type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two type=require variant.foo=baz variant.num=two
 
 
 # %(m2_path)s
-
+%(m2_fmt)s
 
 
 # %(m3_path)s
-
+%(m3_fmt)s
 
 
 # %(m4_path)s
+%(m4_fmt)s
 """
 
         dup_variant_deps = """\
@@ -1297,14 +1300,22 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 m2_path = self.make_manifest(self.two_v_deps_bar)
                 m3_path = self.make_manifest(self.two_v_deps_baz_one)
                 m4_path = self.make_manifest(self.two_v_deps_baz_two)
-                self.pkgdepend_resolve("-o %s" %
+                # Use pkgfmt on the manifest to test for bug 18740.
+                self.pkgfmt(m1_path)
+                with open(m1_path, "rb") as fh:
+                        m1_fmt = fh.read()
+                self.pkgdepend_resolve("-o -m %s" %
                     " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
 
                 self.check_res(self.two_v_deps_output % {
                         "m1_path": m1_path,
                         "m2_path": m2_path,
                         "m3_path": m3_path,
-                        "m4_path": m4_path
+                        "m4_path": m4_path,
+                        "m1_fmt": m1_fmt,
+                        "m2_fmt": self.two_v_deps_bar,
+                        "m3_fmt": self.two_v_deps_baz_one,
+                        "m4_fmt": self.two_v_deps_baz_two,
                     }, self.output)
 
                 self.check_res(self.two_v_deps_resolve_error % {
@@ -1630,6 +1641,10 @@ file NOHASH group=bin mode=0555 owner=root path=c/bin/perl variant.foo=c
                 # that manually added dependencies are propogated correctly.
                 m8_path = self.make_manifest("\n\n")
 
+                # Test that resolve handles multiline actions correctly when
+                # echoing the manifest.  Bug 18740
+                self.pkgfmt(m1_path)
+                
                 self.pkgdepend_resolve(" -vm %s" % " ".join([m1_path, m2_path,
                         m3_path, m4_path, m5_path, m6_path, m7_path, m8_path]))
                 fh = open(m1_path + ".res")
