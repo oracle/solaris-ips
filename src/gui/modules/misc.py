@@ -469,7 +469,7 @@ def set_dependencies_text(textview, info, dep_info, installed_dep_info,
                                     "branch": '0'}
                         found = False
                         for state in installed_states:
-                                if name ==  fmri.extract_pkg_name(state.fmri):
+                                if name ==  state.fmri.get_name():
                                         installed_version = version_fmt % \
                                             {"version": state.version,
                                             "build": state.build_release,
