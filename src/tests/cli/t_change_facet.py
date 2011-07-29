@@ -46,11 +46,13 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         add file tmp/facets_5 mode=0555 owner=root group=bin path=5 facet.locale.nl=True
         add file tmp/facets_6 mode=0555 owner=root group=bin path=6 facet.locale.nl_NA=True
         add file tmp/facets_7 mode=0555 owner=root group=bin path=7 facet.locale.nl_ZA=True
+        add file tmp/facets_8 mode=0555 owner=root group=bin path=8 facet.has/some/slashes=true
         close"""
 
         misc_files = [
             "tmp/facets_0", "tmp/facets_1", "tmp/facets_2", "tmp/facets_3",
-            "tmp/facets_4", "tmp/facets_5", "tmp/facets_6", "tmp/facets_7"
+            "tmp/facets_4", "tmp/facets_5", "tmp/facets_6", "tmp/facets_7",
+            "tmp/facets_8"
         ]
 
         def setUp(self):
@@ -147,6 +149,19 @@ class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("change-facet foo=None")
 
+        def test_slashed_facets(self):
+                rurl = self.dc.get_repo_url()
+                self.pkg_image_create(rurl)
+                self.pkg("install pkg_A")
+                self.pkg("verify")
+
+                self.assert_file_is_there("8")
+                self.pkg("change-facet -v facet.has/some/slashes=False")
+                self.assert_file_is_there("8", negate=True)
+                self.pkg("verify")
+                self.pkg("change-facet -v facet.has/some/slashes=True")
+                self.assert_file_is_there("8")
+                self.pkg("verify")
 
 if __name__ == "__main__":
         unittest.main()

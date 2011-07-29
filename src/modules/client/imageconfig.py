@@ -28,6 +28,7 @@ import errno
 import os.path
 import platform
 import re
+import urllib
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -377,7 +378,10 @@ class ImageConfig(cfg.FileConfig):
                 # how ssl cert and key paths are interpreted.)
                 idx = self.get_index()
                 self.variants.update(idx.get("variant", {}))
-                self.facets.update(idx.get("facet", {}))
+                # facets are encoded so they can contain '/' characters.
+                for k, v in idx.get("facet", {}).iteritems():
+                        self.facets[urllib.unquote(k)] = v
+
 
                 # Ensure architecture and zone variants are defined.
                 if "variant.arch" not in self.variants:
@@ -513,7 +517,8 @@ class ImageConfig(cfg.FileConfig):
                 except cfg.UnknownSectionError:
                         pass
                 for f in self.facets:
-                        self.set_property("facet", f, self.facets[f])
+                        self.set_property("facet", urllib.quote(f, ""), 
+                            self.facets[f])
 
                 try:
                         self.remove_section("mediators")
