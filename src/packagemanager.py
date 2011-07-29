@@ -3962,6 +3962,8 @@ class PackageManager:
                         err = str(tpex)
                         logger.error(err)
                         gui_misc.notify_log_error(self)
+                except api_errors.CanceledException:
+                        gobject.idle_add(self.unset_busy_cursor)
                 except api_errors.ApiException, apiex:
                         err = str(apiex)
                         gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
