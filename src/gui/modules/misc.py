@@ -573,6 +573,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
     is_all_publishers_installed=None, pubs_info=None, renamed_info=None,
     pkg_renamed = False):
         installed = True
+        has_remote = True 
 
         if not local_info:
                 # Package is not installed
@@ -581,6 +582,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
 
         if not remote_info:
                 remote_info = local_info
+                has_remote = False
                 installed = True
 
         labs = {}
@@ -635,8 +637,10 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                             {"version": remote_info.version,
                             "build": remote_info.build_release,
                             "branch": remote_info.branch}
-                else:
+                elif has_remote:
                         text["available"] = _("Not available from this publisher")
+                else:
+                        text["available"] = "No"
         else:
                 if api.PackageInfo.OBSOLETE in remote_info.states:
                         obsolete_str = _(" (Obsolete)")
@@ -750,9 +754,10 @@ def set_package_details_text(labs, text, textview, installed_icon,
             text["ins"], icon, font_size_in_pixel)
         i += 1
         if installed:
-                __add_line_to_generalinfo(infobuffer, i,
-                    labs["available"], text["available"],
-                    update_available_icon, font_size_in_pixel)
+                if text["available"] != "No":
+                        __add_line_to_generalinfo(infobuffer, i,
+                            labs["available"], text["available"],
+                            update_available_icon, font_size_in_pixel)
                 i += 1
                 if not pkg_renamed:
                         i =  __add_renamed_line_to_generalinfo(infobuffer, i,
