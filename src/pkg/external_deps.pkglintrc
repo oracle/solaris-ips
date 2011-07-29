@@ -17,18 +17,26 @@ pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
     pkg:/developer/build/onbld
     pkg:/developer/gnome/gettext
     pkg:/developer/gnome/gnome-doc-utils
+    pkg:/developer/object-file
     pkg:/developer/python/pylint
     pkg:/developer/versioning/mercurial
     pkg:/gnome/config/gconf
     pkg:/gnome/theme/hicolor-icon-theme
     pkg:/library/python-2/cherrypy
+    pkg:/library/python-2/cherrypy-26
     pkg:/library/python-2/coverage
+    pkg:/library/python-2/coverage-26
     pkg:/library/python-2/locale-services
     pkg:/library/python-2/m2crypto
+    pkg:/library/python-2/m2crypto-26
     pkg:/library/python-2/mako
+    pkg:/library/python-2/mako-26
     pkg:/library/python-2/ply
+    pkg:/library/python-2/ply-26
     pkg:/library/python-2/pybonjour
+    pkg:/library/python-2/pybonjour-26
     pkg:/library/python-2/pycurl
+    pkg:/library/python-2/pycurl-26
     pkg:/library/python-2/pygobject-26
     pkg:/library/python-2/pygtk2-26
     pkg:/library/python-2/pyopenssl-26

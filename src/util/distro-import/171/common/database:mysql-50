@@ -1,0 +1,17 @@
+package database/mysql-50
+consolidation "sfw"
+obsoleted 171
+version 5.0.91
+end package
+
+package database/mysql-5
+consolidation "sfw"
+obsoleted 171
+version 5.0.86
+end package
+
+package SUNWmysql5
+consolidation "sfw"
+obsoleted 171
+version 5.0.86
+end package

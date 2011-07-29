@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -108,7 +108,7 @@ for repo in $*; do
 	modified_pkglist=""
 	if [ ! -z $only_this_build ]; then
 		for pkg in $pkglist; do
-			new=$(echo $pkg | grep -- "0.${only_this_build}:")
+			new=$(echo $pkg | grep -- "-0\.${only_this_build}[.:]")
 			modified_pkglist="$modified_pkglist $new"
 
 			if [ -z $new ]; then

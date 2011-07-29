@@ -8,3 +8,9 @@
     -> edit fmri .* SUNWPython@2.4.6,5.11-0.133>
 <transform depend fmri=(pkg:/)?runtime/python-24@.* type=incorporate \
     -> edit fmri .* runtime/python-24@2.4.6-0.163>
+
+#
+# Temporary work-around to allow developer/macro/cpp package to be
+# set-publisher'ed until legacy action has been corrected.
+#
+<transform legacy pkg=SUNWcpp -> drop>

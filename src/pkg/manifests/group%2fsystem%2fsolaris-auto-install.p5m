@@ -190,6 +190,8 @@ $(i386_ONLY)depend type=group fmri=driver/x11/xsvc
 $(i386_ONLY)depend type=group fmri=driver/xvm/pv
 depend type=group fmri=editor/vim/vim-core
 depend type=group fmri=install/beadm
+depend type=group fmri=library/apr-13
+depend type=group fmri=library/apr-util-13
 depend type=group fmri=library/database/gdbm
 depend type=group fmri=library/expat
 depend type=group fmri=library/glib2
@@ -201,13 +203,14 @@ depend type=group fmri=library/libxml2
 depend type=group fmri=library/libxslt
 depend type=group fmri=library/ncurses
 depend type=group fmri=library/nspr
-depend type=group fmri=library/python-2/cherrypy
+depend type=group fmri=library/perl-5/sun-solaris-512
+depend type=group fmri=library/python-2/cherrypy-26
 depend type=group fmri=library/python-2/lxml-26
-depend type=group fmri=library/python-2/m2crypto
-depend type=group fmri=library/python-2/mako
-depend type=group fmri=library/python-2/ply
-depend type=group fmri=library/python-2/pybonjour
-depend type=group fmri=library/python-2/pycurl
+depend type=group fmri=library/python-2/m2crypto-26
+depend type=group fmri=library/python-2/mako-26
+depend type=group fmri=library/python-2/ply-26
+depend type=group fmri=library/python-2/pybonjour-26
+depend type=group fmri=library/python-2/pycurl-26
 depend type=group fmri=library/python-2/pyopenssl-26
 depend type=group fmri=library/python-2/python-extra-26
 depend type=group fmri=library/python-2/simplejson-26
@@ -228,6 +231,8 @@ depend type=group fmri=network/ssh
 depend type=group fmri=network/ssh/ssh-key
 depend type=group fmri=network/telnet
 depend type=group fmri=package/pkg
+depend type=group fmri=package/pkg/system-repository
+depend type=group fmri=package/pkg/zones-proxy
 depend type=group fmri=package/svr4
 depend type=group fmri=release/name
 depend type=group fmri=release/notices
@@ -241,7 +246,6 @@ depend type=group fmri=service/fault-management/fm-snmp-mib
 depend type=group fmri=service/file-system/smb
 depend type=group fmri=service/hal
 $(sparc_ONLY)depend type=group fmri=service/key-management/sun-fire-15000
-depend type=group fmri=service/management/sysidtool
 depend type=group fmri=service/network/dns/mdns
 depend type=group fmri=service/network/ntp
 depend type=group fmri=service/network/smtp/sendmail
@@ -340,11 +344,9 @@ depend type=group fmri=system/library/storage/ima
 depend type=group fmri=system/library/storage/libmpapi
 depend type=group fmri=system/library/storage/libmpscsi_vhci
 depend type=group fmri=system/library/storage/scsi-plugins
-depend type=group fmri=system/library/sysidtool
 depend type=group fmri=system/linker
 $(i386_ONLY)depend type=group fmri=system/management/intel-amt
 depend type=group fmri=system/management/snmp/net-snmp
-depend type=group fmri=system/management/sysidtool
 depend type=group fmri=system/network
 $(sparc_ONLY)depend type=group fmri=system/network-console
 depend type=group fmri=system/network/nis
@@ -363,4 +365,5 @@ depend type=group fmri=text/less
 depend type=group fmri=text/locale
 depend type=group fmri=text/spelling-utilities
 depend type=group fmri=web/curl
+depend type=group fmri=web/server/apache-22
 depend type=group fmri=web/wget

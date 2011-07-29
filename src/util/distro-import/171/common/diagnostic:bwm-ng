@@ -1,0 +1,11 @@
+package diagnostic/bwm-ng
+consolidation "sfw"
+obsoleted 171
+version 0.6
+end package
+
+package SUNWbwm-ng
+consolidation "sfw"
+obsoleted 171
+version 0.6
+end package

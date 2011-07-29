@@ -1,0 +1,9 @@
+package system/management/product-registry
+consolidation "admin"
+obsoleted 171
+end package
+
+package SUNWwsr2
+consolidation "admin"
+obsoleted 171
+end package

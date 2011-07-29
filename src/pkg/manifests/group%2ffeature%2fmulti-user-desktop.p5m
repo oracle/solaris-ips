@@ -203,7 +203,6 @@ depend type=group fmri=library/myspell/dictionary/en
 depend type=group fmri=library/neon
 depend type=group fmri=library/perl-5/authen-pam
 depend type=group fmri=library/perl-5/xml-parser-512
-depend type=group fmri=library/perl-5/xml-parser-584
 depend type=group fmri=library/popt
 depend type=group fmri=library/pth
 depend type=group fmri=library/python-2/coherence-26
@@ -315,7 +314,6 @@ depend type=group fmri=system/management/visual-panels/panel-coreadm
 depend type=group fmri=system/management/visual-panels/panel-coreadm/locale
 depend type=group fmri=system/management/visual-panels/panel-firewall
 depend type=group fmri=system/management/visual-panels/panel-firewall/locale
-depend type=group fmri=system/management/visual-panels/panel-sharemgr
 depend type=group fmri=system/management/visual-panels/panel-smf
 depend type=group fmri=system/management/visual-panels/panel-smf/locale
 depend type=group fmri=system/management/visual-panels/panel-sysmon

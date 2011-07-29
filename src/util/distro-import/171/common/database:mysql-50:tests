@@ -1,0 +1,17 @@
+package database/mysql-50/tests
+consolidation "sfw"
+obsoleted 171
+version 5.0.91
+end package
+
+package database/mysql-5/tests
+consolidation "sfw"
+obsoleted 171
+version 5.0.86
+end package
+
+package SUNWmysql5test
+consolidation "sfw"
+obsoleted 171
+version 5.0.86
+end package

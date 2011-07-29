@@ -50,7 +50,6 @@ depend type=group fmri=network/talk
 depend type=group fmri=network/whois
 depend type=group fmri=package/pkg
 depend type=group fmri=security/sudo
-depend type=group fmri=service/management/sysidtool
 depend type=group fmri=service/network/ssh
 depend type=group fmri=shell/bash
 depend type=group fmri=shell/ksh
@@ -62,7 +61,7 @@ depend type=group fmri=system/install/configuration
 depend type=group fmri=system/kernel
 depend type=group fmri=system/library/install
 depend type=group fmri=system/linker
-depend type=group fmri=system/management/sysidtool
+depend type=group fmri=system/management/ocm
 depend type=group fmri=system/network
 depend type=group fmri=system/network/nis
 depend type=group fmri=system/network/routing
