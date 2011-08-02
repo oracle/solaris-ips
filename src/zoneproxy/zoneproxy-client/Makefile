@@ -33,6 +33,8 @@ LDFLAGS +=      -zassert-deflib=libthread.so
 
 .KEEP_STATE:
 
+all:	$(PROG)
+
 install: $(ZONES_PROG)
 
 lint: lint_PROG

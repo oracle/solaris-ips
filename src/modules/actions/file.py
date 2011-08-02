@@ -34,6 +34,7 @@ import errno
 import tempfile
 import stat
 import generic
+import zlib
 
 import pkg.actions
 import pkg.client.api_errors as api_errors

@@ -28,6 +28,8 @@ include ../Makefile.constants
 
 .KEEP_STATE:
 
+all:	$(PROG)
+
 install: $(ZONES_PROG)
 
 install_h:

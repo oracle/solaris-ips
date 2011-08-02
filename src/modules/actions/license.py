@@ -39,6 +39,7 @@ import generic
 import pkg.misc as misc
 import pkg.portable as portable
 import urllib
+import zlib
 
 from pkg.client.api_errors import ActionExecutionError
 

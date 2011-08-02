@@ -45,6 +45,8 @@ $(ROOTHDR):
 	$(INSTALL) -d -m 0755 $(ROOTHDIR); \
 	$(INSTALL) -s -m 0644 -f $(ROOTHDIR) $(HDR)
 
+all:	$(PROG)
+
 install: $(ZONES_PROG) $(ROOTHDR)
 
 lint: lint_PROG
