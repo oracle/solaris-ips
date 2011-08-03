@@ -734,7 +734,7 @@ depend type=group fmri=system/system-events
 depend type=group fmri=system/virtual-console
 depend type=group fmri=system/xopen/xcu4
 depend type=group fmri=system/zones
-depend type=group fmri=system/zones/brand/ipkg
+depend type=group fmri=system/zones/brand/solaris
 depend type=group fmri=terminal/fbconsole
 depend type=group fmri=terminal/gnome-terminal
 depend type=group fmri=terminal/luit

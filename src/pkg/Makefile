@@ -51,7 +51,7 @@ MANIFESTS.cmd     = \
 	m=$$($(PKGMOGRIFY) -O /dev/null *.p5m ../transforms/nopublish); \
 	echo "$$m" | while read name build; do \
 		[[ $$build -ge $${buildnum%%.*} ]] && echo $$name; \
-	done
+	done ; exit 0
 MANIFESTS         = $(MANIFESTS.cmd:sh)
 $(PUBLISHALL)MANIFESTS:sh      = (cd manifests; print *.p5m)
 PKGS.cmd          = print $(MANIFESTS:%.p5m=%) | sed -e s/%2F/\\//g

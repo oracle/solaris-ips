@@ -99,8 +99,6 @@ man1m_dir = 'usr/share/man/cat1m'
 man5_dir = 'usr/share/man/cat5'
 resource_dir = 'usr/share/lib/pkg'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
-etcbrand_dir = 'etc/brand/ipkg'
-brand_dir = 'usr/lib/brand/ipkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 sysrepo_dir = 'etc/pkg/sysrepo'
@@ -240,20 +238,6 @@ for entry in os.walk("web"):
             if f != "Makefile"
             ]))
 
-brand_files = [
-        'brand/pkgcreatezone',
-        'brand/attach',
-        'brand/clone',
-        'brand/detach',
-        'brand/prestate',
-        'brand/poststate',
-        'brand/uninstall',
-        'brand/common.ksh',
-        ]
-etcbrand_files = [
-        'brand/pkgrm.conf',
-        'brand/smf_disable.conf',
-        ]
 smf_app_files = [
         'svc/pkg-mdns.xml',
         'svc/pkg-server.xml',
@@ -789,8 +773,6 @@ data_files += [
 if osname == 'sunos':
         # Solaris-specific extensions are added here
         data_files += [
-                (brand_dir, brand_files),
-                (etcbrand_dir, etcbrand_files),
                 (smf_app_dir, smf_app_files),
                 (execattrd_dir, execattrd_files),
                 (authattrd_dir, authattrd_files),
