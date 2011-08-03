@@ -127,7 +127,7 @@ from pkg.client.debugvalues import DebugValues
 
 # Version test suite is known to work with.
 PKG_CLIENT_NAME = "pkg"
-CLIENT_API_VERSION = 63
+CLIENT_API_VERSION = 64
 
 ELIDABLE_ERRORS = [ TestSkippedException, depotcontroller.DepotStateException ]
 
@@ -2436,7 +2436,7 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 return self.__imgs_path_backup[self.img_index()]
 
         def corrupt_image_create(self, repourl, config, subdirs, prefix="test",
-            destroy = True):
+            destroy=True):
                 """ Creates two levels of directories under the original image
                 directory. In the first level (called bad), it builds a "corrupt
                 image" which means it builds subdirectories the subdirectories

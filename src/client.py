@@ -72,6 +72,7 @@ try:
         import pkg.client.publisher as publisher
         import pkg.fmri as fmri
         import pkg.misc as misc
+        import pkg.portable as portable
         import pkg.version as version
 
         from pkg.client import global_settings
@@ -89,7 +90,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 63
+CLIENT_API_VERSION = 64
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1253,27 +1254,6 @@ def __api_alloc(imgdir, exact_match, pkg_image_used, quiet, runid=-1):
                 return api.ImageInterface(imgdir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME,
                     exact_match=exact_match, runid=runid)
-        except api_errors.ImageLocationAmbiguous, e:
-                # This should only be raised if exact_match is False.
-                assert exact_match is False
-                error(e)
-                if pkg_image_used:
-                        logger.error(_("(Image location set by $PKG_IMAGE.)"))
-                # This attempts to rebuild the pkg command so users can
-                # just copy & paste the correct one, but it can't perfectly
-                # handle all possible shell escaping requirements or detect
-                # executions using sudo, pfexec, etc.  It's a best effort
-                # convenience feature.
-                logger.error(_("""
-To use this image, execute pkg again as follows:
-
-pkg -R %(root)s %(args)s
-
-To use the system image, execute pkg again as follows:
-
-pkg -R / %(args)s
-""") % { "root": qv(e.root), "args": " ".join(map(qv, sys.argv[1:]))})
-                return
         except api_errors.ImageNotFoundException, e:
                 if e.user_specified:
                         if pkg_image_used:
@@ -5825,12 +5805,14 @@ def main_func():
         provided_image_dir = True
         pkg_image_used = False
         if "mydir" not in locals():
-                try:
-                        mydir = os.environ["PKG_IMAGE"]
+                mydir, provided_image_dir = api.get_default_image_root(
+                    orig_cwd=orig_cwd)
+                if os.environ.get("PKG_IMAGE"):
+                        # It's assumed that this has been checked by the above
+                        # function call and hasn't been removed from the
+                        # environment.
                         pkg_image_used = True
-                except KeyError:
-                        provided_image_dir = False
-                        mydir = orig_cwd
+
         if not mydir:
                 error(_("Could not find image.  Use the -R option or set "
                     "$PKG_IMAGE to the\nlocation of an image."))

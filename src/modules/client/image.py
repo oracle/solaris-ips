@@ -161,8 +161,7 @@ class Image(object):
         def __init__(self, root, user_provided_dir=False, progtrack=None,
             should_exist=True, imgtype=None, force=False,
             augment_ta_from_parent_image=True, allow_ondisk_upgrade=None,
-            allow_ambiguous=False, props=misc.EmptyDict, cmdpath=None,
-            runid=-1):
+            props=misc.EmptyDict, cmdpath=None, runid=-1):
 
                 if should_exist:
                         assert(imgtype is None)
@@ -204,11 +203,13 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 # Indicates whether automatic image format upgrades of the
                 # on-disk format are allowed.
                 self.allow_ondisk_upgrade = allow_ondisk_upgrade
-                self.allow_ambiguous = allow_ambiguous
                 self.__upgraded = False
 
                 # Must happen after upgraded assignment.
                 self.__init_catalogs()
+
+                self.__imgdir = None
+                self.__root = root
 
                 self.attrs = { "Build-Release": "5.11" } # XXX real data needed
                 self.blocking_locks = False
@@ -216,10 +217,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.history = history.History()
                 self.imageplan = None
                 self.img_prefix = None
-                self.imgdir = None
                 self.index_dir = None
                 self.plandir = None
-                self.root = root
                 self.version = -1
 
                 # Can have multiple read cache dirs...
@@ -291,17 +290,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 self.augment_ta_from_parent_image = augment_ta_from_parent_image
 
-        @property
-        def write_cache_path(self):
-                """Returns a path to fs that holds write cache - used to
-                compute whether we have sufficent space for downloads"""
-                return self.__user_cache_dir or \
-                    os.path.join(self.imgdir, IMG_PUB_DIR)
-
-        @staticmethod
-        def alloc(*args, **kwargs):
-                return Image(*args, **kwargs)
-
         def __catalog_loaded(self, name):
                 """Returns a boolean value indicating whether the named catalog
                 has already been loaded.  This is intended to be used as an
@@ -322,9 +310,30 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 self.__catalogs = {}
                 self.__alt_pkg_sources_loaded = False
 
+        @staticmethod
+        def alloc(*args, **kwargs):
+                return Image(*args, **kwargs)
+
+        @property
+        def imgdir(self):
+                """The absolute path of the image's metadata."""
+                return self.__imgdir
+
+        @property
+        def locked(self):
+                """A boolean value indicating whether the image is currently
+                locked."""
+
+                return self.__lock and self.__lock.locked
+
+        @property
+        def root(self):
+                """The absolute path of the image's location."""
+                return self.__root
+
         @property
         def signature_policy(self):
-                """Returns the signature policy for this image."""
+                """The current signature policy for this image."""
 
                 if self.__sig_policy is not None:
                         return self.__sig_policy
@@ -336,10 +345,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
         @property
         def trust_anchors(self):
-                """Return a dictionary mapping subject hashes for certificates
-                this image trusts to those certs.  The image trusts those
-                trust anchors in its trust_anchor_dir and those in the from
-                which pkg was run."""
+                """A dictionary mapping subject hashes for certificates this
+                image trusts to those certs.  The image trusts the trust anchors
+                in its trust_anchor_dir and those in the image from which the
+                client was run."""
 
                 if self.__trust_anchors is not None:
                         return self.__trust_anchors
@@ -354,7 +363,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 if self.__cmddir and self.augment_ta_from_parent_image:
                         pkg_trust_anchors = Image(self.__cmddir,
                             augment_ta_from_parent_image=False,
-                            allow_ambiguous=True,
                             cmdpath=self.cmdpath).trust_anchors
                 if not loc_is_dir and os.path.exists(trust_anchor_loc):
                         raise apx.InvalidPropertyValue(_("The trust "
@@ -381,11 +389,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 return self.__trust_anchors
 
         @property
-        def locked(self):
-                """Returns a boolean value indicating whether the image is
-                currently locked."""
-
-                return self.__lock and self.__lock.locked
+        def write_cache_path(self):
+                """The path to the filesystem that holds the write cache--used
+                to compute whether sufficent space is available for downloads."""
+                return self.__user_cache_dir or \
+                    os.path.join(self.imgdir, IMG_PUB_DIR)
 
         @contextmanager
         def locked_op(self, op, allow_unprivileged=False, new_history_op=True):
@@ -533,20 +541,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     os.path.realpath(d):
                                         raise apx.ImageNotFoundException(
                                             exact_match, startd, d)
-                                live_root = misc.liveroot()
-                                if not exact_match and d != live_root and \
-                                    not self.allow_ambiguous and \
-                                    portable.osname == "sunos":
-                                        # On Solaris, consider an image found
-                                        # somewhere other than the live root an
-                                        # an error if an exact match wasn't
-                                        # requested.  (This prevents accidental
-                                        # use of nested images.) It is not
-                                        # desirable to do this on other
-                                        # platforms as non-root images are the
-                                        # norm.
-                                        raise apx.ImageLocationAmbiguous(d,
-                                            live_root=live_root)
                                 self.__set_dirs(imgtype=imgtype, root=d,
                                     startd=startd, progtrack=progtrack)
                                 return
@@ -752,8 +746,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                            attempted.\nliveroot: %s\nimage path: %s" % \
                            (misc.liveroot(), startd)
 
+                self.__root = root
                 self.type = imgtype
-                self.root = root
                 if self.type == IMG_USER:
                         self.img_prefix = img_user_prefix
                 else:
@@ -765,10 +759,21 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                 # cleanup specified path
                 if os.path.isdir(root):
-                        cwd = os.getcwd()
-                        os.chdir(root)
-                        self.root = os.getcwd()
-                        os.chdir(cwd)
+                        try:
+                                cwd = os.getcwd()
+                        except Exception, e:
+                                # If current directory can't be obtained for any
+                                # reason, ignore the error.
+                                cwd = None
+
+                        try:
+                                os.chdir(root)
+                                self.__root = os.getcwd()
+                        except EnvironmentError, e:
+                                raise apx._convert_error(e)
+                        finally:
+                                if cwd:
+                                        os.chdir(cwd)
 
                 # If current image is locked, then it should be unlocked
                 # and then relocked after the imgdir is changed.  This
@@ -778,7 +783,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self.unlock()
 
                 # Must set imgdir first.
-                self.imgdir = os.path.join(self.root, self.img_prefix)
+                self.__imgdir = os.path.join(self.root, self.img_prefix)
 
                 # Force a reset of version.
                 self.version = -1
@@ -4188,8 +4193,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         # workspace, for example.
                         #
                         newimg = Image(self.__cmddir,
-                            allow_ondisk_upgrade=False, allow_ambiguous=True,
-                            progtrack=progtrack, cmdpath=self.cmdpath)
+                            allow_ondisk_upgrade=False, progtrack=progtrack,
+                            cmdpath=self.cmdpath)
                         useimg = True
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,

@@ -42,7 +42,7 @@ import pkg.misc as misc
 import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
 
-CLIENT_API_VERSION = 63
+CLIENT_API_VERSION = 64
 PKG_CLIENT_NAME = "pkgdepend"
 
 DEFAULT_SUFFIX = ".res"
@@ -249,20 +249,21 @@ def resolve(args, img_dir):
         provided_image_dir = True
         pkg_image_used = False
         if img_dir == None:
+                orig_cwd = None
                 try:
-                        img_dir = os.environ["PKG_IMAGE"]
+                        orig_cwd = os.getcwd()
+                except OSError:
+                        # May be unreadable by user or have other problem.
+                        pass
+
+                img_dir, provided_image_dir = api.get_default_image_root(
+                    orig_cwd=orig_cwd)
+                if os.environ.get("PKG_IMAGE"):
+                        # It's assumed that this has been checked by the above
+                        # function call and hasn't been removed from the
+                        # environment.
                         pkg_image_used = True
-                except KeyError:
-                        provided_image_dir = False
-                        try:
-                                img_dir = os.getcwd()
-                        except OSError, e:
-                                try:
-                                        img_dir = os.environ["PWD"]
-                                        if not img_dir or img_dir[0] != "/":
-                                                img_dir = None
-                                except KeyError:
-                                        img_dir = None
+
         if not img_dir:
                 error(_("Could not find image.  Use the -R option or set "
                     "$PKG_IMAGE to the\nlocation of an image."))
@@ -275,34 +276,6 @@ def resolve(args, img_dir):
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     progress.QuietProgressTracker(), None, PKG_CLIENT_NAME,
                     exact_match=provided_image_dir)
-        except api_errors.ImageLocationAmbiguous, e:
-                def qv(val):
-                        # Escape shell metacharacters; '\' must be escaped first
-                        # to prevent escaping escapes.
-                        for c in "\\ \t\n'`;&()|^<>?*":
-                                val = val.replace(c, "\\" + c)
-                        return val
-
-                # This should only be raised if exact_match is False.
-                assert provided_image_dir is False
-                error(e)
-                if pkg_image_used:
-                        emsg(_("(Image location set by $PKG_IMAGE.)"))
-                # This attempts to rebuild the pkgdepend command so users can
-                # just copy & paste the correct one, but it can't perfectly
-                # handle all possible shell escaping requirements or detect
-                # executions using sudo, pfexec, etc.  It's a best effort
-                # convenience feature.
-                emsg(_("""
-To use this image, execute pkgdepend again as follows:
-
-pkgdepend -R %(root)s %(args)s
-
-To use the system image, execute pkgdepend again as follows:
-
-pkgdepend -R / %(args)s
-""") % { "root": qv(e.root), "args": " ".join(map(qv, sys.argv[1:]))})
-                return 1
         except api_errors.ImageNotFoundException, e:
                 if e.user_specified:
                         if pkg_image_used:

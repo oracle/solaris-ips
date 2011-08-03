@@ -42,7 +42,7 @@ SYNOPSIS
      /usr/bin/pkg mediator [-aH] [-F format] [<mediator> ...]
      /usr/bin/pkg set-mediator [-nv] [-I <implementation>] [-V <version>]
          [--no-be-activate] [--deny-new-be | --require-new-be]
-	 [--be-name name] <mediator> ...
+         [--be-name name] <mediator> ...
      /usr/bin/pkg unset-mediator [-nvIV] [--no-be-activate]
          [--deny-new-be | --require-new-be] [--be-name name] <mediator> ...
 
@@ -77,7 +77,7 @@ SYNOPSIS
          [-p repo_uri] [--enable] [--disable] [--no-refresh]
          [--reset-uuid] [--non-sticky] [--sticky]
          [--search-after=publisher] [--search-before=publisher]
-         [--search-first] 
+         [--search-first]
          [--approve-ca-cert=path_to_CA]
          [--revoke-ca-cert=hash_of_CA_to_remove]
          [--unset-ca-cert=hash_of_CA_to_remove]
@@ -144,11 +144,9 @@ OPTIONS
      The following options are supported:
 
      -R dir
-          Operate on the image rooted at dir, rather than the one discovered
-          automatically.  By default, pkg(1) attempts to determine, based on
-          its working directory, in what image it has been invoked.  If no
-          image metadata can be found in the parent directories, the
-          invocation will fail.  See also ENVIRONMENT VARIABLES.
+          Operate on the image rooted at directory dir.  If no directory
+          was specified or determined based on environment, the default is
+          '/'.  See also ENVIRONMENT VARIABLES.
 
      --help or -?
           Displays a usage message.

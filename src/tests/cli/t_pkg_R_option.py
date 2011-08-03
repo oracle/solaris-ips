@@ -24,7 +24,7 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
 
 import os
@@ -45,11 +45,11 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(self.rurl, self.foo10)
                 self.image_create(self.rurl)
 
-	def test_bad_cli_options(self):
+        def test_bad_cli_options(self):
                 """Verify that pkg rejects invalid -R combos and values."""
 
-		self.pkg("-@", exit=2)
-		self.pkg("-s status", exit=2)
+                self.pkg("-@", exit=2)
+                self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
                 self.pkg("-R / version", exit=2)
 
@@ -97,7 +97,7 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                 self.assertEqual(os.getcwd(), self.img_path())
 
                 if portable.osname != "sunos":
-                        # For other platforms, first install a package uses an
+                        # For other platforms, first install a package using an
                         # explicit root, and then verify that an implicit find
                         # of the image results in the right image being found.
                         self.pkg("install foo")
@@ -106,12 +106,29 @@ class TestROption(pkg5unittest.SingleDepotTestCase):
                         # Remaining tests are not valid on other platforms.
                         return
 
-                # Should fail because image found is not at '/', but at cwd().
-                self.pkg("install foo", exit=1, use_img_root=False)
+                # Should fail because live root is not an image (Solaris 10
+                # case), even though CWD contains a valid one since
+                # PKG_FIND_IMAGE was not set in environment.
+                bad_live_root = os.path.join(self.test_root, "test_2_implicit")
+                os.mkdir(bad_live_root)
+                self.pkg("-D simulate_live_root=%s install foo " % bad_live_root,
+                     use_img_root=False, exit=1)
 
-                # Should succeed because image is found at simulated live root.
+                # Should succeed because image is found at simulated live root,
+                # even though one does not exist in CWD.
+                os.chdir(self.test_root)
                 self.pkg("-D simulate_live_root=%s install foo" %
                     self.img_path(), use_img_root=False)
+
+                # Should succeed because image is found using CWD and
+                # PKG_FIND_IMAGE was set in environment, even though live root
+                # is not a valid image.
+                os.environ["PKG_FIND_IMAGE"] = "true"
+                os.chdir(self.img_path())
+                self.pkg("-D simulate_live_root=%s uninstall foo" %
+                     bad_live_root, use_img_root=False)
+                del os.environ["PKG_FIND_IMAGE"]
+                os.chdir(self.test_root)
 
 
 if __name__ == "__main__":

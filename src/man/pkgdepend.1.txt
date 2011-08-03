@@ -57,11 +57,9 @@ OPTIONS
      The following options are supported:
 
      -R dir
-          Operate on the image rooted at dir, rather than the one discovered
-          automatically.  By default, pkgdepend(1) attempts to determine,
-          based on its working directory, in what image it has been invoked.
-          If no image metadata can be found in the parent directories, the
-          invocation will fail.  See also ENVIRONMENT VARIABLES.
+          Operate on the image rooted at dir.  If no dir was specified or
+          determined based on environment, the default is '/'.  See also
+          ENVIRONMENT VARIABLES.
 
      --help or -?
           Displays a usage message.

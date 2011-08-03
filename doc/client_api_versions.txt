@@ -1,3 +1,12 @@
+Version 64:
+Incompatible with clients using versions 0-63.
+
+    pkg.client.api_errors has changed as follows:
+       * The ImageLocationAmbiguous exception has been removed.  The client
+         API no longer requires the image to be found at '/' on Solaris.
+         Clients are free to enforce whatever restrictions on image root
+         they desire.
+
 Version 63:
 Compatible with clients using version 62.
 
@@ -38,7 +47,7 @@ Compatible with clients using version 60.
     pkg.client.api.PlanDescription has changed as follows:
         * Added the following new interfaces
                 get_bytes_added()
-		get_cbytes_added()
+                get_cbytes_added()
                 get_bytes_avail()
                 get_cbytes_avail()
     pkg.client.api.prepare has changed as follows:
@@ -596,23 +605,23 @@ Version 24:
 Incompatible with clients using versions 0-23.
     The pkg.client.api module has changed as follows:
         * plan_install no longer takes a filters argument
-	* plan_change_variant changed to plan_change_varcets.
-	  w/ argument list changes.
-	* Added get_pub_search_order
-	* Added set_pub_search_after
-	* Added set_pub_search_before
+        * plan_change_variant changed to plan_change_varcets.
+          w/ argument list changes.
+        * Added get_pub_search_order
+        * Added set_pub_search_after
+        * Added set_pub_search_before
 
 Version 23:
 Incompatible with clients using versions 0-22.
     The pkg.client.api module has changed as follows:
         * PackageInfo objects no longer take a "state" parameter, but a
-	  "states" parameter, and the corresponding "state" member is now
-	  "states", and is a list of states, rather than a single value.
+          "states" parameter, and the corresponding "state" member is now
+          "states", and is a list of states, rather than a single value.
 
 Version 22:
 Compatible with clients using version 21.
 Changes:
-	Adds the description field to the PackageInfo class.
+        Adds the description field to the PackageInfo class.
 
 Version 21:
 Incompatible with clients using versions 0-20.

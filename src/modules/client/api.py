@@ -73,7 +73,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 63
+CURRENT_API_VERSION = 64
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -279,13 +279,10 @@ class ImageInterface(object):
                 attempt to find a usable image starting from the specified
                 directory, going up to the filesystem root until it finds one.
                 If set to True, an image must exist at the location indicated
-                by 'img_path'.  If set to False for a client running on the
-                Solaris platform, an ImageLocationAmbiguous exception will be
-                raised if an image is found somewhere other than '/'.  For all
-                other platforms, a value of False will allow any image location.
+                by 'img_path'.
                 """
 
-                compatible_versions = set([62, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise apx.VersionException(CURRENT_API_VERSION,
@@ -4634,6 +4631,46 @@ class PlanDescription(object):
         def cbytes_avail(self):
                 """Estimated number of bytes available in download cache"""
                 return self.__plan.cbytes_avail
+
+
+def get_default_image_root(orig_cwd=None):
+        """Returns a tuple of (root, exact_match) where 'root' is the absolute
+        path of the default image root based on current environment given the
+        client working directory and platform defaults, and 'exact_match' is a
+        boolean specifying how the default should be treated by ImageInterface.
+        Note that the root returned may not actually be the valid root of an
+        image; it is merely the default location a client should use when
+        initializing an ImageInterface (e.g. '/' is not a valid image on Solaris
+        10).
+
+        The ImageInterface object will use the root provided as a starting point
+        to find an image, searching upwards through each parent directory until
+        '/' is reached based on the value of exact_match.
+
+        'orig_cwd' should be the original current working directory at the time
+        of client startup.  This value is assumed to be valid if provided,
+        although permission and access errors will be gracefully handled.
+        """
+
+        # If an image location wasn't explicitly specified, check $PKG_IMAGE in
+        # the environment.
+        root = os.environ.get("PKG_IMAGE")
+        exact_match = True
+        if not root:
+                if os.environ.get("PKG_FIND_IMAGE") or \
+                    portable.osname != "sunos":
+                        # If no image location was found in the environment,
+                        # then see if user enabled finding image or if current
+                        # platform isn't Solaris.  If so, attempt to find the
+                        # image starting with the working directory.
+                        root = orig_cwd
+                        if root:
+                                exact_match = False
+                if not root:
+                        # If no image directory has been determined based on
+                        # request or environment, default to live root.
+                        root = misc.liveroot()
+        return root, exact_match
 
 
 def image_create(pkg_client_name, version_id, root, imgtype, is_zone,

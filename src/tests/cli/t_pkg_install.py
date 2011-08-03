@@ -4819,69 +4819,6 @@ class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-        # Tests for checking what happens when two images are installed side by
-        # side.
-        def test_var_pkg_missing_cfg_cache_ospkg_also_missing_alongside(self):
-                """ Each bad_dir is missing a cfg_cache
-                These 3 tests do nothing currently because trying to install an
-                image next to an existing image in not currently possible.  The
-                test cases remain against the day that such an arrangement is
-                possible.
-                """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl,
-                    set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
-                self.dir = self.corrupt_image_create(self.rurl,
-                    set(["cfg_cache_absent"]), ["var/pkg"], destroy=False)
-
-                self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path(), use_img_root=False)
-
-        def test_var_pkg_ospkg_missing_cfg_cache_alongside(self):
-                """ Complete Full image besides a User image missing cfg_cache
-                """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl, set(),
-                    ["var/pkg"])
-                img_path = self.get_img_path()
-                self.dir = self.corrupt_image_create(self.rurl,
-                    set(["cfg_cache_absent"]), [".org.opensolaris,pkg"],
-                    destroy=False)
-
-                # Found full image before we reached root image.
-                self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path(), use_img_root=False, exit=1)
-
-                # Only possible if user specifies full image's root since
-                # user image is at the top level.
-                self.pkg("-R %s install foo@1.1" % img_path)
-
-        def test_var_pkg_missing_cfg_cache_ospkg_alongside(self):
-                """ Complete User image besides a Full image missing cfg_cache
-                """
-
-                self.pkgsend_bulk(self.rurl, self.foo11)
-                self.image_create(self.rurl)
-
-                self.dir = self.corrupt_image_create(self.rurl,
-                    set(["cfg_cache_absent"]), ["var/pkg"])
-                self.dir = self.corrupt_image_create(self.rurl, set(),
-                    [".org.opensolaris,pkg"], destroy=False)
-
-                # Found user image before we reached root image.
-                self.pkg("-D simulate_live_root=%s install foo@1.1" %
-                    self.backup_img_path(), use_img_root=False, exit=1)
-
-                # Should succeed and install package in user image since
-                # test suite will add -R self.get_img_path().
-                self.pkg("install foo@1.1")
-
 
 class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
         """Test cases for obsolete packages."""

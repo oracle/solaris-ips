@@ -99,24 +99,6 @@ class ImageNotFoundException(ApiException):
                 self.root_dir = root_dir
 
 
-class ImageLocationAmbiguous(ApiException):
-        """Used to indicate that an image was found at a location other than
-        '/' on the Solaris platform when requesting automatic image location
-        discovery.  Clients should trap this exception and add their own
-        messaging telling the user how to specify an image root explicitly
-        for the location."""
-
-        def __init__(self, root, live_root="/"):
-                ApiException.__init__(self)
-                self.root = root
-                self.live_root = live_root
-
-        def __str__(self):
-                return _("pkg(5) image found at '%(found)s' instead of "
-                    "'%(expected)s'.") % { "found": self.root,
-                    "expected": self.live_root }
-
-
 class ImageFormatUpdateNeeded(ApiException):
         """Used to indicate that an image cannot be used until its format is
         updated."""
