@@ -57,6 +57,7 @@ pkglint.action005.1.missing-deps = pkg:/archiver/gnu-tar
     pkg:/system/linker
     pkg:/system/network
     pkg:/system/zones
+    pkg:/system/zones/brand/solaris
     pkg:/system/zones/internal
     pkg:/text/gnu-grep
     pkg:/text/tidy

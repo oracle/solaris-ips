@@ -96,7 +96,7 @@ class TestImporter(pkg5unittest.SingleDepotTestCase):
                 os.mkdir(tmp)
 
                 # verify we can pkgrecv all packages we have imported
-                pkg_list = ("package/pkg entire system/zones/brand/ipkg "
+                pkg_list = ("package/pkg entire package/pkg/package-manager "
                 "consolidation/solaris_re/solaris_re-incorporation "
                 "pkg5test_install")
 
