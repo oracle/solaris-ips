@@ -1331,11 +1331,11 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         pkg_list = None
         if use_system:
                 # We make this a list because we want to reuse the list of
-                # packages again, and despite it's name, get_pkg_list is a
+                # packages again, and despite its name, get_pkg_list is a
                 # generator.
                 pkg_list = list(api_inst.get_pkg_list(
                     api.ImageInterface.LIST_INSTALLED))
-                for (pub, stem, ver), summ, cats, states in pkg_list:
+                for (pub, stem, ver), summ, cats, states, attrs in pkg_list:
                         pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
                         if pfmri.pkg_name in resolving_pkgs:
                                 continue
@@ -1355,7 +1355,7 @@ def resolve_deps(manifest_paths, api_inst, prune_attrs=False, use_system=True):
         # Build a list of all files delivered in the packages installed on
         # the system.
         if use_system:
-                for (pub, stem, ver), summ, cats, states in pkg_list:
+                for (pub, stem, ver), summ, cats, states, attrs in pkg_list:
                         pfmri = fmri.PkgFmri("pkg:/%s@%s" % (stem, ver), "5.11")
                         if pfmri.pkg_name in resolving_pkgs:
                                 continue

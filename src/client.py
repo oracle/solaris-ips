@@ -90,7 +90,7 @@ except KeyboardInterrupt:
         import sys
         sys.exit(1)
 
-CLIENT_API_VERSION = 64
+CLIENT_API_VERSION = 65
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -470,7 +470,7 @@ def list_inventory(op, api_inst, pargs,
         try:
                 res = api_inst.get_pkg_list(pkg_list, patterns=pargs,
                     raise_unmatched=True, repos=origins, variants=variants)
-                for pt, summ, cats, states in res:
+                for pt, summ, cats, states, attrs in res:
                         found = True
                         if not omit_headers:
                                 if verbose:
@@ -3017,7 +3017,12 @@ def info(api_inst, args):
 
                 # XXX even more info on the publisher would be nice?
                 msg(_("     Publisher:"), pi.publisher)
-                msg(_("       Version:"), pi.version)
+                hum_ver = pi.get_attr_values("pkg.human-version")
+                if hum_ver and hum_ver[0] != pi.version:
+                        msg(_("       Version:"), "%s (%s)" %
+                            (pi.version, hum_ver[0]))
+                else:
+                        msg(_("       Version:"), pi.version)
                 msg(_(" Build Release:"), pi.build_release)
                 msg(_("        Branch:"), pi.branch)
                 msg(_("Packaging Date:"), pi.packaging_date)
@@ -3423,7 +3428,7 @@ def list_contents(api_inst, args):
                     repos=origins)
                 manifests = []
 
-                for pfmri, summ, cats, states in res:
+                for pfmri, summ, cats, states, pattrs in res:
                         manifests.append(api_inst.get_manifest(pfmri,
                             all_variants=display_raw, repos=origins))
         except api_errors.ImageFormatUpdateNeeded, e:

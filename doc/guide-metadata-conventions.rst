@@ -119,6 +119,14 @@ Common attributes
        A value of "true" indicates the package is obsolete and should be
        removed on upgrade.
 
+    pkg.human-version
+       For components whose upstream version isn't a dot-separated sequence
+       of nonnegative integers (OpenSSL's 0.9.8r, for example), this
+       attribute can be set to that string, and will be displayed when
+       appropriate.  It cannot be used in an FMRI to install a particular
+       version; package authors must still convert the version into a
+       sequence of integers.
+
     variant.*
        See facets.txt
 

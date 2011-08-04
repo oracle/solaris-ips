@@ -1,3 +1,14 @@
+Version 65:
+Incompatible with clients using versions 0-64.
+
+    pkg.client.api.ImageInterface has changed as follows:
+        * get_pkg_list() yields five values instead of four; the fifth is a
+          dictionary of package attributes.
+
+    pkg.client.api.PackageInfo has changed as follows:
+        * added get_attr_values() to return the values of named package
+          attributes.
+
 Version 64:
 Incompatible with clients using versions 0-63.
 

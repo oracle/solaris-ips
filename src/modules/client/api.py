@@ -73,7 +73,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.pkgdefs import *
 from pkg.smf import NonzeroExitException
 
-CURRENT_API_VERSION = 64
+CURRENT_API_VERSION = 65
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -818,20 +818,20 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                     patterns=["release/name"], return_fmris=True)
                 results = [e for e in results]
                 if results:
-                        pfmri, summary, categories, states = \
-                            results[0]
+                        pfmri, summary, categories, states, attrs = results[0]
                         mfst = self._img.get_manifest(pfmri)
                         osname = mfst.get("pkg.release.osname", None)
                         if osname == "sunos":
                                 return True
 
                 # Otherwise, see if we can find package/pkg (or SUNWipkg) and
-                # SUNWcs.
+                # system/core-os (or SUNWcs).
                 results = self.__get_pkg_list(self.LIST_INSTALLED,
-                    patterns=["pkg:/package/pkg", "SUNWipkg", "SUNWcs"])
+                    patterns=["/package/pkg", "SUNWipkg", "/system/core-os",
+                        "SUNWcs"])
                 installed = set(e[0][1] for e in results)
-                if "SUNWcs" in installed and ("SUNWipkg" in installed or
-                    "package/pkg" in installed):
+                if ("SUNWcs" in installed or "system/core-os" in installed) and \
+                    ("SUNWipkg" in installed or "package/pkg" in installed):
                         return True
 
                 return False
@@ -2654,9 +2654,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         self._img.cleanup_downloads()
 
         @_LockedGenerator()
-        def get_pkg_list(self, pkg_list, cats=None, patterns=misc.EmptyI,
-            pubs=misc.EmptyI, raise_unmatched=False, repos=None,
-            return_fmris=False, variants=False):
+        def get_pkg_list(self, pkg_list, cats=None, collect_attrs=False,
+            patterns=misc.EmptyI, pubs=misc.EmptyI, raise_unmatched=False,
+            repos=None, return_fmris=False, variants=False):
                 """A generator function that produces tuples of the form:
 
                     (
@@ -2667,7 +2667,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         ),
                         summary,    - (string) the package summary
                         categories, - (list) string tuples of (scheme, category)
-                        states      - (list) PackageInfo states
+                        states,     - (list) PackageInfo states
+                        attributes  - (dict) package attributes
                     )
 
                 Results are always sorted by stem, publisher, and then in
@@ -2704,6 +2705,11 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 to any package category.  A value of None indicates that no
                 package category filtering should be applied.
 
+                'collect_attrs' is an optional boolean that indicates whether
+                all package attributes should be collected and returned in the
+                fifth element of the return tuple.  If False, that element will
+                be an empty dictionary.
+
                 'patterns' is an optional list of FMRI wildcard strings to
                 filter results by.
 
@@ -2731,14 +2737,14 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 to retrieve the requested package information."""
 
                 return self.__get_pkg_list(pkg_list, cats=cats,
-                    patterns=patterns, pubs=pubs,
+                    collect_attrs=collect_attrs, patterns=patterns, pubs=pubs,
                     raise_unmatched=raise_unmatched, repos=repos,
                     return_fmris=return_fmris, variants=variants)
 
-        def __get_pkg_list(self, pkg_list, cats=None, inst_cat=None,
-            known_cat=None, patterns=misc.EmptyI, pubs=misc.EmptyI,
-            raise_unmatched=False, repos=None, return_fmris=False,
-            variants=False):
+        def __get_pkg_list(self, pkg_list, cats=None, collect_attrs=False,
+            inst_cat=None, known_cat=None, patterns=misc.EmptyI,
+            pubs=misc.EmptyI, raise_unmatched=False, repos=None,
+            return_fmris=False, variants=False):
                 """This is the implementation of get_pkg_list.  The other
                 function is a wrapper that uses locking.  The separation was
                 necessary because of API functions that already perform locking
@@ -3054,6 +3060,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         omit_var = False
                         states = entry["metadata"]["states"]
                         pkgi = self._img.PKG_STATE_INSTALLED in states
+                        ddm = lambda: collections.defaultdict(list)
+                        attrs = collections.defaultdict(ddm)
                         try:
                                 for a in actions:
                                         if a.name == "depend" and \
@@ -3065,6 +3073,18 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
 
                                         atname = a.attrs["name"]
                                         atvalue = a.attrs["value"]
+                                        if collect_attrs:
+                                                atvlist = a.attrlist("value")
+
+                                                # XXX Need to describe this data
+                                                # structure sanely somewhere.
+                                                mods = tuple(
+                                                    (k, tuple(sorted(a.attrlist(k))))
+                                                    for k in sorted(a.attrs.iterkeys())
+                                                    if k not in ("name", "value")
+                                                )
+                                                attrs[atname][mods].extend(atvlist)
+
                                         if atname == "pkg.summary":
                                                 summ = atvalue
                                                 continue
@@ -3074,6 +3094,10 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                                         # Historical summary
                                                         # field.
                                                         summ = atvalue
+                                                        collect_attrs and \
+                                                            attrs["pkg.summary"] \
+                                                            [mods]. \
+                                                            extend(atvlist)
                                                 continue
 
                                         if atname == "info.classification":
@@ -3174,9 +3198,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                         if return_fmris:
                                 pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
                                     build_release=brelease, publisher=pub)
-                                yield (pfmri, summ, pcats, states)
+                                yield (pfmri, summ, pcats, states, attrs)
                         else:
-                                yield (t, summ, pcats, states)
+                                yield (t, summ, pcats, states, attrs)
 
                 if raise_unmatched:
                         # Caller has requested that non-matching patterns or
@@ -3249,6 +3273,8 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 act_opts = PackageInfo.ACTION_OPTIONS - \
                     frozenset([PackageInfo.DEPENDENCIES])
 
+                collect_attrs = PackageInfo.ALL_ATTRIBUTES in info_needed
+
                 pis = []
                 rval = {
                     self.INFO_FOUND: pis,
@@ -3257,8 +3283,9 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                 }
 
                 try:
-                        for pfmri, summary, cats, states in self.__get_pkg_list(
-                            ilist, inst_cat=inst_cat, known_cat=known_cat,
+                        for pfmri, summary, cats, states, attrs in self.__get_pkg_list(
+                            ilist, collect_attrs=collect_attrs,
+                            inst_cat=inst_cat, known_cat=known_cat,
                             patterns=fmri_strings, raise_unmatched=True,
                             return_fmris=True, variants=True):
                                 release = build_release = branch = \
@@ -3385,7 +3412,7 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                     pfmri=pfmri, licenses=licenses,
                                     links=links, hardlinks=hardlinks, files=files,
                                     dirs=dirs, dependencies=dependencies,
-                                    description=description))
+                                    description=description, attrs=attrs))
                 except apx.InventoryException, e:
                         if e.illegal:
                                 self.log_operation_end(

@@ -384,7 +384,7 @@ add set name=pkg.description value="%(desc)s"
                 returned = []
                 for entry in api_obj.get_pkg_list(pkg_list, cats=cats,
                     patterns=patterns, pubs=pubs, variants=variants):
-                        (pub, stem, ver), summ, pcats, raw_states = entry
+                        (pub, stem, ver), summ, pcats, raw_states, attrs = entry
 
                         sver = ver.split(":", 1)[0]
 

@@ -62,6 +62,12 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        human = """
+            open human@0.9.8.18,5.11-0
+            add set name=pkg.human-version value=0.9.8r
+            close
+        """
+
         misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
             "tmp/bronze2", "tmp/copyright1", "tmp/sh", "tmp/baz"]
 
@@ -69,7 +75,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
                 self.plist = self.pkgsend_bulk(self.rurl, (self.badfile10,
-                    self.baddir10, self.bronze10))
+                    self.baddir10, self.bronze10, self.human))
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""
@@ -256,6 +262,13 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("info -r %s" % pfmri.pkg_name, exit=0)
+
+        def test_human_version(self):
+                """Verify that info returns the expected output for packages
+                with a human-readable version defined."""
+
+                self.image_create(self.rurl)
+                self.pkg("info -r human | grep 'Version: 0.9.8.18 (0.9.8r)'")
 
         def test_renamed_packages(self):
                 """Verify that info returns the expected output for renamed

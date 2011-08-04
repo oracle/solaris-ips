@@ -4060,7 +4060,7 @@ class PackageManager:
                 self.special_package_names = []
                 pub_names = {}
                 for entry in pkgs_from_api:
-                        (pkg_pub, pkg_name, ver), summ, cats, states = entry
+                        (pkg_pub, pkg_name, ver), summ, cats, states, attrs = entry
                         if debug:
                                 print entry, ver
                         pkg_stem  = "pkg://" + pkg_pub + "/"  + pkg_name

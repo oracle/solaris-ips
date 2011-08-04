@@ -309,14 +309,14 @@ class TestApiLinked(pkg5unittest.ManyDepotTestCase):
                 pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_INSTALLED)
                 return set(sorted([
                         "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
-                        for pfmri, summ, cats, states in pkg_list
+                        for pfmri, summ, cats, states, attrs in pkg_list
                 ]))
 
         def _list_all_packages(self, apio):
                 pkg_list = apio.get_pkg_list(api.ImageInterface.LIST_ALL)
                 return set(sorted([
                         "pkg://%s/%s@%s" % (pfmri[0], pfmri[1], pfmri[2])
-                        for pfmri, summ, cats, states in pkg_list
+                        for pfmri, summ, cats, states, attrs in pkg_list
                 ]))
 
         # utility functions for use by test cases
@@ -984,7 +984,7 @@ packages known:
                 pkg_list = list(api_objs[1].get_pkg_list(
                     api.ImageInterface.LIST_INSTALLED))
                 self.assertEqual(len(pkg_list), 1)
-                pfmri, summ, cats, states = pkg_list[0]
+                pfmri, summ, cats, states, attrs = pkg_list[0]
                 pkg_installed = "%s@%s" % (pfmri[1], pfmri[2])
                 self.assertEqual(pkg_installed, self.p_foo1_name[2])
 
@@ -999,7 +999,7 @@ packages known:
                 pkg_list = list(api_objs[1].get_pkg_list(
                     api.ImageInterface.LIST_INSTALLED))
                 self.assertEqual(len(pkg_list), 1)
-                pfmri, summ, cats, states = pkg_list[0]
+                pfmri, summ, cats, states, attrs = pkg_list[0]
                 pkg_installed = "%s@%s" % (pfmri[1], pfmri[2])
                 self.assertEqual(pkg_installed, self.p_foo1_name[0])
 
