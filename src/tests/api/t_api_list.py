@@ -502,7 +502,6 @@ add set name=pkg.description value="%(desc)s"
                 returned = self.__get_returned(api_obj.LIST_NEWEST,
                     api_obj=api_obj, patterns=["baz@1.0", "bat/bar",
                         "corge@1.0"], variants=True)
-
                 expected = [
                     self.__get_exp_pub_entry("test1", 7, "bat/bar",
                         "1.2,5.11-0"),
@@ -515,6 +514,34 @@ add set name=pkg.description value="%(desc)s"
                 ]
                 self.assertPrettyEqual(returned, expected)
                 self.assertEqual(len(returned), 6)
+
+                returned = self.__get_returned(api_obj.LIST_NEWEST,
+                    api_obj=api_obj, patterns=["apple@*", "bat/bar"],
+                    variants=True)
+                expected = [
+                    self.__get_exp_pub_entry("test1", 6, "apple",
+                        "1.2.1,5.11-1"),
+                    self.__get_exp_pub_entry("test2", 6, "apple",
+                        "1.2.1,5.11-1"),
+                    self.__get_exp_pub_entry("test1", 7, "bat/bar",
+                        "1.2,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 7, "bat/bar",
+                        "1.2,5.11-0")
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 4)
+
+                returned = self.__get_returned(api_obj.LIST_NEWEST,
+                    api_obj=api_obj, patterns=["apple@1.2.0"],
+                    variants=True)
+                expected = [
+                    self.__get_exp_pub_entry("test1", 3, "apple",
+                        "1.2.0,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 3, "apple",
+                        "1.2.0,5.11-0")
+                ]
+                self.assertPrettyEqual(returned, expected)
+                self.assertEqual(len(returned), 2)
 
         def test_list_03_cats(self):
                 """Verify the sort order and content of a list excluding

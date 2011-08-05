@@ -2949,7 +2949,6 @@ in the environment or by setting simulate_cmdpath in DebugValues."""
                                 # any additional entries need to be marked for
                                 # omission before continuing.
                                 omit_package = True
-                                omit_ver = True
                         else:
                                 nlist[pkg_stem] += 1
 
