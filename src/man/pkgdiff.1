@@ -1,0 +1,185 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgdiff 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgdiff \- compare package manifests
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgdiff [-i \fIattribute\fR ...] [-o \fIattribute\fR]
+    [-v \fIname\fR=\fIvalue\fR ...] \fIfile1\fR \fIfile2\fR
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgdiff\fR compares two package manifests and reports differences. \fBpkgdiff\fR sorts each manifest and action into a consistent order before comparison.
+.sp
+.LP
+Output is in the following form:
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+This action is in \fIfile2\fR but not in \fIfile1\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIcomplete_action\fR\fR
+.ad
+.RS 21n
+.rt  
+This action is in \fIfile1\fR but not in \fIfile2\fR.
+.RE
+
+.sp
+.in +2
+.nf
+\fIactionname\fR \fIkeyvalue\fR [\fIvariant values, if any\fR]
+.fi
+.in -2
+
+.sp
+.ne 2
+.mk
+.na
+\fB- \fIattribute1\fR=\fIvalue1\fR\fR
+.ad
+.RS 23n
+.rt  
+This \fIattribute\fR,\fIvalue\fR is in \fIfile1\fR but not in \fIfile2\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB+ \fIattribute2\fR=\fIvalue2\fR\fR
+.ad
+.RS 23n
+.rt  
+This \fIattribute\fR,\fIvalue\fR is in \fIfile2\fR but not in \fIfile1\fR.
+.RE
+
+.sp
+.LP
+Actions with different variants but the same type and key attribute value are treated as separate actions for purposes of comparison. Thus, actions that change attributes are shown in their complete form rather than as attribute changes.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR \fIattribute\fR\fR
+.ad
+.RS 17n
+.rt  
+Ignore \fIattribute\fR if present during comparisons. File hash values can be ignored with \fB-i\fR \fIhash\fR. This option cannot be used with the \fB-o\fR option. This option can be repeated.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-o\fR \fIattribute\fR\fR
+.ad
+.RS 17n
+.rt  
+Only report differences in \fIattribute\fR. This option cannot be used with the \fB-i\fR option. This option elides any action changes that do not affect \fIattribute\fR on an action.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR \fIname\fR=\fIvalue\fR\fR
+.ad
+.RS 17n
+.rt  
+Only compute differences for this variant value. For example, only compute differences for \fBarch=sparc\fR. This variant tag is removed for all actions before comparison. Only one value can be specified per variant. This option can be repeated for different variants.
+.RE
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+No differences were found.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+Differences were found.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB>1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

@@ -1,0 +1,811 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkg.depotd 1m "28 Jul 2011" "SunOS 5.11" "System Administration Commands"
+.SH NAME
+pkg.depotd \- Image Packaging System depot server
+.SH SYNOPSIS
+.LP
+.nf
+/usr/lib/pkg.depotd [-a \fIaddress\fR] [-d \fIinst_root\fR] [-p \fIport\fR]
+    [-s \fIthreads\fR] [-t \fIsocket_timeout\fR] [--add-content]
+    [--cfg] [--content-root] [--debug feature_list]
+    [--disable-ops=\fIop\fR[/1][,...]]
+    [--log-access] [--log-errors] [--mirror]
+    [--proxy-base \fIurl\fR] [--readonly] [--rebuild]
+    [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+    [--writable-root]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkg.depotd\fR is the depot server for the image packaging system. It provides network access to the data contained within a package repository. Clients that do not support direct access to a repository through the file system, or for which network access is the only available or preferred method of transport, typically use the package depot.
+.sp
+.LP
+Clients such as \fBpkg\fR(1), the retrieval client, can retrieve a list of packages and package metadata from a repository directly or through the depot server. \fBpkgsend\fR(1), the publication client, can send new versions of packages to a repository directly or through the depot server. \fBpkgrepo\fR(1) can be used to create repositories for use with the depot server, or to manage them both directly and through the depot server.
+.sp
+.LP
+\fBpkg.depotd\fR is typically run as a service on the system. Package and software developers might want to run private copies for testing.
+.sp
+.LP
+The depot does not provide any access control methods of its own. By default, all of the clients that are able to connect are able to read all package data and publish new package versions. The exception is that when running under Service Management Facility (SMF), the default is to run in read-only mode. The "Notes" section below describes some best practices for maintaining a public depot server with evolving content.
+.SH SMF PROPERTIES
+.sp
+.LP
+The \fBpkg.depot\fR server is generally configured via the \fBsmf\fR(5) properties associated with its service. The following properties are recognized:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/address\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBnet_address\fR) The IP address on which to listen for connections. The default value is 0.0.0.0 (\fBINADDR_ANY\fR), which listens on all active interfaces. To listen on all active IPv6 interfaces, use \fB::\fR. Only the first value is used.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/content_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The file system path at which the instance should find its static and other web content. The default value is \fB/usr/share/lib/pkg\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/debug\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) A comma-separated list of debug features to enable. Possible values are:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBheaders\fR\fR
+.ad
+.RS 11n
+.rt  
+Logs the headers of every request to the error log.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/disable_ops\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) A comma-separated list of operations that should be disabled for the depot server. Operations are given as \fIoperation\fR[/\fIversion\fR] (\fBcatalog\fR or \fBsearch_1\fR, for example).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/file_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The root of the file content for this repository. If undefined, this defaults to \fIinst_root\fR/\fIfile\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/inst_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The file system path at which the instance should find its repository data. Required unless \fBfile_root\fR or \fBPKG_REPO\fR has been provided. The default value is \fB/var/pkgrepo\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/log_access\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The destination for any access related information logged by the depot process. Possible values are: \fBstderr\fR, \fBstdout\fR, \fBnone\fR, or an absolute path name. The default value is \fBstdout\fR if \fBstdout\fR is a \fBtty\fR. If \fBstdout\fR is not a \fBtty\fR, the default value is \fBnone\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/log_errors\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The destination for any errors or other information logged by the depot process. Possible values are: \fBstderr\fR, \fBstdout\fR, \fBnone\fR, or an absolute path name. The default value is \fBstderr\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/mirror\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) Sets whether package mirror mode is used. When true, publishing and metadata operations are disabled and only a limited browser user interface is provided. This property cannot be true when the \fBpkg/readonly\fR property is true. The default value is \fBfalse\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/port\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) The port number on which the instance should listen for incoming package requests. If SSL certificate and key information has not been provided, the default value is 80; otherwise, the default value is 443.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/proxy_base\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBuri\fR) This changes the base URL for the depot server and is most useful when running behind Apache or some other web server in a reverse proxy configuration.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/readonly\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBboolean\fR) Sets whether modifying operations, such as those initiated by \fBpkgsend\fR(1), are disabled. Retrieval operations are still available. This property cannot be true when the \fBpkg/mirror\fR property is true. The default value is \fBtrue\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/socket_timeout\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) The maximum number of seconds the server should wait for a response from a client before closing a connection. The default value is 60.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/sort_file_max_size\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) The maximum size of the indexer sort file. Used to limit the amount of RAM the depot uses for indexing, or increase it for speed.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_cert_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The absolute path name to a PEM-encoded Certificate file. The default value is \fBnone\fR. This property must be used with \fBssl_key_file\fR. The depot only responds to SSL requests if both \fBssl_cert_file\fR and \fB/ssl_key_file\fR are provided.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_dialog\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) Specifies what method should be used to obtain the passphrase used to decrypt the \fBssl_key_file\fR. Possible values are:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBbuiltin\fR\fR
+.ad
+.RS 25n
+.rt  
+Prompt for the passphrase. This is the default value.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBexec:\fI/path/to/program\fR\fR\fR
+.ad
+.RS 25n
+.rt  
+Execute the specified external program to obtain the passphrase. The first argument to the program is \fB\&''\fR, and is reserved. The second argument to the program is the port number of the server. The passphrase is printed to \fBstdout\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBsmf:fmri\fR\fR
+.ad
+.RS 25n
+.rt  
+Attempt to retrieve the value of the property \fBpkg_secure/ssl_key_passphrase\fR from the service instance related to the FMRI.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/ssl_key_file\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The absolute path name to a PEM-encoded Private Key file. This property must be used with the property \fBssl_cert_file\fR. The depot only responds to SSL requests if both \fB/ssl_key_file\fR and \fBssl_cert_file\fR are provided.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/threads\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBcount\fR) The number of threads started to serve requests. The default value is 60. Suitable only for small deployments. This value should be approximately 20 times the number of concurrent clients. The maximum value of \fBthreads\fR is 5000.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/writable_root\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The file system path to a directory to which the program has write access. This is used with the \fB-readonly\fR option to enable the depot server to create files, such as search indices, without needing write access to the package information.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_secure/ssl_key_passphrase\fR\fR
+.ad
+.sp .6
+.RS 4n
+(\fBastring\fR) The password to use to decrypt the \fBpkg/ssl_key_file\fR. This value is read-authorization protected using the attribute \fBsolaris.smf.read.pkg-server\fR.
+.RE
+
+.sp
+.LP
+The presentation and behavior of the Browser User Interface (BUI) of the depot server is controlled using the following properties:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_description\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) A descriptive paragraph for the RSS/Atom feed.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_icon\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) The path name of a small image used to visually represent the RSS/Atom feed. The path name should be relative to the \fBcontent_root\fR. The default value is \fBweb/_themes/pkg-block-icon.png\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_logo\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) The path name of a large image that will be used to visually brand or identify the RSS/Atom feed. This value should be relative to the \fBcontent_root\fR. The default value is \fBweb/_themes/pkg-block-icon.png\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_name\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBastring\fR) A short, descriptive name for RSS/Atom feeds generated by the depot serving the repository. The default value is "package repository feed".
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg_bui/feed_window\fR\fR
+.ad
+.RS 28n
+.rt  
+(\fBcount\fR) The number of hours before the feed for the repository was last generated, to include when generating the feed.
+.RE
+
+.sp
+.LP
+The package depot is also able to act as a mirror server for local client images from \fBpkg\fR(5). This enables clients that share a subnet on a LAN to mirror their file caches. Clients can download files from one another, thereby reducing load on the package depot server. This functionality is available as an alternate depot service configured by \fBsmf\fR(5). It uses mDNS and \fBdns-sd\fR for service discovery.
+.sp
+.LP
+The mDNS mirror is generally configured via the \fBsmf\fR(5) properties associated with its service. The following properties are recognized:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/file_root\fR\fR
+.ad
+.RS 17n
+.rt  
+(\fBastring\fR) The file system path at which the instance should find its file content. The default value is \fB/var/pkg/download\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkg/port\fR\fR
+.ad
+.RS 17n
+.rt  
+(\fBcount\fR) The port number on which the instance should listen for incoming package requests. The default value is 80.
+.RE
+
+.SH OPTIONS
+.sp
+.LP
+\fBpkg.depotd\fR can read its base configuration information from a file or from the property data of an existing \fBsmf\fR(5) service instance.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cfg\fR \fIsource\fR\fR
+.ad
+.RS 16n
+.rt  
+The path name of the file to use when reading and writing configuration data, or a string of the form \fBsmf:\fIfmri\fR\fR where \fIfmri\fR is the service fault management resource identifier (FMRI) of the instance to read configuration data from. See "Depot Configuration" below for details on the format of the file specified.
+.RE
+
+.sp
+.LP
+If no preexisting configuration source is available, or to override values read from a configuration file provided using \fB--cfg\fR, the following options can be used to alter the default behavior of the depot server:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIaddress\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/address\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--content-root\fR \fIroot_dir\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/content_root\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIinst_root\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/inst_root\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--debug\fR \fIfeatures\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/debug\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--disable-ops\fR \fIop_list\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/disable_ops\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--file-root\fR \fIpath\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/file_root\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--log-access\fR \fIdest\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/log_access\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--log-errors\fR \fIdest\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/log_errors\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--mirror\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/mirror\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIport\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/port\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--proxy-base\fR \fIurl\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/proxy_base\fR above. This option is ignored if an empty value is provided.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--readonly\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/readonly\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIthreads\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/threads\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s-ort-file-max-size\fR \fIbytes\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/sort_file_max_size\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-cert-file\fR \fIsource\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/ssl_cert_file\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-dialog\fR \fItype\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/ssl_dialog\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--ssl-key-file\fR \fIsource\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/ssl_key_file\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-t\fR \fIsocket_timeout\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/socket_timeout\fR above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--writable-root\fR \fIpath\fR\fR
+.ad
+.RS 30n
+.rt  
+See \fBpkg/writable_root\fR above.
+.RE
+
+.sp
+.LP
+Additional administrative and management functionality for package repositories is provided by \fBpkgrepo\fR(1).
+.SH DEPOT CONFIGURATION
+.sp
+.LP
+When a configuration file is provided (instead of an \fBsmf\fR(5) FMRI) by using the \fB--cfg\fR option, the depot server reads and writes all configuration data in a simple text format. The configuration data is described in "SMF Properties" above. The configuration data consists of sections, lead by a \fB[\fIsection\fR]\fR header, and followed by \fBname = \fIvalue\fR\fR entries. Continuations are in the style of RFC 822. Values can be split over multiple lines by beginning continuation lines with whitespace.
+.sp
+.LP
+Any required values not provided in the configuration file must be provided using the option listed in "Options" above. A sample configuration file might look like this:
+.sp
+.in +2
+.nf
+[pkg]
+port = 80
+inst_root = /export/repo
+
+[pub_example_com]
+feed_description = example.com's software
+  update log
+.fi
+.in -2
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fREnabling the Depot Server
+.sp
+.in +2
+.nf
+# \fBsvcadm enable application/pkg/server\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fRChanging the Listening Port of the Server.
+.sp
+.in +2
+.nf
+# \fBsvccfg -s application/pkg/server setprop pkg/port = 10000\fR
+# \fBsvcadm refresh application/pkg/server\fR
+# \fBsvcadm restart application/pkg/server\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 3 \fREnabling the Mirror
+.sp
+.in +2
+.nf
+# \fBsvcadm enable application/pkg/dynamic-mirror\fR
+.fi
+.in -2
+.sp
+
+.SH ENVIRONMENT VARIABLES
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_REPO\fR\fR
+.ad
+.RS 21n
+.rt  
+Specifies the directory that contains the repository to serve. This value is ignored if \fB-d\fR is specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_DEPOT_CONTENT\fR\fR
+.ad
+.RS 21n
+.rt  
+Specifies the directory that contains static content served by the depot. The files listed below under "Files" should be present in this directory, although their content can differ from the supplied default content.
+.RE
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Successful operation.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH FILES
+.sp
+.ne 2
+.mk
+.na
+\fB\fB/usr/share/lib/pkg\fR\fR
+.ad
+.RS 22n
+.rt  
+Default presentation content location. Modify \fBpkg/content_root\fR to select an alternate location.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBdns-sd\fR(1), \fBmdnsd\fR(1), \fBpkg\fR(1), \fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBsyslogd\fR(1M), \fBsmf\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH NOTES
+.sp
+.LP
+The \fBpkd.depotd\fR service is managed by SMF under the service identifier \fBsvc:/application/pkg/server\fR.
+.sp
+.LP
+The mDNS mirror service is managed by SMF under the service identifier \fBsvc:/application/pkg/dynamic-mirror\fR.
+.sp
+.LP
+To control read access to the depot, you can use an HTTP reverse proxy in combination with authentication methods such as client based SSL certificate access, which \fBpkg\fR(1) natively supports.
+.sp
+.LP
+Changes to configuration, or changes to package data using file system based operations, require a restart of the depot server process so that the changes can be reflected in operations and output. Use one of the following methods to restart the depot server process:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Use \fBsvcadm\fR(1M) to restart the \fBapplication/pkg/server\fR instance.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Send a \fBSIGUSR1\fR signal to the depot server process using \fBkill\fR(1). This executes a "graceful restart" that leaves the process intact but reloads all configuration, package, and search data:
+.sp
+.in +2
+.nf
+# \fBkill -USR1 \fIpid\fR\fR
+.fi
+.in -2
+.sp
+
+.RE

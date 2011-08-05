@@ -29,7 +29,6 @@
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
 ^src/gui/help/.*/package-manager.xml$
-^src/man/.*\.(1m?|5)$
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
 ^src/tests/.coverage$

@@ -1,0 +1,169 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgsign 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgsign \- Image Packaging System signing utility
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgsign [-a \fIhash_algorithm\fR]
+    [-c \fIpath_to_signing_certificate\fR]
+    [-i \fIpath_to_intermediate_cert\fR] ...
+    [-k \fIpath_to_private_key\fR] [-n] -s \fIpath_or_uri\fR
+    [--help] [--no-index] [--no-catalog]
+    (\fIfmri\fR|\fIpattern\fR) ...
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgsign\fR updates the manifest for the given FMRIs in place in the repository by adding a signature action using the provided key and certificates. The modified package retains the original timestamp.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.LP
+With \fB-a\fR, use the signature algorithm \fIhash_algorithm\fR instead of the default. The default signature algorithm is \fBrsa-sha256\fR. Supported signature algorithms are \fBrsa-sha256\fR, \fBrsa-sha384\fR, \fBrsa-sha512\fR, \fBsha256\fR, \fBsha384\fR, and \fBsha512\fR. A signature algorithm that only specifies a hash algorithm causes the signature value to be the hash of the manifest of the package. A signature algorithm that specifies \fBrsa\fR and a hash algorithm causes the signature value to be the hash of the manifest signed with the private key provided (see the \fB-c\fR and \fB-k\fR options).
+.sp
+.LP
+With \fB-c\fR, add the certificate \fIpath_to_signing_certificate\fR as the certificate to use when verifying the value of the signature in the action. The \fB-c\fR option can only be used with the \fB-k\fR option.
+.sp
+.LP
+With \fB-i\fR, add the certificate \fIpath_to_intermediate_cert\fR as a certificate to use when validating the certificate \fIpath_to_signing_certificate\fR given as an argument to \fB-c\fR. Multiple certificates can be provided by specifying \fB-i\fR multiple times.
+.sp
+.LP
+With \fB-k\fR, use the private key stored in \fIpath_to_private_key\fR to sign the manifest. The \fB-k\fR option can only be used with the \fB-c\fR option. If \fB-k\fR is not set, then the signature value is the hash of the manifest.
+.sp
+.LP
+With \fB-n\fR, perform a trial run that does not change the repository in any way.
+.sp
+.LP
+With \fB-s\fR, sign packages in the repository at \fIpath_or_uri\fR.
+.sp
+.LP
+With \fB--help\fR, display a usage message.
+.sp
+.LP
+With \fB--no-index\fR, do not update the repository search indices after the signed manifest has been republished.
+.sp
+.LP
+With \fB--no-catalog\fR, do not update the repository catalog after the signed manifest has been republished.
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRSign Using the Hash Value of the Manifest
+.sp
+.LP
+Sign a package published to \fBhttp://localhost:10000\fR using the hash value of the manifest. This is often useful for testing.
+
+.sp
+.in +2
+.nf
+$ \fBpkgsign -s http://localhost:10000 -a sha256 \e\fR
+\fBexample_pkg@1.0,5.11-0:20100626T030108Z\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fRSign Using a Key and Certificate
+.sp
+.LP
+Sign a package published into the file repository in \fB/foo/bar\fR  using \fBrsa-sha384\fR to hash and sign the manifest. The signature key is in \fB/key/usr2.key\fR, its associated certificate is in \fB/key/usr2.cert\fR, and a certificate needed to validate the certificate is in \fB/icerts/usr1.cert\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgsign -s file:///foo/bar/ -a rsa-sha384 \e\fR
+\fB-k /key/usr2.key -c /key/usr2.cert -i /icerts/usr1.cert \e\fR
+\fBexample_pkg@1.0,5.11-0:20100626T031341Z\fR
+.fi
+.in -2
+.sp
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+Multiple operations were requested, but only some of them succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkg\fR(1), \fBpkgrecv\fR(1), \fBpkgsend\fR(1), \fBpkgrepo\fR(1M), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

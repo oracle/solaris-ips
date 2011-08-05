@@ -1,0 +1,133 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgfmt 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgfmt \- format a package manifest
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgfmt [-c|-d|-u] [\fIpackage-manifest-file\fR]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgfmt\fR without the \fB-c\fR or \fB-d\fR options formats a package manifest in a consistent manner, including wrapping lines at 80 characters, sorting actions by type, and sorting attributes. Lines that do not parse into actions (such as macros, comments, or transforms) do not appear in sorted order.
+.sp
+.LP
+If no arguments are given, \fBpkgfmt\fR reads \fBstdin\fR until EOF, and then writes the formatted manifest to \fBstdout\fR. Any manifests specified on the command line are formatted in place.
+.sp
+.LP
+\fBpkgfmt\fR with the \fB-c\fR option checks whether the manifests are formatted in \fBpkgfmt\fR style. The \fB-d\fR option displays the differences if the file is not properly formatted.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR\fR
+.ad
+.RS 6n
+.rt  
+Check whether the manifest is formatted in the \fBpkgfmt\fR style.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR\fR
+.ad
+.RS 6n
+.rt  
+Display manifest differences from the formatted version in unified form.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.RS 6n
+.rt  
+Do not wrap lines at 80 characters. This option is useful for applying traditional text processing tools to package manifests.
+.RE
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+The \fB-c\fR or \fB-d\fR options were specified, and one or more manifests are not in \fBpkgfmt\fR normal form, or an error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

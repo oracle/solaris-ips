@@ -1,0 +1,273 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH packagemanager 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+packagemanager \- GUI for the Image Packaging System
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/packagemanager [\fIoptions\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/packagemanager [-hiRu] [--help]
+    [--info-install \fIfile\fR] [--update-all]
+    [--image-dir \fIdir\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/packagemanager [\fIfile\fR]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpackagemanager\fR is the graphical user interface for \fBpkg\fR(5), the Image Packaging System software.
+.sp
+.LP
+The Package Manager enables you to perform the following tasks:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Search, install, and remove packages.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Add, remove, and modify publishers.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Create, remove, and manage boot environments.
+.RE
+.sp
+.LP
+If the \fIfile\fR operand is specified and its suffix is \fB\&.p5i\fR, \fBpackagemanager\fR launches in Web Install mode, which adds one or more publishers and a number of packages for each publisher.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR or \fB--help\fR\fR
+.ad
+.sp .6
+.RS 4n
+Displays a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-i\fR or \fB--info-install\fR \fIfile\fR\fR
+.ad
+.sp .6
+.RS 4n
+Allows you to specify a \fB\&.p5i\fR file to run \fBpackagemanager\fR in Web Install mode. The \fIfile\fR must have the suffix \fB\&.p5i\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-R\fR or \fB--image-dir\fR \fIdir\fR\fR
+.ad
+.sp .6
+.RS 4n
+Operate on the image rooted at \fIdir\fR, rather than the image discovered automatically.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-U\fR or \fB--update-all\fR\fR
+.ad
+.sp .6
+.RS 4n
+Update all installed packages that have updates available.
+.LP
+Note - 
+.sp
+.RS 2
+If the \fBpackage/pkg\fR, \fBpackage/pkg/package-manager\fR, or \fBpackage/pkg/update-manager\fR packages need to be updated, \fBpackagemanager\fR first updates these packages and then restarts to carry out any remaining updates.
+.RE
+.RE
+
+.SH OPERANDS
+.sp
+.ne 2
+.mk
+.na
+\fB\fIfile\fR\fR
+.ad
+.RS 8n
+.rt  
+A Web Install file. This file must have the suffix \fB\&.p5i\fR. See the Package Manager online help for more information about Web Install.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fROperate on the Current Image
+.sp
+.LP
+Invoke \fBpackagemanager\fR on the current image.
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fROperate on a Specified Image
+.sp
+.LP
+Invoke \fBpackagemanager\fR in the image stored at \fB/aux0/example_root\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager -R /aux0/example_root\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 3 \fRInvoke in Web Install Mode
+.sp
+.LP
+Invoke \fBpackagemanager\fR in Web Install mode.
+
+.sp
+.in +2
+.nf
+$ \fBpackagemanager ~/test.p5i\fR
+.fi
+.in -2
+.sp
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 5n
+.rt  
+Everything worked.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 5n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 5n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.SH FILES
+.sp
+.LP
+Since \fBpkg\fR(5) images can be located arbitrarily within a larger file system, the token \fB$IMAGE_ROOT\fR is used to distinguish relative paths. For a typical system installation, \fB$IMAGE_ROOT\fR is equivalent to /.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/var/pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+Metadata directory for a full or partial image.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_ROOT/.org.opensolaris,pkg\fR\fR
+.ad
+.sp .6
+.RS 4n
+Metadata directory for a user image.
+.sp
+Within the metadata of a particular image, certain files and directories contain information useful during repair and recovery. The token \fB$IMAGE_META\fR is used to refer to the top-level directory that contains the metadata. \fB$IMAGE_META\fR is typically one of the two paths given above.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB$IMAGE_META/gui-cache\fR\fR
+.ad
+.sp .6
+.RS 4n
+Location for cached metadata maintained by \fBpackagemanager\fR to speed up program startup and switching between publishers.
+.RE
+
+.sp
+.LP
+Other paths within the \fB$IMAGE_META\fR directory hierarchy are Private, and are subject to change.
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg/package-manager\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpm-updatemanager\fR(1), \fBpkg\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+Package Manager online help
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH NOTES
+.sp
+.LP
+\fBpackagemanager\fR needs to be invoked with sufficient privilege to operate on an image's files and directories.

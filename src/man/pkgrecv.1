@@ -1,0 +1,464 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgrecv 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgrecv \- Image Packaging System content retrieval utility
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgrecv [-s \fIsrc_uri\fR] [-a] [-d (\fIpath\fR|\fIdest_uri\fR)]
+    [-c \fIcache_dir\fR] [-kr] [-m \fImatch\fR] [-n] [--raw]
+    [--key \fIkeyfile\fR --cert \fIcertfile\fR] (\fIfmri\fR|\fIpattern\fR) ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgrecv [-s \fIsrc_uri\fR] --newest
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgrecv\fR allows the user to retrieve packages from a \fBpkg\fR(5) repository or package archive. \fBpkgrecv\fR can also optionally republish the retrieved packages to a different package repository or archive them. By default, packages are retrieved in package repository format suitable for use with \fBpkg\fR(1), \fBpkg.depotd\fR(1M), and package publication tools.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR\fR
+.ad
+.RS 19n
+.rt  
+Store the retrieved package data in a \fBpkg\fR(5) archive at the location specified by \fB-d\fR. The file cannot already exist. This option can be used only with file system based destinations. Although not required, using a file extension of \fB\&.p5p\fR (for example, \fBarchive.p5p\fR) is strongly suggested. This option cannot be combined with \fB--raw\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 19n
+.rt  
+The path to a directory that will be used to cache downloaded content. If this directory is not supplied, the client automatically selects a cache directory. In the case where a download is interrupted, and a cache directory was automatically chosen, use this option to resume the download. See the "Environment Variables" section below for details about how to set the location used for temporary data storage.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIpath_or_uri\fR\fR
+.ad
+.RS 19n
+.rt  
+The file system path or URI of the target to republish packages to. The target must already exist. New repositories can be created using \fBpkgrepo\fR(1). If \fB-a\fR is specified, the target is assumed to be a new package archive.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-h\fR\fR
+.ad
+.RS 19n
+.rt  
+Display a usage message.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-k\fR\fR
+.ad
+.RS 19n
+.rt  
+Keep the retrieved package content compressed. This option is ignored when republishing. Compressed package content should not be used with \fBpkgsend\fR(1).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-m\fR \fImatch\fR\fR
+.ad
+.RS 19n
+.rt  
+Controls matching behavior using the following values:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBall-timestamps\fR\fR
+.ad
+.RS 18n
+.rt  
+Includes all matching timestamps, not just the latest (implies \fBall-versions\fR).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBall-versions\fR\fR
+.ad
+.RS 18n
+.rt  
+Includes all matching versions, not just the latest.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.RS 19n
+.rt  
+Perform a trial run with no changes made.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR\fR
+.ad
+.RS 19n
+.rt  
+Recursively retrieves all dependencies for the provided list of packages.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIsrc_repo_uri\fR\fR
+.ad
+.RS 19n
+.rt  
+A URI representing the location of a \fBpkg\fR(5) repository or package archive from which to receive package data.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--cert\fR \fIfile\fR\fR
+.ad
+.RS 19n
+.rt  
+Specify a client SSL certificate file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--key\fR \fIfile\fR\fR
+.ad
+.RS 19n
+.rt  
+Specify a client SSL key file to use for package retrieval from an HTTPS repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--newest\fR\fR
+.ad
+.RS 19n
+.rt  
+List the most recent versions of the packages available from the specified repository and exit. (All other options except \fB-s\fR are ignored.)
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--raw\fR\fR
+.ad
+.RS 19n
+.rt  
+Retrieve and store the raw package data in a set of directory structures by stem and version at the location specified by \fB-d\fR. This option can be used only with file system based destinations. This package data can be used to conveniently modify and republish packages, perhaps by correcting file contents or providing additional package metadata. This option cannot be combined with \fB-a\fR.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRList Newest Packages
+.sp
+.LP
+List the newest packages available from the repository on the system named \fBtest\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test --newest\fR
+pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
+pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fRRetrieve Raw Package Data
+.sp
+.LP
+Receive the \fBSUNWlibC\fR, \fBSUNWfreetype\fR, and \fBSUNWlibm\fR packages from Example 1 in a format suitable for use with \fBpkgsend include\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test \e\fR
+\fBSUNWlibC@0.5.11,5.11-0.79:20080221T125720Z --raw\fR
+SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+$ \fBls -d SUNW*\fR
+SUNWfreetype2  SUNWlibC       SUNWlibm
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 3 \fRRetrieve Dependencies From a System
+.sp
+.LP
+Receive the package \fBSUNWvim\fR and all of its dependencies from the system named \fBtest\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -r SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 4 \fRRetrieve All Versions
+.sp
+.LP
+Receive all versions of the package \fBSUNWvim\fR from the system named \fBtest\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -m all-versions SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 5 \fRRetrieve All Versions and Republish Locally
+.sp
+.LP
+Receive all versions of the package \fBSUNWvim\fR from the system named \fBtest\fR and republish it to a local repository.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -d /local/repo SUNWvim\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 6 \fRRetrieve All Versions and Republish Remotely
+.sp
+.LP
+Receive all versions of the package \fBSUNWzlib\fR from the system named \fBtest\fR and republish it to a remote repository on the system named \fBremote\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://test -d http://remote:10000 SUNWzlib\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 7 \fRRetrieve Dependencies From a Repository
+.sp
+.LP
+Receive the package \fBSUNWemacs\fR and all of its dependencies from the repository located at \fB/export/repo\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s /export/repo -r SUNWemacs\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 8 \fRRetrieve Additional Packages
+.sp
+.LP
+Receive all packages that do not already exist from the repository located at \fBhttp://example.com:10000\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://example.com:10000 -d /my/pkg/repo '*'\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 9 \fRCreate a Package Archive
+.sp
+.LP
+Create a package archive containing the package \fBSUNWemacs\fR and all of its dependencies from the repository located at \fBhttp://example.com:10000\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s http://example.com:10000 -d /my/emacs.p5p -a -r SUNWemacs\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 10 \fRCopy Packages From an Archive to a Repository
+.sp
+.LP
+Copy all of the packages in a package archive to an existing repository located at \fB/export/repo\fR.
+
+.sp
+.in +2
+.nf
+$ \fBpkgrecv -s /my/archive.p5p -d /export/repo '*'\fR
+.fi
+.in -2
+.sp
+
+.SH ENVIRONMENT VARIABLES
+.sp
+.LP
+The following environment variables are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_DEST\fR\fR
+.ad
+.RS 12n
+.rt  
+The path of a directory to save the retrieved package to, or the file system path or URI of a repository or package archive where the packages will be copied.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBPKG_SRC\fR\fR
+.ad
+.RS 12n
+.rt  
+A URI or file system path representing the location of a \fBpkg\fR(5) repository or package archive from which to retrieve packages.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBTMPDIR\fR\fR
+.ad
+.RS 12n
+.rt  
+The absolute path of the directory where temporary data should be stored during program execution. If not set, the default is to store temporary data in \fB/var/tmp\fR.
+.RE
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB3\fR\fR
+.ad
+.RS 6n
+.rt  
+Multiple operations were requested, but only some of them succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkgrepo\fR(1), \fBpkgsend\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

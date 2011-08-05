@@ -1,0 +1,392 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkglint 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkglint \- Image Packaging System package lint
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkglint [-c \fIdir\fR] [-r \fIuri\fR] [-p \fIregexp\fR]
+    [-f \fIrcfile\fR] [-b \fIbuild_no\fR] [-v]
+    [-l \fIuri\fR] | \fImanifest\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkglint -L [-v]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkglint\fR runs a series of checks on one or more package manifests, optionally referencing another repository.
+.sp
+.LP
+\fBpkglint\fR should be used during the package authoring process, prior to package publication. \fBpkglint\fR performs exhaustive testing on the manifests that might be too expensive to perform during normal operation of \fBpkgsend\fR(1) or \fBpkg.depotd\fR(1M). \fBpkglint\fR checks include tests for duplicate actions, missing attributes, and unusual file permissions.
+.sp
+.LP
+Manifests for linting can be passed as a space-separated list of local files on the command line, or manifests can be retrieved from a repository.
+.sp
+.LP
+When retrieving manifests from repositories, on first run \fBpkglint\fR creates and populates \fBpkg\fR(5) user images in the specified cache directory. If the \fB-r\fR option is supplied, a user image  named \fIcache_dir\fR\fB/ref_image\fR is created for the reference repository. If the \fB-l\fR option is supplied, a user image named \fIcache_dir\fR\fB/lint_image\fR is created for the lint repository. No content is installed in these images. These images are only used by \fBpkglint\fR to retrieve manifests from the repositories.
+.sp
+.LP
+Subsequent invocations of \fBpkglint\fR can reuse the cache directory and can omit any \fB-r\fR or \fB-l\fR arguments.
+.sp
+.LP
+\fBpkglint\fR provides limited support for configuring publishers in the cache directory. Use \fBpkg\fR(1) to perform more complex publisher configuration on these images.
+.sp
+.LP
+\fBpkglint\fR allows package authors to bypass checks for a given manifest or action. A manifest or action that contains the attribute \fBpkg.linted\fR set to \fBTrue\fR does not produce any lint output for that manifest or action.
+.sp
+.LP
+More granular \fBpkg.linted\fR settings can be made using substrings of \fBpkglint\fR check names. For example, \fBpkg.linted.\fIcheck\fR.\fIid\fR\fR set to \fBTrue\fR bypasses all checks with the name \fB\fIcheck\fR.\fIid\fR\fR for the given manifest or action.
+.sp
+.LP
+The behavior of \fBpkglint\fR can be configured by specifying a\fBpkglintrc\fR file. By default, \fBpkglint\fR searches in \fB/usr/share/lib/pkg/pkglintrc\fR and \fB$HOME/.pkglintrc\fR for configuration options. Use the \fB-f\fR option to specify a different configuration file.
+.sp
+.LP
+During the lint run, any errors or warnings encountered are printed to \fBstderr\fR.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-b\fR \fIbuild_no\fR\fR
+.ad
+.RS 18n
+.rt  
+Specify a build number used to narrow the list of packages used during linting from lint and reference repositories. If no \fB-b\fR option is specified, the latest versions of packages are used. See also the \fBversion.pattern\fR configuration property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 18n
+.rt  
+Specify a local directory used for caching package metadata from the lint and reference repositories.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-l\fR \fIlint_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+Specify a URI representing the location of the lint repository. Both HTTP and file system based publication are supported. If you specify \fB-l\fR, then you must also specify \fB-c\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-L\fR\fR
+.ad
+.RS 18n
+.rt  
+List the known and excluded lint checks and then exit. Display the short name and description of each check. When combined with the \fB-v\fR flag, display the method that implements the check instead of the description.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-f\fR \fIconfig_file\fR\fR
+.ad
+.RS 18n
+.rt  
+Configure the \fBpkglint\fR session using the \fIconfig_file\fR configuration file.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIregexp\fR\fR
+.ad
+.RS 18n
+.rt  
+Specify a regular expression used to narrow the list of packages to be checked from the lint repository. All manifests from the reference repository are loaded  (assuming they match the value for \fB-b\fR, if supplied), ignoring this pattern.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-r\fR \fIrepo_uri\fR\fR
+.ad
+.RS 18n
+.rt  
+Specify a URI representing the location of the reference repository. If you specify \fB-r\fR, then you must also specify \fB-c\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.RS 18n
+.rt  
+Run \fBpkglint\fR in a verbose mode, overriding any \fBlog_level\fR settings in the configuration file.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.RS 18n
+.rt  
+Display a usage message.
+.RE
+
+.SH FILES
+.sp
+.LP
+The \fBpkglintrc\fR configuration file takes the following key/value arguments:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBlog_level\fR\fR
+.ad
+.RS 24n
+.rt  
+The minimum level at which to emit lint messages. Lint messages lower than this level are discarded. The default value is \fBINFO\fR.
+.sp
+Log levels in order of least to most severe are \fBDEBUG\fR, \fBINFO\fR, \fBWARNING\fR, \fBERROR\fR, and \fBCRITICAL\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBdo_pub_checks\fR\fR
+.ad
+.RS 24n
+.rt  
+If \fBTrue\fR, perform checks that might only make sense for published packages. The default value is \fBTrue\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.ext.\fR*\fR
+.ad
+.RS 24n
+.rt  
+The plugin mechanism of \fBpkglint\fR allows for additional lint modules to be added at runtime. Any key that starts with \fBpkglint.ext.\fR takes a value that must be a fully-specified Python module. See the "Developers" section for more information.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBpkglint.exclude\fR\fR
+.ad
+.RS 24n
+.rt  
+A space-separated list of fully specified Python modules, classes, or function names to omit from the set of checks performed.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBuse_progress_tracker\fR\fR
+.ad
+.RS 24n
+.rt  
+If \fBTrue\fR, use a progress tracker when iterating over manifests during lint runs. The default value is \fBTrue\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBversion.pattern\fR\fR
+.ad
+.RS 24n
+.rt  
+A version pattern, used when specifying a build number to lint against (\fB-b\fR). If not specified in the configuration file, the \fB-b\fR option uses the pattern \fB*,5.11-0.\fR, matching all components of the 5.11 build, with a branch prefix of 0.
+.RE
+
+.SH DEVELOPERS
+.sp
+.LP
+To extend the set of checks performed by \fBpkglint\fR, subclass \fBpkg.lint.base.Checker\fR and its subclasses, \fBManifestChecker\fR, \fBActionChecker\fR, and \fBContentChecker\fR. Add the Python module name that contains those classes to a new \fBpkglint.ext.\fR key in the configuration file.
+.sp
+.LP
+Instances of those new subclasses are created by \fBpkglint\fR on startup. Methods inside each subclass with the special keyword argument \fBpkglint_id\fR are invoked during the course of the lint session. Those methods should have the same signature as the corresponding \fBcheck()\fR method in the super class. Methods should also be assigned a \fBpkglint_desc\fR attribute, which is used as the description printed by \fBpkglint -L\fR.
+.sp
+.LP
+Parameters are available to \fBChecker\fR subclasses, allowing them to tune their behavior. The recommended parameter naming convention is \fB\fIpkglint_id\fR.\fIname\fR\fR. Parameter values can be stored in the configuration file, or accessed in manifests or actions retrieved using the \fBLintEngine.get_param()\fR method. When accessing parameters from the manifest, the prefix \fBpkg.lint\fR is prepended to the key name to ensure that \fBpkglint\fR parameters do not overlap with any existing action or manifest values.
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRFirst Run on a Particular Repository
+.sp
+.LP
+Running a \fBpkglint\fR session for the first time on a given repository.
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 mymanifest.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fRSubsequent Run on the Same Repository
+.sp
+.LP
+A subsequent run against the same repository used in Example 1.
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache mymanifest-fixed.mf\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 3 \fRUsing a Lint Repository With a Narrowed Manifest Set
+.sp
+.LP
+Running a \fBpkglint\fR session with a lint repository and specifying a subset of manifests to check.
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/othercache -l http://localhost:10000 \e\fR
+\fB-p '.*firefox.*'\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 4 \fRSpecifying a Build
+.sp
+.LP
+Running a \fBpkglint\fR session against a given build in verbose mode.
+
+.sp
+.in +2
+.nf
+$ \fBpkglint -c /space/cache -r http://localhost:10000 \e\fR
+\fB-l http://localhost:12000 -b 147 -v\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 5 \fRModifying a Configuration File
+.sp
+.LP
+A configuration file with a new lint module, excluding some checks.
+
+.sp
+.in +2
+.nf
+$ \fBcat ~/.pkglintrc\fR
+[pkglint]
+
+log_level = DEBUG
+# log_level = INFO
+
+pkglint.ext.mycheck = org.timf.mychecks
+pkglint.ext.opensolaris = pkg.lint.opensolaris
+pkglint.exclude: pkg.lint.opensolaris.OpenSolarisActionChecker
+pkg.lint.pkglint.PkgActionChecker.unusual_perms pkg.lint.pkglint.PkgManifestChecker
+pkg.lint.opensolaris.OpenSolarisManifestChecker
+.fi
+.in -2
+.sp
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+One or more lint checks emitted output.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkg\fR(1), \fBpkg.depotd\fR(1M), \fBpkgsend\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

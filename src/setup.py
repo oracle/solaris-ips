@@ -94,9 +94,9 @@ scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
 svc_method_dir = 'lib/svc/method'
 
-man1_dir = 'usr/share/man/cat1'
-man1m_dir = 'usr/share/man/cat1m'
-man5_dir = 'usr/share/man/cat5'
+man1_dir = 'usr/share/man/man1'
+man1m_dir = 'usr/share/man/man1m'
+man5_dir = 'usr/share/man/man5'
 resource_dir = 'usr/share/lib/pkg'
 smf_app_dir = 'lib/svc/manifest/application/pkg'
 execattrd_dir = 'etc/security/exec_attr.d'
@@ -442,8 +442,6 @@ class install_func(_install):
                 Also, make sure that cherrypy and other external dependencies
                 are installed.
                 """
-                for f in man1_files + man1m_files + man5_files:
-                        file_util.copy_file(f + ".txt", f, update=1)
 
                 _install.run(self)
 

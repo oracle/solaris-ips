@@ -69,7 +69,7 @@
 <transform file path=usr/share/icons/.* -> add restart_fmri svc:/application/desktop-cache/icon-cache:default>
 <transform file path=usr/share/mime/packages/.*\.xml -> add restart_fmri svc:/application/desktop-cache/mime-types-cache:default>
 
-# Add facets
+# Add locale facets
 <transform dir file \
     path=usr/share/locale/([a-z]{2,3}(_[A-Z]{2,3})?)([.@][^/]+)?(/.+)?$ -> \
     default facet.locale.%<1> true>
@@ -79,6 +79,10 @@
 <transform file \
     path=usr/share/omf/package-manager/package-manager-([a-z]{2,3}(_[A-Z]{2,3})?)\.omf$ -> \
     default facet.locale.%<1> true>
+
+# Add manpage facets
+<transform dir file link hardlink path=usr.*/man(/.+){0,1}$ -> \
+    default facet.doc.man true>
 
 # Default values for legacy actions
 <transform legacy -> default name %{pkg.summary}>

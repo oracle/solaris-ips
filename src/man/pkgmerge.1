@@ -1,0 +1,414 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgmerge 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgmerge \- Image Packaging System package merging utility
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgmerge [-n] -d \fIdest_repo\fR
+    -s \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR ...
+    [\fIpkg_fmri_pattern\fR ...]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgmerge\fR is a package publication tool for creating multi-variant packages. It does this by merging packages with identical names and versions (excluding time stamp), tagging actions that are unique in the versions being merged with the specified variant name and value for the given source, and then publishing the new packages to the target repository. Only the newest version of every package from each source is used.
+.sp
+.LP
+If an action has the attribute \fBpkg.merge.blend\fR set to the name of the variant being merged, that action is copied to the other manifests prior to merging so that the action appears without any added variant tags in the final output. Note that the attribute \fBpkg.merge.blend\fR itself is removed from any actions in the output manifest. This attribute can be repeated with different values for multiple pass merges.
+.sp
+.LP
+Non-identical actions that deliver to the same path in an input manifest result in \fBpkgmerge\fR exiting with an error.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIdest_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+The file system path or URI of the target repository to publish the merged packages to. The target repository must already exist. New repositories can be created using \fBpkgrepo\fR(1).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-n\fR\fR
+.ad
+.sp .6
+.RS 4n
+Perform a trial run with no changes made to the target repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIvariant\fR=\fIvalue\fR[,...],\fIsrc_repo\fR\fR
+.ad
+.sp .6
+.RS 4n
+The variant name and value to use for packages from this source, followed by the file system path or URI of the source repository or package archive to retrieve packages from. Multiple variants can be specified separated by commas. The same variants must be named for all sources. This option can be specified multiple times.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB--help\fR or \fB-?\fR\fR
+.ad
+.sp .6
+.RS 4n
+Displays a usage message.
+.RE
+
+.SH ENVIRONMENT VARIABLES
+.sp
+.LP
+The following environment variable is supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fBTMPDIR\fR\fR
+.ad
+.RS 10n
+.rt  
+The absolute path of the directory where temporary data should be stored during program execution. If not set, the default is to store temporary data in \fB/var/tmp\fR.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRSpecify Variant Name and Value
+.sp
+.LP
+Tag each package found in the specified source with the given variant name and value specified for the source it was retrieved from:
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src.example.com \e\fR
+\fB-d http://dest.example.com\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Sample package:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package after operation:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fBExample 2 \fRMerge and Publish Packages
+.sp
+.LP
+Merge the newest version of each package from the given sources and publish the new packages to the target repository:
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src1.example.com \e\fR
+\fB-s arch=i386,http://src2.example.com \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Sample package from source 1 (SPARC):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package from source 2 (i386):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Merged package:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fBExample 3 \fRMerge Debug and Non-Debug Packages for i386 and SPARC Systems
+.sp
+.LP
+Merge the newest version of each package in a set of debug and non-debug repositories for i386 and SPARC systems:
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,debug=false,/repo/sparc-nondebug \e\fR
+\fB-s arch=sparc,debug=true,/repo/sparc-debug \e\fR
+\fB-s arch=i386,debug=false,/repo/i386-nondebug \e\fR
+\fB-s arch=i386,debug=true,/repo/i386-debug \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Sample package from source 1 (SPARC non-debug):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package from source 2 (SPARC debug):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121411Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package from source 3 (i386 non-debug):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package from source 4 (i386 debug):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Merged package:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163428Z
+set name=variant.arch value=sparc value=i386
+set name=variant.debug value=false value=true
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=false
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=sparc variant.debug=true
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=false
+file \fIid\fR mode=0555 owner=root group=bin path=usr/bin/foo variant.arch=i386 variant.debug=true
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.LP
+\fBExample 4 \fRMerge Using \fBpkg.merge.blend\fR
+.sp
+.LP
+Merge packages for two architectures that do not collide, using the \fBpkg.merge.blend\fR attribute.
+
+.sp
+.in +2
+.nf
+$ \fBpkgmerge -s arch=sparc,http://src1/example.com \e\fR
+\fB-s arch=i386,http://src2.example.com \e\fR
+\fB-d /\fIpath/to/target/repository\fR\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Sample package from source 1 (SPARC):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T121410Z
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root \e
+    group=bin path=usr/bin/sparc/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Sample package from source 2 (i386):
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root \e
+    group=bin path=usr/bin/i386/foo pkg.merge.blend=arch
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.sp
+.LP
+Merged package:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@5.11,5.11-0.200:20381001T163427Z
+set name=variant.arch value=sparc value=i386
+file d285ada5f3cae14ea00e97a8d99bd3e357caadc0 mode=0555 owner=root \e
+    group=bin path=usr/bin/foo
+file a285ada5f3cae14ea00e97a8d99bd3e357cb0dca mode=0555 owner=root \e
+    group=bin path=usr/bin/i386/foo
+file 1d5eac1aab628317f9c088d21e4afda9c754bb76 mode=0555 owner=root \e
+    group=bin path=usr/bin/sparc/foo
+dir group=sys mode=0755 owner=root path=usr
+.fi
+.in -2
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkgrepo\fR(1), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

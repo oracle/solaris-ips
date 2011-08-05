@@ -1,0 +1,149 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkg.sysrepo 1m "28 Jul 2011" "SunOS 5.11" "System Administration Commands"
+.SH NAME
+pkg.sysrepo \- Image Packaging System system repository configuration
+.SH SYNOPSIS
+.LP
+.nf
+pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkg.sysrepo\fR is used to generate the configuration files for the Image Packaging System (IPS) system repository. \fBpkg.sysrepo\fR is called by the \fBsvc:/application/pkg/system-repository\fR Service Management Facility (SMF) service. Changes in configuration should be made to the properties in the SMF service.
+.sp
+.LP
+The system repository is responsible for providing access to the package repositories configured in a reference image through a centralized proxy. Publisher configuration changes made to that reference image are seen immediately by any clients configured to use the system repository.
+.sp
+.LP
+The system repository is primarily used in the global zone to allow non-global zones to access the repositories configured in the global zone. The SMF services \fBsvc:/application/pkg/zones-proxyd\fR and \fBsvc:/application/pkg/zones-proxy-client\fR are responsible for providing the transport between non-global zones and the global zone. This transport is only used by \fBpkg\fR(5).
+.sp
+.LP
+Note that only http, https, and v4 file repositories are supported. p5p-based file repositories or older file repository formats are not supported. See \fBpkgrepo\fR(1) for more information about repository versions.
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcache_dir\fR\fR
+.ad
+.RS 17n
+.rt  
+The absolute path to a directory that should be used by the system repository for caching responses from the publishers configured.
+.sp
+By default, a file-cache is used. However, the special value \fBmemory\fR can be used to indicate the an in-memory cache should be used. The special value \fBNone\fR can be used to indicate that the system repository should not perform any caching. This setting should be configured using the \fBconfig/cache_dir\fR SMF property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR \fIport\fR\fR
+.ad
+.RS 17n
+.rt  
+The port that the system repository should use to listen for requests. This setting should be configured using the \fBconfig/port\fR SMF property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR \fIcache_size\fR\fR
+.ad
+.RS 17n
+.rt  
+An integer value in megabytes that defines the maximum cache size of the system repository. This setting should be configured using the \fBconfig/cache_max\fR SMF property.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fREnabling the System Repository
+.sp
+.in +2
+.nf
+$ \fBsvcadm enable svc:/application/pkg/system-repository\fR
+.fi
+.in -2
+.sp
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB\fB0\fR\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB1\fR\fR
+.ad
+.RS 6n
+.rt  
+Command failed to write a valid configuration.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB2\fR\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB99\fR\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkg\fR(1), \fBpkgdepotd\fR(1M), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR

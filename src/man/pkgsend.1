@@ -1,0 +1,337 @@
+'\" te
+.\" Copyright (c) 2007, 2011, Oracle and/or its
+.\" affiliates. All rights reserved.
+.TH pkgsend 1 "28 Jul 2011" "SunOS 5.11" "User Commands"
+.SH NAME
+pkgsend \- Image Packaging System publication client
+.SH SYNOPSIS
+.LP
+.nf
+/usr/bin/pkgsend [\fIoptions\fR] \fIcommand\fR [\fIcmd_options\fR] [\fIoperands\fR]
+.fi
+
+.LP
+.nf
+/usr/bin/pkgsend generate [-T \fIpattern\fR] [--target \fIfile\fR]
+    \fIsource\fR ...
+.fi
+
+.LP
+.nf
+/usr/bin/pkgsend publish [-b \fIbundle\fR ...] [-d \fIsource\fR ...] 
+    [-s \fIrepo_uri_or_path\fR] [-T \fIpattern\fR] [--no-catalog]
+    [\fImanifest\fR ...]
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBpkgsend\fR enables the publication of new packages and new package versions to an image packaging repository using package manifests. To create or manage repositories, see \fBpkgrepo\fR(1). To create package archives from packages in an existing repository, see \fBpkgrecv\fR(1). For more information about package manifests, see \fBpkg\fR(5).
+.SH OPTIONS
+.sp
+.LP
+The following options are supported:
+.sp
+.ne 2
+.mk
+.na
+\fB--help\fR or \fB-?\fR
+.ad
+.RS 16n
+.rt  
+Displays a usage message.
+.RE
+
+.SH SUB-COMMANDS
+.sp
+.LP
+The following subcommands are supported:
+.sp
+.ne 2
+.mk
+.na
+\fBgenerate\fR [\fB-T\fR \fIpattern\fR] [\fB--target\fR \fIfile\fR] \fIsource\fR ...\fR
+.ad
+.sp .6
+.RS 4n
+Read each \fIsource\fR (such as an SVR4 package, a directory, or a \fBtar\fR file) and emit the manifest that describes the \fIsource\fR to \fBstdout\fR. The output manifest can then be annotated, have dependencies added or analyzed using \fBpkgdepend\fR(1), and have its correctness verified using \fBpkglint\fR(1) before being passed to the \fBpublish\fR subcommand. The following are supported sources:
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Filesystem format SVR4 packages
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Datastream format SVR4 packages
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+\fBtar\fR files
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+Directories
+.RE
+If the base name of files in the source match the patterns specified with \fB-T\fR, the timestamp of the file is added to the action for that file. The \fIpattern\fR uses shell matching rules:
+.sp
+.ne 2
+.mk
+.na
+\fB*\fR
+.ad
+.RS 20n
+.rt  
+Matches everything.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB?\fR
+.ad
+.RS 20n
+.rt  
+Matches any single character.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB[\fIseq\fR]\fR
+.ad
+.RS 20n
+.rt  
+Matches any character in \fIseq\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB![\fIseq\fR]\fR
+.ad
+.RS 20n
+.rt  
+Matches any character not in \fIseq\fR.
+.RE
+
+When the specified source is a directory, there is no clear way to distinguish a \fBfile\fR action from a \fBhardlink\fR action when there are multiple path names for a single inode. Normally, the first one found in the file system walk is treated as a file and the rest as hardlinks. This can be arbitrary, depending on the implementation of the file system. To specify which path names should be treated as files, pass each path name as an argument to the \fB--target\fR option. This option has no effect on other types of sources because they are capable of expressing which path names are files and which are hardlinks.
+.sp
+When SVR4 packages are provided as a source, \fBpkgsend\fR checks that no files with class action scripts are present and no preinstall, postinstall, preremove, or postremove scripts are present. An exception is made for any SMF manifests installed with the \fBmanifest\fR class. \fBBASEDIR\fR is removed from all relocatable paths.
+.sp
+The SVR4 \fBDESC\fR parameter is converted to a \fBpkg.description\fR value. The SVR4 \fBNAME\fR parameter is converted to a \fBpkg.summary\fR value.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fBpublish\fR [\fB-b\fR \fIbundle\fR ...] [\fB-d\fR \fIsource\fR ...] [\fB-s\fR \fIrepo_uri_or_path\fR] [\fB-T\fR \fIpattern\fR] [\fB--no-catalog\fR] [\fImanifest\fR ...]\fR
+.ad
+.sp .6
+.RS 4n
+Publishes a package using the specified package manifests to the target package repository, retrieving files for the package from the provided sources. If multiple manifests are specified, they are joined in the order provided. If a manifest is not specified, the manifest is read from \fBstdin\fR.
+.sp
+With \fB-b\fR, add the specified bundle to the list of sources to search when looking for files in the manifest. Bundles are sources such as tar files and SVR4 packages. If this option is specified multiple times, sources are searched in the order they appear on the command line. If both \fB-b\fR and \fB-d\fR are specified, \fB-d\fR sources are searched first. For a description of supported bundles and how they are used, refer to the \fBgenerate\fR subcommand above.
+.sp
+With \fB-d\fR, add the specified directory to the list of sources to search when looking for files in the manifest. If this option is specified multiple times, sources are searched in the order they appear on the command line. For a description of supported sources and how they are used, refer to the \fBgenerate\fR subcommand above.
+.sp
+With \fB-s\fR, publish the package to the repository located at the given URI or file system path. See the "Notes" section below for more information about restrictions and suggestions for publication. See also the "Environment Variables" section.
+.sp
+With \fB--no-catalog\fR, do not add the package to the publisher's catalog. This option is recommended whenever multiple packages are being published at one time as updates to publisher catalogs must be performed serially. Once publication is complete, the \fBrefresh\fR subcommand of \fBpkgrepo\fR(1) can be used to add the new packages to the respective publisher catalogs.
+.sp
+For all other options, refer to the \fBgenerate\fR subcommand above for usage and their effects.
+.RE
+
+.SH ENVIRONMENT VARIABLES
+.sp
+.ne 2
+.mk
+.na
+\fBPKG_REPO\fR
+.ad
+.RS 12n
+.rt  
+The path or URI of the destination repository.
+.RE
+
+.SH EXAMPLES
+.LP
+\fBExample 1 \fRGenerate and Publish a Package
+.sp
+.LP
+Create a package using \fBpkgsend generate\fR and publish it.
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend generate /path/to/proto > /path/to/manifests/foo.p5m\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+Add the package FMRI for the \fBexample.com\fR publisher to the beginning of \fBfoo.p5m\fR.
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0
+.fi
+.in -2
+
+.sp
+.LP
+The resulting manifest should look like this:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0
+dir group=sys mode=0755 owner=root path=usr
+dir group=bin mode=0755 owner=root path=usr/bin
+file usr/bin/foo group=bin mode=0555 owner=root path=usr/bin/foo
+.fi
+.in -2
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s http://example.com:10000 -d /path/to/proto \e\fR
+\fB/path/to/manifests/foo.p5m\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 2 \fRCreate and Publish a Trivial Package
+.sp
+.LP
+Create a manifest for publisher \fBexample.com\fR containing the following lines:
+
+.sp
+.in +2
+.nf
+set name=pkg.fmri value=pkg://example.com/foo@1.0-1
+file /exdir/foo mode=0555 owner=root group=bin path=/usr/bin/foo
+.fi
+.in -2
+
+.sp
+.LP
+Publish the package:
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s http://example.com:10000 -d /exdir\fR
+.fi
+.in -2
+.sp
+
+.LP
+\fBExample 3 \fRUse a Preexisting Manifest
+.sp
+.LP
+Publish a package using file system based publication and a preexisting manifest.
+
+.sp
+.in +2
+.nf
+$ \fBpkgsend publish -s /tmp/example_repo -d /tmp/pkg_files \e\fR
+\fB/tmp/pkg_manifest\fR
+.fi
+.in -2
+.sp
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.mk
+.na
+\fB0\fR
+.ad
+.RS 6n
+.rt  
+Command succeeded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB1\fR
+.ad
+.RS 6n
+.rt  
+An error occurred.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB2\fR
+.ad
+.RS 6n
+.rt  
+Invalid command line options were specified.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB99\fR
+.ad
+.RS 6n
+.rt  
+An unanticipated exception occurred.
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for descriptions of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+Availability\fBpackage/pkg\fR
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBpkgdepend\fR(1), \fBpkgrepo\fR(1), \fBpkg.depotd\fR(1M), \fBpkg\fR(5)
+.sp
+.LP
+\fBhttp://hub.opensolaris.org/bin/view/Project+pkg/\fR
+.SH NOTES
+.sp
+.LP
+Because of publication protocol limitations, file system based publication must be used when publishing individual package files that are greater than 128 MB in size. File system based publication is also recommended when access control for a repository is needed.
+.sp
+.LP
+When using file system based publication, any \fBpkg.depotd\fR processes that are serving the target repository must be restarted after publication is completed for the changes to be reflected in its web interface or search responses. See \fBpkg.depotd\fR(1M) for more information.
