@@ -8,6 +8,7 @@ pkg.sysrepo \- Image Packaging System system repository configuration
 .LP
 .nf
 pkg.sysrepo -p \fIport\fR [-c \fIcache_dir\fR] [-s \fIcache_size\fR]
+    [-w \fIhttp_proxy\fR] [-W \fIhttps_proxy\fR]
 .fi
 
 .SH DESCRIPTION
@@ -33,7 +34,7 @@ The following options are supported:
 .na
 \fB\fB-c\fR \fIcache_dir\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
 The absolute path to a directory that should be used by the system repository for caching responses from the publishers configured.
 .sp
@@ -46,7 +47,7 @@ By default, a file-cache is used. However, the special value \fBmemory\fR can be
 .na
 \fB\fB-p\fR \fIport\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
 The port that the system repository should use to listen for requests. This setting should be configured using the \fBconfig/port\fR SMF property.
 .RE
@@ -57,9 +58,31 @@ The port that the system repository should use to listen for requests. This sett
 .na
 \fB\fB-s\fR \fIcache_size\fR\fR
 .ad
-.RS 17n
+.RS 18n
 .rt  
 An integer value in megabytes that defines the maximum cache size of the system repository. This setting should be configured using the \fBconfig/cache_max\fR SMF property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-w\fR \fIhttp_proxy\fR\fR
+.ad
+.RS 18n
+.rt  
+A string of the form \fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR that defines a web proxy that the system repository can use to access http-based package repositories. This setting can be configured using the \fBconfig/http_proxy\fR SMF property.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-W\fR \fIhttps_proxy\fR\fR
+.ad
+.RS 18n
+.rt  
+A string of the form \fB\fIscheme\fR://\fIhostname\fR[:\fIport\fR]\fR that defines a web proxy that the system repository can use to access https-based package repositories. This setting can be configured using the \fBconfig/https_proxy\fR SMF property.
 .RE
 
 .SH EXAMPLES
