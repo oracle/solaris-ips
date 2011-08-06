@@ -1635,6 +1635,31 @@ set name=pkg.lint.pkglint.action005.1.missing-deps value=pkg:/test/package value
 depend type=require fmri=test/package
 """
 
+expected_failures["okay_underscores.mf"] = []
+broken_manifests["okay_underscores.mf"] = \
+"""
+#
+# Underscores in attribute names generate warnings, except for a few that are
+# grandfathered in, locale facets, which have locale names in them, and
+# version-lock facets, which take package names.
+#
+set name=pkg.fmri value=pkg://opensolaris.org/system/kernel@0.5.11,5.11-0.141:20100603T215050Z
+set name=org.opensolaris.consolidation value=osnet
+set name=pkg.description value="core kernel software for a specific instruction-set architecture"
+set name=info.classification value=org.opensolaris.category.2008:System/Core
+set name=pkg.summary value="Core Solaris Kernel"
+set name=variant.arch value=i386 value=sparc
+depend type=incorporate fmri=system/blah_blah@0.5.11-0.172 facet.version-lock.system/blah_blah=true
+link path=usr/lib/locale/en_US.UTF-8/foo.mo target=bar.mo facet.locale.en_US=true
+link path=usr/bin/foo1 target=bar restart_fmri=true
+link path=usr/bin/foo2 target=bar refresh_fmri=true
+link path=usr/bin/foo3 target=bar suspend_fmri=true
+link path=usr/bin/foo4 target=bar disable_fmri=true
+link path=usr/bin/foo5 target=bar reboot_needed=true
+link path=usr/bin/foo6 target=bar clone_perms="* 0666 root root"
+link path=usr/bin/foo7 target=bar original_name=SUNWcar:usr/bin/wazaap
+"""
+
 class TestLogFormatter(log.LogFormatter):
         """Records log messages to a buffer"""
         def __init__(self):

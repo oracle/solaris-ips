@@ -797,7 +797,8 @@ class PkgActionChecker(base.ActionChecker):
                                     "restart_fmri", "suspend_fmri",
                                     "disable_fmri", "clone_perms",
                                     "reboot_needed"] or \
-                                        key.startswith("facet.locale."):
+                                        key.startswith("facet.locale.") or \
+                                        key.startswith("facet.version-lock."):
                                         continue
                                 engine.warning(
                                     _("underscore in attribute name %(key)s in "
