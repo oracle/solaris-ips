@@ -130,3 +130,7 @@ class BaseLine(object):
                         n, r = line.split('|')
                         self.__results[n] = r.rstrip('\n')
                 f.close()
+
+class ReadOnlyBaseLine(BaseLine):
+        def store(self):
+                raise NotImplementedError()

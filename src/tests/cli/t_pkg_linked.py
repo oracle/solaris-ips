@@ -1046,6 +1046,9 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
                 self._pkg_child(0, [1, 2, 3], "audit-linked")
                 self._pkg_child_all(0, "audit-linked")
 
+class TestPkgLinked2(TestPkgLinked):
+        """Class used solely to split up the test suite for parallelization."""
+
         def test_audit_diverged_1(self):
                 self._imgs_create(4)
 
@@ -1284,6 +1287,9 @@ class TestPkgLinked(pkg5unittest.ManyDepotTestCase):
 
         def test_sync_2_via_set_property_linked_TODO(self):
                 pass
+
+class TestPkgLinked3(TestPkgLinked):
+        """Class used solely to split up the test suite for parallelization."""
 
         def test_parent_sync_1_nosync(self):
                 self._imgs_create(2)

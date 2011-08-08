@@ -32,6 +32,7 @@
 ^src/pkg/Makefile.link
 ^src/pkg/pkgtmp/
 ^src/tests/.coverage$
+^src/tests/.timing_history.txt$
 ^src/tests/htmlcov$
 ^src/tests/ro_data/signing_certs/produced/.*/.*\.csr
 ^src/tests/ro_data/signing_certs/produced/.*\.old

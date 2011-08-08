@@ -683,6 +683,8 @@ class test_func(Command):
             ("showonexpectedfail", 'f',
                 "show all failure info, even for expected fails"),
             ("startattest=", 's', "start at indicated test"),
+            ("jobs=", 'j', "number of parallel processes to use"),
+            ("quiet", "q", "use the dots as the output format"),
         ]
         description = "Runs unit and functional tests"
 
@@ -700,6 +702,8 @@ class test_func(Command):
                 self.startattest = ""
                 self.archivedir = ""
                 self.port = 12001
+                self.jobs = 1
+                self.quiet = False
 
         def finalize_options(self):
                 pass
