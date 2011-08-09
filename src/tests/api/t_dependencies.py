@@ -2414,6 +2414,41 @@ file NOHASH group=sys mode=0755 owner=root path=%(runpath_mod_test_path)s
                     "generating dependencies with non-matching bypass entries "
                     "changed the returned dependencies")
 
+        def test_symlinked_proto(self):
+                """Ensure that the behavior when using a symlink to a proto dir
+                is identical to the behavior when using that proto dir for all
+                flavors."""
+
+                multi_flavor_manf = (self.ext_hardlink_manf +
+                     self.ext_script_manf + self.ext_elf_manf +
+                     self.ext_python_manf + self.ext_smf_manf +
+                     self.relative_int_manf)
+                t_path = self.make_manifest(multi_flavor_manf)
+
+                linked_proto = os.path.join(self.test_root, "linked_proto")
+                os.symlink(self.proto_dir, linked_proto)
+
+                self.make_proto_text_file(self.paths["script_path"],
+                    self.script_text)
+                self.make_smf_test_files()
+                self.make_python_test_files(2.6)
+                self.make_elf(self.paths["curses_path"])
+
+                ds, es, ms, pkg_attrs = dependencies.list_implicit_deps(t_path,
+                    [self.proto_dir], {}, [], remove_internal_deps=False,
+                    convert=False)
+
+                smf.SMFManifestDependency._clear_cache()
+
+                # now run the same function, this time using our symlinked dir
+                dsl, esl, msl, pkg_attrsl = dependencies.list_implicit_deps(
+                    t_path, [linked_proto], {}, [],
+                    remove_internal_deps=False, convert=False)
+
+                for a, b in [(ds, dsl), (pkg_attrs, pkg_attrsl)]:
+                            self.assert_(a == b, "Differences found comparing "
+                                "proto_dir with symlinked proto_dir: %s vs. %s"
+                                % (a, b))
 
 if __name__ == "__main__":
         unittest.main()

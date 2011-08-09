@@ -55,6 +55,17 @@ class SMFManifestDependency(base.PublishingDependency):
                 base.PublishingDependency.__init__(self, action,
                     base_names, paths, pkg_vars, proto_dir, "smf_manifest")
 
+        def __repr__(self):
+                return "SMFDep(%s, %s, %s, %s)" % (self.action,
+                    self.base_names[0], self.run_paths, self.pkg_vars)
+
+        @staticmethod
+        def _clear_cache():
+                """Clear our manifest caches.  This is primarily provided for
+                test code."""
+                SMFManifestDependency.instance_mf = None
+                SMFManifestDependency.instance_deps = None
+
         @staticmethod
         def populate_cache(proto_dirs, force_update=False):
                 """Build our instance_mf and instance_deps dictionaries
@@ -364,7 +375,7 @@ def parse_smf_manifest(smf_file):
         manifest_path = None
 
         if isinstance(smf_file, str):
-                manifest_path = os.path.realpath(smf_file)
+                manifest_path = smf_file
 
         svcs = smf_doc.getElementsByTagName("service")
         for service in svcs:
